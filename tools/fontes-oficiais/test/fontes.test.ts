@@ -54,6 +54,29 @@ describe('extratores', () => {
     ]);
   });
 
+  test('gov.br: relativo resolve pelo <base href> sem barra final, como no navegador', () => {
+    const pagina = 'https://www.gov.br/nfse/doc/documentacao-atual';
+    const html = `<base href="${pagina}" />
+      <a href="documentacao-atual">GOV.BR</a>
+      <a href="documentacao-atual/anexo-a.xlsx">Anexo A</a>`;
+    expect(extrairPaginaGovBr(html, pagina)).toEqual([{ id: `${pagina}/anexo-a.xlsx`, titulo: 'Anexo A' }]);
+  });
+
+  test('gov.br: o documento da própria página (og:url) fica de fora', () => {
+    const pagina = 'https://www.gov.br/nfse/doc/rtc';
+    const html = `<meta property="og:url" content="${pagina}/rtc" />
+      <a class="plain" href="${pagina}/rtc">GOV.BR</a>
+      <a href="${pagina}/nt-009.pdf">NT 009</a>`;
+    expect(extrairPaginaGovBr(html, pagina)).toEqual([{ id: `${pagina}/nt-009.pdf`, titulo: 'NT 009' }]);
+  });
+
+  test('gov.br: sem <base>, relativo resolve pelo endereço da página', () => {
+    const pagina = 'https://www.gov.br/nfse/doc/rtc';
+    expect(extrairPaginaGovBr('<a href="rtc/nt-009.pdf">NT 009</a><a href="rtc">rtc</a>', pagina)).toEqual([
+      { id: `${pagina}/nt-009.pdf`, titulo: 'NT 009' },
+    ]);
+  });
+
   test('entidades numéricas, hexadecimais e nomeadas; desconhecida fica como está', () => {
     expect(decodificarEntidades('a&amp;b &#231; &#xE3; &foo;')).toBe('a&b ç ã &foo;');
   });
