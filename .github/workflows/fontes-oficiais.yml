@@ -36,8 +36,10 @@ jobs:
       - id: vigia
         run: bun tools/fontes-oficiais/src/vigiar.ts --relatorio relatorio.md
       - run: cat relatorio.md >> "$GITHUB_STEP_SUMMARY"
+      # Só com todas as fontes lidas: com uma fora do ar, o relatório não traz as pendências dela, e editar ou fechar
+      # a issue apagaria o que ainda falta. A falha de leitura deixa o job vermelho no passo seguinte.
       - name: issue
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && steps.vigia.outputs.falhas == '0'
         env:
           GH_TOKEN: ${{ github.token }}
           MUDOU: ${{ steps.vigia.outputs.mudou }}
