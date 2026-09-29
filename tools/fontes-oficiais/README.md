@@ -16,7 +16,7 @@ Página que responde sem nenhum item reconhecido conta como falha de leitura (le
 
 ## No CI
 
-O workflow `fontes-oficiais.yml` roda todo dia. Com diferença, abre (ou atualiza) a issue "Fontes oficiais publicaram novidades" com o relatório; sem diferença, fecha a issue se ela estiver aberta. Falha de leitura deixa o job vermelho. Em PR que mexe no vigia, ele só lê e escreve o relatório no resumo do job.
+O workflow `fontes-oficiais.yml` roda todo dia. Com diferença, abre (ou atualiza) a issue "Fontes oficiais publicaram novidades" com o relatório; sem diferença, fecha a issue se ela estiver aberta. Com alguma fonte que não deu para ler, o job não mexe na issue (o relatório estaria incompleto) e fica vermelho. Em PR que mexe no vigia, ele só lê e escreve o relatório no resumo do job.
 
 ## Fechar a issue
 
