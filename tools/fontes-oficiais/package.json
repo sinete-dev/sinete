@@ -1,0 +1,8 @@
+{
+  "name": "@sinete/tool-fontes-oficiais",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Vigia das fontes oficiais do sinete (portal da NF-e, portal DF-e da SVRS, documentação da NFS-e Nacional e Calculadora da RFB): compara o que as páginas listam com o estado versionado e relata o que mudou",
+  "license": "Apache-2.0",
+  "type": "module"
+}

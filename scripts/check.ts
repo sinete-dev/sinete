@@ -28,6 +28,7 @@ const steps: [string, string[], string?][] = [
   ['testes das ferramentas', ['bun', 'test'], 'tools/homologacao'],
   ['testes das checagens do repositório', ['bun', 'test'], 'scripts'],
   ['testes do verificador de corpus do DANFE', ['bun', 'test'], 'tools/danfe-corpus'],
+  ['testes do vigia das fontes oficiais', ['bun', 'test'], 'tools/fontes-oficiais'],
   ['publint e attw nos tarballs', ['bun', 'scripts/check-pack.ts']],
   ['slow types do JSR', ['bun', 'scripts/check-jsr.ts']],
 ];
