@@ -67,22 +67,34 @@ export function extrairPortalDfe(html: string): Item[] {
 
 /**
  * Página do gov.br (documentação da NFS-e Nacional): os links que ficam abaixo do caminho da própria página, que são
- * os arquivos e as subpáginas que ela publica. Menu e rodapé apontam para fora desse caminho e ficam de fora.
+ * os arquivos e as subpáginas que ela publica. Menu e rodapé apontam para fora desse caminho e ficam de fora. Links
+ * relativos resolvem como o navegador resolveria: pelo `<base href>` da página, ou pelo endereço dela. O Plone do
+ * gov.br publica a página como um documento dentro da pasta (o `og:url`), e o logo e os botões de compartilhar apontam
+ * para ele: esse endereço é a própria página e fica de fora, senão uma página sem nenhum documento passaria por lida.
  */
 export function extrairPaginaGovBr(html: string, pagina: string): Item[] {
   const base = pagina.replace(/\/+$/, '');
+  const declarado = /<base\b[^>]*href="([^"]+)"/i.exec(html)?.[1];
+  let referencia = pagina;
+  try {
+    if (declarado) referencia = new URL(decodificarEntidades(declarado), pagina).href;
+  } catch {
+    referencia = pagina;
+  }
+  const propria = /<meta\b[^>]*property="og:url"[^>]*content="([^"]+)"/i.exec(html)?.[1];
   const itens: Item[] = [];
   const re = /<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
   for (const m of html.matchAll(re)) {
     let url: string;
     try {
-      url = new URL(decodificarEntidades(m[1] ?? ''), `${base}/`).href.replace(/[#?].*$/, '');
+      url = new URL(decodificarEntidades(m[1] ?? ''), referencia).href.replace(/[#?].*$/, '');
     } catch {
       continue;
     }
     url = url.replace(/\/(view|@@download\/file)$/, '');
     // A âncora de acessibilidade ("Ir para o conteúdo") aponta para a própria página e sobra como `${base}/`.
     if (!url.startsWith(`${base}/`) || url.length === base.length + 1) continue;
+    if (propria && url === decodificarEntidades(propria).replace(/\/+$/, '')) continue;
     itens.push({ id: url, titulo: texto(m[2] ?? '') || url.slice(base.length + 1) });
   }
   return ordenar(itens);

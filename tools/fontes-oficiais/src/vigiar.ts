@@ -90,8 +90,11 @@ async function ler(fonte: Fonte): Promise<readonly Item[]> {
     if (!downloadUrl) throw new Error('a API não devolveu downloadUrl');
     const h = await baixar(downloadUrl, 'HEAD');
     const modificado = h.headers.get('last-modified');
-    const tamanho = Number(h.headers.get('content-length'));
-    if (!modificado || !Number.isFinite(tamanho)) throw new Error('HEAD sem last-modified ou content-length');
+    const bruto = h.headers.get('content-length');
+    const tamanho = bruto === null ? Number.NaN : Number(bruto);
+    if (!modificado || !Number.isSafeInteger(tamanho) || tamanho <= 0) {
+      throw new Error('HEAD sem last-modified ou content-length válido');
+    }
     return [itemCalculadora(downloadUrl, new Date(modificado).toISOString().replace('.000Z', 'Z'), tamanho)];
   }
   const corpo = await html(await baixar(fonte.url));

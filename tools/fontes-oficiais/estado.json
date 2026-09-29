@@ -2213,10 +2213,6 @@
           "titulo": "ANEXO_V-PAINEL_ADM_MUNICIPAL-SNNFSe-v1.00-20251216"
         },
         {
-          "id": "https://www.gov.br/nfse/pt-br/biblioteca/documentacao-tecnica/documentacao-atual/documentacao-atual",
-          "titulo": "GOV.BR"
-        },
-        {
           "id": "https://www.gov.br/nfse/pt-br/biblioteca/documentacao-tecnica/documentacao-atual/guia-do-painel-administrativo-municipal-nfs-e-v1-2-out2025.pdf",
           "titulo": "Guia do Painel Administrativo Municipal"
         },
@@ -2273,10 +2269,6 @@
         {
           "id": "https://www.gov.br/nfse/pt-br/biblioteca/documentacao-tecnica/producao-restrita/anexo_ii-sefin_adn-pedregevt_evt-snnfse-prodrest-v1-01-202601122.xlsx",
           "titulo": "ANEXO_II-SEFIN_ADN-PEDREGEVT_EVT-SNNFSe-PRODREST-v1.01-202601122"
-        },
-        {
-          "id": "https://www.gov.br/nfse/pt-br/biblioteca/documentacao-tecnica/producao-restrita/documentacao-tecnica-rtc-producao-restrita",
-          "titulo": "GOV.BR"
         },
         {
           "id": "https://www.gov.br/nfse/pt-br/biblioteca/documentacao-tecnica/producao-restrita/esquemas-nfse-rtc-v1-01-20260727.zip",
@@ -2363,10 +2355,6 @@
         {
           "id": "https://www.gov.br/nfse/pt-br/biblioteca/documentacao-tecnica/rtc/nt-009-se-cgnfse-v1-0-1.pdf",
           "titulo": "Nota Técnica SE/CGNFS-e nº 009"
-        },
-        {
-          "id": "https://www.gov.br/nfse/pt-br/biblioteca/documentacao-tecnica/rtc/rtc",
-          "titulo": "GOV.BR"
         }
       ]
     }

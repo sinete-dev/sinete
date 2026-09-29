@@ -45,7 +45,8 @@ jobs:
           MUDOU: ${{ steps.vigia.outputs.mudou }}
         run: |
           titulo='Fontes oficiais publicaram novidades'
-          numero="$(gh issue list --state open --limit 100 --json number,title \
+          # Busca pelo título no servidor antes do limite; o filtro exato continua aqui.
+          numero="$(gh issue list --state open --search "\"$titulo\" in:title" --limit 100 --json number,title \
             --jq "map(select(.title == \"$titulo\")) | first | .number // empty")"
           if [ "$MUDOU" = "true" ]; then
             if [ -n "$numero" ]; then
