@@ -4,7 +4,8 @@
  * - HTTP/1.1 sempre (o `node:https` não fala h2; o h2 do undici quebra os hosts que renegociam).
  * - Confiança somada por Agent, sem mexer no processo: `ca` = raízes da runtime (ou a loja do sistema, com
  *   `trust: 'system'`) + conjunto ICP-Brasil do `@sinete/cert` + `additionalCa`. Nada de `NODE_EXTRA_CA_CERTS`,
- *   `setDefaultCACertificates` ou `rejectUnauthorized: false`.
+ *   `setDefaultCACertificates` ou `rejectUnauthorized: false`, e `rejectUnauthorized: true` fixo no Agent, para que
+ *   `NODE_TLS_REJECT_UNAUTHORIZED=0` no processo não desligue a conferência do servidor.
  * - Identidade em PEM na memória (nunca o PFX: o OpenSSL 3 recusa o legado). Renegociação iniciada pelo servidor
  *   fica permitida (é como o IIS da SEFAZ pede o certificado).
  * - Falha barulhenta: depois do handshake, o certificado local do socket tem de ser o da identidade.
@@ -94,6 +95,8 @@ export function createNodeTransport(options: NodeTransportOptions): Transport {
       cert: id.certChain,
       key: id.key,
       ca: [...trustStore(options.trust ?? 'bundled'), ...icpBrasilTlsPem(), ...(options.additionalCa ?? [])],
+      // Explícito: sem ele, NODE_TLS_REJECT_UNAUTHORIZED=0 no processo desliga a conferência do servidor também aqui.
+      rejectUnauthorized: true,
       minVersion: 'TLSv1.2',
       ...(options.sigalgs === undefined ? {} : { sigalgs: options.sigalgs, maxVersion: 'TLSv1.2' as const }),
     });
