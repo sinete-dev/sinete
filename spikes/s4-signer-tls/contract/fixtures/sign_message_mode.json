@@ -1,0 +1,4 @@
+[
+  {"v":1,"id":"h7","method":"sign","params":{"identity":"navegador-webcrypto","scheme":"rsa_pkcs1_sha256","mode":"message","message":"AQAB...transcript TLS 1.2 (ClientHello..ClientKeyExchange), ~10 a 20 KB","messageSha256":"base64 do SHA-256 do transcript","context":{"purpose":"tls12-client-certificate-verify","host":"nfe-homologacao.svrs.rs.gov.br","conn":15,"handshake":1}}},
+  {"v":1,"id":"h7","result":{"signature":"base64"}}
+]

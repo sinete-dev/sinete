@@ -1,0 +1,70 @@
+{
+  "description": "Requisição num host que pede o certificado numa renegociação (IIS). No meio da requisição o helper pede sign ao cliente (handshake 2) e a resposta conta a assinatura no bloco tls.",
+  "frames": [
+    {
+      "from": "client",
+      "frame": {
+        "v": 1,
+        "id": "c4",
+        "method": "http.request",
+        "params": {
+          "identity": "emitente-11222333000181",
+          "url": "https://homologacao.nfe.fazenda.sp.gov.br/ws/nfestatusservico4.asmx",
+          "method": "POST",
+          "headers": { "content-type": "application/soap+xml; charset=utf-8" },
+          "body": "PHNvYXA+",
+          "timeoutMs": 60000,
+          "service": "NfeStatusServico"
+        }
+      }
+    },
+    {
+      "from": "helper",
+      "frame": {
+        "v": 1,
+        "id": "h1",
+        "method": "sign",
+        "params": {
+          "identity": "emitente-11222333000181",
+          "scheme": "rsa_pkcs1_sha256",
+          "mode": "digest",
+          "digest": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+          "context": {
+            "purpose": "tls12-client-certificate-verify",
+            "host": "homologacao.nfe.fazenda.sp.gov.br",
+            "conn": 1,
+            "handshake": 2
+          }
+        }
+      }
+    },
+    { "from": "client", "of": "sign", "frame": { "v": 1, "id": "h1", "result": { "signature": "c2lnbmF0dXJl" } } },
+    {
+      "from": "helper",
+      "of": "http.request",
+      "frame": {
+        "v": 1,
+        "id": "c4",
+        "result": {
+          "status": 200,
+          "headers": { "content-type": "application/soap+xml; charset=utf-8" },
+          "body": "PHNvYXA+",
+          "ms": 244.1,
+          "tls": {
+            "version": "TLS 1.2",
+            "cipher": "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+            "conn": 1,
+            "connReused": false,
+            "handshakes": 2,
+            "resumed": [false, false],
+            "certRequests": 1,
+            "renegotiations": 1,
+            "signatures": [{ "scheme": "rsa_pkcs1_sha256", "mode": "digest", "ms": 1.07 }],
+            "handshakeMs": [57.6],
+            "peerChain": ["homologacao.nfe.fazenda.sp.gov.br", "AC SERPRO SSLv1"]
+          }
+        }
+      }
+    }
+  ]
+}

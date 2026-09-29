@@ -1,0 +1,173 @@
+{
+  "descricao": "Vigência dos módulos gerados do @sinete/schemas por família de documento, em homologação e produção. Datas no fuso de Brasília (UTC-3), a partir de 00:00. null = sem data de início registrada (vale para qualquer data até a próxima entrada da família).",
+  "atualizadoEm": "2026-09-26",
+  "familias": {
+    "nfe": [
+      {
+        "modulo": "nfe/PL_010e",
+        "pl": "PL_010e_v1.02",
+        "homologacao": "2026-07-01",
+        "producao": "2026-08-03",
+        "fonte": "NT 2025.002 v1.51, Histórico de Alterações / Cronograma, versão 1.40: implantação em teste até 01/07/2026 (pode variar por UF) e em produção em 03/08/2026."
+      },
+      {
+        "modulo": "nfe/PL_010f",
+        "pl": "PL_010f_v1.04",
+        "homologacao": "2026-09-01",
+        "producao": "2026-11-03",
+        "fonte": "NT 2025.002 v1.51, cronograma da versão 1.50 (teste até 01/09/2026, produção 03/11/2026), e NT 2026.007 v1.00 (teste 01/09/2026, produção 03/11/2026)."
+      }
+    ],
+    "mdfe": [
+      {
+        "modulo": "mdfe/3.00b",
+        "pl": "PL_MDFe_300b_NT012025_1.05",
+        "homologacao": "2025-07-01",
+        "producao": "2025-10-06",
+        "fonte": "MDF-e NT 2025.001 v1.03, cronograma (homologação 07/2025, sem dia; usado o dia 1) e aviso no portal do MDF-e (produção em 06/10/2025 por volta das 09h00; usado o dia inteiro)."
+      }
+    ],
+    "mdfe/eventos": [
+      {
+        "modulo": "mdfe/eventos/3.00b",
+        "pl": "PL_MDFe_300b_NT012025_1.05",
+        "homologacao": "2025-07-01",
+        "producao": "2025-10-06",
+        "fonte": "MDF-e NT 2025.001 v1.03, cronograma (homologação 07/2025, sem dia; usado o dia 1) e aviso no portal do MDF-e (produção em 06/10/2025 por volta das 09h00; usado o dia inteiro). Os schemas dos eventos e das consultas vêm no mesmo pacote e seguem a mesma data."
+      }
+    ],
+    "mdfe/servicos": [
+      {
+        "modulo": "mdfe/servicos/3.00b",
+        "pl": "PL_MDFe_300b_NT012025_1.05",
+        "homologacao": "2025-07-01",
+        "producao": "2025-10-06",
+        "fonte": "MDF-e NT 2025.001 v1.03, cronograma (homologação 07/2025, sem dia; usado o dia 1) e aviso no portal do MDF-e (produção em 06/10/2025 por volta das 09h00; usado o dia inteiro). Os schemas dos eventos e das consultas vêm no mesmo pacote e seguem a mesma data."
+      }
+    ],
+    "nfe/evento-cancelamento": [
+      {
+        "modulo": "nfe/evento-cancelamento/PL_010d",
+        "pl": "PL_010d_v1.03",
+        "homologacao": "2026-06-15",
+        "producao": "2026-07-01",
+        "fonte": "NT 2026.004 v1.01 (CNPJ alfanumérico), cronograma: teste até 15/06/2026, produção 01/07/2026."
+      }
+    ],
+    "nfe/evento-cce": [
+      {
+        "modulo": "nfe/evento-cce/PL_010d",
+        "pl": "PL_010d_v1.03",
+        "homologacao": "2026-06-15",
+        "producao": "2026-07-01",
+        "fonte": "NT 2026.004 v1.01 (CNPJ alfanumérico), cronograma: teste até 15/06/2026, produção 01/07/2026."
+      }
+    ],
+    "nfe/evento-cancelamento-substituicao": [
+      {
+        "modulo": "nfe/evento-cancelamento-substituicao/PL_010d",
+        "pl": "PL_010d_v1.03",
+        "homologacao": "2026-06-15",
+        "producao": "2026-07-01",
+        "fonte": "NT 2026.004 v1.01 (CNPJ alfanumérico), cronograma do envelope do evento: teste até 15/06/2026, produção 01/07/2026. O detEvento é o do Evento_CancSubst_v1.01 (NT 2018.004)."
+      }
+    ],
+    "nfe/evento-confirmacao-operacao": [
+      {
+        "modulo": "nfe/evento-confirmacao-operacao/PL_010d",
+        "pl": "PL_010d_v1.03",
+        "homologacao": "2026-06-15",
+        "producao": "2026-07-01",
+        "fonte": "NT 2026.004 v1.01 (CNPJ alfanumérico), cronograma: teste até 15/06/2026, produção 01/07/2026."
+      }
+    ],
+    "nfe/evento-ciencia-operacao": [
+      {
+        "modulo": "nfe/evento-ciencia-operacao/PL_010d",
+        "pl": "PL_010d_v1.03",
+        "homologacao": "2026-06-15",
+        "producao": "2026-07-01",
+        "fonte": "NT 2026.004 v1.01 (CNPJ alfanumérico), cronograma: teste até 15/06/2026, produção 01/07/2026."
+      }
+    ],
+    "nfe/evento-desconhecimento-operacao": [
+      {
+        "modulo": "nfe/evento-desconhecimento-operacao/PL_010d",
+        "pl": "PL_010d_v1.03",
+        "homologacao": "2026-06-15",
+        "producao": "2026-07-01",
+        "fonte": "NT 2026.004 v1.01 (CNPJ alfanumérico), cronograma: teste até 15/06/2026, produção 01/07/2026."
+      }
+    ],
+    "nfe/evento-operacao-nao-realizada": [
+      {
+        "modulo": "nfe/evento-operacao-nao-realizada/PL_010d",
+        "pl": "PL_010d_v1.03",
+        "homologacao": "2026-06-15",
+        "producao": "2026-07-01",
+        "fonte": "NT 2026.004 v1.01 (CNPJ alfanumérico), cronograma: teste até 15/06/2026, produção 01/07/2026."
+      }
+    ],
+    "nfe/inutilizacao": [
+      {
+        "modulo": "nfe/inutilizacao/PL_010d",
+        "pl": "PL_010d_v1.03",
+        "homologacao": "2026-06-15",
+        "producao": "2026-07-01",
+        "fonte": "NT 2026.004 v1.01 (CNPJ alfanumérico, inclui o layout do web service NFeInutilizacao), cronograma: teste até 15/06/2026, produção 01/07/2026."
+      }
+    ],
+    "nfe/consulta-protocolo": [
+      {
+        "modulo": "nfe/consulta-protocolo/PL_010d",
+        "pl": "PL_010d_v1.03",
+        "homologacao": "2026-06-15",
+        "producao": "2026-07-01",
+        "fonte": "NT 2026.004 v1.01 (CNPJ alfanumérico), cronograma: teste até 15/06/2026, produção 01/07/2026."
+      }
+    ],
+    "nfe/consulta-cadastro": [
+      {
+        "modulo": "nfe/consulta-cadastro/PL_010d",
+        "pl": "PL_010d_v1.03",
+        "homologacao": "2026-06-15",
+        "producao": "2026-07-01",
+        "fonte": "NT 2026.004 v1.01 (CNPJ alfanumérico), cronograma: teste até 15/06/2026, produção 01/07/2026."
+      }
+    ],
+    "nfe/status-servico": [
+      {
+        "modulo": "nfe/status-servico/PL_009q",
+        "pl": "PL_009q_NT2025_001_v1.00",
+        "homologacao": null,
+        "producao": null,
+        "fonte": "consStatServ e retConsStatServ 4.00 não mudaram nos PL 009 e 010; o PL_009q é o último pacote que os redistribui. Sem data de início registrada."
+      }
+    ],
+    "nfe/dist-dfe": [
+      {
+        "modulo": "nfe/dist-dfe/PL_NFeDistDFe_104",
+        "pl": "PL_NFeDistDFe_104",
+        "homologacao": null,
+        "producao": null,
+        "fonte": "Pacote publicado em 03/07/2026 no portal da NF-e sem cronograma próprio; é o único da família na tabela. Sem data de início registrada."
+      }
+    ],
+    "nfse": [
+      {
+        "modulo": "nfse/1.01-20260209",
+        "pl": "NFSe_v1.01_20260209",
+        "homologacao": "2026-02-09",
+        "producao": "2026-02-09",
+        "fonte": "Documentação Atual do Portal NFS-e (página atualizada em 15/08/2026): NFSe-ESQUEMAS_XSD-v1.01-20260209, o pacote de produção. A data é a do nome do pacote; a notícia de 26/09/2025 diz que produção restrita e produção seguem os mesmos esquemas."
+      },
+      {
+        "modulo": "nfse/1.01-20260727",
+        "pl": "NFSe_v1.01_20260727",
+        "homologacao": "2026-07-27",
+        "producao": "2026-08-10",
+        "fonte": "Notícia do Portal NFS-e de 28/07/2026 (\"Plataforma NFS-e disponibiliza novas evoluções em Produção Restrita e divulga cronograma de implantação\"): schemas atualizados para o CNPJ alfanumérico em produção restrita desde 27/07/2026 e em produção a partir de 10/08/2026."
+      }
+    ]
+  }
+}

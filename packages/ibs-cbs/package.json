@@ -1,0 +1,75 @@
+{
+  "name": "@sinete/ibs-cbs",
+  "version": "0.0.0",
+  "description": "IBS e CBS da reforma tributária do consumo, para qualquer DF-e (NF-e, NFC-e, CT-e, NFCom, NFS-e): alíquotas por data de fato gerador, cálculo nos grupos da NT 2025.002, regras de validação e determinação de CST e cClassTrib, com subpaths para usar cada parte sozinha",
+  "keywords": [
+    "ibs",
+    "cbs",
+    "reforma-tributaria",
+    "cclasstrib",
+    "classificacao-tributaria",
+    "aliquota",
+    "calculadora",
+    "nfe",
+    "nfce",
+    "cte",
+    "nfcom",
+    "nfse",
+    "dfe",
+    "brasil"
+  ],
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./aliquotas": {
+      "types": "./dist/aliquotas/index.d.ts",
+      "default": "./dist/aliquotas/index.js"
+    },
+    "./calcular": {
+      "types": "./dist/calcular/index.d.ts",
+      "default": "./dist/calcular/index.js"
+    },
+    "./validar": {
+      "types": "./dist/validar/index.d.ts",
+      "default": "./dist/validar/index.js"
+    },
+    "./determinar": {
+      "types": "./dist/determinar/index.d.ts",
+      "default": "./dist/determinar/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src",
+    "NOTICE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sinete-dev/sinete.git",
+    "directory": "packages/ibs-cbs"
+  },
+  "homepage": "https://github.com/sinete-dev/sinete/tree/main/packages/ibs-cbs#readme",
+  "bugs": "https://github.com/sinete-dev/sinete/issues",
+  "scripts": {
+    "build": "bun ../../scripts/build.ts ."
+  },
+  "dependencies": {
+    "@sinete/core": "workspace:^",
+    "@sinete/ibs-cbs-dados": "workspace:^"
+  },
+  "devDependencies": {
+    "@sinete/rejeicoes": "workspace:^"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

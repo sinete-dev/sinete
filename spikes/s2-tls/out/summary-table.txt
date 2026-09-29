@@ -1,0 +1,37 @@
+| Host | Uso | TLS aceitos | Cifra (openssl) | Pede cert | Sem cert | Raiz | Node/Bun padrão | Deno padrão | +ICP (N/B/D) | Deno viável | OCSP staple | Retomada |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| `nfe.sefaz.am.gov.br` | nfe:prod:AM | 1.0, 1.1, 1.2 | ECDHE-AES128-GCM-SHA256 | no handshake | alerta TLS: bad certificate | ICP-Brasil v10 | n/a (exige cert) | falha (CA) | n/a (exige cert) | ok | não | não |
+| `nfe.sefaz.ba.gov.br` | nfe:prod:BA | 1.0, 1.1, 1.2 | ECDHE-AES256-SHA384 | renegociação (provável, IIS) | HTTP 403 | ICP-Brasil v10 | falha (CA) | falha (cifra) | ok/ok/falha (cifra) | NÃO (sem ECDHE+AEAD) | sim | sim |
+| `nfe.sefaz.go.gov.br` | nfe:prod:GO | 1.0, 1.1, 1.2 | DHE-AES128-GCM-SHA256 | no handshake | alerta TLS: certificate unknown | ICP-Brasil v10 | n/a (exige cert) | n/a (exige cert) | n/a (exige cert) | NÃO (sem ECDHE+AEAD) | não | não |
+| `nfe.fazenda.mg.gov.br` | nfe:prod:MG | 1.2 | ECDHE-AES128-GCM-SHA256 | no handshake | alerta TLS: handshake failure | Sectigo R46 | n/a (exige cert) | n/a (exige cert) | n/a (exige cert) | ok | não | não |
+| `nfe.sefaz.ms.gov.br` | nfe:prod:MS | 1.2 | ECDHE-AES128-GCM-SHA256 | no handshake | TCP reset após a requisição | ICP-Brasil v10 | falha (CA) | falha (CA) | ok | ok | não | sim |
+| `nfe.sefaz.mt.gov.br` | nfe:prod:MT | 1.2 | ECDHE-AES128-GCM-SHA256 | no handshake | HTTP 200 (GET ?wsdl sem cert) | ICP-Brasil v10 | falha (CA) | falha (CA) | ok | ok | não | sim |
+| `nfe.sefaz.pe.gov.br` | nfe:prod:PE | 1.2 | ECDHE-AES256-GCM-SHA384 | no handshake | HTTP 403 | ICP-Brasil v10 | falha (CA) | falha (CA) | ok | ok | não | não |
+| `nfe.sefa.pr.gov.br` | nfe:prod:PR | 1.2 | ECDHE-AES128-SHA256 | no handshake | alerta TLS: bad certificate | ICP-Brasil v10 | n/a (exige cert) | n/a (exige cert) | n/a (exige cert) | NÃO (sem ECDHE+AEAD) | não | não |
+| `nfe.sefazrs.rs.gov.br` | nfe:prod:RS | 1.2 | ECDHE-AES256-GCM-SHA384 | no handshake | HTTP 403 | ICP-Brasil v10 | falha (CA) | falha (CA) | ok | ok | sim | não |
+| `cad.svrs.rs.gov.br` | nfe:prod:RS nfe:prod:SVRS | 1.2 | ECDHE-AES256-GCM-SHA384 | no handshake | não testado | ICP-Brasil v10 | falha (CA) | falha (CA) | ok | ok | sim | não |
+| `nfe.fazenda.sp.gov.br` | nfe:prod:SP | 1.2 | ECDHE-AES256-GCM-SHA384 | renegociação (provável, IIS) | HTTP 403 | ICP-Brasil v10 | falha (CA) | falha (CA) | ok | NÃO (renegociação) | sim | sim |
+| `www.sefazvirtual.fazenda.gov.br` | nfe:prod:SVAN nfe:prod:SVC-AN | 1.0, 1.1, 1.2 | ECDHE-AES256-GCM-SHA384 | renegociação (provável, IIS) | HTTP 403 | GlobalSign Root R46 | ok | ok | ok | NÃO (renegociação) | sim | não |
+| `nfe.svrs.rs.gov.br` | nfe:prod:SVC-RS nfe:prod:SVRS | 1.2 | ECDHE-AES256-GCM-SHA384 | no handshake | HTTP 403 | ICP-Brasil v10 | falha (CA) | falha (CA) | ok | ok | sim | não |
+| `www1.nfe.fazenda.gov.br` | nfe:prod:AN | 1.0, 1.1, 1.2 | ECDHE-AES256-GCM-SHA384 | renegociação (provável, IIS) | HTTP 403 | GlobalSign Root R46 | ok | ok | ok | NÃO (renegociação) | sim | não |
+| `www.nfe.fazenda.gov.br` | nfe:prod:AN | 1.0, 1.1, 1.2 | ECDHE-AES256-SHA384 | renegociação (provável, IIS) | não testado | ISRG Root X1 | ok | falha (cifra) | ok/ok/falha (cifra) | NÃO (sem ECDHE+AEAD) | não | não |
+| `homnfe.sefaz.am.gov.br` | nfe:hom:AM | 1.0, 1.1, 1.2 | ECDHE-AES128-GCM-SHA256 | no handshake | alerta TLS: bad certificate | ICP-Brasil v10 | n/a (exige cert) | falha (CA) | n/a (exige cert) | ok | não | não |
+| `hnfe.sefaz.ba.gov.br` | nfe:hom:BA | 1.0, 1.1, 1.2 | ECDHE-AES256-GCM-SHA384 | renegociação (verificado) | HTTP 403 | ICP-Brasil v10 | falha (CA) | falha (CA) | ok | NÃO (renegociação) | sim | sim |
+| `homolog.sefaz.go.gov.br` | nfe:hom:GO | 1.0, 1.1, 1.2 | ECDHE-AES128-GCM-SHA256 | no handshake | alerta TLS após a requisição: handshake failure | ISRG Root X1 | ok | ok | ok | ok | não | sim |
+| `hnfe.fazenda.mg.gov.br` | nfe:hom:MG | 1.2 | ECDHE-AES128-GCM-SHA256 | no handshake | alerta TLS: handshake failure | Sectigo R46 | n/a (exige cert) | n/a (exige cert) | n/a (exige cert) | ok | não | não |
+| `hom.nfe.sefaz.ms.gov.br` | nfe:hom:MS | 1.2 | ECDHE-AES128-GCM-SHA256 | no handshake | TCP reset após a requisição | ICP-Brasil v10 | falha (CA) | falha (CA) | ok | ok | não | sim |
+| `homologacao.sefaz.mt.gov.br` | nfe:hom:MT | 1.2 | ECDHE-AES128-GCM-SHA256 | renegociação (verificado) | TCP reset após a requisição | ICP-Brasil v10 | falha (CA) | falha (CA) | ok | NÃO (renegociação) | não | sim |
+| `nfehomolog.sefaz.pe.gov.br` | nfe:hom:PE | 1.2 | ECDHE-AES256-GCM-SHA384 | no handshake | HTTP 403 | ICP-Brasil v10 | falha (CA) | falha (CA) | ok | ok | não | sim |
+| `homologacao.nfe.sefa.pr.gov.br` | nfe:hom:PR | 1.2 | ECDHE-AES128-SHA256 | no handshake | alerta TLS: bad certificate | ICP-Brasil v10 | n/a (exige cert) | n/a (exige cert) | n/a (exige cert) | NÃO (sem ECDHE+AEAD) | não | não |
+| `nfe-homologacao.sefazrs.rs.gov.br` | nfe:hom:RS | 1.2 | ECDHE-AES256-GCM-SHA384 | no handshake | HTTP 403 | ICP-Brasil v10 | falha (CA) | falha (CA) | ok | ok | sim | sim |
+| `cad-homologacao.svrs.rs.gov.br` | nfe:hom:RS nfe:hom:SVRS | 1.2 | ECDHE-AES256-GCM-SHA384 | no handshake | não testado | ICP-Brasil v10 | falha (CA) | falha (CA) | ok | ok | sim | sim |
+| `homologacao.nfe.fazenda.sp.gov.br` | nfe:hom:SP | 1.2 | ECDHE-AES256-GCM-SHA384 | renegociação (verificado) | HTTP 403 | ICP-Brasil v10 | falha (CA) | falha (CA) | ok | NÃO (renegociação) | não | sim |
+| `hom.sefazvirtual.fazenda.gov.br` | nfe:hom:SVAN nfe:hom:SVC-AN | 1.0, 1.1, 1.2 | ECDHE-AES256-GCM-SHA384 | renegociação (verificado) | HTTP 403 | GlobalSign Root R46 | ok | ok | ok | NÃO (renegociação) | sim | sim |
+| `nfe-homologacao.svrs.rs.gov.br` | nfe:hom:SVC-RS nfe:hom:SVRS | 1.2 | ECDHE-AES256-GCM-SHA384 | no handshake | HTTP 403 | ICP-Brasil v10 | falha (CA) | falha (CA) | ok | ok | sim | não |
+| `hom1.nfe.fazenda.gov.br` | nfe:hom:AN | 1.0, 1.1, 1.2 | ECDHE-AES256-SHA384 | renegociação (verificado) | HTTP 403 | GlobalSign Root R46 | ok | falha (cifra) | ok/ok/falha (cifra) | NÃO (sem ECDHE+AEAD) | sim | sim |
+| `mdfe.svrs.rs.gov.br` | mdfe:producao | 1.2 | ECDHE-AES256-GCM-SHA384 | no handshake | HTTP 403 | ICP-Brasil v10 | falha (CA) | falha (CA) | ok | ok | sim | não |
+| `mdfe-homologacao.svrs.rs.gov.br` | mdfe:homologacao | 1.2 | ECDHE-AES256-GCM-SHA384 | no handshake | HTTP 403 | ICP-Brasil v10 | falha (CA) | falha (CA) | ok | ok | sim | sim |
+| `sefin.producaorestrita.nfse.gov.br` | nfse:producaoRestrita | 1.0, 1.1, 1.2 | ECDHE-AES256-GCM-SHA384 | renegociação (verificado) | HTTP 403 | GlobalSign Root R46 | ok | ok | ok | NÃO (renegociação) | sim | sim |
+| `adn.producaorestrita.nfse.gov.br` | nfse:producaoRestrita | 1.2, 1.3 | CHACHA20 (1.3) | no handshake (1.3) | 1.2: handshake failure; 1.3: bad record mac | ISRG Root X1 | ok | ok | ok | ok | não | não |
+| `sefin.nfse.gov.br` | nfse:producao | 1.0, 1.1, 1.2 | ECDHE-AES256-GCM-SHA384 | renegociação (provável, IIS) | HTTP 403 | GlobalSign Root R46 | ok | ok | ok | NÃO (renegociação) | sim | sim |
+| `adn.nfse.gov.br` | nfse:producao | 1.2, 1.3 | CHACHA20 (1.3) | no handshake (1.3) | 1.2: handshake failure; 1.3: bad record mac | ISRG Root X1 | ok | ok | ok | ok | não | não |

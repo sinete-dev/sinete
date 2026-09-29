@@ -1,0 +1,16 @@
+# Configuração do Bun para o monorepo (ADR 0001: Bun é gerenciador, runner de scripts e de testes).
+
+[install]
+# Versões exatas nas devDependencies adicionadas por `bun add`.
+exact = true
+
+[test]
+# Só os testes dos pacotes; `spikes/` tem suítes próprias e fica de fora.
+root = "packages"
+coverageSkipTestFiles = true
+# Um pacote que importa outro do workspace resolve pelo `dist` (build) do irmão; o limite é por arquivo, então o `dist`
+# fica fora da cobertura: cada pacote mede o próprio `src` nos próprios testes. Os scripts do helper Go, que os testes
+# do cliente importam para compilar o binário, também: são ferramenta de build, não código publicado.
+coveragePathIgnorePatterns = ["**/dist/**", "helpers/*/scripts/**"]
+coverageThreshold = { lines = 0.9, functions = 0.9 }
+coverageReporter = ["text"]

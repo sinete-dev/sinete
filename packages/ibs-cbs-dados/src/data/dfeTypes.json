@@ -1,0 +1,128 @@
+[
+  {
+    "description": "Nota Fiscal Eletrônica",
+    "key": "055",
+    "modelo": 55,
+    "sigla": "NF-e",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Conhecimento de Transporte Eletrônico",
+    "key": "057",
+    "modelo": 57,
+    "sigla": "CT-e",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Nota Fiscal de Fatura de Serviços de Comunicação Eletrônica",
+    "key": "062",
+    "modelo": 62,
+    "sigla": "NFCom",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Bilhete de Passagem Eletrônico",
+    "key": "063",
+    "modelo": 63,
+    "sigla": "BP-e",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Nota Fiscal de Consumidor Eletrônica",
+    "key": "065",
+    "modelo": 65,
+    "sigla": "NFC-e",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Nota Fiscal de Energia Elétrica Eletrônica",
+    "key": "066",
+    "modelo": 66,
+    "sigla": "NF3-e",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Conhecimento de Transporte Eletrônico para Outros Serviços",
+    "key": "067",
+    "modelo": 67,
+    "sigla": "CT-e OS",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Nota Fiscal da Água e Saneamento Eletrônica",
+    "key": "075",
+    "modelo": 75,
+    "sigla": "NFAg",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Nota Fiscal Eletrônica do Gás",
+    "key": "076",
+    "modelo": 76,
+    "sigla": "NFGas",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Nota Fiscal Eletrônica de Alienação de Bens Imóveis",
+    "key": "077",
+    "modelo": 77,
+    "sigla": "NF-e ABI",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Bilhete de Passagem Eletrônico para Transporte Aéreo",
+    "key": "083",
+    "modelo": 83,
+    "sigla": "BP-e TA",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Nota Fiscal de Serviços Eletrônica",
+    "key": "091",
+    "modelo": 91,
+    "sigla": "NFS-e",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Nota Fiscal de Serviço Eletrônica de Exploração de Vias",
+    "key": "092",
+    "modelo": 92,
+    "sigla": "NFS-e Via",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Bilhete de Passagem Eletrônico de Transporte Metropolitano",
+    "key": "093",
+    "modelo": 93,
+    "sigla": "BP-e TM",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Declaração de Regimes Específicos",
+    "key": "094",
+    "modelo": 94,
+    "sigla": "DERE",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Declaração de Importação de Remessa",
+    "key": "095",
+    "modelo": 95,
+    "sigla": "DIR",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Declaração Única de Importação",
+    "key": "096",
+    "modelo": 96,
+    "sigla": "Duimp",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Conhecimento de Transporte Eletrônico Simplificado",
+    "key": "097",
+    "modelo": 97,
+    "sigla": "CT-e Simplificado",
+    "validity": { "from": "2026-01-01", "to": null }
+  }
+]

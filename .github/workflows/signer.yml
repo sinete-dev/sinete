@@ -1,0 +1,167 @@
+# Distribuição do helper sinete-signer (ADR 0014): os binários por plataforma e sabor, os pacotes npm por plataforma
+# com SHA256SUMS e a smoke do tarball em cada SO. Não publica nada: o `npm publish` roda em --dry-run e não há release
+# no GitHub. A publicação real (trusted publisher, provenance, assets da release) entra quando o repositório for
+# público (ADR 0014, pendências).
+name: signer
+
+on:
+  pull_request:
+    paths:
+      - helpers/signer-tls/**
+      - packages/transport/src/signer*.ts
+      - docs/signer-contract/**
+      - .github/workflows/signer.yml
+  push:
+    branches: [main]
+    paths:
+      - helpers/signer-tls/**
+      - packages/transport/src/signer*.ts
+      - docs/signer-contract/**
+      - .github/workflows/signer.yml
+    tags: ['sinete-signer@*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: signer-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  # Estáticos das seis plataformas e -p11 de linux/amd64 (nativo), linux/arm64 e windows/amd64 (compiladores cruzados
+  # do Ubuntu). Ubuntu 22.04 de propósito: o -p11 do Linux exige a glibc do runner (GLIBC_2.34), e o passo seguinte
+  # barra se ela subir.
+  build-linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: helpers/signer-tls/go.mod
+          cache-dependency-path: helpers/signer-tls/go.sum
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends gcc-aarch64-linux-gnu libc6-dev-arm64-cross gcc-mingw-w64-x86-64
+      - run: bun helpers/signer-tls/scripts/build.ts --out dist-linux --verify
+        env:
+          SINETE_CC_LINUX_ARM64: aarch64-linux-gnu-gcc
+          SINETE_CC_WINDOWS_AMD64: x86_64-w64-mingw32-gcc
+      - name: glibc exigida pelo -p11 do Linux (no máximo 2.34)
+        run: |
+          for f in dist-linux/sinete-signer-p11-linux-*; do
+            v=$(readelf -W --dyn-syms "$f" | grep -o 'GLIBC_[0-9.]*' | sort -Vu | tail -1)
+            echo "$f: $v"
+            [ "$(printf '%s\nGLIBC_2.34\n' "$v" | sort -V | tail -1)" = GLIBC_2.34 ] || { echo "glibc acima de 2.34"; exit 1; }
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: signer-dist-linux
+          path: dist-linux/
+          if-no-files-found: error
+
+  # -p11 das duas arquiteturas darwin (clang -arch) e os estáticos de novo: o merge exige o mesmo hash dos do Linux.
+  build-darwin:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: helpers/signer-tls/go.mod
+          cache-dependency-path: helpers/signer-tls/go.sum
+      - run: bun helpers/signer-tls/scripts/build.ts --out dist-darwin
+      - uses: actions/upload-artifact@v4
+        with:
+          name: signer-dist-darwin
+          path: dist-darwin/
+          if-no-files-found: error
+
+  package:
+    needs: [build-linux, build-darwin]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # attest-build-provenance, só fora de PR e com o repositório público
+      attestations: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v5
+        with:
+          name: signer-dist-linux
+          path: dist-linux
+      - uses: actions/download-artifact@v5
+        with:
+          name: signer-dist-darwin
+          path: dist-darwin
+      - run: bun helpers/signer-tls/scripts/build.ts --merge dist-linux --merge dist-darwin --out dist
+      - name: tag sinete-signer@<versão> igual a helpers/signer-tls/VERSION
+        if: startsWith(github.ref, 'refs/tags/sinete-signer@')
+        run: test "${GITHUB_REF_NAME#sinete-signer@}" = "$(cat helpers/signer-tls/VERSION)"
+      - run: bun helpers/signer-tls/scripts/npm.ts --dist dist --out npm --require-p11 --pack
+      # O @sinete/signer depende do @sinete/transport, ainda fora do npm: a smoke publica os dois num verdaccio.
+      - run: bun install --frozen-lockfile && bun run build
+      - run: |
+          for p in core cert transport; do (cd "packages/$p" && bun pm pack --quiet --destination ../../deps); done
+          mkdir smoke-tarballs && cp npm/tarballs/*.tgz deps/*.tgz smoke-tarballs/
+      - name: npm publish --dry-run (nada vai ao registry)
+        run: for t in npm/tarballs/*.tgz; do npm publish "$t" --access public --dry-run; done
+      - uses: actions/attest-build-provenance@v3
+        if: github.event_name != 'pull_request' && !github.event.repository.private
+        with:
+          subject-path: |
+            dist/sinete-signer-*
+            npm/tarballs/*.tgz
+      - uses: actions/upload-artifact@v4
+        with:
+          name: signer-binaries
+          path: dist/
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: signer-npm
+          path: |
+            npm/tarballs/
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: signer-smoke-tarballs
+          path: smoke-tarballs/
+          if-no-files-found: error
+
+  # Instala o tarball da plataforma do runner num consumidor e sobe o helper pelo @sinete/signer (hello dos dois
+  # sabores). Os runners arm64 padrão atendem repositório privado desde jan/2026; o macOS Intel (macos-15-intel, a
+  # última imagem x86_64, até ago/2027) só com o repositório público, para não gastar minuto de macOS a mais no privado.
+  smoke:
+    needs: package
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(github.event.repository.private && '[{"os":"ubuntu-latest","p11":true},{"os":"ubuntu-24.04-arm","p11":true},{"os":"macos-latest","p11":true},{"os":"windows-latest","p11":true},{"os":"windows-11-arm","p11":false}]' || '[{"os":"ubuntu-latest","p11":true},{"os":"ubuntu-24.04-arm","p11":true},{"os":"macos-latest","p11":true},{"os":"macos-15-intel","p11":true},{"os":"windows-latest","p11":true},{"os":"windows-11-arm","p11":false}]') }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+      - run: npm install -g verdaccio@6.10.4
+      - uses: actions/download-artifact@v5
+        with:
+          name: signer-smoke-tarballs
+          path: smoke-tarballs
+      - shell: bash
+        run: |
+          VERDACCIO_BIN="$(npm root -g)/verdaccio/bin/verdaccio"
+          export VERDACCIO_BIN
+          bun helpers/signer-tls/scripts/smoke.ts --tarballs smoke-tarballs ${{ matrix.p11 && '--require-p11' || '' }}

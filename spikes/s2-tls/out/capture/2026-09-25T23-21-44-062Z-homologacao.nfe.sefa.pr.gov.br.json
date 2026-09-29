@@ -1,0 +1,72 @@
+{
+  "target": "homologacao.nfe.sefa.pr.gov.br:443",
+  "ua": null,
+  "started": "2026-09-25T23:21:44.062Z",
+  "events": [
+    {
+      "dir": "c2s",
+      "hs": "ClientHello",
+      "len": 1598
+    },
+    {
+      "dir": "s2c",
+      "hs": "ServerHello",
+      "len": 77,
+      "version": "0x303",
+      "cipherSuite": "0xc027"
+    },
+    {
+      "dir": "s2c",
+      "hs": "Certificate",
+      "len": 5517,
+      "certCount": 3,
+      "subjects": [
+        "C=BR, O=COMPANHIA DE TECNOLOGIA DA INFORMACAO E COMUNICACAO DO PARANA - CELEPAR, ST=PR, L=Curitiba, serialNumber=76545011000119, CN=homologacao.nfe.sefa.pr.gov.br, businessCategory=Government Entity, jurisdictionC=BR",
+        "C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v10, CN=AC SOLUTI SSL EV G4",
+        "C=BR, O=ICP-Brasil, OU=Instituto Nacional de Tecnologia da Informacao - ITI, CN=Autoridade Certificadora Raiz Brasileira v10"
+      ]
+    },
+    {
+      "dir": "s2c",
+      "hs": "ServerKeyExchange",
+      "len": 329
+    },
+    {
+      "dir": "s2c",
+      "hs": "CertificateRequest",
+      "len": 19424
+    },
+    {
+      "dir": "s2c",
+      "hs": 32,
+      "len": 4812390
+    },
+    {
+      "dir": "c2s",
+      "hs": "Certificate",
+      "len": 3,
+      "certCount": 0,
+      "subjects": []
+    },
+    {
+      "dir": "c2s",
+      "hs": "ClientKeyExchange",
+      "len": 66
+    },
+    {
+      "dir": "c2s",
+      "rec": "ChangeCipherSpec"
+    },
+    {
+      "dir": "c2s",
+      "rec": "Handshake(encrypted)",
+      "len": 80
+    },
+    {
+      "dir": "s2c",
+      "rec": "Alert",
+      "level": 2,
+      "desc": "bad_certificate"
+    }
+  ]
+}

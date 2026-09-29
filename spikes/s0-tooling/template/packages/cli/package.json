@@ -1,0 +1,14 @@
+{
+  "name": "@sinete/cli",
+  "version": "0.1.0",
+  "description": "CLI do sinete (brinquedo do spike S0)",
+  "license": "Apache-2.0",
+  "type": "module",
+  "engines": { "node": ">=20.19" },
+  "bin": { "sinete": "./dist/index.js" },
+  "exports": { "./package.json": "./package.json" },
+  "files": ["dist"],
+  "repository": { "type": "git", "url": "git+https://github.com/sinete-dev/sinete.git", "directory": "packages/cli" },
+  "dependencies": { "@sinete/core": "workspace:^", "@sinete/xml": "workspace:~" },
+  "scripts": { "build": "tsdown" }
+}

@@ -1,0 +1,2 @@
+# Bytes exatos: CR literal e whitespace fazem parte dos casos de borda do C14N.
+*.xml -text

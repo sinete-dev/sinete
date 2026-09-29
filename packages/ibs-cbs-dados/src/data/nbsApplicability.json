@@ -1,0 +1,1182 @@
+[
+  {
+    "annexItem": "IX/35",
+    "cClassTrib": "200028",
+    "classTribKey": "CBS_IBS:200028:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200028:2026-01-01:122011:2026-01-01",
+    "prefix": "122011",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "II/1",
+    "cClassTrib": "200028",
+    "classTribKey": "CBS_IBS:200028:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200028:2026-01-01:122012000:2026-01-01",
+    "prefix": "122012000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "II/2",
+    "cClassTrib": "200028",
+    "classTribKey": "CBS_IBS:200028:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200028:2026-01-01:122013000:2026-01-01",
+    "prefix": "122013000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "II/3",
+    "cClassTrib": "200028",
+    "classTribKey": "CBS_IBS:200028:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200028:2026-01-01:122020000:2026-01-01",
+    "prefix": "122020000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "II/4",
+    "cClassTrib": "200028",
+    "classTribKey": "CBS_IBS:200028:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200028:2026-01-01:12203:2026-01-01",
+    "prefix": "12203",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "II/5",
+    "cClassTrib": "200028",
+    "classTribKey": "CBS_IBS:200028:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200028:2026-01-01:12204:2026-01-01",
+    "prefix": "12204",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "II/6",
+    "cClassTrib": "200028",
+    "classTribKey": "CBS_IBS:200028:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200028:2026-01-01:122051300:2026-01-01",
+    "prefix": "122051300",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "II/7",
+    "cClassTrib": "200028",
+    "classTribKey": "CBS_IBS:200028:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200028:2026-01-01:122051300:2026-01-01#2",
+    "prefix": "122051300",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "II/8",
+    "cClassTrib": "200029",
+    "classTribKey": "CBS_IBS:200029:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200029:2026-01-01:123011100:2026-01-01",
+    "prefix": "123011100",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "III/1",
+    "cClassTrib": "200029",
+    "classTribKey": "CBS_IBS:200029:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200029:2026-01-01:123011200:2026-01-01",
+    "prefix": "123011200",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "III/2",
+    "cClassTrib": "200029",
+    "classTribKey": "CBS_IBS:200029:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200029:2026-01-01:123011300:2026-01-01",
+    "prefix": "123011300",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "III/3",
+    "cClassTrib": "200029",
+    "classTribKey": "CBS_IBS:200029:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200029:2026-01-01:123011400:2026-01-01",
+    "prefix": "123011400",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "III/4",
+    "cClassTrib": "200029",
+    "classTribKey": "CBS_IBS:200029:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200029:2026-01-01:123011500:2026-01-01",
+    "prefix": "123011500",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "III/5",
+    "cClassTrib": "200029",
+    "classTribKey": "CBS_IBS:200029:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200029:2026-01-01:123011900:2026-01-01",
+    "prefix": "123011900",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "III/6",
+    "cClassTrib": "200029",
+    "classTribKey": "CBS_IBS:200029:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200029:2026-01-01:123012100:2026-01-01",
+    "prefix": "123012100",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "III/7",
+    "cClassTrib": "200029",
+    "classTribKey": "CBS_IBS:200029:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200029:2026-01-01:123012200:2026-01-01",
+    "prefix": "123012200",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "III/8",
+    "cClassTrib": "200029",
+    "classTribKey": "CBS_IBS:200029:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200029:2026-01-01:123012300:2026-01-01",
+    "prefix": "123012300",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "III/9",
+    "cClassTrib": "200029",
+    "classTribKey": "CBS_IBS:200029:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200029:2026-01-01:123019100:2026-01-01",
+    "prefix": "123019100",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "III/10",
+    "cClassTrib": "200029",
+    "classTribKey": "CBS_IBS:200029:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200029:2026-01-01:123019200:2026-01-01",
+    "prefix": "123019200",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "III/11",
+    "cClassTrib": "200029",
+    "classTribKey": "CBS_IBS:200029:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200029:2026-01-01:123019300:2026-01-01",
+    "prefix": "123019300",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "III/12",
+    "cClassTrib": "200029",
+    "classTribKey": "CBS_IBS:200029:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200029:2026-01-01:123019400:2026-01-01",
+    "prefix": "123019400",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "III/13",
+    "cClassTrib": "200029",
+    "classTribKey": "CBS_IBS:200029:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200029:2026-01-01:123019500:2026-01-01",
+    "prefix": "123019500",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "III/14",
+    "cClassTrib": "200029",
+    "classTribKey": "CBS_IBS:200029:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200029:2026-01-01:123019600:2026-01-01",
+    "prefix": "123019600",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "III/15",
+    "cClassTrib": "200029",
+    "classTribKey": "CBS_IBS:200029:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200029:2026-01-01:123019700:2026-01-01",
+    "prefix": "123019700",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "III/16",
+    "cClassTrib": "200029",
+    "classTribKey": "CBS_IBS:200029:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200029:2026-01-01:123019800:2026-01-01",
+    "prefix": "123019800",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "200029",
+    "classTribKey": "CBS_IBS:200029:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200029:2026-01-01:123019900:2026-01-01",
+    "prefix": "123019900",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "IX/28",
+    "cClassTrib": "200029",
+    "classTribKey": "CBS_IBS:200029:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200029:2026-01-01:12302:2026-01-01",
+    "prefix": "12302",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "IX/31",
+    "cClassTrib": "200029",
+    "classTribKey": "CBS_IBS:200029:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200029:2026-01-01:126030000:2026-01-01",
+    "prefix": "126030000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/9",
+    "cClassTrib": "200038",
+    "classTribKey": "CBS_IBS:200038:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200038:2026-01-01:111051000:2026-01-01",
+    "prefix": "111051000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/10",
+    "cClassTrib": "200038",
+    "classTribKey": "CBS_IBS:200038:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200038:2026-01-01:111091000:2026-01-01",
+    "prefix": "111091000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/4",
+    "cClassTrib": "200038",
+    "classTribKey": "CBS_IBS:200038:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200038:2026-01-01:114031000:2026-01-01",
+    "prefix": "114031000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/7",
+    "cClassTrib": "200038",
+    "classTribKey": "CBS_IBS:200038:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200038:2026-01-01:114032900:2026-01-01",
+    "prefix": "114032900",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/8",
+    "cClassTrib": "200038",
+    "classTribKey": "CBS_IBS:200038:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200038:2026-01-01:114044100:2026-01-01",
+    "prefix": "114044100",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/1",
+    "cClassTrib": "200038",
+    "classTribKey": "CBS_IBS:200038:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200038:2026-01-01:114052100:2026-01-01",
+    "prefix": "114052100",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/1",
+    "cClassTrib": "200038",
+    "classTribKey": "CBS_IBS:200038:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200038:2026-01-01:114052200:2026-01-01",
+    "prefix": "114052200",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/3",
+    "cClassTrib": "200038",
+    "classTribKey": "CBS_IBS:200038:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200038:2026-01-01:114052200:2026-01-01#2",
+    "prefix": "114052200",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/1",
+    "cClassTrib": "200038",
+    "classTribKey": "CBS_IBS:200038:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200038:2026-01-01:114059000:2026-01-01",
+    "prefix": "114059000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "IX/32",
+    "cClassTrib": "200038",
+    "classTribKey": "CBS_IBS:200038:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200038:2026-01-01:114109000:2026-01-01",
+    "prefix": "114109000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "IX/33",
+    "cClassTrib": "200038",
+    "classTribKey": "CBS_IBS:200038:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200038:2026-01-01:114109000:2026-01-01#2",
+    "prefix": "114109000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/2",
+    "cClassTrib": "200038",
+    "classTribKey": "CBS_IBS:200038:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200038:2026-01-01:114109000:2026-01-01#3",
+    "prefix": "114109000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/5",
+    "cClassTrib": "200038",
+    "classTribKey": "CBS_IBS:200038:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200038:2026-01-01:119011000:2026-01-01",
+    "prefix": "119011000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/6",
+    "cClassTrib": "200038",
+    "classTribKey": "CBS_IBS:200038:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200038:2026-01-01:119011000:2026-01-01#2",
+    "prefix": "119011000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:101057000:2026-01-01",
+    "prefix": "101057000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/13",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:111031000:2026-01-01",
+    "prefix": "111031000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/14",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:111033100:2026-01-01",
+    "prefix": "111033100",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/15",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:111033200:2026-01-01",
+    "prefix": "111033200",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/16",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:111033400:2026-01-01",
+    "prefix": "111033400",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/17",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:111033500:2026-01-01",
+    "prefix": "111033500",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/18",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:1110336:2026-01-01",
+    "prefix": "1110336",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:111034200:2026-01-01",
+    "prefix": "111034200",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/19",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:111034:2026-01-01",
+    "prefix": "111034",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/12",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:11103:2026-01-01",
+    "prefix": "11103",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/20",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:111061000:2026-01-01",
+    "prefix": "111061000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/21",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:111063100:2026-01-01",
+    "prefix": "111063100",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/22",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:111063200:2026-01-01",
+    "prefix": "111063200",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/23",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:111063400:2026-01-01",
+    "prefix": "111063400",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/24",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:111063500:2026-01-01",
+    "prefix": "111063500",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/25",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:1110636:2026-01-01",
+    "prefix": "1110636",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:111064200:2026-01-01",
+    "prefix": "111064200",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/26",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:111064:2026-01-01",
+    "prefix": "111064",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:11106:2026-01-01",
+    "prefix": "11106",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/27",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:111071000:2026-01-01",
+    "prefix": "111071000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/28",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:111073100:2026-01-01",
+    "prefix": "111073100",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/29",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:111073200:2026-01-01",
+    "prefix": "111073200",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/30",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:111074000:2026-01-01",
+    "prefix": "111074000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/31",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:117041000:2026-01-01",
+    "prefix": "117041000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/32",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:117042000:2026-01-01",
+    "prefix": "117042000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "XI/1.14",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:118053200:2026-01-01",
+    "prefix": "118053200",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/33",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:118066:2026-01-01",
+    "prefix": "118066",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/34",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:125011100:2026-01-01",
+    "prefix": "125011100",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/35",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:125011200:2026-01-01",
+    "prefix": "125011200",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/36",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:125012100:2026-01-01",
+    "prefix": "125012100",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/37",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:125012200:2026-01-01",
+    "prefix": "125012200",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/38",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:125013100:2026-01-01",
+    "prefix": "125013100",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/39",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:125013200:2026-01-01",
+    "prefix": "125013200",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/40",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:125013300:2026-01-01",
+    "prefix": "125013300",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/41",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:125013400:2026-01-01",
+    "prefix": "125013400",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/46",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:125013500:2026-01-01",
+    "prefix": "125013500",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/47",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:125013600:2026-01-01",
+    "prefix": "125013600",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/48",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:125013700:2026-01-01",
+    "prefix": "125013700",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/55",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:125015000:2026-01-01",
+    "prefix": "125015000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/56",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:125019000:2026-01-01",
+    "prefix": "125019000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "X/57",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:125021000:2026-01-01",
+    "prefix": "125021000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "XI/1.1",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:125022000:2026-01-01",
+    "prefix": "125022000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:125023000:2026-01-01",
+    "prefix": "125023000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:125029000:2026-01-01",
+    "prefix": "125029000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "XI/1.2",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:125031000:2026-01-01",
+    "prefix": "125031000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "XI/1.3",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:125032000:2026-01-01",
+    "prefix": "125032000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": "XI/1.13",
+    "cClassTrib": "200039",
+    "classTribKey": "CBS_IBS:200039:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200039:2026-01-01:125041100:2026-01-01",
+    "prefix": "125041100",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "200043",
+    "classTribKey": "CBS_IBS:200043:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200043:2026-01-01:115012000:2026-01-01",
+    "prefix": "115012000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "200043",
+    "classTribKey": "CBS_IBS:200043:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200043:2026-01-01:115029000:2026-01-01",
+    "prefix": "115029000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "200043",
+    "classTribKey": "CBS_IBS:200043:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200043:2026-01-01:115100000:2026-01-01",
+    "prefix": "115100000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "200043",
+    "classTribKey": "CBS_IBS:200043:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200043:2026-01-01:120013500:2026-01-01",
+    "prefix": "120013500",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "200043",
+    "classTribKey": "CBS_IBS:200043:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200043:2026-01-01:120018300:2026-01-01",
+    "prefix": "120018300",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "200044",
+    "classTribKey": "CBS_IBS:200044:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200044:2026-01-01:115012000:2026-01-01",
+    "prefix": "115012000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "200044",
+    "classTribKey": "CBS_IBS:200044:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200044:2026-01-01:115029000:2026-01-01",
+    "prefix": "115029000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "200044",
+    "classTribKey": "CBS_IBS:200044:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200044:2026-01-01:115100000:2026-01-01",
+    "prefix": "115100000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "200044",
+    "classTribKey": "CBS_IBS:200044:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200044:2026-01-01:120013500:2026-01-01",
+    "prefix": "120013500",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "200044",
+    "classTribKey": "CBS_IBS:200044:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:200044:2026-01-01:120018300:2026-01-01",
+    "prefix": "120018300",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "515001",
+    "classTribKey": "CBS_IBS:515001:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:515001:2026-01-01:111051000:2026-01-01",
+    "prefix": "111051000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "515001",
+    "classTribKey": "CBS_IBS:515001:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:515001:2026-01-01:111091000:2026-01-01",
+    "prefix": "111091000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "515001",
+    "classTribKey": "CBS_IBS:515001:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:515001:2026-01-01:114031000:2026-01-01",
+    "prefix": "114031000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "515001",
+    "classTribKey": "CBS_IBS:515001:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:515001:2026-01-01:114032900:2026-01-01",
+    "prefix": "114032900",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "515001",
+    "classTribKey": "CBS_IBS:515001:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:515001:2026-01-01:114044100:2026-01-01",
+    "prefix": "114044100",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "515001",
+    "classTribKey": "CBS_IBS:515001:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:515001:2026-01-01:114052100:2026-01-01",
+    "prefix": "114052100",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "515001",
+    "classTribKey": "CBS_IBS:515001:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:515001:2026-01-01:114052200:2026-01-01",
+    "prefix": "114052200",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "515001",
+    "classTribKey": "CBS_IBS:515001:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:515001:2026-01-01:114052200:2026-01-01#2",
+    "prefix": "114052200",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "515001",
+    "classTribKey": "CBS_IBS:515001:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:515001:2026-01-01:114059000:2026-01-01",
+    "prefix": "114059000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "515001",
+    "classTribKey": "CBS_IBS:515001:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:515001:2026-01-01:114109000:2026-01-01",
+    "prefix": "114109000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "515001",
+    "classTribKey": "CBS_IBS:515001:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:515001:2026-01-01:114109000:2026-01-01#2",
+    "prefix": "114109000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "515001",
+    "classTribKey": "CBS_IBS:515001:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:515001:2026-01-01:114109000:2026-01-01#3",
+    "prefix": "114109000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "515001",
+    "classTribKey": "CBS_IBS:515001:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:515001:2026-01-01:119011000:2026-01-01",
+    "prefix": "119011000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "515001",
+    "classTribKey": "CBS_IBS:515001:2026-01-01",
+    "exceptions": [],
+    "family": "CBS_IBS",
+    "key": "CBS_IBS:515001:2026-01-01:119011000:2026-01-01#2",
+    "prefix": "119011000",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "000001",
+    "classTribKey": "IS:000001:2027-01-01",
+    "exceptions": [],
+    "family": "IS",
+    "key": "IS:000001:2027-01-01:125080000:2027-01-01",
+    "prefix": "125080000",
+    "validity": { "from": "2027-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "000002",
+    "classTribKey": "IS:000002:2027-01-01",
+    "exceptions": [],
+    "family": "IS",
+    "key": "IS:000002:2027-01-01:125080000:2027-01-01",
+    "prefix": "125080000",
+    "validity": { "from": "2027-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "000009",
+    "classTribKey": "IS:000009:2027-01-01",
+    "exceptions": [],
+    "family": "IS",
+    "key": "IS:000009:2027-01-01:125080000:2027-01-01",
+    "prefix": "125080000",
+    "validity": { "from": "2027-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "100001",
+    "classTribKey": "IS:100001:2027-01-01",
+    "exceptions": [],
+    "family": "IS",
+    "key": "IS:100001:2027-01-01:125080000:2027-01-01",
+    "prefix": "125080000",
+    "validity": { "from": "2027-01-01", "to": null }
+  },
+  {
+    "annexItem": null,
+    "cClassTrib": "200007",
+    "classTribKey": "IS:200007:2027-01-01",
+    "exceptions": [],
+    "family": "IS",
+    "key": "IS:200007:2027-01-01:125080000:2027-01-01",
+    "prefix": "125080000",
+    "validity": { "from": "2027-01-01", "to": null }
+  }
+]

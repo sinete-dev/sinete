@@ -1,0 +1,50 @@
+{
+  "name": "@sinete/core",
+  "version": "0.0.0",
+  "description": "Base do sinete: erros tipados, resultados da SEFAZ, relógio injetável, logger, ambiente, tabela de UFs e, em @sinete/core/xml, parser XML estrito, C14N e XMLDSig no perfil dos DF-e",
+  "keywords": [
+    "nfe",
+    "dfe",
+    "sefaz",
+    "fiscal",
+    "xml",
+    "xmldsig",
+    "c14n",
+    "brasil"
+  ],
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./xml": {
+      "types": "./dist/xml/index.d.ts",
+      "default": "./dist/xml/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src",
+    "NOTICE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sinete-dev/sinete.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/sinete-dev/sinete/tree/main/packages/core#readme",
+  "bugs": "https://github.com/sinete-dev/sinete/issues",
+  "scripts": {
+    "build": "bun ../../scripts/build.ts ."
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

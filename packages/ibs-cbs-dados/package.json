@@ -1,0 +1,52 @@
+{
+  "name": "@sinete/ibs-cbs-dados",
+  "version": "2026.9.0",
+  "description": "Dados oficiais do IBS/CBS versionados (CST, cClassTrib, cCredPres, aplicabilidade de NCM/NBS, tratamentos, atores), extraídos da Calculadora offline da RFB e do IT 2025.002 com proveniência por hash",
+  "keywords": [
+    "ibs",
+    "cbs",
+    "reforma-tributaria",
+    "cclasstrib",
+    "nfe",
+    "dfe",
+    "brasil"
+  ],
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./bundled": {
+      "types": "./dist/bundled.d.ts",
+      "default": "./dist/bundled.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src",
+    "NOTICE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sinete-dev/sinete.git",
+    "directory": "packages/ibs-cbs-dados"
+  },
+  "homepage": "https://github.com/sinete-dev/sinete/tree/main/packages/ibs-cbs-dados#readme",
+  "bugs": "https://github.com/sinete-dev/sinete/issues",
+  "scripts": {
+    "build": "bun ../../scripts/build.ts ."
+  },
+  "dependencies": {
+    "@sinete/core": "workspace:^"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

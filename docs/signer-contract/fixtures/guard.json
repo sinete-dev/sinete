@@ -1,0 +1,204 @@
+{
+  "description": "Casos da guarda de hosts. O helper (policy.Guard) e o @sinete/transport (allowlistPolicy com ambienteHosts, mais as travas fixas do envio) têm de dar o mesmo veredito em cada um. ambientes vazio quer dizer laboratório (só loopback) no helper; no transporte, a allowlist com 127.0.0.1 e localhost em qualquer porta.",
+  "cases": [
+    {
+      "name": "status SP homologação com tpAmb 2",
+      "ambientes": ["homologacao"],
+      "tpAmb": "2",
+      "url": "https://homologacao.nfe.fazenda.sp.gov.br/ws/nfestatusservico4.asmx",
+      "method": "POST",
+      "headers": {},
+      "body": "<consStatServ><tpAmb>2</tpAmb></consStatServ>",
+      "allow": true
+    },
+    {
+      "name": "host de produção com só homologação liberada",
+      "ambientes": ["homologacao"],
+      "url": "https://nfe.fazenda.sp.gov.br/ws/nfestatusservico4.asmx",
+      "method": "POST",
+      "headers": {},
+      "body": "",
+      "allow": false
+    },
+    {
+      "name": "host de produção com produção liberada",
+      "ambientes": ["producao"],
+      "url": "https://nfe.fazenda.sp.gov.br/ws/nfestatusservico4.asmx",
+      "method": "POST",
+      "headers": {},
+      "body": "",
+      "allow": true
+    },
+    {
+      "name": "host desconhecido",
+      "ambientes": ["homologacao", "producao"],
+      "url": "https://cav.receita.fazenda.gov.br/",
+      "method": "GET",
+      "headers": {},
+      "body": "",
+      "allow": false
+    },
+    {
+      "name": "http sem TLS",
+      "ambientes": ["homologacao"],
+      "url": "http://homologacao.nfe.fazenda.sp.gov.br/ws/nfestatusservico4.asmx",
+      "method": "POST",
+      "headers": {},
+      "body": "",
+      "allow": false
+    },
+    {
+      "name": "porta diferente de 443",
+      "ambientes": ["homologacao"],
+      "url": "https://homologacao.nfe.fazenda.sp.gov.br:8443/ws",
+      "method": "POST",
+      "headers": {},
+      "body": "",
+      "allow": false
+    },
+    {
+      "name": "porta 443 explícita",
+      "ambientes": ["homologacao"],
+      "url": "https://homologacao.nfe.fazenda.sp.gov.br:443/ws",
+      "method": "POST",
+      "headers": {},
+      "body": "",
+      "allow": true
+    },
+    {
+      "name": "credencial na URL",
+      "ambientes": ["homologacao"],
+      "url": "https://u:p@homologacao.nfe.fazenda.sp.gov.br/ws",
+      "method": "POST",
+      "headers": {},
+      "body": "",
+      "allow": false
+    },
+    {
+      "name": "Host diferente do host da URL",
+      "ambientes": ["homologacao"],
+      "url": "https://homologacao.nfe.fazenda.sp.gov.br/ws",
+      "method": "POST",
+      "headers": { "Host": "nfe.fazenda.sp.gov.br" },
+      "body": "",
+      "allow": false
+    },
+    {
+      "name": "Host igual ao da URL",
+      "ambientes": ["homologacao"],
+      "url": "https://homologacao.nfe.fazenda.sp.gov.br/ws",
+      "method": "POST",
+      "headers": { "host": "HOMOLOGACAO.nfe.fazenda.sp.gov.br" },
+      "body": "",
+      "allow": true
+    },
+    {
+      "name": "maiúsculas no host",
+      "ambientes": ["homologacao"],
+      "url": "https://HOMOLOGACAO.NFE.FAZENDA.SP.GOV.BR/ws",
+      "method": "POST",
+      "headers": {},
+      "body": "",
+      "allow": true
+    },
+    {
+      "name": "tpAmb 1 com política de homologação",
+      "ambientes": ["homologacao"],
+      "tpAmb": "2",
+      "url": "https://homologacao.nfe.fazenda.sp.gov.br/ws",
+      "method": "POST",
+      "headers": {},
+      "body": "<a><tpAmb>1</tpAmb></a>",
+      "allow": false
+    },
+    {
+      "name": "tpAmb com prefixo e atributos",
+      "ambientes": ["homologacao"],
+      "tpAmb": "2",
+      "url": "https://homologacao.nfe.fazenda.sp.gov.br/ws",
+      "method": "POST",
+      "headers": {},
+      "body": "<a><n:tpAmb xmlns:n=\"x\">1</n:tpAmb></a>",
+      "allow": false
+    },
+    {
+      "name": "tpAmb 1 escondido em comentário não conta",
+      "ambientes": ["homologacao"],
+      "tpAmb": "2",
+      "url": "https://homologacao.nfe.fazenda.sp.gov.br/ws",
+      "method": "POST",
+      "headers": {},
+      "body": "<a><!--<tpAmb>1</tpAmb>--><tpAmb>2</tpAmb></a>",
+      "allow": true
+    },
+    {
+      "name": "tpAmb vazio",
+      "ambientes": ["homologacao"],
+      "tpAmb": "2",
+      "url": "https://homologacao.nfe.fazenda.sp.gov.br/ws",
+      "method": "POST",
+      "headers": {},
+      "body": "<a><tpAmb/></a>",
+      "allow": false
+    },
+    {
+      "name": "corpo sem tpAmb aceito sem requireTpAmb",
+      "ambientes": ["homologacao"],
+      "tpAmb": "2",
+      "url": "https://homologacao.nfe.fazenda.sp.gov.br/ws",
+      "method": "POST",
+      "headers": {},
+      "body": "<a/>",
+      "allow": true
+    },
+    {
+      "name": "corpo sem tpAmb recusado com requireTpAmb",
+      "ambientes": ["homologacao"],
+      "tpAmb": "2",
+      "requireTpAmb": true,
+      "url": "https://homologacao.nfe.fazenda.sp.gov.br/ws",
+      "method": "POST",
+      "headers": {},
+      "body": "<a/>",
+      "allow": false
+    },
+    {
+      "name": "GET sem corpo com requireTpAmb",
+      "ambientes": ["homologacao"],
+      "tpAmb": "2",
+      "requireTpAmb": true,
+      "url": "https://adn.producaorestrita.nfse.gov.br/parametrizacao/3550308/convenio",
+      "method": "GET",
+      "headers": {},
+      "body": "",
+      "allow": true
+    },
+    {
+      "name": "laboratório: loopback em qualquer porta",
+      "ambientes": [],
+      "url": "https://127.0.0.1:19443/",
+      "method": "GET",
+      "headers": {},
+      "body": "",
+      "allow": true
+    },
+    {
+      "name": "laboratório: localhost",
+      "ambientes": [],
+      "url": "https://localhost:8443/",
+      "method": "GET",
+      "headers": {},
+      "body": "",
+      "allow": true
+    },
+    {
+      "name": "laboratório: SEFAZ recusada",
+      "ambientes": [],
+      "url": "https://hnfe.sefaz.ba.gov.br/",
+      "method": "GET",
+      "headers": {},
+      "body": "",
+      "allow": false
+    }
+  ]
+}

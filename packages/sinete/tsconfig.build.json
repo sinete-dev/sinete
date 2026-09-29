@@ -1,0 +1,12 @@
+{
+  // Emissão dos .d.ts. Sem @types/node nem bun: o fonte publicado não pode depender de tipos de runtime.
+  "extends": "../../tsconfig.base.json",
+  "include": ["src"],
+  "compilerOptions": {
+    "types": [],
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    "rootDir": "src",
+    "outDir": "dist"
+  }
+}

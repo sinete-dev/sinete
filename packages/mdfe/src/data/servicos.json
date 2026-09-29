@@ -1,0 +1,35 @@
+{
+  "descricao": "Web services do MDF-e 3.00 (SOAP 1.2, estilo document/literal): namespace do WSDL, operação e se a área de dados vai compactada (GZip em Base64). A área de dados vai em mdfeDadosMsg; o cabeçalho SOAP foi descontinuado.",
+  "fontes": [
+    "MOC MDF-e 3.00b Visão Geral, itens 3.2.2 e 3.4.1 (mdfeDadosMsg, compactação só na recepção, sem SOAP Header)",
+    "MOC MDF-e 3.00b Visão Geral, itens 4.2.1, 4.3.1, 4.4.1, 4.5.1 e 5.1.1 (métodos)"
+  ],
+  "atualizadoEm": "2026-09-26",
+  "servicos": {
+    "MDFeRecepcaoSinc": {
+      "namespace": "http://www.portalfiscal.inf.br/mdfe/wsdl/MDFeRecepcaoSinc",
+      "operacao": "mdfeRecepcao",
+      "compactado": true
+    },
+    "MDFeConsulta": {
+      "namespace": "http://www.portalfiscal.inf.br/mdfe/wsdl/MDFeConsulta",
+      "operacao": "mdfeConsultaMDF",
+      "compactado": false
+    },
+    "MDFeConsNaoEnc": {
+      "namespace": "http://www.portalfiscal.inf.br/mdfe/wsdl/MDFeConsNaoEnc",
+      "operacao": "mdfeConsNaoEnc",
+      "compactado": false
+    },
+    "MDFeStatusServico": {
+      "namespace": "http://www.portalfiscal.inf.br/mdfe/wsdl/MDFeStatusServico",
+      "operacao": "mdfeStatusServicoMDF",
+      "compactado": false
+    },
+    "MDFeRecepcaoEvento": {
+      "namespace": "http://www.portalfiscal.inf.br/mdfe/wsdl/MDFeRecepcaoEvento",
+      "operacao": "mdfeRecepcaoEvento",
+      "compactado": false
+    }
+  }
+}

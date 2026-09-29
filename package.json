@@ -1,0 +1,41 @@
+{
+  "name": "sinete-monorepo",
+  "private": true,
+  "type": "module",
+  "packageManager": "bun@1.4.2",
+  "workspaces": [
+    "packages/*",
+    "tools/*"
+  ],
+  "engines": {
+    "bun": ">=1.4.2"
+  },
+  "scripts": {
+    "build": "bun scripts/build.ts",
+    "typecheck": "bun scripts/typecheck.ts",
+    "lint": "biome ci .",
+    "format": "biome check --write .",
+    "test": "bun test --coverage",
+    "check:secrets": "bun scripts/check-no-secrets.ts",
+    "check:pack": "bun scripts/check-pack.ts",
+    "check:jsr": "bun scripts/check-jsr.ts",
+    "check:readme": "bun scripts/check-readme.ts",
+    "check:docs": "bun scripts/check-docs.ts",
+    "docs": "bun run build && bun scripts/docs-gerados.ts",
+    "check": "bun scripts/check.ts",
+    "smoke": "bun smoke/run.ts",
+    "ci": "bun scripts/check.ts --smoke",
+    "version": "changeset version && bun scripts/versao-gerada.ts && bun install",
+    "release": "bun run build && bun scripts/release.ts",
+    "release:tag": "changeset git-tag"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "0.18.5",
+    "@biomejs/biome": "2.5.14",
+    "@changesets/cli": "3.0.3",
+    "@types/bun": "1.4.2",
+    "playwright": "1.63.0",
+    "publint": "0.3.24",
+    "typescript": "7.0.2"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "descricao": "Exigência do grupo infRespTec e do CSRT por UF do emitente, com vigência por ambiente. infRespTec: 'obrigatorio' faz o builder recusar a nota sem responsável técnico; 'opcional' só o inclui quando informado. csrt: 'obrigatorio' exige idCSRT e hashCSRT (rejeição 975). Datas no formato AAAA-MM-DD, a partir de 00:00 de Brasília. UF ausente usa o padrão. A adesão é de cada UF (NT 2018.005); quem emite pode sobrepor em BuildNfeOptions.",
+  "atualizadoEm": "2026-09-26",
+  "fonte": "NT 2018.005 v1.50 (responsável técnico e CSRT, adesão a critério da UF)",
+  "padrao": { "infRespTec": "opcional", "csrt": "opcional" },
+  "ufs": {
+    "PR": {
+      "csrt": { "homologacao": "2025-03-02", "producao": "2025-09-15" },
+      "infRespTec": { "homologacao": "2025-03-02", "producao": "2025-09-15" },
+      "fonte": "SEFAZ-PR, NT 2018.005 v1.50: CSRT obrigatório na NF-e em homologação desde 02/03/2025 e em produção desde 15/09/2025 (aviso da SEFAZ-PR, reproduzido em https://inventti.com.br/nf-e-nfc-e-nt-2018-005-versao-1-50-prorroga-regras-de-validacao-para-uf-do-parana/)."
+    }
+  }
+}

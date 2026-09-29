@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "version": "2026.09.25",
+  "sources": [
+    {
+      "title": "Schemas XML NF-e, PL_010f_v1.04, tiposBasico_v4.00.xsd: tipos TCodUfIBGE (cUF) e TUf (sigla)",
+      "url": "https://www.nfe.fazenda.gov.br/portal/listaConteudo.aspx?tipoConteudo=BMPFMBoln3w=",
+      "retrievedAt": "2026-09-25"
+    },
+    {
+      "title": "IBGE, códigos das Unidades da Federação (nome e região)",
+      "url": "https://www.ibge.gov.br/explica/codigos-dos-municipios.php",
+      "retrievedAt": "2026-09-25"
+    }
+  ],
+  "notes": "A sigla EX do TUf (exterior) não é UF e fica fora da tabela. Os cOrgao 90, 91 e 92 do TCOrgaoIBGE também ficam fora: entram com fonte própria no pacote que os usa.",
+  "ufs": [
+    { "sigla": "RO", "cUF": "11", "nome": "Rondônia", "regiao": "N" },
+    { "sigla": "AC", "cUF": "12", "nome": "Acre", "regiao": "N" },
+    { "sigla": "AM", "cUF": "13", "nome": "Amazonas", "regiao": "N" },
+    { "sigla": "RR", "cUF": "14", "nome": "Roraima", "regiao": "N" },
+    { "sigla": "PA", "cUF": "15", "nome": "Pará", "regiao": "N" },
+    { "sigla": "AP", "cUF": "16", "nome": "Amapá", "regiao": "N" },
+    { "sigla": "TO", "cUF": "17", "nome": "Tocantins", "regiao": "N" },
+    { "sigla": "MA", "cUF": "21", "nome": "Maranhão", "regiao": "NE" },
+    { "sigla": "PI", "cUF": "22", "nome": "Piauí", "regiao": "NE" },
+    { "sigla": "CE", "cUF": "23", "nome": "Ceará", "regiao": "NE" },
+    { "sigla": "RN", "cUF": "24", "nome": "Rio Grande do Norte", "regiao": "NE" },
+    { "sigla": "PB", "cUF": "25", "nome": "Paraíba", "regiao": "NE" },
+    { "sigla": "PE", "cUF": "26", "nome": "Pernambuco", "regiao": "NE" },
+    { "sigla": "AL", "cUF": "27", "nome": "Alagoas", "regiao": "NE" },
+    { "sigla": "SE", "cUF": "28", "nome": "Sergipe", "regiao": "NE" },
+    { "sigla": "BA", "cUF": "29", "nome": "Bahia", "regiao": "NE" },
+    { "sigla": "MG", "cUF": "31", "nome": "Minas Gerais", "regiao": "SE" },
+    { "sigla": "ES", "cUF": "32", "nome": "Espírito Santo", "regiao": "SE" },
+    { "sigla": "RJ", "cUF": "33", "nome": "Rio de Janeiro", "regiao": "SE" },
+    { "sigla": "SP", "cUF": "35", "nome": "São Paulo", "regiao": "SE" },
+    { "sigla": "PR", "cUF": "41", "nome": "Paraná", "regiao": "S" },
+    { "sigla": "SC", "cUF": "42", "nome": "Santa Catarina", "regiao": "S" },
+    { "sigla": "RS", "cUF": "43", "nome": "Rio Grande do Sul", "regiao": "S" },
+    { "sigla": "MS", "cUF": "50", "nome": "Mato Grosso do Sul", "regiao": "CO" },
+    { "sigla": "MT", "cUF": "51", "nome": "Mato Grosso", "regiao": "CO" },
+    { "sigla": "GO", "cUF": "52", "nome": "Goiás", "regiao": "CO" },
+    { "sigla": "DF", "cUF": "53", "nome": "Distrito Federal", "regiao": "CO" }
+  ]
+}

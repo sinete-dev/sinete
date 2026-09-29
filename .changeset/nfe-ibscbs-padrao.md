@@ -1,0 +1,5 @@
+---
+'@sinete/nfe': minor
+---
+
+IBS/CBS calculado por padrão: sem `options.ibsCbs`, o `buildNfe` usa o `ibsCbsCalculator()`, sobre o `@sinete/ibs-cbs`, com o dataset do `@sinete/ibs-cbs-dados` importado sob demanda (`import()` dinâmico na primeira nota classificada, `carregarDatasetEmbarcado()` para adiantar), as alíquotas oficiais e os grupos conferidos pelas regras da NT 2025.002. `ibsCbsCalculator(options)` troca dataset, alíquotas, base, regras e fuso; local da operação pelo `cMunFGIBS`, destino ou emitente (`localDaOperacao`). Base sem `vBC` (a UB16-10 ainda não tem regra), crédito presumido sem o grupo pronto, erro de classificação, regime não suportado, alíquota desconhecida e violação de regra voltam como ocorrências no caminho do item (`ibscbs_base_ausente`, `ibscbs_nao_suportado`, `ibscbs_redutor_divergente`, `ibscbs_regra_nt`). A porta `IbsCbsCalculator` continua para trocar a calculadora. Sai o código `ibscbs_sem_calculadora`. O subpath `@sinete/nfe/ibs-cbs` reexporta o motor e o leitor do dataset, para quem emite NF-e não precisar importar os pacotes do IBS/CBS.

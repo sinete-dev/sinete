@@ -1,0 +1,13 @@
+{
+  // Emissão dos .d.ts. Os tipos do Node entram só para as entradas `*.node.ts`; nenhum tipo do Node pode aparecer na
+  // API pública (a smoke confere com tsc nodenext sem @types/node no consumidor).
+  "extends": "../../tsconfig.base.json",
+  "include": ["src"],
+  "compilerOptions": {
+    "types": ["node"],
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    "rootDir": "src",
+    "outDir": "dist"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "descricao": "Situação da NFS-e gerada (cStat do infNFSe, tipo TStat) e a convenção do sinete para o sucesso de um evento, que a Sefin devolve sem código.",
+  "fonte": "Esquemas XSD NFS-e v1.01 (20260209 e 20260727), tiposSimples_v1.01.xsd, documentação do TStat.",
+  "nfse": {
+    "100": "NFS-e Gerada",
+    "102": "NFS-e de Decisão Judicial",
+    "103": "NFS-e Avulsa",
+    "107": "NFS-e MEI"
+  },
+  "evento": {
+    "cStat": "100",
+    "xMotivo": "Evento registrado",
+    "nota": "A resposta de sucesso do POST /nfse/{chave}/eventos traz só o XML do evento, sem código de situação. O desfecho `authorized` do core exige um cStat; o sinete usa 100 e este texto, que não vêm da Sefin."
+  },
+  "duplicidade": {
+    "codigos": ["E0014"],
+    "fonte": "Anexo I do leiaute da NFS-e Nacional v1.01, E0014: série, número, município emissor e CNPJ/CPF da DPS já existem numa NFS-e gerada a partir de uma DPS enviada antes.",
+    "nota": "O emissor (@sinete/emissor/nfse) trata esta rejeição como possível reenvio de uma DPS que já gerou NFS-e e confere pela consulta da DPS."
+  }
+}

@@ -1,0 +1,39 @@
+# Dependências e artefatos de build
+node_modules/
+dist/
+coverage/
+*.tgz
+.release/
+.reserva/
+.work/
+.packs/
+*.tsbuildinfo
+
+# Segredos e material de certificado: nunca no repo (ver SECURITY.md)
+*.pfx
+*.p12
+*.jks
+*.p8
+*.key
+*.pem
+!**/fixtures/public/**/*.pem
+.env*
+!.env.example
+secrets/
+
+# Corpus real e resultados locais têm dados pessoais e fiscais: ficam só na máquina
+.local/
+results/
+**/corpus/
+
+# Sistema
+.DS_Store
+smoke/.work/
+smoke/.tools/
+
+# Cópias de LICENSE e NOTICE (e de docs/guia/, nos pacotes que a embarcam) feitas pelo build em cada pacote
+packages/*/docs/
+packages/*/LICENSE
+packages/*/NOTICE
+tools/*/LICENSE
+tools/*/NOTICE

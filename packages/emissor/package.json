@@ -1,0 +1,100 @@
+{
+  "name": "@sinete/emissor",
+  "version": "0.0.0",
+  "description": "Camada de emissão dos DF-e com estado entre chamadas: bytes assinados gravados antes do envio com trava entre processos (TransmissaoStore), política dos bytes por cStat, retomada automática, cancelamento com recuperação, pool de emissores por certificado e um emissor por documento (NF-e, MDF-e, NFS-e) em subpaths",
+  "keywords": [
+    "nfe",
+    "mdfe",
+    "nfse",
+    "sefaz",
+    "emissor",
+    "retomada",
+    "idempotencia",
+    "brasil"
+  ],
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./nfe": {
+      "types": "./dist/nfe.d.ts",
+      "default": "./dist/nfe.js"
+    },
+    "./mdfe": {
+      "types": "./dist/mdfe.d.ts",
+      "default": "./dist/mdfe.js"
+    },
+    "./nfse": {
+      "types": "./dist/nfse.d.ts",
+      "default": "./dist/nfse.js"
+    },
+    "./memoria": {
+      "types": "./dist/memoria.d.ts",
+      "default": "./dist/memoria.js"
+    },
+    "./contrato": {
+      "types": "./dist/contrato.d.ts",
+      "default": "./dist/contrato.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src",
+    "docs",
+    "NOTICE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sinete-dev/sinete.git",
+    "directory": "packages/emissor"
+  },
+  "homepage": "https://github.com/sinete-dev/sinete/tree/main/packages/emissor#readme",
+  "bugs": "https://github.com/sinete-dev/sinete/issues",
+  "scripts": {
+    "build": "bun ../../scripts/build.ts ."
+  },
+  "dependencies": {
+    "@sinete/cert": "workspace:^",
+    "@sinete/core": "workspace:^",
+    "@sinete/transport": "workspace:^"
+  },
+  "peerDependencies": {
+    "@sinete/da": "workspace:^",
+    "@sinete/mdfe": "workspace:^",
+    "@sinete/nfe": "workspace:^",
+    "@sinete/nfse": "workspace:^"
+  },
+  "peerDependenciesMeta": {
+    "@sinete/da": {
+      "optional": true
+    },
+    "@sinete/mdfe": {
+      "optional": true
+    },
+    "@sinete/nfe": {
+      "optional": true
+    },
+    "@sinete/nfse": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@sinete/da": "workspace:^",
+    "@sinete/mdfe": "workspace:^",
+    "@sinete/nfe": "workspace:^",
+    "@sinete/nfse": "workspace:^",
+    "@sinete/sefaz-sim": "workspace:^",
+    "@sinete/validators": "workspace:^"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

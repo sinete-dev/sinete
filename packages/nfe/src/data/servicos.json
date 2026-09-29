@@ -1,0 +1,44 @@
+{
+  "descricao": "Web services SOAP 1.2 da NF-e 4.00: namespace do WSDL e operação (a action do Content-Type é <namespace>/<operação>). Na NF-e 4.00 não existe cabeçalho nfeCabecMsg; a mensagem vai em nfeDadosMsg no namespace do WSDL, e a resposta volta em nfeResultMsg. A Distribuição DF-e usa o envelope do WSDL próprio, com nfeDadosMsg dentro de nfeDistDFeInteresse.",
+  "fonte": "MOC 7.0, Visão Geral, item 3 (padrão de comunicação e WSDL dos serviços) e WSDLs do portal da NF-e; NT 2014.002 (Distribuição DF-e)",
+  "atualizadoEm": "2026-09-28",
+  "servicos": {
+    "NfeStatusServico": {
+      "namespace": "http://www.portalfiscal.inf.br/nfe/wsdl/NFeStatusServico4",
+      "operacao": "nfeStatusServicoNF"
+    },
+    "NFeAutorizacao": {
+      "namespace": "http://www.portalfiscal.inf.br/nfe/wsdl/NFeAutorizacao4",
+      "operacao": "nfeAutorizacaoLote"
+    },
+    "NFeRetAutorizacao": {
+      "namespace": "http://www.portalfiscal.inf.br/nfe/wsdl/NFeRetAutorizacao4",
+      "operacao": "nfeRetAutorizacaoLote"
+    },
+    "NfeConsultaProtocolo": {
+      "namespace": "http://www.portalfiscal.inf.br/nfe/wsdl/NFeConsultaProtocolo4",
+      "operacao": "nfeConsultaNF"
+    },
+    "NfeInutilizacao": {
+      "namespace": "http://www.portalfiscal.inf.br/nfe/wsdl/NFeInutilizacao4",
+      "operacao": "nfeInutilizacaoNF"
+    },
+    "RecepcaoEvento": {
+      "namespace": "http://www.portalfiscal.inf.br/nfe/wsdl/NFeRecepcaoEvento4",
+      "operacao": "nfeRecepcaoEvento"
+    },
+    "NfeConsultaCadastro": {
+      "namespace": "http://www.portalfiscal.inf.br/nfe/wsdl/CadConsultaCadastro4",
+      "operacao": "consultaCadastro",
+      "envelopeNoAutorizador": {
+        "MT": "operacao"
+      },
+      "fonteEnvelope": "Resposta da SEFAZ-MT em homologação em 28/09/2026: com a mensagem só em nfeDadosMsg, o MT responde 215 (falha no schema) e devolve o retorno dentro de consultaCadastroResult; com nfeDadosMsg dentro de consultaCadastro (o elemento da operação do WSDL), responde a consulta (259)."
+    },
+    "NFeDistribuicaoDFe": {
+      "namespace": "http://www.portalfiscal.inf.br/nfe/wsdl/NFeDistribuicaoDFe",
+      "operacao": "nfeDistDFeInteresse",
+      "envelope": "distDFeInteresse"
+    }
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "description": "Token local via PKCS#11. O PIN atravessa o canal e nunca vai para argv ou env. No sabor estático, o helper recusa com pkcs11; no sabor -p11, a resposta traz dfeSign true.",
+  "frames": [
+    {
+      "from": "client",
+      "frame": {
+        "v": 1,
+        "id": "c3",
+        "method": "identity.open",
+        "params": {
+          "id": "token-a3",
+          "backend": "pkcs11",
+          "module": "/usr/lib/pkcs11/libfabricante.so",
+          "token": "e-CNPJ",
+          "label": "certificado",
+          "pin": "000000",
+          "chain": ["MIIBCgKCAQEB"]
+        }
+      }
+    },
+    {
+      "from": "helper",
+      "flavor": "static",
+      "frame": {
+        "v": 1,
+        "id": "c3",
+        "error": {
+          "code": "pkcs11",
+          "message": "este binário é o sabor estático (CGO_ENABLED=0), sem PKCS#11; use sinete-signer-p11 ou o backend remote"
+        }
+      }
+    },
+    {
+      "from": "helper",
+      "flavor": "p11",
+      "of": "identity.open",
+      "frame": {
+        "v": 1,
+        "id": "c3",
+        "result": {
+          "id": "token-a3",
+          "backend": "pkcs11",
+          "mode": "pkcs11",
+          "subject": "CN=EMPRESA DE TESTE:11222333000181",
+          "notBefore": "2026-09-01T00:00:00Z",
+          "notAfter": "2027-09-01T00:00:00Z",
+          "chain": ["MIIBCgKCAQEA", "MIIBCgKCAQEB"],
+          "cnpj": "11222333000181",
+          "dfeSign": true
+        }
+      }
+    }
+  ]
+}

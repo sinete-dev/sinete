@@ -1,0 +1,110 @@
+# CI do sinete (ADR 0001). Bun é a toolchain; Node, Deno e Chromium entram como consumidores dos tarballs.
+# `bun run check` roda localmente o mesmo que o job check; `bun run ci` acrescenta a smoke.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    # `sinete@*` é o guarda-chuva, sem escopo (ADR 0008).
+    tags: ['@sinete/*@*', 'sinete@*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      # Helper sinete-signer (ADR 0005): go vet e go test nos dois sabores; o SoftHSM liga os testes do token PKCS#11.
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: helpers/signer-tls/go.mod
+          cache-dependency-path: helpers/signer-tls/go.sum
+      - run: sudo apt-get install -y --no-install-recommends softhsm2
+      - run: bun install --frozen-lockfile
+      # segredos, lockfile, biome ci, build, typecheck, bun test com cobertura, publint e attw nos tarballs,
+      # slow types do JSR (deno publish --dry-run num workspace temporário, sem publicar)
+      - run: bun run check
+
+  smoke:
+    needs: check
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['20.19', '22', '24', '26']
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      # O verdaccio 6.9+ exige Node 22: ele roda no Node 24, fora da versão da matriz, que é a dos consumidores.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+      - run: echo "VERDACCIO_NODE=$(command -v node)" >> "$GITHUB_ENV"
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ matrix.node }}
+      - uses: denoland/setup-deno@v2
+        if: matrix.node == '24'
+        with:
+          deno-version: v2.x
+      # Pacotes npm do sinete-signer da plataforma do runner (ADR 0014); as outras plataformas ficam no workflow signer.
+      - uses: actions/setup-go@v6
+        if: matrix.node == '24'
+        with:
+          go-version-file: helpers/signer-tls/go.mod
+          cache-dependency-path: helpers/signer-tls/go.sum
+      - run: bun install --frozen-lockfile && bun run build
+      - run: bun add -g verdaccio@6
+      # Deno, Bun, Chromium e o helper não dependem da versão do Node: rodam só numa perna da matriz.
+      - if: matrix.node == '24'
+        run: bunx playwright install --with-deps chromium
+      - run: bun smoke/run.ts
+        env:
+          VERDACCIO_BIN: verdaccio
+          SMOKE_SKIP: ${{ matrix.node != '24' && 'deno,browser,bun,signer' || '' }}
+
+  # Publicação no npm com trusted publishing (OIDC) e provenance, disparada pelas tags do `changeset git-tag`.
+  # Desligada até o repo ser público e a variável SINETE_RELEASE_ENABLED valer 'true' (ver docs/release.md).
+  release:
+    if: >-
+      (startsWith(github.ref, 'refs/tags/@sinete/') || startsWith(github.ref, 'refs/tags/sinete@')) &&
+      !github.event.repository.private &&
+      vars.SINETE_RELEASE_ENABLED == 'true'
+    needs: [check, smoke]
+    runs-on: ubuntu-latest
+    environment: npm
+    concurrency:
+      group: release
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      id-token: write # OIDC do trusted publishing e provenance
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24' # npm >= 11.5.1 faz o OIDC
+          registry-url: https://registry.npmjs.org
+      - run: npm install -g npm@^11.5.1
+      - run: bun install --frozen-lockfile
+      # build + scripts/release.ts: bun pm pack, travas no tarball e npm publish <tgz> --provenance.
+      # Idempotente: várias tags do mesmo commit disparam vários runs, e os seguintes pulam o que já foi publicado.
+      - run: bun run release

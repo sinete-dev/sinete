@@ -1,0 +1,218 @@
+[
+  {
+    "host": "nfe.sefaz.am.gov.br",
+    "tags": [
+      "nfe:prod:AM"
+    ]
+  },
+  {
+    "host": "nfe.sefaz.ba.gov.br",
+    "tags": [
+      "nfe:prod:BA"
+    ]
+  },
+  {
+    "host": "nfe.sefaz.go.gov.br",
+    "tags": [
+      "nfe:prod:GO"
+    ]
+  },
+  {
+    "host": "nfe.fazenda.mg.gov.br",
+    "tags": [
+      "nfe:prod:MG"
+    ]
+  },
+  {
+    "host": "nfe.sefaz.ms.gov.br",
+    "tags": [
+      "nfe:prod:MS"
+    ]
+  },
+  {
+    "host": "nfe.sefaz.mt.gov.br",
+    "tags": [
+      "nfe:prod:MT"
+    ]
+  },
+  {
+    "host": "nfe.sefaz.pe.gov.br",
+    "tags": [
+      "nfe:prod:PE"
+    ]
+  },
+  {
+    "host": "nfe.sefa.pr.gov.br",
+    "tags": [
+      "nfe:prod:PR"
+    ]
+  },
+  {
+    "host": "nfe.sefazrs.rs.gov.br",
+    "tags": [
+      "nfe:prod:RS"
+    ]
+  },
+  {
+    "host": "cad.svrs.rs.gov.br",
+    "tags": [
+      "nfe:prod:RS",
+      "nfe:prod:SVRS"
+    ]
+  },
+  {
+    "host": "nfe.fazenda.sp.gov.br",
+    "tags": [
+      "nfe:prod:SP"
+    ]
+  },
+  {
+    "host": "www.sefazvirtual.fazenda.gov.br",
+    "tags": [
+      "nfe:prod:SVAN",
+      "nfe:prod:SVC-AN"
+    ]
+  },
+  {
+    "host": "nfe.svrs.rs.gov.br",
+    "tags": [
+      "nfe:prod:SVC-RS",
+      "nfe:prod:SVRS"
+    ]
+  },
+  {
+    "host": "www1.nfe.fazenda.gov.br",
+    "tags": [
+      "nfe:prod:AN"
+    ]
+  },
+  {
+    "host": "www.nfe.fazenda.gov.br",
+    "tags": [
+      "nfe:prod:AN"
+    ]
+  },
+  {
+    "host": "homnfe.sefaz.am.gov.br",
+    "tags": [
+      "nfe:hom:AM"
+    ]
+  },
+  {
+    "host": "hnfe.sefaz.ba.gov.br",
+    "tags": [
+      "nfe:hom:BA"
+    ]
+  },
+  {
+    "host": "homolog.sefaz.go.gov.br",
+    "tags": [
+      "nfe:hom:GO"
+    ]
+  },
+  {
+    "host": "hnfe.fazenda.mg.gov.br",
+    "tags": [
+      "nfe:hom:MG"
+    ]
+  },
+  {
+    "host": "hom.nfe.sefaz.ms.gov.br",
+    "tags": [
+      "nfe:hom:MS"
+    ]
+  },
+  {
+    "host": "homologacao.sefaz.mt.gov.br",
+    "tags": [
+      "nfe:hom:MT"
+    ]
+  },
+  {
+    "host": "nfehomolog.sefaz.pe.gov.br",
+    "tags": [
+      "nfe:hom:PE"
+    ]
+  },
+  {
+    "host": "homologacao.nfe.sefa.pr.gov.br",
+    "tags": [
+      "nfe:hom:PR"
+    ]
+  },
+  {
+    "host": "nfe-homologacao.sefazrs.rs.gov.br",
+    "tags": [
+      "nfe:hom:RS"
+    ]
+  },
+  {
+    "host": "cad-homologacao.svrs.rs.gov.br",
+    "tags": [
+      "nfe:hom:RS",
+      "nfe:hom:SVRS"
+    ]
+  },
+  {
+    "host": "homologacao.nfe.fazenda.sp.gov.br",
+    "tags": [
+      "nfe:hom:SP"
+    ]
+  },
+  {
+    "host": "hom.sefazvirtual.fazenda.gov.br",
+    "tags": [
+      "nfe:hom:SVAN",
+      "nfe:hom:SVC-AN"
+    ]
+  },
+  {
+    "host": "nfe-homologacao.svrs.rs.gov.br",
+    "tags": [
+      "nfe:hom:SVC-RS",
+      "nfe:hom:SVRS"
+    ]
+  },
+  {
+    "host": "hom1.nfe.fazenda.gov.br",
+    "tags": [
+      "nfe:hom:AN"
+    ]
+  },
+  {
+    "host": "mdfe.svrs.rs.gov.br",
+    "tags": [
+      "mdfe:producao"
+    ]
+  },
+  {
+    "host": "mdfe-homologacao.svrs.rs.gov.br",
+    "tags": [
+      "mdfe:homologacao"
+    ]
+  },
+  {
+    "host": "sefin.producaorestrita.nfse.gov.br",
+    "tags": [
+      "nfse:producaoRestrita"
+    ]
+  },
+  {
+    "host": "adn.producaorestrita.nfse.gov.br",
+    "tags": [
+      "nfse:producaoRestrita"
+    ]
+  },
+  {
+    "host": "sefin.nfse.gov.br",
+    "tags": [
+      "nfse:producao"
+    ]
+  },
+  {
+    "host": "adn.nfse.gov.br",
+    "tags": [
+      "nfse:producao"
+    ]
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "name": "s7-calculadora",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "extract": "bun src/extract.ts",
+    "crosscheck": "bun src/crosscheck.ts",
+    "diff": "bun src/diff.ts",
+    "oracle": "bun src/oracle/run.ts"
+  }
+}

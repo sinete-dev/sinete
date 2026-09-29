@@ -1,0 +1,14 @@
+{
+  "name": "s3-xmldsig-spike",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@peculiar/webcrypto": "^1.7.1",
+    "@xmldom/xmldom": "^0.9.12",
+    "asn1js": "^3.0.10",
+    "node-forge": "^1.4.0",
+    "pkijs": "^3.4.1",
+    "xml-crypto": "^6.3.2",
+    "xmldsigjs": "^2.8.8"
+  }
+}

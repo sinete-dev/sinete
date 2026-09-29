@@ -1,0 +1,40 @@
+{
+  "host": "sefin.nfse.gov.br",
+  "probedAt": "2026-09-25T23:13:19.102Z",
+  "connected": true,
+  "protocol": "TLSv1.2",
+  "cipher": "ECDHE-RSA-AES256-GCM-SHA384",
+  "peerSigType": "rsa_pss_rsae_sha256",
+  "tempKey": "ECDH, secp384r1, 384 bits",
+  "serverKey": "2048",
+  "secureRenegotiation": true,
+  "alpn": null,
+  "ocspStapled": true,
+  "sessionTicketHint": null,
+  "certificateRequest": true,
+  "clientCaNames": [],
+  "clientCertTypes": null,
+  "requestedSigAlgs": null,
+  "verifyReturn": "0 (ok)",
+  "chain": [
+    {
+      "s": "C=BR, ST=DISTRITO FEDERAL, L=BRASILIA, O=SERVICO FEDERAL DE PROCESSAMENTO DE DADOS (SERPRO), CN=*.nfse.gov.br",
+      "i": "C=BR, O=SERVICO FEDERAL DE PROCESSAMENTO DE DADOS (SERPRO), CN=AC SERPRO AR46 OV TLS CA 2025",
+      "key": "PKEY: RSA, 2048 (bit); sigalg: sha256WithRSAEncryption",
+      "validity": "NotBefore: Sep  4 15:20:43 2026 GMT; NotAfter: Mar 22 15:20:42 2027 GMT"
+    },
+    {
+      "s": "C=BR, O=SERVICO FEDERAL DE PROCESSAMENTO DE DADOS (SERPRO), CN=AC SERPRO AR46 OV TLS CA 2025",
+      "i": "C=BE, O=GlobalSign nv-sa, CN=GlobalSign Root R46",
+      "key": "PKEY: RSA, 2048 (bit); sigalg: sha256WithRSAEncryption",
+      "validity": "NotBefore: Oct 15 03:10:25 2025 GMT; NotAfter: Oct 15 00:00:00 2030 GMT"
+    }
+  ],
+  "resumed": true,
+  "versions": {
+    "1.0": "ECDHE-RSA-AES256-SHA",
+    "1.1": "ECDHE-RSA-AES256-SHA",
+    "1.2": "ECDHE-RSA-AES256-GCM-SHA384",
+    "1.3": false
+  }
+}

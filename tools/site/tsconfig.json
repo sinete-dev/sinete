@@ -1,0 +1,9 @@
+{
+  // Ferramenta do repo: o script de sincronização roda no Bun; o Astro cuida do resto.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["bun"],
+    "isolatedDeclarations": false
+  },
+  "include": ["scripts"]
+}

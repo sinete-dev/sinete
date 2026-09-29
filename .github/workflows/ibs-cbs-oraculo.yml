@@ -1,0 +1,69 @@
+# Oráculo da Calculadora da RFB para o @sinete/ibs-cbs e o @sinete/ibs-cbs-dados (ADR 0007). Fora do CI padrão: baixa o zip oficial (cerca de
+# 350 MB) da URL de tools/ibs-cbs-dados/sources.json, confere os hashes, importa a imagem conferida pelo diff_id da camada e
+# roda o teste diferencial. O zip e a imagem nunca são redistribuídos: ficam só no cache do runner.
+name: ibs-cbs-oraculo
+
+on:
+  workflow_dispatch:
+    inputs:
+      n:
+        description: operações sintéticas
+        default: '800'
+      seed:
+        description: semente do gerador
+        default: '1'
+  schedule:
+    # segunda, 06:17 UTC: pega Calculadora nova (o pin falha) e regressão do motor com semente da semana
+    - cron: '17 6 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ibs-cbs-oraculo
+  cancel-in-progress: false
+
+jobs:
+  oracle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      SINETE_IBS_CBS_CACHE: ${{ github.workspace }}/.cache/ibs-cbs
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - run: sudo apt-get update && sudo apt-get install -y sqlite3
+      # O cache abaixo guarda o zip conferido e o extrator não volta à URL oficial quando ele existe. Para detectar
+      # Calculadora nova, o agendamento baixa o zip de novo, fora do cache, e compara com o sha256 fixado.
+      - name: zip oficial ainda é o fixado
+        if: github.event_name == 'schedule'
+        run: |
+          url="$(jq -r .calculadora.url tools/ibs-cbs-dados/sources.json)"
+          pin="$(jq -r .calculadora.zipSha256 tools/ibs-cbs-dados/sources.json)"
+          got="$(curl -fsSL "$url" | sha256sum | cut -d' ' -f1)"
+          if [ "$got" != "$pin" ]; then
+            echo "::error::a Calculadora offline mudou (sha256 $got, fixado $pin): atualize tools/ibs-cbs-dados/sources.json e o dataset"
+            exit 1
+          fi
+      - uses: actions/cache@v4
+        with:
+          path: .cache/ibs-cbs
+          key: ibs-cbs-calculadora-${{ hashFiles('tools/ibs-cbs-dados/sources.json') }}
+      - run: bun install --frozen-lockfile
+      # Dataset reproduzível: SQLite embarcado e reconstruído das migrações Flyway dão os mesmos JSON, iguais aos
+      # versionados; confere também o diff_id da camada que o oráculo vai importar.
+      - run: bun tools/ibs-cbs-dados/extract.ts --check --verify-layer
+      # Semente: a informada, ou a semana do ano no agendamento, para variar os casos sem perder a reprodução.
+      - name: oráculo
+        run: |
+          seed="${{ github.event.inputs.seed }}"
+          [ -z "$seed" ] && seed="$(date -u +%G%V)"
+          bun tools/ibs-cbs-oraculo/run.ts --n "${{ github.event.inputs.n || '800' }}" --seed "$seed" --out oracle-report
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ibs-cbs-oraculo-report
+          path: oracle-report/
+          if-no-files-found: ignore

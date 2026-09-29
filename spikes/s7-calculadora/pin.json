@@ -1,0 +1,21 @@
+{
+  "comment": "Artefato oficial da Calculadora offline fixado por hash. Obtido via GET /api/calculadora/download/url?platform=default do portal piloto-cbs.",
+  "downloadUrlEndpoint": "https://piloto-cbs.tributos.gov.br/servico/calculadora-consumo/api/calculadora/download/url?platform=default",
+  "url": "https://obs-13820-calcpr-apr.obsv3.br-df-1.hcs.serpro.gov.br/calculadora.zip",
+  "lastModified": "2026-09-10T13:28:06Z",
+  "etag": "9ebc4482ad97d83f71e74a2a2b8aaaeb-23",
+  "contentLength": 346174581,
+  "zipSha256": "f451c3902621f02f3a63da29cd63d1e8e0f0456cce44425f1e22c89c079cb68e",
+  "zipMd5": "0b686079a5b7dc83a58e83456821fe61",
+  "entries": {
+    "calculadora.tar.gz": "419d7918bbcedcbcecaf02795d10e263200037b2dce7d46edbcf3abd3c7c751a",
+    "codigo-fonte-backend.zip": "28a21a5cf080056c753eaa6e1bc10bccb645c500a888d3c89d904464a76abfad",
+    "codigo-fonte-simples-nacional.zip": "1fda5af9308ad3def166a1e7ac9d0b748d7365742635f3348d5ae2aaebb3dd79",
+    "scripts-python-exemplo.zip": "af472015cbfbaa752d676a5d0de1aaf740e1da075faa04895ef77ec4223eab22"
+  },
+  "dockerLayerDiffId": "sha256:36c2a33a6aa9777b307d7a653566b845f1a8c769f8769140f5d021418915ee6b",
+  "dockerImportNote": "docker import gera Image ID diferente a cada import (campo created); o diff_id da camada é o sha256 do tar descomprimido e é estável. Fixar por zipSha256 + diff_id.",
+  "platform": "linux/amd64 (Alpine 3.24.1, Temurin 21.0.12+8, musl)",
+  "db": { "pathInTar": "calculadora/calculadora/db/calculadora-pro.db", "sha256": "9a9143b12b38d02fb73630f89ea2b6c215508edc2bc3ac8d15f68c81ac12175d" },
+  "versao": { "versaoApp": "demanda-5451861-cofis-43411-delete-aliquotas-ficticias", "versaoDb": "V0057", "dataVersaoDb": "2026-09-03", "descricaoVersaoDb": "Remoção de alíquotas da monofasia." }
+}

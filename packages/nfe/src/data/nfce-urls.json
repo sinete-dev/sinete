@@ -1,0 +1,170 @@
+{
+  "descricao": "Endereços da NFC-e (modelo 65) por UF e ambiente: a consulta via QR Code (1ª parte da URL do infNFeSupl/qrCode, sem o '?p=' que o builder acrescenta) e a consulta por chave de acesso (infNFeSupl/urlChave, impressa no DANFC-e). Cada UF tem uma lista de endereços com a data de início ('desde', AAAA-MM-DD, 00:00 de Brasília); vale o mais recente cujo início não passou da data de emissão. As tabelas do ENCAT foram transcritas como publicadas, com três ajustes: o '?' final e o exemplo de parâmetros (AM: '?chNFe=1315....') foram retirados, porque o builder monta a query; o espaço dentro do endereço de homologação do MA ('homolog acao') foi juntado; e o endereço de MG por chave de acesso vem da página de web services da própria SEFAZ-MG, mais nova que a do ENCAT. Onde a tabela não dá o protocolo ('http://' ou 'https://'), a URL do QR Code fica null: o schema exige o protocolo e não há fonte para escolher um; informe BuildNfeOptions.urlQrCode. A regra ZX02-20 (rejeição 395) compara o endereço sem diferenciar maiúsculas e minúsculas; ZX03-20 (rejeição 878) é opcional por UF.",
+  "atualizadoEm": "2026-09-26",
+  "fontes": [
+    "Portal Nacional da NFC-e (ENCAT), URL por UF utilizada QR code: https://nfce.encat.org/desenvolvedor/qrcode/ (coletada em 26/09/2026)",
+    "Portal Nacional da NFC-e (ENCAT), URL por UF utilizada para consulta chave, QR Code versão 2.0: https://nfce.encat.org/desenvolvedor/httpnfce-encat-orgconsulte-sua-nota-qr-code-versao-2-0/ (coletada em 26/09/2026)",
+    "SEFAZ-MG, web services da NFC-e: https://portalsped.fazenda.mg.gov.br/spedmg/nfce/web-services/ (a mesma fonte do nfceConsultaUrls do @sinete/transport) (coletada em 26/09/2026)",
+    "MOC 7.0 Anexo I, regras ZX02-20 e ZX03-20; NT 2025.001 v1.03, grupo ZX (campos ZX02 qrCode e ZX03 urlChave)"
+  ],
+  "qrCode": {
+    "producao": {
+      "AC": [{ "url": "http://www.sefaznet.ac.gov.br/nfce/qrcode" }],
+      "AL": [{ "url": "http://nfce.sefaz.al.gov.br/QRCode/consultarNFCe.jsp" }],
+      "AP": [{ "url": "https://www.sefaz.ap.gov.br/nfce/nfcep.php" }],
+      "AM": [
+        { "url": null, "nota": "tabela do ENCAT sem protocolo: sistemas.sefaz.am.gov.br/nfceweb/consultarNFCe.jsp" }
+      ],
+      "BA": [{ "url": "http://nfe.sefaz.ba.gov.br/servicos/nfce/qrcode.aspx" }],
+      "CE": [{ "url": "http://nfce.sefaz.ce.gov.br/pages/ShowNFCe.html" }],
+      "DF": [{ "url": "http://www.fazenda.df.gov.br/nfce/qrcode" }],
+      "ES": [{ "url": "http://app.sefaz.es.gov.br/ConsultaNFCe/" }],
+      "GO": [
+        { "url": "http://nfe.sefaz.go.gov.br/nfeweb/sites/nfce/danfeNFCe" },
+        { "url": "https://nfeweb.sefaz.go.gov.br/nfeweb/sites/nfce/danfeNFCe", "desde": "2025-06-16" }
+      ],
+      "MA": [{ "url": null, "nota": "tabela do ENCAT sem protocolo: nfce.sefaz.ma.gov.br/portal/consultarNFCe.jsp" }],
+      "MT": [{ "url": "http://www.sefaz.mt.gov.br/nfce/consultanfce" }],
+      "MS": [{ "url": "http://www.dfe.ms.gov.br/nfce/qrcode" }],
+      "MG": [
+        { "url": "https://nfce.fazenda.mg.gov.br/portalnfce/sistema/qrcode.xhtml" },
+        { "url": "https://portalsped.fazenda.mg.gov.br/portalnfce/sistema/qrcode.xhtml", "desde": "2022-03-21" }
+      ],
+      "PA": [{ "url": "https://appnfc.sefa.pa.gov.br/portal/view/consultas/nfce/nfceForm.seam" }],
+      "PB": [{ "url": "http://www.sefaz.pb.gov.br/nfce" }],
+      "PR": [{ "url": "http://www.fazenda.pr.gov.br/nfce/qrcode" }],
+      "PE": [{ "url": "http://nfce.sefaz.pe.gov.br/nfce/consulta" }],
+      "PI": [{ "url": "http://www.sefaz.pi.gov.br/nfce/qrcode" }],
+      "RJ": [
+        { "url": "http://www4.fazenda.rj.gov.br/consultaNFCe/QRCode" },
+        { "url": "https://consultadfe.fazenda.rj.gov.br/consultaNFCe/QRCode", "desde": "2023-12-19" }
+      ],
+      "RN": [
+        { "url": "http://nfce.set.rn.gov.br/consultarNFCe.aspx" },
+        { "url": "https://nfce.sefaz.rn.gov.br/consultarNFCe.aspx", "desde": "2026-05-25" }
+      ],
+      "RS": [{ "url": "https://www.sefaz.rs.gov.br/NFCE/NFCE-COM.aspx" }],
+      "RO": [{ "url": "http://www.nfce.sefin.ro.gov.br/consultanfce/consulta.jsp" }],
+      "RR": [{ "url": "https://www.sefaz.rr.gov.br/nfce/servlet/qrcode" }],
+      "SC": [{ "url": "https://sat.sef.sc.gov.br/nfce/consulta" }],
+      "SP": [
+        {
+          "url": "https://www.nfce.fazenda.sp.gov.br/NFCeConsultaPublica/Paginas/ConsultaQRCode.aspx",
+          "nota": "a tabela do ENCAT lista também https://www.nfce.fazenda.sp.gov.br/qrcode"
+        }
+      ],
+      "SE": [{ "url": "http://www.nfce.se.gov.br/nfce/qrcode" }],
+      "TO": [{ "url": "http://www.sefaz.to.gov.br/nfce/qrcode" }]
+    },
+    "homologacao": {
+      "AC": [{ "url": "http://www.hml.sefaznet.ac.gov.br/nfce/qrcode" }],
+      "AL": [{ "url": "http://nfce.sefaz.al.gov.br/QRCode/consultarNFCe.jsp" }],
+      "AP": [{ "url": "https://www.sefaz.ap.gov.br/nfcehml/nfce.php" }],
+      "AM": [
+        { "url": null, "nota": "tabela do ENCAT sem protocolo: homnfce.sefaz.am.gov.br/nfceweb/consultarNFCe.jsp" }
+      ],
+      "BA": [{ "url": "http://hnfe.sefaz.ba.gov.br/servicos/nfce/qrcode.aspx" }],
+      "CE": [{ "url": "http://nfceh.sefaz.ce.gov.br/pages/ShowNFCe.html" }],
+      "DF": [{ "url": "http://www.fazenda.df.gov.br/nfce/qrcode" }],
+      "ES": [{ "url": "http://homologacao.sefaz.es.gov.br/ConsultaNFCe/" }],
+      "GO": [
+        { "url": "http://homolog.sefaz.go.gov.br/nfeweb/sites/nfce/danfeNFCe" },
+        { "url": "https://nfewebhomolog.sefaz.go.gov.br/nfeweb/sites/nfce/danfeNFCe", "desde": "2025-06-16" }
+      ],
+      "MA": [
+        { "url": null, "nota": "tabela do ENCAT sem protocolo: homologacao.sefaz.ma.gov.br/portal/consultarNFCe.jsp" }
+      ],
+      "MT": [{ "url": "http://homologacao.sefaz.mt.gov.br/nfce/consultanfce" }],
+      "MS": [{ "url": "http://www.dfe.ms.gov.br/nfce/qrcode" }],
+      "MG": [
+        { "url": "https://nfce.fazenda.mg.gov.br/portalnfce/sistema/qrcode.xhtml" },
+        { "url": "https://portalsped.fazenda.mg.gov.br/portalnfce/sistema/qrcode.xhtml", "desde": "2022-03-21" }
+      ],
+      "PA": [{ "url": "https://appnfc.sefa.pa.gov.br/portal-homologacao/view/consultas/nfce/nfceForm.seam" }],
+      "PB": [{ "url": "http://www.sefaz.pb.gov.br/nfcehom" }],
+      "PR": [{ "url": "http://www.fazenda.pr.gov.br/nfce/qrcode" }],
+      "PE": [{ "url": "http://nfcehomolog.sefaz.pe.gov.br/nfce/consulta" }],
+      "PI": [{ "url": "http://www.sefaz.pi.gov.br/nfce/qrcode" }],
+      "RJ": [
+        { "url": "http://www4.fazenda.rj.gov.br/consultaNFCe/QRCode" },
+        { "url": "https://consultadfe.fazenda.rj.gov.br/consultaNFCe/QRCode", "desde": "2023-12-19" }
+      ],
+      "RN": [
+        { "url": "http://hom.nfce.set.rn.gov.br/consultarNFCe.aspx" },
+        { "url": "https://hom.nfce.sefaz.rn.gov.br/consultarNFCe.aspx", "desde": "2026-05-25" }
+      ],
+      "RS": [{ "url": "https://www.sefaz.rs.gov.br/NFCE/NFCE-COM.aspx" }],
+      "RO": [{ "url": "http://www.nfce.sefin.ro.gov.br/consultanfce/consulta.jsp" }],
+      "RR": [{ "url": "http://200.174.88.103:8080/nfce/servlet/qrcode" }],
+      "SC": [{ "url": "https://hom.sat.sef.sc.gov.br/nfce/consulta" }],
+      "SP": [
+        {
+          "url": "https://www.homologacao.nfce.fazenda.sp.gov.br/NFCeConsultaPublica/Paginas/ConsultaQRCode.aspx",
+          "nota": "a tabela do ENCAT lista também https://www.homologacao.nfce.fazenda.sp.gov.br/qrcode"
+        }
+      ],
+      "SE": [{ "url": "http://www.hom.nfe.se.gov.br/nfce/qrcode" }],
+      "TO": [{ "url": "http://homologacao.sefaz.to.gov.br/nfce/qrcode" }]
+    }
+  },
+  "urlChave": {
+    "producao": {
+      "AC": [{ "url": "www.sefaznet.ac.gov.br/nfce/consulta" }],
+      "AL": [{ "url": "www.sefaz.al.gov.br/nfce/consulta" }],
+      "AP": [{ "url": "www.sefaz.ap.gov.br/nfce/consulta" }],
+      "AM": [{ "url": "www.sefaz.am.gov.br/nfce/consulta" }],
+      "BA": [{ "url": "www.sefaz.ba.gov.br/nfce/consulta" }],
+      "CE": [{ "url": "www.sefaz.ce.gov.br/nfce/consulta" }],
+      "DF": [{ "url": "www.fazenda.df.gov.br/nfce/consulta" }],
+      "ES": [{ "url": "www.sefaz.es.gov.br/nfce/consulta" }],
+      "GO": [{ "url": "www.sefaz.go.gov.br/nfce/consulta" }],
+      "MA": [{ "url": "www.sefaz.ma.gov.br/nfce/consulta" }],
+      "MT": [{ "url": "http://www.sefaz.mt.gov.br/nfce/consultanfce" }],
+      "MS": [{ "url": "www.dfe.ms.gov.br/nfce/consulta" }],
+      "MG": [{ "url": "https://portalsped.fazenda.mg.gov.br/portalnfce" }],
+      "PA": [{ "url": "www.sefa.pa.gov.br/nfce/consulta" }],
+      "PB": [{ "url": "www.receita.pb.gov.br/nfce/consulta" }],
+      "PR": [{ "url": "http://www.fazenda.pr.gov.br/nfce/consulta" }],
+      "PE": [{ "url": "nfce.sefaz.pe.gov.br/nfce/consulta" }],
+      "PI": [{ "url": "www.sefaz.pi.gov.br/nfce/consulta" }],
+      "RJ": [{ "url": "www.fazenda.rj.gov.br/nfce/consulta" }],
+      "RN": [{ "url": "www.set.rn.gov.br/nfce/consulta" }],
+      "RS": [{ "url": "www.sefaz.rs.gov.br/nfce/consulta" }],
+      "RO": [{ "url": "www.sefin.ro.gov.br/nfce/consulta" }],
+      "RR": [{ "url": "www.sefaz.rr.gov.br/nfce/consulta" }],
+      "SC": [{ "url": "https://sat.sef.sc.gov.br/nfce/consulta" }],
+      "SP": [{ "url": "https://www.nfce.fazenda.sp.gov.br/consulta" }],
+      "SE": [{ "url": "http://www.nfce.se.gov.br/nfce/consulta" }],
+      "TO": [{ "url": "www.sefaz.to.gov.br/nfce/consulta" }]
+    },
+    "homologacao": {
+      "AC": [{ "url": "www.sefaznet.ac.gov.br/nfce/consulta" }],
+      "AL": [{ "url": "www.sefaz.al.gov.br/nfce/consulta" }],
+      "AP": [{ "url": "www.sefaz.ap.gov.br/nfce/consulta" }],
+      "AM": [{ "url": "www.sefaz.am.gov.br/nfce/consulta" }],
+      "BA": [{ "url": "http://hinternet.sefaz.ba.gov.br/nfce/consulta" }],
+      "CE": [{ "url": "www.sefaz.ce.gov.br/nfce/consulta" }],
+      "DF": [{ "url": "www.fazenda.df.gov.br/nfce/consulta" }],
+      "ES": [{ "url": "www.sefaz.es.gov.br/nfce/consulta" }],
+      "GO": [{ "url": "www.sefaz.go.gov.br/nfce/consulta" }],
+      "MA": [{ "url": "www.sefaz.ma.gov.br/nfce/consulta" }],
+      "MT": [{ "url": "http://homologacao.sefaz.mt.gov.br/nfce/consultanfce" }],
+      "MS": [{ "url": "www.dfe.ms.gov.br/nfce/consulta" }],
+      "MG": [{ "url": "https://hportalsped.fazenda.mg.gov.br/portalnfce" }],
+      "PA": [{ "url": "www.sefa.pa.gov.br/nfce/consulta" }],
+      "PB": [{ "url": "www.receita.pb.gov.br/nfcehom" }],
+      "PR": [{ "url": "http://www.fazenda.pr.gov.br/nfce/consulta" }],
+      "PE": [{ "url": "nfce.sefaz.pe.gov.br/nfce/consulta" }],
+      "PI": [{ "url": "www.sefaz.pi.gov.br/nfce/consulta" }],
+      "RJ": [{ "url": "www.fazenda.rj.gov.br/nfce/consulta" }],
+      "RN": [{ "url": "www.set.rn.gov.br/nfce/consulta" }],
+      "RS": [{ "url": "www.sefaz.rs.gov.br/nfce/consulta" }],
+      "RO": [{ "url": "www.sefin.ro.gov.br/nfce/consulta" }],
+      "RR": [{ "url": "www.sefaz.rr.gov.br/nfce/consulta" }],
+      "SC": [{ "url": "https://hom.sat.sef.sc.gov.br/nfce/consulta" }],
+      "SP": [{ "url": "https://www.homologacao.nfce.fazenda.sp.gov.br/consulta" }],
+      "SE": [{ "url": "http://www.hom.nfe.se.gov.br/nfce/consulta" }],
+      "TO": [{ "url": "http://homologacao.sefaz.to.gov.br/nfce/consulta.jsf" }]
+    }
+  }
+}

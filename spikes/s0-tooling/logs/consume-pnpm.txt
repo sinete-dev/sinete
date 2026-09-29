@@ -1,0 +1,39 @@
+### [pnpm] node: npm install do registry local
+added 6 packages in 707ms
+-- node 20.20.2 esm:     {"rt":"node v20.20.2","mode":"esm","VERSION":"0.0.0","condition":"node","id":36,"stamp":"<dhEmi>2026-09-25T12:00:00.000Z</dhEmi>","instanceofOk":true,"code":"E100"} 
+-- node 20.20.2 require: {"rt":"node v20.20.2","mode":"require","condition":"node","stamp":"<dhEmi>2026-09-25T12:00:00.000Z</dhEmi>","instanceofOk":true} 
+-- node 20.20.2 hazard:  {"rt":"node v20.20.2","@sinete/core":{"sameClass":true,"instanceofAcross":true},"@sinete/core-dual":{"sameClass":false,"instanceofAcross":false}} 
+-- node 22.9.0 esm:     {"rt":"node v22.9.0","mode":"esm","VERSION":"0.0.0","condition":"node","id":36,"stamp":"<dhEmi>2026-09-25T12:00:00.000Z</dhEmi>","instanceofOk":true,"code":"E100"} 
+-- node 22.9.0 require: /Users/gabrieljablonski/dev/sinete/spikes/s0-tooling/consumers/pnpm/node/cjs.cjs:315 undefined              ^ 
+-- node 22.9.0 hazard:  node:internal/modules/cjs/loader:1669       const err = new ERR_REQUIRE_ESM(filename, usesEsm, parentPath, 
+-- node 22.23.3 esm:     {"rt":"node v22.23.3","mode":"esm","VERSION":"0.0.0","condition":"node","id":36,"stamp":"<dhEmi>2026-09-25T12:00:00.000Z</dhEmi>","instanceofOk":true,"code":"E100"} 
+-- node 22.23.3 require: {"rt":"node v22.23.3","mode":"require","condition":"node","stamp":"<dhEmi>2026-09-25T12:00:00.000Z</dhEmi>","instanceofOk":true} 
+-- node 22.23.3 hazard:  {"rt":"node v22.23.3","@sinete/core":{"sameClass":true,"instanceofAcross":true},"@sinete/core-dual":{"sameClass":false,"instanceofAcross":false}} 
+-- node 24.13.0 esm:     {"rt":"node v24.13.0","mode":"esm","VERSION":"0.0.0","condition":"node","id":36,"stamp":"<dhEmi>2026-09-25T12:00:00.000Z</dhEmi>","instanceofOk":true,"code":"E100"} 
+-- node 24.13.0 require: {"rt":"node v24.13.0","mode":"require","condition":"node","stamp":"<dhEmi>2026-09-25T12:00:00.000Z</dhEmi>","instanceofOk":true} 
+-- node 24.13.0 hazard:  {"rt":"node v24.13.0","@sinete/core":{"sameClass":true,"instanceofAcross":true},"@sinete/core-dual":{"sameClass":false,"instanceofAcross":false}} 
+-- node 26.3.1 esm:     {"rt":"node v26.3.1","mode":"esm","VERSION":"0.0.0","condition":"node","id":36,"stamp":"<dhEmi>2026-09-25T12:00:00.000Z</dhEmi>","instanceofOk":true,"code":"E100"} 
+-- node 26.3.1 require: {"rt":"node v26.3.1","mode":"require","condition":"node","stamp":"<dhEmi>2026-09-25T12:00:00.000Z</dhEmi>","instanceofOk":true} 
+-- node 26.3.1 hazard:  {"rt":"node v26.3.1","@sinete/core":{"sameClass":true,"instanceofAcross":true},"@sinete/core-dual":{"sameClass":false,"instanceofAcross":false}} 
+-- bin (npx sinete doctor): {"core":"0.0.0","condition":"node","id":36,"xml":"<dhEmi>2026-09-25T12:00:00.000Z</dhEmi>","el":"<x>a&amp;b</x>"}
+-- tsc nodenext:
+   exit=0
+-- tsc bundler:
+   exit=0
+-- browser (esbuild --platform=browser):
+⚡ Done in 2ms
+   node:crypto no bundle? 0  run(deno): {"browserBundle":true,"condition":"default","id":36,"stamp":"<dhEmi>2026-09-25T12:00:00.000Z</dhEmi>"}
+### [pnpm] bun
+3 packages installed [3.00ms]
+-- bun esm:     {"rt":"bun 1.4.2","mode":"esm","VERSION":"0.0.0","condition":"node","id":36,"stamp":"<dhEmi>2026-09-25T12:00:00.000Z</dhEmi>","instanceofOk":true,"code":"E100"}
+-- bun require: {"rt":"bun 1.4.2","mode":"require","condition":"node","stamp":"<dhEmi>2026-09-25T12:00:00.000Z</dhEmi>","instanceofOk":true}
+-- bun typed.ts: <dhEmi>2026-09-25T12:00:00.000Z</dhEmi> node E1
+-- bun bin: {"core":"0.0.0","condition":"node","id":36,"xml":"<dhEmi>2026-09-25T12:00:00.000Z</dhEmi>","el":"<x>a&amp;b</x>"}
+
+   node:crypto no bundle? 0  run(deno): {"browserBundle":true,"condition":"default","id":36,"stamp":"<dhEmi>2026-09-25T12:00:00.000Z</dhEmi>"}
+### [pnpm] deno (npm: specifier, DENO_DIR isolado)
+-- deno run: {"rt":"deno 2.9.1","mode":"esm","VERSION":"0.0.0","condition":"node","id":36,"stamp":"<dhEmi>2026-09-25T12:00:00.000Z</dhEmi>","instanceofOk":true,"code":"E100"}
+-- deno check typed.ts:
+   exit=0
+-- deno run typed.ts: <dhEmi>2026-09-25T12:00:00.000Z</dhEmi> node E1
+-- deno bin (npm:@sinete/cli): {"core":"0.0.0","condition":"node","id":36,"xml":"<dhEmi>2026-09-25T12:00:00.000Z</dhEmi>","el":"<x>a&amp;b</x>"}

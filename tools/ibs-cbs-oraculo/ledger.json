@@ -1,0 +1,93 @@
+{
+  "comment": "Divergências conhecidas entre o @sinete/ibs-cbs/calcular e a Calculadora offline fixada em tools/ibs-cbs-dados/sources.json. Uma divergência que nenhuma entrada explica falha a execução; uma entrada com expectHits=true que não explicou nada também falha, para forçar a limpeza quando a Calculadora ou o motor mudarem. A ordem importa: vale a primeira entrada que casar.",
+  "calculadora": {
+    "versaoDb": "V0057",
+    "zipSha256": "f451c3902621f02f3a63da29cd63d1e8e0f0456cce44425f1e22c89c079cb68e"
+  },
+  "entries": [
+    {
+      "id": "credito-presumido-nao-calculado",
+      "kind": "oracle-gap",
+      "match": {
+        "outcome": "diff",
+        "withInput": "presumedCredit",
+        "path": "gCredPresOper|\\.vCredPres(CondSus)?$|^item\\d+\\.gIBSCBS\\.vIBS$|^total\\.gIBS\\.vIBS$"
+      },
+      "reason": "A entrada do POST /regime-geral não tem cCredPres e a Calculadora não monta gCredPresOper (getCreditoPresumidoOperacao devolve null). O motor calcula vCredPres = vBCCredPres x pCredPres e, com indDeduzCredPres, abate do vIBS do item (UB54a-10); o oráculo não tem como conferir. Segundo oráculo: RV UB120 a UB130 no @sinete/ibs-cbs/validar.",
+      "source": "FAQ Calculadora v1.4, item 4.2; CalculoTributoService.getCreditoPresumidoOperacao (TODO); NT 2025.002 v1.51, UB54a-10 e UB120 a UB130",
+      "expectHits": true
+    },
+    {
+      "id": "estorno-de-credito-nao-calculado",
+      "kind": "oracle-gap",
+      "match": {
+        "outcome": "diff",
+        "withInput": "creditReversal",
+        "path": "gEstornoCred"
+      },
+      "reason": "A Calculadora não monta gEstornoCred (getEstornoCredito devolve null) nem o total correspondente. O motor repassa os valores informados e soma em IBSCBSTot/gEstornoCred (W59f-10 e W59g-10).",
+      "source": "CalculoTributoService.getEstornoCredito (TODO); NT 2025.002 v1.51, UB116 e W59f-10/W59g-10",
+      "expectHits": true
+    },
+    {
+      "id": "gred-na-tributacao-regular",
+      "kind": "engine-choice",
+      "match": {
+        "outcome": "diff",
+        "withInput": "regular",
+        "path": "\\.gRed\\.(pRedAliq|pAliqEfet)$",
+        "cClassTrib": ["200022", "200024"]
+      },
+      "reason": "Quando o cClassTrib exige tributação regular e a CST exige gRed (CST 200 com 200022 e 200024), a Calculadora não emite gRed fora da compra governamental e, na compra governamental, emite pRedAliq 0. O motor segue a NT: gRed com o pRedAliq da tabela do cClassTrib principal e pAliqEfet 0, já que a alíquota do grupo principal é zero na tributação regular. Sem isso o documento cai na UB26-20/UB45-20/UB64-20 ou na UB27-10/UB46-10/UB65-10.",
+      "source": "NT 2025.002 v1.51, UB26-20, UB27-10, UB45-20, UB46-10, UB64-20, UB65-10; CalculoCbsIbsService (gRed na tributação regular)",
+      "expectHits": true
+    },
+    {
+      "id": "diferimento-na-compra-governamental",
+      "kind": "engine-choice",
+      "match": {
+        "outcome": "diff",
+        "gov": true,
+        "yearFrom": 2027,
+        "path": "\\.gDif\\.vDif$|^total\\.(gCBS|gIBS\\.gIBSUF|gIBS\\.gIBSMun)\\.vDif$"
+      },
+      "reason": "A partir de 2027 a Calculadora redistribui a alíquota efetiva e o valor entre os entes (art. 473) mas deixa o gDif de cada tributo no ente de origem, calculado sobre uma alíquota que ele não tem mais; o documento cai na UB23-10 e análogas. O motor redistribui o vDif como o tributo (é linear) e exige o mesmo pDif nos três tributos; devolução de tributos com compra governamental a partir de 2027 é recusada, sem regra publicada. Rara na amostra (só 510001 e 515001 com compra governamental), por isso sem expectHits.",
+      "source": "LC 214/2025, art. 473; NT 2025.002 v1.51, UB23-10, UB42-10, UB61-10; TributacaoCompraGovernamentalDomain",
+      "expectHits": false
+    },
+    {
+      "id": "soma-dos-valores-arredondados",
+      "kind": "engine-choice",
+      "match": {
+        "outcome": "diff",
+        "path": "^item\\d+\\.gIBSCBS\\.vIBS$|^total\\.(vBCIBSCBS|gIBS\\..+|gCBS\\..+)$",
+        "maxAbsDiff": "0.03"
+      },
+      "reason": "A Calculadora soma os valores internos (8 casas) e arredonda o total; o motor soma os valores de 2 casas que vão no XML, como exigem as RV de soma (vIBS = vIBSUF + vIBSMun; totais = soma dos itens). A diferença é de no máximo meio centavo por parcela.",
+      "source": "NT 2025.002 v1.51, UB54a-10, W35-10, W38-10, W41-10, W43-10, W46-10, W47-10, W53-10, W56-10; IBSCBSTotalDomain e CalculoTributoService.getVIbs",
+      "expectHits": true
+    },
+    {
+      "id": "oraculo-recusa-tratamento-com-ajuste",
+      "kind": "oracle-refuses",
+      "match": {
+        "outcome": "oracle-error",
+        "oracleError": "ainda não possui tratamento tributário implementado"
+      },
+      "reason": "A Calculadora recusa todo cClassTrib cujo tratamento tem TRTR_IN_POSSUI_AJUSTE (transferência de crédito 800, crédito presumido da ZFM 810, ajustes 811, tributação em documento específico 820). O motor aceita esses códigos com os grupos informados (gTransfCred, gCredPresIBSZFM, gAjusteCompet) ou só com CST e cClassTrib, conforme os indicadores da CST.",
+      "source": "CalculoCbsIbsService.calcularCbsIbs (ErroFaltaImplementacaoException); FAQ Calculadora v1.4, item 4.2",
+      "expectHits": true
+    },
+    {
+      "id": "oraculo-recusa-tipo-de-documento",
+      "kind": "oracle-refuses",
+      "match": {
+        "outcome": "oracle-error",
+        "oracleError": "Tipo de documento fiscal (tpDoc)"
+      },
+      "reason": "A Calculadora recusa alguns modelos que a própria tabela de tipos de DF-e lista (NF-e ABI 77, DeRE 94). O motor calcula pelo vínculo cClassTrib x modelo do dataset.",
+      "source": "TipoDfeService.buscarPorTipo (V0057)",
+      "expectHits": true
+    }
+  ]
+}

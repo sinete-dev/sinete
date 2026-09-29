@@ -1,0 +1,4 @@
+# material local: certificados de teste, amostras do corpus, resultados com nomes de arquivo
+.local/
+results/
+node_modules/

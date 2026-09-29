@@ -1,0 +1,261 @@
+# Referência: `@sinete/nfe`
+
+Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão. Cada nome exportado traz o tipo, a primeira frase do TSDoc e, nas funções, a assinatura. A assinatura completa dos tipos e das interfaces está nos `.d.ts` do pacote instalado (`node_modules/@sinete/nfe/dist/`), que é a palavra final. Pelo guarda-chuva, `@sinete/nfe/x` é `sinete/nfe/x`.
+
+## `@sinete/nfe`
+
+`@sinete/nfe`: NF-e modelo 55 e NFC-e modelo 65. Entrada do domínio (`NfeInput`), montagem com totais em decimal exato e validação estrita (`buildNfe`), assinatura por splice (`signNfe`) e os serviços da SEFAZ sobre `@sinete/transport` (`createNfeClient`). IBS/CBS pelo motor do sinete por padrão (`ibsCbsCalculator`), com o dataset carregado sob demanda. O emissor (bytes gravados antes do envio, trava, retomada, cancelamento com recuperação) está em `@sinete/emissor/nfe` (ADR 0010).
+
+### Funções
+
+- `assinaturaQrCode`: Assinatura dos parâmetros do QR Code da NFC-e em contingência off-line com a versão 3 (RSA-SHA1 em Base64, com o certificado que assina a nota; Manual do DANFE NFC-e 6.0, 4.4.2). `undefined` quando o QR Code não leva assinatura (NF-e, emissão normal, versão 2). `assinaturaQrCode(built: BuiltNfe, signer: Signer): Promise<string | undefined>`
+- `autorizadorContingencia`: Autorizador SVC da UF e o `tpEmis` que a NF-e emitida nele leva (6 SVC-AN, 7 SVC-RS; MOC 7.0, B22). `autorizadorContingencia(uf: Uf, ambiente: Ambiente): { readonly autorizador: 'SVC-AN' | 'SVC-RS'; readonly tpEmis: '6' | '7'; }`
+- `buildNfe`: Monta, calcula e valida. Nunca lança por dado do chamador: devolve as ocorrências. `buildNfe(input: NfeInput, options: BuildNfeOptions): Promise<BuildNfeResult>`
+- `carregarDatasetEmbarcado`: O dataset embarcado no `@sinete/ibs-cbs-dados`, importado sob demanda (`import()` dinâmico) e carregado uma vez por processo. É o que a calculadora padrão usa quando `dataset` não é informado; chamar antes só adianta a carga. Se o import falhar, a próxima chamada tenta de novo. `carregarDatasetEmbarcado(): Promise<IbsCbsDataset>`
+- `chaveDaDuplicidade`: Chave de acesso que a SEFAZ informa no `xMotivo` da rejeição 539 (`[chNFe:...]`), se houver. `chaveDaDuplicidade(xMotivo: string): string | undefined`
+- `comQrCode`: A NFC-e montada com o `infNFeSupl` (QR Code e `urlChave`) inserido por splice antes do fechamento de `NFe`, pronta para a assinatura. `comQrCode(built: BuiltNfe, assinatura?: string): string`
+- `conferirEmitenteDoCertificado`: Confere o emitente com o titular do certificado que assina a NF-e (MOC 7.0 Anexo I, grupo F): `conferirEmitenteDoCertificado(nfe: NfeInput, titular: { readonly cnpj?: string | undefined; readonly cpf?: string | undefined; }): readonly ValidationIssue[]`
+- `createNfeClient`: Cria o cliente dos serviços da NF-e. `createNfeClient(options: NfeClientOptions): NfeClient`
+- `dec`: Atalho para `Decimal.of`. `dec(input: DecimalInput): Decimal`
+- `documentoAssinado`: Confere que `xml` é um documento `raiz` assinado (no namespace da NF-e, com `Signature` referenciando o filho `elemento`) e devolve a string sem a declaração XML. Lança `ConfigError` para qualquer outra coisa: o serviço nunca "conserta" o documento de quem chama. `documentoAssinado(xml: string, raiz: string, elemento: string): DocumentoAssinado`
+- `exigenciaRespTec`: Exigência de infRespTec ou CSRT para a UF no ambiente e na data (tabela `data/resp-tec.json`). `exigenciaRespTec(uf: Uf, ambiente: Ambiente, data: Instante): { readonly infRespTec: ExigenciaRespTec; readonly csrt: ExigenciaRespTec; }`
+- `formatDecimal`: Texto do valor já arredondado no formato (arredonda em `max` casas pelo modo dado). `formatDecimal(value: Decimal, format: DecimalFormat, mode?: RoundingMode): string`
+- `formatDh`: `TDateTimeUTC` do instante no deslocamento dado. `formatDh(date: Instante, offsetMinutes: number): string`
+- `formatProblem`: Por que o valor não cabe no formato, ou `undefined` se cabe sem perder dígitos. `formatProblem(value: Decimal, format: DecimalFormat): string | undefined`
+- `gunzipBase64`: Base64 de um gzip para o texto UTF-8 de dentro. `gunzipBase64(b64: string): Promise<string>`
+- `hashCsrt`: `hashCSRT`: Base64(SHA-1(CSRT + chave de acesso)) (NT 2018.005, campo ZD09). `hashCsrt(csrt: string, chave: string): Promise<string>`
+- `ibsCbsCalculator`: Cria a calculadora de IBS/CBS sobre o motor do sinete. `ibsCbsCalculator(options?: IbsCbsCalculatorOptions): IbsCbsCalculator`
+- `localDaOperacao`: Local da operação para as alíquotas próprias de UF e município: o `cMunFGIBS` informado (campo B12a da NT 2025.002, município de ocorrência do fato gerador do IBS/CBS), senão o destino da mercadoria (entrega ou destinatário, pela LC 214/2025, art. 11, o local da entrega), senão o emitente. `localDaOperacao(nota: IbsCbsNotaRequest): OperationPlace`
+- `nfeAssinadaDoProc`: NF-e assinada de dentro de um `nfeProc` (ou a própria NF-e assinada), como fatia do texto e sem a declaração XML, pronta para `consultar`, `resolverEnvioSemResposta` e a retomada, que recusam raiz sem `xmlns` próprio. `nfeAssinadaDoProc(xml: string): string`
+- `offsetDaUf`: Deslocamento do horário legal da UF em minutos (`-180` para Brasília). `offsetDaUf(uf: Uf): number`
+- `recuperarEventoRegistrado`: Consulta a chave e devolve o evento `tpEvento` que a SEFAZ registrou para ela (o de maior `nSeqEvento`, quando há vários, como na CC-e). `recuperarEventoRegistrado(client: NfeClient, chave: string, tpEvento: string): Promise<RecuperacaoEvento>`
+- `resolverEnvioSemResposta`: Resolve um envio de autorização sem resposta, ou cuja resposta foi 204 ou 539, consultando a chave da NF-e assinada. `anterior` é o desfecho do envio, quando houve um. `resolverEnvioSemResposta(client: NfeClient, nfeAssinada: string, anterior?: AutorizacaoOutcome): Promise<ResolucaoEnvio>`
+- `rotuloDoCaminho`: Rótulo em português do caminho de uma ocorrência da NF-e: `Grupo, Campo` quando os dois são conhecidos (`Emitente, Inscrição estadual`), só um deles quando falta o outro, e `Dados da NF-e` quando nenhum é. `rotuloDoCaminho(path: string): string`
+- `signNfe`: Assina a NF-e montada: na NFC-e, insere antes o `infNFeSupl` (`comQrCode`, com a assinatura do QR Code quando a contingência off-line pede); depois, a `Signature` como último filho de `NFe`, tudo por splice, e devolve a string final. `signNfe(built: BuiltNfe, signer: Signer): Promise<string>`
+- `sliceElement`: Recorta o elemento da fonte, acrescentando na tag de abertura só as declarações de namespace que ele usa e que estão em ancestrais fora do recorte. O default entra apenas quando difere de `parentDefaultNs` (o default do envelope onde a fatia vai morar). `sliceElement(doc: XmlDocument, el: XmlElement, parentDefaultNs?: string): string`
+- `sum`: Soma uma lista (vazia = zero). `sum(values: Iterable<Decimal>): Decimal`
+- `urlsNfce`: Endereços da NFC-e da UF no ambiente e no dia (`data/nfce-urls.json`, das tabelas do Portal Nacional da NFC-e). O `qrCode` é `undefined` onde a tabela não traz o endereço completo (AM e MA publicam sem o protocolo): informe `BuildNfeOptions.urlQrCode`. `urlsNfce(uf: Uf, ambiente: Ambiente, dia: string): { readonly qrCode: string | undefined; readonly urlChave: string | undefined; }`
+
+### Classes
+
+- `Decimal`: Valor decimal imutável: `coef × 10^-scale`. Membros: `coef`, `scale`, `ZERO`, `ONE`, `HUNDRED`, `fromParts()`, `of()`, `tryOf()`, `plus()`, `minus()`, `times()`, `dividedBy()`, `percent()`, `negate()`, `abs()`, `round()`, `compare()`, `eq()`, `lt()`, `gt()`, `isZero()`, `isNegative()`, `significantScale()`, `toFixed()`, `toString()`, `toJSON()`.
+
+### Interfaces
+
+- `AutorizarOpcoes`: Membros: `sincrono`, `signal`.
+- `BuildNfeOptions`: Membros: `ambiente`, `time`, `ibsCbs`, `offsetMinutes`, `verProc`, `arredondamento`, `respTec`, `exigencias`, `random`, `pagamentoIgualTotal`, `qrCode`, `urlQrCode`, `urlChave`.
+- `BuiltNfe`: Membros: `chave`, `id`, `cNF`, `cDV`, `mod`, `tpEmis`, `dhEmi`, `nfce`, `pl`, `infNFe`, `xml`.
+- `Cadastro`: Membros: `UF`, `dhCons`, `infCad`.
+- `CancelamentoPedido`: Membros: `chave`, `nProt`, `xJust`, `autor`.
+- `CancelamentoSubstituicaoPedido`: Membros: `chave`, `nProt`, `xJust`, `chNFeRef`, `cOrgaoAutor`, `tpAutor`, `verAplic`, `autor`.
+- `CartaCorrecaoPedido`: Membros: `chave`, `xCorrecao`, `nSeqEvento`, `autor`.
+- `ClassificacaoIbsCbs`: Classificação do item para IBS/CBS (NT 2025.002): o que o `IbsCbsCalculator` recebe. `CST` e `cClassTrib` vêm do cadastro do item (tabela de classificação tributária); o cálculo, as alíquotas e as reduções são da calculadora. Membros: `CST`, `cClassTrib`, `vBC`, `indDoacao`, `cCredPres`, `gTribRegular`.
+- `Cobranca`: Cobrança (grupo Y). `fat.vLiq` padrão `vOrig - vDesc`. Membros: `fatura`, `duplicatas`.
+- `ConsultaNfe`: Situação da NF-e na consulta protocolo. Membros: `chNFe`, `situacao`, `protocolo`, `eventos`, `digValConfere`.
+- `ConsultaReciboOpcoes`: Opções da consulta de um recibo. Membros: `signal`, `mod`.
+- `Contingencia`: Forma de emissão (B22) fora do normal. Membros: `tpEmis`, `dhCont`, `xJust`.
+- `DecimalFormat`: Membros: `name`, `min`, `max`, `minBelowOne`, `nonZero`, `intDigits`.
+- `Desoneracao` (estende `MotivoDesoneracaoIcms>`): Desoneração do ICMS: valor e motivo andam juntos (RV N27a/N28). Membros: `vICMSDeson`, `motDesICMS`, `indDeduzDeson`.
+- `DesoneracaoSt`: Desoneração do ICMS-ST (N33a/N33b): 3 uso na agropecuária; 9 outros; 12 fomento agropecuário. Membros: `vICMSSTDeson`, `motDesICMSST`.
+- `DetalhePagamento`: Membros: `indPag`, `tPag`, `xPag`, `vPag`, `dPag`, `CNPJPag`, `UFPag`, `card`.
+- `Distribuicao`: Membros: `ultNSU`, `maxNSU`, `dhResp`, `documentos`.
+- `DistribuicaoOpcoes`: Membros: `cUFAutor`, `autor`.
+- `DocumentoAssinado`: Documento assinado já conferido: a string como veio (sem a declaração XML) e o que se lê dela. Membros: `xml`, `id`, `digestValue`, `doc`.
+- `DocumentoDistribuido`: Documento devolvido pela Distribuição DF-e, já descompactado. Membros: `NSU`, `schema`, `tipo`, `xml`, `resNFe`, `resEvento`.
+- `Endereco`: Endereço no Brasil (`TEnderEmi`, `TEndereco`, `TLocal`). Membros: `xLgr`, `nro`, `xCpl`, `xBairro`, `cMun`, `xMun`, `UF`, `CEP`, `fone`.
+- `EnderecoExterior`: Endereço de destinatário no exterior: o leiaute usa `cMun` 9999999, `xMun` EXTERIOR e `UF` EX. Membros: `exterior`, `xLgr`, `nro`, `xCpl`, `xBairro`, `cPais`, `xPais`, `fone`.
+- `EventoRegistrado`: Evento registrado (cStat 135, 136 ou 155). Membros: `chNFe`, `tpEvento`, `nSeqEvento`, `nProt`, `dhRegEvento`, `retEvento`, `procEventoNFe`.
+- `IbsCbsCalculator`: Calcula o IBS e a CBS dos itens classificados. O padrão é o `ibsCbsCalculator`, sobre o `@sinete/ibs-cbs/calcular`; nos testes, um dublê com alíquotas fixas. A calculadora não vê o XML nem o resto da nota além do que está no pedido. Membros: `calcular()`.
+- `IbsCbsCalculatorOptions`: Membros: `dataset`, `rates`, `base`, `regras`, `utcOffsetMinutes`.
+- `IbsCbsItemRequest`: Um item classificado, com os valores que a calculadora pode precisar para a base do IBS/CBS. Membros: `nItem`, `CST`, `cClassTrib`, `indDoacao`, `cCredPres`, `gTribRegular`, `vBC`, `NCM`, `CFOP`, `uTrib`, `qTrib`, `vProd`, `vDesc`, `vFrete`, `vSeg`, `vOutro`, `vICMS`, `vICMSST`, `vFCP`, `vFCPST`, `vIPI`, `vPIS`, `vCOFINS`, `vII`, `vISSQN`, `vICMSUFDest`, `vFCPUFDest`.
+- `IbsCbsNotaRequest`: Dados da nota que decidem a regra aplicável (local da operação, vigência, compra governamental). Membros: `fatoGerador`, `emissao`, `ambiente`, `mod`, `tpNF`, `finNFe`, `tpNFDebito`, `tpNFCredito`, `indFinal`, `indPres`, `emitente`, `destino`, `cMunFGIBS`, `compraGov`.
+- `IbsCbsResponse`: Resultado da calculadora: o grupo `IBSCBS` de cada item pedido, já na forma lexical do leiaute. Membros: `itens`, `issues`.
+- `Icms00` (estende `IcmsBase, IcmsProprio`): Membros: `CST`, `pFCP`, `vFCP`.
+- `Icms02` (estende `IcmsBase`): Monofásico próprio sobre combustíveis. `vICMSMono` padrão `qBCMono × adRemICMS`. Membros: `CST`, `qBCMono`, `adRemICMS`, `vICMSMono`.
+- `Icms10` (estende `IcmsBase, IcmsProprio, IcmsFcp`): Membros: `CST`, `st`, `desoneracaoSt`.
+- `Icms15` (estende `IcmsBase`): Monofásico próprio e com retenção sobre combustíveis. Membros: `CST`, `qBCMono`, `adRemICMS`, `vICMSMono`, `qBCMonoReten`, `adRemICMSReten`, `vICMSMonoReten`, `pRedAdRem`, `motRedAdRem`.
+- `Icms20` (estende `IcmsBase, IcmsProprio, IcmsFcp`): Com redução de base de cálculo. `vBC` padrão: valor da operação × (1 - pRedBC/100). Membros: `CST`, `pRedBC`, `desoneracao`.
+- `Icms30` (estende `IcmsBase`): Isenta ou não tributada, com ST. Membros: `CST`, `st`, `desoneracao`.
+- `Icms40` (estende `IcmsBase`): 40 isenta, 41 não tributada, 50 suspensão. Membros: `CST`, `desoneracao`.
+- `Icms51` (estende `IcmsBase, IcmsFcp`): Diferimento (CST 51). Com `pICMS` e sem valores: `vICMSOp = vBC × pICMS`, `vICMSDif = vICMSOp × pDif`, `vICMS = vICMSOp - vICMSDif` (RV N16a e N16c); o FCP segue a mesma conta com `pFCPDif`. Membros: `CST`, `modBC`, `pRedBC`, `cBenefRBC`, `vBC`, `pICMS`, `vICMSOp`, `pDif`, `vICMSDif`, `vICMS`, `pFCPDif`, `vFCPDif`, `vFCPEfet`.
+- `Icms53` (estende `IcmsBase`): Monofásico com recolhimento diferido. Membros: `CST`, `qBCMono`, `adRemICMS`, `vICMSMonoOp`, `pDif`, `vICMSMonoDif`, `vICMSMono`, `qBCMonoDif`, `adRemICMSDif`.
+- `Icms60` (estende `IcmsBase, IcmsStRetido`): ICMS cobrado anteriormente por ST. Membros: `CST`.
+- `Icms61` (estende `IcmsBase`): Monofásico cobrado anteriormente. Membros: `CST`, `qBCMonoRet`, `adRemICMSRet`, `vICMSMonoRet`.
+- `Icms70` (estende `IcmsBase, IcmsProprio, IcmsFcp`): Com redução de base e ST. Membros: `CST`, `pRedBC`, `st`, `desoneracao`, `desoneracaoSt`.
+- `Icms90` (estende `IcmsBase, IcmsFcp`): Outras. Tudo opcional; cada parte informada é calculada como nos grupos equivalentes. Membros: `CST`, `modBC`, `vBC`, `pRedBC`, `cBenefRBC`, `pICMS`, `vICMSOp`, `pDif`, `vICMSDif`, `vICMS`, `pFCPDif`, `vFCPDif`, `vFCPEfet`, `st`, `desoneracao`, `desoneracaoSt`.
+- `IcmsFcp`: FCP da operação própria. `vBCFCP` padrão `vBC`; `vFCP` padrão `vBCFCP × pFCP / 100`. Membros: `vBCFCP`, `pFCP`, `vFCP`.
+- `IcmsPartilha` (estende `Omit<IcmsProprio, 'modBC'>`): Partilha do ICMS entre UF de origem e destino (ICMSPart), CST 10 ou 90 (ou 20). Membros: `grupo`, `orig`, `CST`, `modBC`, `pRedBC`, `st`, `pBCOp`, `UFST`, `desoneracao`.
+- `IcmsProprio`: Parte própria do ICMS. `vBC` padrão: valor da operação (vProd + vFrete + vSeg + vOutro - vDesc) já reduzido por `pRedBC`. Membros: `modBC`, `vBC`, `pICMS`, `vICMS`.
+- `IcmsRepasseSt` (estende `IcmsStRetido`): Repasse de ICMS-ST retido anteriormente para a UF de destino (ICMSST), CST 41 ou 60. Membros: `grupo`, `orig`, `CST`, `vBCSTRet`, `vICMSSTRet`, `vBCSTDest`, `vICMSSTDest`.
+- `IcmsSn101` (estende `IcmsBase`): Simples Nacional 101: com permissão de crédito. `vCredICMSSN` padrão: valor da operação × pCredSN / 100. Membros: `CSOSN`, `pCredSN`, `vCredICMSSN`.
+- `IcmsSn102`: Simples Nacional 102, 103, 300, 400. Membros: `CSOSN`, `orig`, `grupo`.
+- `IcmsSn201` (estende `IcmsBase`): Simples Nacional 201: crédito e ST. Membros: `CSOSN`, `st`, `pCredSN`, `vCredICMSSN`.
+- `IcmsSn202` (estende `IcmsBase`): Simples Nacional 202 e 203: ST sem crédito. Membros: `CSOSN`, `st`.
+- `IcmsSn500` (estende `IcmsBase, IcmsStRetido`): Simples Nacional 500: cobrado anteriormente. Membros: `CSOSN`.
+- `IcmsSn900`: Simples Nacional 900: outros. Membros: `CSOSN`, `orig`, `grupo`, `modBC`, `vBC`, `pRedBC`, `pICMS`, `vICMS`, `st`, `pCredSN`, `vCredICMSSN`.
+- `IcmsSt`: ICMS retido por substituição tributária. Membros: `modBCST`, `pMVAST`, `pRedBCST`, `vBCST`, `pICMSST`, `vICMSST`, `vBCFCPST`, `pFCPST`, `vFCPST`, `vICMSDeducaoST`.
+- `IcmsStRetido`: ICMS-ST retido anteriormente (CST 60, CSOSN 500). Todos informativos. Membros: `vBCSTRet`, `pST`, `vICMSSubstituto`, `vICMSSTRet`, `vBCFCPSTRet`, `pFCPSTRet`, `vFCPSTRet`, `pRedBCEfet`, `vBCEfet`, `pICMSEfet`, `vICMSEfet`.
+- `IcmsUfDest`: ICMS de partilha para a UF de destino (NA, EC 87/2015), venda interestadual a não contribuinte. Os valores `vICMSUFDest` e `vFCPUFDest` são obrigatórios: a conta muda entre base única e base dupla conforme a UF de destino, e esse dado não está aqui. Membros: `vBCUFDest`, `vBCFCPUFDest`, `pFCPUFDest`, `pICMSUFDest`, `pICMSInter`, `pICMSInterPart`, `vFCPUFDest`, `vICMSUFDest`, `vICMSUFRemet`.
+- `ImpostoImportacao`: Imposto de importação (grupo P). Membros: `vBC`, `vDespAdu`, `vII`, `vIOF`.
+- `ImpostosItem`: Tributos do item (grupo M). ICMS ou ISSQN, exclusivos; o resto conforme a operação. Membros: `vTotTrib`, `icms`, `ipi`, `ii`, `issqn`, `pis`, `pisSt`, `cofins`, `cofinsSt`, `icmsUfDest`, `is`, `ibsCbs`.
+- `InformacoesAdicionais`: Informações adicionais (grupo Z). Membros: `infAdFisco`, `infCpl`, `obsCont`, `obsFisco`, `procRef`.
+- `Inutilizacao`: Inutilização homologada (cStat 102). Membros: `nProt`, `dhRecbto`, `retInutNFe`, `procInutNFe`.
+- `InutilizacaoPedido`: Membros: `ano`, `serie`, `nNFIni`, `nNFFin`, `xJust`, `mod`, `autor`.
+- `IpiNaoTributado`: IPI não tributado (O08). Membros: `CST`.
+- `Issqn`: ISSQN (grupo U), NF-e conjugada. `vISSQN` padrão `vBC × vAliq / 100`. Membros: `vBC`, `vAliq`, `vISSQN`, `cMunFG`, `cListServ`, `vDeducao`, `vOutro`, `vDescIncond`, `vDescCond`, `vISSRet`, `indISS`, `cServico`, `cMun`, `cPais`, `nProcesso`, `indIncentivo`.
+- `Item`: Item da nota (grupo H). Membros: `produto`, `impostos`, `impostoDevol`, `infAdProd`, `obsItem`, `DFeReferenciado`.
+- `ManifestacaoPedido`: Membros: `chave`, `tipo`, `xJust`, `autor`.
+- `NfceSupl`: O que a montagem deixa pronto para o `infNFeSupl` da NFC-e. Membros: `versao`, `urlChave`, `base`, `parametros`, `assinar`.
+- `NfeClient`: Membros: `options`, `statusServico()`, `autorizar()`, `consultarRecibo()`, `aguardarRecibo()`, `consultar()`, `cancelar()`, `cancelarPorSubstituicao()`, `cartaCorrecao()`, `manifestar()`, `inutilizar()`, `consultarCadastro()`, `distribuicaoDFe()`.
+- `NfeClientOptions`: Membros: `transport`, `signer`, `ambiente`, `uf`, `clock`, `logger`, `timeoutMs`, `offsetMinutes`, `contingencia`, `autor`, `sleep`, `nfceEndpoint`, `idLote`.
+- `NfeInput`: Entrada completa de uma NF-e. Membros: `modelo`, `serie`, `nNF`, `natOp`, `tpNF`, `finNFe`, `tpNFDebito`, `tpNFCredito`, `idDest`, `indFinal`, `indPres`, `indIntermed`, `cMunFG`, `cMunFGIBS`, `tpImp`, `dhSaiEnt`, `dPrevEntrega`, `cNF`, `contingencia`, `referenciadas`, `gCompraGov`, `gPagAntecipado`, `emitente`, `destinatario`, `retirada`, `entrega`, `autXML`, `itens`, `transporte`, `cobranca`, `pagamento`, `infIntermed`, `informacoesAdicionais`, `exporta`, `compra`, `cana`, `respTec`, `agropecuario`.
+- `Pagamento`: Pagamento (grupo YA). Ausente, o builder informa `tPag` 90 (sem pagamento) com valor zero. Membros: `detPag`, `vTroco`.
+- `PoliticaRecibo` (estende `ConsultaReciboOpcoes`): Política de consulta do recibo (autorização assíncrona). Membros: `maxTentativas`, `esperaMinimaMs`, `multiplicador`, `esperaMaximaMs`.
+- `Produto`: Produto ou serviço do item (grupo I). Membros: `cProd`, `cEAN`, `cBarra`, `xProd`, `NCM`, `NVE`, `CEST`, `indEscala`, `CNPJFab`, `cBenef`, `gCred`, `tpCredPresIBSZFM`, `EXTIPI`, `CFOP`, `uCom`, `qCom`, `vUnCom`, `vProd`, `cEANTrib`, `cBarraTrib`, `uTrib`, `qTrib`, `vUnTrib`, `vFrete`, `vSeg`, `vDesc`, `vOutro`, `indTot`, `indBemMovelUsado`, `DI`, `detExport`, `xPed`, `nItemPed`, `nFCI`, `rastro`, `infProdNFF`, `infProdEmb`, `especifico`.
+- `ProtocoloNfe`: Protocolo de uma NF-e (autorização ou denegação). Membros: `chNFe`, `cStat`, `xMotivo`, `nProt`, `dhRecbto`, `digVal`, `verAplic`, `protNFe`, `nfeProc`.
+- `ResponsavelTecnico`: Responsável técnico (grupo ZD, NT 2018.005). O `hashCSRT` é calculado pelo builder a partir do CSRT (nunca vai para o XML): Base64(SHA-1(CSRT + chave de acesso)). Membros: `CNPJ`, `xContato`, `email`, `fone`, `csrt`.
+- `StatusServico`: Status do serviço (cStat 107). Membros: `cUF`, `verAplic`, `dhRecbto`, `tMed`, `dhRetorno`, `xObs`.
+- `Transportador`: Membros: `CNPJ`, `CPF`, `xNome`, `IE`, `xEnder`, `xMun`, `UF`.
+- `Transporte`: Transporte (grupo X). Membros: `modFrete`, `transportador`, `retTransp`, `veicTransp`, `reboque`, `vagao`, `balsa`, `volumes`.
+- `Volume`: Membros: `qVol`, `esp`, `marca`, `nVol`, `pesoL`, `pesoB`, `lacres`.
+
+### Tipos
+
+- `AutorDocumento`: CNPJ ou CPF de quem assina um evento ou consulta a distribuição. `type AutorDocumento = { readonly CNPJ: string; readonly CPF?: never; } | { readonly CPF: string; readonly CNPJ?: never; }`
+- `AutorizacaoOutcome`: Desfecho da autorização: autorizada, denegada (número consumido), rejeitada ou pendente (recibo em `ref`). `type AutorizacaoOutcome = SefazOutcome<ProtocoloNfe, ProtocoloNfe>`
+- `BuildNfeResult`: `type BuildNfeResult = { readonly ok: true; readonly value: BuiltNfe; } | { readonly ok: false; readonly issues: readonly ValidationIssue[]; }`
+- `CadastroPedido`: `type CadastroPedido = { readonly uf: Uf; } & ({ readonly CNPJ: string; } | { readonly CPF: string; } | { readonly IE: string; })`
+- `ConsultaOutcome`: `type ConsultaOutcome = SefazOutcome<ConsultaNfe, ConsultaNfe>`
+- `ConteudoDoProtocolo`: O que o `digVal` do protocolo diz dos bytes assinados: `confere` (é o DigestValue deles), `sem-digval` (o protocolo não o traz) ou `difere` (a SEFAZ registrou outro conteúdo com a mesma chave). `type ConteudoDoProtocolo = 'confere' | 'sem-digval' | 'difere'`
+- `Crt`: Código de Regime Tributário (C21): 1 Simples Nacional; 2 Simples com excesso de sublimite; 3 Regime Normal; 4 MEI. `type Crt = '1' | '2' | '3' | '4'`
+- `CstPisCofinsOutras`: CSTs de PIS/COFINS do grupo "outras operações" (Q05, S05). `type CstPisCofinsOutras = '49' | '50' | '51' | '52' | '53' | '54' | '55' | '56' | '60' | '61' | '62' | '63' | '64' | '65' | '66' | '67' | '70' | '71' | '72' | '73' | '74' | '75' | '98' | '99'`
+- `DecimalInput`: O que as APIs de entrada aceitam como número. Prefira `string` (`'12.34'`): `number` perde dígitos acima de 15 algarismos. `type DecimalInput = string | number | bigint | Decimal`
+- `Destinatario`: Destinatário (grupo E). No exterior, `idEstrangeiro` no lugar do CNPJ/CPF.
+- `DistribuicaoConsulta`: `type DistribuicaoConsulta = { readonly ultNSU: string | number; } | { readonly NSU: string | number; } | { readonly chNFe: string; }`
+- `DocumentoPessoa`: CNPJ (numérico ou alfanumérico) ou CPF, exclusivos. Aceitam máscara; o builder normaliza. `type DocumentoPessoa = { readonly CNPJ: string; readonly CPF?: never; } | { readonly CPF: string; readonly CNPJ?: never; }`
+- `Emitente`: Emitente (grupo C). Produtor rural pessoa física emite com CPF, nas séries 920 a 969.
+- `EventoOutcome`: `type EventoOutcome = SefazOutcome<EventoRegistrado, never>`
+- `ExigenciaRespTec`: `type ExigenciaRespTec = 'obrigatorio' | 'opcional'`
+- `Familia`: Famílias de campo com modo de arredondamento próprio (`data/arredondamento.json`). `type Familia = 'produto' | 'icms' | 'ipi' | 'pisCofins' | 'issqn' | 'ibsCbs'`
+- `FinNFe`: Finalidade (B25): 1 normal; 2 complementar; 3 ajuste; 4 devolução; 5 nota de crédito; 6 nota de débito. `type FinNFe = '1' | '2' | '3' | '4' | '5' | '6'`
+- `GrupoIbsCbs`: Grupo `IBSCBS` do item, como o `@sinete/nfe` o recebe. `type GrupoIbsCbs = IbsCbsResponse['itens'][number]['IBSCBS']`
+- `IbsCbsItem`: IBS/CBS do item: pela classificação (a calculadora injetada devolve o grupo) ou já calculado (grupo do schema pronto, por exemplo vindo de outro sistema). `type IbsCbsItem = { readonly classificacao: ClassificacaoIbsCbs; readonly grupo?: never; } | { readonly grupo: TTribNFe; readonly classificacao?: never; }`
+- `Icms`: Tributação do ICMS do item: um grupo por CST (regime normal) ou CSOSN (Simples Nacional). `type Icms = Icms00 | Icms02 | Icms10 | Icms15 | Icms20 | Icms30 | Icms40 | Icms51 | Icms53 | Icms60 | Icms61 | Icms70 | Icms90 | IcmsPartilha | IcmsRepasseSt | IcmsSn101 | IcmsSn102 | IcmsSn201 | IcmsSn202 | IcmsSn500 | IcmsSn900`
+- `IndIEDest`: Indicador da IE do destinatário (E16a): 1 contribuinte do ICMS; 2 contribuinte isento de inscrição (não informar a IE); 9 não contribuinte. `type IndIEDest = '1' | '2' | '9'`
+- `Instante`: Instante no tempo, como os relógios do `@sinete/core` o devolvem (o tipo `Date`, sem tocar no global). `type Instante = ReturnType<Clock['now']>`
+- `InutilizacaoOutcome`: `type InutilizacaoOutcome = SefazOutcome<Inutilizacao, never>`
+- `Ipi`: `type Ipi = (IpiTributado | IpiNaoTributado) & { /** Código de enquadramento legal; `999` quando não há. */ readonly cEnq: string; readonly CNPJProd?: string; readonly cSelo?: string; readonly qSelo?: string; }`
+- `IpiTributado`: IPI tributado (O07): por alíquota (`vBC` padrão valor da operação) ou por unidade (`qUnid × vUnid`).
+- `Local`: Local de retirada ou de entrega (grupos F e G), quando diferente do endereço do emitente ou destinatário. `type Local = DocumentoPessoa & Endereco & { readonly xNome?: string; readonly email?: string; readonly IE?: string; }`
+- `ManifestacaoTipo`: `type ManifestacaoTipo = 'ciencia' | 'confirmacao' | 'desconhecimento' | 'nao-realizada'`
+- `ModBC`: Modalidade da BC do ICMS (N13): 0 MVA; 1 pauta; 2 preço tabelado máximo; 3 valor da operação. `type ModBC = '0' | '1' | '2' | '3'`
+- `ModBCST`: Modalidade da BC do ICMS ST (N18): 0 preço tabelado; 1 lista negativa; 2 positiva; 3 neutra; 4 MVA; 5 pauta; 6 valor da operação. `type ModBCST = '0' | '1' | '2' | '3' | '4' | '5' | '6'`
+- `ModFrete`: Modalidade do frete (X02): 0 CIF; 1 FOB; 2 terceiros; 3 próprio do remetente; 4 próprio do destinatário; 9 sem frete. `type ModFrete = '0' | '1' | '2' | '3' | '4' | '9'`
+- `NfeIssueCode`: `type NfeIssueCode = (typeof NFE_ISSUE_CODES)[number]`
+- `Origem`: Origem da mercadoria (N11, `Torig`): 0 nacional; 1 e 2 estrangeira; 3 a 8 conforme conteúdo de importação. `type Origem = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8'`
+- `PisCofins`: PIS ou COFINS (grupos Q e S), com a mesma forma. `vBC` é obrigatório: a base legal varia (exclusão do ICMS, receita bruta, regime) e não há padrão seguro. O valor (`valor`) padrão é `vBC × aliquota / 100` ou `qBCProd × vAliqProd`.
+- `PisCofinsSt`: PIS ou COFINS ST (grupos R e T). `indSoma` 1: o valor compõe o total da nota.
+- `ProdutoEspecifico`: Grupo específico do produto (choice do grupo I): no máximo um. Repassado como veio.
+- `QrCodeNfceOpcoes`: Versão do QR Code da NFC-e.
+- `RecuperacaoEvento`: Resultado da recuperação: o evento registrado, com a consulta que o prova, ou só a consulta. `type RecuperacaoEvento = { readonly registrado: true; readonly evento: EventoRegistrado; readonly consulta: ConsultaOutcome; } | { readonly registrado: false; readonly consulta: ConsultaOutcome; }`
+- `Referenciada`: Documento referenciado no nível da nota (grupo BA).
+- `RefNfp`: NF de produtor em papel (modelo 04) ou avulsa (01) referenciada (BA10). O modelo 04 foi extinto pelo Ajuste SINIEF 10/2022; o builder só aceita a referência a notas emitidas antes do fim da vigência (`data/produtor-rural.json`).
+- `ResolucaoEnvio`: O que fazer com uma NF-e cujo envio ficou sem resposta ou voltou como duplicidade. `type ResolucaoEnvio = /** * A chave está decidida: autorizada (ou cancelada) com o mesmo conteúdo, e `outcome` traz o protocolo e o `nfeProc``
+- `RoundingMode`: Decimal exato para os valores da NF-e. Nada de `number` nas contas: um valor é `coef × 10^-scale` com `coef` em `bigint`, então soma, subtração e multiplicação são exatas e só o arredondamento, feito de propósito e com o modo escolhido, descarta dígitos. `type RoundingMode = 'HALF_EVEN' | 'HALF_UP' | 'DOWN'`
+- `Sleep`: Espera injetável (testes passam uma que não dorme). `type Sleep = (ms: number, signal?: AbortSignal) => Promise<void>`
+- `TCIBS_NFe`: reexportado de `@sinete/schemas/nfe/PL_010f` (veja a referência dele).
+- `TMonofasia`: reexportado de `@sinete/schemas/nfe/PL_010f` (veja a referência dele).
+- `TTribNFe`: reexportado de `@sinete/schemas/nfe/PL_010f` (veja a referência dele).
+
+### Constantes
+
+- `MotivoDesoneracaoIcms`: Motivo da desoneração do ICMS (N28), com os nomes das tabelas do leiaute. Cada CST aceita um subconjunto (o tipo de cada grupo restringe): CST 20 e 70 e 90: 3, 9, 10, 11, 12 (20) ou 3, 9, 12; CST 30: 6, 7, 9; CST 40/41/50: 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 16, 90; partilha: 9, 10, 11. `MotivoDesoneracaoIcms: { readonly TAXI: '1'; readonly AGROPECUARIA: '3'; readonly FROTISTA_LOCADORA: '4'; readonly DIPLOMATICO_CONSULAR: '5'; readonly UTILITARIOS_MOTOCICLETAS_AMAZONIA_ALC: '6'; readonly SUFRAMA: '7'; readonly VENDA_ORGAO_…` `type MotivoDesoneracaoIcms = (typeof MotivoDesoneracaoIcms)[keyof typeof MotivoDesoneracaoIcms]`
+- `NFCE_LIMITE_SEM_DESTINATARIO`: Valor da NFC-e acima do qual o destinatário tem de ser identificado (MOC 7.0 Anexo I, RV W16-40, rejeição 750). `NFCE_LIMITE_SEM_DESTINATARIO = "10000.00"`
+- `NFE_ISSUE_CODES`: `NFE_ISSUE_CODES: readonly ['campo_obrigatorio', 'campo_invalido', 'campo_fora_do_pl', 'decimal_invalido', 'valor_divergente', 'combinacao_invalida', 'modelo_nao_suportado', 'serie_invalida', 'documento_invalido', 'ie_invalida', 'chave_inva…`
+- `NFE_NS`: `NFE_NS = "http://www.portalfiscal.inf.br/nfe"`
+- `TipoPagamento`: Meio de pagamento (YA02, NT 2020.006 e seguintes). `TipoPagamento: { readonly DINHEIRO: '01'; readonly CHEQUE: '02'; readonly CARTAO_CREDITO: '03'; readonly CARTAO_DEBITO: '04'; readonly CREDITO_LOJA: '05'; readonly VALE_ALIMENTACAO: '10'; readonly VALE_REFEICAO: '11'; readonly VALE_PRESENT…` `type TipoPagamento = (typeof TipoPagamento)[keyof typeof TipoPagamento]`
+- `XNOME_HOMOLOGACAO`: Literal do nome do destinatário em homologação (MOC 7.0 Anexo I, RV E04-20, rejeição 598). `XNOME_HOMOLOGACAO = "NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL"`
+- `XPROD_HOMOLOGACAO_NFCE`: Literal da descrição do primeiro item da NFC-e em homologação (MOC 7.0 Anexo I, RV I04-10, rejeição 373). `XPROD_HOMOLOGACAO_NFCE = "NOTA FISCAL EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL"`
+
+## `@sinete/nfe/ibs-cbs`
+
+`@sinete/nfe/ibs-cbs`: tudo o que quem emite NF-e precisa do IBS/CBS, sem importar `@sinete/ibs-cbs` nem `@sinete/ibs-cbs-dados` diretamente.
+
+Reexporta o motor inteiro (`@sinete/ibs-cbs`: alíquotas, cálculo, regras da NT 2025.002 e determinação de CST e cClassTrib) e o leitor do dataset (`@sinete/ibs-cbs-dados`: `loadDataset`, `verifyDataset`, diff, tipos). O dataset embarcado não entra aqui, para não ir para o bundle de quem não o usa: `carregarDatasetEmbarcado()`, na raiz do `@sinete/nfe`, o importa sob demanda. `Dec`, `IsoDate` e `Validity` vêm do motor (os de `Dec` e `IsoDate` são os mesmos; a `Validity` dos dados, com os campos do dataset, fica acessível pelos tipos que a usam).
+
+Reexporta tudo de `@sinete/ibs-cbs` (veja a referência dele).
+
+### Tipos
+
+- `ActorClassTribRecord`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `ActorFilter`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `ActorGroupRecord`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `ActorRecord`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `ActorRole`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `AnnexRecord`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `applicability`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `Applicability`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `ApplicabilityRecord`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `ApplicabilityResult`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `BRASILIA_OFFSET_MINUTES`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `ByTributo`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `canonicalJson`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `canonicalTable`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `CbsTransferRecord`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `changeKind`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `ChangeKind`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `civilDate`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `ClassTribCredit`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `ClassTribFilter`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `ClassTribGroups`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `ClassTribLegal`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `ClassTribRecord`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `contentVersionOf`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `CredPresCalculation`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `CredPresGroups`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `CredPresInForce`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `CredPresRates`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `CredPresRecord`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `CstGroups`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `CstRecord`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `DATA_SCHEMA_VERSION`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `DatasetBundle`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `DatasetDiff`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `DatasetManifest`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `DatasetTables`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `DataSource`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `DfeLink`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `DfeTypeRecord`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `diffDatasets`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `Family`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `FieldChange`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `FixedRateRecord`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `formatDiff`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `GovPurchaseReducerRecord`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `IbsCbsDataError`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `IbsCbsDataErrorCode`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `IbsCbsDataset`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `Indicator`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `inForce`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `isIsoDate`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `LegalBasis`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `loadDataset`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `NfseNbsRecord`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `Nomenclature`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `PrefixException`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `RateKind`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `RecordChange`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `ReductionRecord`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `requireIsoDate`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `SourceId`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `TABLE_NAMES`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `TableDiff`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `TableManifest`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `TableName`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `TaxContent`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `TreatmentExpressions`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `TreatmentFlags`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `TreatmentLink`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `TreatmentRecord`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `Tributo`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `verifyDataset`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).

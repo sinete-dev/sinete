@@ -1,0 +1,4 @@
+[
+  {"v":1,"id":"c3","method":"identity.open","params":{"id":"token-a3","backend":"pkcs11","module":"/usr/lib/libeTPkcs11.so","token":"e-CNPJ","label":"certificado","pin":"<pin>","chain":["<intermediária DER base64>"]}},
+  {"v":1,"id":"c3","error":{"code":"pkcs11","message":"este binário é o sabor estático (CGO_ENABLED=0), sem PKCS#11; use sinete-signer-p11 ou o modo remote"}}
+]

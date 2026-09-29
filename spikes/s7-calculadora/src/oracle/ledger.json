@@ -1,0 +1,46 @@
+{
+  "comment": "Divergências conhecidas entre o motor candidato e a Calculadora offline. Divergência fora do ledger falha o CI; entrada com expectHits=true que não disparou também falha (força limpeza). Cada entrada tem motivo, fonte e dono da decisão.",
+  "calculadora": { "versaoDb": "V0057", "zipSha256": "f451c3902621f02f3a63da29cd63d1e8e0f0456cce44425f1e22c89c079cb68e" },
+  "entries": [
+    {
+      "id": "compra-gov-regra-em-codigo",
+      "kind": "engine-gap",
+      "match": { "compraGov": true },
+      "reason": "Com gCompraGov a Calculadora emite gRed (pRedAliq 0) mesmo para CST sem gRed e, em 2027-2028, zera o IBS e soma 0,1 p.p. à CBS. A regra está em Java, não no SQLite (tabela REDUTOR_COMPRA_GOVERNAMENTAL só tem 0 para 2026).",
+      "source": "LC 214 art. 370 e 473 (transição de compras governamentais); CalculoCbsIbsService.obterGrupoCompraGov",
+      "expectHits": true
+    },
+    {
+      "id": "oracle-nao-implementa-8xx-620",
+      "kind": "oracle-refuses",
+      "match": { "oracleError": "ainda não possui tratamento tributário implementado" },
+      "reason": "Calculadora recusa transferência de crédito, ajustes, ZFM, declaração de regime específico (8xx) e monofasia (620): tratamento com TRTR_IN_POSSUI_AJUSTE ou sem alíquota desde V0057.",
+      "source": "FAQ Calculadora v1.4 item 4.2; V0055 desabilitacao_8xx; V0057 remocao_aliquotas_monofasia",
+      "expectHits": true
+    },
+    {
+      "id": "ibs-nfe-nao-validado-cgibs",
+      "kind": "oracle-trust",
+      "match": { "field": "item\\.IBS(UF|Mun)\\." },
+      "reason": "Concordância em IBS de NF-e não prova correção: o CGIBS ainda não validou o cálculo de IBS da Calculadora fora de NFS-e e DeRE. Segundo oráculo: RV da NT 2025.002 e homologação SEFAZ.",
+      "source": "FAQ Calculadora v1.4 item 2.1",
+      "expectHits": false
+    },
+    {
+      "id": "credito-presumido-fora",
+      "kind": "oracle-gap",
+      "match": { "field": "gCredPresOper|vCredPres" },
+      "reason": "A entrada de /regime-geral não tem cCredPres; gCredPresOper e gCredPresIBSZFM não são calculados. Testar só contra RV da NT.",
+      "source": "FAQ Calculadora v1.4 item 4.2; OpenAPI ItemOperacaoInput",
+      "expectHits": false
+    },
+    {
+      "id": "simples-nacional-api-separada",
+      "kind": "oracle-gap",
+      "match": { "field": "simples" },
+      "reason": "Simples Nacional está numa API separada (api-simples-nacional, porta 8082), com parametrização desde V0050; o regime geral não trata CRT 1/2/4.",
+      "source": "pacote calculadora.zip (api-simples-nacional.jar, codigo-fonte-simples-nacional.zip)",
+      "expectHits": false
+    }
+  ]
+}

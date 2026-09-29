@@ -1,0 +1,105 @@
+{
+  "comment": "Divergências revisadas entre a tabela da Calculadora e a do IT 2025.002 (mesmo código, mesma vigência, valor diferente). O extrator falha em divergência fora desta lista e em entrada que deixou de divergir. Em conflito, o dataset segue a Calculadora e guarda o valor do IT só onde a Calculadora não tem a coluna; cada entrada diz por que isso é aceitável.",
+  "entries": [
+    {
+      "id": "classTrib:200006:annex",
+      "reason": "A Calculadora vincula 200006 ao anexo XII (dispositivos médicos) e o IT deixa a coluna ANEXO vazia. O vínculo de NCM vem das tabelas NCM_APLICAVEL, não desta coluna; sem efeito no cálculo nem na aplicabilidade.",
+      "source": "IT 2025.002 v1.60, tabela cClassTrib; Calculadora V0057, CLASSIFICACAO_TRIBUTARIA.CLTR_ANEXO"
+    },
+    {
+      "id": "classTrib:200012:annex",
+      "reason": "Mesmo caso do 200006: anexo XII na Calculadora, coluna vazia no IT. Sem efeito no cálculo.",
+      "source": "IT 2025.002 v1.60; Calculadora V0057"
+    },
+    {
+      "id": "classTrib:200013:annex",
+      "reason": "O IT cita o anexo técnico 91471 e a Calculadora não preenche a coluna. Anexo técnico é referência documental; a aplicabilidade por NCM continua vindo das tabelas de vínculo da Calculadora.",
+      "source": "IT 2025.002 v1.60; Calculadora V0057"
+    },
+    {
+      "id": "classTrib:200041:annex",
+      "reason": "O IT cita o anexo técnico 91411 e a Calculadora não preenche a coluna. Mesmo tratamento do 200013.",
+      "source": "IT 2025.002 v1.60; Calculadora V0057"
+    },
+    {
+      "id": "classTrib:410027:pRedCBS",
+      "reason": "Códigos da CST 410 (imunidade e não incidência) com redução de 100% na Calculadora e 0 no IT. A CST 410 não tem gIBSCBS (ind_gIBSCBS = 0), então o percentual não entra em nenhum grupo do XML nem em valor calculado.",
+      "source": "IT 2025.002 v1.60, tabela CST (410: ind_gIBSCBS 0); Calculadora V0057, PERCENTUAL_REDUCAO"
+    },
+    {
+      "id": "classTrib:410027:pRedIBSMun",
+      "reason": "Ver classTrib:410027:pRedCBS.",
+      "source": "IT 2025.002 v1.60; Calculadora V0057"
+    },
+    {
+      "id": "classTrib:410027:pRedIBSUF",
+      "reason": "Ver classTrib:410027:pRedCBS.",
+      "source": "IT 2025.002 v1.60; Calculadora V0057"
+    },
+    {
+      "id": "classTrib:410028:pRedCBS",
+      "reason": "Ver classTrib:410027:pRedCBS.",
+      "source": "IT 2025.002 v1.60; Calculadora V0057"
+    },
+    {
+      "id": "classTrib:410028:pRedIBSMun",
+      "reason": "Ver classTrib:410027:pRedCBS.",
+      "source": "IT 2025.002 v1.60; Calculadora V0057"
+    },
+    {
+      "id": "classTrib:410028:pRedIBSUF",
+      "reason": "Ver classTrib:410027:pRedCBS.",
+      "source": "IT 2025.002 v1.60; Calculadora V0057"
+    },
+    {
+      "id": "classTrib:410029:pRedCBS",
+      "reason": "Ver classTrib:410027:pRedCBS.",
+      "source": "IT 2025.002 v1.60; Calculadora V0057"
+    },
+    {
+      "id": "classTrib:410029:pRedIBSMun",
+      "reason": "Ver classTrib:410027:pRedCBS.",
+      "source": "IT 2025.002 v1.60; Calculadora V0057"
+    },
+    {
+      "id": "classTrib:410029:pRedIBSUF",
+      "reason": "Ver classTrib:410027:pRedCBS.",
+      "source": "IT 2025.002 v1.60; Calculadora V0057"
+    },
+    {
+      "id": "classTrib:410030:pRedCBS",
+      "reason": "Ver classTrib:410027:pRedCBS.",
+      "source": "IT 2025.002 v1.60; Calculadora V0057"
+    },
+    {
+      "id": "classTrib:410030:pRedIBSMun",
+      "reason": "Ver classTrib:410027:pRedCBS.",
+      "source": "IT 2025.002 v1.60; Calculadora V0057"
+    },
+    {
+      "id": "classTrib:410030:pRedIBSUF",
+      "reason": "Ver classTrib:410027:pRedCBS.",
+      "source": "IT 2025.002 v1.60; Calculadora V0057"
+    },
+    {
+      "id": "classTrib:410031:pRedCBS",
+      "reason": "Ver classTrib:410027:pRedCBS.",
+      "source": "IT 2025.002 v1.60; Calculadora V0057"
+    },
+    {
+      "id": "classTrib:410031:pRedIBSMun",
+      "reason": "Ver classTrib:410027:pRedCBS.",
+      "source": "IT 2025.002 v1.60; Calculadora V0057"
+    },
+    {
+      "id": "classTrib:410031:pRedIBSUF",
+      "reason": "Ver classTrib:410027:pRedCBS.",
+      "source": "IT 2025.002 v1.60; Calculadora V0057"
+    },
+    {
+      "id": "classTrib:510001:rateKind",
+      "reason": "O IT publica 510001 (diferimento de energia elétrica) como 'Sem alíquota' e a Calculadora como 'Padrão'. Diferimento pressupõe tributo calculado à alíquota vigente e depois diferido (LC 214/2025, art. 28, § 1º, e grupo gDif com pDif e vDif na NT 2025.002), o que só é possível com alíquota; o dataset segue a Calculadora, que calcula assim.",
+      "source": "IT 2025.002 v1.60; Calculadora V0057 (TIPO_ALIQUOTA 'Padrão'); LC 214/2025, art. 28"
+    }
+  ]
+}

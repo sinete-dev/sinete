@@ -1,0 +1,8 @@
+{
+  "name": "@sinete/tool-transport-data",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Gera os dados do @sinete/transport: endpoints das páginas oficiais e perfis TLS por host da sondagem",
+  "license": "Apache-2.0",
+  "type": "module"
+}

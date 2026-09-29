@@ -1,0 +1,63 @@
+# Por que o sinete grava os bytes assinados antes do envio
+
+Esta página explica a regra central do emissor do sinete: o documento assinado é gravado antes de ir para a SEFAZ, a Secretaria da Fazenda. Enquanto o resultado estiver indefinido, os bytes ficam gravados e o documento não é montado de novo. A decisão está no registro de arquitetura ADR 0010 do sinete, e a política dos bytes, em `destinoDosBytes` do `@sinete/emissor`. A mesma política vale para a NFS-e Nacional, enviada à Sefin Nacional, o serviço que recebe e processa sua emissão.
+
+## O problema: a resposta que não chega
+
+Um envio à SEFAZ pode terminar de três jeitos que o cliente não consegue distinguir quando fica sem uma resposta válida: o pedido não chegou; chegou e foi processado, mas a resposta se perdeu por tempo esgotado, conexão caída ou resposta fora do leiaute; ou chegou e ainda está sendo processado. No segundo caso, a nota pode estar autorizada sem que o cliente saiba.
+
+O reflexo de "tentar de novo" é montar a nota outra vez. Só que, na NF-e, a Nota Fiscal Eletrônica, a montagem sorteia o código numérico da chave (`cNF`) quando ele não é informado e preenche a data e hora de emissão (`dhEmi`) a partir do relógio de emissão. O sorteio segue a regra de validação B03-10 do Manual de Orientação do Contribuinte (MOC) 7.0. Remontar pode gerar outro documento, com outra chave, para o mesmo número. Isso pode resultar na rejeição 539, duplicidade com diferença na chave, ou, conforme os campos alterados e as regras do autorizador, na autorização de um segundo documento. As duas saídas custam caro: a nota autorizada fica fora do sistema, sem o XML que a SEFAZ tem, ou passa a exigir cancelamento e uma explicação ao usuário.
+
+## A regra
+
+1. **Assinar e gravar antes de enviar.** O emissor monta, valida, assina e grava a string assinada no `TransmissaoStore`, a interface de persistência das transmissões. Faz isso com a trava do documento, que impede duas chamadas de transmiti-lo ao mesmo tempo, e só então envia. Se a gravação falhar, o documento não é enviado à SEFAZ.
+2. **Retomar pelos bytes gravados.** Toda tentativa seguinte do mesmo documento, seja outro clique, outro processo, a tarefa automática de retomada ou uma chamada depois de um reinício, encontra os bytes gravados. O emissor consulta a chave e, se a nota não consta, reenvia os mesmos bytes. Na NFS-e, a Nota Fiscal de Serviço Eletrônica, a consulta usa o identificador da DPS, a Declaração de Prestação de Serviços que dá origem à nota. `emitir(ref, entrada)` com bytes gravados para a mesma referência `ref` ignora a entrada.
+3. **Apagar só quando a SEFAZ decidiu.** Autorizado ou denegado: o `aoDecidir`, a função fornecida pelo integrador para guardar o resultado, persiste o documento no sistema e só então os bytes saem do store. Se essa função lançar uma exceção, os bytes ficam. Ela precisa ser idempotente, isto é, suportar chamadas repetidas para o mesmo documento sem duplicar os efeitos. Recusado: os bytes são descartados quando a recusa é definitiva, permitindo corrigir a entrada e usar o número de novo. As recusas que deixam o resultado indefinido mantêm os bytes, conforme a tabela abaixo.
+
+Na NF-e, a string gravada é exatamente a enviada como documento assinado e a inserida no `nfeProc`, o XML que reúne a nota e seu protocolo. O sinete insere a assinatura diretamente na string final, por splice, e não reserializa o documento, isto é, não o reconstrói a partir de uma representação em memória (veja [por que assinar a string final](assinatura-por-splice.md)). Reenviar os mesmos bytes permite à SEFAZ reconhecer o mesmo documento. A rejeição por duplicidade 204 leva o emissor a consultar a chave para recuperar e conferir o resultado já registrado; o código de duplicidade, sozinho, não comprova a autorização.
+
+## O que acontece com os bytes em cada desfecho
+
+O campo `cStat` contém o código de situação da resposta fiscal. O emissor usa esse campo também para os códigos de rejeição da NFS-e.
+
+| Desfecho | Quando | Bytes |
+|---|---|---|
+| `autorizado` | o serviço autorizador autorizou estes bytes, ou a consulta encontrou o documento autorizado e confirmou seu conteúdo | guardados pelo `aoDecidir`, depois apagados |
+| `denegado` | uso denegado (só NF-e): o número fica consumido, com ou sem prova do conteúdo (veja abaixo) | guardados pelo `aoDecidir`, depois apagados |
+| `ja-guardado` | a função `jaGuardado` do integrador confirmou que o documento destes bytes já foi guardado; esta tentativa não foi ao serviço autorizador | apagados, sem `aoDecidir` |
+| `recusado` | o serviço autorizador recusou estes bytes | descartados, exceto nos `cStat` indefinidos |
+| `pendente` | o resultado ainda não foi confirmado: sem resposta, consulta indecisa ou lote em processamento; também inclui a emissão em contingência sem envio | ficam |
+| `divergente` | há outro documento no número destes bytes, ou a chave foi autorizada sem `digVal`, o resumo criptográfico que permite conferir o conteúdo registrado; também ocorre, com `situacaoPosterior: 'divergente'`, quando o documento destes bytes já foi cancelado ou encerrado fora deste fluxo | ficam |
+
+Os `cStat` indefinidos são as recusas que não provam que o número está livre: a duplicidade que nem a consulta nem o reenvio resolveram e os códigos de lote em processamento. Na NF-e e no MDF-e, o Manifesto Eletrônico de Documentos Fiscais, são 103 e 105 da recepção em lote e 204 e 539 da duplicidade. Na NFS-e, é E0014, que indica que a DPS já gerou uma nota. As fontes são o MOC 7.0, Anexo I, tabela 4.4.1 e regras 204 e 539; o MOC MDF-e 3.00b, Visão Geral 4.2.6 e Anexo I, F81 e F82; e o Anexo I da NFS-e Nacional v1.01. A tabela está em `src/data/cstat.json` do `@sinete/emissor`. Descartar os bytes nesses casos liberaria o número com um documento possivelmente autorizado.
+
+## `pendente` não é erro
+
+`pendente` quer dizer "tente de novo depois, com os mesmos bytes", e é o que a [retomada](../como-fazer/retomada.md) faz. O motivo explica a pendência: `sem-resposta` traz o erro em `causa`; `consulta-indefinida` indica uma consulta que não decidiu, por exemplo por serviço paralisado ou consumo indevido; `lote-em-processamento` indica, na NF-e, que o processamento não terminou durante a espera e traz o recibo em `nRec`, quando disponível; `contingencia` indica uma NFC-e, a Nota Fiscal de Consumidor Eletrônica, emitida off-line e gravada sem envio enquanto o autorizador do estado está indisponível, na [contingência automática](../como-fazer/contingencia.md#contingência-automática). A tela pode mostrar "em processamento"; o que ela não pode é oferecer "emitir de novo" com outra referência.
+
+## O que fazer com `divergente`
+
+`divergente` exige verificar o documento registrado antes de prosseguir. Na NF-e e no MDF-e, pode significar a mesma chave com outro conteúdo (`conteudo: 'difere'`, quando o `digVal` do protocolo não confere com a assinatura gravada), a chave autorizada sem `digVal` para provar o conteúdo (`conteudo: 'sem-digval'`, veja [protocolo sem `digVal`](#protocolo-sem-digval)) ou outra chave para a mesma série e número, indicada pela rejeição 539. A chave registrada aparece em `chaveRegistrada` quando está disponível. Na NFS-e, a duplicidade E0014 leva à consulta da DPS; o desfecho é `divergente` se a nota recuperada contém uma DPS cujo resumo criptográfico não confere com o dos bytes gravados. Nesse caso, `chaveRegistrada` traz a chave da NFS-e recuperada.
+
+Com a opção `situacaoPosterior: 'divergente'`, o desfecho também pode indicar que o documento destes bytes já foi cancelado ou, no MDF-e, encerrado fora deste fluxo. Nesse caso, `situacaoAtual` informa a situação e `proc` contém o documento autorizado recuperado. No comportamento padrão, esse documento retorna como `autorizado`, com `situacaoAtual`, para que o integrador o guarde com a situação correta.
+
+Reenviar não resolve a divergência, então a retomada registra o alerta na primeira tentativa. As causas típicas de conteúdo ou chave diferentes são outro sistema emitindo com a mesma numeração, ou bytes apagados à mão e o documento remontado. Alguém precisa recuperar o documento registrado e decidir o que fazer com os bytes gravados. Na NF-e, a consulta da chave devolve o protocolo e pode trazer eventos, como o cancelamento em `procEventoNFe`, o XML que reúne o evento e seu retorno. Ela não devolve o XML completo da nota: o `nfeProc` é montado pelo cliente com a nota assinada disponível e o protocolo cujo `digVal` confere. Para recuperar uma nota com conteúdo diferente, é necessário obter seu XML por outro meio, como a Distribuição DF-e, o serviço de distribuição de documentos fiscais eletrônicos, ou o portal da SEFAZ.
+
+## Protocolo sem `digVal`
+
+O `digVal` do protocolo corresponde ao `DigestValue`, o resumo criptográfico do conteúdo assinado do documento que a SEFAZ registrou. Sua comparação com a assinatura gravada permite verificar que o protocolo corresponde a esse conteúdo. Ele é opcional no leiaute: `TProtNFe/infProt/digVal` e `TProtMDFe/infProt/digVal` têm `minOccurs="0"` no XSD, o esquema que define a estrutura do XML. Há autorizadores que o omitem, sobretudo na denegação. O emissor trata denegação e autorização de formas diferentes porque as decisões têm consequências diferentes:
+
+- **Denegação** (110, 301, 302, 303; MOC 7.0 Anexo I, tabela 4.4.3) é decisão sobre a chave: a NF-e fica registrada como denegada e o número não pode ser reaproveitado nem inutilizado, qualquer que seja o conteúdo. O desfecho é `denegado`, definitivo, na resposta do envio e na consulta. O campo `conteudo` diz o que o `digVal` prova: `confere` significa que `proc` é o `nfeProc` destes bytes; `sem-digval` significa que não há `proc`, então guarde os bytes de `xml` e o protocolo de `protocolo.protNFe`; `difere` significa que a consulta encontrou a chave denegada com outro conteúdo. Neste último caso também não há `proc`: guarde os bytes e o protocolo, registrando a divergência. O número continua denegado, mas o documento registrado não é o destes bytes, e alguém precisa saber. Os bytes saem do store depois do `aoDecidir` e a retomada não volta a eles.
+- **Autorização** sem `digVal` não prova que o documento autorizado é este. O emissor consulta a chave: com o `digVal` na consulta, a comparação decide entre `autorizado` e `divergente`. Sem `digVal` também na consulta, o desfecho é `divergente` com `conteudo: 'sem-digval'`, e os bytes ficam. Não é seguro guardar como autorizado um documento cujo conteúdo não foi confirmado. A retomada registra o alerta na primeira tentativa e continua tentando, no máximo uma vez por `intervaloDepoisDoAlertaMs`, até a idade máxima. Se o autorizador passar a informar o `digVal`, a tentativa seguinte poderá confirmar o conteúdo e guardar o documento. Para resolver antes, baixe o XML autorizado pela Distribuição DF-e ou pelo portal da SEFAZ, compare com os bytes gravados e, se for o mesmo documento, guarde-o no seu sistema. Depois, deixe a função `jaGuardado` confirmar essa guarda para que o emissor apague a gravação.
+
+## Rejeição é desfecho, não exceção
+
+Pelo mesmo motivo, a rejeição recebida da SEFAZ não é lançada como exceção: é um resultado discriminado (`status: 'rejected'` no cliente, `tipo: 'recusado'` no emissor), que o código precisa tratar. Exceções representam falhas locais ou na execução, como configuração inválida, validação local, problemas de transporte ou resposta fora do leiaute. No emissor, as falhas que podem ter ocorrido depois de o documento chegar ao autorizador levam à consulta; se ela não resolver, o resultado pode ser `pendente`. As exceções próprias do sinete têm um `code` estável, documentado em [erros](../erros/index.md). Erros lançados pelo store ou pelas funções do integrador também podem se propagar.
+
+Há ainda uma proteção local contra repetir uma recusa definitiva: quando o store implementa `registrarRecusa` e `recusaRecente` e a barreira está habilitada, o emissor conta recusas do mesmo conteúdo com o mesmo `cStat`. Por padrão, depois de três recusas iguais em uma janela de uma hora, a próxima emissão do mesmo documento com o mesmo conteúdo lança `RecusaRepetidaError`, com `code: 'recusa_repetida'`, antes de gravar ou enviar. Essa barreira ajuda a evitar o consumo indevido, rejeição 656 da NF-e. Corrigir o conteúdo permite uma nova tentativa; se a causa foi resolvida fora da nota, a opção `reenviarRecusado: true` permite o reenvio consciente. Essa exceção local não é uma nova rejeição recebida da SEFAZ.
+
+## Veja também
+
+- [Por que o `store` e a trava](store-e-trava.md).
+- [Retomada](../como-fazer/retomada.md).
+- [Tutorial: primeira NF-e](../tutorial/primeira-nfe.md), que mostra a queda da conexão depois da autorização.

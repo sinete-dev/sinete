@@ -1,0 +1,123 @@
+{
+  "name": "@sinete/schemas",
+  "version": "0.0.0",
+  "description": "Tipos, descritores, serializer canônico, decoder tolerante e validador gerados dos XSD oficiais dos DF-e, por documento e pacote de liberação",
+  "keywords": [
+    "nfe",
+    "mdfe",
+    "dfe",
+    "sefaz",
+    "xsd",
+    "schema"
+  ],
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./nfe/PL_010f": {
+      "types": "./dist/nfe/PL_010f.d.ts",
+      "default": "./dist/nfe/PL_010f.js"
+    },
+    "./nfe/PL_010e": {
+      "types": "./dist/nfe/PL_010e.d.ts",
+      "default": "./dist/nfe/PL_010e.js"
+    },
+    "./mdfe/3.00b": {
+      "types": "./dist/mdfe/3.00b.d.ts",
+      "default": "./dist/mdfe/3.00b.js"
+    },
+    "./mdfe/eventos/3.00b": {
+      "types": "./dist/mdfe/eventos/3.00b.d.ts",
+      "default": "./dist/mdfe/eventos/3.00b.js"
+    },
+    "./mdfe/servicos/3.00b": {
+      "types": "./dist/mdfe/servicos/3.00b.d.ts",
+      "default": "./dist/mdfe/servicos/3.00b.js"
+    },
+    "./nfe/evento-cancelamento/PL_010d": {
+      "types": "./dist/nfe/evento-cancelamento/PL_010d.d.ts",
+      "default": "./dist/nfe/evento-cancelamento/PL_010d.js"
+    },
+    "./nfe/evento-cce/PL_010d": {
+      "types": "./dist/nfe/evento-cce/PL_010d.d.ts",
+      "default": "./dist/nfe/evento-cce/PL_010d.js"
+    },
+    "./nfe/evento-cancelamento-substituicao/PL_010d": {
+      "types": "./dist/nfe/evento-cancelamento-substituicao/PL_010d.d.ts",
+      "default": "./dist/nfe/evento-cancelamento-substituicao/PL_010d.js"
+    },
+    "./nfe/evento-confirmacao-operacao/PL_010d": {
+      "types": "./dist/nfe/evento-confirmacao-operacao/PL_010d.d.ts",
+      "default": "./dist/nfe/evento-confirmacao-operacao/PL_010d.js"
+    },
+    "./nfe/evento-ciencia-operacao/PL_010d": {
+      "types": "./dist/nfe/evento-ciencia-operacao/PL_010d.d.ts",
+      "default": "./dist/nfe/evento-ciencia-operacao/PL_010d.js"
+    },
+    "./nfe/evento-desconhecimento-operacao/PL_010d": {
+      "types": "./dist/nfe/evento-desconhecimento-operacao/PL_010d.d.ts",
+      "default": "./dist/nfe/evento-desconhecimento-operacao/PL_010d.js"
+    },
+    "./nfe/evento-operacao-nao-realizada/PL_010d": {
+      "types": "./dist/nfe/evento-operacao-nao-realizada/PL_010d.d.ts",
+      "default": "./dist/nfe/evento-operacao-nao-realizada/PL_010d.js"
+    },
+    "./nfe/inutilizacao/PL_010d": {
+      "types": "./dist/nfe/inutilizacao/PL_010d.d.ts",
+      "default": "./dist/nfe/inutilizacao/PL_010d.js"
+    },
+    "./nfe/consulta-protocolo/PL_010d": {
+      "types": "./dist/nfe/consulta-protocolo/PL_010d.d.ts",
+      "default": "./dist/nfe/consulta-protocolo/PL_010d.js"
+    },
+    "./nfe/consulta-cadastro/PL_010d": {
+      "types": "./dist/nfe/consulta-cadastro/PL_010d.d.ts",
+      "default": "./dist/nfe/consulta-cadastro/PL_010d.js"
+    },
+    "./nfe/status-servico/PL_009q": {
+      "types": "./dist/nfe/status-servico/PL_009q.d.ts",
+      "default": "./dist/nfe/status-servico/PL_009q.js"
+    },
+    "./nfe/dist-dfe/PL_NFeDistDFe_104": {
+      "types": "./dist/nfe/dist-dfe/PL_NFeDistDFe_104.d.ts",
+      "default": "./dist/nfe/dist-dfe/PL_NFeDistDFe_104.js"
+    },
+    "./nfse/1.01-20260209": {
+      "types": "./dist/nfse/1.01-20260209.d.ts",
+      "default": "./dist/nfse/1.01-20260209.js"
+    },
+    "./nfse/1.01-20260727": {
+      "types": "./dist/nfse/1.01-20260727.d.ts",
+      "default": "./dist/nfse/1.01-20260727.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src",
+    "NOTICE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sinete-dev/sinete.git",
+    "directory": "packages/schemas"
+  },
+  "homepage": "https://github.com/sinete-dev/sinete/tree/main/packages/schemas#readme",
+  "bugs": "https://github.com/sinete-dev/sinete/issues",
+  "scripts": {
+    "build": "bun ../../scripts/build.ts ."
+  },
+  "dependencies": {
+    "@sinete/core": "workspace:^"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

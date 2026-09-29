@@ -1,0 +1,251 @@
+CONNECTED(00000005)
+OCSP response: 
+======================================
+OCSP Response Data:
+    OCSP Response Status: successful (0x0)
+    Response Type: Basic OCSP Response
+    Version: 1 (0x0)
+    Responder Id: B5A005137661B71C9188CE63E4CBAF6F36F672B2
+    Produced At: Sep 25 20:13:17 2026 GMT
+    Responses:
+    Certificate ID:
+      Hash Algorithm: sha1
+      Issuer Name Hash: 0CCBAB1F8FC53847EABCF0C4010BC116CCBBF54A
+      Issuer Key Hash: 4150995178E1754EC1FF6715E12ED0B223D43D86
+      Serial Number: 01822E5211B5A1422A58304BD5B32389
+    Cert Status: good
+    This Update: Sep 25 20:13:17 2026 GMT
+    Next Update: Sep 26 08:13:17 2026 GMT
+
+    Signature Algorithm: sha256WithRSAEncryption
+    Signature Value:
+        1b:4d:1d:0a:c2:83:e5:53:44:42:9f:20:af:58:ad:ba:bb:19:
+        e2:22:52:6b:17:c6:ea:43:fc:33:d0:4a:91:df:0a:6a:92:1f:
+        8f:ef:76:93:cc:83:98:30:29:b0:dd:81:39:01:40:dd:63:64:
+        d1:26:6d:9a:3f:82:91:30:0e:7b:3b:92:5c:8f:3b:d7:50:e6:
+        0c:db:4d:3a:72:c1:1e:a1:c5:9f:9a:b7:9c:73:54:f2:0d:30:
+        79:ee:de:98:36:1b:47:77:72:c7:4e:6c:f8:37:40:4f:a5:f6:
+        36:7e:c9:5f:d3:ad:c9:7d:a2:6d:33:c1:b5:0c:48:e6:6c:da:
+        98:f0:73:46:37:34:a6:98:3b:85:f2:5d:87:b7:e9:f9:5a:22:
+        dc:ae:aa:eb:1d:9a:6d:79:34:3e:e3:51:3b:4c:88:c4:d8:d0:
+        a3:ab:f0:fb:d6:50:df:96:78:ef:46:a4:e1:4b:6e:cf:9b:bb:
+        28:a1:03:cd:0c:80:47:c0:25:61:4f:d1:60:a8:81:cf:d7:ee:
+        16:7b:52:31:49:e9:b5:03:a9:ec:21:e0:e1:01:22:23:76:27:
+        26:0f:47:e4:e0:d8:fe:00:16:0a:0b:f5:f0:c1:4b:35:eb:c4:
+        a2:e7:95:78:8d:4b:b0:91:90:c8:44:35:5a:26:65:c0:fc:5c:
+        c5:63:8e:93
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            01:39:f7:98:f8:7e:3e:2c:d0:3a:9b:d4:30:97:e8:32
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: C=BR, O=SERVICO FEDERAL DE PROCESSAMENTO DE DADOS (SERPRO), CN=AC SERPRO AR46 OV TLS CA 2025
+        Validity
+            Not Before: Sep 24 14:07:05 2026 GMT
+            Not After : Oct  1 14:07:05 2026 GMT
+        Subject: C=BE, O=GlobalSign nv-sa, CN=AC Serpro AR46 OV TLS CA 2025 - OCSP Responder
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (2048 bit)
+                Modulus:
+                    00:9d:72:bf:a1:9b:dc:ec:43:d1:47:c5:7f:7b:53:
+                    91:6b:f1:b4:22:fb:d3:fb:3b:b3:0f:98:58:17:0a:
+                    4c:40:b7:2c:62:f2:aa:5e:fe:44:cd:e6:73:e0:78:
+                    f7:44:f3:28:73:24:28:68:06:c1:7d:ed:25:98:9e:
+                    5b:61:72:e4:a8:ad:4c:fc:4f:87:35:20:5b:52:62:
+                    b3:59:d3:53:26:1e:34:a7:a1:bb:2d:50:bd:59:7d:
+                    c7:2f:09:a3:93:53:91:17:71:de:34:ce:56:5e:a8:
+                    cb:5e:64:fc:ac:fa:3d:01:57:42:df:97:ca:d9:f2:
+                    6e:ff:a5:15:2e:8b:54:f1:7f:a5:c3:cb:c7:7d:53:
+                    fd:7e:cd:c8:fc:31:3e:40:e7:ef:32:3f:24:a7:6c:
+                    67:04:6e:8e:c9:10:46:72:7b:d8:4c:a3:2d:b9:a8:
+                    bb:ed:2f:28:0c:af:31:15:da:a9:37:6a:be:4a:fd:
+                    61:c3:39:98:8a:81:b2:04:2d:41:01:e1:57:bd:21:
+                    35:89:95:f8:68:db:34:b9:2d:35:b4:78:23:e3:c8:
+                    a1:31:6d:d4:13:4d:c2:05:9a:fa:6a:07:a6:24:14:
+                    9a:ae:67:c6:ef:9f:42:64:cb:16:32:50:36:bb:ba:
+                    47:25:72:d4:5d:e3:80:11:02:13:6a:51:fd:95:fc:
+                    9c:e9
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            OCSP No Check: 
+
+            X509v3 Key Usage: critical
+                Digital Signature
+            X509v3 Extended Key Usage: 
+                OCSP Signing
+            X509v3 Subject Key Identifier: 
+                B5:A0:05:13:76:61:B7:1C:91:88:CE:63:E4:CB:AF:6F:36:F6:72:B2
+            X509v3 Basic Constraints: critical
+                CA:FALSE
+            X509v3 Authority Key Identifier: 
+                41:50:99:51:78:E1:75:4E:C1:FF:67:15:E1:2E:D0:B2:23:D4:3D:86
+    Signature Algorithm: sha256WithRSAEncryption
+    Signature Value:
+        95:11:0b:d5:87:fc:a4:c9:64:8c:ad:e8:a3:95:f0:a3:cb:11:
+        4a:3b:4b:31:97:cc:b7:cd:97:be:98:eb:22:2a:23:9c:0b:4b:
+        e4:7e:24:3e:70:8e:b7:31:d2:aa:f7:a9:16:af:05:41:dc:9e:
+        a6:95:fa:84:32:da:61:8c:d7:a0:29:ea:16:d4:b5:86:ab:9d:
+        1f:1c:9d:b5:e5:96:8c:31:aa:b6:9f:ff:48:5a:8a:c1:42:fa:
+        45:cd:5f:45:ed:ae:6c:37:a7:54:07:b4:1b:9c:89:ca:53:51:
+        ab:fa:ad:08:a6:ad:9b:b4:73:6f:d3:0d:f0:f9:d4:90:a2:18:
+        a3:29:77:b4:29:9c:f8:94:ee:98:6e:4b:fc:d2:82:23:dd:d9:
+        3a:62:7e:21:93:5e:aa:d8:aa:29:4c:d5:22:11:9d:a8:e7:3e:
+        e9:fb:f3:ef:79:24:0b:88:a7:d2:a9:7c:2c:91:59:ba:13:d1:
+        a3:3e:7f:b0:95:f6:61:55:90:84:c5:a6:4f:5b:91:76:ce:e7:
+        b8:0e:ee:d9:10:a2:c7:76:54:e0:84:1a:33:c2:8e:18:53:90:
+        e7:e8:5c:21:3c:d1:43:9c:7c:2f:72:8e:54:47:67:56:2c:19:
+        1b:0b:de:54:60:86:39:ae:e8:f6:2e:36:16:20:29:04:be:8a:
+        5f:1e:2b:ac
+-----BEGIN CERTIFICATE-----
+MIID5TCCAs2gAwIBAgIQATn3mPh+PizQOpvUMJfoMjANBgkqhkiG9w0BAQsFADBy
+MQswCQYDVQQGEwJCUjE7MDkGA1UEChMyU0VSVklDTyBGRURFUkFMIERFIFBST0NF
+U1NBTUVOVE8gREUgREFET1MgKFNFUlBSTykxJjAkBgNVBAMTHUFDIFNFUlBSTyBB
+UjQ2IE9WIFRMUyBDQSAyMDI1MB4XDTI2MDkyNDE0MDcwNVoXDTI2MTAwMTE0MDcw
+NVowYTELMAkGA1UEBhMCQkUxGTAXBgNVBAoMEEdsb2JhbFNpZ24gbnYtc2ExNzA1
+BgNVBAMMLkFDIFNlcnBybyBBUjQ2IE9WIFRMUyBDQSAyMDI1IC0gT0NTUCBSZXNw
+b25kZXIwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCdcr+hm9zsQ9FH
+xX97U5Fr8bQi+9P7O7MPmFgXCkxAtyxi8qpe/kTN5nPgePdE8yhzJChoBsF97SWY
+nlthcuSorUz8T4c1IFtSYrNZ01MmHjSnobstUL1ZfccvCaOTU5EXcd40zlZeqMte
+ZPys+j0BV0Lfl8rZ8m7/pRUui1Txf6XDy8d9U/1+zcj8MT5A5+8yPySnbGcEbo7J
+EEZye9hMoy25qLvtLygMrzEV2qk3ar5K/WHDOZiKgbIELUEB4Ve9ITWJlfho2zS5
+LTW0eCPjyKExbdQTTcIFmvpqB6YkFJquZ8bvn0JkyxYyUDa7ukclctRd44ARAhNq
+Uf2V/JzpAgMBAAGjgYcwgYQwDwYJKwYBBQUHMAEFBAIFADAOBgNVHQ8BAf8EBAMC
+B4AwEwYDVR0lBAwwCgYIKwYBBQUHAwkwHQYDVR0OBBYEFLWgBRN2YbcckYjOY+TL
+r2829nKyMAwGA1UdEwEB/wQCMAAwHwYDVR0jBBgwFoAUQVCZUXjhdU7B/2cV4S7Q
+siPUPYYwDQYJKoZIhvcNAQELBQADggEBAJURC9WH/KTJZIyt6KOV8KPLEUo7SzGX
+zLfNl76Y6yIqI5wLS+R+JD5wjrcx0qr3qRavBUHcnqaV+oQy2mGM16Ap6hbUtYar
+nR8cnbXllowxqraf/0haisFC+kXNX0Xtrmw3p1QHtBucicpTUav6rQimrZu0c2/T
+DfD51JCiGKMpd7QpnPiU7phuS/zSgiPd2TpifiGTXqrYqilM1SIRnajnPun78+95
+JAuIp9KpfCyRWboT0aM+f7CV9mFVkITFpk9bkXbO57gO7tkQosd2VOCEGjPCjhhT
+kOfoXCE80UOcfC9yjlRHZ1YsGRsL3lRghjmu6PYuNhYgKQS+il8eK6w=
+-----END CERTIFICATE-----
+
+======================================
+---
+Certificate chain
+ 0 s:C=BR, ST=DISTRITO FEDERAL, L=BRASILIA, O=SERVICO FEDERAL DE PROCESSAMENTO DE DADOS (SERPRO), CN=*.nfse.gov.br
+   i:C=BR, O=SERVICO FEDERAL DE PROCESSAMENTO DE DADOS (SERPRO), CN=AC SERPRO AR46 OV TLS CA 2025
+   a:PKEY: RSA, 2048 (bit); sigalg: sha256WithRSAEncryption
+   v:NotBefore: Sep  4 15:20:43 2026 GMT; NotAfter: Mar 22 15:20:42 2027 GMT
+-----BEGIN CERTIFICATE-----
+MIIG9jCCBd6gAwIBAgIQAYIuUhG1oUIqWDBL1bMjiTANBgkqhkiG9w0BAQsFADBy
+MQswCQYDVQQGEwJCUjE7MDkGA1UEChMyU0VSVklDTyBGRURFUkFMIERFIFBST0NF
+U1NBTUVOVE8gREUgREFET1MgKFNFUlBSTykxJjAkBgNVBAMTHUFDIFNFUlBSTyBB
+UjQ2IE9WIFRMUyBDQSAyMDI1MB4XDTI2MDkwNDE1MjA0M1oXDTI3MDMyMjE1MjA0
+MlowgZAxCzAJBgNVBAYTAkJSMRkwFwYDVQQIDBBESVNUUklUTyBGRURFUkFMMREw
+DwYDVQQHDAhCUkFTSUxJQTE7MDkGA1UECgwyU0VSVklDTyBGRURFUkFMIERFIFBS
+T0NFU1NBTUVOVE8gREUgREFET1MgKFNFUlBSTykxFjAUBgNVBAMMDSoubmZzZS5n
+b3YuYnIwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC85qgqlNuIu8xH
+TQK82kIlU2npLMtCWd1JfH7hdEJhApJzBay6vonBmAh46Z6Ww67NwbXOD8a0QAET
+UP0hog/ikNLCgQ2WQZPx1sYHeWEYWmeIs/Ntbxas6h/WlPi5XMy+J/epTBvbkahX
++nIpKDyP0jH5YGX2jasIvKUN81kyyV1+MOGnacjcHXya+kQrcTgbjUI+DmqlRFFm
+IPbKZGJ+AFV2kWAA818vM5Y8sVmEElpVk808btLBboUjCyRaWCpFwe+Hv1Zr1sj2
+RtlOxvKTbnRyCzXKJsXz0cSPn0AsXP/fF727pqzvXZ+xcuN8JcA0yAfZAGYYLEbs
+wUQd6iONAgMBAAGjggNnMIIDYzAYBgNVHREEETAPgg0qLm5mc2UuZ292LmJyMA4G
+A1UdDwEB/wQEAwIFoDATBgNVHSUEDDAKBggrBgEFBQcDATAdBgNVHQ4EFgQUDL0J
+BnseA/JM1F3/XR7c+JeKeGwwZAYDVR0gBF0wWzAIBgZngQwBAgIwQgYKKwYBBAGg
+MgoBAjA0MDIGCCsGAQUFBwIBFiZodHRwczovL3d3dy5nbG9iYWxzaWduLmNvbS9y
+ZXBvc2l0b3J5LzALBgkrBgEEAaAyARQwDAYDVR0TAQH/BAIwADCBoAYIKwYBBQUH
+AQEEgZMwgZAwQQYIKwYBBQUHMAGGNWh0dHA6Ly9vY3NwLmdsb2JhbHNpZ24uY29t
+L2NhL2Fjc2VycHJvYXI0Nm92dGxzY2EyMDI1MEsGCCsGAQUFBzAChj9odHRwOi8v
+c2VjdXJlLmdsb2JhbHNpZ24uY29tL2NhY2VydC9hY3NlcnByb2FyNDZvdnRsc2Nh
+MjAyNS5jcnQwHwYDVR0jBBgwFoAUQVCZUXjhdU7B/2cV4S7QsiPUPYYwSQYDVR0f
+BEIwQDA+oDygOoY4aHR0cDovL2NybC5nbG9iYWxzaWduLmNvbS9jYS9hY3NlcnBy
+b2FyNDZvdnRsc2NhMjAyNS5jcmwwggF+BgorBgEEAdZ5AgQCBIIBbgSCAWoBaAB3
+AGBMmq96f3dfAdQG/JINyJnrCxx9+MlSG/r6F3c7l4vJAAABoG0CDtoAAAQDAEgw
+RgIhAPEsiPgcaK31olq3Jk9/74EM1JBm/85G/25Mf7Gi4cP6AiEAmzK+3Fz5J4Jw
+6ltUFyeDfnQbriWBA6DmrllVoVjzH2gAdQBMY9yY5Zwdq4j2Hoo93q6Pq0SjN3tf
+m5TD+6Gc/MG+JgAAAaBtAg8ZAAAEAwBGMEQCIDftqOIqhrZbHkIbLSUhNhXsETaH
+NMWZC6i8+6aC71Z1AiBY6XKuKHN3CsLBay5trGdhStCTS8P/42dGVj6KlzKz8QB2
+AByfaCzp+vBFaVD4G5aKh93bMhDYTObIsuOCUkrEz1mfAAABoG0CEDUAAAQDAEcw
+RQIhAJATaNw6ETRPh0oxtTHAL5hArKwsJ4CKXgKtRvZ4keFKAiB2PXzCVRJnd8+m
+G37FM43vOARDbxIwH54GVWPyOAocbTANBgkqhkiG9w0BAQsFAAOCAQEApQrPMW3d
+z11/ZD7T13Lwr7xcQ1xO+4tNVJWpe4zicjZEo8EKnwyTUTjbL23cZZ7SNKRriSsJ
+7uKFCPOojp6MUB0D8BQWO4w+P91LeldyeYKLQXysbM1ySnF6DAPzA6b0VmPn+tjL
+SjL7unjQEp1xMyo3EcjFRDUtVUT6RGambSRLUvxbMUl6+bljPixm47FwCPvdiona
+Jwi2n9m0oXRkJGXl6hgAN0gXGEjGkcpnf4w8lHmCbLT80XSD40z9Zm5OW2MirImF
+SXCf6rYmnEGd4tvpn1ttJeWzvuxYp2R2t6C6I14fUhPvBRxLzIRkUd/+sGwi4fXS
+JGdVOy6dK2x3HQ==
+-----END CERTIFICATE-----
+ 1 s:C=BR, O=SERVICO FEDERAL DE PROCESSAMENTO DE DADOS (SERPRO), CN=AC SERPRO AR46 OV TLS CA 2025
+   i:C=BE, O=GlobalSign nv-sa, CN=GlobalSign Root R46
+   a:PKEY: RSA, 2048 (bit); sigalg: sha256WithRSAEncryption
+   v:NotBefore: Oct 15 03:10:25 2025 GMT; NotAfter: Oct 15 00:00:00 2030 GMT
+-----BEGIN CERTIFICATE-----
+MIIFpzCCA4+gAwIBAgIRAIRx9G2LfAoKwTKl53hyfAswDQYJKoZIhvcNAQELBQAw
+RjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExHDAaBgNV
+BAMTE0dsb2JhbFNpZ24gUm9vdCBSNDYwHhcNMjUxMDE1MDMxMDI1WhcNMzAxMDE1
+MDAwMDAwWjByMQswCQYDVQQGEwJCUjE7MDkGA1UEChMyU0VSVklDTyBGRURFUkFM
+IERFIFBST0NFU1NBTUVOVE8gREUgREFET1MgKFNFUlBSTykxJjAkBgNVBAMTHUFD
+IFNFUlBSTyBBUjQ2IE9WIFRMUyBDQSAyMDI1MIIBIjANBgkqhkiG9w0BAQEFAAOC
+AQ8AMIIBCgKCAQEAyMRQ+shSUPjCphR87q8phTDqKNHDF4vPorY+Fyj6LQw75f6Z
+cv1sGTbeqfNlrvh9hj1ealgKX/EfBnOVUzFzT0r0SoiLrXL7aun+qnIie7jpaTRd
+BuvzSvjfYFVuHs9z+s2iTytmKb1AqJ3NhOvSnrrO6Bz/0ofBjaiwahAQip7SVpdA
+LuZOIckg1cW9tHjJTrJKcgsk6IBSLiCI38Wq7G3v5umngmAzCCUadC3ZMz8e7sHj
+I7GEo/AKG5SPHysNL44SEhzTLU+aywXMQ+n/g4+71KMbJyKoAeHHx0bv1AjLj3QS
+YeG/3caYWlKVLjt7sl882Z7wY9vmlsYcH82jxQIDAQABo4IBYjCCAV4wDgYDVR0P
+AQH/BAQDAgGGMBMGA1UdJQQMMAoGCCsGAQUFBwMBMBIGA1UdEwEB/wQIMAYBAf8C
+AQAwHQYDVR0OBBYEFEFQmVF44XVOwf9nFeEu0LIj1D2GMB8GA1UdIwQYMBaAFANc
+q3OBh6jMsKbVlOI2lkn/BZksMHsGCCsGAQUFBwEBBG8wbTAuBggrBgEFBQcwAYYi
+aHR0cDovL29jc3AuZ2xvYmFsc2lnbi5jb20vcm9vdHI0NjA7BggrBgEFBQcwAoYv
+aHR0cDovL3NlY3VyZS5nbG9iYWxzaWduLmNvbS9jYWNlcnQvcm9vdHI0Ni5jcnQw
+NgYDVR0fBC8wLTAroCmgJ4YlaHR0cDovL2NybC5nbG9iYWxzaWduLmNvbS9yb290
+cjQ2LmNybDAuBgNVHSAEJzAlMAgGBmeBDAECAjAMBgorBgEEAaAyCgECMAsGCSsG
+AQQBoDIBFDANBgkqhkiG9w0BAQsFAAOCAgEAMuKjBsN1ZzTAC+2mPeg0WHz24WGF
+zmR4YZgNAdniTXKZXlCwB7Sdgfx/O7nM0dDKJXvDSHM4U7A7ZIm9Kii1kDAIsi9P
+UQg0uSX002FHw+6//EWxAjYp2SealDrNewpu31SWBwuY6cqwbrlIRaO5meyQL+iN
+ZxNfQX7Xz2q2LJqbn5KXIaYXyUy8QGXWSJR4ezZUMFQK6MY48h8IFjxjh709yQiQ
+wm6UH9pR+uCllCD0yF5GvbaII1MVp3BYud99IOu0Pcl1UPxtDsLPNy6gndm9gwDS
+imc3lE6kzLdVdlDyVM/d5yY5g16OLMgAqdT0NH2rZMviIsanM3Wj8QDx2QFwoa5+
+eN4gc1gCT45oiSzX4yHs61Hve+X9pArxv131lsIg5ycS+MGfF2d9PihcrJxUx0s/
+dk+5Y1b9LUdDQm9VRFhaU3fhCxoTpchNZhPJpVecP7wuc+7DaphfI/y5UIKOh4dr
+NpUPEy65MXw9zz/DOrFK1s4d9iz6Zk9oriZkeQq6Hzs3rQ5IZ4xWSBE6eZXYmuJF
+octVsACXaDuOPSWmSAWnZQWRR/8r6lettq614jWzhFTVtV9lPCcY47r3+owtYqDG
+V4NDxqRf0TrkkbR2kiPh4x1cdM9sjQukc3CkTThHXHQCP9TULHO2cgz2Oys2kBav
+BheS1LHxSa8rZ7o=
+-----END CERTIFICATE-----
+---
+Server certificate
+subject=C=BR, ST=DISTRITO FEDERAL, L=BRASILIA, O=SERVICO FEDERAL DE PROCESSAMENTO DE DADOS (SERPRO), CN=*.nfse.gov.br
+issuer=C=BR, O=SERVICO FEDERAL DE PROCESSAMENTO DE DADOS (SERPRO), CN=AC SERPRO AR46 OV TLS CA 2025
+---
+No client certificate CA names sent
+Peer signing digest: SHA256
+Peer signature type: rsa_pss_rsae_sha256
+Peer Temp Key: ECDH, secp384r1, 384 bits
+---
+SSL handshake has read 5252 bytes and written 1715 bytes
+Verification: OK
+---
+New, TLSv1.2, Cipher is ECDHE-RSA-AES256-GCM-SHA384
+Protocol: TLSv1.2
+Server public key is 2048 bit
+Secure Renegotiation IS supported
+Compression: NONE
+Expansion: NONE
+No ALPN negotiated
+SSL-Session:
+    Protocol  : TLSv1.2
+    Cipher    : ECDHE-RSA-AES256-GCM-SHA384
+    Session-ID: 2A1000009818D76181AD800314CA99118BB8CFAC271E4CCDDF8E8ABDC69B79A3
+    Session-ID-ctx: 
+    Master-Key: F45D43EA79777EB25E42D5C65903C1CD82EC1237AA18F4F637E8F032C015D7A3C4524C7EB0DA26BD7F9D968888BD45F0
+    PSK identity: None
+    PSK identity hint: None
+    SRP username: None
+    Start Time: 1790377999
+    Timeout   : 7200 (sec)
+    Verify return code: 0 (ok)
+    Extended master secret: yes
+---
+
+Connecting to 189.9.84.43
+depth=2 C=BE, O=GlobalSign nv-sa, CN=GlobalSign Root R46
+verify return:1
+depth=1 C=BR, O=SERVICO FEDERAL DE PROCESSAMENTO DE DADOS (SERPRO), CN=AC SERPRO AR46 OV TLS CA 2025
+verify return:1
+depth=0 C=BR, ST=DISTRITO FEDERAL, L=BRASILIA, O=SERVICO FEDERAL DE PROCESSAMENTO DE DADOS (SERPRO), CN=*.nfse.gov.br
+verify return:1
+DONE

@@ -1,0 +1,11 @@
+sinete
+Copyright 2026 FAZER.AI LTDA e os contribuidores do sinete (ver o histórico do git)
+
+Este produto é distribuído sob a Apache License, Version 2.0 (arquivo LICENSE).
+
+O sinete é implementado a partir das especificações oficiais (Manual de Orientação do Contribuinte, Notas Técnicas, schemas XSD e manuais da NFS-e Nacional) publicadas pelos órgãos fazendários, que são documentos públicos. Nenhum código de projetos sob LGPL ou GPL foi copiado ou adaptado.
+
+Componentes de terceiros
+
+- node-forge (https://github.com/digitalbazaar/forge), dependência de runtime do @sinete/cert para ler PKCS#12. É distribuído sob licença dupla "BSD-3-Clause OR GPL-2.0"; o sinete usa o node-forge sob a opção BSD-3-Clause. Ele não é embutido nos pacotes do sinete: é instalado como dependência. Copyright (c) 2010, Digital Bazaar, Inc. Todos os direitos reservados.
+- Logomarca da NFS-e ("Logo - NFS-e - Horizontal.png", https://www.gov.br/nfse/pt-br/biblioteca/documentacao-tecnica/logos-da-nfs-e), embutida no @sinete/da em versão reduzida para o cabeçalho do DANFSe, como exige a NT SE/CGNFS-e 008/2026 (2.4.3). É a marca do Sistema Nacional NFS-e, do Comitê Gestor da NFS-e, e não é coberta pela licença do sinete.

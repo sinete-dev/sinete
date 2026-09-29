@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "lib": ["es2023", "dom"],
+    "types": ["node"],
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "isolatedDeclarations": true,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
+    "declaration": true,
+    "declarationMap": true,
+    "noEmit": true,
+    "skipLibCheck": true
+  }
+}

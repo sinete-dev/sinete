@@ -1,0 +1,4 @@
+# material descartável: CA, chaves de teste, tokens SoftHSM
+.local/
+bin/
+node_modules/

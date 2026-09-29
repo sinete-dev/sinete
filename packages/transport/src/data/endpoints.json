@@ -1,0 +1,1542 @@
+{
+  "$comment": "Gerado por tools/transport-data/build.ts endpoints; não edite à mão.",
+  "schemaVersion": 1,
+  "version": "2026.09.26",
+  "nfe": {
+    "versao": "4.00",
+    "svcSemServicos": {
+      "servicos": ["NfeInutilizacao"],
+      "source": "NT 2013.007 v1.03 (SVC), item 04.5: \"O Serviço de Inutilização (Web Service: NFeInutilizacao) não será oferecido pela SVC\""
+    },
+    "producao": {
+      "source": "https://www.nfe.fazenda.gov.br/portal/webServices.aspx?tipoConteudo=OUC/YVNWZfo=",
+      "retrievedAt": "2026-09-25",
+      "ufMap": {
+        "SVAN": ["MA"],
+        "SVRS": ["AC", "AL", "AP", "CE", "DF", "ES", "PA", "PB", "PI", "RJ", "RN", "RO", "RR", "SC", "SE", "TO"],
+        "SVRS_consultaCadastro": ["AC", "ES", "RN", "PB", "SC"],
+        "SVC-AN": [
+          "AC",
+          "AL",
+          "AP",
+          "CE",
+          "DF",
+          "ES",
+          "MG",
+          "PA",
+          "PB",
+          "PI",
+          "RJ",
+          "RN",
+          "RO",
+          "RR",
+          "RS",
+          "SC",
+          "SE",
+          "SP",
+          "TO"
+        ],
+        "SVC-RS": ["AM", "BA", "GO", "MA", "MS", "MT", "PE", "PR"]
+      },
+      "authorizers": {
+        "AM": {
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.am.gov.br/services2/services/NfeInutilizacao4"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.am.gov.br/services2/services/NfeConsulta4"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.am.gov.br/services2/services/NfeStatusServico4"
+          },
+          "NfeConsultaCadastro": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.am.gov.br/services2/services/CadConsultaCadastro4"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.am.gov.br/services2/services/RecepcaoEvento4"
+          },
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.am.gov.br/services2/services/NfeAutorizacao4"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.am.gov.br/services2/services/NfeRetAutorizacao4"
+          }
+        },
+        "BA": {
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.ba.gov.br/webservices/NFeInutilizacao4/NFeInutilizacao4.asmx"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.ba.gov.br/webservices/NFeConsultaProtocolo4/NFeConsultaProtocolo4.asmx"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.ba.gov.br/webservices/NFeStatusServico4/NFeStatusServico4.asmx"
+          },
+          "NfeConsultaCadastro": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.ba.gov.br/webservices/CadConsultaCadastro4/CadConsultaCadastro4.asmx"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.ba.gov.br/webservices/NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx"
+          },
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.ba.gov.br/webservices/NFeAutorizacao4/NFeAutorizacao4.asmx"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.ba.gov.br/webservices/NFeRetAutorizacao4/NFeRetAutorizacao4.asmx"
+          }
+        },
+        "GO": {
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.go.gov.br/nfe/services/NFeInutilizacao4?wsdl"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.go.gov.br/nfe/services/NFeConsultaProtocolo4?wsdl"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.go.gov.br/nfe/services/NFeStatusServico4?wsdl"
+          },
+          "NfeConsultaCadastro": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.go.gov.br/nfe/services/CadConsultaCadastro4?wsdl"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.go.gov.br/nfe/services/NFeRecepcaoEvento4?wsdl"
+          },
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.go.gov.br/nfe/services/NFeAutorizacao4?wsdl"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.go.gov.br/nfe/services/NFeRetAutorizacao4?wsdl"
+          }
+        },
+        "MG": {
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.fazenda.mg.gov.br/nfe2/services/NFeInutilizacao4"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://nfe.fazenda.mg.gov.br/nfe2/services/NFeConsultaProtocolo4"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://nfe.fazenda.mg.gov.br/nfe2/services/NFeStatusServico4"
+          },
+          "NfeConsultaCadastro": {
+            "versao": "4.00",
+            "url": "https://nfe.fazenda.mg.gov.br/nfe2/services/CadConsultaCadastro4"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://nfe.fazenda.mg.gov.br/nfe2/services/NFeRecepcaoEvento4"
+          },
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.fazenda.mg.gov.br/nfe2/services/NFeAutorizacao4"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.fazenda.mg.gov.br/nfe2/services/NFeRetAutorizacao4"
+          }
+        },
+        "MS": {
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.ms.gov.br/ws/NFeInutilizacao4"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.ms.gov.br/ws/NFeConsultaProtocolo4"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.ms.gov.br/ws/NFeStatusServico4"
+          },
+          "NfeConsultaCadastro": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.ms.gov.br/ws/CadConsultaCadastro4"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.ms.gov.br/ws/NFeRecepcaoEvento4"
+          },
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.ms.gov.br/ws/NFeAutorizacao4"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.ms.gov.br/ws/NFeRetAutorizacao4"
+          }
+        },
+        "MT": {
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.mt.gov.br/nfews/v2/services/NfeInutilizacao4?wsdl"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.mt.gov.br/nfews/v2/services/NfeConsulta4?wsdl"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.mt.gov.br/nfews/v2/services/NfeStatusServico4?wsdl"
+          },
+          "NfeConsultaCadastro": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.mt.gov.br/nfews/v2/services/CadConsultaCadastro4?wsdl"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.mt.gov.br/nfews/v2/services/RecepcaoEvento4?wsdl"
+          },
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.mt.gov.br/nfews/v2/services/NfeAutorizacao4?wsdl"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.mt.gov.br/nfews/v2/services/NfeRetAutorizacao4?wsdl"
+          }
+        },
+        "PE": {
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.pe.gov.br/nfe-service/services/NFeInutilizacao4"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.pe.gov.br/nfe-service/services/NFeConsultaProtocolo4"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.pe.gov.br/nfe-service/services/NFeStatusServico4"
+          },
+          "NfeConsultaCadastro": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.pe.gov.br/nfe-service/services/CadConsultaCadastro4?wsdl"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.pe.gov.br/nfe-service/services/NFeRecepcaoEvento4"
+          },
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.pe.gov.br/nfe-service/services/NFeAutorizacao4"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.pe.gov.br/nfe-service/services/NFeRetAutorizacao4"
+          }
+        },
+        "PR": {
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.sefa.pr.gov.br/nfe/NFeInutilizacao4?wsdl"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://nfe.sefa.pr.gov.br/nfe/NFeConsultaProtocolo4?wsdl"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://nfe.sefa.pr.gov.br/nfe/NFeStatusServico4?wsdl"
+          },
+          "NfeConsultaCadastro": {
+            "versao": "4.00",
+            "url": "https://nfe.sefa.pr.gov.br/nfe/CadConsultaCadastro4?wsdl"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://nfe.sefa.pr.gov.br/nfe/NFeRecepcaoEvento4?wsdl"
+          },
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.sefa.pr.gov.br/nfe/NFeAutorizacao4?wsdl"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.sefa.pr.gov.br/nfe/NFeRetAutorizacao4?wsdl"
+          }
+        },
+        "RS": {
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.sefazrs.rs.gov.br/ws/nfeinutilizacao/nfeinutilizacao4.asmx"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://nfe.sefazrs.rs.gov.br/ws/NfeConsulta/NfeConsulta4.asmx"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://nfe.sefazrs.rs.gov.br/ws/NfeStatusServico/NfeStatusServico4.asmx"
+          },
+          "NfeConsultaCadastro": {
+            "versao": "4.00",
+            "url": "https://cad.svrs.rs.gov.br/ws/cadconsultacadastro/cadconsultacadastro4.asmx"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://nfe.sefazrs.rs.gov.br/ws/recepcaoevento/recepcaoevento4.asmx"
+          },
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.sefazrs.rs.gov.br/ws/NfeAutorizacao/NFeAutorizacao4.asmx"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.sefazrs.rs.gov.br/ws/NfeRetAutorizacao/NFeRetAutorizacao4.asmx"
+          }
+        },
+        "SP": {
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.fazenda.sp.gov.br/ws/nfeinutilizacao4.asmx"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://nfe.fazenda.sp.gov.br/ws/nfeconsultaprotocolo4.asmx"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://nfe.fazenda.sp.gov.br/ws/nfestatusservico4.asmx"
+          },
+          "NfeConsultaCadastro": {
+            "versao": "4.00",
+            "url": "https://nfe.fazenda.sp.gov.br/ws/cadconsultacadastro4.asmx"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://nfe.fazenda.sp.gov.br/ws/nferecepcaoevento4.asmx"
+          },
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.fazenda.sp.gov.br/ws/nfeautorizacao4.asmx"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.fazenda.sp.gov.br/ws/nferetautorizacao4.asmx"
+          }
+        },
+        "SVAN": {
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://www.sefazvirtual.fazenda.gov.br/NFeInutilizacao4/NFeInutilizacao4.asmx"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://www.sefazvirtual.fazenda.gov.br/NFeConsultaProtocolo4/NFeConsultaProtocolo4.asmx"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://www.sefazvirtual.fazenda.gov.br/NFeStatusServico4/NFeStatusServico4.asmx"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://www.sefazvirtual.fazenda.gov.br/NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx"
+          },
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://www.sefazvirtual.fazenda.gov.br/NFeAutorizacao4/NFeAutorizacao4.asmx"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://www.sefazvirtual.fazenda.gov.br/NFeRetAutorizacao4/NFeRetAutorizacao4.asmx"
+          }
+        },
+        "SVRS": {
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.svrs.rs.gov.br/ws/nfeinutilizacao/nfeinutilizacao4.asmx"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://nfe.svrs.rs.gov.br/ws/NfeConsulta/NfeConsulta4.asmx"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://nfe.svrs.rs.gov.br/ws/NfeStatusServico/NfeStatusServico4.asmx"
+          },
+          "NfeConsultaCadastro": {
+            "versao": "4.00",
+            "url": "https://cad.svrs.rs.gov.br/ws/cadconsultacadastro/cadconsultacadastro4.asmx"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://nfe.svrs.rs.gov.br/ws/recepcaoevento/recepcaoevento4.asmx"
+          },
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.svrs.rs.gov.br/ws/NfeAutorizacao/NFeAutorizacao4.asmx"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.svrs.rs.gov.br/ws/NfeRetAutorizacao/NFeRetAutorizacao4.asmx"
+          }
+        },
+        "SVC-AN": {
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://www.sefazvirtual.fazenda.gov.br/NFeConsultaProtocolo4/NFeConsultaProtocolo4.asmx"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://www.sefazvirtual.fazenda.gov.br/NFeStatusServico4/NFeStatusServico4.asmx"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://www.sefazvirtual.fazenda.gov.br/NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx"
+          },
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://www.sefazvirtual.fazenda.gov.br/NFeAutorizacao4/NFeAutorizacao4.asmx"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://www.sefazvirtual.fazenda.gov.br/NFeRetAutorizacao4/NFeRetAutorizacao4.asmx"
+          }
+        },
+        "SVC-RS": {
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://nfe.svrs.rs.gov.br/ws/NfeConsulta/NfeConsulta4.asmx"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://nfe.svrs.rs.gov.br/ws/NfeStatusServico/NfeStatusServico4.asmx"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://nfe.svrs.rs.gov.br/ws/recepcaoevento/recepcaoevento4.asmx"
+          },
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.svrs.rs.gov.br/ws/NfeAutorizacao/NFeAutorizacao4.asmx"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.svrs.rs.gov.br/ws/NfeRetAutorizacao/NFeRetAutorizacao4.asmx"
+          }
+        },
+        "AN": {
+          "NFeDistribuicaoDFe": {
+            "versao": "1.00",
+            "url": "https://www1.nfe.fazenda.gov.br/NFeDistribuicaoDFe/NFeDistribuicaoDFe.asmx"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://www.nfe.fazenda.gov.br/NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx"
+          }
+        }
+      }
+    },
+    "homologacao": {
+      "source": "https://hom.nfe.fazenda.gov.br/PORTAL/webServices.aspx?tipoConteudo=OUC/YVNWZfo=",
+      "retrievedAt": "2026-09-25",
+      "ufMap": {
+        "SVAN": ["MA"],
+        "SVRS": ["AC", "AL", "AP", "CE", "DF", "ES", "PA", "PB", "PI", "RJ", "RN", "RO", "RR", "SC", "SE", "TO"],
+        "SVRS_consultaCadastro": ["AC", "ES", "RN", "PB", "SC"],
+        "SVC-AN": [
+          "AC",
+          "AL",
+          "AP",
+          "CE",
+          "DF",
+          "ES",
+          "MG",
+          "PA",
+          "PB",
+          "RJ",
+          "RN",
+          "RO",
+          "RR",
+          "RS",
+          "SC",
+          "SE",
+          "SP",
+          "TO"
+        ],
+        "SVC-RS": ["AM", "BA", "GO", "MA", "MS", "MT", "PE", "PI", "PR"]
+      },
+      "authorizers": {
+        "AM": {
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://homnfe.sefaz.am.gov.br/services2/services/NfeInutilizacao4"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://homnfe.sefaz.am.gov.br/services2/services/NfeConsulta4"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://homnfe.sefaz.am.gov.br/services2/services/NfeStatusServico4"
+          },
+          "NfeConsultaCadastro": {
+            "versao": "4.00",
+            "url": "https://homnfe.sefaz.am.gov.br/services2/services/CadConsultaCadastro4"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://homnfe.sefaz.am.gov.br/services2/services/RecepcaoEvento4"
+          },
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://homnfe.sefaz.am.gov.br/services2/services/NfeAutorizacao4"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://homnfe.sefaz.am.gov.br/services2/services/NfeRetAutorizacao4"
+          }
+        },
+        "BA": {
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://hnfe.sefaz.ba.gov.br/webservices/NFeInutilizacao4/NFeInutilizacao4.asmx"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://hnfe.sefaz.ba.gov.br/webservices/NFeConsultaProtocolo4/NFeConsultaProtocolo4.asmx"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://hnfe.sefaz.ba.gov.br/webservices/NFeStatusServico4/NFeStatusServico4.asmx"
+          },
+          "NfeConsultaCadastro": {
+            "versao": "4.00",
+            "url": "https://hnfe.sefaz.ba.gov.br/webservices/CadConsultaCadastro4/CadConsultaCadastro4.asmx"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://hnfe.sefaz.ba.gov.br/webservices/NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx"
+          },
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://hnfe.sefaz.ba.gov.br/webservices/NFeAutorizacao4/NFeAutorizacao4.asmx"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://hnfe.sefaz.ba.gov.br/webservices/NFeRetAutorizacao4/NFeRetAutorizacao4.asmx"
+          }
+        },
+        "GO": {
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://homolog.sefaz.go.gov.br/nfe/services/NFeInutilizacao4?wsdl"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://homolog.sefaz.go.gov.br/nfe/services/NFeConsultaProtocolo4?wsdl"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://homolog.sefaz.go.gov.br/nfe/services/NFeStatusServico4?wsdl"
+          },
+          "NfeConsultaCadastro": {
+            "versao": "4.00",
+            "url": "https://homolog.sefaz.go.gov.br/nfe/services/CadConsultaCadastro4?wsdl"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://homolog.sefaz.go.gov.br/nfe/services/NFeRecepcaoEvento4?wsdl"
+          },
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://homolog.sefaz.go.gov.br/nfe/services/NFeAutorizacao4?wsdl"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://homolog.sefaz.go.gov.br/nfe/services/NFeRetAutorizacao4?wsdl"
+          }
+        },
+        "MG": {
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://hnfe.fazenda.mg.gov.br/nfe2/services/NFeInutilizacao4"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://hnfe.fazenda.mg.gov.br/nfe2/services/NFeConsultaProtocolo4"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://hnfe.fazenda.mg.gov.br/nfe2/services/NFeStatusServico4"
+          },
+          "NfeConsultaCadastro": {
+            "versao": "4.00",
+            "url": "https://hnfe.fazenda.mg.gov.br/nfe2/services/CadConsultaCadastro4"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://hnfe.fazenda.mg.gov.br/nfe2/services/NFeRecepcaoEvento4"
+          },
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://hnfe.fazenda.mg.gov.br/nfe2/services/NFeAutorizacao4"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://hnfe.fazenda.mg.gov.br/nfe2/services/NFeRetAutorizacao4"
+          }
+        },
+        "MS": {
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://hom.nfe.sefaz.ms.gov.br/ws/NFeInutilizacao4"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://hom.nfe.sefaz.ms.gov.br/ws/NFeConsultaProtocolo4"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://hom.nfe.sefaz.ms.gov.br/ws/NFeStatusServico4"
+          },
+          "NfeConsultaCadastro": {
+            "versao": "4.00",
+            "url": "https://hom.nfe.sefaz.ms.gov.br/ws/CadConsultaCadastro4"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://hom.nfe.sefaz.ms.gov.br/ws/NFeRecepcaoEvento4"
+          },
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://hom.nfe.sefaz.ms.gov.br/ws/NFeAutorizacao4"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://hom.nfe.sefaz.ms.gov.br/ws/NFeRetAutorizacao4"
+          }
+        },
+        "MT": {
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://homologacao.sefaz.mt.gov.br/nfews/v2/services/NfeInutilizacao4?wsdl"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://homologacao.sefaz.mt.gov.br/nfews/v2/services/NfeConsulta4?wsdl"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://homologacao.sefaz.mt.gov.br/nfews/v2/services/NfeStatusServico4?wsdl"
+          },
+          "NfeConsultaCadastro": {
+            "versao": "4.00",
+            "url": "https://homologacao.sefaz.mt.gov.br/nfews/v2/services/CadConsultaCadastro4?wsdl"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://homologacao.sefaz.mt.gov.br/nfews/v2/services/RecepcaoEvento4?wsdl"
+          },
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://homologacao.sefaz.mt.gov.br/nfews/v2/services/NfeAutorizacao4?wsdl"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://homologacao.sefaz.mt.gov.br/nfews/v2/services/NfeRetAutorizacao4?wsdl"
+          }
+        },
+        "PE": {
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://nfehomolog.sefaz.pe.gov.br/nfe-service/services/NFeInutilizacao4?wsdl"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://nfehomolog.sefaz.pe.gov.br/nfe-service/services/NFeConsultaProtocolo4?wsdl"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://nfehomolog.sefaz.pe.gov.br/nfe-service/services/NFeStatusServico4?wsdl"
+          },
+          "NfeConsultaCadastro": {
+            "versao": "4.00",
+            "url": "https://nfehomolog.sefaz.pe.gov.br/nfe-service/services/CadConsultaCadastro4?wsdl"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://nfehomolog.sefaz.pe.gov.br/nfe-service/services/NFeRecepcaoEvento4?wsdl"
+          },
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfehomolog.sefaz.pe.gov.br/nfe-service/services/NFeAutorizacao4?wsdl"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfehomolog.sefaz.pe.gov.br/nfe-service/services/NFeRetAutorizacao4?wsdl"
+          }
+        },
+        "PR": {
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://homologacao.nfe.sefa.pr.gov.br/nfe/NFeInutilizacao4?wsdl"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://homologacao.nfe.sefa.pr.gov.br/nfe/NFeConsultaProtocolo4?wsdl"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://homologacao.nfe.sefa.pr.gov.br/nfe/NFeStatusServico4?wsdl"
+          },
+          "NfeConsultaCadastro": {
+            "versao": "4.00",
+            "url": "https://homologacao.nfe.sefa.pr.gov.br/nfe/CadConsultaCadastro4?wsdl"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://homologacao.nfe.sefa.pr.gov.br/nfe/NFeRecepcaoEvento4?wsdl"
+          },
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://homologacao.nfe.sefa.pr.gov.br/nfe/NFeAutorizacao4?wsdl"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://homologacao.nfe.sefa.pr.gov.br/nfe/NFeRetAutorizacao4?wsdl"
+          }
+        },
+        "RS": {
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://nfe-homologacao.sefazrs.rs.gov.br/ws/nfeinutilizacao/nfeinutilizacao4.asmx"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://nfe-homologacao.sefazrs.rs.gov.br/ws/NfeConsulta/NfeConsulta4.asmx"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://nfe-homologacao.sefazrs.rs.gov.br/ws/NfeStatusServico/NfeStatusServico4.asmx"
+          },
+          "NfeConsultaCadastro": {
+            "versao": "4.00",
+            "url": "https://cad-homologacao.svrs.rs.gov.br/ws/cadconsultacadastro/cadconsultacadastro4.asmx"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://nfe-homologacao.sefazrs.rs.gov.br/ws/recepcaoevento/recepcaoevento4.asmx"
+          },
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe-homologacao.sefazrs.rs.gov.br/ws/NfeAutorizacao/NFeAutorizacao4.asmx"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe-homologacao.sefazrs.rs.gov.br/ws/NfeRetAutorizacao/NFeRetAutorizacao4.asmx"
+          }
+        },
+        "SP": {
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://homologacao.nfe.fazenda.sp.gov.br/ws/nfeinutilizacao4.asmx"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://homologacao.nfe.fazenda.sp.gov.br/ws/nfeconsultaprotocolo4.asmx"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://homologacao.nfe.fazenda.sp.gov.br/ws/nfestatusservico4.asmx"
+          },
+          "NfeConsultaCadastro": {
+            "versao": "4.00",
+            "url": "https://homologacao.nfe.fazenda.sp.gov.br/ws/cadconsultacadastro4.asmx"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://homologacao.nfe.fazenda.sp.gov.br/ws/nferecepcaoevento4.asmx"
+          },
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://homologacao.nfe.fazenda.sp.gov.br/ws/nfeautorizacao4.asmx"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://homologacao.nfe.fazenda.sp.gov.br/ws/nferetautorizacao4.asmx"
+          }
+        },
+        "SVAN": {
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://hom.sefazvirtual.fazenda.gov.br/NFeInutilizacao4/NFeInutilizacao4.asmx"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://hom.sefazvirtual.fazenda.gov.br/NFeConsultaProtocolo4/NFeConsultaProtocolo4.asmx"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://hom.sefazvirtual.fazenda.gov.br/NFeStatusServico4/NFeStatusServico4.asmx"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://hom.sefazvirtual.fazenda.gov.br/NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx"
+          },
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://hom.sefazvirtual.fazenda.gov.br/NFeAutorizacao4/NFeAutorizacao4.asmx"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://hom.sefazvirtual.fazenda.gov.br/NFeRetAutorizacao4/NFeRetAutorizacao4.asmx"
+          }
+        },
+        "SVRS": {
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://nfe-homologacao.svrs.rs.gov.br/ws/nfeinutilizacao/nfeinutilizacao4.asmx"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://nfe-homologacao.svrs.rs.gov.br/ws/NfeConsulta/NfeConsulta4.asmx"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://nfe-homologacao.svrs.rs.gov.br/ws/NfeStatusServico/NfeStatusServico4.asmx"
+          },
+          "NfeConsultaCadastro": {
+            "versao": "4.00",
+            "url": "https://cad-homologacao.svrs.rs.gov.br/ws/cadconsultacadastro/cadconsultacadastro4.asmx"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://nfe-homologacao.svrs.rs.gov.br/ws/recepcaoevento/recepcaoevento4.asmx"
+          },
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe-homologacao.svrs.rs.gov.br/ws/NfeAutorizacao/NFeAutorizacao4.asmx"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe-homologacao.svrs.rs.gov.br/ws/NfeRetAutorizacao/NFeRetAutorizacao4.asmx"
+          }
+        },
+        "SVC-AN": {
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://hom.sefazvirtual.fazenda.gov.br/NFeConsultaProtocolo4/NFeConsultaProtocolo4.asmx"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://hom.sefazvirtual.fazenda.gov.br/NFeStatusServico4/NFeStatusServico4.asmx"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://hom.sefazvirtual.fazenda.gov.br/NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx"
+          },
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://hom.sefazvirtual.fazenda.gov.br/NFeAutorizacao4/NFeAutorizacao4.asmx"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://hom.sefazvirtual.fazenda.gov.br/NFeRetAutorizacao4/NFeRetAutorizacao4.asmx"
+          }
+        },
+        "SVC-RS": {
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://nfe-homologacao.svrs.rs.gov.br/ws/NfeConsulta/NfeConsulta4.asmx"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://nfe-homologacao.svrs.rs.gov.br/ws/NfeStatusServico/NfeStatusServico4.asmx"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://nfe-homologacao.svrs.rs.gov.br/ws/recepcaoevento/recepcaoevento4.asmx"
+          },
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe-homologacao.svrs.rs.gov.br/ws/NfeAutorizacao/NFeAutorizacao4.asmx"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe-homologacao.svrs.rs.gov.br/ws/NfeRetAutorizacao/NFeRetAutorizacao4.asmx"
+          }
+        },
+        "AN": {
+          "NFeDistribuicaoDFe": {
+            "versao": "1.00",
+            "url": "https://hom1.nfe.fazenda.gov.br/NFeDistribuicaoDFe/NFeDistribuicaoDFe.asmx"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://hom1.nfe.fazenda.gov.br/NFeRecepcaoEvento4/NFeRecepcaoEvento4.asmx"
+          }
+        }
+      }
+    }
+  },
+  "mdfe": {
+    "versao": "3.00",
+    "autorizador": "SVRS",
+    "source": "https://dfe-portal.svrs.rs.gov.br/Mdfe/Servicos",
+    "retrievedAt": "2026-09-25",
+    "producao": {
+      "MDFeRecepcaoEvento": {
+        "versao": "3.00",
+        "url": "https://mdfe.svrs.rs.gov.br/ws/MDFeRecepcaoEvento/MDFeRecepcaoEvento.asmx"
+      },
+      "MDFeConsulta": {
+        "versao": "3.00",
+        "url": "https://mdfe.svrs.rs.gov.br/ws/MDFeConsulta/MDFeConsulta.asmx"
+      },
+      "MDFeStatusServico": {
+        "versao": "3.00",
+        "url": "https://mdfe.svrs.rs.gov.br/ws/MDFeStatusServico/MDFeStatusServico.asmx"
+      },
+      "MDFeConsNaoEnc": {
+        "versao": "3.00",
+        "url": "https://mdfe.svrs.rs.gov.br/ws/MDFeConsNaoEnc/MDFeConsNaoEnc.asmx"
+      },
+      "MDFeDistribuicaoDFe": {
+        "versao": "1.00",
+        "url": "https://mdfe.svrs.rs.gov.br/ws/MDFeDistribuicaoDFe/MDFeDistribuicaoDFe.asmx"
+      },
+      "MDFeRecepcaoSinc": {
+        "versao": "3.00",
+        "url": "https://mdfe.svrs.rs.gov.br/ws/MDFeRecepcaoSinc/MDFeRecepcaoSinc.asmx"
+      }
+    },
+    "homologacao": {
+      "MDFeRecepcaoEvento": {
+        "versao": "3.00",
+        "url": "https://mdfe-homologacao.svrs.rs.gov.br/ws/MDFeRecepcaoEvento/MDFeRecepcaoEvento.asmx"
+      },
+      "MDFeConsulta": {
+        "versao": "3.00",
+        "url": "https://mdfe-homologacao.svrs.rs.gov.br/ws/MDFeConsulta/MDFeConsulta.asmx"
+      },
+      "MDFeStatusServico": {
+        "versao": "3.00",
+        "url": "https://mdfe-homologacao.svrs.rs.gov.br/ws/MDFeStatusServico/MDFeStatusServico.asmx"
+      },
+      "MDFeConsNaoEnc": {
+        "versao": "3.00",
+        "url": "https://mdfe-homologacao.svrs.rs.gov.br/ws/MDFeConsNaoEnc/MDFeConsNaoEnc.asmx"
+      },
+      "MDFeDistribuicaoDFe": {
+        "versao": "1.00",
+        "url": "https://mdfe-homologacao.svrs.rs.gov.br/ws/MDFeDistribuicaoDFe/MDFeDistribuicaoDFe.asmx"
+      },
+      "MDFeRecepcaoSinc": {
+        "versao": "3.00",
+        "url": "https://mdfe-homologacao.svrs.rs.gov.br/ws/MDFeRecepcaoSinc/MDFeRecepcaoSinc.asmx"
+      }
+    }
+  },
+  "nfce": {
+    "versao": "4.00",
+    "source": "https://dfe-portal.svrs.rs.gov.br/Nfce/Servicos",
+    "sources": {
+      "MG": "https://portalsped.fazenda.mg.gov.br/spedmg/nfce/web-services/"
+    },
+    "retrievedAt": "2026-09-26",
+    "ufMapRule": "UF sem autorizador próprio na relação da SVRS nem na da SEF/MG autoriza a NFC-e na SVRS",
+    "consultasSource": "https://portalsped.fazenda.mg.gov.br/spedmg/nfce/web-services/",
+    "producao": {
+      "ufMap": {
+        "SVRS": [
+          "AC",
+          "AL",
+          "AP",
+          "BA",
+          "CE",
+          "DF",
+          "ES",
+          "MA",
+          "PA",
+          "PB",
+          "PE",
+          "PI",
+          "RJ",
+          "RN",
+          "RO",
+          "RR",
+          "SC",
+          "SE",
+          "TO"
+        ]
+      },
+      "authorizers": {
+        "AM": {
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfce.sefaz.am.gov.br/nfce-services/services/NfeAutorizacao4"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfce.sefaz.am.gov.br/nfce-services/services/NfeRetAutorizacao4"
+          },
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://nfce.sefaz.am.gov.br/nfce-services/services/NfeInutilizacao4"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://nfce.sefaz.am.gov.br/nfce-services/services/NfeConsulta4"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://nfce.sefaz.am.gov.br/nfce-services/services/NfeStatusServico4"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://nfce.sefaz.am.gov.br/nfce-services/services/RecepcaoEvento4"
+          }
+        },
+        "GO": {
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.go.gov.br/nfe/services/NFeAutorizacao4"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.go.gov.br/nfe/services/NFeRetAutorizacao4"
+          },
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.go.gov.br/nfe/services/NFeInutilizacao4"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.go.gov.br/nfe/services/NFeConsultaProtocolo4"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.go.gov.br/nfe/services/NFeStatusServico4"
+          },
+          "NfeConsultaCadastro": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.go.gov.br/nfe/services/CadConsultaCadastro4"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.go.gov.br/nfe/services/NFeRecepcaoEvento4"
+          }
+        },
+        "MS": {
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfce.sefaz.ms.gov.br/ws/NFeAutorizacao4"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfce.sefaz.ms.gov.br/ws/NFeRetAutorizacao4"
+          },
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://nfce.sefaz.ms.gov.br/ws/NFeInutilizacao4"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://nfce.sefaz.ms.gov.br/ws/NFeConsultaProtocolo4"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://nfce.sefaz.ms.gov.br/ws/NFeStatusServico4"
+          },
+          "NfeConsultaCadastro": {
+            "versao": "4.00",
+            "url": "https://nfe.sefaz.ms.gov.br/ws/CadConsultaCadastro4"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://nfce.sefaz.ms.gov.br/ws/NFeRecepcaoEvento4"
+          }
+        },
+        "MT": {
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfce.sefaz.mt.gov.br/nfcews/services/NfeAutorizacao4"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfce.sefaz.mt.gov.br/nfcews/services/NfeRetAutorizacao4"
+          },
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://nfce.sefaz.mt.gov.br/nfcews/services/NfeInutilizacao4"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://nfce.sefaz.mt.gov.br/nfcews/services/NfeConsulta4"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://nfce.sefaz.mt.gov.br/nfcews/services/NfeStatusServico4"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://nfce.sefaz.mt.gov.br/nfcews/services/RecepcaoEvento4"
+          }
+        },
+        "PR": {
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfce.sefa.pr.gov.br/nfce/NFeAutorizacao4"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfce.sefa.pr.gov.br/nfce/NFeRetAutorizacao4"
+          },
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://nfce.sefa.pr.gov.br/nfce/NFeInutilizacao4"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://nfce.sefa.pr.gov.br/nfce/NFeConsultaProtocolo4"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://nfce.sefa.pr.gov.br/nfce/NFeStatusServico4"
+          },
+          "NfeConsultaCadastro": {
+            "versao": "4.00",
+            "url": "https://nfce.sefa.pr.gov.br/nfce/CadConsultaCadastro4"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://nfce.sefa.pr.gov.br/nfce/NFeRecepcaoEvento4"
+          }
+        },
+        "RS": {
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfce.sefazrs.rs.gov.br/ws/NfeAutorizacao/NFeAutorizacao4.asmx"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfce.sefazrs.rs.gov.br/ws/NfeRetAutorizacao/NFeRetAutorizacao4.asmx"
+          },
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://nfce.sefazrs.rs.gov.br/ws/nfeinutilizacao/nfeinutilizacao4.asmx"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://nfce.sefazrs.rs.gov.br/ws/NfeConsulta/NfeConsulta4.asmx"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://nfce.sefazrs.rs.gov.br/ws/NfeStatusServico/NfeStatusServico4.asmx"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://nfce.sefazrs.rs.gov.br/ws/recepcaoevento/recepcaoevento4.asmx"
+          }
+        },
+        "SP": {
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfce.fazenda.sp.gov.br/ws/NFeAutorizacao4.asmx"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfce.fazenda.sp.gov.br/ws/NFeRetAutorizacao4.asmx"
+          },
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://nfce.fazenda.sp.gov.br/ws/NFeInutilizacao4.asmx"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://nfce.fazenda.sp.gov.br/ws/NFeConsultaProtocolo4.asmx"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://nfce.fazenda.sp.gov.br/ws/NFeStatusServico4.asmx"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://nfce.fazenda.sp.gov.br/ws/NFeRecepcaoEvento4.asmx"
+          }
+        },
+        "SVRS": {
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfce.svrs.rs.gov.br/ws/NfeAutorizacao/NFeAutorizacao4.asmx"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfce.svrs.rs.gov.br/ws/NfeRetAutorizacao/NFeRetAutorizacao4.asmx"
+          },
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://nfce.svrs.rs.gov.br/ws/nfeinutilizacao/nfeinutilizacao4.asmx"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://nfce.svrs.rs.gov.br/ws/NfeConsulta/NfeConsulta4.asmx"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://nfce.svrs.rs.gov.br/ws/NfeStatusServico/NfeStatusServico4.asmx"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://nfce.svrs.rs.gov.br/ws/recepcaoevento/recepcaoevento4.asmx"
+          }
+        },
+        "MG": {
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://nfce.fazenda.mg.gov.br/nfce/services/NFeRecepcaoEvento4"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://nfce.fazenda.mg.gov.br/nfce/services/NFeConsultaProtocolo4"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://nfce.fazenda.mg.gov.br/nfce/services/NFeStatusServico4"
+          },
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://nfce.fazenda.mg.gov.br/nfce/services/NFeInutilizacao4"
+          },
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfce.fazenda.mg.gov.br/nfce/services/NFeAutorizacao4"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfce.fazenda.mg.gov.br/nfce/services/NFeRetAutorizacao4"
+          }
+        }
+      },
+      "consultas": {
+        "MG": {
+          "qrCode": "https://portalsped.fazenda.mg.gov.br/portalnfce/sistema/qrcode.xhtml",
+          "consultaChave": "https://portalsped.fazenda.mg.gov.br/portalnfce"
+        }
+      }
+    },
+    "homologacao": {
+      "ufMap": {
+        "SVRS": [
+          "AC",
+          "AL",
+          "AP",
+          "BA",
+          "CE",
+          "DF",
+          "ES",
+          "MA",
+          "PA",
+          "PB",
+          "PE",
+          "PI",
+          "RJ",
+          "RN",
+          "RO",
+          "RR",
+          "SC",
+          "SE",
+          "TO"
+        ]
+      },
+      "authorizers": {
+        "AM": {
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://homnfce.sefaz.am.gov.br/nfce-services/services/NfeAutorizacao4"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://homnfce.sefaz.am.gov.br/nfce-services/services/NfeRetAutorizacao4"
+          },
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://homnfce.sefaz.am.gov.br/nfce-services/services/NfeInutilizacao4"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://homnfce.sefaz.am.gov.br/nfce-services/services/NfeConsulta4"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://homnfce.sefaz.am.gov.br/nfce-services/services/NfeStatusServico4"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://homnfce.sefaz.am.gov.br/nfce-services/services/RecepcaoEvento4"
+          }
+        },
+        "GO": {
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://homolog.sefaz.go.gov.br/nfe/services/NFeAutorizacao4"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://homolog.sefaz.go.gov.br/nfe/services/NFeRetAutorizacao4"
+          },
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://homolog.sefaz.go.gov.br/nfe/services/NFeInutilizacao4"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://homolog.sefaz.go.gov.br/nfe/services/NFeConsultaProtocolo4"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://homolog.sefaz.go.gov.br/nfe/services/NFeStatusServico4"
+          },
+          "NfeConsultaCadastro": {
+            "versao": "4.00",
+            "url": "https://homolog.sefaz.go.gov.br/nfe/services/CadConsultaCadastro4"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://homolog.sefaz.go.gov.br/nfe/services/NFeRecepcaoEvento4"
+          }
+        },
+        "MS": {
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://hom.nfce.sefaz.ms.gov.br/ws/NFeAutorizacao4"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://hom.nfce.sefaz.ms.gov.br/ws/NFeRetAutorizacao4"
+          },
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://hom.nfce.sefaz.ms.gov.br/ws/NFeInutilizacao4"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://hom.nfce.sefaz.ms.gov.br/ws/NFeConsultaProtocolo4"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://hom.nfce.sefaz.ms.gov.br/ws/NFeStatusServico4"
+          },
+          "NfeConsultaCadastro": {
+            "versao": "4.00",
+            "url": "https://hom.nfe.sefaz.ms.gov.br/ws/CadConsultaCadastro4"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://hom.nfce.sefaz.ms.gov.br/ws/NFeRecepcaoEvento4"
+          }
+        },
+        "MT": {
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://homologacao.sefaz.mt.gov.br/nfcews/services/NfeAutorizacao4"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://homologacao.sefaz.mt.gov.br/nfcews/services/NfeRetAutorizacao4"
+          },
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://homologacao.sefaz.mt.gov.br/nfcews/services/NfeInutilizacao4"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://homologacao.sefaz.mt.gov.br/nfcews/services/NfeConsulta4"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://homologacao.sefaz.mt.gov.br/nfcews/services/NfeStatusServico4"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://homologacao.sefaz.mt.gov.br/nfcews/services/RecepcaoEvento4"
+          }
+        },
+        "PR": {
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://homologacao.nfce.sefa.pr.gov.br/nfce/NFeAutorizacao4"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://homologacao.nfce.sefa.pr.gov.br/nfce/NFeRetAutorizacao4"
+          },
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://homologacao.nfce.sefa.pr.gov.br/nfce/NFeInutilizacao4"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://homologacao.nfce.sefa.pr.gov.br/nfce/NFeConsultaProtocolo4"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://homologacao.nfce.sefa.pr.gov.br/nfce/NFeStatusServico4"
+          },
+          "NfeConsultaCadastro": {
+            "versao": "4.00",
+            "url": "https://homologacao.nfce.sefa.pr.gov.br/nfce/CadConsultaCadastro4"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://homologacao.nfce.sefa.pr.gov.br/nfce/NFeRecepcaoEvento4"
+          }
+        },
+        "RS": {
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfce-homologacao.sefazrs.rs.gov.br/ws/NfeAutorizacao/NFeAutorizacao4.asmx"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfce-homologacao.sefazrs.rs.gov.br/ws/NfeRetAutorizacao/NFeRetAutorizacao4.asmx"
+          },
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://nfce-homologacao.sefazrs.rs.gov.br/ws/nfeinutilizacao/nfeinutilizacao4.asmx"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://nfce-homologacao.sefazrs.rs.gov.br/ws/NfeConsulta/NfeConsulta4.asmx"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://nfce-homologacao.sefazrs.rs.gov.br/ws/NfeStatusServico/NfeStatusServico4.asmx"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://nfce-homologacao.sefazrs.rs.gov.br/ws/recepcaoevento/recepcaoevento4.asmx"
+          }
+        },
+        "SP": {
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://homologacao.nfce.fazenda.sp.gov.br/ws/NFeAutorizacao4.asmx"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://homologacao.nfce.fazenda.sp.gov.br/ws/NFeRetAutorizacao4.asmx"
+          },
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://homologacao.nfce.fazenda.sp.gov.br/ws/NFeInutilizacao4.asmx"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://homologacao.nfce.fazenda.sp.gov.br/ws/NFeConsultaProtocolo4.asmx"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://homologacao.nfce.fazenda.sp.gov.br/ws/NFeStatusServico4.asmx"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://homologacao.nfce.fazenda.sp.gov.br/ws/NFeRecepcaoEvento4.asmx"
+          }
+        },
+        "SVRS": {
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfce-homologacao.svrs.rs.gov.br/ws/NfeAutorizacao/NFeAutorizacao4.asmx"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://nfce-homologacao.svrs.rs.gov.br/ws/NfeRetAutorizacao/NFeRetAutorizacao4.asmx"
+          },
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://nfce-homologacao.svrs.rs.gov.br/ws/nfeinutilizacao/nfeinutilizacao4.asmx"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://nfce-homologacao.svrs.rs.gov.br/ws/NfeConsulta/NfeConsulta4.asmx"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://nfce-homologacao.svrs.rs.gov.br/ws/NfeStatusServico/NfeStatusServico4.asmx"
+          },
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://nfce-homologacao.svrs.rs.gov.br/ws/recepcaoevento/recepcaoevento4.asmx"
+          }
+        },
+        "MG": {
+          "RecepcaoEvento": {
+            "versao": "4.00",
+            "url": "https://hnfce.fazenda.mg.gov.br/nfce/services/NFeRecepcaoEvento4"
+          },
+          "NfeConsultaProtocolo": {
+            "versao": "4.00",
+            "url": "https://hnfce.fazenda.mg.gov.br/nfce/services/NFeConsultaProtocolo4"
+          },
+          "NfeStatusServico": {
+            "versao": "4.00",
+            "url": "https://hnfce.fazenda.mg.gov.br/nfce/services/NFeStatusServico4"
+          },
+          "NfeInutilizacao": {
+            "versao": "4.00",
+            "url": "https://hnfce.fazenda.mg.gov.br/nfce/services/NFeInutilizacao4"
+          },
+          "NFeAutorizacao": {
+            "versao": "4.00",
+            "url": "https://hnfce.fazenda.mg.gov.br/nfce/services/NFeAutorizacao4"
+          },
+          "NFeRetAutorizacao": {
+            "versao": "4.00",
+            "url": "https://hnfce.fazenda.mg.gov.br/nfce/services/NFeRetAutorizacao4"
+          }
+        }
+      },
+      "consultas": {
+        "MG": {
+          "qrCode": "https://portalsped.fazenda.mg.gov.br/portalnfce/sistema/qrcode.xhtml",
+          "consultaChave": "https://hportalsped.fazenda.mg.gov.br/portalnfce"
+        }
+      }
+    }
+  },
+  "nfse": {
+    "source": "https://www.gov.br/nfse/pt-br/biblioteca/documentacao-tecnica/apis-prod-restrita-e-producao",
+    "sourceUpdatedAt": "2026-08-20",
+    "retrievedAt": "2026-09-25",
+    "producaoRestrita": {
+      "sefin": "https://sefin.producaorestrita.nfse.gov.br/API/SefinNacional",
+      "adn": "https://adn.producaorestrita.nfse.gov.br",
+      "adnContribuintes": "https://adn.producaorestrita.nfse.gov.br/contribuintes",
+      "parametrizacao": "https://adn.producaorestrita.nfse.gov.br/parametrizacao",
+      "cnc": "https://adn.producaorestrita.nfse.gov.br/cnc"
+    },
+    "producao": {
+      "sefin": "https://sefin.nfse.gov.br/SefinNacional",
+      "adn": "https://adn.nfse.gov.br",
+      "adnContribuintes": "https://adn.nfse.gov.br/contribuintes",
+      "parametrizacao": "https://adn.nfse.gov.br/parametrizacao",
+      "cnc": "https://adn.nfse.gov.br/cnc"
+    }
+  }
+}

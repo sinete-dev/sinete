@@ -1,0 +1,15 @@
+{
+  "name": "@sinete/tool-homologacao",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Validação dos pacotes publicados contra a SEFAZ de homologação com o certificado real do operador: status, consultas, uma autorização e o sinete doctor, atrás de uma allowlist fechada de hosts de homologação",
+  "license": "Apache-2.0",
+  "type": "module",
+  "dependencies": {
+    "@sinete/cert": "workspace:^",
+    "@sinete/cli": "workspace:^",
+    "@sinete/core": "workspace:^",
+    "@sinete/nfe": "workspace:^",
+    "@sinete/transport": "workspace:^"
+  }
+}

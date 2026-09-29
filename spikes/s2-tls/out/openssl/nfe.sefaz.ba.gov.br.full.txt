@@ -1,0 +1,357 @@
+CONNECTED(00000005)
+OCSP response: 
+======================================
+OCSP Response Data:
+    OCSP Response Status: successful (0x0)
+    Response Type: Basic OCSP Response
+    Version: 1 (0x0)
+    Responder Id: C = BR, O = ICP-Brasil, OU = Autoridade Certificadora Raiz Brasileira v10, CN = AC Certisign ICP-Brasil SSL EV G4
+    Produced At: Sep 25 23:06:18 2026 GMT
+    Responses:
+    Certificate ID:
+      Hash Algorithm: sha1
+      Issuer Name Hash: 2555B8DB88D609FBCE1425EB39564F8643FD3AD0
+      Issuer Key Hash: 1749D346B869A42E3F09834E148D493E90D50C28
+      Serial Number: 453FD7EC5544BB59E22E8A641C8A1A51
+    Cert Status: good
+    This Update: Sep 25 23:06:18 2026 GMT
+    Next Update: Sep 25 23:36:18 2026 GMT
+
+    Signature Algorithm: sha256WithRSAEncryption
+    Signature Value:
+        5b:87:b3:4f:68:8d:f6:ab:f4:f5:94:00:ed:78:68:8e:96:94:
+        38:a3:71:c2:ab:89:8d:5a:de:1b:e4:22:47:15:6a:1b:22:8d:
+        76:b6:3b:86:47:c0:36:a2:d9:39:ab:1b:7e:40:be:e7:05:8c:
+        17:c2:89:01:57:7d:41:a6:40:98:57:04:ab:06:0f:97:a8:cf:
+        fa:1b:3c:53:0d:1f:77:72:ef:95:23:4b:33:ae:4d:c4:a7:7a:
+        bc:69:52:19:78:cf:f2:6d:a5:1a:84:e3:91:18:b3:bf:aa:a8:
+        f5:7d:89:f6:41:73:e8:27:98:3f:f4:2f:be:46:cf:c7:ba:94:
+        38:ac:9e:35:70:16:04:c4:88:f7:00:33:48:bb:a3:11:4b:57:
+        05:e6:21:05:5d:2d:98:d3:4c:5c:d2:e7:b8:c3:7d:7f:d7:f3:
+        ee:8a:bf:13:78:fb:bb:dc:34:6a:53:6e:2a:17:07:c7:3e:e1:
+        93:32:c7:f1:95:52:c7:ea:06:c9:3d:4f:c9:82:60:06:4b:a2:
+        11:16:ca:a8:af:2e:b1:34:58:24:1e:f5:74:f8:0f:a9:22:e5:
+        45:b2:1f:45:ad:00:94:99:16:d6:23:74:ea:fb:66:79:b5:cc:
+        73:bb:cd:fd:75:57:2b:d4:63:e8:f9:24:0b:6d:9c:53:e7:b7:
+        69:25:d9:16:b0:9f:55:69:7d:35:00:a5:f6:b2:7b:2c:fe:9b:
+        8e:55:04:94:6f:47:0f:67:aa:57:ca:b7:4b:e7:18:71:b5:29:
+        3e:f0:b4:66:a8:81:35:e0:2c:ba:63:bc:b0:da:c4:f1:c2:33:
+        b8:a2:f1:d0:20:46:10:c9:b1:5c:55:9c:b4:f6:ce:a3:6a:ce:
+        75:50:15:16:c3:63:a9:22:97:0a:95:0a:e3:91:d5:f4:f3:72:
+        23:e9:81:76:55:be:38:89:10:c6:18:de:c2:4e:5e:32:71:31:
+        b9:db:aa:b2:18:92:44:05:16:bc:f4:b9:85:6d:59:dd:c1:48:
+        97:5f:b8:1c:db:72:2e:3a:51:03:08:9f:84:a0:38:91:68:6a:
+        eb:e2:0b:ff:95:76:16:ba:38:48:f0:1d:87:b5:33:51:3d:cf:
+        85:1b:72:a3:ec:0f:d2:c6:1e:0a:73:b8:55:31:96:0f:e8:e1:
+        d5:35:61:ca:83:13:73:cc:9a:f5:83:76:89:e1:29:e4:ab:dd:
+        16:3c:4c:68:2f:76:5a:90:c8:09:f4:02:3d:f1:e2:db:61:5c:
+        24:5d:25:bf:9c:2d:b1:d5:4d:52:ff:f5:12:ee:18:c0:16:ac:
+        e0:49:45:c4:ef:fc:4a:c4:55:bc:f2:bb:66:d5:90:ec:b7:34:
+        59:59:05:8c:ae:1c:3e:07
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            f6:17:b9:09:02:e0:bf:51
+        Signature Algorithm: sha512WithRSAEncryption
+        Issuer: C=BR, O=ICP-Brasil, OU=Instituto Nacional de Tecnologia da Informacao - ITI, CN=Autoridade Certificadora Raiz Brasileira v10
+        Validity
+            Not Before: Apr 12 19:17:38 2023 GMT
+            Not After : Jul  1 12:00:59 2032 GMT
+        Subject: C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v10, CN=AC Certisign ICP-Brasil SSL EV G4
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (4096 bit)
+                Modulus:
+                    00:d0:72:df:48:76:2b:41:11:f0:0f:38:1c:d1:3c:
+                    e2:4e:1d:ea:66:f5:61:41:01:32:f1:9c:7d:0d:bf:
+                    a9:6d:67:d1:09:6e:02:f9:27:8f:33:a8:b5:46:f4:
+                    87:a8:7a:71:f0:36:12:77:77:9a:94:31:dc:a2:41:
+                    e4:56:2c:8f:da:0a:03:1d:80:c2:95:d0:fd:ca:8b:
+                    e3:8e:74:c9:ed:ff:d4:2f:73:91:18:89:d6:7f:8d:
+                    02:fc:98:e8:0f:12:ee:08:16:11:54:4d:f5:f3:e0:
+                    88:95:11:1e:62:14:cd:42:e7:29:84:97:85:8b:51:
+                    47:7a:c8:90:e8:d8:cf:5f:28:f9:da:aa:8f:f9:2e:
+                    c8:6e:a6:2f:bf:e5:b6:54:6d:86:8f:c0:c7:28:f1:
+                    35:da:a4:6c:8e:33:83:62:0c:f9:d4:e5:d2:4f:e6:
+                    74:92:f0:90:c7:10:f1:9b:d8:3f:61:22:57:6f:15:
+                    88:d7:f7:91:d8:da:f0:aa:b7:b7:72:36:01:cb:17:
+                    78:df:48:8d:a2:75:01:fd:2c:84:21:48:5c:13:16:
+                    d3:08:5e:a7:01:ca:6f:2b:ed:bf:02:95:59:bc:58:
+                    db:33:7b:d8:d4:a3:8a:f4:f3:63:9b:04:5a:38:72:
+                    93:85:f6:3e:2c:65:07:74:40:70:ee:fc:61:f6:43:
+                    21:23:cc:31:a3:4c:a6:3b:82:0b:dc:52:eb:58:4f:
+                    f8:bf:06:b0:53:8c:30:ec:bd:a5:13:e9:f6:25:5c:
+                    0b:e4:04:db:c4:4b:c3:3e:dd:2d:e3:40:cf:9d:29:
+                    5f:97:5a:40:02:30:7a:86:69:4a:c4:d3:30:f4:2c:
+                    09:73:da:11:ae:83:ad:60:bf:16:6c:09:46:e9:69:
+                    4d:0c:d4:32:a1:d2:ec:e4:0a:a2:4d:03:68:59:ff:
+                    04:2c:66:0a:e1:77:24:14:9b:b4:5b:3f:34:ac:5a:
+                    99:17:8d:9c:eb:fa:8b:6f:00:b8:6d:46:a9:37:b9:
+                    1d:8b:1e:ed:01:3a:66:8e:97:d7:bb:a5:45:71:24:
+                    eb:5b:c7:ae:48:93:9e:0d:d3:d1:f3:78:f9:7a:6b:
+                    3c:0d:00:a5:c3:06:0d:0e:5d:a6:2f:85:57:ea:dc:
+                    ba:ea:e1:84:a4:7b:75:78:ac:18:39:e1:a4:4f:3b:
+                    41:05:cd:61:54:ef:39:35:ce:3b:b7:ae:5f:ba:9a:
+                    4f:4c:49:b3:a8:8a:3c:36:79:fa:c3:0c:0f:b3:a9:
+                    28:85:4d:3d:3b:14:55:d9:2e:76:9a:b8:fb:95:f7:
+                    07:21:6f:a7:50:59:cc:8a:61:0b:4e:e4:9e:78:30:
+                    9c:8b:3d:52:04:2f:7c:0c:94:fc:e7:a5:04:a6:16:
+                    dd:a7:63
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Certificate Policies: 
+                Policy: 2.16.76.1.1.0
+                  CPS: http://acraiz.icpbrasil.gov.br/DPCacraiz.pdf
+                Policy: 2.16.76.1.1.138
+                  CPS: http://icp-brasil.certisign.com.br/repositorio/dpc/ac_certisign_icp_br_ssl/DPC_AC_Certisign_Icp_Br_Ssl.pdf
+                Policy: 2.16.76.1.2.1.106
+                  CPS: http://icp-brasil.certisign.com.br/repositorio/dpc/ac_certisign_icp_br_ssl/DPC_AC_Certisign_Icp_Br_Ssl.pdf
+                Policy: 2.16.76.1.2.3.101
+                  CPS: http://icp-brasil.certisign.com.br/repositorio/dpc/ac_certisign_icp_br_ssl/DPC_AC_Certisign_Icp_Br_Ssl.pdf
+                Policy: 2.23.140.1.1
+                Policy: 2.23.140.1.2.2
+            X509v3 CRL Distribution Points: 
+                Full Name:
+                  URI:http://acraiz.icpbrasil.gov.br/LCRacraizv10.crl
+
+            X509v3 Authority Key Identifier: 
+                74:F3:7E:FF:FC:9F:53:7A:F1:7C:EB:AB:3E:A4:A6:DA:18:BA:45:63
+            X509v3 Subject Key Identifier: 
+                17:49:D3:46:B8:69:A4:2E:3F:09:83:4E:14:8D:49:3E:90:D5:0C:28
+            X509v3 Basic Constraints: critical
+                CA:TRUE
+            X509v3 Key Usage: critical
+                Digital Signature, Certificate Sign, CRL Sign
+            X509v3 Extended Key Usage: 
+                TLS Web Server Authentication, TLS Web Client Authentication
+            Authority Information Access: 
+                CA Issuers - URI:http://acraiz.icpbrasil.gov.br/ICP-Brasilv10.crt
+    Signature Algorithm: sha512WithRSAEncryption
+    Signature Value:
+        5c:b0:76:d4:fa:00:20:28:8b:2b:9f:74:bf:c4:91:0a:bb:5b:
+        7e:83:7f:65:75:66:28:70:59:81:6c:f3:af:82:38:28:50:e1:
+        36:84:46:12:84:0f:8f:7c:a5:84:9e:01:97:3b:96:3a:2e:5e:
+        8c:c8:8e:09:79:42:dc:ef:95:02:b6:b6:ae:08:ae:e0:9a:17:
+        9f:b3:c9:73:c9:15:f0:ca:f8:77:72:41:75:39:67:f1:80:ba:
+        1e:a4:c1:3c:f2:07:25:22:8f:69:8a:41:18:b5:02:a1:4c:2f:
+        d5:ec:91:50:c7:e0:bd:6d:f5:e2:62:aa:0b:3b:91:20:8b:b2:
+        9b:07:13:b3:4b:29:40:77:c0:14:83:53:07:c0:be:eb:0e:6f:
+        24:c3:b2:6f:53:52:5a:e0:21:c1:dd:d9:b4:17:af:c2:b9:7b:
+        73:1b:fd:ea:b0:50:d1:e2:ea:d0:16:6b:57:25:22:cd:13:9c:
+        62:b3:63:1c:93:70:1c:99:db:2d:6e:55:4e:e5:24:d4:78:c1:
+        fd:3f:8a:b3:3e:8d:a1:91:54:3d:53:f7:3f:7d:e5:13:84:3d:
+        e7:8a:26:b7:39:69:d4:5c:39:76:10:d5:f3:61:2f:ed:90:85:
+        11:62:da:f6:12:0d:fa:d2:e5:02:b3:ee:48:1e:70:b1:8f:c2:
+        b6:65:e3:8b:c7:2f:b2:a4:f4:fe:9e:75:b6:31:f4:3c:85:56:
+        62:09:95:2c:96:0e:0c:08:85:d7:09:a2:45:f3:f7:45:d9:10:
+        5c:45:9b:b6:7f:3c:37:f3:d6:39:8a:72:57:e7:d6:97:06:01:
+        8c:0c:d1:93:6b:24:2b:29:17:2c:57:cd:18:8d:25:21:37:63:
+        6b:f1:27:4f:d9:15:f4:7e:68:f3:33:59:56:ab:71:de:75:80:
+        b3:8a:61:29:ee:1d:f8:c3:57:f9:b3:cb:e7:4f:d2:3e:fa:f2:
+        56:75:82:32:9d:f1:9f:92:4c:a4:32:ae:cd:00:22:b8:bf:db:
+        7c:aa:ee:b1:49:e5:3f:29:39:78:9f:5c:72:0b:99:52:fc:09:
+        6a:73:13:8c:92:16:73:13:cb:b5:69:8b:f7:f1:f7:be:46:4c:
+        e5:e9:9f:30:c8:63:23:43:33:b4:6b:60:71:e6:66:31:e9:0d:
+        bf:94:27:bc:76:3b:e8:10:32:0f:6b:3b:d1:57:93:c5:bb:a5:
+        bf:4f:18:62:22:fd:50:7f:1b:a3:e2:91:fd:cc:01:3a:99:88:
+        b3:eb:c1:4c:28:7b:02:ea:fe:8d:73:de:5e:ef:8e:8f:0e:ca:
+        47:a3:bb:50:89:0e:d5:4f:e0:cc:8d:7b:42:5b:0e:3c:6e:55:
+        23:e4:60:a7:53:66:ae:c7
+-----BEGIN CERTIFICATE-----
+MIIIsDCCBpigAwIBAgIJAPYXuQkC4L9RMA0GCSqGSIb3DQEBDQUAMIGYMQswCQYD
+VQQGEwJCUjETMBEGA1UECgwKSUNQLUJyYXNpbDE9MDsGA1UECww0SW5zdGl0dXRv
+IE5hY2lvbmFsIGRlIFRlY25vbG9naWEgZGEgSW5mb3JtYWNhbyAtIElUSTE1MDMG
+A1UEAwwsQXV0b3JpZGFkZSBDZXJ0aWZpY2Fkb3JhIFJhaXogQnJhc2lsZWlyYSB2
+MTAwHhcNMjMwNDEyMTkxNzM4WhcNMzIwNzAxMTIwMDU5WjCBhTELMAkGA1UEBhMC
+QlIxEzARBgNVBAoTCklDUC1CcmFzaWwxNTAzBgNVBAsTLEF1dG9yaWRhZGUgQ2Vy
+dGlmaWNhZG9yYSBSYWl6IEJyYXNpbGVpcmEgdjEwMSowKAYDVQQDEyFBQyBDZXJ0
+aXNpZ24gSUNQLUJyYXNpbCBTU0wgRVYgRzQwggIiMA0GCSqGSIb3DQEBAQUAA4IC
+DwAwggIKAoICAQDQct9IditBEfAPOBzRPOJOHepm9WFBATLxnH0Nv6ltZ9EJbgL5
+J48zqLVG9IeoenHwNhJ3d5qUMdyiQeRWLI/aCgMdgMKV0P3Ki+OOdMnt/9Qvc5EY
+idZ/jQL8mOgPEu4IFhFUTfXz4IiVER5iFM1C5ymEl4WLUUd6yJDo2M9fKPnaqo/5
+Lshupi+/5bZUbYaPwMco8TXapGyOM4NiDPnU5dJP5nSS8JDHEPGb2D9hIldvFYjX
+95HY2vCqt7dyNgHLF3jfSI2idQH9LIQhSFwTFtMIXqcBym8r7b8ClVm8WNsze9jU
+o4r082ObBFo4cpOF9j4sZQd0QHDu/GH2QyEjzDGjTKY7ggvcUutYT/i/BrBTjDDs
+vaUT6fYlXAvkBNvES8M+3S3jQM+dKV+XWkACMHqGaUrE0zD0LAlz2hGug61gvxZs
+CUbpaU0M1DKh0uzkCqJNA2hZ/wQsZgrhdyQUm7RbPzSsWpkXjZzr+otvALhtRqk3
+uR2LHu0BOmaOl9e7pUVxJOtbx65Ik54N09HzePl6azwNAKXDBg0OXaYvhVfq3Lrq
+4YSke3V4rBg54aRPO0EFzWFU7zk1zju3rl+6mk9MSbOoijw2efrDDA+zqSiFTT07
+FFXZLnaauPuV9wchb6dQWcyKYQtO5J54MJyLPVIEL3wMlPznpQSmFt2nYwIDAQAB
+o4IDDDCCAwgwggH0BgNVHSAEggHrMIIB5zBDBgVgTAEBADA6MDgGCCsGAQUFBwIB
+FixodHRwOi8vYWNyYWl6LmljcGJyYXNpbC5nb3YuYnIvRFBDYWNyYWl6LnBkZjCB
+ggYGYEwBAYEKMHgwdgYIKwYBBQUHAgEWamh0dHA6Ly9pY3AtYnJhc2lsLmNlcnRp
+c2lnbi5jb20uYnIvcmVwb3NpdG9yaW8vZHBjL2FjX2NlcnRpc2lnbl9pY3BfYnJf
+c3NsL0RQQ19BQ19DZXJ0aXNpZ25fSWNwX0JyX1NzbC5wZGYwgYIGBmBMAQIBajB4
+MHYGCCsGAQUFBwIBFmpodHRwOi8vaWNwLWJyYXNpbC5jZXJ0aXNpZ24uY29tLmJy
+L3JlcG9zaXRvcmlvL2RwYy9hY19jZXJ0aXNpZ25faWNwX2JyX3NzbC9EUENfQUNf
+Q2VydGlzaWduX0ljcF9Ccl9Tc2wucGRmMIGCBgZgTAECA2UweDB2BggrBgEFBQcC
+ARZqaHR0cDovL2ljcC1icmFzaWwuY2VydGlzaWduLmNvbS5ici9yZXBvc2l0b3Jp
+by9kcGMvYWNfY2VydGlzaWduX2ljcF9icl9zc2wvRFBDX0FDX0NlcnRpc2lnbl9J
+Y3BfQnJfU3NsLnBkZjAHBgVngQwBATAIBgZngQwBAgIwQAYDVR0fBDkwNzA1oDOg
+MYYvaHR0cDovL2FjcmFpei5pY3BicmFzaWwuZ292LmJyL0xDUmFjcmFpenYxMC5j
+cmwwHwYDVR0jBBgwFoAUdPN+//yfU3rxfOurPqSm2hi6RWMwHQYDVR0OBBYEFBdJ
+00a4aaQuPwmDThSNST6Q1QwoMA8GA1UdEwEB/wQFMAMBAf8wDgYDVR0PAQH/BAQD
+AgGGMB0GA1UdJQQWMBQGCCsGAQUFBwMBBggrBgEFBQcDAjBMBggrBgEFBQcBAQRA
+MD4wPAYIKwYBBQUHMAKGMGh0dHA6Ly9hY3JhaXouaWNwYnJhc2lsLmdvdi5ici9J
+Q1AtQnJhc2lsdjEwLmNydDANBgkqhkiG9w0BAQ0FAAOCAgEAXLB21PoAICiLK590
+v8SRCrtbfoN/ZXVmKHBZgWzzr4I4KFDhNoRGEoQPj3ylhJ4BlzuWOi5ejMiOCXlC
+3O+VAra2rgiu4JoXn7PJc8kV8Mr4d3JBdTln8YC6HqTBPPIHJSKPaYpBGLUCoUwv
+1eyRUMfgvW314mKqCzuRIIuymwcTs0spQHfAFINTB8C+6w5vJMOyb1NSWuAhwd3Z
+tBevwrl7cxv96rBQ0eLq0BZrVyUizROcYrNjHJNwHJnbLW5VTuUk1HjB/T+Ksz6N
+oZFUPVP3P33lE4Q954omtzlp1Fw5dhDV82Ev7ZCFEWLa9hIN+tLlArPuSB5wsY/C
+tmXji8cvsqT0/p51tjH0PIVWYgmVLJYODAiF1wmiRfP3RdkQXEWbtn88N/PWOYpy
+V+fWlwYBjAzRk2skKykXLFfNGI0lITdja/EnT9kV9H5o8zNZVqtx3nWAs4phKe4d
++MNX+bPL50/SPvryVnWCMp3xn5JMpDKuzQAiuL/bfKrusUnlPyk5eJ9ccguZUvwJ
+anMTjJIWcxPLtWmL9/H3vkZM5emfMMhjI0MztGtgceZmMekNv5QnvHY76BAyD2s7
+0VeTxbulv08YYiL9UH8bo+KR/cwBOpmIs+vBTCh7Aur+jXPeXu+Ojw7KR6O7UIkO
+1U/gzI17QlsOPG5VI+Rgp1Nmrsc=
+-----END CERTIFICATE-----
+
+======================================
+---
+Certificate chain
+ 0 s:C=BR, O=BAHIA SECRETARIA DA FAZENDA, CN=nfe.sefaz.ba.gov.br, ST=BA, L=Salvador, businessCategory=Government Entity, serialNumber=13937073000156, jurisdictionC=BR
+   i:C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v10, CN=AC Certisign ICP-Brasil SSL EV G4
+   a:PKEY: RSA, 2048 (bit); sigalg: sha256WithRSAEncryption
+   v:NotBefore: Feb 23 22:09:34 2026 GMT; NotAfter: Feb 23 22:09:34 2027 GMT
+-----BEGIN CERTIFICATE-----
+MIIIBDCCBeygAwIBAgIQRT/X7FVEu1niLopkHIoaUTANBgkqhkiG9w0BAQsFADCB
+hTELMAkGA1UEBhMCQlIxEzARBgNVBAoTCklDUC1CcmFzaWwxNTAzBgNVBAsTLEF1
+dG9yaWRhZGUgQ2VydGlmaWNhZG9yYSBSYWl6IEJyYXNpbGVpcmEgdjEwMSowKAYD
+VQQDEyFBQyBDZXJ0aXNpZ24gSUNQLUJyYXNpbCBTU0wgRVYgRzQwHhcNMjYwMjIz
+MjIwOTM0WhcNMjcwMjIzMjIwOTM0WjCBuzELMAkGA1UEBhMCQlIxJDAiBgNVBAoM
+G0JBSElBIFNFQ1JFVEFSSUEgREEgRkFaRU5EQTEcMBoGA1UEAwwTbmZlLnNlZmF6
+LmJhLmdvdi5icjELMAkGA1UECAwCQkExETAPBgNVBAcMCFNhbHZhZG9yMRowGAYD
+VQQPDBFHb3Zlcm5tZW50IEVudGl0eTEXMBUGA1UEBRMOMTM5MzcwNzMwMDAxNTYx
+EzARBgsrBgEEAYI3PAIBAxMCQlIwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK
+AoIBAQDQh3+Q16hWpHesa/sDTv4D9Et9xBf0emJPQhAHqlH+FvTDaFj+Btl+pXxJ
+4t2ZNuABzBHygFWFpv6dGmY47s1CyPux6vZ7vCJsCP7YK8BlK2EYDXAi39c3A1by
+srQFllg9ds/ogo3PJTfqvlDtNqNbBa+cSz2p+Duqc7XdEwirx4/1ZDl3k1GjhjY8
+KU4zF8tyuBBSpfN2tAIqbm4cUNYnGDo1z2JL8KUDVN9PX57e3s4uTb37rF+Cwq8F
+Lv64HdxFKyVHUAw/OUJ4EosClqyYnTV6or8GMyJH3yo13QxAO0Mb0iqcrn4MBboc
++m1+as9/oxKtiM3C0US3gkjALnNbAgMBAAGjggM2MIIDMjAeBgNVHREEFzAVghNu
+ZmUuc2VmYXouYmEuZ292LmJyMAkGA1UdEwQCMAAwHwYDVR0jBBgwFoAUF0nTRrhp
+pC4/CYNOFI1JPpDVDCgwgZoGA1UdIASBkjCBjzCBggYGYEwBAgFqMHgwdgYIKwYB
+BQUHAgEWamh0dHA6Ly9pY3AtYnJhc2lsLmNlcnRpc2lnbi5jb20uYnIvcmVwb3Np
+dG9yaW8vZHBjL2FjX2NlcnRpc2lnbl9pY3BfYnJfc3NsL0RQQ19BQ19DZXJ0aXNp
+Z25fSWNwX0JyX1NzbC5wZGYwCAYGZ4EMAQICMIHKBgNVHR8EgcIwgb8wXqBcoFqG
+WGh0dHA6Ly9pY3AtYnJhc2lsLmNlcnRpc2lnbi5jb20uYnIvcmVwb3NpdG9yaW8v
+bGNyL0FDQ2VydGlzaWduSUNQQlJTU0xFVkc0L0xhdGVzdENSTC5jcmwwXaBboFmG
+V2h0dHA6Ly9pY3AtYnJhc2lsLm91dHJhbGNyLmNvbS5ici9yZXBvc2l0b3Jpby9s
+Y3IvQUNDZXJ0aXNpZ25JQ1BCUlNTTEVWRzQvTGF0ZXN0Q1JMLmNybDAOBgNVHQ8B
+Af8EBAMCA6gwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMIGKBgorBgEE
+AdZ5AgQCBHwEegB4AHYA1tWNqdAXU/NqSqDHV0kCr+vH3CzTjNn3ZMgMiRkenwIA
+AAGcjIz7jAAABAMARzBFAiEAh4VqI1SaA+4YoMmYCNxDINispL5ZNjbEAZCxGIgv
+7B4CIDEwZdc21r7QvgpMlCucQkcb2nAjDHXvc/Jon/PlG42pMIG9BggrBgEFBQcB
+AQSBsDCBrTBpBggrBgEFBQcwAoZdaHR0cDovL2ljcC1icmFzaWwuY2VydGlzaWdu
+LmNvbS5ici9yZXBvc2l0b3Jpby9jZXJ0aWZpY2Fkb3MvQUNfQ2VydGlzaWduX0lj
+cF9Ccl9Tc2xfRVZfRzQucDdjMEAGCCsGAQUFBzABhjRodHRwOi8vb2NzcC1hYy1j
+ZXJ0aXNpZ24taWNwLWJyLXNzbC5jZXJ0aXNpZ24uY29tLmJyMA0GCSqGSIb3DQEB
+CwUAA4ICAQCYMvxQ575Et7Uy8HubH/qmQ4/mAlR22xDW7eOv2F6c0uwnZpincemq
+gF3Ot58rHKaGcXZk2fu5tsgMApxP3CTPzb2oR/EgPmA1Qwl1E/9ZwcIOGUQwq/6g
+YFDfIEnjvRq6sxYxhMJHjqDj5wToBItnyO4jZdY9OaPF0o7PjI5lGxdviHWJWpwB
+4/TeaxLrZQKlEPQNts3V7PhH1L6T63/jp7T3v7TAIZ0rMHkaEI4UcEIBcD2uwZiO
+AWjSsl/2wYKDadIRDvW0llMMXAxC5GBKhIegV6DyR1lkk4t5jaTBXwAffrAy3Opj
+S3uHxN3vmaxLtNkQtQ2XJOrTxSKHcn7cXSkCQHXcnHoBrdc3e2JAH9jC7BtmMNR3
+SITtXXGkXGtVGGZ+5qpsukhnu/wgFsFbC8v+GvK/uwuQYoMsvybCyeYePlpz4gsN
+WFflv9ak+riHBhNhP5BGY4pmMXcGg3UqxxX/T4HCSFRJKx7If4YlVYBn1IjKnqFV
+/K9btwIzUca9PDMHCmHZd6nxuHM1hNGkEld+Emm31rMtIkNdiQY/X89l38Np9Y4i
+ZGE2M7yxFZDR1UrVMlWgW4aP2US96VQ+zrPr5s4p8I6HDJNdu4dfpCYVxkxEOdEf
+IL//XYgT/Gb4irCkdN526R4t6I/+YCxTzHBoO3R18DWjxZCjhqa38w==
+-----END CERTIFICATE-----
+ 1 s:C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v10, CN=AC Certisign ICP-Brasil SSL EV G4
+   i:C=BR, O=ICP-Brasil, OU=Instituto Nacional de Tecnologia da Informacao - ITI, CN=Autoridade Certificadora Raiz Brasileira v10
+   a:PKEY: RSA, 4096 (bit); sigalg: sha512WithRSAEncryption
+   v:NotBefore: Apr 12 19:17:38 2023 GMT; NotAfter: Jul  1 12:00:59 2032 GMT
+-----BEGIN CERTIFICATE-----
+MIIIsDCCBpigAwIBAgIJAPYXuQkC4L9RMA0GCSqGSIb3DQEBDQUAMIGYMQswCQYD
+VQQGEwJCUjETMBEGA1UECgwKSUNQLUJyYXNpbDE9MDsGA1UECww0SW5zdGl0dXRv
+IE5hY2lvbmFsIGRlIFRlY25vbG9naWEgZGEgSW5mb3JtYWNhbyAtIElUSTE1MDMG
+A1UEAwwsQXV0b3JpZGFkZSBDZXJ0aWZpY2Fkb3JhIFJhaXogQnJhc2lsZWlyYSB2
+MTAwHhcNMjMwNDEyMTkxNzM4WhcNMzIwNzAxMTIwMDU5WjCBhTELMAkGA1UEBhMC
+QlIxEzARBgNVBAoTCklDUC1CcmFzaWwxNTAzBgNVBAsTLEF1dG9yaWRhZGUgQ2Vy
+dGlmaWNhZG9yYSBSYWl6IEJyYXNpbGVpcmEgdjEwMSowKAYDVQQDEyFBQyBDZXJ0
+aXNpZ24gSUNQLUJyYXNpbCBTU0wgRVYgRzQwggIiMA0GCSqGSIb3DQEBAQUAA4IC
+DwAwggIKAoICAQDQct9IditBEfAPOBzRPOJOHepm9WFBATLxnH0Nv6ltZ9EJbgL5
+J48zqLVG9IeoenHwNhJ3d5qUMdyiQeRWLI/aCgMdgMKV0P3Ki+OOdMnt/9Qvc5EY
+idZ/jQL8mOgPEu4IFhFUTfXz4IiVER5iFM1C5ymEl4WLUUd6yJDo2M9fKPnaqo/5
+Lshupi+/5bZUbYaPwMco8TXapGyOM4NiDPnU5dJP5nSS8JDHEPGb2D9hIldvFYjX
+95HY2vCqt7dyNgHLF3jfSI2idQH9LIQhSFwTFtMIXqcBym8r7b8ClVm8WNsze9jU
+o4r082ObBFo4cpOF9j4sZQd0QHDu/GH2QyEjzDGjTKY7ggvcUutYT/i/BrBTjDDs
+vaUT6fYlXAvkBNvES8M+3S3jQM+dKV+XWkACMHqGaUrE0zD0LAlz2hGug61gvxZs
+CUbpaU0M1DKh0uzkCqJNA2hZ/wQsZgrhdyQUm7RbPzSsWpkXjZzr+otvALhtRqk3
+uR2LHu0BOmaOl9e7pUVxJOtbx65Ik54N09HzePl6azwNAKXDBg0OXaYvhVfq3Lrq
+4YSke3V4rBg54aRPO0EFzWFU7zk1zju3rl+6mk9MSbOoijw2efrDDA+zqSiFTT07
+FFXZLnaauPuV9wchb6dQWcyKYQtO5J54MJyLPVIEL3wMlPznpQSmFt2nYwIDAQAB
+o4IDDDCCAwgwggH0BgNVHSAEggHrMIIB5zBDBgVgTAEBADA6MDgGCCsGAQUFBwIB
+FixodHRwOi8vYWNyYWl6LmljcGJyYXNpbC5nb3YuYnIvRFBDYWNyYWl6LnBkZjCB
+ggYGYEwBAYEKMHgwdgYIKwYBBQUHAgEWamh0dHA6Ly9pY3AtYnJhc2lsLmNlcnRp
+c2lnbi5jb20uYnIvcmVwb3NpdG9yaW8vZHBjL2FjX2NlcnRpc2lnbl9pY3BfYnJf
+c3NsL0RQQ19BQ19DZXJ0aXNpZ25fSWNwX0JyX1NzbC5wZGYwgYIGBmBMAQIBajB4
+MHYGCCsGAQUFBwIBFmpodHRwOi8vaWNwLWJyYXNpbC5jZXJ0aXNpZ24uY29tLmJy
+L3JlcG9zaXRvcmlvL2RwYy9hY19jZXJ0aXNpZ25faWNwX2JyX3NzbC9EUENfQUNf
+Q2VydGlzaWduX0ljcF9Ccl9Tc2wucGRmMIGCBgZgTAECA2UweDB2BggrBgEFBQcC
+ARZqaHR0cDovL2ljcC1icmFzaWwuY2VydGlzaWduLmNvbS5ici9yZXBvc2l0b3Jp
+by9kcGMvYWNfY2VydGlzaWduX2ljcF9icl9zc2wvRFBDX0FDX0NlcnRpc2lnbl9J
+Y3BfQnJfU3NsLnBkZjAHBgVngQwBATAIBgZngQwBAgIwQAYDVR0fBDkwNzA1oDOg
+MYYvaHR0cDovL2FjcmFpei5pY3BicmFzaWwuZ292LmJyL0xDUmFjcmFpenYxMC5j
+cmwwHwYDVR0jBBgwFoAUdPN+//yfU3rxfOurPqSm2hi6RWMwHQYDVR0OBBYEFBdJ
+00a4aaQuPwmDThSNST6Q1QwoMA8GA1UdEwEB/wQFMAMBAf8wDgYDVR0PAQH/BAQD
+AgGGMB0GA1UdJQQWMBQGCCsGAQUFBwMBBggrBgEFBQcDAjBMBggrBgEFBQcBAQRA
+MD4wPAYIKwYBBQUHMAKGMGh0dHA6Ly9hY3JhaXouaWNwYnJhc2lsLmdvdi5ici9J
+Q1AtQnJhc2lsdjEwLmNydDANBgkqhkiG9w0BAQ0FAAOCAgEAXLB21PoAICiLK590
+v8SRCrtbfoN/ZXVmKHBZgWzzr4I4KFDhNoRGEoQPj3ylhJ4BlzuWOi5ejMiOCXlC
+3O+VAra2rgiu4JoXn7PJc8kV8Mr4d3JBdTln8YC6HqTBPPIHJSKPaYpBGLUCoUwv
+1eyRUMfgvW314mKqCzuRIIuymwcTs0spQHfAFINTB8C+6w5vJMOyb1NSWuAhwd3Z
+tBevwrl7cxv96rBQ0eLq0BZrVyUizROcYrNjHJNwHJnbLW5VTuUk1HjB/T+Ksz6N
+oZFUPVP3P33lE4Q954omtzlp1Fw5dhDV82Ev7ZCFEWLa9hIN+tLlArPuSB5wsY/C
+tmXji8cvsqT0/p51tjH0PIVWYgmVLJYODAiF1wmiRfP3RdkQXEWbtn88N/PWOYpy
+V+fWlwYBjAzRk2skKykXLFfNGI0lITdja/EnT9kV9H5o8zNZVqtx3nWAs4phKe4d
++MNX+bPL50/SPvryVnWCMp3xn5JMpDKuzQAiuL/bfKrusUnlPyk5eJ9ccguZUvwJ
+anMTjJIWcxPLtWmL9/H3vkZM5emfMMhjI0MztGtgceZmMekNv5QnvHY76BAyD2s7
+0VeTxbulv08YYiL9UH8bo+KR/cwBOpmIs+vBTCh7Aur+jXPeXu+Ojw7KR6O7UIkO
+1U/gzI17QlsOPG5VI+Rgp1Nmrsc=
+-----END CERTIFICATE-----
+---
+Server certificate
+subject=C=BR, O=BAHIA SECRETARIA DA FAZENDA, CN=nfe.sefaz.ba.gov.br, ST=BA, L=Salvador, businessCategory=Government Entity, serialNumber=13937073000156, jurisdictionC=BR
+issuer=C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v10, CN=AC Certisign ICP-Brasil SSL EV G4
+---
+No client certificate CA names sent
+Peer signing digest: SHA256
+Peer signature type: rsa_pkcs1_sha256
+Peer Temp Key: ECDH, prime256v1, 256 bits
+---
+SSL handshake has read 7922 bytes and written 1741 bytes
+Verification error: unable to get local issuer certificate
+---
+New, TLSv1.2, Cipher is ECDHE-RSA-AES256-SHA384
+Protocol: TLSv1.2
+Server public key is 2048 bit
+Secure Renegotiation IS supported
+Compression: NONE
+Expansion: NONE
+No ALPN negotiated
+SSL-Session:
+    Protocol  : TLSv1.2
+    Cipher    : ECDHE-RSA-AES256-SHA384
+    Session-ID: 7501000091FE25F0AA87E07E33B27EAF34DB71F04A546272D620200731864065
+    Session-ID-ctx: 
+    Master-Key: 43390826E8736CCDA46FC3D8707077A17C545500FCC29159A910DEBF247CF900FD65F78709A887B304719B3224CA3C97
+    PSK identity: None
+    PSK identity hint: None
+    SRP username: None
+    Start Time: 1790377928
+    Timeout   : 7200 (sec)
+    Verify return code: 20 (unable to get local issuer certificate)
+    Extended master secret: yes
+---
+
+Connecting to 200.187.29.23
+depth=1 C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v10, CN=AC Certisign ICP-Brasil SSL EV G4
+verify error:num=20:unable to get local issuer certificate
+verify return:1
+depth=0 C=BR, O=BAHIA SECRETARIA DA FAZENDA, CN=nfe.sefaz.ba.gov.br, ST=BA, L=Salvador, businessCategory=Government Entity, serialNumber=13937073000156, jurisdictionC=BR
+verify return:1
+DONE

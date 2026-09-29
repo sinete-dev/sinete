@@ -1,0 +1,13 @@
+{
+  // Ferramenta do repo: roda no Bun, com tipos do Bun. Os pacotes do workspace resolvem para o fonte.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["bun"],
+    "isolatedDeclarations": false,
+    "paths": {
+      "@sinete/core": ["../../packages/core/src/index.ts"],
+      "@sinete/core/xml": ["../../packages/core/src/xml/index.ts"]
+    }
+  },
+  "include": ["src"]
+}

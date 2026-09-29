@@ -1,0 +1,22 @@
+a-bun run1 .421s
+a-bun run2 .355s
+a-bun run3 .320s
+a-bun run4 .338s
+a-bun run5 .365s
+a-bun run6 .391s
+b-pnpm run1 .775s
+b-pnpm run2 .658s
+b-pnpm run3 .607s
+b-pnpm run4 .694s
+b-pnpm run5 .646s
+b-pnpm run6 .641s
+c-tsc run1 .368s
+c-tsc run2 .218s
+c-tsc run3 .218s
+c-tsc run4 .229s
+c-tsc run5 .232s
+c-tsc run6 .269s
+real 0.79
+real 0.64
+real 4.02
+real 0.54

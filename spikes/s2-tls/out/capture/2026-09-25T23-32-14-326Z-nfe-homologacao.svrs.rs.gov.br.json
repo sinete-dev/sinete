@@ -1,0 +1,92 @@
+{
+  "target": "nfe-homologacao.svrs.rs.gov.br:443",
+  "ua": null,
+  "started": "2026-09-25T23:32:14.326Z",
+  "events": [
+    {
+      "dir": "c2s",
+      "hs": "ClientHello",
+      "len": 193
+    },
+    {
+      "dir": "s2c",
+      "hs": "ServerHello",
+      "len": 81,
+      "version": "0x303",
+      "cipherSuite": "0xc030"
+    },
+    {
+      "dir": "s2c",
+      "hs": "Certificate",
+      "len": 3562,
+      "certCount": 2,
+      "subjects": [
+        "C=BR, ST=RS, L=PORTO ALEGRE, O=PROCERGS - CENTRO DE TECNOLOGIA DA INFORMACAO E COMUNICACAO DO E, serialNumber=87124582000104, CN=*.svrs.rs.gov.br, businessCategory=Business Entity, jurisdictionC=BR",
+        "C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v10, CN=Autoridade Certificadora do SERPRO SSLv1"
+      ]
+    },
+    {
+      "dir": "s2c",
+      "hs": "ServerKeyExchange",
+      "len": 361
+    },
+    {
+      "dir": "s2c",
+      "hs": "CertificateRequest",
+      "len": 7834
+    },
+    {
+      "dir": "s2c",
+      "hs": "ServerHelloDone",
+      "len": 0
+    },
+    {
+      "dir": "c2s",
+      "hs": "Certificate",
+      "len": 879,
+      "certCount": 1,
+      "subjects": [
+        "CN=sinete-spike-throwaway-client, O=sinete spike S2"
+      ]
+    },
+    {
+      "dir": "c2s",
+      "hs": "ClientKeyExchange",
+      "len": 98
+    },
+    {
+      "dir": "c2s",
+      "hs": "CertificateVerify",
+      "len": 260,
+      "sigScheme": "0x0401"
+    },
+    {
+      "dir": "c2s",
+      "rec": "ChangeCipherSpec"
+    },
+    {
+      "dir": "c2s",
+      "rec": "Handshake(encrypted)",
+      "len": 40
+    },
+    {
+      "dir": "s2c",
+      "rec": "ChangeCipherSpec"
+    },
+    {
+      "dir": "s2c",
+      "rec": "Handshake(encrypted)",
+      "len": 40
+    },
+    {
+      "dir": "c2s",
+      "rec": "ApplicationData",
+      "len": 201
+    },
+    {
+      "dir": "s2c",
+      "rec": "ApplicationData",
+      "len": 1437
+    }
+  ]
+}

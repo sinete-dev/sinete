@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "source": "MOC 7.0 Anexo I, tabela 4.4.1 (Tabela de Códigos de Resultado de Processamento)",
+  "url": "https://www.nfe.fazenda.gov.br/portal/listaConteudo.aspx?tipoConteudo=ndIjl+iEFdE=",
+  "sha256": "5eb4cf2010b10b0b62f78197c4eb64025f24535d4c6e61158bc7806dd008f55d",
+  "retrievedAt": "2026-09-25",
+  "note": "Mesmo PDF registrado em tools/rejeicoes-data/sources.json (moc70-anexo1). Só os códigos de resultado que o simulador devolve; as rejeições vêm do @sinete/rejeicoes.",
+  "codes": {
+    "100": "Autorizado o uso da NF-e",
+    "101": "Cancelamento de NF-e homologado",
+    "102": "Inutilização de número homologado",
+    "103": "Lote recebido com sucesso",
+    "104": "Lote processado",
+    "105": "Lote em processamento",
+    "106": "Lote não localizado",
+    "107": "Serviço em Operação",
+    "108": "Serviço Paralisado Momentaneamente (curto prazo)",
+    "109": "Serviço Paralisado sem Previsão",
+    "110": "Uso Denegado",
+    "111": "Consulta cadastro com uma ocorrência",
+    "112": "Consulta cadastro com mais de uma ocorrência",
+    "128": "Lote de Evento Processado",
+    "135": "Evento registrado e vinculado a NF-e",
+    "137": "Nenhum documento localizado para o Destinatário",
+    "138": "Documento localizado para o Destinatário"
+  }
+}

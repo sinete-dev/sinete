@@ -1,0 +1,60 @@
+---
+title: Nota fiscal eletrônica
+description: Biblioteca JavaScript e TypeScript para integrar emissão fiscal com validação, assinatura, transmissão e retomada quando a conexão cai.
+template: splash
+hero:
+  title: Nota fiscal eletrônica, do XML à autorização na SEFAZ.
+  tagline: Biblioteca JavaScript e TypeScript para NF-e, NFC-e, MDF-e e NFS-e Nacional, com cálculo de IBS/CBS, DANFE e demais PDFs auxiliares, e retomada da emissão quando a conexão cai.
+  actions:
+    - text: Comece pelo tutorial
+      link: /tutorial/primeira-nfe/
+      variant: primary
+    - text: Ler o guia
+      link: /guia/
+      variant: minimal
+    - text: GitHub
+      link: https://github.com/sinete-dev/sinete
+      variant: minimal
+      icon: external
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+Instale no seu projeto:
+
+```sh
+npm install sinete
+```
+
+## Da emissão à recuperação
+
+<CardGrid>
+  <Card title="Retome sem duplicar a nota">
+    Grava os bytes assinados no banco da aplicação antes do envio. Se a conexão cair, consulta a chave e, se precisar reenviar, usa os mesmos bytes para evitar outra nota para a mesma operação.
+  </Card>
+  <Card title="Valide antes da SEFAZ">
+    Aplica regras das rejeições reais antes de transmitir. Devolve todas as ocorrências locais juntas em um `ValidationError`.
+  </Card>
+  <Card title="Certificados A1 e A3">
+    Usa A1 sem binário nativo, JDK ou openssl externo. Integra A3 em token PKCS#11 ou em nuvem pelo `sinete-signer`.
+  </Card>
+  <Card title="IBS/CBS da reforma tributária">
+    Calcula IBS/CBS e determina CST e cClassTrib pelos fatos do negócio, com dados oficiais versionados por mês.
+  </Card>
+  <Card title="DANFE e demais PDFs locais">
+    Gera os documentos auxiliares em PDF e HTML, sem browser headless, fonte embutida ou dependência nativa.
+  </Card>
+  <Card title="Simule a queda de conexão">
+    O simulador injeta falhas inclusive depois da autorização, para testar a recuperação no seu sistema.
+  </Card>
+</CardGrid>
+
+## Documentação para agentes de código
+
+A documentação vem no pacote, na versão instalada. Execute `npx sinete agents-md` para apontar o agente de código para ela e consulte o [llms.txt do site](/llms.txt).
+
+## Estado do projeto
+
+O sinete está na série **0.x**, com possibilidade de mudanças na API até a 1.0. Está em produção desde setembro de 2026 num emissor em uso comercial.
+
+Consulte os resultados e o que ainda falta validar em ambiente real no [relatório de validação em homologação](https://github.com/sinete-dev/sinete/blob/main/docs/validacao-homologacao.md).

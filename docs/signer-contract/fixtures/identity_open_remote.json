@@ -1,0 +1,39 @@
+{
+  "description": "Identidade remote em modo digest: o cliente manda só a cadeia pública e responde aos sign. O helper devolve o titular lido do SubjectAltName ICP-Brasil.",
+  "frames": [
+    {
+      "from": "client",
+      "frame": {
+        "v": 1,
+        "id": "c2",
+        "method": "identity.open",
+        "params": {
+          "id": "emitente-11222333000181",
+          "backend": "remote",
+          "mode": "digest",
+          "chain": ["MIIBCgKCAQEA", "MIIBCgKCAQEB"],
+          "signTimeoutMs": 30000
+        }
+      }
+    },
+    {
+      "from": "helper",
+      "of": "identity.open",
+      "frame": {
+        "v": 1,
+        "id": "c2",
+        "result": {
+          "id": "emitente-11222333000181",
+          "backend": "remote",
+          "mode": "digest",
+          "subject": "CN=EMPRESA DE TESTE:11222333000181",
+          "notBefore": "2026-09-01T00:00:00Z",
+          "notAfter": "2027-09-01T00:00:00Z",
+          "chain": ["MIIBCgKCAQEA", "MIIBCgKCAQEB"],
+          "cnpj": "11222333000181",
+          "dfeSign": false
+        }
+      }
+    }
+  ]
+}

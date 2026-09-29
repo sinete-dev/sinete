@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sinete.dev/contract/signer/v1/frame.schema.json",
+  "title": "Frame do protocolo sinete-signer v1 (decodificado de uma linha NDJSON)",
+  "type": "object",
+  "required": ["v", "id"],
+  "properties": {
+    "v": { "const": 1 },
+    "id": { "type": "string", "minLength": 1, "maxLength": 64, "description": "Prefixo c = iniciado pelo cliente JS, h = iniciado pelo helper" },
+    "method": { "enum": ["hello", "identity.open", "identity.close", "http.request", "pool.reset", "stats", "sign"] },
+    "params": { "type": "object" },
+    "result": { "type": "object" },
+    "error": {
+      "type": "object",
+      "required": ["code", "message"],
+      "properties": {
+        "code": { "enum": ["protocol_version", "unknown_method", "bad_request", "guard", "forbidden", "unknown_identity", "pkcs11", "transport", "sign_refused", "sign_timeout", "error"] },
+        "message": { "type": "string" }
+      }
+    }
+  },
+  "oneOf": [
+    { "required": ["method", "params"], "not": { "anyOf": [{ "required": ["result"] }, { "required": ["error"] }] } },
+    { "required": ["result"], "not": { "anyOf": [{ "required": ["method"] }, { "required": ["error"] }] } },
+    { "required": ["error"], "not": { "anyOf": [{ "required": ["method"] }, { "required": ["result"] }] } }
+  ],
+  "$defs": {
+    "signParams": {
+      "type": "object",
+      "required": ["identity", "scheme", "mode", "context"],
+      "properties": {
+        "identity": { "type": "string" },
+        "scheme": { "enum": ["rsa_pkcs1_sha256", "rsa_pkcs1_sha1"] },
+        "mode": { "enum": ["digest", "message"] },
+        "digest": { "type": "string", "contentEncoding": "base64", "description": "modo digest: hash pronto (32 bytes em SHA-256); quem assina monta o DigestInfo" },
+        "message": { "type": "string", "contentEncoding": "base64", "description": "modo message: transcript TLS 1.2 inteiro (mensagens de handshake do ClientHello até antes do CertificateVerify)" },
+        "messageSha256": { "type": "string", "contentEncoding": "base64" },
+        "context": {
+          "type": "object",
+          "required": ["purpose", "host", "conn", "handshake"],
+          "properties": {
+            "purpose": { "const": "tls12-client-certificate-verify" },
+            "host": { "type": "string" },
+            "conn": { "type": "integer" },
+            "handshake": { "type": "integer", "minimum": 1, "description": "1 = handshake inicial; 2 = renegociação pedida pelo servidor" }
+          }
+        }
+      }
+    },
+    "httpRequestParams": {
+      "type": "object",
+      "required": ["identity", "url", "method", "headers", "body"],
+      "properties": {
+        "identity": { "type": "string" },
+        "url": { "type": "string", "pattern": "^https://" },
+        "method": { "enum": ["POST", "GET"] },
+        "headers": { "type": "object", "additionalProperties": { "type": "string" } },
+        "body": { "type": "string", "contentEncoding": "base64" },
+        "timeoutMs": { "type": "integer" },
+        "freshConn": { "type": "boolean" },
+        "service": { "type": "string" }
+      }
+    }
+  }
+}

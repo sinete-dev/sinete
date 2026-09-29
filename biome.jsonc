@@ -1,0 +1,70 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "files": {
+    // `spikes/` é código descartável de referência, com configs próprias.
+    "includes": ["**", "!!**/spikes", "!**/dist", "!**/CHANGELOG.md", "!smoke/fixtures", "!.changeset/*.md"]
+  },
+  "formatter": { "indentStyle": "space", "indentWidth": 2, "lineWidth": 120 },
+  "javascript": { "formatter": { "quoteStyle": "single" } },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
+  "linter": {
+    "rules": {
+      "preset": "recommended",
+      "style": {
+        "useImportType": { "level": "error", "options": { "style": "separatedType" } },
+        "useExportType": "error",
+        "useNodejsImportProtocol": "error",
+        "noDefaultExport": "error"
+      },
+      "correctness": { "noNodejsModules": "error", "noProcessGlobal": "error" },
+      "performance": { "noReExportAll": "error", "noBarrelFile": "off" },
+      "suspicious": { "noConsole": "error" },
+      "nursery": { "useExplicitType": "error" }
+    }
+  },
+  "overrides": [
+    {
+      // O Astro exige `export default` no arquivo de configuração.
+      "includes": ["tools/site/astro.config.mjs"],
+      "linter": { "rules": { "style": { "noDefaultExport": "off" } } }
+    },
+    {
+      // Entradas com condição `node` e a CLI podem usar builtins do Node.
+      "includes": ["**/*.node.ts", "packages/cli/**", "helpers/*/npm/**"],
+      "linter": {
+        "rules": {
+          "correctness": { "noNodejsModules": "off", "noProcessGlobal": "off" },
+          "suspicious": { "noConsole": "off" }
+        }
+      }
+    },
+    {
+      // Relógio injetável (princípio 6): `Date` só no relógio do core.
+      "includes": ["packages/*/src/**", "!packages/core/src/clock.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedGlobals": {
+              "level": "error",
+              "options": { "deniedGlobals": { "Date": "Use o Clock injetado (princípio 6)." } }
+            }
+          }
+        }
+      }
+    },
+    {
+      // Tooling do repo (build, release, smoke, testes) roda no Bun e pode usar Node e console.
+      "includes": ["scripts/**", "smoke/**", "**/test/**", "tools/**", "helpers/*/scripts/**"],
+      "linter": {
+        "rules": {
+          "correctness": { "noNodejsModules": "off", "noProcessGlobal": "off" },
+          "suspicious": { "noConsole": "off" },
+          "nursery": { "useExplicitType": "off" },
+          "style": { "noRestrictedGlobals": "off" }
+        }
+      }
+    },
+    { "includes": ["**/*.config.ts"], "linter": { "rules": { "style": { "noDefaultExport": "off" } } } }
+  ]
+}

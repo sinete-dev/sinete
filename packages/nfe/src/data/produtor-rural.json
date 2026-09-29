@@ -1,0 +1,17 @@
+{
+  "descricao": "Regras do produtor rural que variam no tempo ou por UF. refNFP: a nota fiscal de produtor em papel (modelo 04) foi extinta; uma NF-e ainda pode referenciar uma nota modelo 04 emitida antes do fim da vigência na UF da nota referenciada. vedadaDesde é o primeiro AAMM em que a UF não aceita mais nota modelo 04 emitida; a referência a nota com AAMM igual ou posterior é recusada pelo builder. series: faixas de série por tipo de emitente na emissão pelo contribuinte (procEmi 0, a única que o buildNfe monta).",
+  "atualizadoEm": "2026-09-28",
+  "refNFP": {
+    "modelo04": {
+      "vedadaDesde": "2601",
+      "fonte": "Ajuste SINIEF 10/2022 (extinção da nota fiscal de produtor modelo 4, com prazos prorrogados até 05/01/2026) e avisos das SEFAZ (RS e SP: fim do talão em 05/01/2026)."
+    },
+    "ufs": {}
+  },
+  "series": {
+    "cpf": [920, 969],
+    "fonte": "MOC 7.0 Anexo I, RV B07 e BA02-30: séries 920 a 969 reservadas à NF-e emitida por pessoa física (CPF).",
+    "cnpj": [0, 889],
+    "fonteCnpj": "MOC 7.0 Anexo I, RV C02-30 (emitente CNPJ: séries 0 a 909, rejeição 503) e B26-10 (emissão pelo contribuinte, procEmi 0: séries 0 a 889 ou 920 a 969, rejeição 244): as duas juntas deixam 0 a 889. A NT 2026.001 v1.02b (PAA, produção em 05/10/2026) abre 980 a 989 na C02-30 e mantém a B26-10, então a faixa continua 0 a 889."
+  }
+}

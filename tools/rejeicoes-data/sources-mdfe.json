@@ -1,0 +1,71 @@
+{
+  "retrievedAt": "2026-09-26",
+  "documents": [
+    {
+      "id": "moc300b-anexo1",
+      "title": "MOC MDF-e 3.00b, Anexo I: Leiaute e Regras de Validação do MDF-e",
+      "versao": "3.00b",
+      "citation": "MOC MDF-e 3.00b Anexo I",
+      "url": "https://dfe-portal.svrs.rs.gov.br/MDFE/DownloadArquivoEstatico/?sistema=MDFE&tipoArquivo=1&nomeArquivo=MOC_MDFe_Anexo%20I_Leiaute%20e%20Regras%20Valida%C3%A7%C3%A3o_v3.00b.pdf",
+      "file": "anexo1-3.00b.pdf",
+      "sha256": "823ca492144eb928821c8ac6d5440f7625397d7b90a770003256559c6d6abe78",
+      "from": "^\\s*2\\.2 Regras de Validação Específicas do MDFe",
+      "to": "^\\s*3 Leiaute do MDFe"
+    },
+    {
+      "id": "moc300b-visao-geral",
+      "title": "MOC MDF-e 3.00b, Visão Geral: Padrões Técnicos de Comunicação do MDF-e",
+      "versao": "3.00b",
+      "citation": "MOC MDF-e 3.00b Visão Geral",
+      "url": "https://dfe-portal.svrs.rs.gov.br/MDFE/DownloadArquivoEstatico/?sistema=MDFE&tipoArquivo=1&nomeArquivo=MOC_MDFe_VisaoGeral_v3.00b.pdf",
+      "file": "visao-geral-3.00b.pdf",
+      "sha256": "f8501acf8880c6b6705d286ee56acf59657de491c92e9d45aba7c666119932d7",
+      "from": "^\\s*4\\.1 Regras de Validação Gerais",
+      "to": "^\\s*9 QR Code"
+    },
+    {
+      "id": "mdfe-nt2024001",
+      "title": "MDF-e NT 2024.001: altera regras de validação do MDF-e (chaves antigas, veículos, encerramento pelo transportador)",
+      "versao": "1.02",
+      "citation": "MDF-e NT 2024.001 v1.02",
+      "url": "https://dfe-portal.svrs.rs.gov.br/MDFE/DownloadArquivoEstatico/?sistema=MDFE&tipoArquivo=3&nomeArquivo=MDFe_Nota_Tecnica_2024_001_1.02.pdf",
+      "file": "nt2024001.pdf",
+      "sha256": "8c4dc7667260605575fd8fc1660f3ea630b0988245bddd7b4d70d6fb3c0a3a81",
+      "from": "^\\s*1 Resumo",
+      "to": null
+    },
+    {
+      "id": "mdfe-nt2024002",
+      "title": "MDF-e NT 2024.002: CT-e Simplificado com entrega parcial e regras do PAA",
+      "versao": "1.01",
+      "citation": "MDF-e NT 2024.002 v1.01",
+      "url": "https://dfe-portal.svrs.rs.gov.br/MDFE/DownloadArquivoEstatico/?sistema=MDFE&tipoArquivo=3&nomeArquivo=MDFe_Nota_Tecnica_2024_002_1.01.pdf",
+      "file": "nt2024002.pdf",
+      "sha256": "e32f0ef55f4b6d0e0ebe9a45662de853c27b9e6bdd74000562106243537d171a",
+      "from": "^\\s*1 Resumo",
+      "to": null
+    },
+    {
+      "id": "mdfe-nt2025001",
+      "title": "MDF-e NT 2025.001: altera schema e regras de validação do MDF-e",
+      "versao": "1.03",
+      "citation": "MDF-e NT 2025.001 v1.03",
+      "url": "https://dfe-portal.svrs.rs.gov.br/MDFE/DownloadArquivoEstatico/?sistema=MDFE&tipoArquivo=3&nomeArquivo=MDFe_Nota_Tecnica_2025_001_1.03.pdf",
+      "file": "nt2025001-v1.03.pdf",
+      "sha256": "c4b32be94eb484e7806daa280abba88738e156955a941a4ad6fe07b551f28037",
+      "from": "^\\s*2 Regras solicitadas pela ANTT",
+      "to": "^\\s*3 Alteração no leiaute do MDFe"
+    },
+    {
+      "id": "mdfe-nt2026001",
+      "title": "MDF-e NT 2026.001: regra de validação da exigência do CIOT",
+      "versao": "1.00",
+      "citation": "MDF-e NT 2026.001 v1.00",
+      "url": "https://dfe-portal.svrs.rs.gov.br/MDFE/DownloadArquivoEstatico/?sistema=MDFE&tipoArquivo=3&nomeArquivo=MDFe_Nota_Tecnica_2026_001.pdf",
+      "file": "nt2026001.pdf",
+      "sha256": "cf1ecb48d9c1baf9c541d5cf5edee4e44a7b88abdeb3c9d877af5519ae58b1da",
+      "from": "^\\s*1 Resumo",
+      "to": null
+    }
+  ]
+}

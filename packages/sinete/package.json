@@ -1,0 +1,275 @@
+{
+  "name": "sinete",
+  "version": "0.0.0",
+  "description": "Guarda-chuva do sinete, DF-e brasileiros em TypeScript: um pacote só, com um subpath por pacote @sinete/* (sinete/nfe, sinete/mdfe, sinete/nfse, sinete/da/nfe, sinete/ibs-cbs, sinete/core...) e o bin sinete, com as versões fixadas num conjunto testado junto",
+  "keywords": [
+    "nfe",
+    "nfce",
+    "mdfe",
+    "nfse",
+    "dfe",
+    "sefaz",
+    "danfe",
+    "ibs",
+    "cbs",
+    "nota-fiscal",
+    "brasil"
+  ],
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": [
+    "./dist/cli.js"
+  ],
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "bin": {
+    "sinete": "./dist/cli.js"
+  },
+  "exports": {
+    "./core": {
+      "types": "./dist/core/index.d.ts",
+      "default": "./dist/core/index.js"
+    },
+    "./core/xml": {
+      "types": "./dist/core/xml.d.ts",
+      "default": "./dist/core/xml.js"
+    },
+    "./cert": {
+      "types": "./dist/cert/index.d.ts",
+      "default": "./dist/cert/index.js"
+    },
+    "./transport": {
+      "types": "./dist/transport/index.d.ts",
+      "default": "./dist/transport/index.js"
+    },
+    "./transport/signer": {
+      "types": "./dist/transport/signer.d.ts",
+      "default": "./dist/transport/signer.js"
+    },
+    "./validators": {
+      "types": "./dist/validators/index.d.ts",
+      "default": "./dist/validators/index.js"
+    },
+    "./rejeicoes": {
+      "types": "./dist/rejeicoes/index.d.ts",
+      "default": "./dist/rejeicoes/index.js"
+    },
+    "./rejeicoes/mdfe": {
+      "types": "./dist/rejeicoes/mdfe.d.ts",
+      "default": "./dist/rejeicoes/mdfe.js"
+    },
+    "./rejeicoes/nfse": {
+      "types": "./dist/rejeicoes/nfse.d.ts",
+      "default": "./dist/rejeicoes/nfse.js"
+    },
+    "./schemas": {
+      "types": "./dist/schemas/index.d.ts",
+      "default": "./dist/schemas/index.js"
+    },
+    "./schemas/nfe/PL_010f": {
+      "types": "./dist/schemas/nfe/PL_010f.d.ts",
+      "default": "./dist/schemas/nfe/PL_010f.js"
+    },
+    "./schemas/nfe/PL_010e": {
+      "types": "./dist/schemas/nfe/PL_010e.d.ts",
+      "default": "./dist/schemas/nfe/PL_010e.js"
+    },
+    "./schemas/mdfe/3.00b": {
+      "types": "./dist/schemas/mdfe/3.00b.d.ts",
+      "default": "./dist/schemas/mdfe/3.00b.js"
+    },
+    "./schemas/mdfe/eventos/3.00b": {
+      "types": "./dist/schemas/mdfe/eventos/3.00b.d.ts",
+      "default": "./dist/schemas/mdfe/eventos/3.00b.js"
+    },
+    "./schemas/mdfe/servicos/3.00b": {
+      "types": "./dist/schemas/mdfe/servicos/3.00b.d.ts",
+      "default": "./dist/schemas/mdfe/servicos/3.00b.js"
+    },
+    "./schemas/nfe/evento-cancelamento/PL_010d": {
+      "types": "./dist/schemas/nfe/evento-cancelamento/PL_010d.d.ts",
+      "default": "./dist/schemas/nfe/evento-cancelamento/PL_010d.js"
+    },
+    "./schemas/nfe/evento-cce/PL_010d": {
+      "types": "./dist/schemas/nfe/evento-cce/PL_010d.d.ts",
+      "default": "./dist/schemas/nfe/evento-cce/PL_010d.js"
+    },
+    "./schemas/nfe/evento-cancelamento-substituicao/PL_010d": {
+      "types": "./dist/schemas/nfe/evento-cancelamento-substituicao/PL_010d.d.ts",
+      "default": "./dist/schemas/nfe/evento-cancelamento-substituicao/PL_010d.js"
+    },
+    "./schemas/nfe/evento-confirmacao-operacao/PL_010d": {
+      "types": "./dist/schemas/nfe/evento-confirmacao-operacao/PL_010d.d.ts",
+      "default": "./dist/schemas/nfe/evento-confirmacao-operacao/PL_010d.js"
+    },
+    "./schemas/nfe/evento-ciencia-operacao/PL_010d": {
+      "types": "./dist/schemas/nfe/evento-ciencia-operacao/PL_010d.d.ts",
+      "default": "./dist/schemas/nfe/evento-ciencia-operacao/PL_010d.js"
+    },
+    "./schemas/nfe/evento-desconhecimento-operacao/PL_010d": {
+      "types": "./dist/schemas/nfe/evento-desconhecimento-operacao/PL_010d.d.ts",
+      "default": "./dist/schemas/nfe/evento-desconhecimento-operacao/PL_010d.js"
+    },
+    "./schemas/nfe/evento-operacao-nao-realizada/PL_010d": {
+      "types": "./dist/schemas/nfe/evento-operacao-nao-realizada/PL_010d.d.ts",
+      "default": "./dist/schemas/nfe/evento-operacao-nao-realizada/PL_010d.js"
+    },
+    "./schemas/nfe/inutilizacao/PL_010d": {
+      "types": "./dist/schemas/nfe/inutilizacao/PL_010d.d.ts",
+      "default": "./dist/schemas/nfe/inutilizacao/PL_010d.js"
+    },
+    "./schemas/nfe/consulta-protocolo/PL_010d": {
+      "types": "./dist/schemas/nfe/consulta-protocolo/PL_010d.d.ts",
+      "default": "./dist/schemas/nfe/consulta-protocolo/PL_010d.js"
+    },
+    "./schemas/nfe/consulta-cadastro/PL_010d": {
+      "types": "./dist/schemas/nfe/consulta-cadastro/PL_010d.d.ts",
+      "default": "./dist/schemas/nfe/consulta-cadastro/PL_010d.js"
+    },
+    "./schemas/nfe/status-servico/PL_009q": {
+      "types": "./dist/schemas/nfe/status-servico/PL_009q.d.ts",
+      "default": "./dist/schemas/nfe/status-servico/PL_009q.js"
+    },
+    "./schemas/nfe/dist-dfe/PL_NFeDistDFe_104": {
+      "types": "./dist/schemas/nfe/dist-dfe/PL_NFeDistDFe_104.d.ts",
+      "default": "./dist/schemas/nfe/dist-dfe/PL_NFeDistDFe_104.js"
+    },
+    "./schemas/nfse/1.01-20260209": {
+      "types": "./dist/schemas/nfse/1.01-20260209.d.ts",
+      "default": "./dist/schemas/nfse/1.01-20260209.js"
+    },
+    "./schemas/nfse/1.01-20260727": {
+      "types": "./dist/schemas/nfse/1.01-20260727.d.ts",
+      "default": "./dist/schemas/nfse/1.01-20260727.js"
+    },
+    "./ibs-cbs-dados": {
+      "types": "./dist/ibs-cbs-dados/index.d.ts",
+      "default": "./dist/ibs-cbs-dados/index.js"
+    },
+    "./ibs-cbs-dados/bundled": {
+      "types": "./dist/ibs-cbs-dados/bundled.d.ts",
+      "default": "./dist/ibs-cbs-dados/bundled.js"
+    },
+    "./ibs-cbs": {
+      "types": "./dist/ibs-cbs/index.d.ts",
+      "default": "./dist/ibs-cbs/index.js"
+    },
+    "./ibs-cbs/aliquotas": {
+      "types": "./dist/ibs-cbs/aliquotas.d.ts",
+      "default": "./dist/ibs-cbs/aliquotas.js"
+    },
+    "./ibs-cbs/calcular": {
+      "types": "./dist/ibs-cbs/calcular.d.ts",
+      "default": "./dist/ibs-cbs/calcular.js"
+    },
+    "./ibs-cbs/validar": {
+      "types": "./dist/ibs-cbs/validar.d.ts",
+      "default": "./dist/ibs-cbs/validar.js"
+    },
+    "./ibs-cbs/determinar": {
+      "types": "./dist/ibs-cbs/determinar.d.ts",
+      "default": "./dist/ibs-cbs/determinar.js"
+    },
+    "./nfe": {
+      "types": "./dist/nfe/index.d.ts",
+      "default": "./dist/nfe/index.js"
+    },
+    "./nfe/ibs-cbs": {
+      "types": "./dist/nfe/ibs-cbs.d.ts",
+      "default": "./dist/nfe/ibs-cbs.js"
+    },
+    "./mdfe": {
+      "types": "./dist/mdfe/index.d.ts",
+      "default": "./dist/mdfe/index.js"
+    },
+    "./nfse": {
+      "types": "./dist/nfse/index.d.ts",
+      "default": "./dist/nfse/index.js"
+    },
+    "./da": {
+      "types": "./dist/da/index.d.ts",
+      "default": "./dist/da/index.js"
+    },
+    "./da/nfe": {
+      "types": "./dist/da/nfe.d.ts",
+      "default": "./dist/da/nfe.js"
+    },
+    "./da/nfce": {
+      "types": "./dist/da/nfce.d.ts",
+      "default": "./dist/da/nfce.js"
+    },
+    "./da/mdfe": {
+      "types": "./dist/da/mdfe.d.ts",
+      "default": "./dist/da/mdfe.js"
+    },
+    "./da/cce": {
+      "types": "./dist/da/cce.d.ts",
+      "default": "./dist/da/cce.js"
+    },
+    "./da/nfse": {
+      "types": "./dist/da/nfse.d.ts",
+      "default": "./dist/da/nfse.js"
+    },
+    "./emissor": {
+      "types": "./dist/emissor/index.d.ts",
+      "default": "./dist/emissor/index.js"
+    },
+    "./emissor/nfe": {
+      "types": "./dist/emissor/nfe.d.ts",
+      "default": "./dist/emissor/nfe.js"
+    },
+    "./emissor/mdfe": {
+      "types": "./dist/emissor/mdfe.d.ts",
+      "default": "./dist/emissor/mdfe.js"
+    },
+    "./emissor/nfse": {
+      "types": "./dist/emissor/nfse.d.ts",
+      "default": "./dist/emissor/nfse.js"
+    },
+    "./emissor/memoria": {
+      "types": "./dist/emissor/memoria.d.ts",
+      "default": "./dist/emissor/memoria.js"
+    },
+    "./emissor/contrato": {
+      "types": "./dist/emissor/contrato.d.ts",
+      "default": "./dist/emissor/contrato.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src",
+    "docs",
+    "NOTICE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sinete-dev/sinete.git",
+    "directory": "packages/sinete"
+  },
+  "homepage": "https://github.com/sinete-dev/sinete/tree/main/packages/sinete#readme",
+  "bugs": "https://github.com/sinete-dev/sinete/issues",
+  "scripts": {
+    "build": "bun ../../scripts/build.ts ."
+  },
+  "dependencies": {
+    "@sinete/cert": "workspace:*",
+    "@sinete/cli": "workspace:*",
+    "@sinete/core": "workspace:*",
+    "@sinete/da": "workspace:*",
+    "@sinete/emissor": "workspace:*",
+    "@sinete/ibs-cbs": "workspace:*",
+    "@sinete/ibs-cbs-dados": "workspace:*",
+    "@sinete/mdfe": "workspace:*",
+    "@sinete/nfe": "workspace:*",
+    "@sinete/nfse": "workspace:*",
+    "@sinete/rejeicoes": "workspace:*",
+    "@sinete/schemas": "workspace:*",
+    "@sinete/transport": "workspace:*",
+    "@sinete/validators": "workspace:*"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

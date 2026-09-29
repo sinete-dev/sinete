@@ -1,0 +1,8 @@
+[
+  {"v":1,"id":"c9","method":"http.request","params":{"identity":"emitente-59554465000137","url":"https://nfe.fazenda.sp.gov.br/ws/nfestatusservico4.asmx","method":"POST","headers":{},"body":""}},
+  {"v":1,"id":"c9","error":{"code":"guard","message":"host fora da allowlist (produção ou desconhecido): nfe.fazenda.sp.gov.br"}},
+  {"v":1,"id":"h9","method":"sign","params":{"identity":"k","scheme":"rsa_pkcs1_sha256","mode":"digest","digest":"...","context":{"purpose":"tls12-client-certificate-verify","host":"cav.receita.fazenda.gov.br","conn":3,"handshake":1}}},
+  {"v":1,"id":"h9","error":{"code":"sign_refused","message":"host fora da política do dono da chave: cav.receita.fazenda.gov.br"}},
+  {"v":2,"id":"c10","method":"hello","params":{}},
+  {"v":1,"id":"c10","error":{"code":"protocol_version","message":"helper fala v1, frame v2"}}
+]

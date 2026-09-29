@@ -1,0 +1,30 @@
+{
+  "descricao": "Parâmetros fixos da emissão do MDF-e: faixa de série do emitente pessoa física, tipo de emissão do documento transportado que exige o segundo código de barras, formato nacional de placa prazos de transmissão, idade máxima das chaves dos documentos e composição do cavalo mecânico.",
+  "atualizadoEm": "2026-09-26",
+  "series": {
+    "cpf": [920, 969],
+    "fonte": "MOC MDF-e 3.00b Anexo I, regras F69 (232) e F70 (233)"
+  },
+  "segCodBarra": {
+    "tpEmisFsDa": "5",
+    "fonte": "MOC MDF-e 3.00b Anexo I, regras F35, F36, F41 e F42 (602, 603, 606, 607): FS-DA é o tpEmis 5 da NF-e e do CT-e"
+  },
+  "placa": {
+    "padrao": "^[A-Z]{3}[0-9][0-9A-Z][0-9]{2}$",
+    "fonte": "MOC MDF-e 3.00b Anexo I, regra F89 (646), quando carregamento e descarregamento não são EX"
+  },
+  "contingencia": {
+    "prazoTransmissaoHoras": 168,
+    "atrasoMaximoNormalHoras": 24,
+    "fonte": "MOC MDF-e 3.00b Visão Geral, item 11.1 (168 horas, mesma chave e mesmo cMDF); Anexo I, regra F80 (228, emissão normal com mais de 24 horas)"
+  },
+  "percursoMaximo": 25,
+  "chaveAntiga": {
+    "meses": 6,
+    "fonte": "MDF-e NT 2024.001 v1.02, regras F30a (518) e F37a (519): ano e mês da chave do CT-e ou da NF-e anteriores a 6 meses da data de autorização do MDF-e. O sinete confere contra a data de emissão, que é a autorização em emissão normal; aceita o próprio mês limite (em setembro, março ainda passa) e recusa os anteriores."
+  },
+  "reboqueCavalo": {
+    "tpRod": "03",
+    "fonte": "MDF-e NT 2024.001 v1.02, regra F89c (523): cavalo mecânico (tpRod 03) exige ao menos um reboque"
+  }
+}

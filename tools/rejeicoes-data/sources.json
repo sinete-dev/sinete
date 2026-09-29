@@ -1,0 +1,62 @@
+{
+  "retrievedAt": "2026-09-28",
+  "documents": [
+    {
+      "id": "moc70-anexo1",
+      "title": "MOC 7.0, Anexo I: Leiaute e Regras de Validação da NF-e e da NFC-e",
+      "versao": "7.00",
+      "citation": "MOC 7.0 Anexo I",
+      "url": "https://www.nfe.fazenda.gov.br/portal/listaConteudo.aspx?tipoConteudo=ndIjl+iEFdE=",
+      "file": "ANEXO I - Leiaute e Regra de Validação - NF-e e NFC-e (1).pdf",
+      "sha256": "5eb4cf2010b10b0b62f78197c4eb64025f24535d4c6e61158bc7806dd008f55d"
+    },
+    {
+      "id": "nt2025002",
+      "title": "NT 2025.002-RTC: Reforma Tributária do Consumo, IBS, CBS e IS na NF-e e na NFC-e",
+      "versao": "1.40",
+      "citation": "NT 2025.002 v1.40",
+      "url": "https://www.nfe.fazenda.gov.br/portal/listaConteudo.aspx?tipoConteudo=04BIflQt1aY=",
+      "file": "NT_2025.002_v1.40_RTC_NF-e_IBS_CBS_IS Final.pdf",
+      "sha256": "4af56d5fae5eceaad63bb67f663dad4fd599f5bd9482d5474b419a97710193f0"
+    },
+    {
+      "id": "nt2025001",
+      "title": "NT 2025.001: Simplificação Operacional (leiaute do QR-Code da NFC-e, resposta assíncrona com lote de 1 NF-e e outras regras)",
+      "versao": "1.03",
+      "citation": "NT 2025.001 v1.03",
+      "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=NvuzQGYd6E8=",
+      "file": "NT2025.001_v1.03.pdf",
+      "sha256": "333b69f71debe5040585b677b574bb13b39362aa7934b904edc59cdf83cded02",
+      "mensagens": {
+        "tabela": "^90\\.1 Código das Mensagens",
+        "regrasDe": "^03\\.2 Validação da Área de Dados",
+        "regrasAte": "^04\\. Preenchimento da URL",
+        "item": "90.1"
+      }
+    },
+    {
+      "id": "nt2024003",
+      "title": "NT 2024.003: Informações de Produtos da Agricultura, Pecuária e Produção Florestal",
+      "versao": "1.10",
+      "citation": "NT 2024.003 v1.10",
+      "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=iamjHzm+4/I=",
+      "file": "NT2024.003_v1.10.pdf",
+      "sha256": "d7609f48772db2ccbff6784b3e51a138433733ddff3deba84640622f82397966"
+    },
+    {
+      "id": "nt2023002",
+      "title": "NT 2023.002: Emitente Pessoa Física (CPF) com Inscrição Estadual, NFC-e",
+      "versao": "1.01",
+      "citation": "NT 2023.002 v1.01",
+      "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=T3QyeMfpios=",
+      "file": "NT_2023.002_v1.01.pdf",
+      "sha256": "b0cb9528bfaa6e0b5ac2986c879898eebcbb9457e97fcf0af985a00659649031",
+      "mensagens": {
+        "tabela": "^\\s*7\\. Tabela de códigos e descrições",
+        "regrasDe": "^\\s*3\\. Grupo D: Validação da Área de Dados\\s*$",
+        "regrasAte": "^\\s*7\\. Tabela de códigos e descrições de mensagens de erro\\s*$",
+        "item": "7"
+      }
+    }
+  ]
+}

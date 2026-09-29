@@ -1,0 +1,67 @@
+{
+  "description": "Assinatura de documento fiscal com a chave do token. O helper recalcula o hash do SignedInfo, confere o perfil XMLDSig dos DF-e e que o Id referencia documento do titular; no backend remote o método é recusado (forbidden).",
+  "frames": [
+    {
+      "from": "client",
+      "frame": {
+        "v": 1,
+        "id": "c8",
+        "method": "dfe.sign",
+        "params": { "identity": "token-a3", "signedInfo": "PFNpZ25lZEluZm8+", "hash": "SHA-1" }
+      }
+    },
+    {
+      "from": "helper",
+      "of": "dfe.sign",
+      "frame": {
+        "v": 1,
+        "id": "c8",
+        "result": {
+          "signature": "c2lnbmF0dXJl",
+          "reference": "NFe35260911222333000181550010000000011000000011",
+          "kind": "nfe"
+        }
+      }
+    },
+    {
+      "from": "client",
+      "frame": {
+        "v": 1,
+        "id": "c9",
+        "method": "dfe.sign",
+        "params": { "identity": "token-a3", "signedInfo": "PFNpZ25lZEluZm8+", "hash": "SHA-1" }
+      }
+    },
+    {
+      "from": "helper",
+      "frame": {
+        "v": 1,
+        "id": "c9",
+        "error": {
+          "code": "dfe_refused",
+          "message": "o emitente do Id (44555666******) não é o titular do certificado"
+        }
+      }
+    },
+    {
+      "from": "client",
+      "frame": {
+        "v": 1,
+        "id": "c10",
+        "method": "dfe.sign",
+        "params": { "identity": "emitente-11222333000181", "signedInfo": "PFNpZ25lZEluZm8+", "hash": "SHA-1" }
+      }
+    },
+    {
+      "from": "helper",
+      "frame": {
+        "v": 1,
+        "id": "c10",
+        "error": {
+          "code": "forbidden",
+          "message": "dfe.sign só vale para chave que o helper controla (pkcs11); no backend remote, o cliente já tem a chave"
+        }
+      }
+    }
+  ]
+}

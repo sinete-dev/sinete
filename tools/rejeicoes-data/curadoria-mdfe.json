@@ -1,0 +1,92 @@
+{
+  "notes": "Curadoria do catálogo do MDF-e: causa provável e correção redigidas a partir do MOC MDF-e 3.00b e das NT, com a regra citada em referencia. Redação própria; nada de texto de terceiros.",
+  "sanityAllow": {},
+  "mensagens": {
+    "678": {
+      "message": "Consumo Indevido",
+      "source": "MOC MDF-e 3.00b Visão Geral, item 8 (as regras CI01 a CI04 dão só o código; a mensagem está no texto do item 8)",
+      "rule": "CI01",
+      "doc": "moc300b-visao-geral"
+    }
+  },
+  "entries": {
+    "204": {
+      "category": "duplicidade",
+      "causaProvavel": "Já existe MDF-e autorizado com a mesma chave natural (UF, CNPJ/CPF do emitente, modelo, série e número). Caso típico: reenvio depois de um envio sem resposta.",
+      "comoCorrigir": "Consulte a situação da chave (MDFeConsulta). Se estiver autorizada com o mesmo digVal, recupere o protocolo e monte o mdfeProc em vez de reenviar. Se o conteúdo mudou, emita com outro número.",
+      "referencia": "MOC MDF-e 3.00b Anexo I, regra F82"
+    },
+    "539": {
+      "category": "duplicidade",
+      "causaProvavel": "O número já foi autorizado com outra chave de acesso (outro cMDF ou outro dhEmi): o MDF-e foi remontado depois de um envio sem resposta.",
+      "comoCorrigir": "Não reenvie. Recupere o MDF-e autorizado pela chave informada no xMotivo e descarte o local; para uma nova viagem, use outro número.",
+      "referencia": "MOC MDF-e 3.00b Anexo I, regra F81"
+    },
+    "220": {
+      "causaProvavel": "O cancelamento só é aceito até 24 horas depois da autorização.",
+      "comoCorrigir": "Depois do prazo, encerre o MDF-e (evento 110112). A liberação do prazo é feita só pelo fisco (evento 240170).",
+      "referencia": "MOC MDF-e 3.00b Visão Geral, item 6.1.1, regra K04"
+    },
+    "222": {
+      "causaProvavel": "O nProt informado no evento não é o protocolo de autorização do MDF-e.",
+      "comoCorrigir": "Use o nProt do protMDFe gravado no mdfeProc (ou devolvido pela consulta da chave).",
+      "referencia": "MOC MDF-e 3.00b Visão Geral, item 6.1.1, regra K05"
+    },
+    "609": {
+      "category": "duplicidade",
+      "causaProvavel": "O MDF-e já foi encerrado; depois do encerramento não se cancela, não se encerra de novo e não se inclui condutor nem DF-e.",
+      "comoCorrigir": "Consulte a chave para obter o evento de encerramento registrado. Para nova viagem, emita outro MDF-e.",
+      "referencia": "MOC MDF-e 3.00b Anexo I, regra F84; Visão Geral, item 6.2.1, regra K09"
+    },
+    "611": {
+      "causaProvavel": "Existe MDF-e não encerrado para a mesma placa, o mesmo tipo de emitente e a mesma UF de descarregamento.",
+      "comoCorrigir": "Encerre o MDF-e anterior (a consulta de não encerrados lista chave e protocolo) antes de emitir o novo.",
+      "referencia": "MOC MDF-e 3.00b Anexo I, regra F85"
+    },
+    "662": {
+      "causaProvavel": "Existe MDF-e não encerrado para a mesma placa com o par de UF de carregamento e descarregamento no sentido oposto (a volta foi emitida sem encerrar a ida).",
+      "comoCorrigir": "Encerre o MDF-e da ida antes de autorizar o da volta.",
+      "referencia": "MOC MDF-e 3.00b Anexo I, regra F88"
+    },
+    "686": {
+      "causaProvavel": "O emitente tem MDF-e autorizado há mais de 30 dias sem encerramento.",
+      "comoCorrigir": "Liste os não encerrados (MDFeConsNaoEnc) e encerre cada um com a data e o município reais do fim da viagem.",
+      "referencia": "MOC MDF-e 3.00b Anexo I, regra F86"
+    },
+    "462": {
+      "causaProvavel": "Existe MDF-e não encerrado há mais de 5 dias para a placa, com até duas UF de percurso além do carregamento e do descarregamento.",
+      "comoCorrigir": "Encerre o MDF-e anterior da placa antes de emitir o novo.",
+      "referencia": "MOC MDF-e 3.00b Anexo I, regra F87"
+    },
+    "663": {
+      "causaProvavel": "As UF de percurso não formam um caminho por divisas entre a UF de carregamento e a de descarregamento, na ordem da viagem.",
+      "comoCorrigir": "Informe em infPercurso, na ordem, cada UF atravessada entre UFIni e UFFim, de modo que cada par consecutivo faça divisa.",
+      "referencia": "MOC MDF-e 3.00b Anexo I, regra F90"
+    },
+    "725": {
+      "causaProvavel": "Prestador de serviço de transporte (tpEmit 1 ou 3), ou carga própria com tpTransp informado, sem o grupo do produto predominante.",
+      "comoCorrigir": "Informe prodPred com tpCarga e xProd (e NCM na carga lotação, NT 2025.001).",
+      "referencia": "MOC MDF-e 3.00b Anexo I, regra F54"
+    },
+    "726": {
+      "causaProvavel": "MDF-e com um único DF-e transportado (carga lotação) sem o grupo infLotacao do produto predominante.",
+      "comoCorrigir": "Informe prodPred/infLotacao com o CEP ou as coordenadas do local de carregamento e de descarregamento.",
+      "referencia": "MOC MDF-e 3.00b Anexo I, regra F55"
+    },
+    "698": {
+      "causaProvavel": "Prestador de serviço de transporte (tpEmit 1 ou 3) no modal rodoviário sem o grupo de seguro da carga.",
+      "comoCorrigir": "Informe seg com o responsável, a seguradora, a apólice e as averbações.",
+      "referencia": "MOC MDF-e 3.00b Anexo I, regra F91"
+    },
+    "745": {
+      "causaProvavel": "tpTransp informado sem o proprietário do veículo de tração. No transporte de carga própria em veículo próprio, o tipo de transportador não vai.",
+      "comoCorrigir": "Retire tpTransp, ou informe veicTracao/prop quando o veículo for de terceiro.",
+      "referencia": "MOC MDF-e 3.00b Anexo I, regra F20"
+    },
+    "684": {
+      "causaProvavel": "Prestação por conta de terceiros no modal rodoviário (tpEmit 1 ou 3, ou tpEmit 2 com tpTransp) sem o grupo infCIOT. A NT 2026.001 torna a exigência geral a partir de 23/11/2026 em produção.",
+      "comoCorrigir": "Informe infANTT/infCIOT com o CIOT e o CPF ou CNPJ do responsável pela geração.",
+      "referencia": "MDF-e NT 2026.001 v1.00, item 1; MOC MDF-e 3.00b Anexo I, regra F113"
+    }
+  }
+}

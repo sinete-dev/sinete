@@ -1,0 +1,7 @@
+{
+  "descricao": "Onde a inscrição na Suframa do destinatário (ISUF) é aceita na NF-e: UFs inteiras e, no Amapá, só os municípios listados. Fora delas, rejeição 251.",
+  "atualizadoEm": "2026-09-28",
+  "fonte": "MOC 7.0 Anexo I, RV E18-30 (rejeição 251, modelo 55, obrigatória)",
+  "ufs": ["AC", "AM", "RO", "RR"],
+  "municipios": { "AP": ["1600303", "1600600"] }
+}

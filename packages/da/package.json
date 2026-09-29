@@ -1,0 +1,82 @@
+{
+  "name": "@sinete/da",
+  "version": "0.0.0",
+  "description": "Documentos auxiliares dos DF-e em PDF e HTML/SVG a partir do XML autorizado, com um subpath por documento: DANFE da NF-e (retrato, paisagem, Simplificado, Etiqueta e Simplificado Tipo 2), DANFC-e (DANFE NFC-e), DAMDFE, DACCe e DANFSe v2 (NT 008/2026), com o DACTE previsto. Determinístico e sem dependência nativa",
+  "keywords": [
+    "danfe",
+    "danfce",
+    "damdfe",
+    "dacce",
+    "dacte",
+    "danfse",
+    "documento-auxiliar",
+    "nfe",
+    "nfce",
+    "mdfe",
+    "cce",
+    "cte",
+    "nfse",
+    "pdf",
+    "brasil"
+  ],
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./nfe": {
+      "types": "./dist/nfe.d.ts",
+      "default": "./dist/nfe.js"
+    },
+    "./nfce": {
+      "types": "./dist/nfce.d.ts",
+      "default": "./dist/nfce.js"
+    },
+    "./mdfe": {
+      "types": "./dist/mdfe.d.ts",
+      "default": "./dist/mdfe.js"
+    },
+    "./cce": {
+      "types": "./dist/cce.d.ts",
+      "default": "./dist/cce.js"
+    },
+    "./nfse": {
+      "types": "./dist/nfse.d.ts",
+      "default": "./dist/nfse.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src",
+    "NOTICE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sinete-dev/sinete.git",
+    "directory": "packages/da"
+  },
+  "homepage": "https://github.com/sinete-dev/sinete/tree/main/packages/da#readme",
+  "bugs": "https://github.com/sinete-dev/sinete/issues",
+  "scripts": {
+    "build": "bun ../../scripts/build.ts ."
+  },
+  "dependencies": {
+    "@sinete/core": "workspace:^",
+    "@sinete/schemas": "workspace:^",
+    "fflate": "^0.8.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "pixelmatch": "7.2.0",
+    "qrcode-generator": "2.0.4"
+  }
+}

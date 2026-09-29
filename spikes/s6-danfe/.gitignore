@@ -1,0 +1,5 @@
+# material local: saídas renderizadas do corpus (dados pessoais), resultados com nomes de arquivo
+.local/
+results/
+node_modules/
+out/

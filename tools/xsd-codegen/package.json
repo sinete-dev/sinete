@@ -1,0 +1,15 @@
+{
+  "name": "@sinete/xsd-codegen",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Gerador de código dos XSD oficiais (XSD, IR JSON, módulo TS) que alimenta o @sinete/schemas. Não é publicado.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "gen": "bun src/cli.ts",
+    "check": "bun src/cli.ts --check"
+  },
+  "dependencies": {
+    "@sinete/core": "workspace:^"
+  }
+}

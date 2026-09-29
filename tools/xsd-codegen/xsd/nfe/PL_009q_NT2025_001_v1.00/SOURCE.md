@@ -1,0 +1,35 @@
+# PL_009q_NT2025_001_v1.00
+
+Pacote oficial, artefato público do governo, sem alterações. Os arquivos abaixo são o conteúdo do zip, byte a byte (inclusive CRLF).
+
+- Título na fonte: Esquema XML NF-e/NFC-e - Pacote de Liberação nº 9q (Novo leiaute da NF-e, NT 2025.001 v.1.00)
+- Publicação: 19/05/2025
+- Página de origem: https://www.nfe.fazenda.gov.br/portal/listaConteudo.aspx?tipoConteudo=BMPFMBoln3w= (Documentos > Esquemas XML)
+- Download: https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=0qRvxtvKcj4=
+- Arquivo baixado: `PL_009q_NT2025_001_v1.00.zip` (sha256 `82a26d04a778fc214bf8c6c6e5c65ea577721e32ed5efa9a11a80098b8f9802f`)
+- Baixado em: 2026-09-25
+- Uso no sinete: Último pacote que traz consStatServ e retConsStatServ (status do serviço); os pacotes 010 não os redistribuem. Só esses dois schemas são gerados daqui.
+
+## sha256 dos arquivos extraídos
+
+```
+0520356a8ac619c8730f793ed2a955418ce5a138b6811f3a6f2c0e72017002c5  consReciNFe_v4.00.xsd
+44d816a725553a0c53508be919629c9235b42c5d41c358a05be8fdf61945f5c1  consSitNFe_v4.00.xsd
+20c2cae522ac79ea52353ca66d7595c6616a46a491e561b076145fe8574b8773  consStatServ_v4.00.xsd
+9ba17a12e3fd6e153bd8676450526ba3bcfc15b75ecb372823826ee827b8c3ef  enviNFe_v4.00.xsd
+d50dd40f010634d8576ad880552a3d186bd4cfe0a4b554f3097dae2cc5c6a59e  inutNFe_v4.00.xsd
+e74e697bc033d8eec01ff75487eb649598250dd7715f6d120eec817fb2506e8e  leiauteConsSitNFe_v4.00.xsd
+cdc0813b5bf0087c7c8510f6ea0c2a367c829d9ea4b44c23533d18d3bcf23375  leiauteConsStatServ_v4.00.xsd
+fd501253ebc1400ef8a753f6ff8dffbf4f5bd07461f1d789c38839c26d26928c  leiauteInutNFe_v4.00.xsd
+70499ad19d4c64282ec6a339692f5da84f2b7c57572b2b3b745525bfa1fa5e9a  leiauteNFe_v4.00.xsd
+3c79d7cdb26be1bc417fa5fc24da56e23de31e1b6003c0a56d26640b1164db3a  nfe_v4.00.xsd
+c71ce9ed656e22161923d77af47839421fa41c63703a064655880fed76e20334  procInutNFe_v4.00.xsd
+b7af3072ff7398aa557c42bc6d8198dd3c006b1a6ecaad66bc839a5c34cbcb84  procNFe_v4.00.xsd
+5cc8219feac16f43a21e168ec4cbf8d0dcf8dade5dccf3f07a42f538519129e9  retConsReciNFe_v4.00.xsd
+8b7188d6fe9e879ca057bfb68600746c7491d2e092e3dc5121a6cd5aa79272d5  retConsSitNFe_v4.00.xsd
+337ceed7f74c0764edbc8a18feacaf8c33f66aa951c46b4b29b561cda7c2f7fb  retConsStatServ_v4.00.xsd
+d58b700f849ea7df9f1d35580ae0de425dfa1e295408c02609b81905b04ce4ce  retEnviNFe_v4.00.xsd
+8b5590f79c157510c5f65a43c7325008c01677ebf24e14eef26e4817ea2673a1  retInutNFe_v4.00.xsd
+ca9a0be58e15b3065a1645af21f60b2e18edd6b13b9f5747c5c85e4692ebd13b  tiposBasico_v4.00.xsd
+f56744a5f51c03f027de13f39f869307091781a9ef1d91b1ebe14719ce28e1ac  xmldsig-core-schema_v1.01.xsd
+```

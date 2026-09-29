@@ -1,0 +1,7 @@
+{
+  // Typecheck de src e test. Os testes rodam no Bun, então aqui entram os tipos do Bun e a condição `node` (o Bun a
+  // resolve: a suíte de ponta a ponta usa o servidor HTTPS do @sinete/sefaz-sim e o transporte sobre node:https).
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": { "types": ["bun"], "customConditions": ["node"] },
+  "include": ["src", "test"]
+}

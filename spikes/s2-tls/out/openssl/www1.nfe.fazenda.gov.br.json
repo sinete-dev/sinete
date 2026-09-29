@@ -1,0 +1,40 @@
+{
+  "host": "www1.nfe.fazenda.gov.br",
+  "probedAt": "2026-09-25T23:12:33.686Z",
+  "connected": true,
+  "protocol": "TLSv1.2",
+  "cipher": "ECDHE-RSA-AES256-GCM-SHA384",
+  "peerSigType": "rsa_pss_rsae_sha256",
+  "tempKey": "ECDH, secp384r1, 384 bits",
+  "serverKey": "2048",
+  "secureRenegotiation": true,
+  "alpn": null,
+  "ocspStapled": true,
+  "sessionTicketHint": null,
+  "certificateRequest": true,
+  "clientCaNames": [],
+  "clientCertTypes": null,
+  "requestedSigAlgs": null,
+  "verifyReturn": "0 (ok)",
+  "chain": [
+    {
+      "s": "C=BR, ST=DISTRITO FEDERAL, L=BRASILIA, O=SERVICO FEDERAL DE PROCESSAMENTO DE DADOS (SERPRO), CN=www1.nfe.fazenda.gov.br",
+      "i": "C=BR, O=SERVICO FEDERAL DE PROCESSAMENTO DE DADOS (SERPRO), CN=AC SERPRO AR46 OV TLS CA 2025",
+      "key": "PKEY: RSA, 2048 (bit); sigalg: sha256WithRSAEncryption",
+      "validity": "NotBefore: Apr 13 13:58:35 2026 GMT; NotAfter: Oct 29 13:58:34 2026 GMT"
+    },
+    {
+      "s": "C=BR, O=SERVICO FEDERAL DE PROCESSAMENTO DE DADOS (SERPRO), CN=AC SERPRO AR46 OV TLS CA 2025",
+      "i": "C=BE, O=GlobalSign nv-sa, CN=GlobalSign Root R46",
+      "key": "PKEY: RSA, 2048 (bit); sigalg: sha256WithRSAEncryption",
+      "validity": "NotBefore: Oct 15 03:10:25 2025 GMT; NotAfter: Oct 15 00:00:00 2030 GMT"
+    }
+  ],
+  "resumed": false,
+  "versions": {
+    "1.0": "ECDHE-RSA-AES256-SHA",
+    "1.1": "ECDHE-RSA-AES256-SHA",
+    "1.2": "ECDHE-RSA-AES256-GCM-SHA384",
+    "1.3": false
+  }
+}

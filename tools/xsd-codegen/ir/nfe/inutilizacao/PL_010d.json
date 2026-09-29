@@ -1,0 +1,1543 @@
+{
+ "subpath": "nfe/inutilizacao/PL_010d",
+ "pl": "PL_010d_v1.03",
+ "roots": [
+  {
+   "name": "inutNFe",
+   "ns": "http://www.portalfiscal.inf.br/nfe",
+   "type": "TInutNFe"
+  },
+  {
+   "name": "retInutNFe",
+   "ns": "http://www.portalfiscal.inf.br/nfe",
+   "type": "TRetInutNFe"
+  },
+  {
+   "name": "ProcInutNFe",
+   "ns": "http://www.portalfiscal.inf.br/nfe",
+   "type": "TProcInutNFe"
+  }
+ ],
+ "complex": {
+  "TInutNFe": {
+   "kind": "complex",
+   "id": "TInutNFe",
+   "anonymous": false,
+   "ns": "http://www.portalfiscal.inf.br/nfe",
+   "attrs": [
+    {
+     "name": "versao",
+     "type": {
+      "kind": "simple",
+      "builtin": "token",
+      "chain": [],
+      "facets": {
+       "patterns": [
+        [
+         "4\\.00"
+        ]
+       ]
+      },
+      "name": "TVerInutNFe",
+      "doc": "Tipo Versão do leiaute de Inutilização 4.00"
+     },
+     "required": true
+    }
+   ],
+   "doc": "Tipo Pedido de Inutilização de Numeração da Nota Fiscal Eletrônica",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "infInut",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "ref": "TInutNFe.infInut"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Dados do Pedido de Inutilização de Numeração da Nota Fiscal Eletrônica"
+     },
+     {
+      "k": "el",
+      "name": "Signature",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "SignatureType"
+      },
+      "min": 1,
+      "max": 1
+     }
+    ]
+   }
+  },
+  "TInutNFe.infInut": {
+   "kind": "complex",
+   "id": "TInutNFe.infInut",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/nfe",
+   "attrs": [
+    {
+     "name": "Id",
+     "type": {
+      "kind": "simple",
+      "builtin": "ID",
+      "chain": [],
+      "facets": {
+       "patterns": [
+        [
+         "ID[0-9]{4}[0-9A-Z]{12}[0-9]{25}"
+        ]
+       ]
+      }
+     },
+     "required": true
+    }
+   ],
+   "doc": "Dados do Pedido de Inutilização de Numeração da Nota Fiscal Eletrônica",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "tpAmb",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "1",
+         "2"
+        ]
+       },
+       "name": "TAmb",
+       "doc": "Tipo Ambiente"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Identificação do Ambiente:\n1 - Produção\n2 - Homologação"
+     },
+     {
+      "k": "el",
+      "name": "xServ",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TServ",
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "enumeration": [
+         "INUTILIZAR"
+        ]
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Serviço Solicitado"
+     },
+     {
+      "k": "el",
+      "name": "cUF",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "11",
+         "12",
+         "13",
+         "14",
+         "15",
+         "16",
+         "17",
+         "21",
+         "22",
+         "23",
+         "24",
+         "25",
+         "26",
+         "27",
+         "28",
+         "29",
+         "31",
+         "32",
+         "33",
+         "35",
+         "41",
+         "42",
+         "43",
+         "50",
+         "51",
+         "52",
+         "53"
+        ]
+       },
+       "name": "TCodUfIBGE",
+       "doc": "Tipo Código da UF da tabela do IBGE"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Código da UF do emitente"
+     },
+     {
+      "k": "el",
+      "name": "ano",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{2}"
+         ]
+        ]
+       },
+       "name": "Tano",
+       "doc": "Tipo ano"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Ano de inutilização da numeração"
+     },
+     {
+      "k": "el",
+      "name": "CNPJ",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "maxLength": 14,
+        "patterns": [
+         [
+          "[0-9A-Z]{12}[0-9]{2}"
+         ]
+        ]
+       },
+       "name": "TCnpj",
+       "doc": "Tipo Número do CNPJ"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "CNPJ do emitente"
+     },
+     {
+      "k": "el",
+      "name": "mod",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "55",
+         "65"
+        ]
+       },
+       "name": "TMod",
+       "doc": "Tipo Modelo Documento Fiscal"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Modelo da NF-e (55, 65 etc.)"
+     },
+     {
+      "k": "el",
+      "name": "serie",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "0|[1-9]{1}[0-9]{0,2}"
+         ]
+        ]
+       },
+       "name": "TSerie",
+       "doc": "Tipo Série do Documento Fiscal"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Série da NF-e"
+     },
+     {
+      "k": "el",
+      "name": "nNFIni",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[1-9]{1}[0-9]{0,8}"
+         ]
+        ]
+       },
+       "name": "TNF",
+       "doc": "Tipo Número do Documento Fiscal"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Número da NF-e inicial"
+     },
+     {
+      "k": "el",
+      "name": "nNFFin",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[1-9]{1}[0-9]{0,8}"
+         ]
+        ]
+       },
+       "name": "TNF",
+       "doc": "Tipo Número do Documento Fiscal"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Número da NF-e final"
+     },
+     {
+      "k": "el",
+      "name": "xJust",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "minLength": 15,
+        "maxLength": 255
+       },
+       "name": "TJust",
+       "doc": "Tipo Justificativa"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Justificativa do pedido de inutilização"
+     }
+    ]
+   }
+  },
+  "SignatureType": {
+   "kind": "complex",
+   "id": "SignatureType",
+   "anonymous": false,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [
+    {
+     "name": "Id",
+     "type": {
+      "kind": "simple",
+      "builtin": "ID",
+      "chain": [],
+      "facets": {}
+     },
+     "required": false
+    }
+   ],
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "SignedInfo",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "SignedInfoType"
+      },
+      "min": 1,
+      "max": 1
+     },
+     {
+      "k": "el",
+      "name": "SignatureValue",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "SignatureValueType"
+      },
+      "min": 1,
+      "max": 1
+     },
+     {
+      "k": "el",
+      "name": "KeyInfo",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "KeyInfoType"
+      },
+      "min": 1,
+      "max": 1
+     }
+    ]
+   }
+  },
+  "SignedInfoType": {
+   "kind": "complex",
+   "id": "SignedInfoType",
+   "anonymous": false,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [
+    {
+     "name": "Id",
+     "type": {
+      "kind": "simple",
+      "builtin": "ID",
+      "chain": [],
+      "facets": {}
+     },
+     "required": false
+    }
+   ],
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "CanonicalizationMethod",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "SignedInfoType.CanonicalizationMethod"
+      },
+      "min": 1,
+      "max": 1
+     },
+     {
+      "k": "el",
+      "name": "SignatureMethod",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "SignedInfoType.SignatureMethod"
+      },
+      "min": 1,
+      "max": 1
+     },
+     {
+      "k": "el",
+      "name": "Reference",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "ReferenceType"
+      },
+      "min": 1,
+      "max": 1
+     }
+    ]
+   }
+  },
+  "SignedInfoType.CanonicalizationMethod": {
+   "kind": "complex",
+   "id": "SignedInfoType.CanonicalizationMethod",
+   "anonymous": true,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [
+    {
+     "name": "Algorithm",
+     "type": {
+      "kind": "simple",
+      "builtin": "anyURI",
+      "chain": [],
+      "facets": {}
+     },
+     "required": true,
+     "fixed": "http://www.w3.org/TR/2001/REC-xml-c14n-20010315"
+    }
+   ]
+  },
+  "SignedInfoType.SignatureMethod": {
+   "kind": "complex",
+   "id": "SignedInfoType.SignatureMethod",
+   "anonymous": true,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [
+    {
+     "name": "Algorithm",
+     "type": {
+      "kind": "simple",
+      "builtin": "anyURI",
+      "chain": [],
+      "facets": {}
+     },
+     "required": true,
+     "fixed": "http://www.w3.org/2000/09/xmldsig#rsa-sha1"
+    }
+   ]
+  },
+  "ReferenceType": {
+   "kind": "complex",
+   "id": "ReferenceType",
+   "anonymous": false,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [
+    {
+     "name": "Id",
+     "type": {
+      "kind": "simple",
+      "builtin": "ID",
+      "chain": [],
+      "facets": {}
+     },
+     "required": false
+    },
+    {
+     "name": "URI",
+     "type": {
+      "kind": "simple",
+      "builtin": "anyURI",
+      "chain": [],
+      "facets": {
+       "minLength": 2
+      }
+     },
+     "required": true
+    },
+    {
+     "name": "Type",
+     "type": {
+      "kind": "simple",
+      "builtin": "anyURI",
+      "chain": [],
+      "facets": {}
+     },
+     "required": false
+    }
+   ],
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "Transforms",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "TransformsType"
+      },
+      "min": 1,
+      "max": 1,
+      "unique": [
+       "Algorithm"
+      ]
+     },
+     {
+      "k": "el",
+      "name": "DigestMethod",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "ReferenceType.DigestMethod"
+      },
+      "min": 1,
+      "max": 1
+     },
+     {
+      "k": "el",
+      "name": "DigestValue",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "kind": "simple",
+       "builtin": "base64Binary",
+       "chain": [],
+       "facets": {},
+       "name": "DigestValueType"
+      },
+      "min": 1,
+      "max": 1
+     }
+    ]
+   }
+  },
+  "TransformsType": {
+   "kind": "complex",
+   "id": "TransformsType",
+   "anonymous": false,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [],
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "Transform",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "TransformType"
+      },
+      "min": 2,
+      "max": 2
+     }
+    ]
+   }
+  },
+  "TransformType": {
+   "kind": "complex",
+   "id": "TransformType",
+   "anonymous": false,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [
+    {
+     "name": "Algorithm",
+     "type": {
+      "kind": "simple",
+      "builtin": "anyURI",
+      "chain": [],
+      "facets": {
+       "enumeration": [
+        "http://www.w3.org/2000/09/xmldsig#enveloped-signature",
+        "http://www.w3.org/TR/2001/REC-xml-c14n-20010315"
+       ]
+      },
+      "name": "TTransformURI"
+     },
+     "required": true
+    }
+   ],
+   "content": {
+    "k": "seq",
+    "min": 0,
+    "max": "unbounded",
+    "items": [
+     {
+      "k": "el",
+      "name": "XPath",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {}
+      },
+      "min": 1,
+      "max": 1
+     }
+    ]
+   }
+  },
+  "ReferenceType.DigestMethod": {
+   "kind": "complex",
+   "id": "ReferenceType.DigestMethod",
+   "anonymous": true,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [
+    {
+     "name": "Algorithm",
+     "type": {
+      "kind": "simple",
+      "builtin": "anyURI",
+      "chain": [],
+      "facets": {}
+     },
+     "required": true,
+     "fixed": "http://www.w3.org/2000/09/xmldsig#sha1"
+    }
+   ]
+  },
+  "SignatureValueType": {
+   "kind": "complex",
+   "id": "SignatureValueType",
+   "anonymous": false,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [
+    {
+     "name": "Id",
+     "type": {
+      "kind": "simple",
+      "builtin": "ID",
+      "chain": [],
+      "facets": {}
+     },
+     "required": false
+    }
+   ],
+   "text": {
+    "kind": "simple",
+    "builtin": "base64Binary",
+    "chain": [],
+    "facets": {}
+   }
+  },
+  "KeyInfoType": {
+   "kind": "complex",
+   "id": "KeyInfoType",
+   "anonymous": false,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [
+    {
+     "name": "Id",
+     "type": {
+      "kind": "simple",
+      "builtin": "ID",
+      "chain": [],
+      "facets": {}
+     },
+     "required": false
+    }
+   ],
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "X509Data",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "X509DataType"
+      },
+      "min": 1,
+      "max": 1
+     }
+    ]
+   }
+  },
+  "X509DataType": {
+   "kind": "complex",
+   "id": "X509DataType",
+   "anonymous": false,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [],
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "X509Certificate",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "kind": "simple",
+       "builtin": "base64Binary",
+       "chain": [],
+       "facets": {}
+      },
+      "min": 1,
+      "max": 1
+     }
+    ]
+   }
+  },
+  "TRetInutNFe": {
+   "kind": "complex",
+   "id": "TRetInutNFe",
+   "anonymous": false,
+   "ns": "http://www.portalfiscal.inf.br/nfe",
+   "attrs": [
+    {
+     "name": "versao",
+     "type": {
+      "kind": "simple",
+      "builtin": "token",
+      "chain": [],
+      "facets": {
+       "patterns": [
+        [
+         "4\\.00"
+        ]
+       ]
+      },
+      "name": "TVerInutNFe",
+      "doc": "Tipo Versão do leiaute de Inutilização 4.00"
+     },
+     "required": true
+    }
+   ],
+   "doc": "Tipo retorno do Pedido de Inutilização de Numeração da Nota Fiscal Eletrônica",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "infInut",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "ref": "TRetInutNFe.infInut"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Dados do Retorno do Pedido de Inutilização de Numeração da Nota Fiscal Eletrônica"
+     },
+     {
+      "k": "el",
+      "name": "Signature",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "SignatureType"
+      },
+      "min": 0,
+      "max": 1
+     }
+    ]
+   }
+  },
+  "TRetInutNFe.infInut": {
+   "kind": "complex",
+   "id": "TRetInutNFe.infInut",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/nfe",
+   "attrs": [
+    {
+     "name": "Id",
+     "type": {
+      "kind": "simple",
+      "builtin": "ID",
+      "chain": [],
+      "facets": {}
+     },
+     "required": false
+    }
+   ],
+   "doc": "Dados do Retorno do Pedido de Inutilização de Numeração da Nota Fiscal Eletrônica",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "tpAmb",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "1",
+         "2"
+        ]
+       },
+       "name": "TAmb",
+       "doc": "Tipo Ambiente"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Identificação do Ambiente:\n1 - Produção\n2 - Homologação"
+     },
+     {
+      "k": "el",
+      "name": "verAplic",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "minLength": 1,
+        "maxLength": 20
+       },
+       "name": "TVerAplic",
+       "doc": "Tipo Versão do Aplicativo"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Versão do Aplicativo que processou a NF-e"
+     },
+     {
+      "k": "el",
+      "name": "cStat",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "maxLength": 4,
+        "patterns": [
+         [
+          "[0-9]{3,4}"
+         ]
+        ]
+       },
+       "name": "TStat",
+       "doc": "Tipo Código da Mensagem enviada"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Código do status da mensagem enviada."
+     },
+     {
+      "k": "el",
+      "name": "xMotivo",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "maxLength": 255,
+        "minLength": 1
+       },
+       "name": "TMotivo",
+       "doc": "Tipo Motivo"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Descrição literal do status do serviço solicitado."
+     },
+     {
+      "k": "el",
+      "name": "cUF",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "11",
+         "12",
+         "13",
+         "14",
+         "15",
+         "16",
+         "17",
+         "21",
+         "22",
+         "23",
+         "24",
+         "25",
+         "26",
+         "27",
+         "28",
+         "29",
+         "31",
+         "32",
+         "33",
+         "35",
+         "41",
+         "42",
+         "43",
+         "50",
+         "51",
+         "52",
+         "53"
+        ]
+       },
+       "name": "TCodUfIBGE",
+       "doc": "Tipo Código da UF da tabela do IBGE"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Código da UF que atendeu a solicitação"
+     },
+     {
+      "k": "el",
+      "name": "ano",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{2}"
+         ]
+        ]
+       },
+       "name": "Tano",
+       "doc": "Tipo ano"
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Ano de inutilização da numeração"
+     },
+     {
+      "k": "el",
+      "name": "CNPJ",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "maxLength": 14,
+        "patterns": [
+         [
+          "[0-9A-Z]{12}[0-9]{2}"
+         ]
+        ]
+       },
+       "name": "TCnpj",
+       "doc": "Tipo Número do CNPJ"
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "CNPJ do emitente"
+     },
+     {
+      "k": "el",
+      "name": "mod",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "55",
+         "65"
+        ]
+       },
+       "name": "TMod",
+       "doc": "Tipo Modelo Documento Fiscal"
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Modelo da NF-e (55, etc.)"
+     },
+     {
+      "k": "el",
+      "name": "serie",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "0|[1-9]{1}[0-9]{0,2}"
+         ]
+        ]
+       },
+       "name": "TSerie",
+       "doc": "Tipo Série do Documento Fiscal"
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Série da NF-e"
+     },
+     {
+      "k": "el",
+      "name": "nNFIni",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[1-9]{1}[0-9]{0,8}"
+         ]
+        ]
+       },
+       "name": "TNF",
+       "doc": "Tipo Número do Documento Fiscal"
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Número da NF-e inicial"
+     },
+     {
+      "k": "el",
+      "name": "nNFFin",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[1-9]{1}[0-9]{0,8}"
+         ]
+        ]
+       },
+       "name": "TNF",
+       "doc": "Tipo Número do Documento Fiscal"
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Número da NF-e final"
+     },
+     {
+      "k": "el",
+      "name": "dhRecbto",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "(((20(([02468][048])|([13579][26]))-02-29))|(20[0-9][0-9])-((((0[1-9])|(1[0-2]))-((0[1-9])|(1\\d)|(2[0-8])))|((((0[13578])|(1[02]))-31)|(((0[1,3-9])|(1[0-2]))-(29|30)))))T(20|21|22|23|[0-1]\\d):[0-5]\\d:[0-5]\\d([\\-,\\+](0[0-9]|10|11):00|([\\+](12):00))"
+         ]
+        ]
+       },
+       "name": "TDateTimeUTC",
+       "doc": "Data e Hora, formato UTC (AAAA-MM-DDThh:mm:ssTZD, onde TZD = +hh:mm ou -hh:mm)"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Data e hora de recebimento, no formato AAAA-MM-DDTHH:MM:SS. Deve ser preenchida com data e hora da gravação no Banco em caso de Confirmação. Em caso de Rejeição, com data e hora do recebimento do Pedido de Inutilização."
+     },
+     {
+      "k": "el",
+      "name": "nProt",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "maxLength": 17,
+        "patterns": [
+         [
+          "[0-9]{15}|[0-9]{17}"
+         ]
+        ]
+       },
+       "name": "TProt",
+       "doc": "Tipo Número do Protocolo de Status"
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Número do Protocolo de Status da NF-e. 1 posição (1 – Secretaria de Fazenda Estadual 2 – Receita Federal); 2 - código da UF - 2 posições ano; 10 seqüencial no ano."
+     }
+    ]
+   }
+  },
+  "TProcInutNFe": {
+   "kind": "complex",
+   "id": "TProcInutNFe",
+   "anonymous": false,
+   "ns": "http://www.portalfiscal.inf.br/nfe",
+   "attrs": [
+    {
+     "name": "versao",
+     "type": {
+      "kind": "simple",
+      "builtin": "token",
+      "chain": [],
+      "facets": {
+       "patterns": [
+        [
+         "4\\.00"
+        ]
+       ]
+      },
+      "name": "TVerInutNFe",
+      "doc": "Tipo Versão do leiaute de Inutilização 4.00"
+     },
+     "required": true
+    }
+   ],
+   "doc": "Tipo Pedido de inutilzação de númeração de  NF-e processado",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "inutNFe",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "ref": "TInutNFe"
+      },
+      "min": 1,
+      "max": 1
+     },
+     {
+      "k": "el",
+      "name": "retInutNFe",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "ref": "TRetInutNFe"
+      },
+      "min": 1,
+      "max": 1
+     }
+    ]
+   }
+  }
+ },
+ "simple": {
+  "TAmb": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "enumeration": [
+     "1",
+     "2"
+    ]
+   },
+   "name": "TAmb",
+   "doc": "Tipo Ambiente"
+  },
+  "TString": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+     ]
+    ]
+   },
+   "name": "TString",
+   "doc": "Tipo string genérico"
+  },
+  "TServ": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [
+    "TString"
+   ],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+     ]
+    ]
+   },
+   "name": "TServ",
+   "doc": "Tipo Serviço solicitado"
+  },
+  "TCodUfIBGE": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "enumeration": [
+     "11",
+     "12",
+     "13",
+     "14",
+     "15",
+     "16",
+     "17",
+     "21",
+     "22",
+     "23",
+     "24",
+     "25",
+     "26",
+     "27",
+     "28",
+     "29",
+     "31",
+     "32",
+     "33",
+     "35",
+     "41",
+     "42",
+     "43",
+     "50",
+     "51",
+     "52",
+     "53"
+    ]
+   },
+   "name": "TCodUfIBGE",
+   "doc": "Tipo Código da UF da tabela do IBGE"
+  },
+  "Tano": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[0-9]{2}"
+     ]
+    ]
+   },
+   "name": "Tano",
+   "doc": "Tipo ano"
+  },
+  "TCnpj": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "maxLength": 14,
+    "patterns": [
+     [
+      "[0-9A-Z]{12}[0-9]{2}"
+     ]
+    ]
+   },
+   "name": "TCnpj",
+   "doc": "Tipo Número do CNPJ"
+  },
+  "TMod": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "enumeration": [
+     "55",
+     "65"
+    ]
+   },
+   "name": "TMod",
+   "doc": "Tipo Modelo Documento Fiscal"
+  },
+  "TSerie": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "0|[1-9]{1}[0-9]{0,2}"
+     ]
+    ]
+   },
+   "name": "TSerie",
+   "doc": "Tipo Série do Documento Fiscal"
+  },
+  "TNF": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[1-9]{1}[0-9]{0,8}"
+     ]
+    ]
+   },
+   "name": "TNF",
+   "doc": "Tipo Número do Documento Fiscal"
+  },
+  "TJust": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [
+    "TString"
+   ],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+     ]
+    ],
+    "minLength": 15,
+    "maxLength": 255
+   },
+   "name": "TJust",
+   "doc": "Tipo Justificativa"
+  },
+  "TTransformURI": {
+   "kind": "simple",
+   "builtin": "anyURI",
+   "chain": [],
+   "facets": {
+    "enumeration": [
+     "http://www.w3.org/2000/09/xmldsig#enveloped-signature",
+     "http://www.w3.org/TR/2001/REC-xml-c14n-20010315"
+    ]
+   },
+   "name": "TTransformURI"
+  },
+  "DigestValueType": {
+   "kind": "simple",
+   "builtin": "base64Binary",
+   "chain": [],
+   "facets": {},
+   "name": "DigestValueType"
+  },
+  "TVerInutNFe": {
+   "kind": "simple",
+   "builtin": "token",
+   "chain": [],
+   "facets": {
+    "patterns": [
+     [
+      "4\\.00"
+     ]
+    ]
+   },
+   "name": "TVerInutNFe",
+   "doc": "Tipo Versão do leiaute de Inutilização 4.00"
+  },
+  "TVerAplic": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [
+    "TString"
+   ],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+     ]
+    ],
+    "minLength": 1,
+    "maxLength": 20
+   },
+   "name": "TVerAplic",
+   "doc": "Tipo Versão do Aplicativo"
+  },
+  "TStat": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "maxLength": 4,
+    "patterns": [
+     [
+      "[0-9]{3,4}"
+     ]
+    ]
+   },
+   "name": "TStat",
+   "doc": "Tipo Código da Mensagem enviada"
+  },
+  "TMotivo": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [
+    "TString"
+   ],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+     ]
+    ],
+    "maxLength": 255,
+    "minLength": 1
+   },
+   "name": "TMotivo",
+   "doc": "Tipo Motivo"
+  },
+  "TDateTimeUTC": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "(((20(([02468][048])|([13579][26]))-02-29))|(20[0-9][0-9])-((((0[1-9])|(1[0-2]))-((0[1-9])|(1\\d)|(2[0-8])))|((((0[13578])|(1[02]))-31)|(((0[1,3-9])|(1[0-2]))-(29|30)))))T(20|21|22|23|[0-1]\\d):[0-5]\\d:[0-5]\\d([\\-,\\+](0[0-9]|10|11):00|([\\+](12):00))"
+     ]
+    ]
+   },
+   "name": "TDateTimeUTC",
+   "doc": "Data e Hora, formato UTC (AAAA-MM-DDThh:mm:ssTZD, onde TZD = +hh:mm ou -hh:mm)"
+  },
+  "TProt": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "maxLength": 17,
+    "patterns": [
+     [
+      "[0-9]{15}|[0-9]{17}"
+     ]
+    ]
+   },
+   "name": "TProt",
+   "doc": "Tipo Número do Protocolo de Status"
+  }
+ },
+ "unsupported": []
+}

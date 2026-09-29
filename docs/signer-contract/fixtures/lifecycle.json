@@ -1,0 +1,34 @@
+{
+  "description": "pool.reset, stats, identity.close e cancel. Depois de fechada, a identidade não existe mais; cancel de uma requisição que já terminou (ou que nunca existiu) devolve cancelled false.",
+  "frames": [
+    {
+      "from": "client",
+      "frame": {
+        "v": 1,
+        "id": "c11",
+        "method": "pool.reset",
+        "params": { "identity": "emitente-11222333000181", "dropSessions": true }
+      }
+    },
+    { "from": "helper", "of": "pool.reset", "frame": { "v": 1, "id": "c11", "result": { "ok": true } } },
+    { "from": "client", "frame": { "v": 1, "id": "c12", "method": "stats", "params": {} } },
+    {
+      "from": "helper",
+      "of": "stats",
+      "frame": {
+        "v": 1,
+        "id": "c12",
+        "result": { "identities": { "emitente-11222333000181": { "signatures": 3, "backend": "remote" } } }
+      }
+    },
+    {
+      "from": "client",
+      "frame": { "v": 1, "id": "c13", "method": "identity.close", "params": { "identity": "emitente-11222333000181" } }
+    },
+    { "from": "helper", "of": "identity.close", "frame": { "v": 1, "id": "c13", "result": { "closed": true } } },
+    { "from": "client", "frame": { "v": 1, "id": "c14", "method": "stats", "params": {} } },
+    { "from": "helper", "of": "stats", "frame": { "v": 1, "id": "c14", "result": { "identities": {} } } },
+    { "from": "client", "frame": { "v": 1, "id": "c15", "method": "cancel", "params": { "id": "c12" } } },
+    { "from": "helper", "of": "cancel", "frame": { "v": 1, "id": "c15", "result": { "cancelled": false } } }
+  ]
+}

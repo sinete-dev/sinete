@@ -1,0 +1,10 @@
+{
+  "descricao": "Endereço da consulta pública via QR Code do MDF-e (infMDFeSupl/qrCodMDFe). O Portal Nacional usa o mesmo endereço em produção e homologação; o ambiente vai no parâmetro tpAmb. Maiúsculas e minúsculas não contam na regra F115.",
+  "fontes": [
+    "MOC MDF-e 3.00b Visão Geral, itens 9.2 e 10.4",
+    "MOC MDF-e 3.00b Anexo I, regras F114 a F119 (rejeições 480, 479, 481, 482, 488, 496)",
+    "Portal Nacional do MDF-e, relação de serviços: https://dfe-portal.svrs.rs.gov.br/MDFe/Servicos"
+  ],
+  "atualizadoEm": "2026-09-26",
+  "url": "https://dfe-portal.svrs.rs.gov.br/mdfe/qrCode"
+}

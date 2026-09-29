@@ -1,0 +1,43 @@
+{
+  "description": "O cliente abre o canal com hello e recusa helper cujo protocol não conhece. O helper estático anuncia só o backend remote.",
+  "frames": [
+    {
+      "from": "client",
+      "frame": {
+        "v": 1,
+        "id": "c1",
+        "method": "hello",
+        "params": { "protocol": 1, "client": "@sinete/transport 0.1.0" }
+      }
+    },
+    {
+      "from": "helper",
+      "of": "hello",
+      "frame": {
+        "v": 1,
+        "id": "c1",
+        "result": {
+          "protocol": 1,
+          "helper": "sinete-signer/0.1.0",
+          "go": "go1.26.6",
+          "lab": false,
+          "ambientes": ["homologacao"],
+          "backends": ["remote"],
+          "signModes": ["digest", "message"],
+          "schemes": ["rsa_pkcs1_sha256"],
+          "methods": [
+            "hello",
+            "identity.open",
+            "identity.close",
+            "http.request",
+            "pool.reset",
+            "stats",
+            "dfe.sign",
+            "cancel"
+          ],
+          "dataVersion": "endpoints 2026.09.26; perfis 2026.09.25; icp 2026.08.25"
+        }
+      }
+    }
+  ]
+}

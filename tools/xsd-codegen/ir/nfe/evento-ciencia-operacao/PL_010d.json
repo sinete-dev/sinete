@@ -1,0 +1,2049 @@
+{
+ "subpath": "nfe/evento-ciencia-operacao/PL_010d",
+ "pl": "PL_010d_v1.03",
+ "roots": [
+  {
+   "name": "envEvento",
+   "ns": "http://www.portalfiscal.inf.br/nfe",
+   "type": "TEnvEvento"
+  },
+  {
+   "name": "retEnvEvento",
+   "ns": "http://www.portalfiscal.inf.br/nfe",
+   "type": "TRetEnvEvento"
+  },
+  {
+   "name": "procEventoNFe",
+   "ns": "http://www.portalfiscal.inf.br/nfe",
+   "type": "TProcEvento"
+  }
+ ],
+ "complex": {
+  "TEnvEvento": {
+   "kind": "complex",
+   "id": "TEnvEvento",
+   "anonymous": false,
+   "ns": "http://www.portalfiscal.inf.br/nfe",
+   "attrs": [
+    {
+     "name": "versao",
+     "type": {
+      "kind": "simple",
+      "builtin": "string",
+      "chain": [],
+      "facets": {
+       "whiteSpace": "preserve",
+       "patterns": [
+        [
+         "1\\.00"
+        ]
+       ]
+      },
+      "name": "TVerEnvEvento",
+      "doc": "Tipo Versão do EnvEvento"
+     },
+     "required": true
+    }
+   ],
+   "doc": "Tipo Lote de Envio",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "idLote",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{1,15}"
+         ]
+        ]
+       }
+      },
+      "min": 1,
+      "max": 1
+     },
+     {
+      "k": "el",
+      "name": "evento",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "ref": "TEvento"
+      },
+      "min": 1,
+      "max": 20
+     }
+    ]
+   }
+  },
+  "TEvento": {
+   "kind": "complex",
+   "id": "TEvento",
+   "anonymous": false,
+   "ns": "http://www.portalfiscal.inf.br/nfe",
+   "attrs": [
+    {
+     "name": "versao",
+     "type": {
+      "kind": "simple",
+      "builtin": "string",
+      "chain": [],
+      "facets": {
+       "whiteSpace": "preserve",
+       "patterns": [
+        [
+         "1\\.00"
+        ]
+       ]
+      },
+      "name": "TVerEvento",
+      "doc": "Tipo Versão do Evento"
+     },
+     "required": true
+    }
+   ],
+   "doc": "Tipo Evento",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "infEvento",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "ref": "TEvento.infEvento"
+      },
+      "min": 1,
+      "max": 1
+     },
+     {
+      "k": "el",
+      "name": "Signature",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "SignatureType"
+      },
+      "min": 1,
+      "max": 1
+     }
+    ]
+   }
+  },
+  "TEvento.infEvento": {
+   "kind": "complex",
+   "id": "TEvento.infEvento",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/nfe",
+   "attrs": [
+    {
+     "name": "Id",
+     "type": {
+      "kind": "simple",
+      "builtin": "ID",
+      "chain": [],
+      "facets": {
+       "patterns": [
+        [
+         "ID[0-9]{12}[0-9A-Z]{12}[0-9]{28}"
+        ]
+       ]
+      }
+     },
+     "required": true,
+     "doc": "Identificador da TAG a ser assinada, a regra de formação do Id é:\n“ID” + tpEvento +  chave da NF-e + nSeqEvento"
+    }
+   ],
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "cOrgao",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "11",
+         "12",
+         "13",
+         "14",
+         "15",
+         "16",
+         "17",
+         "21",
+         "22",
+         "23",
+         "24",
+         "25",
+         "26",
+         "27",
+         "28",
+         "29",
+         "31",
+         "32",
+         "33",
+         "35",
+         "41",
+         "42",
+         "43",
+         "50",
+         "51",
+         "52",
+         "53",
+         "90",
+         "91",
+         "92"
+        ]
+       },
+       "name": "TCOrgaoIBGE",
+       "doc": "Tipo Código de orgão (UF da tabela do IBGE + 90 RFB)"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Código do órgão de recepção do Evento. Utilizar a Tabela do IBGE extendida, utilizar 90 para identificar o Ambiente Nacional"
+     },
+     {
+      "k": "el",
+      "name": "tpAmb",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "1",
+         "2"
+        ]
+       },
+       "name": "TAmb",
+       "doc": "Tipo Ambiente"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Identificação do Ambiente:\n1 - Produção\n2 - Homologação"
+     },
+     {
+      "k": "choice",
+      "min": 1,
+      "max": 1,
+      "items": [
+       {
+        "k": "el",
+        "name": "CNPJ",
+        "ns": "http://www.portalfiscal.inf.br/nfe",
+        "type": {
+         "kind": "simple",
+         "builtin": "string",
+         "chain": [],
+         "facets": {
+          "whiteSpace": "preserve",
+          "maxLength": 14,
+          "patterns": [
+           [
+            "[0-9]{0}|[0-9A-Z]{12}[0-9]{2}"
+           ]
+          ]
+         },
+         "name": "TCnpjOpc",
+         "doc": "Tipo Número do CNPJ Opcional"
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "CNPJ"
+       },
+       {
+        "k": "el",
+        "name": "CPF",
+        "ns": "http://www.portalfiscal.inf.br/nfe",
+        "type": {
+         "kind": "simple",
+         "builtin": "string",
+         "chain": [],
+         "facets": {
+          "whiteSpace": "preserve",
+          "patterns": [
+           [
+            "[0-9]{11}"
+           ]
+          ]
+         },
+         "name": "TCpf",
+         "doc": "Tipo Número do CPF"
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "CPF"
+       }
+      ]
+     },
+     {
+      "k": "el",
+      "name": "chNFe",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{6}[0-9A-Z]{12}[0-9]{26}"
+         ]
+        ]
+       },
+       "name": "TChNFe",
+       "doc": "Tipo Chave da Nota Fiscal Eletrônica"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Chave de Acesso da NF-e vinculada ao evento"
+     },
+     {
+      "k": "el",
+      "name": "dhEvento",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "(((20(([02468][048])|([13579][26]))-02-29))|(20[0-9][0-9])-((((0[1-9])|(1[0-2]))-((0[1-9])|(1\\d)|(2[0-8])))|((((0[13578])|(1[02]))-31)|(((0[1,3-9])|(1[0-2]))-(29|30)))))T(20|21|22|23|[0-1]\\d):[0-5]\\d:[0-5]\\d([\\-,\\+](0[0-9]|10|11):00|([\\+](12):00))"
+         ]
+        ]
+       },
+       "name": "TDateTimeUTC",
+       "doc": "Data e Hora, formato UTC (AAAA-MM-DDThh:mm:ssTZD, onde TZD = +hh:mm ou -hh:mm)"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Data e Hora do Evento, formato UTC (AAAA-MM-DDThh:mm:ssTZD, onde TZD = +hh:mm ou -hh:mm)"
+     },
+     {
+      "k": "el",
+      "name": "tpEvento",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{6}"
+         ]
+        ]
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Tipo do Evento"
+     },
+     {
+      "k": "el",
+      "name": "nSeqEvento",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[1-9][0-9]{0,1}"
+         ]
+        ]
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Seqüencial do evento para o mesmo tipo de evento.  Para maioria dos eventos será 1, nos casos em que possa existir mais de um evento, como é o caso da carta de correção, o autor do evento deve numerar de forma seqüencial."
+     },
+     {
+      "k": "el",
+      "name": "verEvento",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve"
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Versão do Tipo do Evento"
+     },
+     {
+      "k": "el",
+      "name": "detEvento",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "ref": "TEvento.infEvento.detEvento"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Schema XML de validação do evento de Ciência da Operação"
+     },
+     {
+      "k": "el",
+      "name": "infPAA",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "ref": "TEvento.infEvento.infPAA"
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Grupo de Informação do Provedor de Assinatura e Autorização"
+     }
+    ]
+   }
+  },
+  "TEvento.infEvento.detEvento": {
+   "kind": "complex",
+   "id": "TEvento.infEvento.detEvento",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/nfe",
+   "attrs": [
+    {
+     "name": "versao",
+     "type": {
+      "kind": "simple",
+      "builtin": "string",
+      "chain": [],
+      "facets": {
+       "whiteSpace": "preserve",
+       "enumeration": [
+        "1.00"
+       ]
+      }
+     },
+     "required": true
+    }
+   ],
+   "doc": "Schema XML de validação do evento de Ciência da Operação",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "descEvento",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "Ciencia da Operacao"
+        ]
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Descrição do Evento:\n\t\t\t\t\t\t\t\t\t\t\t \"Ciência da Operação\""
+     }
+    ]
+   }
+  },
+  "TEvento.infEvento.infPAA": {
+   "kind": "complex",
+   "id": "TEvento.infEvento.infPAA",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/nfe",
+   "attrs": [],
+   "doc": "Grupo de Informação do Provedor de Assinatura e Autorização",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "CNPJPAA",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9A-Z]{12}[0-9]{2}"
+         ]
+        ]
+       },
+       "name": "TCnpj",
+       "doc": "Tipo Número do CNPJ"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "CNPJ do Provedor de Assinatura e Autorização"
+     },
+     {
+      "k": "el",
+      "name": "PAASignature",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "ref": "TEvento.infEvento.infPAA.PAASignature"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Assinatura RSA do Emitente para DFe gerados por PAA"
+     }
+    ]
+   }
+  },
+  "TEvento.infEvento.infPAA.PAASignature": {
+   "kind": "complex",
+   "id": "TEvento.infEvento.infPAA.PAASignature",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/nfe",
+   "attrs": [],
+   "doc": "Assinatura RSA do Emitente para DFe gerados por PAA",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "SignatureValue",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "base64Binary",
+       "chain": [],
+       "facets": {}
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Assinatura digital padrão RSA\nConverter o atributo Id do DFe para array de bytes e assinar com a chave privada do RSA com algoritmo SHA1 gerando um valor no formato base64."
+     },
+     {
+      "k": "el",
+      "name": "RSAKeyValue",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "ref": "TRSAKeyValueType"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Chave Publica no padrão XML RSA Key"
+     }
+    ]
+   }
+  },
+  "TRSAKeyValueType": {
+   "kind": "complex",
+   "id": "TRSAKeyValueType",
+   "anonymous": false,
+   "ns": "http://www.portalfiscal.inf.br/nfe",
+   "attrs": [],
+   "doc": "Tipo que representa uma chave publica padrão RSA",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "Modulus",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "base64Binary",
+       "chain": [],
+       "facets": {}
+      },
+      "min": 1,
+      "max": 1
+     },
+     {
+      "k": "el",
+      "name": "Exponent",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "base64Binary",
+       "chain": [],
+       "facets": {}
+      },
+      "min": 1,
+      "max": 1
+     }
+    ]
+   }
+  },
+  "SignatureType": {
+   "kind": "complex",
+   "id": "SignatureType",
+   "anonymous": false,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [
+    {
+     "name": "Id",
+     "type": {
+      "kind": "simple",
+      "builtin": "ID",
+      "chain": [],
+      "facets": {}
+     },
+     "required": false
+    }
+   ],
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "SignedInfo",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "SignedInfoType"
+      },
+      "min": 1,
+      "max": 1
+     },
+     {
+      "k": "el",
+      "name": "SignatureValue",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "SignatureValueType"
+      },
+      "min": 1,
+      "max": 1
+     },
+     {
+      "k": "el",
+      "name": "KeyInfo",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "KeyInfoType"
+      },
+      "min": 1,
+      "max": 1
+     }
+    ]
+   }
+  },
+  "SignedInfoType": {
+   "kind": "complex",
+   "id": "SignedInfoType",
+   "anonymous": false,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [
+    {
+     "name": "Id",
+     "type": {
+      "kind": "simple",
+      "builtin": "ID",
+      "chain": [],
+      "facets": {}
+     },
+     "required": false
+    }
+   ],
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "CanonicalizationMethod",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "SignedInfoType.CanonicalizationMethod"
+      },
+      "min": 1,
+      "max": 1
+     },
+     {
+      "k": "el",
+      "name": "SignatureMethod",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "SignedInfoType.SignatureMethod"
+      },
+      "min": 1,
+      "max": 1
+     },
+     {
+      "k": "el",
+      "name": "Reference",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "ReferenceType"
+      },
+      "min": 1,
+      "max": 1
+     }
+    ]
+   }
+  },
+  "SignedInfoType.CanonicalizationMethod": {
+   "kind": "complex",
+   "id": "SignedInfoType.CanonicalizationMethod",
+   "anonymous": true,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [
+    {
+     "name": "Algorithm",
+     "type": {
+      "kind": "simple",
+      "builtin": "anyURI",
+      "chain": [],
+      "facets": {}
+     },
+     "required": true,
+     "fixed": "http://www.w3.org/TR/2001/REC-xml-c14n-20010315"
+    }
+   ]
+  },
+  "SignedInfoType.SignatureMethod": {
+   "kind": "complex",
+   "id": "SignedInfoType.SignatureMethod",
+   "anonymous": true,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [
+    {
+     "name": "Algorithm",
+     "type": {
+      "kind": "simple",
+      "builtin": "anyURI",
+      "chain": [],
+      "facets": {}
+     },
+     "required": true,
+     "fixed": "http://www.w3.org/2000/09/xmldsig#rsa-sha1"
+    }
+   ]
+  },
+  "ReferenceType": {
+   "kind": "complex",
+   "id": "ReferenceType",
+   "anonymous": false,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [
+    {
+     "name": "Id",
+     "type": {
+      "kind": "simple",
+      "builtin": "ID",
+      "chain": [],
+      "facets": {}
+     },
+     "required": false
+    },
+    {
+     "name": "URI",
+     "type": {
+      "kind": "simple",
+      "builtin": "anyURI",
+      "chain": [],
+      "facets": {
+       "minLength": 2
+      }
+     },
+     "required": true
+    },
+    {
+     "name": "Type",
+     "type": {
+      "kind": "simple",
+      "builtin": "anyURI",
+      "chain": [],
+      "facets": {}
+     },
+     "required": false
+    }
+   ],
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "Transforms",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "TransformsType"
+      },
+      "min": 1,
+      "max": 1,
+      "unique": [
+       "Algorithm"
+      ]
+     },
+     {
+      "k": "el",
+      "name": "DigestMethod",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "ReferenceType.DigestMethod"
+      },
+      "min": 1,
+      "max": 1
+     },
+     {
+      "k": "el",
+      "name": "DigestValue",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "kind": "simple",
+       "builtin": "base64Binary",
+       "chain": [],
+       "facets": {},
+       "name": "DigestValueType"
+      },
+      "min": 1,
+      "max": 1
+     }
+    ]
+   }
+  },
+  "TransformsType": {
+   "kind": "complex",
+   "id": "TransformsType",
+   "anonymous": false,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [],
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "Transform",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "TransformType"
+      },
+      "min": 2,
+      "max": 2
+     }
+    ]
+   }
+  },
+  "TransformType": {
+   "kind": "complex",
+   "id": "TransformType",
+   "anonymous": false,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [
+    {
+     "name": "Algorithm",
+     "type": {
+      "kind": "simple",
+      "builtin": "anyURI",
+      "chain": [],
+      "facets": {
+       "enumeration": [
+        "http://www.w3.org/2000/09/xmldsig#enveloped-signature",
+        "http://www.w3.org/TR/2001/REC-xml-c14n-20010315"
+       ]
+      },
+      "name": "TTransformURI"
+     },
+     "required": true
+    }
+   ],
+   "content": {
+    "k": "seq",
+    "min": 0,
+    "max": "unbounded",
+    "items": [
+     {
+      "k": "el",
+      "name": "XPath",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {}
+      },
+      "min": 1,
+      "max": 1
+     }
+    ]
+   }
+  },
+  "ReferenceType.DigestMethod": {
+   "kind": "complex",
+   "id": "ReferenceType.DigestMethod",
+   "anonymous": true,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [
+    {
+     "name": "Algorithm",
+     "type": {
+      "kind": "simple",
+      "builtin": "anyURI",
+      "chain": [],
+      "facets": {}
+     },
+     "required": true,
+     "fixed": "http://www.w3.org/2000/09/xmldsig#sha1"
+    }
+   ]
+  },
+  "SignatureValueType": {
+   "kind": "complex",
+   "id": "SignatureValueType",
+   "anonymous": false,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [
+    {
+     "name": "Id",
+     "type": {
+      "kind": "simple",
+      "builtin": "ID",
+      "chain": [],
+      "facets": {}
+     },
+     "required": false
+    }
+   ],
+   "text": {
+    "kind": "simple",
+    "builtin": "base64Binary",
+    "chain": [],
+    "facets": {}
+   }
+  },
+  "KeyInfoType": {
+   "kind": "complex",
+   "id": "KeyInfoType",
+   "anonymous": false,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [
+    {
+     "name": "Id",
+     "type": {
+      "kind": "simple",
+      "builtin": "ID",
+      "chain": [],
+      "facets": {}
+     },
+     "required": false
+    }
+   ],
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "X509Data",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "X509DataType"
+      },
+      "min": 1,
+      "max": 1
+     }
+    ]
+   }
+  },
+  "X509DataType": {
+   "kind": "complex",
+   "id": "X509DataType",
+   "anonymous": false,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [],
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "X509Certificate",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "kind": "simple",
+       "builtin": "base64Binary",
+       "chain": [],
+       "facets": {}
+      },
+      "min": 1,
+      "max": 1
+     }
+    ]
+   }
+  },
+  "TRetEnvEvento": {
+   "kind": "complex",
+   "id": "TRetEnvEvento",
+   "anonymous": false,
+   "ns": "http://www.portalfiscal.inf.br/nfe",
+   "attrs": [
+    {
+     "name": "versao",
+     "type": {
+      "kind": "simple",
+      "builtin": "string",
+      "chain": [],
+      "facets": {
+       "whiteSpace": "preserve",
+       "patterns": [
+        [
+         "1\\.00"
+        ]
+       ]
+      },
+      "name": "TVerEnvEvento",
+      "doc": "Tipo Versão do EnvEvento"
+     },
+     "required": true
+    }
+   ],
+   "doc": "Tipo Retorno de Lote de Envio",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "idLote",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{1,15}"
+         ]
+        ]
+       }
+      },
+      "min": 1,
+      "max": 1
+     },
+     {
+      "k": "el",
+      "name": "tpAmb",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "1",
+         "2"
+        ]
+       },
+       "name": "TAmb",
+       "doc": "Tipo Ambiente"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Identificação do Ambiente:\n1 - Produção\n2 - Homologação"
+     },
+     {
+      "k": "el",
+      "name": "verAplic",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "minLength": 1,
+        "maxLength": 20
+       },
+       "name": "TVerAplic",
+       "doc": "Tipo Versão do Aplicativo"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Versão do Aplicativo que recebeu o Evento"
+     },
+     {
+      "k": "el",
+      "name": "cOrgao",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "11",
+         "12",
+         "13",
+         "14",
+         "15",
+         "16",
+         "17",
+         "21",
+         "22",
+         "23",
+         "24",
+         "25",
+         "26",
+         "27",
+         "28",
+         "29",
+         "31",
+         "32",
+         "33",
+         "35",
+         "41",
+         "42",
+         "43",
+         "50",
+         "51",
+         "52",
+         "53",
+         "90",
+         "91",
+         "92"
+        ]
+       },
+       "name": "TCOrgaoIBGE",
+       "doc": "Tipo Código de orgão (UF da tabela do IBGE + 90 RFB)"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Código do òrgao que registrou o Evento"
+     },
+     {
+      "k": "el",
+      "name": "cStat",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "maxLength": 4,
+        "patterns": [
+         [
+          "[0-9]{3,4}"
+         ]
+        ]
+       },
+       "name": "TStat",
+       "doc": "Tipo Código da Mensagem enviada"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Código do status da registro do Evento"
+     },
+     {
+      "k": "el",
+      "name": "xMotivo",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "maxLength": 255,
+        "minLength": 1
+       },
+       "name": "TMotivo",
+       "doc": "Tipo Motivo"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Descrição literal do status do registro do Evento"
+     },
+     {
+      "k": "el",
+      "name": "retEvento",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "ref": "TRetEvento"
+      },
+      "min": 0,
+      "max": 20
+     }
+    ]
+   }
+  },
+  "TRetEvento": {
+   "kind": "complex",
+   "id": "TRetEvento",
+   "anonymous": false,
+   "ns": "http://www.portalfiscal.inf.br/nfe",
+   "attrs": [
+    {
+     "name": "versao",
+     "type": {
+      "kind": "simple",
+      "builtin": "string",
+      "chain": [],
+      "facets": {
+       "whiteSpace": "preserve",
+       "patterns": [
+        [
+         "1\\.00"
+        ]
+       ]
+      },
+      "name": "TVerEvento",
+      "doc": "Tipo Versão do Evento"
+     },
+     "required": true
+    }
+   ],
+   "doc": "Tipo retorno do Evento",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "infEvento",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "ref": "TRetEvento.infEvento"
+      },
+      "min": 1,
+      "max": 1
+     },
+     {
+      "k": "el",
+      "name": "Signature",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "SignatureType"
+      },
+      "min": 0,
+      "max": 1
+     }
+    ]
+   }
+  },
+  "TRetEvento.infEvento": {
+   "kind": "complex",
+   "id": "TRetEvento.infEvento",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/nfe",
+   "attrs": [
+    {
+     "name": "Id",
+     "type": {
+      "kind": "simple",
+      "builtin": "ID",
+      "chain": [],
+      "facets": {
+       "patterns": [
+        [
+         "ID[0-9]{15}"
+        ]
+       ]
+      }
+     },
+     "required": false
+    }
+   ],
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "tpAmb",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "1",
+         "2"
+        ]
+       },
+       "name": "TAmb",
+       "doc": "Tipo Ambiente"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Identificação do Ambiente:\n1 - Produção\n2 - Homologação"
+     },
+     {
+      "k": "el",
+      "name": "verAplic",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "minLength": 1,
+        "maxLength": 20
+       },
+       "name": "TVerAplic",
+       "doc": "Tipo Versão do Aplicativo"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Versão do Aplicativo que recebeu o Evento"
+     },
+     {
+      "k": "el",
+      "name": "cOrgao",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "11",
+         "12",
+         "13",
+         "14",
+         "15",
+         "16",
+         "17",
+         "21",
+         "22",
+         "23",
+         "24",
+         "25",
+         "26",
+         "27",
+         "28",
+         "29",
+         "31",
+         "32",
+         "33",
+         "35",
+         "41",
+         "42",
+         "43",
+         "50",
+         "51",
+         "52",
+         "53",
+         "90",
+         "91",
+         "92"
+        ]
+       },
+       "name": "TCOrgaoIBGE",
+       "doc": "Tipo Código de orgão (UF da tabela do IBGE + 90 RFB)"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Código do órgão de recepção do Evento. Utilizar a Tabela do IBGE extendida, utilizar 90 para identificar o Ambiente Nacional"
+     },
+     {
+      "k": "el",
+      "name": "cStat",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "maxLength": 4,
+        "patterns": [
+         [
+          "[0-9]{3,4}"
+         ]
+        ]
+       },
+       "name": "TStat",
+       "doc": "Tipo Código da Mensagem enviada"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Código do status da registro do Evento"
+     },
+     {
+      "k": "el",
+      "name": "xMotivo",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "maxLength": 255,
+        "minLength": 1
+       },
+       "name": "TMotivo",
+       "doc": "Tipo Motivo"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Descrição literal do status do registro do Evento"
+     },
+     {
+      "k": "el",
+      "name": "chNFe",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{6}[0-9A-Z]{12}[0-9]{26}"
+         ]
+        ]
+       },
+       "name": "TChNFe",
+       "doc": "Tipo Chave da Nota Fiscal Eletrônica"
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Chave de Acesso NF-e vinculada"
+     },
+     {
+      "k": "el",
+      "name": "tpEvento",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{6}"
+         ]
+        ]
+       }
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Tipo do Evento vinculado"
+     },
+     {
+      "k": "el",
+      "name": "xEvento",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "minLength": 5,
+        "maxLength": 60
+       }
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Descrição do Evento"
+     },
+     {
+      "k": "el",
+      "name": "nSeqEvento",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[1-9][0-9]{0,1}"
+         ]
+        ]
+       }
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Seqüencial do evento"
+     },
+     {
+      "k": "el",
+      "name": "cOrgaoAutor",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "11",
+         "12",
+         "13",
+         "14",
+         "15",
+         "16",
+         "17",
+         "21",
+         "22",
+         "23",
+         "24",
+         "25",
+         "26",
+         "27",
+         "28",
+         "29",
+         "31",
+         "32",
+         "33",
+         "35",
+         "41",
+         "42",
+         "43",
+         "50",
+         "51",
+         "52",
+         "53",
+         "90",
+         "91",
+         "92"
+        ]
+       },
+       "name": "TCOrgaoIBGE",
+       "doc": "Tipo Código de orgão (UF da tabela do IBGE + 90 RFB)"
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Código do órgão de autor do Evento. Utilizar a Tabela do IBGE extendida, utilizar 90 para identificar o Ambiente Nacional"
+     },
+     {
+      "k": "choice",
+      "min": 0,
+      "max": 1,
+      "items": [
+       {
+        "k": "el",
+        "name": "CNPJDest",
+        "ns": "http://www.portalfiscal.inf.br/nfe",
+        "type": {
+         "kind": "simple",
+         "builtin": "string",
+         "chain": [],
+         "facets": {
+          "whiteSpace": "preserve",
+          "maxLength": 14,
+          "patterns": [
+           [
+            "[0-9]{0}|[0-9A-Z]{12}[0-9]{2}"
+           ]
+          ]
+         },
+         "name": "TCnpjOpc",
+         "doc": "Tipo Número do CNPJ Opcional"
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "CNPJ Destinatário"
+       },
+       {
+        "k": "el",
+        "name": "CPFDest",
+        "ns": "http://www.portalfiscal.inf.br/nfe",
+        "type": {
+         "kind": "simple",
+         "builtin": "string",
+         "chain": [],
+         "facets": {
+          "whiteSpace": "preserve",
+          "patterns": [
+           [
+            "[0-9]{11}"
+           ]
+          ]
+         },
+         "name": "TCpf",
+         "doc": "Tipo Número do CPF"
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "CPF Destiantário"
+       }
+      ]
+     },
+     {
+      "k": "el",
+      "name": "emailDest",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "minLength": 1,
+        "maxLength": 60
+       }
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "email do destinatário"
+     },
+     {
+      "k": "el",
+      "name": "dhRegEvento",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "(((20(([02468][048])|([13579][26]))-02-29))|(20[0-9][0-9])-((((0[1-9])|(1[0-2]))-((0[1-9])|(1\\d)|(2[0-8])))|((((0[13578])|(1[02]))-31)|(((0[1,3-9])|(1[0-2]))-(29|30)))))T(20|21|22|23|[0-1]\\d):[0-5]\\d:[0-5]\\d[\\-,\\+](0[0-9]|10|11|12):00"
+         ]
+        ]
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Data e Hora de registro do evento formato UTC AAAA-MM-DDTHH:MM:SSTZD"
+     },
+     {
+      "k": "el",
+      "name": "nProt",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{15}|[0-9]{17}"
+         ]
+        ]
+       },
+       "name": "TProt",
+       "doc": "Tipo Número do Protocolo de Status"
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Número do protocolo de registro do evento"
+     }
+    ]
+   }
+  },
+  "TProcEvento": {
+   "kind": "complex",
+   "id": "TProcEvento",
+   "anonymous": false,
+   "ns": "http://www.portalfiscal.inf.br/nfe",
+   "attrs": [
+    {
+     "name": "versao",
+     "type": {
+      "kind": "simple",
+      "builtin": "string",
+      "chain": [],
+      "facets": {
+       "whiteSpace": "preserve",
+       "patterns": [
+        [
+         "1\\.00"
+        ]
+       ]
+      },
+      "name": "TVerEvento",
+      "doc": "Tipo Versão do Evento"
+     },
+     "required": true
+    }
+   ],
+   "doc": "Tipo procEvento",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "evento",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "ref": "TEvento"
+      },
+      "min": 1,
+      "max": 1
+     },
+     {
+      "k": "el",
+      "name": "retEvento",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "ref": "TRetEvento"
+      },
+      "min": 1,
+      "max": 1
+     }
+    ]
+   }
+  }
+ },
+ "simple": {
+  "TCOrgaoIBGE": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "enumeration": [
+     "11",
+     "12",
+     "13",
+     "14",
+     "15",
+     "16",
+     "17",
+     "21",
+     "22",
+     "23",
+     "24",
+     "25",
+     "26",
+     "27",
+     "28",
+     "29",
+     "31",
+     "32",
+     "33",
+     "35",
+     "41",
+     "42",
+     "43",
+     "50",
+     "51",
+     "52",
+     "53",
+     "90",
+     "91",
+     "92"
+    ]
+   },
+   "name": "TCOrgaoIBGE",
+   "doc": "Tipo Código de orgão (UF da tabela do IBGE + 90 RFB)"
+  },
+  "TAmb": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "enumeration": [
+     "1",
+     "2"
+    ]
+   },
+   "name": "TAmb",
+   "doc": "Tipo Ambiente"
+  },
+  "TCnpjOpc": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "maxLength": 14,
+    "patterns": [
+     [
+      "[0-9]{0}|[0-9A-Z]{12}[0-9]{2}"
+     ]
+    ]
+   },
+   "name": "TCnpjOpc",
+   "doc": "Tipo Número do CNPJ Opcional"
+  },
+  "TCpf": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[0-9]{11}"
+     ]
+    ]
+   },
+   "name": "TCpf",
+   "doc": "Tipo Número do CPF"
+  },
+  "TChNFe": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[0-9]{6}[0-9A-Z]{12}[0-9]{26}"
+     ]
+    ]
+   },
+   "name": "TChNFe",
+   "doc": "Tipo Chave da Nota Fiscal Eletrônica"
+  },
+  "TDateTimeUTC": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "(((20(([02468][048])|([13579][26]))-02-29))|(20[0-9][0-9])-((((0[1-9])|(1[0-2]))-((0[1-9])|(1\\d)|(2[0-8])))|((((0[13578])|(1[02]))-31)|(((0[1,3-9])|(1[0-2]))-(29|30)))))T(20|21|22|23|[0-1]\\d):[0-5]\\d:[0-5]\\d([\\-,\\+](0[0-9]|10|11):00|([\\+](12):00))"
+     ]
+    ]
+   },
+   "name": "TDateTimeUTC",
+   "doc": "Data e Hora, formato UTC (AAAA-MM-DDThh:mm:ssTZD, onde TZD = +hh:mm ou -hh:mm)"
+  },
+  "TCnpj": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[0-9A-Z]{12}[0-9]{2}"
+     ]
+    ]
+   },
+   "name": "TCnpj",
+   "doc": "Tipo Número do CNPJ"
+  },
+  "TTransformURI": {
+   "kind": "simple",
+   "builtin": "anyURI",
+   "chain": [],
+   "facets": {
+    "enumeration": [
+     "http://www.w3.org/2000/09/xmldsig#enveloped-signature",
+     "http://www.w3.org/TR/2001/REC-xml-c14n-20010315"
+    ]
+   },
+   "name": "TTransformURI"
+  },
+  "DigestValueType": {
+   "kind": "simple",
+   "builtin": "base64Binary",
+   "chain": [],
+   "facets": {},
+   "name": "DigestValueType"
+  },
+  "TVerEvento": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "1\\.00"
+     ]
+    ]
+   },
+   "name": "TVerEvento",
+   "doc": "Tipo Versão do Evento"
+  },
+  "TVerEnvEvento": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "1\\.00"
+     ]
+    ]
+   },
+   "name": "TVerEnvEvento",
+   "doc": "Tipo Versão do EnvEvento"
+  },
+  "TString": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+     ]
+    ]
+   },
+   "name": "TString",
+   "doc": "Tipo string genérico"
+  },
+  "TVerAplic": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [
+    "TString"
+   ],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+     ]
+    ],
+    "minLength": 1,
+    "maxLength": 20
+   },
+   "name": "TVerAplic",
+   "doc": "Tipo Versão do Aplicativo"
+  },
+  "TStat": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "maxLength": 4,
+    "patterns": [
+     [
+      "[0-9]{3,4}"
+     ]
+    ]
+   },
+   "name": "TStat",
+   "doc": "Tipo Código da Mensagem enviada"
+  },
+  "TMotivo": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [
+    "TString"
+   ],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+     ]
+    ],
+    "maxLength": 255,
+    "minLength": 1
+   },
+   "name": "TMotivo",
+   "doc": "Tipo Motivo"
+  },
+  "TProt": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[0-9]{15}|[0-9]{17}"
+     ]
+    ]
+   },
+   "name": "TProt",
+   "doc": "Tipo Número do Protocolo de Status"
+  }
+ },
+ "unsupported": []
+}

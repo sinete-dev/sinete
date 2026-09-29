@@ -1,0 +1,13 @@
+{
+  "name": "@sinete/tool-ibs-cbs-oraculo",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Teste diferencial opcional do @sinete/ibs-cbs/calcular e do @sinete/ibs-cbs-dados contra a Calculadora offline da RFB, com ledger de divergências conhecidas e gravação das fixtures dos testes unitários",
+  "license": "Apache-2.0",
+  "type": "module",
+  "dependencies": {
+    "@sinete/core": "workspace:^",
+    "@sinete/ibs-cbs": "workspace:^",
+    "@sinete/ibs-cbs-dados": "workspace:^"
+  }
+}

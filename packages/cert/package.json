@@ -1,0 +1,52 @@
+{
+  "name": "@sinete/cert",
+  "version": "0.0.0",
+  "description": "Certificado ICP-Brasil do sinete: leitura de PFX (inclusive legado RC2/3DES), identidade (CNPJ/CPF), cadeia ICP-Brasil versionada, KeyStore e assinatura A1 via WebCrypto",
+  "keywords": [
+    "nfe",
+    "dfe",
+    "icp-brasil",
+    "pfx",
+    "pkcs12",
+    "certificado-digital",
+    "brasil"
+  ],
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src",
+    "NOTICE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sinete-dev/sinete.git",
+    "directory": "packages/cert"
+  },
+  "homepage": "https://github.com/sinete-dev/sinete/tree/main/packages/cert#readme",
+  "bugs": "https://github.com/sinete-dev/sinete/issues",
+  "scripts": {
+    "build": "bun ../../scripts/build.ts ."
+  },
+  "dependencies": {
+    "@sinete/core": "workspace:^",
+    "node-forge": "^1.4.0"
+  },
+  "devDependencies": {
+    "@types/node-forge": "1.3.14"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

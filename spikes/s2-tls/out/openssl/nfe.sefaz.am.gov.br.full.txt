@@ -1,0 +1,354 @@
+CONNECTED(00000005)
+OCSP response: no OCSP response received
+---
+Certificate chain
+ 0 s:C=BR, ST=AM, L=MANAUS, O=SECRETARIA DE ESTADO DA FAZENDA SEFAZ, serialNumber=04312377000137, CN=*.sefaz.am.gov.br, businessCategory=Business Entity, jurisdictionC=BR
+   i:C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v10, CN=Autoridade Certificadora do SERPRO SSLv1
+   a:PKEY: RSA, 2048 (bit); sigalg: sha256WithRSAEncryption
+   v:NotBefore: Aug  3 12:30:12 2026 GMT; NotAfter: Aug  3 12:30:12 2027 GMT
+-----BEGIN CERTIFICATE-----
+MIIGuDCCBKCgAwIBAgINAK/KyMC00CmUDB/24zANBgkqhkiG9w0BAQsFADCBjDEL
+MAkGA1UEBhMCQlIxEzARBgNVBAoMCklDUC1CcmFzaWwxNTAzBgNVBAsMLEF1dG9y
+aWRhZGUgQ2VydGlmaWNhZG9yYSBSYWl6IEJyYXNpbGVpcmEgdjEwMTEwLwYDVQQD
+DChBdXRvcmlkYWRlIENlcnRpZmljYWRvcmEgZG8gU0VSUFJPIFNTTHYxMB4XDTI2
+MDgwMzEyMzAxMloXDTI3MDgwMzEyMzAxMlowgb8xCzAJBgNVBAYTAkJSMQswCQYD
+VQQIDAJBTTEPMA0GA1UEBwwGTUFOQVVTMS4wLAYDVQQKDCVTRUNSRVRBUklBIERF
+IEVTVEFETyBEQSBGQVpFTkRBIFNFRkFaMRcwFQYDVQQFEw4wNDMxMjM3NzAwMDEz
+NzEaMBgGA1UEAwwRKi5zZWZhei5hbS5nb3YuYnIxGDAWBgNVBA8TD0J1c2luZXNz
+IEVudGl0eTETMBEGCysGAQQBgjc8AgEDEwJCUjCCASIwDQYJKoZIhvcNAQEBBQAD
+ggEPADCCAQoCggEBAK6RnM2X+LEuK+H3gWmU3eyVlMQvLzo+vZ+Dpg+pFzgnNUmg
+OTXqUvne6EmAIOvX4DOY19MerecCKDGqNzQLza7HIceTWAHaH/isha06CQlBJFW5
+Hs5nD/96gkrAACWRk5891xOi6Bngaxi6w3crkSc3jiNX9doF8U1He1if9MbzKjrX
+eLbiNAJcjZfn6tIqP+dXRKwxvREMEYbt4OJNgYQSZiLo0MErxZusTYCdxHKmP0f/
+rqMKL59wpN2QzHiUo7ftuUiI2fBFgUlXzBTB7k7lmL6lnozA4tkYsDxIgJypRtmb
+wbbr0zbXe0vPHm80iBLiaAGpxWosuqsPmz/6cvMCAwEAAaOCAeIwggHeMB8GA1Ud
+IwQYMBaAFK0WT0vxDL7CiqKFGNcNRiWTIuPNMA4GA1UdDwEB/wQEAwIFoDBZBgNV
+HSAEUjBQME4GBmBMAQIBaTBEMEIGCCsGAQUFBwIBFjZodHRwOi8vcmVwb3NpdG9y
+aW8uc2VycHJvLmdvdi5ici9kb2NzL2RwY3NlcnByb3NzbC5wZGYwHAYDVR0RBBUw
+E4IRKi5zZWZhei5hbS5nb3YuYnIwHQYDVR0lBBYwFAYIKwYBBQUHAwIGCCsGAQUF
+BwMBMIGIBgNVHR8EgYAwfjA8oDqgOIY2aHR0cDovL3JlcG9zaXRvcmlvLnNlcnBy
+by5nb3YuYnIvbGNyL2Fjc2VycHJvc3NsdjEuY3JsMD6gPKA6hjhodHRwOi8vY2Vy
+dGlmaWNhZG9zMi5zZXJwcm8uZ292LmJyL2xjci9hY3NlcnByb3NzbHYxLmNybDCB
+hwYIKwYBBQUHAQEEezB5MEIGCCsGAQUFBzAChjZodHRwOi8vcmVwb3NpdG9yaW8u
+c2VycHJvLmdvdi5ici9jYWRlaWFzL3NlcnByb3NzbC5wN2IwMwYIKwYBBQUHMAGG
+J2h0dHA6Ly9vY3NwLnNlcnByby5nb3YuYnIvYWNzZXJwcm9zc2x2MTANBgkqhkiG
+9w0BAQsFAAOCAgEAiFCxYqF7/QrHn/eV96EkESRChgwQryEC2I7yl1wJ77EpD7/d
+C9grIcDLzHajSjhylOmuiY35cLhJiIpKL0nbcnudGjlXr9V6Tm8iby/PnqUXYMuP
+XzY/36kPYovx3hS+Mmd0D5BbiHEiDOlP/IZpRHhlO3wZlSH/q7drbRSHYtIx911q
+RSV3SA2lDz3IOedKOqtF0gfjPRsNUzwtYkTVdgSYhE7UuJ7reUdDLOj52MvdV6rX
+8bmMVHnR8VuiO6LsjQZ53jcruh7NgYuTJk8bwqW7jJCuP5ExFDNOALxYa5z+wCtf
+SafD0s0bn+ihIcBRfWetMiIa3NzmZ135zG6MkNFS61woznWQd1RLYqF7JPYVoYup
+ZZZ1HNs8f5NwlY1TL04ZQLB5Fs2h5o/HQQNkNKE3yr++0MgrmC51AjNmpEnLjUnx
+i8URwn8RV7QViB3HEeCCn0HtbjACUFatJOhyIEgKTqyUSqKTaENsTSqflFrqnOsK
+hDhkNytV7ld/56rtsPHXYFsiw2dgpnUp6BwKO8dDkKU1G8tZO3q0T/tprjFXJ/R7
+N6ob9klox+4y0rCMCU7Lm52RnCl1uhbPE8WxJ6rMyTwoOgcgUnsDPBNeN5Y5U/lC
+mZEOdKdd5zHl0cetMI2R6Cg4UVWB4ViNvI+MxmW7NiDt1cPOvUYfvPegMQc=
+-----END CERTIFICATE-----
+ 1 s:C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v10, CN=Autoridade Certificadora do SERPRO SSLv1
+   i:C=BR, O=ICP-Brasil, OU=Instituto Nacional de Tecnologia da Informacao - ITI, CN=Autoridade Certificadora Raiz Brasileira v10
+   a:PKEY: RSA, 4096 (bit); sigalg: sha512WithRSAEncryption
+   v:NotBefore: Mar 12 19:31:42 2020 GMT; NotAfter: Jul  1 12:00:59 2032 GMT
+-----BEGIN CERTIFICATE-----
+MIIHAjCCBOqgAwIBAgIJAJVIeKgiEmNTMA0GCSqGSIb3DQEBDQUAMIGYMQswCQYD
+VQQGEwJCUjETMBEGA1UECgwKSUNQLUJyYXNpbDE9MDsGA1UECww0SW5zdGl0dXRv
+IE5hY2lvbmFsIGRlIFRlY25vbG9naWEgZGEgSW5mb3JtYWNhbyAtIElUSTE1MDMG
+A1UEAwwsQXV0b3JpZGFkZSBDZXJ0aWZpY2Fkb3JhIFJhaXogQnJhc2lsZWlyYSB2
+MTAwHhcNMjAwMzEyMTkzMTQyWhcNMzIwNzAxMTIwMDU5WjCBjDELMAkGA1UEBhMC
+QlIxEzARBgNVBAoMCklDUC1CcmFzaWwxNTAzBgNVBAsMLEF1dG9yaWRhZGUgQ2Vy
+dGlmaWNhZG9yYSBSYWl6IEJyYXNpbGVpcmEgdjEwMTEwLwYDVQQDDChBdXRvcmlk
+YWRlIENlcnRpZmljYWRvcmEgZG8gU0VSUFJPIFNTTHYxMIICIjANBgkqhkiG9w0B
+AQEFAAOCAg8AMIICCgKCAgEA61jQVBX27GVzyZkJuyrEezqjBGdLSJDFRyGdwxbm
+8Ntr0AA8blhDaN5ASDOjqDESMA7xF38znfkZWBMLxJ3Ob0271W6G9bqgTwp/svhZ
+s91UcbZW6sB7gyxzMTGWLxcFMeBrurM0QpMVsp8hDH5Suv5rfP0YB9brz60k104u
+HG625rAcbRKHn7XsWJ1ZUQcwRzx1g0L1NlUKpsk0+eOAxTcVSVRTO33k+n6Gve83
+4MXMiG6Orved4isnEvQnl4AecCXOuUuM3vXZ+kdJGTpNy1HOy0coFdKCJSSCxU/y
+TbTiAiRJTc8rbvor3I7k7wR4ZDR8alDbW/Sbw1JEMtbQqMOXEOV7iEUIub0/uNT2
+g0oM4pu8DAxhIwy2YQCpjfCbzYu2bf1nabuOEQ2B4mFt/zgoxa5FLsM+0IjpCi8u
+z9RqLvYFo9pIy5BTi7JMkVfbgqcOv7vkQf3xF7sODdInCVRIbB0R6xpHm+bpitx9
+t5ip+Sf24QFlKbjy0gwVAnaEyf/iQF+t8qgcFBO65kyfH/2vs6iYg5TNhFKtjpqQ
+iTyI7YkRkfTbLFdcgZbiRUUs5TFi0BkS4PAWupO1GgV9sJdk9gm3Z+KNZDgoAnu7
+Cvhq1JXt6t7qO96WzBx9q9hi7T6eld1VFrV5Ya5kxM9Lgh+XcBDwfnDLI1Yoozbd
+MbkCAwEAAaOCAVcwggFTMIGtBgNVHSAEgaUwgaIwTwYGYEwBAYEJMEUwQwYIKwYB
+BQUHAgEWN2h0dHBzOi8vcmVwb3NpdG9yaW8uc2VycHJvLmdvdi5ici9kb2NzL2Rw
+Y3NlcnByb3NzbC5wZGYwTwYGYEwBAgFpMEUwQwYIKwYBBQUHAgEWN2h0dHBzOi8v
+cmVwb3NpdG9yaW8uc2VycHJvLmdvdi5ici9kb2NzL2RwY3NlcnByb3NzbC5wZGYw
+QAYDVR0fBDkwNzA1oDOgMYYvaHR0cDovL2FjcmFpei5pY3BicmFzaWwuZ292LmJy
+L0xDUmFjcmFpenYxMC5jcmwwHwYDVR0jBBgwFoAUdPN+//yfU3rxfOurPqSm2hi6
+RWMwHQYDVR0OBBYEFK0WT0vxDL7CiqKFGNcNRiWTIuPNMA8GA1UdEwEB/wQFMAMB
+Af8wDgYDVR0PAQH/BAQDAgGGMA0GCSqGSIb3DQEBDQUAA4ICAQCDvWkOYakalAHB
+3ZcifI9yLyuTtjR8eYXlfDesYr7zMFVlmduVghCgueBMZxmht9BpLq9/ceBWu1q8
+sKge5oNNyySPmBJFe+CLjtB7Z1Ljk0Q/7A59lMCDZajojJlSEnH6pdhxA1JD58E0
+dGsom3SufuBWxdNfgsvpQNXDoKp48VlkyL4DKFCdJExtzuR5IlcQbB1FrmB5m2zo
+GG6j7UdoevmikIv01la+8kyn7CF5aNubRE0cfwxulik5LNM1uLIwfUVwYbbQiB8z
+baLUOS2lU/pYr+seLQ7VBPHps/guGB9hKei/Df49KWjDVplu3+AuZhBHqiK533VJ
+f9Uwv3Rvx8FCobT54OCrAVfnFs8F6sM3dPh1u7AbW3Ddpeo4oBH5kBA0feLvLk7v
+mOnOq64oPMMoj+g6x0B0v7tGqOrNBZK486MaU/uaJi+omx+Le9EfyIz39BbRYGdV
+JvO/9P8vn5XnNXsmqziw08ENLjHcrro48tRm3YX0/BUgoitjMUqyzlKTgQ8UOpfi
+XeJzqvxvUMO/HgZK9aknN3WQXWXxIFG01OHsEOTd2Nddqbrth5qmZE+1IxwEH+ys
+QQzlV0pnPL5K0bRuPCqvH4Jr0CmwV2PqD6dkjI/Sy77XDkTP8adAuYjIEynBoQ0b
+tqY/0rJPT3dztepWAwRHhKbvO1yYkA==
+-----END CERTIFICATE-----
+ 2 s:C=BR, O=ICP-Brasil, OU=Instituto Nacional de Tecnologia da Informacao - ITI, CN=Autoridade Certificadora Raiz Brasileira v10
+   i:C=BR, O=ICP-Brasil, OU=Instituto Nacional de Tecnologia da Informacao - ITI, CN=Autoridade Certificadora Raiz Brasileira v10
+   a:PKEY: RSA, 4096 (bit); sigalg: sha512WithRSAEncryption
+   v:NotBefore: Jul  1 19:15:59 2019 GMT; NotAfter: Jul  1 12:00:59 2032 GMT
+-----BEGIN CERTIFICATE-----
+MIIGrDCCBJSgAwIBAgIJANLVi0S/gZNCMA0GCSqGSIb3DQEBDQUAMIGYMQswCQYD
+VQQGEwJCUjETMBEGA1UECgwKSUNQLUJyYXNpbDE9MDsGA1UECww0SW5zdGl0dXRv
+IE5hY2lvbmFsIGRlIFRlY25vbG9naWEgZGEgSW5mb3JtYWNhbyAtIElUSTE1MDMG
+A1UEAwwsQXV0b3JpZGFkZSBDZXJ0aWZpY2Fkb3JhIFJhaXogQnJhc2lsZWlyYSB2
+MTAwHhcNMTkwNzAxMTkxNTU5WhcNMzIwNzAxMTIwMDU5WjCBmDELMAkGA1UEBhMC
+QlIxEzARBgNVBAoMCklDUC1CcmFzaWwxPTA7BgNVBAsMNEluc3RpdHV0byBOYWNp
+b25hbCBkZSBUZWNub2xvZ2lhIGRhIEluZm9ybWFjYW8gLSBJVEkxNTAzBgNVBAMM
+LEF1dG9yaWRhZGUgQ2VydGlmaWNhZG9yYSBSYWl6IEJyYXNpbGVpcmEgdjEwMIIC
+IjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAk3AxKl1ZtP0pNyjChqO7qNkn
++/sClZeqiV/Kd7KnnbkDbI2y3VWcUG7feCE/deIxot6GH6JXncRG794UZl+4doD0
+D0/cEwBd4DvrDSZm0RT40xhmYYOTxZDJxv+coTHdmsT5aNmSkktfjzYX4HQHh/7M
+em+kTOpT/3E4K6B7KVs9HkOT7nXx5yU1qYbVWqI0qpJM9mOTSFx8C9HiKcHvLCvt
+1ioXKPAmFuHPkayOcXP2MXeb+VRNjWKU4E+L2t5uZPKVx1M/9i1DztlLb4K8OfYg
+GaPDUSF1sxnoGk5qZHLleO6KjCpmuQepmgsBvxi2YNO7X2YUwQQx1AXNSolgtkAR
+5gt+1WzxhbFUhItQqlhqxgWHefLmiT5T/Ctz/P2v+zSO4efkkIzsi1iwD+ypZvM2
+lnIvB24RcSN6jzmCahLPX4CwjwIK6JsSoMVxIhpZHCguUP4LXqP8IWUZ6WgS/4zB
+7B9E0EICl2rM1PRy+6ulv+ZOW256e8a0pijUB+hXM1msUq9L92476FAAX8va3sP7
++Uut94+bGHmubcTLImWUPrxNT7QyrvE3FyHicfiHioeFL2oV4cXTLZrEq2wS8R4P
+KPdSzNn5Z9e2uMEGYQaSNO+OwvVycpIhOBOqrm12wJ9ZhWKtM5UOo34/o37r5ZBI
+TYXAGbhqQDB9mWXwH+0CAwEAAaOB9jCB8zBOBgNVHSAERzBFMEMGBWBMAQEAMDow
+OAYIKwYBBQUHAgEWLGh0dHA6Ly9hY3JhaXouaWNwYnJhc2lsLmdvdi5ici9EUENh
+Y3JhaXoucGRmMEAGA1UdHwQ5MDcwNaAzoDGGL2h0dHA6Ly9hY3JhaXouaWNwYnJh
+c2lsLmdvdi5ici9MQ1JhY3JhaXp2MTAuY3JsMB8GA1UdIwQYMBaAFHTzfv/8n1N6
+8Xzrqz6kptoYukVjMB0GA1UdDgQWBBR0837//J9TevF866s+pKbaGLpFYzAPBgNV
+HRMBAf8EBTADAQH/MA4GA1UdDwEB/wQEAwIBBjANBgkqhkiG9w0BAQ0FAAOCAgEA
+eCNhBSuy/Ih/T+1VOtAJju85SrtoE3vET1qXASpmjQllDHG/ph7VFNRAkC+gha+B
+CbjoA5oJ/8wwl+Qdp1KGz6nXXFTLx3osU+kjm0srmBf9nyXHPqvFyvBeB0A7sYb7
+TmII9GKD20oCxsdkccR/oE/JuTaNnGq0GYZ2aDb5v62uLi21Y6P9UBiTxZqQ4ojW
+ET6kXNjlK238jpXv17FR8Sg3VusCvX7Q8eJkavvHHZDeWck2fSA+ycAc2JeL2Z0B
+MSxGWpH32WM9J8+6XqCJUXHiWEV0zCE8wDYiYC+047pTxQI/gB/FcU7jvylh98DJ
+kQPHd/Tp6Og3ynlDA9n9uBbxYHVRZs9vsZ/7xTFaxRe+zk8dhgKgZ/3RrcMFB570
+2t8LFbyuUE/kQVY6rZ0QJ9qMWQ7VPLRwRhiMeU3k8WDJb/tBbOXHBqldTbWyQ+mp
+MEDWhbrzE/IED82wAuO23Tb05cYk2xC7+Izef8fSc3XdJDuPSbcDpWukzyCDtSEH
+isLiGEtIbYRiPsF3czlQPsnIEVoTTCWxHCH1zYR6zScSv18Qh69qVe2J40K5jZoP
+GEOhq/oKhVJQAdvAFW5Odp7mF3Tk9nivjjsctJSxY26LFiV5GRV+07SSse4ti0aO
+jO5PLg5SWjfcOtBG2rz02EIvQAmLcb0kGBtfdj0lW/w=
+-----END CERTIFICATE-----
+---
+Server certificate
+subject=C=BR, ST=AM, L=MANAUS, O=SECRETARIA DE ESTADO DA FAZENDA SEFAZ, serialNumber=04312377000137, CN=*.sefaz.am.gov.br, businessCategory=Business Entity, jurisdictionC=BR
+issuer=C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v10, CN=Autoridade Certificadora do SERPRO SSLv1
+---
+Acceptable client certificate CA names
+C=BR, O=ICP-Brasil, OU=AC SOLUTI v5, CN=AC QUALITYCERT v5
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC VALID RFB v5
+C=BR, O=ICP-Brasil, OU=Servico Federal de Processamento de Dados - SERPRO, CN=Autoridade Certificadora PRIMECERT
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC ONLINE RFB v5
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v5, CN=AC SOLUTI v5 G2
+C=BR, O=ICP-Brasil, OU=AC SAFEWEB, CN=AC SEMPRE CD
+C=BR, O=ICP-Brasil, OU=AC SOLUTI v5, CN=AC MULT v5
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora VALID - AC VALID v5, CN=AC SENHA DIGITAL BRASIL
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC Imprensa Oficial SP RFB SSL
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v5, CN=Autoridade Certificadora da Justica v5
+C=BR, O=ICP-Brasil, OU=Certisign Certificadora Digital S.A., CN=AC Certisign Tempo G2
+C=BR, O=ICP-Brasil, OU=AC SOLUTI v5, CN=AC SOLUTI Multipla v5
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v5, CN=AC SyngularID
+emailAddress=dft-nfe@procergs.rs.gov.br, ST=RS, OU=Teste Projeto NFe RS, O=Teste Projeto NFe RS, L=PORTO ALEGRE, C=BR, CN=NFe2 - AC Intermediaria 1 v3
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v10, CN=AC SOLUTI SSL EV G4
+C=BR, O=ICP-Brasil, OU=CSPB-1, OU=Servico Federal de Processamento de Dados - SERPRO, CN=Autoridade Certificadora do SERPRO Final SSL
+C=BR, O=ICP-Brasil, OU=AC SOLUTI v5 G2, CN=AC DIGISEC v5
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v5, CN=Autoridade Certificadora de Defesa
+C=BR, O=ICP-Brasil, OU=AC SAFEWEB, CN=AC PREMIUM CERTIFICADORA DIGITAL CD
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC DIGITALSIGN RFB G3
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC SOLUTI RFB V5
+C=BR, O=ICP-Brasil, OU=Servico Federal de Processamento de Dados - SERPRO, CN=Autoridade Certificadora IDFEDERAL
+C=BR, O=ICP-Brasil, OU=Servico Federal de Processamento de Dados - SERPRO, CN=Autoridade Certificadora INVIA
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC Instituto Fenacon RFB G3
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora da Justica v5, OU=SMIME, CN=AC CERTISIGN-JUS G6
+C=BR, O=ICP-Brasil, OU=AC SAFEWEB, CN=AC REDE IDEIA CD
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC EGBA RFB
+C=BR, O=ICP-Brasil, OU=DigitalSign Certificacao Digital Ltda, CN=AC DIGITALSIGN G2
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v10, CN=AC SERASA SSL EV V3
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v10, CN=AC Certisign ICP-Brasil SSL EV G3
+C=BR, O=ICP-Brasil, OU=Instituto Nacional de Tecnologia da Informacao - ITI, CN=Autoridade Certificadora Raiz Brasileira v6
+C=BR, O=ICP-Brasil, OU=AC SOLUTI v5 G2, CN=AC SOLUTI Multipla v5 G2
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v6, CN=Instituto Nacional de Metrologia Qualidade e Tecnologia INMETRO
+C=BR, O=ICP-Brasil, OU=Servico Federal de Processamento de Dados - SERPRO, CN=Autoridade Certificadora PROCERTI
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v5, CN=AC Certisign G7
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v10, CN=Autoridade Certificadora do SERPRO SSLv1
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC Certisign RFB G5
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora VALID - AC VALID v5, CN=AC CERTBANK
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora VALID - AC VALID v5, CN=AC VALID PLUS TIMESTAMPING
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC LINK RFB v2
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC CONSULTI RFB
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC Notarial RFB G4
+C=BR, O=ICP-Brasil, OU=Servico Federal de Processamento de Dados - SERPRO, CN=Autoridade Certificadora SEFAZCE
+C=BR, O=ICP-Brasil, OU=Servico Federal de Processamento de Dados - SERPRO, CN=Autoridade Certificadora NACIONAL
+C=BR, O=ICP-Brasil, OU=AC SOLUTI v5 G2, CN=AC REDE BRASIL v5 G2
+C=BR, O=ICP-Brasil, OU=ORDEM DOS ADVOGADOS DO BRASIL CONSELHO FEDERAL, CN=AC OAB G3
+C=BR, O=ICP-Brasil, OU=Instituto Nacional de Metrologia Qualidade e Tecnologia INMETRO, CN=AC Soluti OM-BR
+C=BR, O=ICP-Brasil, OU=CSPB-6, CN=AC VALID SPB v5
+C=BR, O=ICP-Brasil, OU=AC SOLUTI v5, CN=AC INFOCO DIGITAL v5
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora da Justica v5, OU=SMIME, CN=AC VALID-JUS v5
+C=BR, O=ICP-Brasil, OU=Servico Federal de Processamento de Dados - SERPRO, CN=Autoridade Certificadora do SERPRO Final v5
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora VALID - AC VALID v5, CN=AC ONLINE BRASIL v5
+C=BR, O=ICP-Brasil, OU=Certisign Certificadora Digital S.A., CN=AC Certisign Multipla G7
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC DOCCLOUD RFB v2
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v10, CN=AC SOLUTI SSL EV G3
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora VALID - AC VALID v5, CN=AC VALID PLUS CODESIGNING
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v5, CN=SERASA Autoridade Certificadora Principal v5
+C=BR, O=ICP-Brasil, OU=AC SOLUTI v5, CN=AC MAXIMUS TECNOLOGIA E EVENTOS v5
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v5, CN=AC SOLUTI v5
+C=BR, O=ICP-Brasil, OU=AC SAFEWEB, CN=AC SAFEWEB CD
+C=BR, O=ICP-Brasil, OU=Certisign Certificadora Digital S.A., OU=CSPB-2, CN=AC Certisign SPB G6
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v12, CN=AC Safeweb v12
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora VALID - AC VALID v5, CN=AC SIG BRASIL
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC DIGITALSIGN RFB G2
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora da Justica v5, OU=CODESIGNING, CN=AC SOLUTI-JUS CODESIGNING v5
+C=BR, O=ICP-Brasil, OU=Instituto Nacional de Tecnologia da Informacao - ITI, CN=Autoridade Certificadora Raiz Brasileira v12
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v12, CN=Autoridade Certificadora da Justica v6
+C=BR, O=ICP-Brasil, OU=Certisign Certificadora Digital S.A., CN=AC Certisign Multipla SSL
+emailAddress=dft-nfe@procergs.rs.gov.br, ST=RS, OU=Teste Projeto NFe RS, O=Teste Projeto NFe RS, L=PORTO ALEGRE, C=BR, CN=NFe2 AC Raiz v3
+C=BR, O=ICP-Brasil, OU=Certisign Certificadora Digital S.A., CN=AC Instituto Fenacon G4
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC FENACOR RFB
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v5, CN=AC DOCCLOUD
+C=BR, O=ICP-Brasil, OU=AC SOLUTI v5, OU=CSPB-7, CN=AC SOLUTI SPB v5
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora da Justica v5, OU=SMIME, CN=AC SOLUTI-JUS v5
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v5, CN=AC SAFEWEB
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC CNDL RFB v3
+C=BR, O=ICP-Brasil, OU=AC SOLUTI v5 G2, CN=AC CERTIFICA ANAPOLIS v5 G2
+C=BR, O=ICP-Brasil, CN=SERASA CD SSL V5
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora da Justica v5, OU=CODESIGNING, CN=AC VALID-JUS CODESIGNING v5
+C=BR, O=ICP-Brasil, OU=AC SAFEWEB, CN=AC SAFEWEB TIMESTAMPING
+C=BR, O=ICP-Brasil, OU=AC SAFEWEB, CN=AC SAFETECH CD
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC REDE IDEIA RFB
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v10, CN=AC SERASA SSL EV V2
+C=BR, O=ICP-Brasil, OU=Instituto Nacional de Tecnologia da Informacao - ITI, CN=Autoridade Certificadora Raiz Brasileira v5
+C=BR, O=ICP-Brasil, OU=AC SAFEWEB, CN=AC LINK CD
+C=BR, O=ICP-Brasil, OU=Servico Federal de Processamento de Dados - SERPRO, CN=Autoridade Certificadora INFOCOMEX
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v5, CN=AC DIGITAL MAIS
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC SINCOR RIO RFB G2
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora VALID - AC VALID v5, CN=AC VALID PLUS v5
+C=BR, O=ICP-Brasil, OU=AC SOLUTI v5, CN=AC CERTFACIL v5
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v12, CN=Autoridade Certificadora da Presidencia da Republica v6
+C=BR, O=ICP-Brasil, OU=AC SOLUTI v5 G2, CN=AC MAXIMUS TECNOLOGIA E EVENTOS v5 G2
+C=BR, O=ICP-Brasil, OU=Servico Federal de Processamento de Dados - SERPRO, CN=Autoridade Certificadora SDI
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora da Justica v5, OU=CODESIGNING, CN=AC CERTISIGN-JUS CODESIGNING G6
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC SINCOR RFB G5
+C=BR, O=ICP-Brasil, OU=AC SOLUTI v5, CN=AC CERTIFICA MINAS v5
+C=BR, O=ICP-Brasil, OU=Servico Federal de Processamento de Dados - SERPRO, CN=Autoridade Certificadora BRASIL CERTEC
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora VALID - AC VALID v5, CN=AC VALID PLUS SSL
+C=BR, O=ICP-Brasil, OU=AC SAFEWEB, CN=AC META CERTIFICADO DIGITAL CD
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC SEMPRE RFB v2
+C=BR, O=ICP-Brasil, OU=Certisign Certificadora Digital S.A., CN=AC EGBA Multipla G2
+C=BR, OU=AC SyngularID, O=ICP-Brasil, CN=AC SyngularID Multipla
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora VALID - AC VALID v5, CN=AC VALID BRASIL CODESIGNING
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora da Justica v5, OU=SSL, CN=AC SOLUTI-JUS SSL v5
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora da Justica v5, OU=SMIME, CN=AC SERPRO-JUS v5
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v10, CN=AC SOLUTI SSL EV G2
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora VALID - AC VALID v5, CN=AC CERTDATA BRASIL
+C=BR, O=ICP-Brasil, OU=AC SOLUTI v5, CN=AC A R A CERTIFICACAO DIGITAL v5
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v10, CN=AC Certisign ICP-Brasil SSL G2
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora da Justica v5, OU=SMIME, CN=AC CERTISIGN-JUS G5
+C=BR, O=ICP-Brasil, OU=AC SOLUTI v5 G2, CN=AC FCDL SC v5 G2
+C=BR, O=ICP-Brasil, OU=AC SOLUTI v5, CN=AC ACD v5
+C=BR, O=ICP-Brasil, OU=Instituto Nacional de Tecnologia da Informacao - ITI, CN=Autoridade Certificadora Raiz Brasileira v11
+C=BR, O=ICP-Brasil, OU=Instituto Nacional de Metrologia Qualidade e Tecnologia INMETRO, CN=AC Certisign OM-BR
+C=BR, O=ICP-Brasil, OU=AC SOLUTI v5, CN=AC FCDL SC v5
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v11, CN=AC VALID CODE SIGNING
+C=BR, O=ICP-Brasil, OU=Certisign Certificadora Digital S.A., CN=AC Instituto Fenacon G3
+C=BR, O=ICP-Brasil, OU=AC SAFEWEB, CN=AC CERTIPE CD
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC Imprensa Oficial SP RFB G5
+C=BR, O=ICP-Brasil, OU=Certisign Certificadora Digital S.A., CN=AC Certisign Multipla CodeSigning
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=Autoridade Certificadora SERPRORFBv5
+C=BR, O=ICP-Brasil, OU=AC SOLUTI v5 G2, CN=AC CCN COMPANHIA CERTIFICADORA NACIONAL v5
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v5, CN=AC PRODESP SP
+C=BR, OU=AC SyngularID, O=ICP-Brasil, CN=AC Solucao Digital Multipla
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v5, CN=Autoridade Certificadora SERPRO v4
+C=BR, O=ICP-Brasil, OU=AC SOLUTI v5 G2, CN=AC SOLUTI Multipla TIMESTAMPING v5
+C=BR, O=ICP-Brasil, OU=AC SAFEWEB, CN=AC CACB CD
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC PRODESP RFB v1
+C=BR, O=ICP-Brasil, OU=AC SAFEWEB, CN=AC CERTMAIS CD
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v10, CN=AC VALID SSL EV
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC SERASA RFB v5
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora VALID - AC VALID v5, CN=AC SIC BRASIL
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v5, CN=AC VALID v5
+C=BR, O=ICP-Brasil, OU=Servico Federal de Processamento de Dados - SERPRO, CN=Autoridade Certificadora DIGITAL CERTY
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC PRODEMGE RFB G4
+C=BR, OU=AC SyngularID, O=ICP-Brasil, CN=AC Validar Multipla
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC Prodemge RFB
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC SIC RFB
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora VALID - AC VALID v5, CN=AC VALID BRASIL SSL
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC A DIGIFORTE RFB
+C=BR, O=ICP-Brasil, OU=Servico Federal de Processamento de Dados - SERPRO, CN=Autoridade Certificadora ALTERNATIVE
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC CONSULTI BRASIL RFB
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC A DIGIFORTE RFB
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v5, CN=Autoridade Certificadora da Presidencia da Republica v5
+C=BR, O=ICP-Brasil, OU=SINCOR-SP - Sindicato dos Corretores de Seguros no Estado de SP, CN=AC SINCOR G4
+C=BR, O=ICP-Brasil, OU=ORDEM DOS ADVOGADOS DO BRASIL CONSELHO FEDERAL, CN=AC OAB G4
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v12, CN=AC VALID V12
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora da Justica v5, OU=SSL, CN=AC VALID-JUS SSL v5
+C=BR, O=ICP-Brasil, OU=AC SOLUTI v5, CN=AC REDE BRASIL v5
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora da Justica v5, OU=SSL, CN=AC CERTISIGN-JUS SSL G6
+C=BR, O=ICP-Brasil, OU=AC SOLUTI v5, CN=AC CERTIFICA ANAPOLIS v5
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC BR RFB G4
+C=BR, O=ICP-Brasil, OU=AC SAFEWEB, CN=AC PLANO DIGITAL CD
+C=BR, O=ICP-Brasil, OU=AC DIGITAL MAIS, CN=AC DIGITAL MULTIPLA G1
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC SAFEWEB RFB v5
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v10, CN=AC SERASA SSL EV V4
+C=BR, O=ICP-Brasil, OU=AC SOLUTI v5, CN=AC INTERCERT v5
+C=BR, O=ICP-Brasil, CN=SERASA Certificadora Digital v5
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v10, CN=AC Certisign ICP-Brasil SSL EV G4
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v5, CN=AC Secretaria da Receita Federal do Brasil v4
+C=BR, O=ICP-Brasil, OU=Instituto Nacional de Tecnologia da Informacao - ITI, CN=Autoridade Certificadora Raiz Brasileira v7
+C=BR, O=ICP-Brasil, OU=AC PRODESP SP, CN=AC PRODESP v1
+C=BR, O=ICP-Brasil, OU=Servico Federal de Processamento de Dados - SERPRO, CN=Autoridade Certificadora SAFE-ID BRASIL
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v12, CN=AC Certisign G8
+C=BR, O=ICP-Brasil, OU=AC SOLUTI v5 G2, CN=AC SEGURA ID v5
+C=BR, O=ICP-Brasil, OU=Instituto Nacional de Tecnologia da Informacao - ITI, CN=Autoridade Certificadora Raiz Brasileira v10
+C=BR, O=ICP-Brasil, OU=Secretaria da Receita Federal do Brasil - RFB, CN=AC CACB RFB G2
+C=BR, O=ICP-Brasil, OU=CSPB-4, CN=SERASA Autoridade Certificadora v5
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora da Justica v5, OU=SMIME, CN=AC SERASA-JUS v5
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora VALID - AC VALID v5, CN=AC VALID BRASIL v5
+C=BR, O=ICP-Brasil, OU=AC SOLUTI v5, CN=AC PRIME v5
+C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v5, CN=AC DIGITALSIGN ACP G2
+Client Certificate Types: RSA sign, DSA sign, ECDSA sign
+Requested Signature Algorithms: ECDSA+SHA512:RSA+SHA512:ECDSA+SHA384:RSA+SHA384:ECDSA+SHA256:RSA+SHA256:DSA+SHA256:ECDSA+SHA224:RSA+SHA224:DSA+SHA224:ECDSA+SHA1:RSA+SHA1:DSA+SHA1
+Shared Requested Signature Algorithms: ECDSA+SHA512:RSA+SHA512:ECDSA+SHA384:RSA+SHA384:ECDSA+SHA256:RSA+SHA256:DSA+SHA256:ECDSA+SHA224:RSA+SHA224:DSA+SHA224
+Peer signing digest: SHA256
+Peer signature type: rsa_pkcs1_sha256
+Peer Temp Key: ECDH, prime256v1, 256 bits
+---
+SSL handshake has read 26544 bytes and written 1697 bytes
+Verification error: self-signed certificate in certificate chain
+---
+New, TLSv1.2, Cipher is ECDHE-RSA-AES128-GCM-SHA256
+Protocol: TLSv1.2
+Server public key is 2048 bit
+Secure Renegotiation IS supported
+Compression: NONE
+Expansion: NONE
+No ALPN negotiated
+SSL-Session:
+    Protocol  : TLSv1.2
+    Cipher    : ECDHE-RSA-AES128-GCM-SHA256
+    Session-ID: 6AB6FFC59D4580D42B8DE8FA7C26C5B314D9117E72D6B415F2BFB7B57C2BE609
+    Session-ID-ctx: 
+    Master-Key: 7FFB89B555682A1BEB6D4678A88BAB18E8210FD4F1A0D6336DA35440C25851919E52EF945EA570DBECBC7FCA25B5210E
+    PSK identity: None
+    PSK identity hint: None
+    SRP username: None
+    Start Time: 1790377924
+    Timeout   : 7200 (sec)
+    Verify return code: 19 (self-signed certificate in certificate chain)
+    Extended master secret: no
+---
+
+Connecting to 200.242.61.36
+depth=2 C=BR, O=ICP-Brasil, OU=Instituto Nacional de Tecnologia da Informacao - ITI, CN=Autoridade Certificadora Raiz Brasileira v10
+verify error:num=19:self-signed certificate in certificate chain
+verify return:1
+depth=2 C=BR, O=ICP-Brasil, OU=Instituto Nacional de Tecnologia da Informacao - ITI, CN=Autoridade Certificadora Raiz Brasileira v10
+verify return:1
+depth=1 C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v10, CN=Autoridade Certificadora do SERPRO SSLv1
+verify return:1
+depth=0 C=BR, ST=AM, L=MANAUS, O=SECRETARIA DE ESTADO DA FAZENDA SEFAZ, serialNumber=04312377000137, CN=*.sefaz.am.gov.br, businessCategory=Business Entity, jurisdictionC=BR
+verify return:1
+809DA7F501000000:error:0A000412:SSL routines:ssl3_read_bytes:ssl/tls alert bad certificate:ssl/record/rec_layer_s3.c:918:SSL alert number 42
+809DA7F501000000:error:0A000197:SSL routines:SSL_shutdown:shutdown while in init:ssl/ssl_lib.c:2804:

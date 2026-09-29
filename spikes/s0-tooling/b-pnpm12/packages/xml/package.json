@@ -1,0 +1,37 @@
+{
+  "name": "@sinete/xml",
+  "version": "0.20.1",
+  "description": "XML do sinete (brinquedo do spike S0)",
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20.19"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sinete-dev/sinete.git",
+    "directory": "packages/xml"
+  },
+  "dependencies": {
+    "@sinete/core": "workspace:*"
+  },
+  "scripts": {
+    "build": "tsdown"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "http://127.0.0.1:45913/"
+  }
+}

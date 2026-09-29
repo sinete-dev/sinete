@@ -1,0 +1,12 @@
+{
+  "name": "@sinete/tool-danfe-corpus",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Renderiza DANFE, DACCE e DAMDFE sobre um corpus local de XML autorizados e imprime só estatísticas agregadas",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@sinete/core": "workspace:^",
+    "@sinete/da": "workspace:^"
+  }
+}

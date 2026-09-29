@@ -1,0 +1,39 @@
+{
+  "name": "@sinete/core",
+  "version": "0.1.0-tsc.0",
+  "description": "Tipos base do sinete (brinquedo do spike S0)",
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20.19"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./runtime": {
+      "types": "./dist/runtime.d.ts",
+      "node": "./dist/runtime.node.js",
+      "default": "./dist/runtime.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sinete-dev/sinete.git",
+    "directory": "packages/core"
+  },
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "http://127.0.0.1:45913/"
+  }
+}

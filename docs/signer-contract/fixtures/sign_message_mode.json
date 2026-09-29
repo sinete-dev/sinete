@@ -1,0 +1,27 @@
+{
+  "description": "Modo message (CryptoKey WebCrypto não exportável): o helper manda o transcript TLS 1.2 e o hash para conferência; o cliente confere SNI e certificado do servidor no transcript antes de assinar.",
+  "frames": [
+    {
+      "from": "helper",
+      "frame": {
+        "v": 1,
+        "id": "h7",
+        "method": "sign",
+        "params": {
+          "identity": "navegador",
+          "scheme": "rsa_pkcs1_sha256",
+          "mode": "message",
+          "message": "AQAAdHJhbnNjcmlwdA==",
+          "messageSha256": "M2Fh4n8Q0Ch6dY0z7a1qg1XgqQw0bJk1pQ4q0T3w5gA=",
+          "context": {
+            "purpose": "tls12-client-certificate-verify",
+            "host": "nfe-homologacao.svrs.rs.gov.br",
+            "conn": 15,
+            "handshake": 1
+          }
+        }
+      }
+    },
+    { "from": "client", "of": "sign", "frame": { "v": 1, "id": "h7", "result": { "signature": "c2lnbmF0dXJl" } } }
+  ]
+}

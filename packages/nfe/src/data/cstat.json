@@ -1,0 +1,36 @@
+{
+  "descricao": "Códigos de status de sucesso e de processamento (MOC 7.0 Anexo I, tabela 4.4.1) e os códigos que o @sinete/nfe trata de forma própria. Rejeições e denegações com mensagem oficial estão no @sinete/rejeicoes; aqui fica só o desfecho de cada código por serviço.",
+  "fonte": "MOC 7.0 Anexo I, tabela 4.4.1 (códigos de sucesso) e 4.4.2 (denegação 301, 302, 303); NT 2014.002 (Distribuição DF-e, 137 e 138); NT 2011.004 (lote em processamento, 105); MOC 7.0 Anexo I, consulta protocolo J03 a J06 (561, 562 e 613: a numeração da chave consultada tem outra NF-e)",
+  "atualizadoEm": "2026-09-26",
+  "autorizada": ["100", "150"],
+  "denegada": ["110", "301", "302", "303"],
+  "cancelada": ["101", "151", "155"],
+  "loteRecebido": ["103"],
+  "loteProcessado": ["104"],
+  "loteEmProcessamento": ["105"],
+  "loteNaoLocalizado": ["106"],
+  "servicoEmOperacao": ["107"],
+  "inutilizacaoHomologada": ["102"],
+  "eventoRegistrado": ["135", "136", "155"],
+  "loteEventoProcessado": ["128"],
+  "cadastroEncontrado": ["111", "112"],
+  "distribuicaoNenhumDocumento": ["137"],
+  "distribuicaoDocumentos": ["138"],
+  "duplicidade": ["204"],
+  "duplicidadeChaveDiferente": ["539"],
+  "naoConsta": ["217"],
+  "outraNfeNoNumero": ["561", "562", "613"],
+  "consumoIndevido": ["656"],
+  "dicas": {
+    "656": {
+      "probableCause": "Consumo indevido: consultas repetidas à Distribuição DF-e sem documento novo (ultNSU igual a maxNSU) ou acima do limite de requisições por hora.",
+      "suggestedFix": "Aguardar uma hora antes de consultar de novo e só repetir a consulta quando ultNSU for menor que maxNSU; guardar o ultNSU devolvido e continuar dele.",
+      "source": "NT 2014.002 v1.02 (Distribuição DF-e), regras de consumo indevido"
+    },
+    "217": {
+      "probableCause": "A chave consultada não consta na base do autorizador consultado: a nota não foi recebida, ou foi autorizada em outro ambiente ou autorizador (SVC).",
+      "suggestedFix": "Se o envio ficou sem resposta, reenviar exatamente o mesmo XML assinado; se foi emitida em contingência SVC, consultar no SVC.",
+      "source": "MOC 7.0 Anexo I, serviço de consulta protocolo"
+    }
+  }
+}

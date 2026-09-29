@@ -1,0 +1,83 @@
+{
+  "notes": "Curadoria manual sobre o catálogo de erros da NFS-e Nacional gerado das planilhas dos Anexos I e II. Cada entrada com causaProvavel e comoCorrigir cita em `referencia` a aba e a linha (coluna #) da regra de onde a explicação saiu, mais o que o spike S2 observou na produção restrita quando for o caso (ADR 0004, seção 6). Redação própria; nada copiado de terceiros. `categoria` aqui sobrepõe a heurística do builder.",
+  "entradas": {
+    "E0014": {
+      "categoria": "duplicidade",
+      "causaProvavel": "Já existe NFS-e gerada a partir de uma DPS com a mesma série, o mesmo número, o mesmo município emissor e o mesmo CNPJ ou CPF. Costuma ser o reenvio de uma DPS que já foi processada, por exemplo depois de um timeout.",
+      "comoCorrigir": "Não gere outra DPS com o mesmo número. Consulte a DPS pelo Id (GET /dps/{id}) para obter a chave da NFS-e já gerada; se for uma nota nova de verdade, use o próximo nDPS da série.",
+      "referencia": "Anexo I v1.01 (20260209), aba RN DPS_NFS-e, linha 145 (infDPS/serie)"
+    },
+    "E0312": {
+      "causaProvavel": "O código de tributação nacional (cTribNac) não tem parametrização vigente no município de incidência do ISSQN na data de competência (dCompet). É regra de nível 3: depende do que o município cadastrou no Painel Administrativo Municipal. Na produção restrita, São Paulo não administrava nenhum código de software na competência de set/2026 (ADR 0004, rodada 3).",
+      "comoCorrigir": "Consulte a parametrização do município antes de emitir: GET /parametrizacao/{cMun}/{codigo}/{competencia}/aliquota no ADN, com o código de 9 dígitos com pontos (01.01.01.000); sem pontos o ADN responde 400. Use um código que o município administra na competência ou corrija o local de incidência.",
+      "referencia": "Anexo I v1.01 (20260209), aba RN DPS_NFS-e, linha 317 (serv/cServ/cTribNac), nível 3"
+    },
+    "E0714": {
+      "causaProvavel": "A assinatura da DPS não confere: o XML mudou depois de assinado (reformatação, reserialização, troca de encoding) ou a assinatura não segue o padrão enveloped com C14N sobre o infDPS.",
+      "comoCorrigir": "Assine a string final do DPS e envie exatamente esses bytes (só a declaração XML pode vir antes, porque fica fora do elemento assinado). Confira que a Reference aponta para o Id do infDPS.",
+      "referencia": "Anexo I v1.01 (20260209), aba RN DPS_NFS-e, linha 642 (DPS/Signature), nível 1"
+    },
+    "E0717": {
+      "causaProvavel": "A DPS chegou à API sem o elemento Signature.",
+      "comoCorrigir": "Assine a DPS com o certificado do emitente antes de enviar; na API a assinatura é obrigatória.",
+      "referencia": "Anexo I v1.01 (20260209), aba RN DPS_NFS-e, linha 645 (DPS/Signature), nível 1"
+    },
+    "E0718": {
+      "causaProvavel": "O certificado da assinatura não é do emitente da DPS (CNPJ ou CPF do certificado diferente do prestador ou do emitente informado).",
+      "comoCorrigir": "Assine com o e-CNPJ ou e-CPF do próprio emitente. O certificado da conexão (mTLS) também precisa ser do emitente: a NFS-e Nacional não aceita transmissor terceiro.",
+      "referencia": "Anexo I v1.01 (20260209), aba RN DPS_NFS-e, linha 646 (DPS/Signature), nível 1"
+    },
+    "E1200": {
+      "causaProvavel": "O certificado apresentado no TLS não serve para transmissão: ausente, versão diferente de 3, certificado de AC ou sem o uso de autenticação de cliente.",
+      "comoCorrigir": "Use um e-CNPJ ou e-CPF ICP-Brasil de usuário final (A1 ou A3) com extended key usage clientAuth como identidade TLS do transporte.",
+      "referencia": "Anexo I v1.01 (20260209), aba RN_RECEPCAO_DPS, linha 2"
+    },
+    "E1203": {
+      "causaProvavel": "O certificado de transmissão está fora da validade (antes do início ou depois do fim).",
+      "comoCorrigir": "Renove o certificado e troque a identidade TLS do transporte; confira também o relógio da máquina.",
+      "referencia": "Anexo I v1.01 (20260209), aba RN_RECEPCAO_DPS, linha 3"
+    },
+    "E1209": {
+      "causaProvavel": "O certificado de transmissão não tem a extensão otherName com CNPJ (OID 2.16.76.1.3.3) ou CPF, como exigido para certificados ICP-Brasil de pessoa.",
+      "comoCorrigir": "Use um certificado ICP-Brasil e-CNPJ ou e-CPF; certificados de servidor, de equipamento ou sem a identificação da pessoa não servem.",
+      "referencia": "Anexo I v1.01 (20260209), aba RN_RECEPCAO_DPS, linha 8"
+    },
+    "E1225": {
+      "causaProvavel": "O campo com o documento compactado (dpsXmlGZipB64 ou o equivalente do evento) não é base64 válido.",
+      "comoCorrigir": "Envie o gzip do XML em base64 padrão (RFC 4648, com padding e sem quebras de linha).",
+      "referencia": "Anexo I v1.01 (20260209), aba RN_RECEPCAO_DPS, linha 10"
+    },
+    "E1226": {
+      "causaProvavel": "O base64 decodificou, mas o conteúdo não é um gzip válido ou o XML descompactado está malformado.",
+      "comoCorrigir": "Compacte com gzip (não deflate puro nem zlib) o XML completo em UTF-8 e confira que ele é bem formado antes de compactar.",
+      "referencia": "Anexo I v1.01 (20260209), aba RN_RECEPCAO_DPS, linha 11"
+    },
+    "E1229": {
+      "causaProvavel": "O XML descompactado não traz a declaração de codificação UTF-8. A Sefin exige a declaração, e essa checagem vem antes do schema e da assinatura: no spike S2, a primeira DPS enviada sem a declaração voltou com E1229.",
+      "comoCorrigir": "Comece o documento com <?xml version=\"1.0\" encoding=\"UTF-8\"?>. A declaração fica fora do elemento assinado, então acrescentá-la não muda a assinatura; no spike, a mesma DPS com a mesma assinatura passou dessa regra.",
+      "referencia": "Anexo I v1.01 (20260209), aba RN_RECEPCAO_DPS, linha 15; ADR 0004, seção 6 (NFS-e, operação 5)"
+    },
+    "E1235": {
+      "categoria": "schema",
+      "causaProvavel": "O XML não valida contra o XSD do leiaute vigente (campo fora de ordem, tamanho, pattern, enumeração ou grupo obrigatório).",
+      "comoCorrigir": "Valide a DPS ou o pedido de evento contra o schema da versão vigente antes de assinar e corrija o campo apontado. Atenção ao TSSerieDPS do pacote de 09/02/2026, cujo pattern oficial tem âncoras literais e é corrigido na geração dos schemas do sinete.",
+      "referencia": "Anexo I v1.01 (20260209), aba RN_RECEPCAO_DPS, linha 16"
+    },
+    "E1260": {
+      "causaProvavel": "A versão do leiaute informada no atributo versao não é mais aceita pelo Sistema Nacional NFS-e.",
+      "comoCorrigir": "Gere o documento com a versão vigente do leiaute (hoje 1.01) e o schema correspondente.",
+      "referencia": "Anexo I v1.01 (20260209), aba RN DPS_NFS-e, linha 2; Anexo II v1.01 (20260122), aba RN EVENTO_PED.REG.EVENTO, linha 2"
+    },
+    "E1268": {
+      "causaProvavel": "A chave de acesso da NFS-e já existe no ADN: o documento já foi compartilhado antes.",
+      "comoCorrigir": "Não reenvie o mesmo documento; consulte a NFS-e pela chave (GET /nfse/{chave}) para recuperar o XML já gerado.",
+      "referencia": "Anexo I v1.01 (20260209), aba RN DPS_NFS-e, linha 5 (infNFSe/id)"
+    },
+    "E1967": {
+      "categoria": "evento"
+    },
+    "E1978": {
+      "categoria": "evento"
+    }
+  }
+}

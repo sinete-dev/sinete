@@ -1,0 +1,325 @@
+{
+  "runtime": "deno",
+  "version": "2.9.1",
+  "at": "2026-09-25T23:17:00.216Z",
+  "rootCount": null,
+  "hosts": {
+    "nfe.sefaz.am.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "invalid peer certificate: UnknownIssuer"
+      },
+      "withIcp": {
+        "ok": false,
+        "error": "received fatal alert: BadCertificate"
+      }
+    },
+    "nfe.sefaz.ba.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "unexpected end of file"
+      },
+      "withIcp": {
+        "ok": false,
+        "error": "unexpected end of file"
+      }
+    },
+    "nfe.sefaz.go.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "received fatal alert: HandshakeFailure"
+      },
+      "withIcp": {
+        "ok": false,
+        "error": "received fatal alert: HandshakeFailure"
+      }
+    },
+    "nfe.fazenda.mg.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "received fatal alert: HandshakeFailure"
+      },
+      "withIcp": {
+        "ok": false,
+        "error": "received fatal alert: HandshakeFailure"
+      }
+    },
+    "nfe.sefaz.ms.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "invalid peer certificate: UnknownIssuer"
+      },
+      "withIcp": {
+        "ok": true
+      }
+    },
+    "nfe.sefaz.mt.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "invalid peer certificate: UnknownIssuer"
+      },
+      "withIcp": {
+        "ok": true
+      }
+    },
+    "nfe.sefaz.pe.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "invalid peer certificate: UnknownIssuer"
+      },
+      "withIcp": {
+        "ok": true
+      }
+    },
+    "nfe.sefa.pr.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "received fatal alert: HandshakeFailure"
+      },
+      "withIcp": {
+        "ok": false,
+        "error": "received fatal alert: HandshakeFailure"
+      }
+    },
+    "nfe.sefazrs.rs.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "invalid peer certificate: UnknownIssuer"
+      },
+      "withIcp": {
+        "ok": true
+      }
+    },
+    "cad.svrs.rs.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "invalid peer certificate: UnknownIssuer"
+      },
+      "withIcp": {
+        "ok": true
+      }
+    },
+    "nfe.fazenda.sp.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "invalid peer certificate: UnknownIssuer"
+      },
+      "withIcp": {
+        "ok": true
+      }
+    },
+    "www.sefazvirtual.fazenda.gov.br": {
+      "default": {
+        "ok": true
+      },
+      "withIcp": {
+        "ok": true
+      }
+    },
+    "nfe.svrs.rs.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "invalid peer certificate: UnknownIssuer"
+      },
+      "withIcp": {
+        "ok": true
+      }
+    },
+    "www1.nfe.fazenda.gov.br": {
+      "default": {
+        "ok": true
+      },
+      "withIcp": {
+        "ok": true
+      }
+    },
+    "www.nfe.fazenda.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "unexpected end of file"
+      },
+      "withIcp": {
+        "ok": false,
+        "error": "unexpected end of file"
+      }
+    },
+    "homnfe.sefaz.am.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "invalid peer certificate: UnknownIssuer"
+      },
+      "withIcp": {
+        "ok": false,
+        "error": "received fatal alert: BadCertificate"
+      }
+    },
+    "hnfe.sefaz.ba.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "invalid peer certificate: UnknownIssuer"
+      },
+      "withIcp": {
+        "ok": true
+      }
+    },
+    "homolog.sefaz.go.gov.br": {
+      "default": {
+        "ok": true
+      },
+      "withIcp": {
+        "ok": true
+      }
+    },
+    "hnfe.fazenda.mg.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "received fatal alert: HandshakeFailure"
+      },
+      "withIcp": {
+        "ok": false,
+        "error": "received fatal alert: HandshakeFailure"
+      }
+    },
+    "hom.nfe.sefaz.ms.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "invalid peer certificate: UnknownIssuer"
+      },
+      "withIcp": {
+        "ok": true
+      }
+    },
+    "homologacao.sefaz.mt.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "invalid peer certificate: UnknownIssuer"
+      },
+      "withIcp": {
+        "ok": true
+      }
+    },
+    "nfehomolog.sefaz.pe.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "invalid peer certificate: UnknownIssuer"
+      },
+      "withIcp": {
+        "ok": true
+      }
+    },
+    "homologacao.nfe.sefa.pr.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "received fatal alert: HandshakeFailure"
+      },
+      "withIcp": {
+        "ok": false,
+        "error": "received fatal alert: HandshakeFailure"
+      }
+    },
+    "nfe-homologacao.sefazrs.rs.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "invalid peer certificate: UnknownIssuer"
+      },
+      "withIcp": {
+        "ok": true
+      }
+    },
+    "cad-homologacao.svrs.rs.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "invalid peer certificate: UnknownIssuer"
+      },
+      "withIcp": {
+        "ok": true
+      }
+    },
+    "homologacao.nfe.fazenda.sp.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "invalid peer certificate: UnknownIssuer"
+      },
+      "withIcp": {
+        "ok": true
+      }
+    },
+    "hom.sefazvirtual.fazenda.gov.br": {
+      "default": {
+        "ok": true
+      },
+      "withIcp": {
+        "ok": true
+      }
+    },
+    "nfe-homologacao.svrs.rs.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "invalid peer certificate: UnknownIssuer"
+      },
+      "withIcp": {
+        "ok": true
+      }
+    },
+    "hom1.nfe.fazenda.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "unexpected end of file"
+      },
+      "withIcp": {
+        "ok": false,
+        "error": "unexpected end of file"
+      }
+    },
+    "mdfe.svrs.rs.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "invalid peer certificate: UnknownIssuer"
+      },
+      "withIcp": {
+        "ok": true
+      }
+    },
+    "mdfe-homologacao.svrs.rs.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "invalid peer certificate: UnknownIssuer"
+      },
+      "withIcp": {
+        "ok": true
+      }
+    },
+    "sefin.producaorestrita.nfse.gov.br": {
+      "default": {
+        "ok": true
+      },
+      "withIcp": {
+        "ok": true
+      }
+    },
+    "adn.producaorestrita.nfse.gov.br": {
+      "default": {
+        "ok": true
+      },
+      "withIcp": {
+        "ok": true
+      }
+    },
+    "sefin.nfse.gov.br": {
+      "default": {
+        "ok": true
+      },
+      "withIcp": {
+        "ok": true
+      }
+    },
+    "adn.nfse.gov.br": {
+      "default": {
+        "ok": true
+      },
+      "withIcp": {
+        "ok": true
+      }
+    }
+  }
+}

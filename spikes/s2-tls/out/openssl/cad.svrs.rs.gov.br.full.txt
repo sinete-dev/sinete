@@ -1,0 +1,332 @@
+CONNECTED(00000005)
+OCSP response: 
+======================================
+OCSP Response Data:
+    OCSP Response Status: successful (0x0)
+    Response Type: Basic OCSP Response
+    Version: 1 (0x0)
+    Responder Id: C = BR, O = ICP-Brasil, OU = Autoridade Certificadora Raiz Brasileira v10, CN = Autoridade Certificadora do SERPRO SSLv1
+    Produced At: Sep 25 21:19:21 2026 GMT
+    Responses:
+    Certificate ID:
+      Hash Algorithm: sha1
+      Issuer Name Hash: C1436F292AD8977C06C65BE854B0D9AA49D71845
+      Issuer Key Hash: AD164F4BF10CBEC28AA28518D70D46259322E3CD
+      Serial Number: C085C50748228B4D1BC44B38
+    Cert Status: good
+    This Update: Sep 25 21:19:21 2026 GMT
+    Next Update: Sep 26 05:19:21 2026 GMT
+
+    Signature Algorithm: sha256WithRSAEncryption
+    Signature Value:
+        90:43:48:56:47:ec:04:69:5b:06:0d:2e:36:54:97:1e:76:c4:
+        9d:7f:e1:6b:4c:86:56:a9:b1:d7:1f:e7:57:0c:9e:01:6f:ae:
+        33:e0:d6:c2:32:2d:ee:2e:fd:72:96:ef:20:4c:07:78:92:1e:
+        44:c4:0e:47:db:c5:84:ca:5a:aa:c2:9f:87:12:47:19:cb:f6:
+        4b:81:96:55:f9:b9:75:2f:24:a9:40:43:5b:a9:d3:4c:7f:9d:
+        95:25:90:ea:90:ce:fe:c0:98:b7:7b:ae:fd:5e:bd:c2:0d:d1:
+        a2:7e:3b:a7:e1:6b:ca:c8:b5:db:ed:d4:80:b6:ac:ce:1f:1e:
+        aa:ed:1c:d9:38:c3:d1:8d:5a:25:36:e9:39:7a:e8:c2:62:f3:
+        38:d0:0d:5c:17:1a:dc:51:26:f1:e8:5b:da:80:ee:ec:94:6b:
+        79:a4:93:be:f7:4c:43:0f:36:d5:f0:1a:a7:1e:fb:e3:a5:46:
+        50:ac:3f:3e:b0:05:36:60:1b:01:a9:e0:3a:9e:ce:df:6c:98:
+        80:f1:0f:88:75:e3:4f:30:6c:ab:c6:c9:1b:d6:9b:06:0a:f3:
+        02:d8:f5:c8:fd:09:27:b0:dd:98:e4:9e:5a:37:d5:90:69:31:
+        ea:78:30:89:6c:16:fa:d7:e4:27:07:dc:a6:ef:1e:45:00:5c:
+        a3:9e:1f:ac:48:33:67:e3:61:35:4e:08:e4:07:74:b8:e0:ee:
+        7b:96:15:21:23:60:91:09:fa:a6:a1:15:22:f5:52:56:5e:98:
+        97:e0:c9:2d:b4:8e:cb:cf:78:e7:91:1a:89:dd:e2:0d:ff:a4:
+        4b:e9:46:e5:48:87:97:ed:c5:c3:30:71:40:29:1c:2a:71:14:
+        3e:85:23:26:a5:d1:b2:0e:8a:86:3c:92:06:1e:98:b5:31:c4:
+        17:57:62:a1:1a:21:18:2b:18:09:27:1e:6c:32:72:78:92:e1:
+        73:cb:ee:fb:d5:57:00:b0:24:03:41:db:3b:2c:3d:41:b9:e2:
+        6b:6b:c0:e6:a6:58:ab:ff:0a:79:d4:7f:97:ba:63:bf:2d:1e:
+        e8:64:e4:8c:f4:e7:bb:e8:3b:8f:34:69:45:a4:94:03:ce:d7:
+        ce:a4:48:d1:4c:19:90:1e:35:cd:61:84:52:9b:94:48:97:55:
+        71:14:01:31:30:16:1f:60:20:a5:32:39:90:f2:6c:82:46:91:
+        74:10:c6:6d:e5:f8:e5:15:65:e4:9c:b2:f7:fc:63:74:0e:6a:
+        c6:57:c1:da:5a:26:25:42:c6:bf:47:4b:55:04:46:c3:3f:b0:
+        cd:a8:47:ff:61:da:18:4a:f5:3a:c8:e6:3f:46:3f:a3:54:93:
+        aa:05:7b:00:5b:b6:72:7c
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            95:48:78:a8:22:12:63:53
+        Signature Algorithm: sha512WithRSAEncryption
+        Issuer: C=BR, O=ICP-Brasil, OU=Instituto Nacional de Tecnologia da Informacao - ITI, CN=Autoridade Certificadora Raiz Brasileira v10
+        Validity
+            Not Before: Mar 12 19:31:42 2020 GMT
+            Not After : Jul  1 12:00:59 2032 GMT
+        Subject: C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v10, CN=Autoridade Certificadora do SERPRO SSLv1
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (4096 bit)
+                Modulus:
+                    00:eb:58:d0:54:15:f6:ec:65:73:c9:99:09:bb:2a:
+                    c4:7b:3a:a3:04:67:4b:48:90:c5:47:21:9d:c3:16:
+                    e6:f0:db:6b:d0:00:3c:6e:58:43:68:de:40:48:33:
+                    a3:a8:31:12:30:0e:f1:17:7f:33:9d:f9:19:58:13:
+                    0b:c4:9d:ce:6f:4d:bb:d5:6e:86:f5:ba:a0:4f:0a:
+                    7f:b2:f8:59:b3:dd:54:71:b6:56:ea:c0:7b:83:2c:
+                    73:31:31:96:2f:17:05:31:e0:6b:ba:b3:34:42:93:
+                    15:b2:9f:21:0c:7e:52:ba:fe:6b:7c:fd:18:07:d6:
+                    eb:cf:ad:24:d7:4e:2e:1c:6e:b6:e6:b0:1c:6d:12:
+                    87:9f:b5:ec:58:9d:59:51:07:30:47:3c:75:83:42:
+                    f5:36:55:0a:a6:c9:34:f9:e3:80:c5:37:15:49:54:
+                    53:3b:7d:e4:fa:7e:86:bd:ef:37:e0:c5:cc:88:6e:
+                    8e:ae:f7:9d:e2:2b:27:12:f4:27:97:80:1e:70:25:
+                    ce:b9:4b:8c:de:f5:d9:fa:47:49:19:3a:4d:cb:51:
+                    ce:cb:47:28:15:d2:82:25:24:82:c5:4f:f2:4d:b4:
+                    e2:02:24:49:4d:cf:2b:6e:fa:2b:dc:8e:e4:ef:04:
+                    78:64:34:7c:6a:50:db:5b:f4:9b:c3:52:44:32:d6:
+                    d0:a8:c3:97:10:e5:7b:88:45:08:b9:bd:3f:b8:d4:
+                    f6:83:4a:0c:e2:9b:bc:0c:0c:61:23:0c:b6:61:00:
+                    a9:8d:f0:9b:cd:8b:b6:6d:fd:67:69:bb:8e:11:0d:
+                    81:e2:61:6d:ff:38:28:c5:ae:45:2e:c3:3e:d0:88:
+                    e9:0a:2f:2e:cf:d4:6a:2e:f6:05:a3:da:48:cb:90:
+                    53:8b:b2:4c:91:57:db:82:a7:0e:bf:bb:e4:41:fd:
+                    f1:17:bb:0e:0d:d2:27:09:54:48:6c:1d:11:eb:1a:
+                    47:9b:e6:e9:8a:dc:7d:b7:98:a9:f9:27:f6:e1:01:
+                    65:29:b8:f2:d2:0c:15:02:76:84:c9:ff:e2:40:5f:
+                    ad:f2:a8:1c:14:13:ba:e6:4c:9f:1f:fd:af:b3:a8:
+                    98:83:94:cd:84:52:ad:8e:9a:90:89:3c:88:ed:89:
+                    11:91:f4:db:2c:57:5c:81:96:e2:45:45:2c:e5:31:
+                    62:d0:19:12:e0:f0:16:ba:93:b5:1a:05:7d:b0:97:
+                    64:f6:09:b7:67:e2:8d:64:38:28:02:7b:bb:0a:f8:
+                    6a:d4:95:ed:ea:de:ea:3b:de:96:cc:1c:7d:ab:d8:
+                    62:ed:3e:9e:95:dd:55:16:b5:79:61:ae:64:c4:cf:
+                    4b:82:1f:97:70:10:f0:7e:70:cb:23:56:28:a3:36:
+                    dd:31:b9
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Certificate Policies: 
+                Policy: 2.16.76.1.1.137
+                  CPS: https://repositorio.serpro.gov.br/docs/dpcserprossl.pdf
+                Policy: 2.16.76.1.2.1.105
+                  CPS: https://repositorio.serpro.gov.br/docs/dpcserprossl.pdf
+            X509v3 CRL Distribution Points: 
+                Full Name:
+                  URI:http://acraiz.icpbrasil.gov.br/LCRacraizv10.crl
+
+            X509v3 Authority Key Identifier: 
+                74:F3:7E:FF:FC:9F:53:7A:F1:7C:EB:AB:3E:A4:A6:DA:18:BA:45:63
+            X509v3 Subject Key Identifier: 
+                AD:16:4F:4B:F1:0C:BE:C2:8A:A2:85:18:D7:0D:46:25:93:22:E3:CD
+            X509v3 Basic Constraints: critical
+                CA:TRUE
+            X509v3 Key Usage: critical
+                Digital Signature, Certificate Sign, CRL Sign
+    Signature Algorithm: sha512WithRSAEncryption
+    Signature Value:
+        83:bd:69:0e:61:a9:1a:94:01:c1:dd:97:22:7c:8f:72:2f:2b:
+        93:b6:34:7c:79:85:e5:7c:37:ac:62:be:f3:30:55:65:99:db:
+        95:82:10:a0:b9:e0:4c:67:19:a1:b7:d0:69:2e:af:7f:71:e0:
+        56:bb:5a:bc:b0:a8:1e:e6:83:4d:cb:24:8f:98:12:45:7b:e0:
+        8b:8e:d0:7b:67:52:e3:93:44:3f:ec:0e:7d:94:c0:83:65:a8:
+        e8:8c:99:52:12:71:fa:a5:d8:71:03:52:43:e7:c1:34:74:6b:
+        28:9b:74:ae:7e:e0:56:c5:d3:5f:82:cb:e9:40:d5:c3:a0:aa:
+        78:f1:59:64:c8:be:03:28:50:9d:24:4c:6d:ce:e4:79:22:57:
+        10:6c:1d:45:ae:60:79:9b:6c:e8:18:6e:a3:ed:47:68:7a:f9:
+        a2:90:8b:f4:d6:56:be:f2:4c:a7:ec:21:79:68:db:9b:44:4d:
+        1c:7f:0c:6e:96:29:39:2c:d3:35:b8:b2:30:7d:45:70:61:b6:
+        d0:88:1f:33:6d:a2:d4:39:2d:a5:53:fa:58:af:eb:1e:2d:0e:
+        d5:04:f1:e9:b3:f8:2e:18:1f:61:29:e8:bf:0d:fe:3d:29:68:
+        c3:56:99:6e:df:e0:2e:66:10:47:aa:22:b9:df:75:49:7f:d5:
+        30:bf:74:6f:c7:c1:42:a1:b4:f9:e0:e0:ab:01:57:e7:16:cf:
+        05:ea:c3:37:74:f8:75:bb:b0:1b:5b:70:dd:a5:ea:38:a0:11:
+        f9:90:10:34:7d:e2:ef:2e:4e:ef:98:e9:ce:ab:ae:28:3c:c3:
+        28:8f:e8:3a:c7:40:74:bf:bb:46:a8:ea:cd:05:92:b8:f3:a3:
+        1a:53:fb:9a:26:2f:a8:9b:1f:8b:7b:d1:1f:c8:8c:f7:f4:16:
+        d1:60:67:55:26:f3:bf:f4:ff:2f:9f:95:e7:35:7b:26:ab:38:
+        b0:d3:c1:0d:2e:31:dc:ae:ba:38:f2:d4:66:dd:85:f4:fc:15:
+        20:a2:2b:63:31:4a:b2:ce:52:93:81:0f:14:3a:97:e2:5d:e2:
+        73:aa:fc:6f:50:c3:bf:1e:06:4a:f5:a9:27:37:75:90:5d:65:
+        f1:20:51:b4:d4:e1:ec:10:e4:dd:d8:d7:5d:a9:ba:ed:87:9a:
+        a6:64:4f:b5:23:1c:04:1f:ec:ac:41:0c:e5:57:4a:67:3c:be:
+        4a:d1:b4:6e:3c:2a:af:1f:82:6b:d0:29:b0:57:63:ea:0f:a7:
+        64:8c:8f:d2:cb:be:d7:0e:44:cf:f1:a7:40:b9:88:c8:13:29:
+        c1:a1:0d:1b:b6:a6:3f:d2:b2:4f:4f:77:73:b5:ea:56:03:04:
+        47:84:a6:ef:3b:5c:98:90
+-----BEGIN CERTIFICATE-----
+MIIHAjCCBOqgAwIBAgIJAJVIeKgiEmNTMA0GCSqGSIb3DQEBDQUAMIGYMQswCQYD
+VQQGEwJCUjETMBEGA1UECgwKSUNQLUJyYXNpbDE9MDsGA1UECww0SW5zdGl0dXRv
+IE5hY2lvbmFsIGRlIFRlY25vbG9naWEgZGEgSW5mb3JtYWNhbyAtIElUSTE1MDMG
+A1UEAwwsQXV0b3JpZGFkZSBDZXJ0aWZpY2Fkb3JhIFJhaXogQnJhc2lsZWlyYSB2
+MTAwHhcNMjAwMzEyMTkzMTQyWhcNMzIwNzAxMTIwMDU5WjCBjDELMAkGA1UEBhMC
+QlIxEzARBgNVBAoMCklDUC1CcmFzaWwxNTAzBgNVBAsMLEF1dG9yaWRhZGUgQ2Vy
+dGlmaWNhZG9yYSBSYWl6IEJyYXNpbGVpcmEgdjEwMTEwLwYDVQQDDChBdXRvcmlk
+YWRlIENlcnRpZmljYWRvcmEgZG8gU0VSUFJPIFNTTHYxMIICIjANBgkqhkiG9w0B
+AQEFAAOCAg8AMIICCgKCAgEA61jQVBX27GVzyZkJuyrEezqjBGdLSJDFRyGdwxbm
+8Ntr0AA8blhDaN5ASDOjqDESMA7xF38znfkZWBMLxJ3Ob0271W6G9bqgTwp/svhZ
+s91UcbZW6sB7gyxzMTGWLxcFMeBrurM0QpMVsp8hDH5Suv5rfP0YB9brz60k104u
+HG625rAcbRKHn7XsWJ1ZUQcwRzx1g0L1NlUKpsk0+eOAxTcVSVRTO33k+n6Gve83
+4MXMiG6Orved4isnEvQnl4AecCXOuUuM3vXZ+kdJGTpNy1HOy0coFdKCJSSCxU/y
+TbTiAiRJTc8rbvor3I7k7wR4ZDR8alDbW/Sbw1JEMtbQqMOXEOV7iEUIub0/uNT2
+g0oM4pu8DAxhIwy2YQCpjfCbzYu2bf1nabuOEQ2B4mFt/zgoxa5FLsM+0IjpCi8u
+z9RqLvYFo9pIy5BTi7JMkVfbgqcOv7vkQf3xF7sODdInCVRIbB0R6xpHm+bpitx9
+t5ip+Sf24QFlKbjy0gwVAnaEyf/iQF+t8qgcFBO65kyfH/2vs6iYg5TNhFKtjpqQ
+iTyI7YkRkfTbLFdcgZbiRUUs5TFi0BkS4PAWupO1GgV9sJdk9gm3Z+KNZDgoAnu7
+Cvhq1JXt6t7qO96WzBx9q9hi7T6eld1VFrV5Ya5kxM9Lgh+XcBDwfnDLI1Yoozbd
+MbkCAwEAAaOCAVcwggFTMIGtBgNVHSAEgaUwgaIwTwYGYEwBAYEJMEUwQwYIKwYB
+BQUHAgEWN2h0dHBzOi8vcmVwb3NpdG9yaW8uc2VycHJvLmdvdi5ici9kb2NzL2Rw
+Y3NlcnByb3NzbC5wZGYwTwYGYEwBAgFpMEUwQwYIKwYBBQUHAgEWN2h0dHBzOi8v
+cmVwb3NpdG9yaW8uc2VycHJvLmdvdi5ici9kb2NzL2RwY3NlcnByb3NzbC5wZGYw
+QAYDVR0fBDkwNzA1oDOgMYYvaHR0cDovL2FjcmFpei5pY3BicmFzaWwuZ292LmJy
+L0xDUmFjcmFpenYxMC5jcmwwHwYDVR0jBBgwFoAUdPN+//yfU3rxfOurPqSm2hi6
+RWMwHQYDVR0OBBYEFK0WT0vxDL7CiqKFGNcNRiWTIuPNMA8GA1UdEwEB/wQFMAMB
+Af8wDgYDVR0PAQH/BAQDAgGGMA0GCSqGSIb3DQEBDQUAA4ICAQCDvWkOYakalAHB
+3ZcifI9yLyuTtjR8eYXlfDesYr7zMFVlmduVghCgueBMZxmht9BpLq9/ceBWu1q8
+sKge5oNNyySPmBJFe+CLjtB7Z1Ljk0Q/7A59lMCDZajojJlSEnH6pdhxA1JD58E0
+dGsom3SufuBWxdNfgsvpQNXDoKp48VlkyL4DKFCdJExtzuR5IlcQbB1FrmB5m2zo
+GG6j7UdoevmikIv01la+8kyn7CF5aNubRE0cfwxulik5LNM1uLIwfUVwYbbQiB8z
+baLUOS2lU/pYr+seLQ7VBPHps/guGB9hKei/Df49KWjDVplu3+AuZhBHqiK533VJ
+f9Uwv3Rvx8FCobT54OCrAVfnFs8F6sM3dPh1u7AbW3Ddpeo4oBH5kBA0feLvLk7v
+mOnOq64oPMMoj+g6x0B0v7tGqOrNBZK486MaU/uaJi+omx+Le9EfyIz39BbRYGdV
+JvO/9P8vn5XnNXsmqziw08ENLjHcrro48tRm3YX0/BUgoitjMUqyzlKTgQ8UOpfi
+XeJzqvxvUMO/HgZK9aknN3WQXWXxIFG01OHsEOTd2Nddqbrth5qmZE+1IxwEH+ys
+QQzlV0pnPL5K0bRuPCqvH4Jr0CmwV2PqD6dkjI/Sy77XDkTP8adAuYjIEynBoQ0b
+tqY/0rJPT3dztepWAwRHhKbvO1yYkA==
+-----END CERTIFICATE-----
+
+======================================
+---
+Certificate chain
+ 0 s:C=BR, ST=RS, L=PORTO ALEGRE, O=PROCERGS - CENTRO DE TECNOLOGIA DA INFORMACAO E COMUNICACAO DO E, serialNumber=87124582000104, CN=*.svrs.rs.gov.br, businessCategory=Business Entity, jurisdictionC=BR
+   i:C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v10, CN=Autoridade Certificadora do SERPRO SSLv1
+   a:PKEY: RSA, 2048 (bit); sigalg: sha256WithRSAEncryption
+   v:NotBefore: Jul  3 17:49:30 2026 GMT; NotAfter: Jul  3 17:49:30 2027 GMT
+-----BEGIN CERTIFICATE-----
+MIIG1zCCBL+gAwIBAgINAMCFxQdIIotNG8RLODANBgkqhkiG9w0BAQsFADCBjDEL
+MAkGA1UEBhMCQlIxEzARBgNVBAoMCklDUC1CcmFzaWwxNTAzBgNVBAsMLEF1dG9y
+aWRhZGUgQ2VydGlmaWNhZG9yYSBSYWl6IEJyYXNpbGVpcmEgdjEwMTEwLwYDVQQD
+DChBdXRvcmlkYWRlIENlcnRpZmljYWRvcmEgZG8gU0VSUFJPIFNTTHYxMB4XDTI2
+MDcwMzE3NDkzMFoXDTI3MDcwMzE3NDkzMFowgd8xCzAJBgNVBAYTAkJSMQswCQYD
+VQQIDAJSUzEVMBMGA1UEBwwMUE9SVE8gQUxFR1JFMUkwRwYDVQQKDEBQUk9DRVJH
+UyAtIENFTlRSTyBERSBURUNOT0xPR0lBIERBIElORk9STUFDQU8gRSBDT01VTklD
+QUNBTyBETyBFMRcwFQYDVQQFEw44NzEyNDU4MjAwMDEwNDEZMBcGA1UEAwwQKi5z
+dnJzLnJzLmdvdi5icjEYMBYGA1UEDxMPQnVzaW5lc3MgRW50aXR5MRMwEQYLKwYB
+BAGCNzwCAQMTAkJSMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwB1g
+zmybs34NkZkV3P738g3xMNhkMofNwkdXnas4ycPpDCwlaRxDnT5f31apqLHqCACy
+ZsCqXbCwxO4HB/VMiZMe9nV+4hzE75wfwT/BycPU5tqzQ4TRiZqZoPYbBfED+CkO
+qAz/Q7WIEYwtscCzefTBysWII6ZOFT3kvjilvGMSH9Urugm08pn6R2MxoMRfjRz+
+9a+Jn6lHFYYkwE3moJvOwgviPgju13UqBc9FhuwVGPkv7xVCp3j8gUcgVlietpHY
+/f/R4ZNN+67dDQmNM5fy197qZTqCNp3k4xXgVKFWoGkCfJn8E3Oe5FvZnNiUrh12
+Pbgovdce41h5ZxdGHQIDAQABo4IB4TCCAd0wHwYDVR0jBBgwFoAUrRZPS/EMvsKK
+ooUY1w1GJZMi480wDgYDVR0PAQH/BAQDAgWgMFkGA1UdIARSMFAwTgYGYEwBAgFp
+MEQwQgYIKwYBBQUHAgEWNmh0dHA6Ly9yZXBvc2l0b3Jpby5zZXJwcm8uZ292LmJy
+L2RvY3MvZHBjc2VycHJvc3NsLnBkZjAbBgNVHREEFDASghAqLnN2cnMucnMuZ292
+LmJyMB0GA1UdJQQWMBQGCCsGAQUFBwMCBggrBgEFBQcDATCBiAYDVR0fBIGAMH4w
+PKA6oDiGNmh0dHA6Ly9yZXBvc2l0b3Jpby5zZXJwcm8uZ292LmJyL2xjci9hY3Nl
+cnByb3NzbHYxLmNybDA+oDygOoY4aHR0cDovL2NlcnRpZmljYWRvczIuc2VycHJv
+Lmdvdi5ici9sY3IvYWNzZXJwcm9zc2x2MS5jcmwwgYcGCCsGAQUFBwEBBHsweTBC
+BggrBgEFBQcwAoY2aHR0cDovL3JlcG9zaXRvcmlvLnNlcnByby5nb3YuYnIvY2Fk
+ZWlhcy9zZXJwcm9zc2wucDdiMDMGCCsGAQUFBzABhidodHRwOi8vb2NzcC5zZXJw
+cm8uZ292LmJyL2Fjc2VycHJvc3NsdjEwDQYJKoZIhvcNAQELBQADggIBAMTDbeN6
+R4UVnno06OJITwuIsk9MwwHgISin1n2EIr0SozaXSt6ahAAaqcb1UjCQxeguD6YG
+ZC3wy7KlwxocBSFVibxvbMrcK8JE1qzX4fwZsWjVNfrWCemm7uy2JwCvoGOCOGbI
+8Rq4OYtgbkQ4JsYVWmyWUdaQc7wDnRG+ZwO7xasRWBG1kbRlWF8i/CAnnHmx6Kly
+U12rcU+pJYuMLUI2w8XEbua8TZkXURUFl8e1iq+Cs1Uc7TRTxKJhKB/aTK0mFEY5
+Q89jLblgfJD5ys/QeMqtk3VdGTloBCcF0ShLDBnrghgqgT8LquC9Rkrul6CEEcY8
+Tmo3Ujr9t20ujQWeIu85aNHLBkDNBxmN/zVU68WEUr71hiioxjUoSIqJ7uRg/ctz
+4LyZNIeAapgKeQBHmBAkLH7EJ/r4NZMY8v02bthokta8Pp1Wp146+wBubvPhY1iv
+TjJXdezbLPxEPfY7KkbPNiFn4m+aUobVFDH6dRbmvET94kf+P1/Wt9G7zrjPMaV3
+h4BUlgyD8n6TiYadeh+d/aDSTf1xyTDvQhTj49pwWeremePGGBYwhYoD2dMQByBW
+Mhh1Xj/RLleRNFdAoEQBrZZEpoaFA1a7Kg3giM4hl9ydl+diBDhFfSJOO9gU5eQu
+iSe3Pu0w3oKa4If14rnuUH1yfh5Km63nGEuA
+-----END CERTIFICATE-----
+ 1 s:C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v10, CN=Autoridade Certificadora do SERPRO SSLv1
+   i:C=BR, O=ICP-Brasil, OU=Instituto Nacional de Tecnologia da Informacao - ITI, CN=Autoridade Certificadora Raiz Brasileira v10
+   a:PKEY: RSA, 4096 (bit); sigalg: sha512WithRSAEncryption
+   v:NotBefore: Mar 12 19:31:42 2020 GMT; NotAfter: Jul  1 12:00:59 2032 GMT
+-----BEGIN CERTIFICATE-----
+MIIHAjCCBOqgAwIBAgIJAJVIeKgiEmNTMA0GCSqGSIb3DQEBDQUAMIGYMQswCQYD
+VQQGEwJCUjETMBEGA1UECgwKSUNQLUJyYXNpbDE9MDsGA1UECww0SW5zdGl0dXRv
+IE5hY2lvbmFsIGRlIFRlY25vbG9naWEgZGEgSW5mb3JtYWNhbyAtIElUSTE1MDMG
+A1UEAwwsQXV0b3JpZGFkZSBDZXJ0aWZpY2Fkb3JhIFJhaXogQnJhc2lsZWlyYSB2
+MTAwHhcNMjAwMzEyMTkzMTQyWhcNMzIwNzAxMTIwMDU5WjCBjDELMAkGA1UEBhMC
+QlIxEzARBgNVBAoMCklDUC1CcmFzaWwxNTAzBgNVBAsMLEF1dG9yaWRhZGUgQ2Vy
+dGlmaWNhZG9yYSBSYWl6IEJyYXNpbGVpcmEgdjEwMTEwLwYDVQQDDChBdXRvcmlk
+YWRlIENlcnRpZmljYWRvcmEgZG8gU0VSUFJPIFNTTHYxMIICIjANBgkqhkiG9w0B
+AQEFAAOCAg8AMIICCgKCAgEA61jQVBX27GVzyZkJuyrEezqjBGdLSJDFRyGdwxbm
+8Ntr0AA8blhDaN5ASDOjqDESMA7xF38znfkZWBMLxJ3Ob0271W6G9bqgTwp/svhZ
+s91UcbZW6sB7gyxzMTGWLxcFMeBrurM0QpMVsp8hDH5Suv5rfP0YB9brz60k104u
+HG625rAcbRKHn7XsWJ1ZUQcwRzx1g0L1NlUKpsk0+eOAxTcVSVRTO33k+n6Gve83
+4MXMiG6Orved4isnEvQnl4AecCXOuUuM3vXZ+kdJGTpNy1HOy0coFdKCJSSCxU/y
+TbTiAiRJTc8rbvor3I7k7wR4ZDR8alDbW/Sbw1JEMtbQqMOXEOV7iEUIub0/uNT2
+g0oM4pu8DAxhIwy2YQCpjfCbzYu2bf1nabuOEQ2B4mFt/zgoxa5FLsM+0IjpCi8u
+z9RqLvYFo9pIy5BTi7JMkVfbgqcOv7vkQf3xF7sODdInCVRIbB0R6xpHm+bpitx9
+t5ip+Sf24QFlKbjy0gwVAnaEyf/iQF+t8qgcFBO65kyfH/2vs6iYg5TNhFKtjpqQ
+iTyI7YkRkfTbLFdcgZbiRUUs5TFi0BkS4PAWupO1GgV9sJdk9gm3Z+KNZDgoAnu7
+Cvhq1JXt6t7qO96WzBx9q9hi7T6eld1VFrV5Ya5kxM9Lgh+XcBDwfnDLI1Yoozbd
+MbkCAwEAAaOCAVcwggFTMIGtBgNVHSAEgaUwgaIwTwYGYEwBAYEJMEUwQwYIKwYB
+BQUHAgEWN2h0dHBzOi8vcmVwb3NpdG9yaW8uc2VycHJvLmdvdi5ici9kb2NzL2Rw
+Y3NlcnByb3NzbC5wZGYwTwYGYEwBAgFpMEUwQwYIKwYBBQUHAgEWN2h0dHBzOi8v
+cmVwb3NpdG9yaW8uc2VycHJvLmdvdi5ici9kb2NzL2RwY3NlcnByb3NzbC5wZGYw
+QAYDVR0fBDkwNzA1oDOgMYYvaHR0cDovL2FjcmFpei5pY3BicmFzaWwuZ292LmJy
+L0xDUmFjcmFpenYxMC5jcmwwHwYDVR0jBBgwFoAUdPN+//yfU3rxfOurPqSm2hi6
+RWMwHQYDVR0OBBYEFK0WT0vxDL7CiqKFGNcNRiWTIuPNMA8GA1UdEwEB/wQFMAMB
+Af8wDgYDVR0PAQH/BAQDAgGGMA0GCSqGSIb3DQEBDQUAA4ICAQCDvWkOYakalAHB
+3ZcifI9yLyuTtjR8eYXlfDesYr7zMFVlmduVghCgueBMZxmht9BpLq9/ceBWu1q8
+sKge5oNNyySPmBJFe+CLjtB7Z1Ljk0Q/7A59lMCDZajojJlSEnH6pdhxA1JD58E0
+dGsom3SufuBWxdNfgsvpQNXDoKp48VlkyL4DKFCdJExtzuR5IlcQbB1FrmB5m2zo
+GG6j7UdoevmikIv01la+8kyn7CF5aNubRE0cfwxulik5LNM1uLIwfUVwYbbQiB8z
+baLUOS2lU/pYr+seLQ7VBPHps/guGB9hKei/Df49KWjDVplu3+AuZhBHqiK533VJ
+f9Uwv3Rvx8FCobT54OCrAVfnFs8F6sM3dPh1u7AbW3Ddpeo4oBH5kBA0feLvLk7v
+mOnOq64oPMMoj+g6x0B0v7tGqOrNBZK486MaU/uaJi+omx+Le9EfyIz39BbRYGdV
+JvO/9P8vn5XnNXsmqziw08ENLjHcrro48tRm3YX0/BUgoitjMUqyzlKTgQ8UOpfi
+XeJzqvxvUMO/HgZK9aknN3WQXWXxIFG01OHsEOTd2Nddqbrth5qmZE+1IxwEH+ys
+QQzlV0pnPL5K0bRuPCqvH4Jr0CmwV2PqD6dkjI/Sy77XDkTP8adAuYjIEynBoQ0b
+tqY/0rJPT3dztepWAwRHhKbvO1yYkA==
+-----END CERTIFICATE-----
+---
+Server certificate
+subject=C=BR, ST=RS, L=PORTO ALEGRE, O=PROCERGS - CENTRO DE TECNOLOGIA DA INFORMACAO E COMUNICACAO DO E, serialNumber=87124582000104, CN=*.svrs.rs.gov.br, businessCategory=Business Entity, jurisdictionC=BR
+issuer=C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v10, CN=Autoridade Certificadora do SERPRO SSLv1
+---
+Acceptable client certificate CA names
+C=BR, ST=RS, L=Porto Alegre, O=Banrisul Cartoes S.A., CN=AC Vero Raiz NFC-e
+C=BR, O=ICP-Brasil, OU=Instituto Nacional de Tecnologia da Informacao - ITI, CN=Autoridade Certificadora Raiz Brasileira v2
+emailAddress=dft-nfe@procergs.rs.gov.br, ST=RS, OU=Teste Projeto NFe RS, O=Teste Projeto NFe RS, L=PORTO ALEGRE, C=BR, CN=NFe1 Procergs - AC Raiz v3
+C=BR, O=ICP-Brasil, OU=Instituto Nacional de Tecnologia da Informacao - ITI, CN=Autoridade Certificadora Raiz Brasileira v10
+C=BR, O=ICP-Brasil, OU=Instituto Nacional de Tecnologia da Informacao - ITI, CN=Autoridade Certificadora Raiz Brasileira v5
+emailAddress=one-dft@procergs.rs.gov.br, ST=RS, OU=Teste Projeto NFe RS, O=Teste Projeto NFe RS, L=PORTO ALEGRE, C=BR, CN=ONE - AC Raiz
+Client Certificate Types: RSA sign, DSA sign, ECDSA sign
+Requested Signature Algorithms: RSA-PSS+SHA256:RSA-PSS+SHA384:RSA-PSS+SHA512:RSA+SHA256:RSA+SHA384:RSA+SHA1:ECDSA+SHA256:ECDSA+SHA384:ECDSA+SHA1:DSA+SHA1:RSA+SHA512:ECDSA+SHA512
+Shared Requested Signature Algorithms: RSA-PSS+SHA256:RSA-PSS+SHA384:RSA-PSS+SHA512:RSA+SHA256:RSA+SHA384:ECDSA+SHA256:ECDSA+SHA384:RSA+SHA512:ECDSA+SHA512
+Peer signing digest: SHA256
+Peer signature type: rsa_pss_rsae_sha256
+Peer Temp Key: ECDH, secp384r1, 384 bits
+---
+SSL handshake has read 7743 bytes and written 1728 bytes
+Verification error: unable to get local issuer certificate
+---
+New, TLSv1.2, Cipher is ECDHE-RSA-AES256-GCM-SHA384
+Protocol: TLSv1.2
+Server public key is 2048 bit
+Secure Renegotiation IS supported
+Compression: NONE
+Expansion: NONE
+No ALPN negotiated
+SSL-Session:
+    Protocol  : TLSv1.2
+    Cipher    : ECDHE-RSA-AES256-GCM-SHA384
+    Session-ID: 44270000225FB53EA1FE2EC947C15C74036107D29F8A5AF5799F86AEA47C630D
+    Session-ID-ctx: 
+    Master-Key: 7A5663FCABA15520406ECC785C6B05684A506FFA8D99D1A91FA672F0F2A70DABFED21F7E6A1F9957E73EB72DCE57D3A8
+    PSK identity: None
+    PSK identity hint: None
+    SRP username: None
+    Start Time: 1790377947
+    Timeout   : 7200 (sec)
+    Verify return code: 20 (unable to get local issuer certificate)
+    Extended master secret: yes
+---
+
+Connecting to 4.201.99.36
+depth=1 C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v10, CN=Autoridade Certificadora do SERPRO SSLv1
+verify error:num=20:unable to get local issuer certificate
+verify return:1
+depth=0 C=BR, ST=RS, L=PORTO ALEGRE, O=PROCERGS - CENTRO DE TECNOLOGIA DA INFORMACAO E COMUNICACAO DO E, serialNumber=87124582000104, CN=*.svrs.rs.gov.br, businessCategory=Business Entity, jurisdictionC=BR
+verify return:1
+DONE

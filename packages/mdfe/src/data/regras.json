@@ -1,0 +1,24 @@
+{
+  "descricao": "Regras de validação do MDF-e com vigência própria, conferidas pelo builder pelo instante da emissão (dia civil de Brasília). Antes da data do ambiente a regra não é aplicada.",
+  "atualizadoEm": "2026-09-26",
+  "regras": {
+    "ciotObrigatorio": {
+      "cStat": "684",
+      "fonte": "MDF-e NT 2026.001 v1.00, item 1 (Ajuste SINIEF 03/2026)",
+      "homologacao": "2026-09-21",
+      "producao": "2026-11-23"
+    },
+    "ncmLotacao": {
+      "cStat": "301",
+      "fonte": "MDF-e NT 2025.001 v1.03, regra F55a",
+      "homologacao": "2025-07-01",
+      "producao": "2025-10-06"
+    },
+    "infPagLotacao": {
+      "cStat": "302",
+      "fonte": "MDF-e NT 2025.001 v1.03, regra F55b",
+      "homologacao": "2025-07-01",
+      "producao": "2025-10-06"
+    }
+  }
+}

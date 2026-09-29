@@ -1,0 +1,4 @@
+[
+  {"v":1,"id":"c2","method":"identity.open","params":{"id":"emitente-59554465000137","backend":"remote","mode":"digest","chain":["MIIH...folha","MIIG...AC SAFEWEB RFB v5","MIIG...AC RFB v4"]}},
+  {"v":1,"id":"c2","result":{"id":"emitente-59554465000137","subject":"CN=FAZER AI LTDA:59554465000137,...","notAfter":"2027-01-12T00:00:00Z","chainLen":3,"backend":"remote"}}
+]

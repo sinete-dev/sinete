@@ -1,0 +1,79 @@
+/**
+ * Os módulos de schema da NFS-e que o simulador usa, pela mesma tabela de vigências do `@sinete/schemas` que o
+ * emissor usa: o relógio da Sefin simulada e o ambiente escolhem o pacote (20260209 ou 20260727).
+ */
+
+import type { Ambiente, Signer } from '@sinete/core';
+import { fixedClock } from '@sinete/core';
+import type { XmlDocument } from '@sinete/core/xml';
+import { signXml } from '@sinete/core/xml';
+import type { RootElement } from '@sinete/schemas';
+import { decodeRoot, selecionarPl, serializeRoot, validateRoot } from '@sinete/schemas';
+import * as v20260209 from '@sinete/schemas/nfse/1.01-20260209';
+import type { TCDPS, TCPedRegEvt, TSCodJustSubst } from '@sinete/schemas/nfse/1.01-20260727';
+import * as v20260727 from '@sinete/schemas/nfse/1.01-20260727';
+
+interface Modulo {
+  readonly DPSElement: RootElement<TCDPS>;
+  readonly pedRegEventoElement: RootElement<TCPedRegEvt>;
+}
+
+const MODULOS: Readonly<Record<string, Modulo>> = {
+  'nfse/1.01-20260209': v20260209,
+  'nfse/1.01-20260727': v20260727,
+};
+
+export interface PedidoDaSefin {
+  readonly chave: string;
+  readonly autor: { readonly CNPJ?: string; readonly CPF?: string };
+  readonly detalhe: { readonly chSubstituta: string; readonly cMotivo: string; readonly xMotivo?: string };
+  readonly dhEvento: string;
+  readonly tpAmb: '1' | '2';
+  readonly signer: Signer;
+}
+
+export interface LeiauteSim {
+  readonly modulo: string;
+  /** Ocorrências de schema (`caminho: código`), vazio quando válido. */
+  validar(tipo: 'dps' | 'pedRegEvento', doc: XmlDocument): string[];
+  lerDps(doc: XmlDocument): TCDPS;
+  lerPedido(doc: XmlDocument): TCPedRegEvt;
+  /** Pedido do cancelamento por substituição (e105102) que a Sefin registra sozinha, assinado pelo simulador. */
+  pedidoDaSefin(p: PedidoDaSefin): Promise<string>;
+}
+
+export function leiauteNfseEm(ambiente: Ambiente, ms: number): LeiauteSim {
+  const modulo = selecionarPl('nfse', ambiente, fixedClock(ms)).modulo;
+  const m = MODULOS[modulo] as Modulo;
+  const raiz = (tipo: 'dps' | 'pedRegEvento'): RootElement<unknown> =>
+    tipo === 'dps' ? m.DPSElement : m.pedRegEventoElement;
+  return {
+    modulo,
+    validar: (tipo: 'dps' | 'pedRegEvento', doc: XmlDocument): string[] =>
+      validateRoot(raiz(tipo), doc).map((i) => `${i.path}: ${i.code}`),
+    lerDps: (doc: XmlDocument): TCDPS => decodeRoot(m.DPSElement, doc).value,
+    lerPedido: (doc: XmlDocument): TCPedRegEvt => decodeRoot(m.pedRegEventoElement, doc).value,
+    async pedidoDaSefin(p: PedidoDaSefin): Promise<string> {
+      const id = `PRE${p.chave}105102`;
+      const autor = p.autor.CNPJ !== undefined ? { CNPJAutor: p.autor.CNPJ } : { CPFAutor: p.autor.CPF ?? '' };
+      const xml = serializeRoot(m.pedRegEventoElement, {
+        versao: '1.01',
+        infPedReg: {
+          Id: id,
+          tpAmb: p.tpAmb,
+          verAplic: 'sefaz-sim',
+          dhEvento: p.dhEvento,
+          chNFSe: p.chave,
+          ...autor,
+          e105102: {
+            xDesc: 'Cancelamento de NFS-e por Substituição',
+            cMotivo: p.detalhe.cMotivo as TSCodJustSubst,
+            ...(p.detalhe.xMotivo === undefined ? {} : { xMotivo: p.detalhe.xMotivo }),
+            chSubstituta: p.detalhe.chSubstituta,
+          },
+        } as TCPedRegEvt['infPedReg'],
+      });
+      return signXml(xml, { id }, p.signer);
+    },
+  };
+}

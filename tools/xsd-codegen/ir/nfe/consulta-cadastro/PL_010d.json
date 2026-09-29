@@ -1,0 +1,1413 @@
+{
+ "subpath": "nfe/consulta-cadastro/PL_010d",
+ "pl": "PL_010d_v1.03",
+ "roots": [
+  {
+   "name": "ConsCad",
+   "ns": "http://www.portalfiscal.inf.br/nfe",
+   "type": "TConsCad"
+  },
+  {
+   "name": "retConsCad",
+   "ns": "http://www.portalfiscal.inf.br/nfe",
+   "type": "TRetConsCad"
+  }
+ ],
+ "complex": {
+  "TConsCad": {
+   "kind": "complex",
+   "id": "TConsCad",
+   "anonymous": false,
+   "ns": "http://www.portalfiscal.inf.br/nfe",
+   "attrs": [
+    {
+     "name": "versao",
+     "type": {
+      "kind": "simple",
+      "builtin": "token",
+      "chain": [],
+      "facets": {
+       "patterns": [
+        [
+         "2\\.00"
+        ]
+       ]
+      },
+      "name": "TVerConsCad",
+      "doc": "Tipo Versão do Leiaute da Consulta Cadastro 2.00"
+     },
+     "required": true
+    }
+   ],
+   "doc": "Tipo Pedido de Consulta de cadastro de contribuintes",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "infCons",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "ref": "TConsCad.infCons"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Dados do Pedido de Consulta de cadastro de contribuintes"
+     }
+    ]
+   }
+  },
+  "TConsCad.infCons": {
+   "kind": "complex",
+   "id": "TConsCad.infCons",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/nfe",
+   "attrs": [],
+   "doc": "Dados do Pedido de Consulta de cadastro de contribuintes",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "xServ",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TServ",
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "enumeration": [
+         "CONS-CAD"
+        ]
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Serviço Solicitado"
+     },
+     {
+      "k": "el",
+      "name": "UF",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "token",
+       "chain": [],
+       "facets": {
+        "enumeration": [
+         "AC",
+         "AL",
+         "AM",
+         "AP",
+         "BA",
+         "CE",
+         "DF",
+         "ES",
+         "GO",
+         "MA",
+         "MG",
+         "MS",
+         "MT",
+         "PA",
+         "PB",
+         "PE",
+         "PI",
+         "PR",
+         "RJ",
+         "RN",
+         "RO",
+         "RR",
+         "RS",
+         "SC",
+         "SE",
+         "SP",
+         "TO",
+         "SU"
+        ]
+       },
+       "name": "TUfCons",
+       "doc": "Tipo Sigla da UF consultada"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "sigla da UF consultada, utilizar SU para SUFRAMA"
+     },
+     {
+      "k": "choice",
+      "min": 1,
+      "max": 1,
+      "items": [
+       {
+        "k": "el",
+        "name": "IE",
+        "ns": "http://www.portalfiscal.inf.br/nfe",
+        "type": {
+         "kind": "simple",
+         "builtin": "string",
+         "chain": [],
+         "facets": {
+          "whiteSpace": "preserve",
+          "patterns": [
+           [
+            "[0-9]{2,14}|ISENTO"
+           ]
+          ]
+         },
+         "name": "TIe",
+         "doc": "Tipo Inscrição Estadual do Emitente // alterado EM 24/10/08 para aceitar ISENTO"
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "Inscrição Estadual do contribuinte"
+       },
+       {
+        "k": "el",
+        "name": "CNPJ",
+        "ns": "http://www.portalfiscal.inf.br/nfe",
+        "type": {
+         "kind": "simple",
+         "builtin": "string",
+         "chain": [],
+         "facets": {
+          "whiteSpace": "preserve",
+          "patterns": [
+           [
+            "[0-9A-Z]{12}[0-9]{2}"
+           ]
+          ]
+         },
+         "name": "TCnpjVar",
+         "doc": "Tipo Número do CNPJ tmanho varíavel (3-14)"
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "CNPJ do contribuinte"
+       },
+       {
+        "k": "el",
+        "name": "CPF",
+        "ns": "http://www.portalfiscal.inf.br/nfe",
+        "type": {
+         "kind": "simple",
+         "builtin": "string",
+         "chain": [],
+         "facets": {
+          "whiteSpace": "preserve",
+          "patterns": [
+           [
+            "[0-9]{3,11}"
+           ]
+          ]
+         },
+         "name": "TCpfVar",
+         "doc": "Tipo Número do CPF de tamanho variável (3-11)"
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "CPF do contribuinte"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "TRetConsCad": {
+   "kind": "complex",
+   "id": "TRetConsCad",
+   "anonymous": false,
+   "ns": "http://www.portalfiscal.inf.br/nfe",
+   "attrs": [
+    {
+     "name": "versao",
+     "type": {
+      "kind": "simple",
+      "builtin": "token",
+      "chain": [],
+      "facets": {
+       "patterns": [
+        [
+         "2\\.00"
+        ]
+       ]
+      },
+      "name": "TVerConsCad",
+      "doc": "Tipo Versão do Leiaute da Consulta Cadastro 2.00"
+     },
+     "required": true
+    }
+   ],
+   "doc": "Tipo Retorno Pedido de Consulta de cadastro de contribuintes",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "infCons",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "ref": "TRetConsCad.infCons"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Dados do Resultado doDados do Pedido de Consulta de cadastro de contribuintes"
+     }
+    ]
+   }
+  },
+  "TRetConsCad.infCons": {
+   "kind": "complex",
+   "id": "TRetConsCad.infCons",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/nfe",
+   "attrs": [],
+   "doc": "Dados do Resultado doDados do Pedido de Consulta de cadastro de contribuintes",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "verAplic",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "minLength": 1,
+        "maxLength": 20
+       },
+       "name": "TVerAplic",
+       "doc": "Tipo Versão do Aplicativo"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Versão do Aplicativo que processou o pedido de consulta de cadastro"
+     },
+     {
+      "k": "el",
+      "name": "cStat",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{3}"
+         ]
+        ]
+       },
+       "name": "TStat",
+       "doc": "Tipo Código da Mensagem enviada"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Código do status da mensagem enviada."
+     },
+     {
+      "k": "el",
+      "name": "xMotivo",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "maxLength": 255,
+        "minLength": 1
+       },
+       "name": "TMotivo",
+       "doc": "Tipo Motivo"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Descrição literal do status do serviço solicitado."
+     },
+     {
+      "k": "el",
+      "name": "UF",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "token",
+       "chain": [],
+       "facets": {
+        "enumeration": [
+         "AC",
+         "AL",
+         "AM",
+         "AP",
+         "BA",
+         "CE",
+         "DF",
+         "ES",
+         "GO",
+         "MA",
+         "MG",
+         "MS",
+         "MT",
+         "PA",
+         "PB",
+         "PE",
+         "PI",
+         "PR",
+         "RJ",
+         "RN",
+         "RO",
+         "RR",
+         "RS",
+         "SC",
+         "SE",
+         "SP",
+         "TO",
+         "SU"
+        ]
+       },
+       "name": "TUfCons",
+       "doc": "Tipo Sigla da UF consultada"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "sigla da UF consultada, utilizar SU para SUFRAMA"
+     },
+     {
+      "k": "choice",
+      "min": 1,
+      "max": 1,
+      "items": [
+       {
+        "k": "el",
+        "name": "IE",
+        "ns": "http://www.portalfiscal.inf.br/nfe",
+        "type": {
+         "kind": "simple",
+         "builtin": "string",
+         "chain": [],
+         "facets": {
+          "whiteSpace": "preserve",
+          "patterns": [
+           [
+            "[0-9]{2,14}|ISENTO"
+           ]
+          ]
+         },
+         "name": "TIe",
+         "doc": "Tipo Inscrição Estadual do Emitente // alterado EM 24/10/08 para aceitar ISENTO"
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "Inscrição Estadual do contribuinte"
+       },
+       {
+        "k": "el",
+        "name": "CNPJ",
+        "ns": "http://www.portalfiscal.inf.br/nfe",
+        "type": {
+         "kind": "simple",
+         "builtin": "string",
+         "chain": [],
+         "facets": {
+          "whiteSpace": "preserve",
+          "patterns": [
+           [
+            "[0-9A-Z]{12}[0-9]{2}"
+           ]
+          ]
+         },
+         "name": "TCnpjVar",
+         "doc": "Tipo Número do CNPJ tmanho varíavel (3-14)"
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "CNPJ do contribuinte"
+       },
+       {
+        "k": "el",
+        "name": "CPF",
+        "ns": "http://www.portalfiscal.inf.br/nfe",
+        "type": {
+         "kind": "simple",
+         "builtin": "string",
+         "chain": [],
+         "facets": {
+          "whiteSpace": "preserve",
+          "patterns": [
+           [
+            "[0-9]{3,11}"
+           ]
+          ]
+         },
+         "name": "TCpfVar",
+         "doc": "Tipo Número do CPF de tamanho variável (3-11)"
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "CPF do contribuinte"
+       }
+      ]
+     },
+     {
+      "k": "el",
+      "name": "dhCons",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "dateTime",
+       "chain": [],
+       "facets": {}
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Data da Consulta"
+     },
+     {
+      "k": "el",
+      "name": "cUF",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "11",
+         "12",
+         "13",
+         "14",
+         "15",
+         "16",
+         "17",
+         "21",
+         "22",
+         "23",
+         "24",
+         "25",
+         "26",
+         "27",
+         "28",
+         "29",
+         "31",
+         "32",
+         "33",
+         "35",
+         "41",
+         "42",
+         "43",
+         "50",
+         "51",
+         "52",
+         "53"
+        ]
+       },
+       "name": "TCodUfIBGE",
+       "doc": "Tipo Código da UF da tabela do IBGE"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "código da UF de atendimento"
+     },
+     {
+      "k": "el",
+      "name": "infCad",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "ref": "TRetConsCad.infCons.infCad"
+      },
+      "min": 0,
+      "max": "unbounded",
+      "doc": "Informações cadastrais do contribuinte consultado"
+     }
+    ]
+   }
+  },
+  "TRetConsCad.infCons.infCad": {
+   "kind": "complex",
+   "id": "TRetConsCad.infCons.infCad",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/nfe",
+   "attrs": [],
+   "doc": "Informações cadastrais do contribuinte consultado",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "IE",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{2,14}|ISENTO"
+         ]
+        ]
+       },
+       "name": "TIe",
+       "doc": "Tipo Inscrição Estadual do Emitente // alterado EM 24/10/08 para aceitar ISENTO"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Número da Inscrição Estadual do contribuinte"
+     },
+     {
+      "k": "choice",
+      "min": 1,
+      "max": 1,
+      "items": [
+       {
+        "k": "el",
+        "name": "CNPJ",
+        "ns": "http://www.portalfiscal.inf.br/nfe",
+        "type": {
+         "kind": "simple",
+         "builtin": "string",
+         "chain": [],
+         "facets": {
+          "whiteSpace": "preserve",
+          "patterns": [
+           [
+            "[0-9A-Z]{12}[0-9]{2}"
+           ]
+          ]
+         },
+         "name": "TCnpjVar",
+         "doc": "Tipo Número do CNPJ tmanho varíavel (3-14)"
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "Número do CNPJ  do contribuinte"
+       },
+       {
+        "k": "el",
+        "name": "CPF",
+        "ns": "http://www.portalfiscal.inf.br/nfe",
+        "type": {
+         "kind": "simple",
+         "builtin": "string",
+         "chain": [],
+         "facets": {
+          "whiteSpace": "preserve",
+          "patterns": [
+           [
+            "[0-9]{3,11}"
+           ]
+          ]
+         },
+         "name": "TCpfVar",
+         "doc": "Tipo Número do CPF de tamanho variável (3-11)"
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "Número do CPF do contribuinte"
+       }
+      ]
+     },
+     {
+      "k": "el",
+      "name": "UF",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "AC",
+         "AL",
+         "AM",
+         "AP",
+         "BA",
+         "CE",
+         "DF",
+         "ES",
+         "GO",
+         "MA",
+         "MG",
+         "MS",
+         "MT",
+         "PA",
+         "PB",
+         "PE",
+         "PI",
+         "PR",
+         "RJ",
+         "RN",
+         "RO",
+         "RR",
+         "RS",
+         "SC",
+         "SE",
+         "SP",
+         "TO",
+         "EX"
+        ]
+       },
+       "name": "TUf",
+       "doc": "Tipo Sigla da UF"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Sigla da UF de localização do contribuinte. Em algumas situações, a UF de localização pode ser diferente da UF consultada. Ex. IE de Substituto Tributário."
+     },
+     {
+      "k": "el",
+      "name": "cSit",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "token",
+       "chain": [],
+       "facets": {
+        "enumeration": [
+         "0",
+         "1"
+        ]
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Situação cadastral do contribuinte:\n0 - não habilitado\n1 - habilitado"
+     },
+     {
+      "k": "el",
+      "name": "indCredNFe",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "0",
+         "1",
+         "2",
+         "3",
+         "4"
+        ]
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Indicador de contribuinte credenciado a emitir NF-e.\n0 - Não credenciado para emissão da NF-e;\n1 - Credenciado;\n2 - Credenciado com obrigatoriedade para todas operações;\n3 - Credenciado com obrigatoriedade parcial;\n4 – a SEFAZ não fornece a informação.\nEste indicador significa apenas que o contribuinte é credenciado para emitir NF-e na SEFAZ consultada."
+     },
+     {
+      "k": "el",
+      "name": "indCredCTe",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "0",
+         "1",
+         "2",
+         "3",
+         "4"
+        ]
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Indicador de contribuinte credenciado a emitir CT-e.\n0 - Não credenciado para emissão da CT-e;\n1 - Credenciado;\n2 - Credenciado com obrigatoriedade para todas operações;\n3 - Credenciado com obrigatoriedade parcial;\n4 – a SEFAZ não fornece a informação.\nEste indicador significa apenas que o contribuinte é credenciado para emitir CT-e na SEFAZ consultada."
+     },
+     {
+      "k": "el",
+      "name": "xNome",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "minLength": 1,
+        "maxLength": 60
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Razão Social ou nome do contribuinte"
+     },
+     {
+      "k": "el",
+      "name": "xFant",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "minLength": 1,
+        "maxLength": 60
+       }
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Razão Social ou nome do contribuinte"
+     },
+     {
+      "k": "el",
+      "name": "xRegApur",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "token",
+       "chain": [],
+       "facets": {
+        "minLength": 1,
+        "maxLength": 60
+       }
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Regime de Apuração do ICMS"
+     },
+     {
+      "k": "el",
+      "name": "CNAE",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "token",
+       "chain": [],
+       "facets": {
+        "patterns": [
+         [
+          "[0-9]{6,7}"
+         ]
+        ]
+       }
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "CNAE Fiscal do contribuinte"
+     },
+     {
+      "k": "el",
+      "name": "dIniAtiv",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "date",
+       "chain": [],
+       "facets": {}
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Data de início de atividades do contribuinte"
+     },
+     {
+      "k": "el",
+      "name": "dUltSit",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "date",
+       "chain": [],
+       "facets": {}
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Data da última modificação da situação cadastral do contribuinte."
+     },
+     {
+      "k": "el",
+      "name": "dBaixa",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "date",
+       "chain": [],
+       "facets": {}
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Data de ocorrência da baixa do contribuinte."
+     },
+     {
+      "k": "el",
+      "name": "IEUnica",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{2,14}|ISENTO"
+         ]
+        ]
+       },
+       "name": "TIe",
+       "doc": "Tipo Inscrição Estadual do Emitente // alterado EM 24/10/08 para aceitar ISENTO"
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Inscrição Estadual Única"
+     },
+     {
+      "k": "el",
+      "name": "IEAtual",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{2,14}|ISENTO"
+         ]
+        ]
+       },
+       "name": "TIe",
+       "doc": "Tipo Inscrição Estadual do Emitente // alterado EM 24/10/08 para aceitar ISENTO"
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Inscrição Estadual atual"
+     },
+     {
+      "k": "el",
+      "name": "ender",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "ref": "TEndereco"
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Endereço"
+     }
+    ]
+   }
+  },
+  "TEndereco": {
+   "kind": "complex",
+   "id": "TEndereco",
+   "anonymous": false,
+   "ns": "http://www.portalfiscal.inf.br/nfe",
+   "attrs": [],
+   "doc": "Tipo Dados do Endereço",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "xLgr",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "minLength": 1,
+        "maxLength": 255
+       }
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Logradouro"
+     },
+     {
+      "k": "el",
+      "name": "nro",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "maxLength": 60,
+        "minLength": 1
+       }
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Número"
+     },
+     {
+      "k": "el",
+      "name": "xCpl",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "maxLength": 60,
+        "minLength": 1
+       }
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Complemento"
+     },
+     {
+      "k": "el",
+      "name": "xBairro",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "maxLength": 60,
+        "minLength": 1
+       }
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Bairro"
+     },
+     {
+      "k": "el",
+      "name": "cMun",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{7}"
+         ]
+        ]
+       },
+       "name": "TCodMunIBGE",
+       "doc": "Tipo Código do Município da tabela do IBGE"
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Código do município (utilizar a tabela do IBGE), informar 9999999 para operações com o exterior."
+     },
+     {
+      "k": "el",
+      "name": "xMun",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "maxLength": 60,
+        "minLength": 1
+       }
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Nome do município"
+     },
+     {
+      "k": "el",
+      "name": "CEP",
+      "ns": "http://www.portalfiscal.inf.br/nfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "token",
+       "chain": [],
+       "facets": {
+        "patterns": [
+         [
+          "[0-9]{7,8}"
+         ]
+        ]
+       }
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "CEP"
+     }
+    ]
+   }
+  }
+ },
+ "simple": {
+  "TString": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+     ]
+    ]
+   },
+   "name": "TString",
+   "doc": "Tipo string genérico"
+  },
+  "TServ": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [
+    "TString"
+   ],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+     ]
+    ]
+   },
+   "name": "TServ",
+   "doc": "Tipo Serviço solicitado"
+  },
+  "TUfCons": {
+   "kind": "simple",
+   "builtin": "token",
+   "chain": [],
+   "facets": {
+    "enumeration": [
+     "AC",
+     "AL",
+     "AM",
+     "AP",
+     "BA",
+     "CE",
+     "DF",
+     "ES",
+     "GO",
+     "MA",
+     "MG",
+     "MS",
+     "MT",
+     "PA",
+     "PB",
+     "PE",
+     "PI",
+     "PR",
+     "RJ",
+     "RN",
+     "RO",
+     "RR",
+     "RS",
+     "SC",
+     "SE",
+     "SP",
+     "TO",
+     "SU"
+    ]
+   },
+   "name": "TUfCons",
+   "doc": "Tipo Sigla da UF consultada"
+  },
+  "TIe": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[0-9]{2,14}|ISENTO"
+     ]
+    ]
+   },
+   "name": "TIe",
+   "doc": "Tipo Inscrição Estadual do Emitente // alterado EM 24/10/08 para aceitar ISENTO"
+  },
+  "TCnpjVar": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[0-9A-Z]{12}[0-9]{2}"
+     ]
+    ]
+   },
+   "name": "TCnpjVar",
+   "doc": "Tipo Número do CNPJ tmanho varíavel (3-14)"
+  },
+  "TCpfVar": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[0-9]{3,11}"
+     ]
+    ]
+   },
+   "name": "TCpfVar",
+   "doc": "Tipo Número do CPF de tamanho variável (3-11)"
+  },
+  "TVerConsCad": {
+   "kind": "simple",
+   "builtin": "token",
+   "chain": [],
+   "facets": {
+    "patterns": [
+     [
+      "2\\.00"
+     ]
+    ]
+   },
+   "name": "TVerConsCad",
+   "doc": "Tipo Versão do Leiaute da Consulta Cadastro 2.00"
+  },
+  "TVerAplic": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [
+    "TString"
+   ],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+     ]
+    ],
+    "minLength": 1,
+    "maxLength": 20
+   },
+   "name": "TVerAplic",
+   "doc": "Tipo Versão do Aplicativo"
+  },
+  "TStat": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[0-9]{3}"
+     ]
+    ]
+   },
+   "name": "TStat",
+   "doc": "Tipo Código da Mensagem enviada"
+  },
+  "TMotivo": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [
+    "TString"
+   ],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+     ]
+    ],
+    "maxLength": 255,
+    "minLength": 1
+   },
+   "name": "TMotivo",
+   "doc": "Tipo Motivo"
+  },
+  "TCodUfIBGE": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "enumeration": [
+     "11",
+     "12",
+     "13",
+     "14",
+     "15",
+     "16",
+     "17",
+     "21",
+     "22",
+     "23",
+     "24",
+     "25",
+     "26",
+     "27",
+     "28",
+     "29",
+     "31",
+     "32",
+     "33",
+     "35",
+     "41",
+     "42",
+     "43",
+     "50",
+     "51",
+     "52",
+     "53"
+    ]
+   },
+   "name": "TCodUfIBGE",
+   "doc": "Tipo Código da UF da tabela do IBGE"
+  },
+  "TUf": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "enumeration": [
+     "AC",
+     "AL",
+     "AM",
+     "AP",
+     "BA",
+     "CE",
+     "DF",
+     "ES",
+     "GO",
+     "MA",
+     "MG",
+     "MS",
+     "MT",
+     "PA",
+     "PB",
+     "PE",
+     "PI",
+     "PR",
+     "RJ",
+     "RN",
+     "RO",
+     "RR",
+     "RS",
+     "SC",
+     "SE",
+     "SP",
+     "TO",
+     "EX"
+    ]
+   },
+   "name": "TUf",
+   "doc": "Tipo Sigla da UF"
+  },
+  "TCodMunIBGE": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[0-9]{7}"
+     ]
+    ]
+   },
+   "name": "TCodMunIBGE",
+   "doc": "Tipo Código do Município da tabela do IBGE"
+  }
+ },
+ "unsupported": []
+}

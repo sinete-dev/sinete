@@ -1,0 +1,383 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/sinete-dev/sinete/docs/signer-contract/schema/frame.schema.json",
+  "title": "Frame do protocolo sinete-signer v1 (uma linha NDJSON decodificada)",
+  "description": "Normativo junto com PROTOCOL.md. Os resultados dependem do método da requisição, que a resposta não repete: valide-os com $defs/<metodo>Result.",
+  "type": "object",
+  "required": ["v", "id"],
+  "properties": {
+    "v": { "const": 1 },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "c<n> para o que o cliente inicia, h<n> para o que o helper inicia"
+    },
+    "method": {
+      "enum": [
+        "hello",
+        "identity.open",
+        "identity.close",
+        "http.request",
+        "pool.reset",
+        "stats",
+        "dfe.sign",
+        "cancel",
+        "sign"
+      ]
+    },
+    "params": { "type": "object" },
+    "result": { "type": "object" },
+    "error": { "$ref": "#/$defs/error" }
+  },
+  "additionalProperties": false,
+  "oneOf": [
+    { "required": ["method", "params"], "not": { "anyOf": [{ "required": ["result"] }, { "required": ["error"] }] } },
+    { "required": ["result"], "not": { "anyOf": [{ "required": ["method"] }, { "required": ["error"] }] } },
+    { "required": ["error"], "not": { "anyOf": [{ "required": ["method"] }, { "required": ["result"] }] } }
+  ],
+  "allOf": [
+    {
+      "if": { "required": ["method"], "properties": { "method": { "const": "hello" } } },
+      "then": { "properties": { "params": { "$ref": "#/$defs/helloParams" } } }
+    },
+    {
+      "if": { "required": ["method"], "properties": { "method": { "const": "identity.open" } } },
+      "then": { "properties": { "params": { "$ref": "#/$defs/identityOpenParams" } } }
+    },
+    {
+      "if": { "required": ["method"], "properties": { "method": { "const": "identity.close" } } },
+      "then": { "properties": { "params": { "$ref": "#/$defs/identityRef" } } }
+    },
+    {
+      "if": { "required": ["method"], "properties": { "method": { "const": "http.request" } } },
+      "then": { "properties": { "params": { "$ref": "#/$defs/httpRequestParams" } } }
+    },
+    {
+      "if": { "required": ["method"], "properties": { "method": { "const": "pool.reset" } } },
+      "then": { "properties": { "params": { "$ref": "#/$defs/poolResetParams" } } }
+    },
+    {
+      "if": { "required": ["method"], "properties": { "method": { "const": "stats" } } },
+      "then": { "properties": { "params": { "type": "object", "additionalProperties": false } } }
+    },
+    {
+      "if": { "required": ["method"], "properties": { "method": { "const": "dfe.sign" } } },
+      "then": { "properties": { "params": { "$ref": "#/$defs/dfeSignParams" } } }
+    },
+    {
+      "if": { "required": ["method"], "properties": { "method": { "const": "cancel" } } },
+      "then": { "properties": { "params": { "$ref": "#/$defs/cancelParams" } } }
+    },
+    {
+      "if": { "required": ["method"], "properties": { "method": { "const": "sign" } } },
+      "then": { "properties": { "params": { "$ref": "#/$defs/signParams" } } }
+    }
+  ],
+  "$defs": {
+    "base64": { "type": "string", "pattern": "^[A-Za-z0-9+/]*={0,2}$" },
+    "error": {
+      "type": "object",
+      "required": ["code", "message"],
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "enum": [
+            "protocol_version",
+            "unknown_method",
+            "bad_request",
+            "guard",
+            "forbidden",
+            "unknown_identity",
+            "identity_exists",
+            "pkcs11",
+            "transport",
+            "sign_refused",
+            "sign_timeout",
+            "dfe_refused",
+            "closed",
+            "error"
+          ]
+        },
+        "message": { "type": "string" },
+        "data": { "$ref": "#/$defs/errorData" }
+      }
+    },
+    "errorData": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "stage": { "enum": ["dial", "handshake", "request", "response"] },
+        "alert": { "type": "integer", "minimum": 0, "maximum": 255, "description": "alerta TLS recebido do servidor" },
+        "x509": { "enum": ["unknown_authority", "hostname", "invalid"] },
+        "timeout": { "const": true },
+        "reset": { "const": true },
+        "refused": { "const": true },
+        "dns": { "const": true },
+        "notTls": { "const": true }
+      }
+    },
+    "identityRef": {
+      "type": "object",
+      "required": ["identity"],
+      "additionalProperties": false,
+      "properties": { "identity": { "type": "string", "minLength": 1, "maxLength": 128 } }
+    },
+    "helloParams": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": { "protocol": { "const": 1 }, "client": { "type": "string" } }
+    },
+    "helloResult": {
+      "type": "object",
+      "required": ["protocol", "helper", "backends", "signModes", "schemes", "methods", "lab", "ambientes"],
+      "additionalProperties": false,
+      "properties": {
+        "protocol": { "const": 1 },
+        "helper": { "type": "string", "pattern": "^sinete-signer/" },
+        "go": { "type": "string" },
+        "lab": { "type": "boolean" },
+        "ambientes": { "type": "array", "items": { "enum": ["homologacao", "producao", "laboratorio"] } },
+        "backends": { "type": "array", "items": { "enum": ["remote", "pkcs11"] } },
+        "signModes": { "type": "array", "items": { "enum": ["digest", "message"] } },
+        "schemes": { "type": "array", "items": { "enum": ["rsa_pkcs1_sha256"] } },
+        "methods": { "type": "array", "items": { "type": "string" } },
+        "dataVersion": { "type": "string" }
+      }
+    },
+    "identityOpenParams": {
+      "type": "object",
+      "required": ["id", "backend"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "backend": { "enum": ["remote", "pkcs11"] },
+        "chain": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/base64" },
+          "description": "DER em base64, titular primeiro, sem a raiz. remote: obrigatória; pkcs11: intermediárias que completam a cadeia do token"
+        },
+        "mode": { "enum": ["digest", "message"] },
+        "signTimeoutMs": { "type": "integer", "minimum": 1, "maximum": 300000 },
+        "module": { "type": "string", "description": "pkcs11: caminho absoluto do módulo do fabricante" },
+        "token": { "type": "string" },
+        "serial": { "type": "string" },
+        "label": { "type": "string" },
+        "keyId": { "type": "string", "pattern": "^[0-9a-fA-F]*$" },
+        "pin": { "type": "string" },
+        "additionalCa": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "PEMs de AC somados à confiança do servidor"
+        }
+      }
+    },
+    "identityOpenResult": {
+      "type": "object",
+      "required": ["id", "backend", "mode", "subject", "notBefore", "notAfter", "chain", "dfeSign"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "backend": { "enum": ["remote", "pkcs11"] },
+        "mode": { "enum": ["digest", "message", "pkcs11"] },
+        "subject": { "type": "string" },
+        "notBefore": { "type": "string" },
+        "notAfter": { "type": "string" },
+        "chain": { "type": "array", "items": { "$ref": "#/$defs/base64" } },
+        "cnpj": { "type": "string" },
+        "cpf": { "type": "string" },
+        "dfeSign": { "type": "boolean" }
+      }
+    },
+    "identityCloseResult": {
+      "type": "object",
+      "required": ["closed"],
+      "additionalProperties": false,
+      "properties": { "closed": { "const": true } }
+    },
+    "httpRequestParams": {
+      "type": "object",
+      "required": ["identity", "url", "method", "headers", "body"],
+      "additionalProperties": false,
+      "properties": {
+        "identity": { "type": "string" },
+        "url": { "type": "string", "pattern": "^https://" },
+        "method": { "enum": ["POST", "GET"] },
+        "headers": { "type": "object", "additionalProperties": { "type": "string" } },
+        "body": { "$ref": "#/$defs/base64" },
+        "timeoutMs": { "type": "integer", "minimum": 1 },
+        "freshConn": { "type": "boolean" },
+        "service": { "type": "string" }
+      }
+    },
+    "signatureStat": {
+      "type": "object",
+      "required": ["scheme", "mode", "ms"],
+      "additionalProperties": false,
+      "properties": {
+        "scheme": { "enum": ["rsa_pkcs1_sha256"] },
+        "mode": { "enum": ["digest", "message", "pkcs11"] },
+        "ms": { "type": "number" }
+      }
+    },
+    "httpRequestResult": {
+      "type": "object",
+      "required": ["status", "headers", "body", "ms", "tls"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "type": "integer" },
+        "headers": { "type": "object", "additionalProperties": { "type": "string" } },
+        "body": { "$ref": "#/$defs/base64" },
+        "ms": { "type": "number" },
+        "tls": {
+          "type": "object",
+          "required": [
+            "version",
+            "cipher",
+            "conn",
+            "connReused",
+            "handshakes",
+            "resumed",
+            "certRequests",
+            "renegotiations",
+            "signatures",
+            "handshakeMs",
+            "peerChain"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "version": { "type": "string" },
+            "cipher": { "type": "string" },
+            "conn": { "type": "integer" },
+            "connReused": { "type": "boolean" },
+            "handshakes": { "type": "integer", "minimum": 0 },
+            "resumed": { "type": ["array", "null"], "items": { "type": "boolean" } },
+            "certRequests": { "type": "integer", "minimum": 0 },
+            "renegotiations": { "type": "integer", "minimum": 0 },
+            "signatures": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/signatureStat" },
+              "description": "assinaturas pedidas durante esta requisição"
+            },
+            "handshakeMs": { "type": ["array", "null"], "items": { "type": "number" } },
+            "peerChain": { "type": ["array", "null"], "items": { "type": "string" } }
+          }
+        }
+      }
+    },
+    "poolResetParams": {
+      "type": "object",
+      "required": ["identity"],
+      "additionalProperties": false,
+      "properties": { "identity": { "type": "string" }, "dropSessions": { "type": "boolean" } }
+    },
+    "poolResetResult": {
+      "type": "object",
+      "required": ["ok"],
+      "additionalProperties": false,
+      "properties": { "ok": { "const": true } }
+    },
+    "cancelParams": {
+      "type": "object",
+      "required": ["id"],
+      "additionalProperties": false,
+      "properties": { "id": { "type": "string", "minLength": 1, "maxLength": 64 } }
+    },
+    "cancelResult": {
+      "type": "object",
+      "required": ["cancelled"],
+      "additionalProperties": false,
+      "properties": { "cancelled": { "type": "boolean" } }
+    },
+    "statsResult": {
+      "type": "object",
+      "required": ["identities"],
+      "additionalProperties": false,
+      "properties": {
+        "identities": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["signatures", "backend"],
+            "additionalProperties": false,
+            "properties": {
+              "signatures": { "type": "integer", "minimum": 0 },
+              "backend": { "enum": ["remote", "pkcs11"] }
+            }
+          }
+        }
+      }
+    },
+    "dfeSignParams": {
+      "type": "object",
+      "required": ["identity", "signedInfo", "hash"],
+      "additionalProperties": false,
+      "properties": {
+        "identity": { "type": "string" },
+        "signedInfo": {
+          "$ref": "#/$defs/base64",
+          "description": "SignedInfo canonicalizado (C14N 1.0), os bytes que a assinatura cobre"
+        },
+        "hash": { "enum": ["SHA-1", "SHA-256"] },
+        "element": {
+          "$ref": "#/$defs/base64",
+          "description": "elemento referenciado, canonicalizado; obrigatório em evento cujo autor não é o emitente da chave"
+        }
+      }
+    },
+    "dfeSignResult": {
+      "type": "object",
+      "required": ["signature", "reference", "kind"],
+      "additionalProperties": false,
+      "properties": {
+        "signature": { "$ref": "#/$defs/base64" },
+        "reference": { "type": "string" },
+        "kind": { "enum": ["nfe", "mdfe", "cte", "evento", "inutilizacao", "dps", "evento-nfse"] }
+      }
+    },
+    "signParams": {
+      "type": "object",
+      "required": ["identity", "scheme", "mode", "context"],
+      "additionalProperties": false,
+      "properties": {
+        "identity": { "type": "string" },
+        "scheme": { "enum": ["rsa_pkcs1_sha256"] },
+        "mode": { "enum": ["digest", "message"] },
+        "digest": {
+          "$ref": "#/$defs/base64",
+          "description": "modo digest: hash SHA-256 pronto (32 bytes); quem assina monta o DigestInfo"
+        },
+        "message": {
+          "$ref": "#/$defs/base64",
+          "description": "modo message: transcript TLS 1.2 (mensagens de handshake do ClientHello até antes do CertificateVerify)"
+        },
+        "messageSha256": { "$ref": "#/$defs/base64" },
+        "context": {
+          "type": "object",
+          "required": ["purpose", "host", "conn", "handshake"],
+          "additionalProperties": false,
+          "properties": {
+            "purpose": { "const": "tls12-client-certificate-verify" },
+            "host": { "type": "string" },
+            "conn": { "type": "integer" },
+            "handshake": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "1: handshake inicial; 2: renegociação pedida pelo servidor"
+            }
+          }
+        }
+      },
+      "oneOf": [
+        { "properties": { "mode": { "const": "digest" } }, "required": ["digest"] },
+        { "properties": { "mode": { "const": "message" } }, "required": ["message", "messageSha256"] }
+      ]
+    },
+    "signResult": {
+      "type": "object",
+      "required": ["signature"],
+      "additionalProperties": false,
+      "properties": { "signature": { "$ref": "#/$defs/base64" } }
+    }
+  }
+}

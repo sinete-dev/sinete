@@ -1,0 +1,80 @@
+{
+  "target": "hnfe.fazenda.mg.gov.br:443",
+  "ua": null,
+  "started": "2026-09-25T23:21:47.784Z",
+  "events": [
+    {
+      "dir": "c2s",
+      "hs": "ClientHello",
+      "len": 1590
+    },
+    {
+      "dir": "s2c",
+      "hs": "ServerHello",
+      "len": 55,
+      "version": "0x303",
+      "cipherSuite": "0xc02f"
+    },
+    {
+      "dir": "s2c",
+      "hs": "Certificate",
+      "len": 4830,
+      "certCount": 3,
+      "subjects": [
+        "C=BR, ST=Minas Gerais, O=SECRETARIA DE ESTADO DE FAZENDA DE MINAS GERAIS, CN=*.fazenda.mg.gov.br",
+        "C=BR, O=Valid Certificadora Digital LTDA, CN=Valid Certificadora RSA OV SSL CA 2",
+        "C=GB, O=Sectigo Limited, CN=Sectigo Public Server Authentication Root R46"
+      ]
+    },
+    {
+      "dir": "s2c",
+      "hs": "ServerKeyExchange",
+      "len": 329
+    },
+    {
+      "dir": "s2c",
+      "hs": "CertificateRequest",
+      "len": 20
+    },
+    {
+      "dir": "s2c",
+      "hs": "ServerHelloDone",
+      "len": 0
+    },
+    {
+      "dir": "c2s",
+      "hs": "Certificate",
+      "len": 879,
+      "certCount": 1,
+      "subjects": [
+        "CN=sinete-spike-throwaway-client, O=sinete spike S2"
+      ]
+    },
+    {
+      "dir": "c2s",
+      "hs": "ClientKeyExchange",
+      "len": 66
+    },
+    {
+      "dir": "c2s",
+      "hs": "CertificateVerify",
+      "len": 260,
+      "sigScheme": "0x0401"
+    },
+    {
+      "dir": "c2s",
+      "rec": "ChangeCipherSpec"
+    },
+    {
+      "dir": "c2s",
+      "rec": "Handshake(encrypted)",
+      "len": 40
+    },
+    {
+      "dir": "s2c",
+      "rec": "Alert",
+      "level": 2,
+      "desc": "handshake_failure"
+    }
+  ]
+}

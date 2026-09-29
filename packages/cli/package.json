@@ -1,0 +1,60 @@
+{
+  "name": "@sinete/cli",
+  "version": "0.0.0",
+  "description": "CLI do sinete: sinete doctor confere certificado A1, cadeia ICP-Brasil, relógio e o handshake TLS com um endpoint",
+  "keywords": [
+    "nfe",
+    "sefaz",
+    "cli",
+    "certificado-digital",
+    "brasil"
+  ],
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": [
+    "./dist/cli.js"
+  ],
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "bin": {
+    "sinete": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./bin": {
+      "types": "./dist/cli.d.ts",
+      "default": "./dist/cli.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src",
+    "NOTICE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sinete-dev/sinete.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/sinete-dev/sinete/tree/main/packages/cli#readme",
+  "bugs": "https://github.com/sinete-dev/sinete/issues",
+  "scripts": {
+    "build": "bun ../../scripts/build.ts ."
+  },
+  "dependencies": {
+    "@sinete/cert": "workspace:^",
+    "@sinete/core": "workspace:^",
+    "@sinete/transport": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

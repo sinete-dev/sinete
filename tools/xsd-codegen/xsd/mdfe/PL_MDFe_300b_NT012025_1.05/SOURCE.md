@@ -1,0 +1,57 @@
+# PL_MDFe_300b_NT012025_1.05
+
+Pacote oficial, artefato público do governo, sem alterações. Os arquivos abaixo são o conteúdo do zip, byte a byte.
+
+- Título na fonte: Schemas NT 2025.001 v 1.04 (o zip se chama 1.04, a pasta interna se chama PL_MDFe_300b_NT012025_1.05)
+- Publicação: 25/04/2026 (data do pacote no portal)
+- Página de origem: https://dfe-portal.svrs.rs.gov.br/Mdfe/Documentos (Schemas)
+- Download: https://dfe-portal.svrs.rs.gov.br/MDFE/DownloadArquivoEstatico/?sistema=MDFE&tipoArquivo=2&nomeArquivo=PL_MDFe_300b_NT012025_1.04.zip
+- Arquivo baixado: `PL_MDFe_300b_NT012025_1.04.zip` (sha256 `fc53c880bd757d5b03b79de15dd7687259dfbfa38fed85e9ebb9c638b93854cc`)
+- Baixado em: 2026-09-25
+- Uso no sinete: MDFe, mdfeProc e retMDFe (leiaute 3.00b), com os quatro modais ligados ao infModal; eventos (eventoMDFe, retEventoMDFe, procEventoMDFe com os sete schemas de evento) e consultas (status, situação e não encerrados).
+
+## sha256 dos arquivos extraídos
+
+```
+56447ff932eac1bc8ef5f7d25b519f6be3309a0eab8285285193762b3b094776  consMDFeNaoEnc_v3.00.xsd
+700d1fc21063159779b66d8877f9173e80511972355f302f7cb44cc2df8a5b9d  consMDFeNaoEncTiposBasico_v3.00.xsd
+04fd0188fbbcffb7d825e592d419d0e3763682098a76aa71c807e931b5a5612e  consReciMDFe_v3.00.xsd
+ae91fa1afdaa7dfc14744fc0229c3d61c764b865c2843da319c2f6d22fe17e4c  consReciMDFeTiposBasico_v3.00.xsd
+5fbb6a1b4706e599dab39fdf87685ee8c829e46e4c919a3073dc13a09c816097  consSitMDFe_v3.00.xsd
+13f4c72488595d94c311b3031dfcd091956570876d7fc0664c4e9d68beedc009  consSitMDFeTiposBasico_v3.00.xsd
+af9e3470200b1331883ade295b225395875bb981c818dfddbce6975b79a2e280  consStatServMDFe_v3.00.xsd
+e11064713405c2ed0d82af602c65dd04b6c929d239d49a1030a0123a2f924fd3  consStatServTiposBasico_v3.00.xsd
+dd6ea686440a57372daa2b9935f3052f717306bfebe483595deb3d072f1cbc2b  distMDFe_v3.00.xsd
+dd202f7f15226179bef0ab275af0b75742644e93782ce3ddce32f10ea958241d  enviMDFe_v3.00.xsd
+e63664a2b04985e3fc0025894a4889f2c1a6ebe640deca1ad5b5c1f1721aa74c  evAlteracaoPagtoServMDFe_v3.00.xsd
+081c268523b6a9aa35af3cd8a2deb37b994c68b813090fa1de18680fd54d0f15  evCancMDFe_v3.00.xsd
+1abb8583e7799ac14b53ccfe16d28fa91173bc9b098f21272cf037bd9691958a  evConfirmaServMDFe_v3.00.xsd
+d64d53db632cbf495a41e364a8c809f54a54096c7811f1a869091cf6b7785070  evEncMDFe_v3.00.xsd
+3c8c5896977be7837a1f36c198efa6e347a494aeed671986d894be4e5209b50a  eventoMDFe_v3.00.xsd
+03eda45ebe91293bf8dddca08e9a657aa239391038310a2821d2a32abbb69b82  eventoMDFeTiposBasico_v3.00.xsd
+51c2d77b512b0d68efd9dc02da756c4787ca7fd1ea817cc1589ec73c0a7ba61f  evIncCondutorMDFe_v3.00.xsd
+f1afe8f3c9c11c3be9f660d65d91baa26c02b269b43f885156efc68cceeb8e45  evInclusaoDFeMDFe_v3.00.xsd
+5b8a1bbf409a0cfd1e10b25c71875708d8b4c9f7b64d7af796a66cae6bb94620  evPagtoOperMDFe_v3.00.xsd
+9730122ebd6dea5dff276939d1270b5694ad2df6ef073ac874a92efa5465fc86  leiauteDistMDFe_v3.00.xsd
+0af8a6dd60dd2fe799da41d84ebdfac7922e676df2d7395927878a3ef552944e  mdfe_v3.00.xsd
+6bb964f985f0d89ff5ee98023b95b60b25bb86aa5b06f3a0380c77c75c5876db  mdfeConsultaDFe_v3.00.xsd
+01b97176194ba61d522691cd0bcf31ed3db473798872e034ea2ce18fd2cb6834  mdfeConsultaDFeTiposBasico_v3.00.xsd
+6d1a345d0c10789a6e3b92cc806c910607633bebfda4e2836c55ecf31acac991  mdfeModalAereo_v3.00.xsd
+f2f7bca34c4f12146d4958f41ca03b5cb380f8a8cd52b11667dfc8c150afbb53  mdfeModalAquaviario_v3.00.xsd
+3f84f98831a976e35d8174af99a1fe54ae72da9552cbbdfb639186d1d73b13c3  mdfeModalFerroviario_v3.00.xsd
+41900c27b013a6edce9f44b515de20d4bc9de1df8dafbc2b806a44c9b2762446  mdfeModalRodoviario_v3.00.xsd
+c1931da7635f1afe9d0145d07f41a9db352dde42f1d99359d967eb53da1843c0  mdfeTiposBasico_v3.00.xsd
+79f53898033ec4cbadbbdce2e301215ef0f89f8ee707efa469bdf185b45968b7  procEventoMDFe_v3.00.xsd
+c06c3fb24b2f86338d1847297755bbd2c66bc9fe8f2dd288506866095f0eb8b8  procMDFe_v3.00.xsd
+588303a2ff35fc1f12fc27a4a0db1854869f4ea108eadd007b8fc7e1b7b9bd2f  retConsMDFeNaoEnc_v3.00.xsd
+7c472b7f2d655f4c1dfa3ec781c3e943ea8e9392232167fae346338909d865be  retConsReciMDFe_v3.00.xsd
+7aaeaf0c5ffe99df2d3186814a27baf49579faadcfa2a8d8afb86d08ddcd050c  retConsSitMDFe_v3.00.xsd
+4509a253389a881e06c26a7fb06a8267a2f8637a929b95f725aeede54d182c97  retConsStatServMDFe_v3.00.xsd
+1a6da085851732975ba7c21a4d12346d28363e6bafe79b3d5f46b4bfe8210a64  retDistMDFe_v3.00.xsd
+1fffe22e4ee90c1c2ee668d0b64b26c4d4aa2d86821559cc95dbfae668bb5f28  retEnviMDFe_v3.00.xsd
+c87fa52925803a1e211a48ea57363c494f70f6fe161f819bc77c4efc05924a42  retEventoMDFe_v3.00.xsd
+0aff787d1f52207e686231fdd013d26b43a5c7483093dcdb58e5f02d4ab5d870  retMDFe_v3.00.xsd
+ae75eba12d1720c5955474442ce962fe225b14591cf6455de76abd3ac860f443  retMDFeConsultaDFe_v3.00.xsd
+bcf13cb3df70f1daec09b67d552bae62d3808972640c30859371fc74ea83ead8  tiposGeralMDFe_v3.00.xsd
+8ce2a385b593c85acf09cb03521f9e730dad2b2e6a5d02cc6f5b688ca94ce230  xmldsig-core-schema_v1.01.xsd
+```

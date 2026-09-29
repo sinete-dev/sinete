@@ -1,0 +1,15 @@
+{
+  "descricao": "Códigos de resultado do MDF-e e o desfecho de cada um por serviço. Rejeições com a mensagem oficial estão no @sinete/rejeicoes/mdfe; aqui fica só a classificação dos códigos de sucesso e dos que o cliente trata de forma própria.",
+  "fonte": "MOC MDF-e 3.00b Visão Geral, itens 4.2.6, 4.3.6, 4.4.6, 4.5 e 5.1.7; Anexo I, regras F81 (539), F82 (204) e G04 (217)",
+  "atualizadoEm": "2026-09-26",
+  "autorizado": ["100"],
+  "cancelado": ["101"],
+  "encerrado": ["132"],
+  "servicoEmOperacao": ["107"],
+  "naoEncerradosLocalizados": ["111"],
+  "naoEncerradosNenhum": ["112"],
+  "eventoRegistrado": ["135", "134", "136"],
+  "duplicidade": ["204"],
+  "duplicidadeChaveDiferente": ["539"],
+  "naoConsta": ["217"]
+}

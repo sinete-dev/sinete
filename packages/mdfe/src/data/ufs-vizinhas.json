@@ -1,0 +1,37 @@
+{
+  "descricao": "UFs que fazem divisa terrestre entre si, para a regra de percurso do MDF-e rodoviário: a sequência UF de carregamento, UFs de percurso e UF de descarregamento precisa andar sempre entre UFs vizinhas. A relação é simétrica (o teste confere). EX (exterior) fica fora da tabela: um trecho com o exterior não é conferido.",
+  "fontes": [
+    "IBGE, Divisão Territorial Brasileira e Malha Territorial (limites interestaduais), https://www.ibge.gov.br/geociencias/organizacao-do-territorio/malhas-territoriais.html",
+    "MOC MDF-e 3.00b Anexo I, regra F90 (rejeição 663): percurso na ordem origem e destino, considerando as divisas possíveis"
+  ],
+  "atualizadoEm": "2026-09-26",
+  "vizinhas": {
+    "AC": ["AM", "RO"],
+    "AL": ["BA", "PE", "SE"],
+    "AM": ["AC", "MT", "PA", "RO", "RR"],
+    "AP": ["PA"],
+    "BA": ["AL", "ES", "GO", "MG", "PE", "PI", "SE", "TO"],
+    "CE": ["PB", "PE", "PI", "RN"],
+    "DF": ["GO", "MG"],
+    "ES": ["BA", "MG", "RJ"],
+    "GO": ["BA", "DF", "MG", "MS", "MT", "TO"],
+    "MA": ["PA", "PI", "TO"],
+    "MG": ["BA", "DF", "ES", "GO", "MS", "RJ", "SP"],
+    "MS": ["GO", "MG", "MT", "PR", "SP"],
+    "MT": ["AM", "GO", "MS", "PA", "RO", "TO"],
+    "PA": ["AM", "AP", "MA", "MT", "RR", "TO"],
+    "PB": ["CE", "PE", "RN"],
+    "PE": ["AL", "BA", "CE", "PB", "PI"],
+    "PI": ["BA", "CE", "MA", "PE", "TO"],
+    "PR": ["MS", "SC", "SP"],
+    "RJ": ["ES", "MG", "SP"],
+    "RN": ["CE", "PB"],
+    "RO": ["AC", "AM", "MT"],
+    "RR": ["AM", "PA"],
+    "RS": ["SC"],
+    "SC": ["PR", "RS"],
+    "SE": ["AL", "BA"],
+    "SP": ["MG", "MS", "PR", "RJ"],
+    "TO": ["BA", "GO", "MA", "MT", "PA", "PI"]
+  }
+}

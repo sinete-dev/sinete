@@ -1,0 +1,11 @@
+{
+  "name": "@sinete/tool-ie-crosscheck",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Confronta o validador de IE do @sinete/validators com outra implementação sobre uma lista local, imprimindo só estatísticas",
+  "dependencies": {
+    "@sinete/core": "workspace:^",
+    "@sinete/validators": "workspace:^"
+  }
+}

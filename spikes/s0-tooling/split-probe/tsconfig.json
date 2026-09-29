@@ -1,0 +1,1 @@
+{"compilerOptions":{"strict":true,"isolatedDeclarations":true,"allowImportingTsExtensions":true,"noEmit":true,"module":"preserve","moduleResolution":"bundler","target":"es2022","declaration":true}}

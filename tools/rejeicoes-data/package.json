@@ -1,0 +1,7 @@
+{
+  "name": "@sinete/tool-rejeicoes-data",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Builder reprodutível do catálogo de rejeições do @sinete/rejeicoes a partir dos PDFs oficiais do MOC e das NT"
+}

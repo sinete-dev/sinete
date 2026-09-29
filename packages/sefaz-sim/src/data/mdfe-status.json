@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "source": "MOC MDF-e 3.00b Visão Geral, itens 4.2.6, 4.3.6, 4.4.6, 4.5 e 5.1.7; textos de 100 e 135 conferidos contra MDF-e e eventos autorizados pela SVRS",
+  "retrievedAt": "2026-09-26",
+  "note": "Só os códigos de resultado que o simulador devolve no MDF-e; as rejeições vêm do @sinete/rejeicoes/mdfe. O MOC não fixa o texto de 111 e 112: o simulador usa a descrição do item 4.4.6.",
+  "codes": {
+    "100": "Autorizado o uso do MDF-e",
+    "101": "Cancelamento de MDF-e homologado",
+    "107": "Serviço em Operação",
+    "108": "Serviço Paralisado Momentaneamente (curto prazo)",
+    "109": "Serviço Paralisado sem Previsão",
+    "111": "MDF-e não encerrados localizados",
+    "112": "MDF-e não encerrados não localizados",
+    "132": "Encerramento de MDF-e homologado",
+    "135": "Evento registrado e vinculado ao MDF-e"
+  }
+}

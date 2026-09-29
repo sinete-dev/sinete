@@ -1,0 +1,68 @@
+{
+  "name": "@sinete/transport",
+  "version": "0.0.0",
+  "description": "Transporte mTLS do sinete: Transport com identidade TLS plugável, endpoints e perfis TLS por host como dados, SOAP 1.2, política de hosts e erros tipados",
+  "keywords": [
+    "nfe",
+    "mdfe",
+    "nfse",
+    "sefaz",
+    "mtls",
+    "soap",
+    "brasil"
+  ],
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "exports": {
+    ".": {
+      "node": {
+        "types": "./dist/index.node.d.ts",
+        "default": "./dist/index.node.js"
+      },
+      "default": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "./signer": {
+      "node": {
+        "types": "./dist/signer.node.d.ts",
+        "default": "./dist/signer.node.js"
+      },
+      "default": {
+        "types": "./dist/signer.d.ts",
+        "default": "./dist/signer.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src",
+    "NOTICE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sinete-dev/sinete.git",
+    "directory": "packages/transport"
+  },
+  "homepage": "https://github.com/sinete-dev/sinete/tree/main/packages/transport#readme",
+  "bugs": "https://github.com/sinete-dev/sinete/issues",
+  "scripts": {
+    "build": "bun ../../scripts/build.ts ."
+  },
+  "dependencies": {
+    "@sinete/cert": "workspace:^",
+    "@sinete/core": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -1,0 +1,3845 @@
+{
+ "subpath": "mdfe/eventos/3.00b",
+ "pl": "PL_MDFe_300b_NT012025_1.05",
+ "roots": [
+  {
+   "name": "eventoMDFe",
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "type": "TEvento"
+  },
+  {
+   "name": "retEventoMDFe",
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "type": "TRetEvento"
+  },
+  {
+   "name": "procEventoMDFe",
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "type": "TProcEvento"
+  }
+ ],
+ "complex": {
+  "TEvento": {
+   "kind": "complex",
+   "id": "TEvento",
+   "anonymous": false,
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "attrs": [
+    {
+     "name": "versao",
+     "type": {
+      "kind": "simple",
+      "builtin": "string",
+      "chain": [],
+      "facets": {
+       "whiteSpace": "preserve",
+       "patterns": [
+        [
+         "3\\.00"
+        ]
+       ]
+      },
+      "name": "TVerEvento",
+      "doc": "Tipo Versão do Evento"
+     },
+     "required": true
+    }
+   ],
+   "doc": "Tipo Evento",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "infEvento",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "ref": "TEvento.infEvento"
+      },
+      "min": 1,
+      "max": 1
+     },
+     {
+      "k": "el",
+      "name": "Signature",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "SignatureType"
+      },
+      "min": 1,
+      "max": 1
+     }
+    ]
+   }
+  },
+  "TEvento.infEvento": {
+   "kind": "complex",
+   "id": "TEvento.infEvento",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "attrs": [
+    {
+     "name": "Id",
+     "type": {
+      "kind": "simple",
+      "builtin": "ID",
+      "chain": [],
+      "facets": {
+       "patterns": [
+        [
+         "ID[0-9]{12}[A-Z0-9]{12}[0-9]{28}|ID[0-9]{12}[A-Z0-9]{12}[0-9]{29}"
+        ]
+       ]
+      }
+     },
+     "required": true,
+     "doc": "Identificador da TAG a ser assinada, a regra de formação do Id é:\n“ID” + tpEvento +  chave do MDF-e + nSeqEvento"
+    }
+   ],
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "cOrgao",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "11",
+         "12",
+         "13",
+         "14",
+         "15",
+         "16",
+         "17",
+         "21",
+         "22",
+         "23",
+         "24",
+         "25",
+         "26",
+         "27",
+         "28",
+         "29",
+         "31",
+         "32",
+         "33",
+         "35",
+         "41",
+         "42",
+         "43",
+         "50",
+         "51",
+         "52",
+         "53",
+         "90",
+         "91",
+         "92",
+         "93",
+         "94"
+        ]
+       },
+       "name": "TCOrgaoIBGE",
+       "doc": "Tipo Código de orgão (UF da tabela do IBGE + 90 SUFRAMA + 91 RFB + 92 BRId)"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Código do órgão de recepção do Evento. Utilizar a Tabela do IBGE extendida, utilizar 90 para identificar SUFRAMA, 91 para RFB,  93 para ONE, 94 para SVBA"
+     },
+     {
+      "k": "el",
+      "name": "tpAmb",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "1",
+         "2"
+        ]
+       },
+       "name": "TAmb",
+       "doc": "Tipo Ambiente"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Identificação do Ambiente:\n1 - Produção\n2 - Homologação"
+     },
+     {
+      "k": "choice",
+      "min": 1,
+      "max": 1,
+      "items": [
+       {
+        "k": "el",
+        "name": "CNPJ",
+        "ns": "http://www.portalfiscal.inf.br/mdfe",
+        "type": {
+         "kind": "simple",
+         "builtin": "string",
+         "chain": [],
+         "facets": {
+          "whiteSpace": "preserve",
+          "patterns": [
+           [
+            "[A-Z0-9]{12}[0-9]{2}"
+           ]
+          ]
+         },
+         "name": "TCnpj",
+         "doc": "Tipo Número do CNPJ"
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "CNPJ do autor\nInformar zeros não significativos"
+       },
+       {
+        "k": "el",
+        "name": "CPF",
+        "ns": "http://www.portalfiscal.inf.br/mdfe",
+        "type": {
+         "kind": "simple",
+         "builtin": "string",
+         "chain": [],
+         "facets": {
+          "whiteSpace": "preserve",
+          "patterns": [
+           [
+            "[0-9]{11}"
+           ]
+          ]
+         },
+         "name": "TCpf",
+         "doc": "Tipo Número do CPF"
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "CPF do Autor\nInformar zeros não significativos. \nUsar com serie específica 920-969 para emitente pessoa física com inscrição estadual, ou para emissor TAC do Regime Especial da Nota Fiscal Fácil"
+       }
+      ]
+     },
+     {
+      "k": "el",
+      "name": "chMDFe",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "maxLength": 44,
+        "patterns": [
+         [
+          "[0-9]{6}[A-Z0-9]{12}[0-9]{26}"
+         ]
+        ]
+       },
+       "name": "TChMDFe",
+       "doc": "Tipo Chave de Manifesto de Documentos Fiscais Eletrônico"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Chave de Acesso do MDF-e vinculado ao evento"
+     },
+     {
+      "k": "el",
+      "name": "dhEvento",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "(((20(([02468][048])|([13579][26]))-02-29))|(20[0-9][0-9])-((((0[1-9])|(1[0-2]))-((0[1-9])|(1\\d)|(2[0-8])))|((((0[13578])|(1[02]))-31)|(((0[1,3-9])|(1[0-2]))-(29|30)))))T(20|21|22|23|[0-1]\\d):[0-5]\\d:[0-5]\\d([\\-,\\+](0[0-9]|10|11):00|([\\+](12):00))"
+         ]
+        ]
+       },
+       "name": "TDateTimeUTC",
+       "doc": "Data e Hora, formato UTC (AAAA-MM-DDThh:mm:ssTZD, onde TZD = +hh:mm ou -hh:mm)"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Data e Hora do Evento, formato AAAA-MM-DDThh:mm:ss TZD"
+     },
+     {
+      "k": "el",
+      "name": "tpEvento",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {}
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Tipo do Evento:\n110111 - Cancelamento\n110112 - Encerramento\n110114 - Inclusão de Condutor\n310620 - Registro de Passagem\n510620 - Registro de Passagem BRId"
+     },
+     {
+      "k": "el",
+      "name": "nSeqEvento",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{1,3}"
+         ]
+        ]
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Seqüencial do evento para o mesmo tipo de evento.  Para maioria dos eventos será 1, nos casos em que possa existir mais de um evento o autor do evento deve numerar de forma seqüencial."
+     },
+     {
+      "k": "el",
+      "name": "detEvento",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "ref": "TEvento.infEvento.detEvento"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Detalhamento do evento específico"
+     },
+     {
+      "k": "el",
+      "name": "infSolicNFF",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "ref": "TEvento.infEvento.infSolicNFF"
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Grupo de informações do pedido de registro de evento da Nota Fiscal Fácil"
+     },
+     {
+      "k": "el",
+      "name": "infPAA",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "ref": "TEvento.infEvento.infPAA"
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Grupo de Informação do Provedor de Assinatura e Autorização"
+     }
+    ]
+   }
+  },
+  "TEvento.infEvento.detEvento": {
+   "kind": "complex",
+   "id": "TEvento.infEvento.detEvento",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "attrs": [
+    {
+     "name": "versaoEvento",
+     "type": {
+      "kind": "simple",
+      "builtin": "string",
+      "chain": [],
+      "facets": {
+       "whiteSpace": "preserve",
+       "patterns": [
+        [
+         "3\\.00"
+        ]
+       ]
+      },
+      "name": "TVerEvento",
+      "doc": "Tipo Versão do Evento"
+     },
+     "required": true
+    }
+   ],
+   "doc": "Detalhamento do evento específico",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "choice",
+      "min": 1,
+      "max": 1,
+      "items": [
+       {
+        "k": "el",
+        "name": "evCancMDFe",
+        "ns": "http://www.portalfiscal.inf.br/mdfe",
+        "type": {
+         "ref": "evCancMDFe"
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "Schema XML de validação do evento do cancelamento \n110111"
+       },
+       {
+        "k": "el",
+        "name": "evEncMDFe",
+        "ns": "http://www.portalfiscal.inf.br/mdfe",
+        "type": {
+         "ref": "evEncMDFe"
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "Schema XML de validação do evento do encerramento \n110112"
+       },
+       {
+        "k": "el",
+        "name": "evIncCondutorMDFe",
+        "ns": "http://www.portalfiscal.inf.br/mdfe",
+        "type": {
+         "ref": "evIncCondutorMDFe"
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "Schema XML de validação do evento de inclusao de condutor 110114"
+       },
+       {
+        "k": "el",
+        "name": "evIncDFeMDFe",
+        "ns": "http://www.portalfiscal.inf.br/mdfe",
+        "type": {
+         "ref": "evIncDFeMDFe"
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "Schema XML de validação do evento de inclusão de DFe \n110115"
+       },
+       {
+        "k": "el",
+        "name": "evPagtoOperMDFe",
+        "ns": "http://www.portalfiscal.inf.br/mdfe",
+        "type": {
+         "ref": "evPagtoOperMDFe"
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "Schema XML de validação do evento de pagamento da operação de transporte 110116"
+       },
+       {
+        "k": "el",
+        "name": "evConfirmaServMDFe",
+        "ns": "http://www.portalfiscal.inf.br/mdfe",
+        "type": {
+         "ref": "evConfirmaServMDFe"
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "Schema XML de validação do evento de confirmação do serviço de transporte 110117"
+       },
+       {
+        "k": "el",
+        "name": "evAlteracaoPagtoServMDFe",
+        "ns": "http://www.portalfiscal.inf.br/mdfe",
+        "type": {
+         "ref": "evAlteracaoPagtoServMDFe"
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "Schema XML de validação do evento de alteração do pagamento do serviçp de transporte 110118"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  "evCancMDFe": {
+   "kind": "complex",
+   "id": "evCancMDFe",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "attrs": [],
+   "doc": "Schema XML de validação do evento do cancelamento \n110111",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "descEvento",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "Cancelamento"
+        ]
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Descrição do Evento - “Cancelamento”"
+     },
+     {
+      "k": "el",
+      "name": "nProt",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{15}"
+         ]
+        ]
+       },
+       "name": "TProt",
+       "doc": "Tipo Número do Protocolo de Status"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Número do Protocolo de Status do MDF-e.\n1 posição tipo de autorizador (9 -SEFAZ Nacional ); \n2 posições ano; \n10 seqüencial no ano."
+     },
+     {
+      "k": "el",
+      "name": "xJust",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "minLength": 15,
+        "maxLength": 255
+       },
+       "name": "TJust",
+       "doc": "Tipo Justificativa"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Justificativa do Cancelamento"
+     }
+    ]
+   }
+  },
+  "evEncMDFe": {
+   "kind": "complex",
+   "id": "evEncMDFe",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "attrs": [],
+   "doc": "Schema XML de validação do evento do encerramento \n110112",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "descEvento",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "Encerramento"
+        ]
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Descrição do Evento - “Encerramento”"
+     },
+     {
+      "k": "el",
+      "name": "nProt",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{15}"
+         ]
+        ]
+       },
+       "name": "TProt",
+       "doc": "Tipo Número do Protocolo de Status"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Número do Protocolo de Status do MDF-e. \n1 posição tipo de autorizador (9 - SEFAZ Nacional ); \n2 posições ano;\n10 seqüencial no ano."
+     },
+     {
+      "k": "el",
+      "name": "dtEnc",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "(((20(([02468][048])|([13579][26]))-02-29))|(20[0-9][0-9])-((((0[1-9])|(1[0-2]))-((0[1-9])|(1\\d)|(2[0-8])))|((((0[13578])|(1[02]))-31)|(((0[1,3-9])|(1[0-2]))-(29|30)))))"
+         ]
+        ]
+       },
+       "name": "TData",
+       "doc": "Tipo data AAAA-MM-DD"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Data que o Manifesto foi encerrado"
+     },
+     {
+      "k": "el",
+      "name": "cUF",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "11",
+         "12",
+         "13",
+         "14",
+         "15",
+         "16",
+         "17",
+         "21",
+         "22",
+         "23",
+         "24",
+         "25",
+         "26",
+         "27",
+         "28",
+         "29",
+         "31",
+         "32",
+         "33",
+         "35",
+         "41",
+         "42",
+         "43",
+         "50",
+         "51",
+         "52",
+         "53",
+         "99"
+        ]
+       },
+       "name": "TCodUfIBGE_EX",
+       "doc": "Tipo Código da UF da tabela do IBGE + 99 para Exterior"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "UF de encerramento do Manifesto"
+     },
+     {
+      "k": "el",
+      "name": "cMun",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{7}"
+         ]
+        ]
+       },
+       "name": "TCodMunIBGE",
+       "doc": "Tipo Código do Município da tabela do IBGE"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Código do Município de Encerramento do manifesto"
+     },
+     {
+      "k": "el",
+      "name": "indEncPorTerceiro",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "enumeration": [
+         "1"
+        ]
+       }
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Indicador que deve ser informado quando o encerramento for registrado pelo transportador terceiro\nInformar valor 1 quando o MDFe for encerrado pelo transportador terceiro, este sendo diferente do emitente do MDFe"
+     }
+    ]
+   }
+  },
+  "evIncCondutorMDFe": {
+   "kind": "complex",
+   "id": "evIncCondutorMDFe",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "attrs": [],
+   "doc": "Schema XML de validação do evento de inclusao de condutor 110114",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "descEvento",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "Inclusao Condutor"
+        ]
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Descrição do Evento - “Inclusao Condutor”"
+     },
+     {
+      "k": "el",
+      "name": "condutor",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "ref": "evIncCondutorMDFe.condutor"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Informações do(s) Condutor(s) do veículo"
+     }
+    ]
+   }
+  },
+  "evIncCondutorMDFe.condutor": {
+   "kind": "complex",
+   "id": "evIncCondutorMDFe.condutor",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "attrs": [],
+   "doc": "Informações do(s) Condutor(s) do veículo",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "xNome",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "maxLength": 60,
+        "minLength": 2
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Nome do Condutor"
+     },
+     {
+      "k": "el",
+      "name": "CPF",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{11}"
+         ]
+        ]
+       },
+       "name": "TCpf",
+       "doc": "Tipo Número do CPF"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "CPF do Condutor"
+     }
+    ]
+   }
+  },
+  "evIncDFeMDFe": {
+   "kind": "complex",
+   "id": "evIncDFeMDFe",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "attrs": [],
+   "doc": "Schema XML de validação do evento de inclusão de DFe \n110115",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "descEvento",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "Inclusão DF-e",
+         "Inclusao DF-e"
+        ]
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Descrição do Evento - “Inclusão DF-e”"
+     },
+     {
+      "k": "el",
+      "name": "nProt",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{15}"
+         ]
+        ]
+       },
+       "name": "TProt",
+       "doc": "Tipo Número do Protocolo de Status"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Número do Protocolo de Status do MDF-e. \n1 posição tipo de autorizador (9 - SEFAZ Nacional ); \n2 posições ano;\n10 seqüencial no ano."
+     },
+     {
+      "k": "el",
+      "name": "cMunCarrega",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{7}"
+         ]
+        ]
+       },
+       "name": "TCodMunIBGE",
+       "doc": "Tipo Código do Município da tabela do IBGE"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Código do Município de Carregamento"
+     },
+     {
+      "k": "el",
+      "name": "xMunCarrega",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "minLength": 2,
+        "maxLength": 60
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Nome do Município de Carregamento"
+     },
+     {
+      "k": "el",
+      "name": "infDoc",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "ref": "evIncDFeMDFe.infDoc"
+      },
+      "min": 1,
+      "max": "unbounded",
+      "doc": "Informações dos Documentos fiscais vinculados ao manifesto"
+     }
+    ]
+   }
+  },
+  "evIncDFeMDFe.infDoc": {
+   "kind": "complex",
+   "id": "evIncDFeMDFe.infDoc",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "attrs": [],
+   "doc": "Informações dos Documentos fiscais vinculados ao manifesto",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "cMunDescarga",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{7}"
+         ]
+        ]
+       },
+       "name": "TCodMunIBGE",
+       "doc": "Tipo Código do Município da tabela do IBGE"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Código do Município de Descarregamento"
+     },
+     {
+      "k": "el",
+      "name": "xMunDescarga",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "minLength": 2,
+        "maxLength": 60
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Nome do Município de Descarregamento"
+     },
+     {
+      "k": "el",
+      "name": "chNFe",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "maxLength": 44,
+        "patterns": [
+         [
+          "[0-9]{6}[A-Z0-9]{12}[0-9]{26}"
+         ]
+        ]
+       },
+       "name": "TChNFe",
+       "doc": "Tipo Chave da Nota Fiscal Eletrônica"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Nota Fiscal Eletrônica"
+     }
+    ]
+   }
+  },
+  "evPagtoOperMDFe": {
+   "kind": "complex",
+   "id": "evPagtoOperMDFe",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "attrs": [],
+   "doc": "Schema XML de validação do evento de pagamento da operação de transporte 110116",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "descEvento",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "Pagamento Operação MDF-e",
+         "Pagamento Operacao MDF-e"
+        ]
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Descrição do Evento - “Pagamento Operação MDF-e”"
+     },
+     {
+      "k": "el",
+      "name": "nProt",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{15}"
+         ]
+        ]
+       },
+       "name": "TProt",
+       "doc": "Tipo Número do Protocolo de Status"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Número do Protocolo de Status do MDF-e. \n1 posição tipo de autorizador (9 - SEFAZ Nacional ); \n2 posições ano;\n10 seqüencial no ano."
+     },
+     {
+      "k": "el",
+      "name": "infViagens",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "ref": "evPagtoOperMDFe.infViagens"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Informações do total de viagens acobertadas pelo Evento “pagamento do frete”"
+     },
+     {
+      "k": "el",
+      "name": "infPag",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "ref": "evPagtoOperMDFe.infPag"
+      },
+      "min": 1,
+      "max": "unbounded",
+      "doc": "Informações do Pagamento do Frete"
+     }
+    ]
+   }
+  },
+  "evPagtoOperMDFe.infViagens": {
+   "kind": "complex",
+   "id": "evPagtoOperMDFe.infViagens",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "attrs": [],
+   "doc": "Informações do total de viagens acobertadas pelo Evento “pagamento do frete”",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "qtdViagens",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "patterns": [
+         [
+          "[0-9]{5}"
+         ]
+        ]
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Quantidade total de viagens realizadas com o pagamento do Frete"
+     },
+     {
+      "k": "el",
+      "name": "nroViagem",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "patterns": [
+         [
+          "[0-9]{5}"
+         ]
+        ]
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Número de referência da viagem do MDFe referenciado."
+     }
+    ]
+   }
+  },
+  "evPagtoOperMDFe.infPag": {
+   "kind": "complex",
+   "id": "evPagtoOperMDFe.infPag",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "attrs": [],
+   "doc": "Informações do Pagamento do Frete",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "xNome",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "maxLength": 60,
+        "minLength": 2
+       }
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Razão social ou Nome do responsavel pelo pagamento"
+     },
+     {
+      "k": "choice",
+      "min": 1,
+      "max": 1,
+      "items": [
+       {
+        "k": "el",
+        "name": "CPF",
+        "ns": "http://www.portalfiscal.inf.br/mdfe",
+        "type": {
+         "kind": "simple",
+         "builtin": "string",
+         "chain": [],
+         "facets": {
+          "whiteSpace": "preserve",
+          "patterns": [
+           [
+            "[0-9]{11}"
+           ]
+          ]
+         },
+         "name": "TCpf",
+         "doc": "Tipo Número do CPF"
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "Número do CPF do responsável pelo pgto\nInformar os zeros não significativos."
+       },
+       {
+        "k": "el",
+        "name": "CNPJ",
+        "ns": "http://www.portalfiscal.inf.br/mdfe",
+        "type": {
+         "kind": "simple",
+         "builtin": "string",
+         "chain": [],
+         "facets": {
+          "whiteSpace": "preserve",
+          "patterns": [
+           [
+            "[0-9]{0}|[A-Z0-9]{12}[0-9]{2}"
+           ]
+          ]
+         },
+         "name": "TCnpjOpc",
+         "doc": "Tipo Número do CNPJ Opcional"
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "Número do CNPJ do responsável pelo pgto\nInformar os zeros não significativos."
+       },
+       {
+        "k": "el",
+        "name": "idEstrangeiro",
+        "ns": "http://www.portalfiscal.inf.br/mdfe",
+        "type": {
+         "kind": "simple",
+         "builtin": "string",
+         "chain": [],
+         "facets": {
+          "whiteSpace": "preserve",
+          "minLength": 2,
+          "maxLength": 20,
+          "patterns": [
+           [
+            "([!-ÿ]{0}|[!-ÿ]{5,20})?"
+           ]
+          ]
+         }
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "Identificador do responsável pelo pgto em caso de ser estrangeiro"
+       }
+      ]
+     },
+     {
+      "k": "el",
+      "name": "Comp",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "ref": "evPagtoOperMDFe.infPag.Comp"
+      },
+      "min": 1,
+      "max": "unbounded",
+      "doc": "Componentes do Pagamentoi do Frete"
+     },
+     {
+      "k": "el",
+      "name": "vContrato",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "0|0\\.[0-9]{2}|[1-9]{1}[0-9]{0,12}(\\.[0-9]{2})?"
+         ]
+        ]
+       },
+       "name": "TDec_1302",
+       "doc": "Tipo Decimal com 15 dígitos, sendo 13 de corpo e 2 decimais"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Valor Total do Contrato"
+     },
+     {
+      "k": "el",
+      "name": "indPag",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "0",
+         "1"
+        ]
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Indicador da Forma de Pagamento:0-Pagamento à Vista;1-Pagamento à Prazo;"
+     },
+     {
+      "k": "el",
+      "name": "vAdiant",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "0|0\\.[0-9]{2}|[1-9]{1}[0-9]{0,12}(\\.[0-9]{2})?"
+         ]
+        ]
+       },
+       "name": "TDec_1302",
+       "doc": "Tipo Decimal com 15 dígitos, sendo 13 de corpo e 2 decimais"
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Valor do Adiantamento (usar apenas em pagamento à Prazo"
+     },
+     {
+      "k": "el",
+      "name": "indAntecipaAdiant",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "enumeration": [
+         "1"
+        ]
+       }
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Indicador para declarar concordância em antecipar o adiantamento\nOperação de transporte com utilização de veículos de frotas dedicadas ou fidelizadas.\nPreencher com “1” para indicar operação de transporte de alto desempenho, demais casos não informar a tag"
+     },
+     {
+      "k": "el",
+      "name": "infPrazo",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "ref": "evPagtoOperMDFe.infPag.infPrazo"
+      },
+      "min": 0,
+      "max": "unbounded",
+      "doc": "Informações do pagamento a prazo. \nInformar somente se indPag for à Prazo"
+     },
+     {
+      "k": "el",
+      "name": "tpAntecip",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "enumeration": [
+         "0",
+         "1",
+         "2"
+        ]
+       }
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Tipo de Permissão em relação a antecipação das parcelas\n0 - Não permite antecipar\n1 - Permite antecipar as parcelas\n2 - Permite antecipar as parcelas mediante confirmação"
+     },
+     {
+      "k": "el",
+      "name": "infBanc",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "ref": "evPagtoOperMDFe.infPag.infBanc"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Informações bancárias"
+     }
+    ]
+   }
+  },
+  "evPagtoOperMDFe.infPag.Comp": {
+   "kind": "complex",
+   "id": "evPagtoOperMDFe.infPag.Comp",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "attrs": [],
+   "doc": "Componentes do Pagamentoi do Frete",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "tpComp",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "01",
+         "02",
+         "03",
+         "04",
+         "99"
+        ]
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Tipo do Componente\n\n01 - Vale Pedágio; \n02 - Impostos, taxas e contribuições; \n03 - Despesas (bancárias, meios de pagamento, outras)\n04 - Frete\n99 - Outros"
+     },
+     {
+      "k": "el",
+      "name": "vComp",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "0|0\\.[0-9]{2}|[1-9]{1}[0-9]{0,12}(\\.[0-9]{2})?"
+         ]
+        ]
+       },
+       "name": "TDec_1302",
+       "doc": "Tipo Decimal com 15 dígitos, sendo 13 de corpo e 2 decimais"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Valor do componente"
+     },
+     {
+      "k": "el",
+      "name": "xComp",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "maxLength": 60,
+        "minLength": 2
+       }
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Descrição do componente do tipo Outros"
+     }
+    ]
+   }
+  },
+  "evPagtoOperMDFe.infPag.infPrazo": {
+   "kind": "complex",
+   "id": "evPagtoOperMDFe.infPag.infPrazo",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "attrs": [],
+   "doc": "Informações do pagamento a prazo. \nInformar somente se indPag for à Prazo",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "nParcela",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{3}"
+         ]
+        ]
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Número da Parcela"
+     },
+     {
+      "k": "el",
+      "name": "dVenc",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "(((20(([02468][048])|([13579][26]))-02-29))|(20[0-9][0-9])-((((0[1-9])|(1[0-2]))-((0[1-9])|(1\\d)|(2[0-8])))|((((0[13578])|(1[02]))-31)|(((0[1,3-9])|(1[0-2]))-(29|30)))))"
+         ]
+        ]
+       },
+       "name": "TData",
+       "doc": "Tipo data AAAA-MM-DD"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Data de vencimento da Parcela (AAAA-MM-DD)"
+     },
+     {
+      "k": "el",
+      "name": "vParcela",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "0\\.[0-9]{1}[1-9]{1}|0\\.[1-9]{1}[0-9]{1}|[1-9]{1}[0-9]{0,12}(\\.[0-9]{2})?"
+         ]
+        ]
+       },
+       "name": "TDec_1302Opc",
+       "doc": "Tipo Decimal com 15 dígitos, sendo 13 de corpo e 2 decimais, utilizado em tags opcionais"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Valor da Parcela"
+     }
+    ]
+   }
+  },
+  "evPagtoOperMDFe.infPag.infBanc": {
+   "kind": "complex",
+   "id": "evPagtoOperMDFe.infPag.infBanc",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "attrs": [],
+   "doc": "Informações bancárias",
+   "content": {
+    "k": "choice",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "seq",
+      "min": 1,
+      "max": 1,
+      "items": [
+       {
+        "k": "el",
+        "name": "codBanco",
+        "ns": "http://www.portalfiscal.inf.br/mdfe",
+        "type": {
+         "kind": "simple",
+         "builtin": "string",
+         "chain": [
+          "TString"
+         ],
+         "facets": {
+          "whiteSpace": "preserve",
+          "patterns": [
+           [
+            "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+           ]
+          ],
+          "minLength": 3,
+          "maxLength": 5
+         }
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "Número do banco"
+       },
+       {
+        "k": "el",
+        "name": "codAgencia",
+        "ns": "http://www.portalfiscal.inf.br/mdfe",
+        "type": {
+         "kind": "simple",
+         "builtin": "string",
+         "chain": [
+          "TString"
+         ],
+         "facets": {
+          "whiteSpace": "preserve",
+          "patterns": [
+           [
+            "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+           ]
+          ],
+          "minLength": 1,
+          "maxLength": 10
+         }
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "Número da agência bancária"
+       }
+      ]
+     },
+     {
+      "k": "el",
+      "name": "CNPJIPEF",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{0}|[A-Z0-9]{12}[0-9]{2}"
+         ]
+        ]
+       },
+       "name": "TCnpjOpc",
+       "doc": "Tipo Número do CNPJ Opcional"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Número do CNPJ da Instituição de Pagamento Eletrônico do Frete\nInformar os zeros não significativos."
+     },
+     {
+      "k": "el",
+      "name": "PIX",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "maxLength": 60,
+        "minLength": 2
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Chave PIX \nInformar a chave PIX para recebimento do frete. \nPode ser email, CPF/ CNPJ (somente numeros), Telefone com a seguinte formatação (+5599999999999) ou a chave aleatória gerada pela instituição."
+     }
+    ]
+   }
+  },
+  "evConfirmaServMDFe": {
+   "kind": "complex",
+   "id": "evConfirmaServMDFe",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "attrs": [],
+   "doc": "Schema XML de validação do evento de confirmação do serviço de transporte 110117",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "descEvento",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "Confirmação Serviço Transporte",
+         "Confirmacao Servico Transporte"
+        ]
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Descrição do Evento - “Confirmação Serviço Transporte”"
+     },
+     {
+      "k": "el",
+      "name": "nProt",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{15}"
+         ]
+        ]
+       },
+       "name": "TProt",
+       "doc": "Tipo Número do Protocolo de Status"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Número do Protocolo de Status do MDF-e. \n1 posição tipo de autorizador (9 - SEFAZ Nacional ); \n2 posições ano;\n10 seqüencial no ano."
+     }
+    ]
+   }
+  },
+  "evAlteracaoPagtoServMDFe": {
+   "kind": "complex",
+   "id": "evAlteracaoPagtoServMDFe",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "attrs": [],
+   "doc": "Schema XML de validação do evento de alteração do pagamento do serviçp de transporte 110118",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "descEvento",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "Alteração Pagamento Serviço MDFe",
+         "Alteracao Pagamento Servico MDFe"
+        ]
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Descrição do Evento - “Alteração Pagamento Serviço MDFe”"
+     },
+     {
+      "k": "el",
+      "name": "nProt",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{15}"
+         ]
+        ]
+       },
+       "name": "TProt",
+       "doc": "Tipo Número do Protocolo de Status"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Número do Protocolo de Status do MDF-e."
+     },
+     {
+      "k": "el",
+      "name": "infPag",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "ref": "evAlteracaoPagtoServMDFe.infPag"
+      },
+      "min": 1,
+      "max": "unbounded",
+      "doc": "Informações do Pagamento do Frete"
+     }
+    ]
+   }
+  },
+  "evAlteracaoPagtoServMDFe.infPag": {
+   "kind": "complex",
+   "id": "evAlteracaoPagtoServMDFe.infPag",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "attrs": [],
+   "doc": "Informações do Pagamento do Frete",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "xNome",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "maxLength": 60,
+        "minLength": 2
+       }
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Razão social ou Nome do responsavel pelo pagamento"
+     },
+     {
+      "k": "choice",
+      "min": 1,
+      "max": 1,
+      "items": [
+       {
+        "k": "el",
+        "name": "CPF",
+        "ns": "http://www.portalfiscal.inf.br/mdfe",
+        "type": {
+         "kind": "simple",
+         "builtin": "string",
+         "chain": [],
+         "facets": {
+          "whiteSpace": "preserve",
+          "patterns": [
+           [
+            "[0-9]{11}"
+           ]
+          ]
+         },
+         "name": "TCpf",
+         "doc": "Tipo Número do CPF"
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "Número do CPF do responsável pelo pgto\nInformar os zeros não significativos."
+       },
+       {
+        "k": "el",
+        "name": "CNPJ",
+        "ns": "http://www.portalfiscal.inf.br/mdfe",
+        "type": {
+         "kind": "simple",
+         "builtin": "string",
+         "chain": [],
+         "facets": {
+          "whiteSpace": "preserve",
+          "patterns": [
+           [
+            "[0-9]{0}|[A-Z0-9]{12}[0-9]{2}"
+           ]
+          ]
+         },
+         "name": "TCnpjOpc",
+         "doc": "Tipo Número do CNPJ Opcional"
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "Número do CNPJ do responsável pelo pgto\nInformar os zeros não significativos."
+       },
+       {
+        "k": "el",
+        "name": "idEstrangeiro",
+        "ns": "http://www.portalfiscal.inf.br/mdfe",
+        "type": {
+         "kind": "simple",
+         "builtin": "string",
+         "chain": [],
+         "facets": {
+          "whiteSpace": "preserve",
+          "minLength": 2,
+          "maxLength": 20,
+          "patterns": [
+           [
+            "([!-ÿ]{0}|[!-ÿ]{5,20})?"
+           ]
+          ]
+         }
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "Identificador do responsável pelo pgto em caso de ser estrangeiro"
+       }
+      ]
+     },
+     {
+      "k": "el",
+      "name": "Comp",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "ref": "evAlteracaoPagtoServMDFe.infPag.Comp"
+      },
+      "min": 1,
+      "max": "unbounded",
+      "doc": "Componentes do Pagamentoi do Frete"
+     },
+     {
+      "k": "el",
+      "name": "vContrato",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "0|0\\.[0-9]{2}|[1-9]{1}[0-9]{0,12}(\\.[0-9]{2})?"
+         ]
+        ]
+       },
+       "name": "TDec_1302",
+       "doc": "Tipo Decimal com 15 dígitos, sendo 13 de corpo e 2 decimais"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Valor Total do Contrato"
+     },
+     {
+      "k": "el",
+      "name": "indPag",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "0",
+         "1"
+        ]
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Indicador da Forma de Pagamento:0-Pagamento à Vista;1-Pagamento à Prazo;"
+     },
+     {
+      "k": "el",
+      "name": "vAdiant",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "0|0\\.[0-9]{2}|[1-9]{1}[0-9]{0,12}(\\.[0-9]{2})?"
+         ]
+        ]
+       },
+       "name": "TDec_1302",
+       "doc": "Tipo Decimal com 15 dígitos, sendo 13 de corpo e 2 decimais"
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Valor do Adiantamento (usar apenas em pagamento à Prazo"
+     },
+     {
+      "k": "el",
+      "name": "indAntecipaAdiant",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "enumeration": [
+         "1"
+        ]
+       }
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Indicador para declarar concordância em antecipar o adiantamento\nOperação de transporte com utilização de veículos de frotas dedicadas ou fidelizadas.\nPreencher com “1” para indicar operação de transporte de alto desempenho, demais casos não informar a tag"
+     },
+     {
+      "k": "el",
+      "name": "infPrazo",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "ref": "evAlteracaoPagtoServMDFe.infPag.infPrazo"
+      },
+      "min": 0,
+      "max": "unbounded",
+      "doc": "Informações do pagamento a prazo. \nInformar somente se indPag for à Prazo"
+     },
+     {
+      "k": "el",
+      "name": "tpAntecip",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "enumeration": [
+         "0",
+         "1",
+         "2"
+        ]
+       }
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Tipo de Permissão em relação a antecipação das parcelas\n0 - Não permite antecipar\n1 - Permite antecipar as parcelas\n2 - Permite antecipar as parcelas mediante confirmação"
+     },
+     {
+      "k": "el",
+      "name": "infBanc",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "ref": "evAlteracaoPagtoServMDFe.infPag.infBanc"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Informações bancárias"
+     }
+    ]
+   }
+  },
+  "evAlteracaoPagtoServMDFe.infPag.Comp": {
+   "kind": "complex",
+   "id": "evAlteracaoPagtoServMDFe.infPag.Comp",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "attrs": [],
+   "doc": "Componentes do Pagamentoi do Frete",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "tpComp",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "01",
+         "02",
+         "03",
+         "04",
+         "99"
+        ]
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Tipo do Componente\n\n01 - Vale Pedágio; \n02 - Impostos, taxas e contribuições; \n03 - Despesas (bancárias, meios de pagamento, outras)\n04 - Frete\n99 - Outros"
+     },
+     {
+      "k": "el",
+      "name": "vComp",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "0|0\\.[0-9]{2}|[1-9]{1}[0-9]{0,12}(\\.[0-9]{2})?"
+         ]
+        ]
+       },
+       "name": "TDec_1302",
+       "doc": "Tipo Decimal com 15 dígitos, sendo 13 de corpo e 2 decimais"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Valor do componente"
+     },
+     {
+      "k": "el",
+      "name": "xComp",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "maxLength": 60,
+        "minLength": 2
+       }
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Descrição do componente do tipo Outros"
+     }
+    ]
+   }
+  },
+  "evAlteracaoPagtoServMDFe.infPag.infPrazo": {
+   "kind": "complex",
+   "id": "evAlteracaoPagtoServMDFe.infPag.infPrazo",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "attrs": [],
+   "doc": "Informações do pagamento a prazo. \nInformar somente se indPag for à Prazo",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "nParcela",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{3}"
+         ]
+        ]
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Número da Parcela"
+     },
+     {
+      "k": "el",
+      "name": "dVenc",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "(((20(([02468][048])|([13579][26]))-02-29))|(20[0-9][0-9])-((((0[1-9])|(1[0-2]))-((0[1-9])|(1\\d)|(2[0-8])))|((((0[13578])|(1[02]))-31)|(((0[1,3-9])|(1[0-2]))-(29|30)))))"
+         ]
+        ]
+       },
+       "name": "TData",
+       "doc": "Tipo data AAAA-MM-DD"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Data de vencimento da Parcela (AAAA-MM-DD)"
+     },
+     {
+      "k": "el",
+      "name": "vParcela",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "0\\.[0-9]{1}[1-9]{1}|0\\.[1-9]{1}[0-9]{1}|[1-9]{1}[0-9]{0,12}(\\.[0-9]{2})?"
+         ]
+        ]
+       },
+       "name": "TDec_1302Opc",
+       "doc": "Tipo Decimal com 15 dígitos, sendo 13 de corpo e 2 decimais, utilizado em tags opcionais"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Valor da Parcela"
+     }
+    ]
+   }
+  },
+  "evAlteracaoPagtoServMDFe.infPag.infBanc": {
+   "kind": "complex",
+   "id": "evAlteracaoPagtoServMDFe.infPag.infBanc",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "attrs": [],
+   "doc": "Informações bancárias",
+   "content": {
+    "k": "choice",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "seq",
+      "min": 1,
+      "max": 1,
+      "items": [
+       {
+        "k": "el",
+        "name": "codBanco",
+        "ns": "http://www.portalfiscal.inf.br/mdfe",
+        "type": {
+         "kind": "simple",
+         "builtin": "string",
+         "chain": [
+          "TString"
+         ],
+         "facets": {
+          "whiteSpace": "preserve",
+          "patterns": [
+           [
+            "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+           ]
+          ],
+          "minLength": 3,
+          "maxLength": 5
+         }
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "Número do banco"
+       },
+       {
+        "k": "el",
+        "name": "codAgencia",
+        "ns": "http://www.portalfiscal.inf.br/mdfe",
+        "type": {
+         "kind": "simple",
+         "builtin": "string",
+         "chain": [
+          "TString"
+         ],
+         "facets": {
+          "whiteSpace": "preserve",
+          "patterns": [
+           [
+            "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+           ]
+          ],
+          "minLength": 1,
+          "maxLength": 10
+         }
+        },
+        "min": 1,
+        "max": 1,
+        "doc": "Número da agência bancária"
+       }
+      ]
+     },
+     {
+      "k": "el",
+      "name": "CNPJIPEF",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{0}|[A-Z0-9]{12}[0-9]{2}"
+         ]
+        ]
+       },
+       "name": "TCnpjOpc",
+       "doc": "Tipo Número do CNPJ Opcional"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Número do CNPJ da Instituição de Pagamento Eletrônico do Frete\nInformar os zeros não significativos."
+     },
+     {
+      "k": "el",
+      "name": "PIX",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "maxLength": 60,
+        "minLength": 2
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Chave PIX \nInformar a chave PIX para recebimento do frete. \nPode ser email, CPF/ CNPJ (somente numeros), Telefone com a seguinte formatação (+5599999999999) ou a chave aleatória gerada pela instituição."
+     }
+    ]
+   }
+  },
+  "TEvento.infEvento.infSolicNFF": {
+   "kind": "complex",
+   "id": "TEvento.infEvento.infSolicNFF",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "attrs": [],
+   "doc": "Grupo de informações do pedido de registro de evento da Nota Fiscal Fácil",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "xSolic",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "minLength": 2,
+        "maxLength": 8000
+       }
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Solicitação do pedido de registro de evento da NFF.\nSerá preenchido com a totalidade de campos informados no aplicativo emissor serializado."
+     }
+    ]
+   }
+  },
+  "TEvento.infEvento.infPAA": {
+   "kind": "complex",
+   "id": "TEvento.infEvento.infPAA",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "attrs": [],
+   "doc": "Grupo de Informação do Provedor de Assinatura e Autorização",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "CNPJPAA",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[A-Z0-9]{12}[0-9]{2}"
+         ]
+        ]
+       },
+       "name": "TCnpj",
+       "doc": "Tipo Número do CNPJ"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "CNPJ do Provedor de Assinatura e Autorização"
+     },
+     {
+      "k": "el",
+      "name": "PAASignature",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "ref": "TEvento.infEvento.infPAA.PAASignature"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Assinatura RSA do Emitente para DFe gerados por PAA"
+     }
+    ]
+   }
+  },
+  "TEvento.infEvento.infPAA.PAASignature": {
+   "kind": "complex",
+   "id": "TEvento.infEvento.infPAA.PAASignature",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "attrs": [],
+   "doc": "Assinatura RSA do Emitente para DFe gerados por PAA",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "SignatureValue",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "base64Binary",
+       "chain": [],
+       "facets": {}
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Assinatura digital padrão RSA\nConverter o atributo Id do DFe para array de bytes e assinar com a chave privada do RSA com algoritmo SHA1 gerando um valor no formato base64."
+     },
+     {
+      "k": "el",
+      "name": "RSAKeyValue",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "ref": "TRSAKeyValueType"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Chave Publica no padrão XML RSA Key"
+     }
+    ]
+   }
+  },
+  "TRSAKeyValueType": {
+   "kind": "complex",
+   "id": "TRSAKeyValueType",
+   "anonymous": false,
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "attrs": [],
+   "doc": "Tipo que representa uma chave publica padrão RSA",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "Modulus",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "base64Binary",
+       "chain": [],
+       "facets": {}
+      },
+      "min": 1,
+      "max": 1
+     },
+     {
+      "k": "el",
+      "name": "Exponent",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "base64Binary",
+       "chain": [],
+       "facets": {}
+      },
+      "min": 1,
+      "max": 1
+     }
+    ]
+   }
+  },
+  "SignatureType": {
+   "kind": "complex",
+   "id": "SignatureType",
+   "anonymous": false,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [
+    {
+     "name": "Id",
+     "type": {
+      "kind": "simple",
+      "builtin": "ID",
+      "chain": [],
+      "facets": {}
+     },
+     "required": false
+    }
+   ],
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "SignedInfo",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "SignedInfoType"
+      },
+      "min": 1,
+      "max": 1
+     },
+     {
+      "k": "el",
+      "name": "SignatureValue",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "SignatureValueType"
+      },
+      "min": 1,
+      "max": 1
+     },
+     {
+      "k": "el",
+      "name": "KeyInfo",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "KeyInfoType"
+      },
+      "min": 1,
+      "max": 1
+     }
+    ]
+   }
+  },
+  "SignedInfoType": {
+   "kind": "complex",
+   "id": "SignedInfoType",
+   "anonymous": false,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [
+    {
+     "name": "Id",
+     "type": {
+      "kind": "simple",
+      "builtin": "ID",
+      "chain": [],
+      "facets": {}
+     },
+     "required": false
+    }
+   ],
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "CanonicalizationMethod",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "SignedInfoType.CanonicalizationMethod"
+      },
+      "min": 1,
+      "max": 1
+     },
+     {
+      "k": "el",
+      "name": "SignatureMethod",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "SignedInfoType.SignatureMethod"
+      },
+      "min": 1,
+      "max": 1
+     },
+     {
+      "k": "el",
+      "name": "Reference",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "ReferenceType"
+      },
+      "min": 1,
+      "max": 1
+     }
+    ]
+   }
+  },
+  "SignedInfoType.CanonicalizationMethod": {
+   "kind": "complex",
+   "id": "SignedInfoType.CanonicalizationMethod",
+   "anonymous": true,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [
+    {
+     "name": "Algorithm",
+     "type": {
+      "kind": "simple",
+      "builtin": "anyURI",
+      "chain": [],
+      "facets": {}
+     },
+     "required": true,
+     "fixed": "http://www.w3.org/TR/2001/REC-xml-c14n-20010315"
+    }
+   ]
+  },
+  "SignedInfoType.SignatureMethod": {
+   "kind": "complex",
+   "id": "SignedInfoType.SignatureMethod",
+   "anonymous": true,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [
+    {
+     "name": "Algorithm",
+     "type": {
+      "kind": "simple",
+      "builtin": "anyURI",
+      "chain": [],
+      "facets": {}
+     },
+     "required": true,
+     "fixed": "http://www.w3.org/2000/09/xmldsig#rsa-sha1"
+    }
+   ]
+  },
+  "ReferenceType": {
+   "kind": "complex",
+   "id": "ReferenceType",
+   "anonymous": false,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [
+    {
+     "name": "Id",
+     "type": {
+      "kind": "simple",
+      "builtin": "ID",
+      "chain": [],
+      "facets": {}
+     },
+     "required": false
+    },
+    {
+     "name": "URI",
+     "type": {
+      "kind": "simple",
+      "builtin": "anyURI",
+      "chain": [],
+      "facets": {
+       "minLength": 2
+      }
+     },
+     "required": true
+    },
+    {
+     "name": "Type",
+     "type": {
+      "kind": "simple",
+      "builtin": "anyURI",
+      "chain": [],
+      "facets": {}
+     },
+     "required": false
+    }
+   ],
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "Transforms",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "TransformsType"
+      },
+      "min": 1,
+      "max": 1,
+      "unique": [
+       "Algorithm"
+      ]
+     },
+     {
+      "k": "el",
+      "name": "DigestMethod",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "ReferenceType.DigestMethod"
+      },
+      "min": 1,
+      "max": 1
+     },
+     {
+      "k": "el",
+      "name": "DigestValue",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "kind": "simple",
+       "builtin": "base64Binary",
+       "chain": [],
+       "facets": {},
+       "name": "DigestValueType"
+      },
+      "min": 1,
+      "max": 1
+     }
+    ]
+   }
+  },
+  "TransformsType": {
+   "kind": "complex",
+   "id": "TransformsType",
+   "anonymous": false,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [],
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "Transform",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "TransformType"
+      },
+      "min": 2,
+      "max": 2
+     }
+    ]
+   }
+  },
+  "TransformType": {
+   "kind": "complex",
+   "id": "TransformType",
+   "anonymous": false,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [
+    {
+     "name": "Algorithm",
+     "type": {
+      "kind": "simple",
+      "builtin": "anyURI",
+      "chain": [],
+      "facets": {
+       "enumeration": [
+        "http://www.w3.org/2000/09/xmldsig#enveloped-signature",
+        "http://www.w3.org/TR/2001/REC-xml-c14n-20010315"
+       ]
+      },
+      "name": "TTransformURI"
+     },
+     "required": true
+    }
+   ],
+   "content": {
+    "k": "seq",
+    "min": 0,
+    "max": "unbounded",
+    "items": [
+     {
+      "k": "el",
+      "name": "XPath",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {}
+      },
+      "min": 1,
+      "max": 1
+     }
+    ]
+   }
+  },
+  "ReferenceType.DigestMethod": {
+   "kind": "complex",
+   "id": "ReferenceType.DigestMethod",
+   "anonymous": true,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [
+    {
+     "name": "Algorithm",
+     "type": {
+      "kind": "simple",
+      "builtin": "anyURI",
+      "chain": [],
+      "facets": {}
+     },
+     "required": true,
+     "fixed": "http://www.w3.org/2000/09/xmldsig#sha1"
+    }
+   ]
+  },
+  "SignatureValueType": {
+   "kind": "complex",
+   "id": "SignatureValueType",
+   "anonymous": false,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [
+    {
+     "name": "Id",
+     "type": {
+      "kind": "simple",
+      "builtin": "ID",
+      "chain": [],
+      "facets": {}
+     },
+     "required": false
+    }
+   ],
+   "text": {
+    "kind": "simple",
+    "builtin": "base64Binary",
+    "chain": [],
+    "facets": {}
+   }
+  },
+  "KeyInfoType": {
+   "kind": "complex",
+   "id": "KeyInfoType",
+   "anonymous": false,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [
+    {
+     "name": "Id",
+     "type": {
+      "kind": "simple",
+      "builtin": "ID",
+      "chain": [],
+      "facets": {}
+     },
+     "required": false
+    }
+   ],
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "X509Data",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "X509DataType"
+      },
+      "min": 1,
+      "max": 1
+     }
+    ]
+   }
+  },
+  "X509DataType": {
+   "kind": "complex",
+   "id": "X509DataType",
+   "anonymous": false,
+   "ns": "http://www.w3.org/2000/09/xmldsig#",
+   "attrs": [],
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "X509Certificate",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "kind": "simple",
+       "builtin": "base64Binary",
+       "chain": [],
+       "facets": {}
+      },
+      "min": 1,
+      "max": 1
+     }
+    ]
+   }
+  },
+  "TRetEvento": {
+   "kind": "complex",
+   "id": "TRetEvento",
+   "anonymous": false,
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "attrs": [
+    {
+     "name": "versao",
+     "type": {
+      "kind": "simple",
+      "builtin": "string",
+      "chain": [],
+      "facets": {
+       "whiteSpace": "preserve",
+       "patterns": [
+        [
+         "3\\.00"
+        ]
+       ]
+      },
+      "name": "TVerEvento",
+      "doc": "Tipo Versão do Evento"
+     },
+     "required": true
+    }
+   ],
+   "doc": "Tipo retorno do Evento",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "infEvento",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "ref": "TRetEvento.infEvento"
+      },
+      "min": 1,
+      "max": 1
+     },
+     {
+      "k": "el",
+      "name": "Signature",
+      "ns": "http://www.w3.org/2000/09/xmldsig#",
+      "type": {
+       "ref": "SignatureType"
+      },
+      "min": 0,
+      "max": 1
+     }
+    ]
+   }
+  },
+  "TRetEvento.infEvento": {
+   "kind": "complex",
+   "id": "TRetEvento.infEvento",
+   "anonymous": true,
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "attrs": [
+    {
+     "name": "Id",
+     "type": {
+      "kind": "simple",
+      "builtin": "ID",
+      "chain": [],
+      "facets": {
+       "patterns": [
+        [
+         "ID[0-9]{15}"
+        ]
+       ]
+      }
+     },
+     "required": false
+    }
+   ],
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "tpAmb",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "1",
+         "2"
+        ]
+       },
+       "name": "TAmb",
+       "doc": "Tipo Ambiente"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Identificação do Ambiente:\n1 - Produção\n2 - Homologação"
+     },
+     {
+      "k": "el",
+      "name": "verAplic",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "minLength": 1,
+        "maxLength": 20
+       },
+       "name": "TVerAplic",
+       "doc": "Tipo Versão do Aplicativo"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Versão do Aplicativo que recebeu o Evento"
+     },
+     {
+      "k": "el",
+      "name": "cOrgao",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "enumeration": [
+         "11",
+         "12",
+         "13",
+         "14",
+         "15",
+         "16",
+         "17",
+         "21",
+         "22",
+         "23",
+         "24",
+         "25",
+         "26",
+         "27",
+         "28",
+         "29",
+         "31",
+         "32",
+         "33",
+         "35",
+         "41",
+         "42",
+         "43",
+         "50",
+         "51",
+         "52",
+         "53",
+         "90",
+         "91",
+         "92",
+         "93",
+         "94"
+        ]
+       },
+       "name": "TCOrgaoIBGE",
+       "doc": "Tipo Código de orgão (UF da tabela do IBGE + 90 SUFRAMA + 91 RFB + 92 BRId)"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Código do órgão de recepção do Evento. Utilizar a Tabela do IBGE extendida, utilizar 90 para identificar SUFRAMA, 91 RFB, 92 BackOffice BRId e 93 ONE"
+     },
+     {
+      "k": "el",
+      "name": "cStat",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{3,4}"
+         ]
+        ]
+       },
+       "name": "TStat",
+       "doc": "Tipo Código da Mensagem enviada"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Código do status da registro do Evento"
+     },
+     {
+      "k": "el",
+      "name": "xMotivo",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "minLength": 1,
+        "maxLength": 255
+       },
+       "name": "TMotivo",
+       "doc": "Tipo Motivo"
+      },
+      "min": 1,
+      "max": 1,
+      "doc": "Descrição literal do status do registro do Evento"
+     },
+     {
+      "k": "el",
+      "name": "chMDFe",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "maxLength": 44,
+        "patterns": [
+         [
+          "[0-9]{6}[A-Z0-9]{12}[0-9]{26}"
+         ]
+        ]
+       },
+       "name": "TChMDFe",
+       "doc": "Tipo Chave de Manifesto de Documentos Fiscais Eletrônico"
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Chave de Acesso MDF-e vinculado"
+     },
+     {
+      "k": "el",
+      "name": "tpEvento",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{6}"
+         ]
+        ]
+       }
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Tipo do Evento vinculado"
+     },
+     {
+      "k": "el",
+      "name": "xEvento",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [
+        "TString"
+       ],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+         ]
+        ],
+        "minLength": 5,
+        "maxLength": 60
+       }
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Descrição do Evento"
+     },
+     {
+      "k": "el",
+      "name": "nSeqEvento",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{1,3}"
+         ]
+        ]
+       }
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Seqüencial do evento"
+     },
+     {
+      "k": "el",
+      "name": "dhRegEvento",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "(((20(([02468][048])|([13579][26]))-02-29))|(20[0-9][0-9])-((((0[1-9])|(1[0-2]))-((0[1-9])|(1\\d)|(2[0-8])))|((((0[13578])|(1[02]))-31)|(((0[1,3-9])|(1[0-2]))-(29|30)))))T(20|21|22|23|[0-1]\\d):[0-5]\\d:[0-5]\\d([\\-,\\+](0[0-9]|10|11):00|([\\+](12):00))"
+         ]
+        ]
+       },
+       "name": "TDateTimeUTC",
+       "doc": "Data e Hora, formato UTC (AAAA-MM-DDThh:mm:ssTZD, onde TZD = +hh:mm ou -hh:mm)"
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Data e Hora de do recebimento do evento ou do registro do evento formato AAAA-MM-DDThh:mm:ss TZD"
+     },
+     {
+      "k": "el",
+      "name": "nProt",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "kind": "simple",
+       "builtin": "string",
+       "chain": [],
+       "facets": {
+        "whiteSpace": "preserve",
+        "patterns": [
+         [
+          "[0-9]{15}"
+         ]
+        ]
+       },
+       "name": "TProt",
+       "doc": "Tipo Número do Protocolo de Status"
+      },
+      "min": 0,
+      "max": 1,
+      "doc": "Número do protocolo de registro do evento"
+     }
+    ]
+   }
+  },
+  "TProcEvento": {
+   "kind": "complex",
+   "id": "TProcEvento",
+   "anonymous": false,
+   "ns": "http://www.portalfiscal.inf.br/mdfe",
+   "attrs": [
+    {
+     "name": "versao",
+     "type": {
+      "kind": "simple",
+      "builtin": "string",
+      "chain": [],
+      "facets": {
+       "whiteSpace": "preserve",
+       "patterns": [
+        [
+         "3\\.00"
+        ]
+       ]
+      },
+      "name": "TVerEvento",
+      "doc": "Tipo Versão do Evento"
+     },
+     "required": true
+    },
+    {
+     "name": "ipTransmissor",
+     "type": {
+      "kind": "simple",
+      "builtin": "string",
+      "chain": [],
+      "facets": {
+       "whiteSpace": "preserve",
+       "patterns": [
+        [
+         "(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])"
+        ]
+       ]
+      },
+      "name": "TIPv4",
+      "doc": "Tipo IP versão 4"
+     },
+     "required": false,
+     "doc": "IP do transmissor do documento fiscal para o ambiente autorizador"
+    },
+    {
+     "name": "nPortaCon",
+     "type": {
+      "kind": "simple",
+      "builtin": "string",
+      "chain": [],
+      "facets": {
+       "patterns": [
+        [
+         "[0-9]{1,5}"
+        ]
+       ]
+      }
+     },
+     "required": false,
+     "doc": "Porta de origem utilizada na conexão (De 0 a 65535)"
+    },
+    {
+     "name": "dhConexao",
+     "type": {
+      "kind": "simple",
+      "builtin": "string",
+      "chain": [],
+      "facets": {
+       "whiteSpace": "preserve",
+       "patterns": [
+        [
+         "(((20(([02468][048])|([13579][26]))-02-29))|(20[0-9][0-9])-((((0[1-9])|(1[0-2]))-((0[1-9])|(1\\d)|(2[0-8])))|((((0[13578])|(1[02]))-31)|(((0[1,3-9])|(1[0-2]))-(29|30)))))T(20|21|22|23|[0-1]\\d):[0-5]\\d:[0-5]\\d([\\-,\\+](0[0-9]|10|11):00|([\\+](12):00))"
+        ]
+       ]
+      },
+      "name": "TDateTimeUTC",
+      "doc": "Data e Hora, formato UTC (AAAA-MM-DDThh:mm:ssTZD, onde TZD = +hh:mm ou -hh:mm)"
+     },
+     "required": false,
+     "doc": "Data e Hora da Conexão de Origem"
+    }
+   ],
+   "doc": "Tipo procEvento",
+   "content": {
+    "k": "seq",
+    "min": 1,
+    "max": 1,
+    "items": [
+     {
+      "k": "el",
+      "name": "eventoMDFe",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "ref": "TEvento"
+      },
+      "min": 1,
+      "max": 1
+     },
+     {
+      "k": "el",
+      "name": "retEventoMDFe",
+      "ns": "http://www.portalfiscal.inf.br/mdfe",
+      "type": {
+       "ref": "TRetEvento"
+      },
+      "min": 1,
+      "max": 1
+     }
+    ]
+   }
+  }
+ },
+ "simple": {
+  "TCOrgaoIBGE": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "enumeration": [
+     "11",
+     "12",
+     "13",
+     "14",
+     "15",
+     "16",
+     "17",
+     "21",
+     "22",
+     "23",
+     "24",
+     "25",
+     "26",
+     "27",
+     "28",
+     "29",
+     "31",
+     "32",
+     "33",
+     "35",
+     "41",
+     "42",
+     "43",
+     "50",
+     "51",
+     "52",
+     "53",
+     "90",
+     "91",
+     "92",
+     "93",
+     "94"
+    ]
+   },
+   "name": "TCOrgaoIBGE",
+   "doc": "Tipo Código de orgão (UF da tabela do IBGE + 90 SUFRAMA + 91 RFB + 92 BRId)"
+  },
+  "TAmb": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "enumeration": [
+     "1",
+     "2"
+    ]
+   },
+   "name": "TAmb",
+   "doc": "Tipo Ambiente"
+  },
+  "TCnpj": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[A-Z0-9]{12}[0-9]{2}"
+     ]
+    ]
+   },
+   "name": "TCnpj",
+   "doc": "Tipo Número do CNPJ"
+  },
+  "TCpf": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[0-9]{11}"
+     ]
+    ]
+   },
+   "name": "TCpf",
+   "doc": "Tipo Número do CPF"
+  },
+  "TChMDFe": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "maxLength": 44,
+    "patterns": [
+     [
+      "[0-9]{6}[A-Z0-9]{12}[0-9]{26}"
+     ]
+    ]
+   },
+   "name": "TChMDFe",
+   "doc": "Tipo Chave de Manifesto de Documentos Fiscais Eletrônico"
+  },
+  "TDateTimeUTC": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "(((20(([02468][048])|([13579][26]))-02-29))|(20[0-9][0-9])-((((0[1-9])|(1[0-2]))-((0[1-9])|(1\\d)|(2[0-8])))|((((0[13578])|(1[02]))-31)|(((0[1,3-9])|(1[0-2]))-(29|30)))))T(20|21|22|23|[0-1]\\d):[0-5]\\d:[0-5]\\d([\\-,\\+](0[0-9]|10|11):00|([\\+](12):00))"
+     ]
+    ]
+   },
+   "name": "TDateTimeUTC",
+   "doc": "Data e Hora, formato UTC (AAAA-MM-DDThh:mm:ssTZD, onde TZD = +hh:mm ou -hh:mm)"
+  },
+  "TProt": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[0-9]{15}"
+     ]
+    ]
+   },
+   "name": "TProt",
+   "doc": "Tipo Número do Protocolo de Status"
+  },
+  "TString": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+     ]
+    ]
+   },
+   "name": "TString",
+   "doc": "Tipo string genérico"
+  },
+  "TJust": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [
+    "TString"
+   ],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+     ]
+    ],
+    "minLength": 15,
+    "maxLength": 255
+   },
+   "name": "TJust",
+   "doc": "Tipo Justificativa"
+  },
+  "TData": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "(((20(([02468][048])|([13579][26]))-02-29))|(20[0-9][0-9])-((((0[1-9])|(1[0-2]))-((0[1-9])|(1\\d)|(2[0-8])))|((((0[13578])|(1[02]))-31)|(((0[1,3-9])|(1[0-2]))-(29|30)))))"
+     ]
+    ]
+   },
+   "name": "TData",
+   "doc": "Tipo data AAAA-MM-DD"
+  },
+  "TCodUfIBGE_EX": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "enumeration": [
+     "11",
+     "12",
+     "13",
+     "14",
+     "15",
+     "16",
+     "17",
+     "21",
+     "22",
+     "23",
+     "24",
+     "25",
+     "26",
+     "27",
+     "28",
+     "29",
+     "31",
+     "32",
+     "33",
+     "35",
+     "41",
+     "42",
+     "43",
+     "50",
+     "51",
+     "52",
+     "53",
+     "99"
+    ]
+   },
+   "name": "TCodUfIBGE_EX",
+   "doc": "Tipo Código da UF da tabela do IBGE + 99 para Exterior"
+  },
+  "TCodMunIBGE": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[0-9]{7}"
+     ]
+    ]
+   },
+   "name": "TCodMunIBGE",
+   "doc": "Tipo Código do Município da tabela do IBGE"
+  },
+  "TChNFe": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "maxLength": 44,
+    "patterns": [
+     [
+      "[0-9]{6}[A-Z0-9]{12}[0-9]{26}"
+     ]
+    ]
+   },
+   "name": "TChNFe",
+   "doc": "Tipo Chave da Nota Fiscal Eletrônica"
+  },
+  "TCnpjOpc": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[0-9]{0}|[A-Z0-9]{12}[0-9]{2}"
+     ]
+    ]
+   },
+   "name": "TCnpjOpc",
+   "doc": "Tipo Número do CNPJ Opcional"
+  },
+  "TDec_1302": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "0|0\\.[0-9]{2}|[1-9]{1}[0-9]{0,12}(\\.[0-9]{2})?"
+     ]
+    ]
+   },
+   "name": "TDec_1302",
+   "doc": "Tipo Decimal com 15 dígitos, sendo 13 de corpo e 2 decimais"
+  },
+  "TDec_1302Opc": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "0\\.[0-9]{1}[1-9]{1}|0\\.[1-9]{1}[0-9]{1}|[1-9]{1}[0-9]{0,12}(\\.[0-9]{2})?"
+     ]
+    ]
+   },
+   "name": "TDec_1302Opc",
+   "doc": "Tipo Decimal com 15 dígitos, sendo 13 de corpo e 2 decimais, utilizado em tags opcionais"
+  },
+  "TVerEvento": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "3\\.00"
+     ]
+    ]
+   },
+   "name": "TVerEvento",
+   "doc": "Tipo Versão do Evento"
+  },
+  "TTransformURI": {
+   "kind": "simple",
+   "builtin": "anyURI",
+   "chain": [],
+   "facets": {
+    "enumeration": [
+     "http://www.w3.org/2000/09/xmldsig#enveloped-signature",
+     "http://www.w3.org/TR/2001/REC-xml-c14n-20010315"
+    ]
+   },
+   "name": "TTransformURI"
+  },
+  "DigestValueType": {
+   "kind": "simple",
+   "builtin": "base64Binary",
+   "chain": [],
+   "facets": {},
+   "name": "DigestValueType"
+  },
+  "TVerAplic": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [
+    "TString"
+   ],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+     ]
+    ],
+    "minLength": 1,
+    "maxLength": 20
+   },
+   "name": "TVerAplic",
+   "doc": "Tipo Versão do Aplicativo"
+  },
+  "TStat": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[0-9]{3,4}"
+     ]
+    ]
+   },
+   "name": "TStat",
+   "doc": "Tipo Código da Mensagem enviada"
+  },
+  "TMotivo": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [
+    "TString"
+   ],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}"
+     ]
+    ],
+    "minLength": 1,
+    "maxLength": 255
+   },
+   "name": "TMotivo",
+   "doc": "Tipo Motivo"
+  },
+  "TIPv4": {
+   "kind": "simple",
+   "builtin": "string",
+   "chain": [],
+   "facets": {
+    "whiteSpace": "preserve",
+    "patterns": [
+     [
+      "(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])"
+     ]
+    ]
+   },
+   "name": "TIPv4",
+   "doc": "Tipo IP versão 4"
+  }
+ },
+ "unsupported": []
+}

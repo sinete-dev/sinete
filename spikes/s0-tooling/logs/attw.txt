@@ -1,0 +1,104 @@
+=== attw a-bun/core (default)
+node16 (from CJS): ⚠️ ESM (dynamic import only)
+node16 (from ESM): 🟢 (ESM)
+bundler: 🟢 
+
+***********************************
+
+"@sinete/core/package.json"
+
+node10: 🟢 (JSON)
+node16 (from CJS): 🟢 (JSON)
+node16 (from ESM): 🟢 (JSON)
+bundler: 🟢 (JSON)
+
+***********************************
+=== attw a-bun/core --profile esm-only
+***********************************
+
+"@sinete/core/package.json"
+
+node16 (from ESM): 🟢 (JSON)
+bundler: 🟢 (JSON)
+node10: (ignored) 🟢 (JSON)
+node16 (from CJS): (ignored) 🟢 (JSON)
+
+***********************************
+=== attw a-bun/xml (default)
+⚠️ A require call resolved to an ESM JavaScript file, which is an error in Node and some bundlers. CommonJS consumers will need to use a dynamic import. https://github.com/arethetypeswrong/arethetypeswrong.github.io/blob/main/docs/problems/CJSResolvesToESM.md
+
+
+[90m┌───────────────────[39m[90m┬──────────────────────────────[39m[90m┬────────────────────────────┐[39m
+[90m│[39m[31m                   [39m[90m│[39m[31m "@sinete/xml"                [39m[90m│[39m[31m "@sinete/xml/package.json" [39m[90m│[39m
+[90m├───────────────────[39m[90m┼──────────────────────────────[39m[90m┼────────────────────────────┤[39m
+[90m│[39m node10            [90m│[39m 💀 Resolution failed         [90m│[39m 🟢 (JSON)                  [90m│[39m
+[90m├───────────────────[39m[90m┼──────────────────────────────[39m[90m┼────────────────────────────┤[39m
+[90m│[39m node16 (from CJS) [90m│[39m ⚠️ ESM (dynamic import only) [90m│[39m 🟢 (JSON)                  [90m│[39m
+[90m├───────────────────[39m[90m┼──────────────────────────────[39m[90m┼────────────────────────────┤[39m
+[90m│[39m node16 (from ESM) [90m│[39m 🟢 (ESM)                     [90m│[39m 🟢 (JSON)                  [90m│[39m
+[90m├───────────────────[39m[90m┼──────────────────────────────[39m[90m┼────────────────────────────┤[39m
+[90m│[39m bundler           [90m│[39m 🟢                           [90m│[39m 🟢 (JSON)                  [90m│[39m
+[90m└───────────────────[39m[90m┴──────────────────────────────[39m[90m┴────────────────────────────┘[39m
+=== attw a-bun/xml --profile esm-only
+[90m│[39m[31m                   [39m[90m│[39m[31m "@sinete/xml"                          [39m[90m│[39m[31m "@sinete/xml/package.json" [39m[90m│[39m
+[90m├───────────────────[39m[90m┼────────────────────────────────────────[39m[90m┼────────────────────────────┤[39m
+[90m│[39m node16 (from ESM) [90m│[39m 🟢 (ESM)                               [90m│[39m 🟢 (JSON)                  [90m│[39m
+[90m├───────────────────[39m[90m┼────────────────────────────────────────[39m[90m┼────────────────────────────┤[39m
+[90m│[39m bundler           [90m│[39m 🟢                                     [90m│[39m 🟢 (JSON)                  [90m│[39m
+[90m├───────────────────[39m[90m┼────────────────────────────────────────[39m[90m┼────────────────────────────┤[39m
+[90m│[39m node10            [90m│[39m (ignored) 💀 Resolution failed         [90m│[39m (ignored) 🟢 (JSON)        [90m│[39m
+[90m├───────────────────[39m[90m┼────────────────────────────────────────[39m[90m┼────────────────────────────┤[39m
+[90m│[39m node16 (from CJS) [90m│[39m (ignored) ⚠️ ESM (dynamic import only) [90m│[39m (ignored) 🟢 (JSON)        [90m│[39m
+[90m└───────────────────[39m[90m┴────────────────────────────────────────[39m[90m┴────────────────────────────┘[39m
+=== attw c-tsc/core (default)
+node16 (from CJS): ⚠️ ESM (dynamic import only)
+node16 (from ESM): 🟢 (ESM)
+bundler: 🟢 
+
+***********************************
+
+"@sinete/core/package.json"
+
+node10: 🟢 (JSON)
+node16 (from CJS): 🟢 (JSON)
+node16 (from ESM): 🟢 (JSON)
+bundler: 🟢 (JSON)
+
+***********************************
+=== attw c-tsc/core --profile esm-only
+***********************************
+
+"@sinete/core/package.json"
+
+node16 (from ESM): 🟢 (JSON)
+bundler: 🟢 (JSON)
+node10: (ignored) 🟢 (JSON)
+node16 (from CJS): (ignored) 🟢 (JSON)
+
+***********************************
+=== attw c-tsc/xml (default)
+⚠️ A require call resolved to an ESM JavaScript file, which is an error in Node and some bundlers. CommonJS consumers will need to use a dynamic import. https://github.com/arethetypeswrong/arethetypeswrong.github.io/blob/main/docs/problems/CJSResolvesToESM.md
+
+
+[90m┌───────────────────[39m[90m┬──────────────────────────────[39m[90m┬────────────────────────────┐[39m
+[90m│[39m[31m                   [39m[90m│[39m[31m "@sinete/xml"                [39m[90m│[39m[31m "@sinete/xml/package.json" [39m[90m│[39m
+[90m├───────────────────[39m[90m┼──────────────────────────────[39m[90m┼────────────────────────────┤[39m
+[90m│[39m node10            [90m│[39m 💀 Resolution failed         [90m│[39m 🟢 (JSON)                  [90m│[39m
+[90m├───────────────────[39m[90m┼──────────────────────────────[39m[90m┼────────────────────────────┤[39m
+[90m│[39m node16 (from CJS) [90m│[39m ⚠️ ESM (dynamic import only) [90m│[39m 🟢 (JSON)                  [90m│[39m
+[90m├───────────────────[39m[90m┼──────────────────────────────[39m[90m┼────────────────────────────┤[39m
+[90m│[39m node16 (from ESM) [90m│[39m 🟢 (ESM)                     [90m│[39m 🟢 (JSON)                  [90m│[39m
+[90m├───────────────────[39m[90m┼──────────────────────────────[39m[90m┼────────────────────────────┤[39m
+[90m│[39m bundler           [90m│[39m 🟢                           [90m│[39m 🟢 (JSON)                  [90m│[39m
+[90m└───────────────────[39m[90m┴──────────────────────────────[39m[90m┴────────────────────────────┘[39m
+=== attw c-tsc/xml --profile esm-only
+[90m│[39m[31m                   [39m[90m│[39m[31m "@sinete/xml"                          [39m[90m│[39m[31m "@sinete/xml/package.json" [39m[90m│[39m
+[90m├───────────────────[39m[90m┼────────────────────────────────────────[39m[90m┼────────────────────────────┤[39m
+[90m│[39m node16 (from ESM) [90m│[39m 🟢 (ESM)                               [90m│[39m 🟢 (JSON)                  [90m│[39m
+[90m├───────────────────[39m[90m┼────────────────────────────────────────[39m[90m┼────────────────────────────┤[39m
+[90m│[39m bundler           [90m│[39m 🟢                                     [90m│[39m 🟢 (JSON)                  [90m│[39m
+[90m├───────────────────[39m[90m┼────────────────────────────────────────[39m[90m┼────────────────────────────┤[39m
+[90m│[39m node10            [90m│[39m (ignored) 💀 Resolution failed         [90m│[39m (ignored) 🟢 (JSON)        [90m│[39m
+[90m├───────────────────[39m[90m┼────────────────────────────────────────[39m[90m┼────────────────────────────┤[39m
+[90m│[39m node16 (from CJS) [90m│[39m (ignored) ⚠️ ESM (dynamic import only) [90m│[39m (ignored) 🟢 (JSON)        [90m│[39m
+[90m└───────────────────[39m[90m┴────────────────────────────────────────[39m[90m┴────────────────────────────┘[39m

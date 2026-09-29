@@ -1,0 +1,17 @@
+{
+  "descricao": "Deslocamento do horário legal de cada UF em relação a UTC, em minutos, usado para formatar dhEmi, dhSaiEnt, dhCont e dhEvento quando quem emite não informa o fuso. Sem horário de verão desde 2019. UFs com mais de um fuso usam o da capital; o emitente de outro fuso informa offsetMinutes.",
+  "atualizadoEm": "2026-09-26",
+  "fontes": [
+    "Lei 11.662/2008 e Lei 12.876/2013 (fusos horários do Brasil; Acre em UTC-5)",
+    "Decreto 9.772/2019 (fim do horário de verão)"
+  ],
+  "padrao": -180,
+  "ufs": {
+    "AC": -300,
+    "AM": -240,
+    "MS": -240,
+    "MT": -240,
+    "RO": -240,
+    "RR": -240
+  }
+}

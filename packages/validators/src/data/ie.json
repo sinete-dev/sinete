@@ -1,0 +1,1120 @@
+{
+  "schemaVersion": 1,
+  "version": "2026.09.25",
+  "sources": [
+    {
+      "title": "Sintegra, Conferência de Inscrições Estaduais (índice dos roteiros por UF)",
+      "url": "http://www.sintegra.gov.br/insc_est.html",
+      "retrievedAt": "2026-09-25"
+    },
+    {
+      "title": "MOC 7.0, Anexo I, regras C17-20, C17-30, E17-30 e nota (*2): normalização de zeros à esquerda e uso do literal ISENTO",
+      "url": "https://www.nfe.fazenda.gov.br/portal/listaConteudo.aspx?tipoConteudo=ndIjl+iEFdE=",
+      "retrievedAt": "2026-09-25"
+    }
+  ],
+  "notes": "Cada UF tem variantes de formato; a primeira que casa em tamanho, padrão e dígitos verificadores vence. Pesos alinhados com `over` (padrão: posições 0 a n-1). `result`: complement = mod - resto, remainder = resto. `map` troca o resultado pelo dígito aceito (lista = qualquer um). `times` multiplica a soma antes do módulo; `digitSum` soma os algarismos de cada produto; `ranges` troca `add` e `map` quando o número em `slice` cai na faixa. `legacy` marca formatos anteriores ao vigente.",
+  "ufs": {
+    "AC": {
+      "sources": [
+        {
+          "title": "Sintegra, Conferência de Inscrições Estaduais, roteiro de AC",
+          "url": "http://www.sintegra.gov.br/Cad_Estados/cad_AC.html",
+          "retrievedAt": "2026-09-25"
+        }
+      ],
+      "variants": [
+        {
+          "id": "padrao",
+          "length": 13,
+          "pattern": "^01\\d{11}$",
+          "mask": "##.###.###/###-##",
+          "checks": [
+            {
+              "at": 11,
+              "weights": [4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 0
+              }
+            },
+            {
+              "at": 12,
+              "weights": [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "AL": {
+      "sources": [
+        {
+          "title": "Sintegra, Conferência de Inscrições Estaduais, roteiro de AL",
+          "url": "http://www.sintegra.gov.br/Cad_Estados/cad_AL.html",
+          "retrievedAt": "2026-09-25"
+        }
+      ],
+      "notes": "Terceiro algarismo é o tipo de empresa (0, 3, 5, 7, 8 no roteiro); não é conferido porque o roteiro não diz que a lista é exaustiva.",
+      "variants": [
+        {
+          "id": "padrao",
+          "length": 9,
+          "pattern": "^24\\d{7}$",
+          "checks": [
+            {
+              "at": 8,
+              "weights": [9, 8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "times": 10,
+              "result": "remainder",
+              "map": {
+                "10": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "AP": {
+      "sources": [
+        {
+          "title": "Sintegra, Conferência de Inscrições Estaduais, roteiro de AP",
+          "url": "http://www.sintegra.gov.br/Cad_Estados/cad_AP.html",
+          "retrievedAt": "2026-09-25"
+        }
+      ],
+      "variants": [
+        {
+          "id": "padrao",
+          "length": 9,
+          "pattern": "^03\\d{7}$",
+          "checks": [
+            {
+              "at": 8,
+              "weights": [9, 8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 0
+              },
+              "ranges": [
+                {
+                  "slice": [0, 8],
+                  "min": 3000001,
+                  "max": 3017000,
+                  "add": 5,
+                  "map": {
+                    "10": 0,
+                    "11": 0
+                  }
+                },
+                {
+                  "slice": [0, 8],
+                  "min": 3017001,
+                  "max": 3019022,
+                  "add": 9,
+                  "map": {
+                    "10": 0,
+                    "11": 1
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "AM": {
+      "sources": [
+        {
+          "title": "Sintegra, Conferência de Inscrições Estaduais, roteiro de AM",
+          "url": "http://www.sintegra.gov.br/Cad_Estados/cad_AM.html",
+          "retrievedAt": "2026-09-25"
+        }
+      ],
+      "variants": [
+        {
+          "id": "padrao",
+          "length": 9,
+          "pattern": "^\\d{9}$",
+          "mask": "##.###.###-#",
+          "checks": [
+            {
+              "at": 8,
+              "weights": [9, 8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "BA": {
+      "sources": [
+        {
+          "title": "Sintegra, Conferência de Inscrições Estaduais, roteiro de BA",
+          "url": "http://www.sintegra.gov.br/Cad_Estados/cad_BA.html",
+          "retrievedAt": "2026-09-25"
+        },
+        {
+          "title": "SEFAZ-BA, Fórmula de Cálculo dos Dígitos Verificadores da Inscrição Estadual",
+          "url": "https://www.sefaz.ba.gov.br/inspetoria-eletronica/icms/cadastro/calculo-dv/",
+          "retrievedAt": "2026-09-25"
+        }
+      ],
+      "notes": "O 2º DV é calculado primeiro e entra no cálculo do 1º. Módulo 10 ou 11 conforme o 1º algarismo (8 posições) ou o 2º (9 posições).",
+      "variants": [
+        {
+          "id": "8-mod10",
+          "length": 8,
+          "pattern": "^[0-58]\\d{7}$",
+          "mask": "######-##",
+          "checks": [
+            {
+              "at": 7,
+              "weights": [7, 6, 5, 4, 3, 2],
+              "mod": 10,
+              "result": "complement",
+              "map": {
+                "10": 0
+              }
+            },
+            {
+              "at": 6,
+              "over": [0, 1, 2, 3, 4, 5, 7],
+              "weights": [8, 7, 6, 5, 4, 3, 2],
+              "mod": 10,
+              "result": "complement",
+              "map": {
+                "10": 0
+              }
+            }
+          ]
+        },
+        {
+          "id": "8-mod11",
+          "length": 8,
+          "pattern": "^[679]\\d{7}$",
+          "mask": "######-##",
+          "checks": [
+            {
+              "at": 7,
+              "weights": [7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 0
+              }
+            },
+            {
+              "at": 6,
+              "over": [0, 1, 2, 3, 4, 5, 7],
+              "weights": [8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 0
+              }
+            }
+          ]
+        },
+        {
+          "id": "9-mod10",
+          "length": 9,
+          "pattern": "^\\d[0-58]\\d{7}$",
+          "mask": "#######-##",
+          "checks": [
+            {
+              "at": 8,
+              "weights": [8, 7, 6, 5, 4, 3, 2],
+              "mod": 10,
+              "result": "complement",
+              "map": {
+                "10": 0
+              }
+            },
+            {
+              "at": 7,
+              "over": [0, 1, 2, 3, 4, 5, 6, 8],
+              "weights": [9, 8, 7, 6, 5, 4, 3, 2],
+              "mod": 10,
+              "result": "complement",
+              "map": {
+                "10": 0
+              }
+            }
+          ]
+        },
+        {
+          "id": "9-mod11",
+          "length": 9,
+          "pattern": "^\\d[679]\\d{7}$",
+          "mask": "#######-##",
+          "checks": [
+            {
+              "at": 8,
+              "weights": [8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 0
+              }
+            },
+            {
+              "at": 7,
+              "over": [0, 1, 2, 3, 4, 5, 6, 8],
+              "weights": [9, 8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "CE": {
+      "sources": [
+        {
+          "title": "Sintegra, Conferência de Inscrições Estaduais, roteiro de CE",
+          "url": "http://www.sintegra.gov.br/Cad_Estados/cad_CE.html",
+          "retrievedAt": "2026-09-25"
+        }
+      ],
+      "variants": [
+        {
+          "id": "padrao",
+          "length": 9,
+          "pattern": "^\\d{9}$",
+          "mask": "########-#",
+          "checks": [
+            {
+              "at": 8,
+              "weights": [9, 8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "DF": {
+      "sources": [
+        {
+          "title": "Sintegra, Conferência de Inscrições Estaduais, roteiro de DF",
+          "url": "http://www.sintegra.gov.br/Cad_Estados/cad_DF.html",
+          "retrievedAt": "2026-09-25"
+        },
+        {
+          "title": "Sintegra, roteiro do DF (imagem 1: composição e 1º DV)",
+          "url": "http://www.sintegra.gov.br/Cad_Estados/df1t.gif",
+          "retrievedAt": "2026-09-25"
+        },
+        {
+          "title": "Sintegra, roteiro do DF (imagem 2: 2º DV)",
+          "url": "http://www.sintegra.gov.br/Cad_Estados/df2t.gif",
+          "retrievedAt": "2026-09-25"
+        }
+      ],
+      "notes": "No roteiro, o exemplo 07 300001 001-DD marca \"07 300001\" inteiro como número sequencial, seguido da ordem do estabelecimento (001 matriz) e 2 DV: o 07 não é prefixo fixo. Cadastros reais têm 07 e 08.",
+      "variants": [
+        {
+          "id": "padrao",
+          "length": 13,
+          "pattern": "^\\d{13}$",
+          "mask": "###########-##",
+          "checks": [
+            {
+              "at": 11,
+              "weights": [4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 0
+              }
+            },
+            {
+              "at": 12,
+              "weights": [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "ES": {
+      "sources": [
+        {
+          "title": "Sintegra, Conferência de Inscrições Estaduais, roteiro de ES",
+          "url": "http://www.sintegra.gov.br/Cad_Estados/cad_ES.html",
+          "retrievedAt": "2026-09-25"
+        }
+      ],
+      "variants": [
+        {
+          "id": "padrao",
+          "length": 9,
+          "pattern": "^\\d{9}$",
+          "checks": [
+            {
+              "at": 8,
+              "weights": [9, 8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "GO": {
+      "sources": [
+        {
+          "title": "Sintegra, Conferência de Inscrições Estaduais, roteiro de GO",
+          "url": "http://www.sintegra.gov.br/Cad_Estados/cad_GO.html",
+          "retrievedAt": "2026-09-25"
+        },
+        {
+          "title": "Secretaria da Economia de Goiás, Roteiro de Crítica da Inscrição Estadual de Goiás",
+          "url": "https://goias.gov.br/economia/roteiro-de-critica-da-inscricao-estadual-de-goias/",
+          "retrievedAt": "2026-09-25"
+        }
+      ],
+      "notes": "Prefixo: 10, 11 ou 15 no roteiro da Secretaria da Economia; 10, 11 ou 20 a 29 no Sintegra. Aceita a união. Resto 1 dá DV 1 na faixa 10103105 a 10119997; a inscrição 11094402 aceita DV 0 ou 1.",
+      "variants": [
+        {
+          "id": "padrao",
+          "length": 9,
+          "pattern": "^(1[015]|2\\d)\\d{7}$",
+          "mask": "##.###.###-#",
+          "checks": [
+            {
+              "at": 8,
+              "weights": [9, 8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 0
+              },
+              "ranges": [
+                {
+                  "slice": [0, 8],
+                  "min": 10103105,
+                  "max": 10119997,
+                  "map": {
+                    "10": 1,
+                    "11": 0
+                  }
+                },
+                {
+                  "slice": [0, 8],
+                  "min": 11094402,
+                  "max": 11094402,
+                  "map": {
+                    "10": [0, 1],
+                    "11": 0
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "MA": {
+      "sources": [
+        {
+          "title": "Sintegra, Conferência de Inscrições Estaduais, roteiro de MA",
+          "url": "http://www.sintegra.gov.br/Cad_Estados/cad_MA.html",
+          "retrievedAt": "2026-09-25"
+        }
+      ],
+      "variants": [
+        {
+          "id": "padrao",
+          "length": 9,
+          "pattern": "^12\\d{7}$",
+          "checks": [
+            {
+              "at": 8,
+              "weights": [9, 8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "MG": {
+      "sources": [
+        {
+          "title": "Sintegra, Conferência de Inscrições Estaduais, roteiro de MG",
+          "url": "http://www.sintegra.gov.br/Cad_Estados/cad_MG.html",
+          "retrievedAt": "2026-09-25"
+        }
+      ],
+      "notes": "D1: insere 0 depois dos 3 algarismos do município, pesos 1 e 2 alternados, soma dos algarismos dos produtos, complemento para a dezena. D2: pesos 2 a 11 da direita para a esquerda sobre os 12 primeiros.",
+      "variants": [
+        {
+          "id": "padrao",
+          "length": 13,
+          "pattern": "^\\d{13}$",
+          "mask": "###.###.###/####",
+          "checks": [
+            {
+              "at": 11,
+              "weights": [1, 2, 1, 1, 2, 1, 2, 1, 2, 1, 2],
+              "digitSum": true,
+              "mod": 10,
+              "result": "complement",
+              "map": {
+                "10": 0
+              }
+            },
+            {
+              "at": 12,
+              "weights": [3, 2, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "MS": {
+      "sources": [
+        {
+          "title": "Sintegra, Conferência de Inscrições Estaduais, roteiro de MS",
+          "url": "http://www.sintegra.gov.br/Cad_Estados/cad_MS.html",
+          "retrievedAt": "2026-09-25"
+        }
+      ],
+      "variants": [
+        {
+          "id": "padrao",
+          "length": 9,
+          "pattern": "^(28|50)\\d{7}$",
+          "checks": [
+            {
+              "at": 8,
+              "weights": [9, 8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "MT": {
+      "sources": [
+        {
+          "title": "Sintegra, Conferência de Inscrições Estaduais, roteiro de MT",
+          "url": "http://www.sintegra.gov.br/Cad_Estados/cad_MT.html",
+          "retrievedAt": "2026-09-25"
+        }
+      ],
+      "notes": "Formato de 11 posições; inscrições com menos algarismos recebem zeros à esquerda (Anexo I do MOC 7.0, nota *2).",
+      "variants": [
+        {
+          "id": "padrao",
+          "length": 11,
+          "pattern": "^\\d{11}$",
+          "mask": "##########-#",
+          "checks": [
+            {
+              "at": 10,
+              "weights": [3, 2, 9, 8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "PA": {
+      "sources": [
+        {
+          "title": "Sintegra, Conferência de Inscrições Estaduais, roteiro de PA",
+          "url": "http://www.sintegra.gov.br/Cad_Estados/cad_PA.html",
+          "retrievedAt": "2026-09-25"
+        }
+      ],
+      "variants": [
+        {
+          "id": "padrao",
+          "length": 9,
+          "pattern": "^(15|7[5-9])\\d{7}$",
+          "mask": "##-######-#",
+          "checks": [
+            {
+              "at": 8,
+              "weights": [9, 8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "PB": {
+      "sources": [
+        {
+          "title": "Sintegra, Conferência de Inscrições Estaduais, roteiro de PB",
+          "url": "http://www.sintegra.gov.br/Cad_Estados/cad_PB.html",
+          "retrievedAt": "2026-09-25"
+        }
+      ],
+      "variants": [
+        {
+          "id": "padrao",
+          "length": 9,
+          "pattern": "^\\d{9}$",
+          "mask": "########-#",
+          "checks": [
+            {
+              "at": 8,
+              "weights": [9, 8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "PE": {
+      "sources": [
+        {
+          "title": "Sintegra, Conferência de Inscrições Estaduais, roteiro de PE",
+          "url": "http://www.sintegra.gov.br/Cad_Estados/cad_PE.html",
+          "retrievedAt": "2026-09-25"
+        }
+      ],
+      "variants": [
+        {
+          "id": "efisco",
+          "length": 9,
+          "pattern": "^\\d{9}$",
+          "mask": "#######-##",
+          "checks": [
+            {
+              "at": 7,
+              "weights": [8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 0
+              }
+            },
+            {
+              "at": 8,
+              "weights": [9, 8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 0
+              }
+            }
+          ]
+        },
+        {
+          "id": "cacepe",
+          "legacy": true,
+          "length": 14,
+          "pattern": "^\\d{14}$",
+          "mask": "##.#.###.#######-#",
+          "checks": [
+            {
+              "at": 13,
+              "weights": [5, 4, 3, 2, 1, 9, 8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "PI": {
+      "sources": [
+        {
+          "title": "Sintegra, Conferência de Inscrições Estaduais, roteiro de PI",
+          "url": "http://www.sintegra.gov.br/Cad_Estados/cad_PI.html",
+          "retrievedAt": "2026-09-25"
+        }
+      ],
+      "variants": [
+        {
+          "id": "padrao",
+          "length": 9,
+          "pattern": "^\\d{9}$",
+          "checks": [
+            {
+              "at": 8,
+              "weights": [9, 8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "PR": {
+      "sources": [
+        {
+          "title": "Sintegra, Conferência de Inscrições Estaduais, roteiro de PR",
+          "url": "http://www.sintegra.gov.br/Cad_Estados/cad_PR.html",
+          "retrievedAt": "2026-09-25"
+        }
+      ],
+      "variants": [
+        {
+          "id": "padrao",
+          "length": 10,
+          "pattern": "^\\d{10}$",
+          "mask": "###.#####-##",
+          "checks": [
+            {
+              "at": 8,
+              "weights": [3, 2, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 0
+              }
+            },
+            {
+              "at": 9,
+              "weights": [4, 3, 2, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "RJ": {
+      "sources": [
+        {
+          "title": "Sintegra, Conferência de Inscrições Estaduais, roteiro de RJ",
+          "url": "http://www.sintegra.gov.br/Cad_Estados/cad_RJ.html",
+          "retrievedAt": "2026-09-25"
+        },
+        {
+          "title": "Sintegra, roteiro do RJ (imagem com pesos e módulo)",
+          "url": "http://www.sintegra.gov.br/Cad_Estados/rj.gif",
+          "retrievedAt": "2026-09-25"
+        }
+      ],
+      "notes": "A imagem do roteiro traz os pesos 2, 7, 6, 5, 4, 3, 2 e o módulo 11; resto 0 ou 1 dá DV 0, como nas demais UFs de módulo 11.",
+      "variants": [
+        {
+          "id": "padrao",
+          "length": 8,
+          "pattern": "^\\d{8}$",
+          "mask": "##.###.##-#",
+          "checks": [
+            {
+              "at": 7,
+              "weights": [2, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "RN": {
+      "sources": [
+        {
+          "title": "Sintegra, Conferência de Inscrições Estaduais, roteiro de RN",
+          "url": "http://www.sintegra.gov.br/Cad_Estados/cad_RN.html",
+          "retrievedAt": "2026-09-25"
+        }
+      ],
+      "variants": [
+        {
+          "id": "9",
+          "length": 9,
+          "pattern": "^20\\d{7}$",
+          "mask": "##.###.###-#",
+          "checks": [
+            {
+              "at": 8,
+              "weights": [9, 8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "times": 10,
+              "result": "remainder",
+              "map": {
+                "10": 0
+              }
+            }
+          ]
+        },
+        {
+          "id": "10",
+          "length": 10,
+          "pattern": "^20\\d{8}$",
+          "mask": "##.#.###.###-#",
+          "checks": [
+            {
+              "at": 9,
+              "weights": [10, 9, 8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "times": 10,
+              "result": "remainder",
+              "map": {
+                "10": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "RO": {
+      "sources": [
+        {
+          "title": "Sintegra, Conferência de Inscrições Estaduais, roteiro de RO",
+          "url": "http://www.sintegra.gov.br/Cad_Estados/cad_RO.html",
+          "retrievedAt": "2026-09-25"
+        }
+      ],
+      "variants": [
+        {
+          "id": "padrao",
+          "length": 14,
+          "pattern": "^\\d{14}$",
+          "mask": "#############-#",
+          "checks": [
+            {
+              "at": 13,
+              "weights": [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "anterior-2000-08",
+          "legacy": true,
+          "length": 9,
+          "pattern": "^\\d{9}$",
+          "mask": "###.#####-#",
+          "checks": [
+            {
+              "at": 8,
+              "over": [3, 4, 5, 6, 7],
+              "weights": [6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "RR": {
+      "sources": [
+        {
+          "title": "Sintegra, Conferência de Inscrições Estaduais, roteiro de RR",
+          "url": "http://www.sintegra.gov.br/Cad_Estados/cad_RR.html",
+          "retrievedAt": "2026-09-25"
+        }
+      ],
+      "variants": [
+        {
+          "id": "padrao",
+          "length": 9,
+          "pattern": "^24\\d{7}$",
+          "mask": "########-#",
+          "checks": [
+            {
+              "at": 8,
+              "weights": [1, 2, 3, 4, 5, 6, 7, 8],
+              "mod": 9,
+              "result": "remainder"
+            }
+          ]
+        }
+      ]
+    },
+    "RS": {
+      "sources": [
+        {
+          "title": "Sintegra, Conferência de Inscrições Estaduais, roteiro de RS",
+          "url": "http://www.sintegra.gov.br/Cad_Estados/cad_RS.html",
+          "retrievedAt": "2026-09-25"
+        }
+      ],
+      "variants": [
+        {
+          "id": "padrao",
+          "length": 10,
+          "pattern": "^\\d{10}$",
+          "mask": "###/#######",
+          "checks": [
+            {
+              "at": 9,
+              "weights": [2, 9, 8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "SC": {
+      "sources": [
+        {
+          "title": "Sintegra, Conferência de Inscrições Estaduais, roteiro de SC",
+          "url": "http://www.sintegra.gov.br/Cad_Estados/cad_SC.html",
+          "retrievedAt": "2026-09-25"
+        }
+      ],
+      "variants": [
+        {
+          "id": "padrao",
+          "length": 9,
+          "pattern": "^\\d{9}$",
+          "mask": "###.###.###",
+          "checks": [
+            {
+              "at": 8,
+              "weights": [9, 8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "SE": {
+      "sources": [
+        {
+          "title": "Sintegra, Conferência de Inscrições Estaduais, roteiro de SE",
+          "url": "http://www.sintegra.gov.br/Cad_Estados/cad_SE.html",
+          "retrievedAt": "2026-09-25"
+        }
+      ],
+      "variants": [
+        {
+          "id": "padrao",
+          "length": 9,
+          "pattern": "^\\d{9}$",
+          "mask": "########-#",
+          "checks": [
+            {
+              "at": 8,
+              "weights": [9, 8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "SP": {
+      "sources": [
+        {
+          "title": "Sintegra, Conferência de Inscrições Estaduais, roteiro de SP",
+          "url": "http://www.sintegra.gov.br/Cad_Estados/cad_SP.html",
+          "retrievedAt": "2026-09-25"
+        }
+      ],
+      "notes": "O DV é o algarismo mais à direita do resto da divisão por 11. Produtor rural não equiparado: P + 12 algarismos, DV na 10ª posição contando o P, 3 últimos fora do cálculo. O leiaute da NF-e (TIe) só aceita algarismos.",
+      "variants": [
+        {
+          "id": "padrao",
+          "length": 12,
+          "pattern": "^\\d{12}$",
+          "mask": "###.###.###.###",
+          "checks": [
+            {
+              "at": 8,
+              "weights": [1, 3, 4, 5, 6, 7, 8, 10],
+              "mod": 11,
+              "result": "remainder",
+              "map": {
+                "10": 0
+              }
+            },
+            {
+              "at": 11,
+              "weights": [3, 2, 10, 9, 8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "remainder",
+              "map": {
+                "10": 0
+              }
+            }
+          ]
+        },
+        {
+          "id": "produtor-rural",
+          "length": 13,
+          "pattern": "^P\\d{12}$",
+          "mask": "#-########.#/###",
+          "checks": [
+            {
+              "at": 9,
+              "over": [1, 2, 3, 4, 5, 6, 7, 8],
+              "weights": [1, 3, 4, 5, 6, 7, 8, 10],
+              "mod": 11,
+              "result": "remainder",
+              "map": {
+                "10": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "TO": {
+      "sources": [
+        {
+          "title": "Sintegra, Conferência de Inscrições Estaduais, roteiro de TO",
+          "url": "http://www.sintegra.gov.br/Cad_Estados/cad_TO.html",
+          "retrievedAt": "2026-09-25"
+        },
+        {
+          "title": "SEFAZ-TO, Portaria 676/2002 (inscrição passa a ter 9 dígitos)",
+          "url": "https://dtri.sefaz.to.gov.br/legislacao/ntributaria/portarias/sefaz/Portaria676-02.htm",
+          "retrievedAt": "2026-09-25"
+        }
+      ],
+      "notes": "A Portaria 676/2002 trocou as 11 posições por 9 (prefixo, sequencial e DV). O DV de 9 posições segue o roteiro de 11 sem as posições 3 e 4 (tipo de empresa).",
+      "variants": [
+        {
+          "id": "padrao",
+          "length": 9,
+          "pattern": "^\\d{9}$",
+          "mask": "########-#",
+          "checks": [
+            {
+              "at": 8,
+              "weights": [9, 8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 0
+              }
+            }
+          ]
+        },
+        {
+          "id": "anterior-2002",
+          "legacy": true,
+          "length": 11,
+          "pattern": "^\\d{2}(01|02|03|99)\\d{7}$",
+          "mask": "##.##.######-#",
+          "checks": [
+            {
+              "at": 10,
+              "over": [0, 1, 4, 5, 6, 7, 8, 9],
+              "weights": [9, 8, 7, 6, 5, 4, 3, 2],
+              "mod": 11,
+              "result": "complement",
+              "map": {
+                "10": 0,
+                "11": 0
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

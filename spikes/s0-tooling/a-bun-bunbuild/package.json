@@ -1,0 +1,27 @@
+{
+  "name": "sinete-s0-bunbuild",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "bun run --filter '@sinete/*' build",
+    "typecheck": "tsc -p packages/core && tsc -p packages/xml && tsc -p packages/cli",
+    "test": "bun test",
+    "smoke": "bun smoke/run.ts",
+    "version": "changeset version && bun install",
+    "release": "bun run build && bun scripts/release.ts && changeset git-tag"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "0.18.5",
+    "@biomejs/biome": "2.5.14",
+    "@changesets/cli": "3.0.3",
+    "@types/bun": "^1.4.2",
+    "@types/node": "^22",
+    "playwright": "^1.63.0",
+    "publint": "0.3.24",
+    "tsdown": "0.23.0",
+    "typescript": "7.0.2"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "s1-codegen-spike",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "gen": "bun src/gen/cli.ts",
+    "roundtrip": "bun src/bench/roundtrip.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.3",
+    "typescript": "^7.0.2"
+  }
+}

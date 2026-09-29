@@ -1,0 +1,62 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true, "root": "../../.." },
+  "files": { "includes": ["**", "!**/dist", "!**/CHANGELOG.md", "!smoke/.work", "!smoke/fixtures"] },
+  "formatter": { "indentStyle": "space", "indentWidth": 2, "lineWidth": 120 },
+  "javascript": { "formatter": { "quoteStyle": "single" } },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
+  "linter": {
+    "rules": {
+      "preset": "recommended",
+      "style": {
+        "useImportType": { "level": "error", "options": { "style": "separatedType" } },
+        "useExportType": "error",
+        "useNodejsImportProtocol": "error",
+        "noDefaultExport": "error"
+      },
+      "correctness": { "noNodejsModules": "error", "noProcessGlobal": "error" },
+      "performance": { "noReExportAll": "error", "noBarrelFile": "off" },
+      "suspicious": { "noConsole": "error" },
+      "nursery": { "useExplicitType": "error" }
+    }
+  },
+  "overrides": [
+    {
+      // Entradas com condição `node` e a CLI podem usar builtins do Node.
+      "includes": ["**/*.node.ts", "packages/cli/**"],
+      "linter": {
+        "rules": {
+          "correctness": { "noNodejsModules": "off", "noProcessGlobal": "off" },
+          "suspicious": { "noConsole": "off" }
+        }
+      }
+    },
+    {
+      // Relógio injetável: `new Date()` só no pacote core (clock) e em testes.
+      "includes": ["packages/*/src/**", "!packages/core/src/index.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedGlobals": {
+              "level": "error",
+              "options": { "deniedGlobals": { "Date": "Use o Clock injetado (princípio 6)." } }
+            }
+          }
+        }
+      }
+    },
+    {
+      // Tooling do repo (build, release, smoke, testes) roda no Bun e pode usar Node e console.
+      "includes": ["**/build.ts", "scripts/**", "smoke/**", "**/test/**"],
+      "linter": {
+        "rules": {
+          "correctness": { "noNodejsModules": "off", "noProcessGlobal": "off" },
+          "suspicious": { "noConsole": "off" },
+          "nursery": { "useExplicitType": "off" },
+          "style": { "noRestrictedGlobals": "off" }
+        }
+      }
+    },
+    { "includes": ["**/*.config.ts"], "linter": { "rules": { "style": { "noDefaultExport": "off" } } } }
+  ]
+}

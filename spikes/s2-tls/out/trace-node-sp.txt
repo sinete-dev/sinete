@@ -1,0 +1,1092 @@
+Sent TLS Record
+Header:
+  Version = TLS 1.0 (0x301)
+  Content Type = Handshake (22)
+  Length = 1605
+    ClientHello, Length=1601
+      client_version=0x303 (TLS 1.2)
+      Random:
+        gmt_unix_time=0x54824B13
+        random_bytes (len=28): BF049F54889DC9E58561CC5E5CDED14451C94199FB2765B0886FA6C1
+      session_id (len=32): E94F795B2796D99C3E671A55CF785A0C1AD55F0BD5CA04664513A39ED1CB2D0F
+      cipher_suites (len=104)
+        {0x13, 0x02} TLS_AES_256_GCM_SHA384
+        {0x13, 0x03} TLS_CHACHA20_POLY1305_SHA256
+        {0x13, 0x01} TLS_AES_128_GCM_SHA256
+        {0xC0, 0x2F} TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        {0xC0, 0x2B} TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+        {0xC0, 0x30} TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        {0xC0, 0x2C} TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+        {0x00, 0x9E} TLS_DHE_RSA_WITH_AES_128_GCM_SHA256
+        {0xC0, 0x27} TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
+        {0x00, 0x67} TLS_DHE_RSA_WITH_AES_128_CBC_SHA256
+        {0xC0, 0x28} TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384
+        {0x00, 0x6B} TLS_DHE_RSA_WITH_AES_256_CBC_SHA256
+        {0x00, 0xA3} TLS_DHE_DSS_WITH_AES_256_GCM_SHA384
+        {0x00, 0x9F} TLS_DHE_RSA_WITH_AES_256_GCM_SHA384
+        {0xCC, 0xA9} TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
+        {0xCC, 0xA8} TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+        {0xCC, 0xAA} TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+        {0xC0, 0xAD} TLS_ECDHE_ECDSA_WITH_AES_256_CCM
+        {0xC0, 0x9F} TLS_DHE_RSA_WITH_AES_256_CCM
+        {0xC0, 0x5D} TLS_ECDHE_ECDSA_WITH_ARIA_256_GCM_SHA384
+        {0xC0, 0x61} TLS_ECDHE_RSA_WITH_ARIA_256_GCM_SHA384
+        {0xC0, 0x57} TLS_DHE_DSS_WITH_ARIA_256_GCM_SHA384
+        {0xC0, 0x53} TLS_DHE_RSA_WITH_ARIA_256_GCM_SHA384
+        {0x00, 0xA2} TLS_DHE_DSS_WITH_AES_128_GCM_SHA256
+        {0xC0, 0xAC} TLS_ECDHE_ECDSA_WITH_AES_128_CCM
+        {0xC0, 0x9E} TLS_DHE_RSA_WITH_AES_128_CCM
+        {0xC0, 0x5C} TLS_ECDHE_ECDSA_WITH_ARIA_128_GCM_SHA256
+        {0xC0, 0x60} TLS_ECDHE_RSA_WITH_ARIA_128_GCM_SHA256
+        {0xC0, 0x56} TLS_DHE_DSS_WITH_ARIA_128_GCM_SHA256
+        {0xC0, 0x52} TLS_DHE_RSA_WITH_ARIA_128_GCM_SHA256
+        {0xC0, 0x24} TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+        {0x00, 0x6A} TLS_DHE_DSS_WITH_AES_256_CBC_SHA256
+        {0xC0, 0x23} TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256
+        {0x00, 0x40} TLS_DHE_DSS_WITH_AES_128_CBC_SHA256
+        {0xC0, 0x0A} TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA
+        {0xC0, 0x14} TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
+        {0x00, 0x39} TLS_DHE_RSA_WITH_AES_256_CBC_SHA
+        {0x00, 0x38} TLS_DHE_DSS_WITH_AES_256_CBC_SHA
+        {0xC0, 0x09} TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA
+        {0xC0, 0x13} TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA
+        {0x00, 0x33} TLS_DHE_RSA_WITH_AES_128_CBC_SHA
+        {0x00, 0x32} TLS_DHE_DSS_WITH_AES_128_CBC_SHA
+        {0x00, 0x9D} TLS_RSA_WITH_AES_256_GCM_SHA384
+        {0xC0, 0x9D} TLS_RSA_WITH_AES_256_CCM
+        {0xC0, 0x51} TLS_RSA_WITH_ARIA_256_GCM_SHA384
+        {0x00, 0x9C} TLS_RSA_WITH_AES_128_GCM_SHA256
+        {0xC0, 0x9C} TLS_RSA_WITH_AES_128_CCM
+        {0xC0, 0x50} TLS_RSA_WITH_ARIA_128_GCM_SHA256
+        {0x00, 0x3D} TLS_RSA_WITH_AES_256_CBC_SHA256
+        {0x00, 0x3C} TLS_RSA_WITH_AES_128_CBC_SHA256
+        {0x00, 0x35} TLS_RSA_WITH_AES_256_CBC_SHA
+        {0x00, 0x2F} TLS_RSA_WITH_AES_128_CBC_SHA
+      compression_methods (len=1)
+        No Compression (0x00)
+      extensions, length = 1424
+        extension_type=renegotiate(65281), length=1
+            <EMPTY>
+        extension_type=server_name(0), length=38
+          0000 - 00 24 00 00 21 68 6f 6d-6f 6c 6f 67 61 63 61   .$..!homologaca
+          000f - 6f 2e 6e 66 65 2e 66 61-7a 65 6e 64 61 2e 73   o.nfe.fazenda.s
+          001e - 70 2e 67 6f 76 2e 62 72-                       p.gov.br
+        extension_type=ec_point_formats(11), length=4
+          uncompressed (0)
+          ansiX962_compressed_prime (1)
+          ansiX962_compressed_char2 (2)
+        extension_type=supported_groups(10), length=18
+          X25519MLKEM768 (4588)
+          ecdh_x25519 (29)
+          secp256r1 (P-256) (23)
+          ecdh_x448 (30)
+          secp384r1 (P-384) (24)
+          secp521r1 (P-521) (25)
+          ffdhe2048 (256)
+          ffdhe3072 (257)
+        extension_type=session_ticket(35), length=0
+        extension_type=encrypt_then_mac(22), length=0
+        extension_type=extended_master_secret(23), length=0
+        extension_type=signature_algorithms(13), length=54
+          mldsa65 (0x0905)
+          mldsa87 (0x0906)
+          mldsa44 (0x0904)
+          ecdsa_secp256r1_sha256 (0x0403)
+          ecdsa_secp384r1_sha384 (0x0503)
+          ecdsa_secp521r1_sha512 (0x0603)
+          ed25519 (0x0807)
+          ed448 (0x0808)
+          ecdsa_brainpoolP256r1tls13_sha256 (0x081a)
+          ecdsa_brainpoolP384r1tls13_sha384 (0x081b)
+          ecdsa_brainpoolP512r1tls13_sha512 (0x081c)
+          rsa_pss_pss_sha256 (0x0809)
+          rsa_pss_pss_sha384 (0x080a)
+          rsa_pss_pss_sha512 (0x080b)
+          rsa_pss_rsae_sha256 (0x0804)
+          rsa_pss_rsae_sha384 (0x0805)
+          rsa_pss_rsae_sha512 (0x0806)
+          rsa_pkcs1_sha256 (0x0401)
+          rsa_pkcs1_sha384 (0x0501)
+          rsa_pkcs1_sha512 (0x0601)
+          ecdsa_sha224 (0x0303)
+          rsa_pkcs1_sha224 (0x0301)
+          dsa_sha224 (0x0302)
+          dsa_sha256 (0x0402)
+          dsa_sha384 (0x0502)
+          dsa_sha512 (0x0602)
+        extension_type=supported_versions(43), length=5
+          TLS 1.3 (772)
+          TLS 1.2 (771)
+        extension_type=psk_key_exchange_modes(45), length=2
+          psk_dhe_ke (1)
+        extension_type=key_share(51), length=1258
+            NamedGroup: X25519MLKEM768 (4588)
+            key_exchange:  (len=1216): 4198B790288E56661F8D3504D870AF7CD091E2868989273B55B87D7DD7298CD00CDDA81BD6681A61E37087DA4CC10B96D89B932B78C26CFA3E979A3CC4B7601159882AC021ABEA1312B58778516D002B77FF6B5DB4BC1698709953803EA2E36341C116DA7533E4235BA767617797A3759B372F5231295C545F7349805966E7D20B0FB55288F3C85BAB9D8BC8A1DDD45975A74A8D30296CC316C65348D50CCD66861C35605674E5AAA59AA3EEC5606D8430263064E107541D65970E2BA4FED2B7CBB92E562A8E6E29C4DEB93FCE1A8F5F160E31B99EE8E58548E8853E9B6E950A8018905177C577B0D066CA4BBE0450A92C678D473705C9441D270B859D199067789C7A3940EE6B1EEEAB756FB66719CB79053A7E98D6B014C42356B6CBCF37266D932CA36754B1E4A01D1A629FC09D67D26BE6371838924462DB1F3AB380F99A8768B590F561342082186AB47D08173EBA223E33348EE195CB96C44DA16448D6AB154327C880B9B6BE30CEC278785570CB926A7FD4578DEDE6849299AF039030656586FDFA771244A140128B43F73004AA6AABD53E5EF5A75C157E3FEC6901B21832B37A61056F3F080589A7BC32F939126ABA7AD34554BC1AEAF1712B8458488078EFD05EF9D26B393A765AC16D8FF49AFCEC724043345D42C524263667598CF4252A28BB2285AA3388C8B64D0051B9702EA2B40373D71E84231697C020371220462A6B124316728A64048560D0C5B15B130405F461086124014B2D53320A641C99C242A90B6B5737CA696DF6241A1581C97C883CC954C1282EE7E75B717261ECC532B68287D392A949609705B169B743101CF61BB9520B227856FD64C27FB52446C711BBD62112B735032B6691FAC40B0068B9D5861605216CE9B1D947BA8D12C398204EA946A2EDFA61BC8A569B64685AC721EBC05542E80D36093E2EC259752469392428080BCC33A442141A3B8DACBFAEAA90AF740B36DA1B1713BFE1C31BF54570A951B1CFC948E21299F6A8638CE26249696A328104CBE9A6FEB57E5CE49DD7D49EAFD98CB6D697AAD110F356866F6697F7576708E86D0583A89AB29590565FE0E7C70AC4118B5B364AE4AC7BFA023BD407150AB02ADBC441D547D388AB86E64B6BC455F586774675093E4C6A4D6A28ED1C6454CBA48BB8909FF80FB6C6AEF2FBC700CAC937E56B21D1155AB9C7A79C87A4663545D26101054C2AFC30414B6821571323C100B9287C7866CDC56442FAB89FE8387BB9D90983A32BCD64A3D0A12B94A8A8A9763994E47DB5D60612349B8A5B9AD276446E7A1DF1B3813A23A3CE9B8CEDA3B07C81871536CA2FC4BE01821E14C21266A59896932DDF689EB03560AFA9C9F14C801B8729AE7809A81BCE62FA92C35C5368050936D29EF2D645CB5476B507CA69371C2C799D28E12964A5900CF6BD81B833D703A48BC6ADAD721E01996CEF2B34656CC694E959AF707A2B88381F517D23FBA0A3600E8F700126B094E287A3004BAC2369A025517E84F76DED083E7574CED022B804D0421639984B61AE564BA25D08CDCCA33609515EBA179BDAF609944C244C78CDA3C90A922B571F163053A0A501DB54E326AC2A7A143D4A3E101C354F01051751BBC47849CB50A531D1DEA54C010EB2877C71AA31EDA55F32BE69F75DEC9F932D8153F19DD7B265E0E5BC0CE1BA1EA4BCED7D1DEFB2B6FEF565E94B57E56E98E2F7C2392C
+            NamedGroup: ecdh_x25519 (29)
+            key_exchange:  (len=32): C4E73558E29490C00F6AF9B83447D0253638B3C3876AFF7DB372C879074FE940
+
+Received TLS Record
+Header:
+  Version = TLS 1.2 (0x303)
+  Content Type = Handshake (22)
+  Length = 4232
+    ServerHello, Length=81
+      server_version=0x303 (TLS 1.2)
+      Random:
+        gmt_unix_time=0x6AB70428
+        random_bytes (len=28): F66948BC7FA891C0AC137D529D91C9AC85F81453E8AEAE8CF60B97F1
+      session_id (len=32): FD2A00003BBFF911F5FEF400D82ADA13D8AAC0D85AEE68B94BA2FD90E318DD74
+      cipher_suite {0xC0, 0x30} TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+      compression_method: No Compression (0x00)
+      extensions, length = 9
+        extension_type=extended_master_secret(23), length=0
+        extension_type=renegotiate(65281), length=1
+            <EMPTY>
+
+    Certificate, Length=3774
+      certificate_list, length=3771
+        ASN.1Cert, length=1789
+------details-----
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            4c:51:26:04:13:6d:27:88:8d:a4
+        Signature Algorithm: sha512WithRSAEncryption
+        Issuer: C = BR, O = ICP-Brasil, OU = Autoridade Certificadora Raiz Brasileira v10, CN = AC SOLUTI SSL EV G4
+        Validity
+            Not Before: Apr 16 13:52:00 2026 GMT
+            Not After : Apr 16 13:52:00 2027 GMT
+        Subject: C = BR, O = SECRETARIA DA FAZENDA E PLANEJAMENTO, ST = SP, L = Sao Paulo, serialNumber = 46377222000129, CN = homologacao.nfe.fazenda.sp.gov.br, businessCategory = Government Entity, jurisdictionC = BR
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (2048 bit)
+                Modulus:
+                    00:c6:5e:18:1a:95:2e:cd:01:46:6b:7a:4a:b6:c2:
+                    6c:cc:21:d1:7d:e3:bf:e7:76:96:10:12:f5:3b:92:
+                    b5:25:2f:22:ec:3f:69:74:ea:6b:3c:e3:c2:b8:a6:
+                    06:02:b6:a3:1e:01:81:d7:0f:90:81:f1:e8:17:ad:
+                    44:41:9a:ad:f2:99:1a:46:87:fb:85:ef:d5:cd:1c:
+                    87:5c:0f:93:38:64:c7:72:7d:3a:b8:e3:dc:8a:53:
+                    28:d1:e9:5f:19:f1:7e:bf:a9:9a:d2:68:3b:54:85:
+                    c2:b9:38:49:65:6d:a1:0d:af:6c:ec:00:08:14:ed:
+                    8a:a1:1f:c3:b2:76:1e:a5:cb:43:95:e4:2f:b4:b1:
+                    b8:40:bb:98:39:35:b2:d4:cc:4d:46:d5:d9:2a:62:
+                    b5:01:18:c3:aa:81:f7:6e:00:f8:dd:fd:d1:e4:7c:
+                    a0:c8:48:da:b1:d3:9a:5f:5f:6b:f7:cc:79:da:44:
+                    90:80:6f:c8:86:77:20:96:9e:b7:41:5c:50:45:a4:
+                    f1:76:a6:55:82:0d:e3:ae:e8:ae:39:d0:b3:11:82:
+                    89:98:8a:d9:bf:19:99:0e:f1:d4:6e:b0:f9:e2:80:
+                    ea:10:b9:2b:39:db:dc:af:7a:21:a0:32:89:47:d2:
+                    60:52:30:79:af:5e:3f:ee:e7:0c:b1:3b:fb:61:26:
+                    21:2b
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Basic Constraints: 
+                CA:FALSE
+            X509v3 Authority Key Identifier: 
+                FE:06:B9:2C:95:7E:2F:E6:D0:B8:A8:F1:2F:B7:F2:2E:85:D5:D7:C0
+            Authority Information Access: 
+                CA Issuers - URI:http://ccd.acsoluti.com.br/lcr/ac-soluti-ssl-ev-v10-g4.crt
+                OCSP - URI:http://ocsp3.acsoluti.com.br
+            X509v3 Subject Alternative Name: 
+                DNS:homologacao.nfe.fazenda.sp.gov.br
+            X509v3 Certificate Policies: 
+                Policy: 2.23.140.1.1
+                Policy: 2.16.76.1.2.1.112
+                  CPS: http://ccd.acsoluti.com.br/docs/dpc-ac-soluti-ssl-ev.pdf
+            X509v3 Extended Key Usage: 
+                TLS Web Client Authentication, TLS Web Server Authentication
+            X509v3 CRL Distribution Points: 
+                Full Name:
+                  URI:http://ccd.acsoluti.com.br/lcr/ac-soluti-ssl-ev-v10-g4.crl
+
+                Full Name:
+                  URI:http://ccd2.acsoluti.com.br/lcr/ac-soluti-ssl-ev-v10-g4.crl
+
+            X509v3 Subject Key Identifier: 
+                F9:13:FD:51:19:56:61:F5:A1:2C:5A:CB:3E:2D:F7:9E:B5:D8:71:FF
+            X509v3 Key Usage: critical
+                Digital Signature, Key Encipherment
+    Signature Algorithm: sha512WithRSAEncryption
+    Signature Value:
+        00:2b:15:9f:c0:7f:94:80:ff:af:3d:8e:34:54:fd:e7:89:86:
+        7a:04:88:4a:f5:d8:c3:af:14:31:4a:53:11:2f:1c:8a:24:b4:
+        3f:6c:87:c4:3d:fd:0c:7b:c4:33:31:d8:8f:d1:47:a1:87:fa:
+        0d:c3:d9:ef:90:9d:09:63:5d:40:0f:e2:ad:ea:41:1e:58:d2:
+        5b:4e:f7:21:61:c9:c5:0b:15:de:0e:8b:d6:56:18:0a:b1:d9:
+        ca:aa:0e:d1:bc:ee:4a:72:b7:62:f6:98:59:3f:48:1d:6a:12:
+        ae:6b:90:08:38:a5:cb:bd:7a:12:10:50:35:56:81:ba:dd:19:
+        57:2c:e9:08:68:39:07:11:a2:1f:86:f6:a7:37:0a:95:3b:4b:
+        cf:8e:a1:c5:dc:50:4f:9b:c6:5c:de:e5:ec:63:3c:10:e3:49:
+        b2:48:46:3e:ac:02:25:20:67:12:26:64:54:84:c7:79:e7:cc:
+        c3:5d:dc:f8:61:fc:10:f8:61:46:90:d3:c7:df:93:05:b8:77:
+        cc:8f:db:43:b8:21:f9:9d:95:ca:2a:ec:cb:3a:3d:46:38:b9:
+        bd:75:e2:b4:e0:c2:e8:43:2c:a4:74:6b:e0:64:79:07:19:92:
+        94:c9:8c:be:ce:cb:ec:63:db:0d:37:d3:d3:ce:90:fc:59:67:
+        c9:8e:3d:f3:65:3e:76:5f:ea:dc:af:d0:b6:b3:d2:92:a3:80:
+        74:8e:67:f9:36:f2:dd:ff:3e:e8:3e:6d:28:39:6b:41:7b:6a:
+        e0:80:55:23:2d:4b:89:ea:ef:3d:82:dc:d8:17:b7:d2:a1:ed:
+        2b:54:1d:e1:cf:da:75:53:bc:d7:f0:27:61:76:05:99:87:2d:
+        ec:0d:2c:79:19:27:99:ea:a8:68:40:8d:32:60:2c:fc:c2:23:
+        78:cf:ea:71:a4:4f:58:0a:b8:95:d0:b4:b1:4d:c4:b8:d8:e0:
+        2b:bf:3c:80:46:c9:a1:d2:fc:84:64:80:82:95:ef:26:ab:ca:
+        e2:3d:b5:b5:4a:3c:aa:0b:94:f1:f0:02:be:f0:de:08:4a:be:
+        2a:84:3c:9e:22:6f:07:29:d6:b9:7e:4c:18:40:93:b3:16:90:
+        cc:bd:6c:e6:ed:0a:29:7b:77:5b:81:60:76:8e:fe:fb:05:0b:
+        ed:ae:07:9b:1b:91:17:f7:e1:5a:1c:d0:8a:11:9c:75:4f:b5:
+        d9:3f:96:22:92:9d:97:d6:86:05:52:66:55:92:e7:c5:6e:da:
+        45:7d:9c:11:0d:de:37:c0:2f:1b:21:f3:f3:9e:e5:c5:9f:8e:
+        55:f8:fe:7a:bf:95:90:f5:64:4e:6b:f4:37:3d:ab:8b:f7:40:
+        00:5d:f0:ce:5e:80:b1:91
+-----BEGIN CERTIFICATE-----
+MIIG+TCCBOGgAwIBAgIKTFEmBBNtJ4iNpDANBgkqhkiG9w0BAQ0FADB3MQswCQYD
+VQQGEwJCUjETMBEGA1UEChMKSUNQLUJyYXNpbDE1MDMGA1UECxMsQXV0b3JpZGFk
+ZSBDZXJ0aWZpY2Fkb3JhIFJhaXogQnJhc2lsZWlyYSB2MTAxHDAaBgNVBAMTE0FD
+IFNPTFVUSSBTU0wgRVYgRzQwHhcNMjYwNDE2MTM1MjAwWhcNMjcwNDE2MTM1MjAw
+WjCB0zELMAkGA1UEBhMCQlIxLTArBgNVBAoMJFNFQ1JFVEFSSUEgREEgRkFaRU5E
+QSBFIFBMQU5FSkFNRU5UTzELMAkGA1UECAwCU1AxEjAQBgNVBAcMCVNhbyBQYXVs
+bzEXMBUGA1UEBRMONDYzNzcyMjIwMDAxMjkxKjAoBgNVBAMMIWhvbW9sb2dhY2Fv
+Lm5mZS5mYXplbmRhLnNwLmdvdi5icjEaMBgGA1UEDwwRR292ZXJubWVudCBFbnRp
+dHkxEzARBgsrBgEEAYI3PAIBAxMCQlIwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAw
+ggEKAoIBAQDGXhgalS7NAUZrekq2wmzMIdF947/ndpYQEvU7krUlLyLsP2l06ms8
+48K4pgYCtqMeAYHXD5CB8egXrURBmq3ymRpGh/uF79XNHIdcD5M4ZMdyfTq449yK
+UyjR6V8Z8X6/qZrSaDtUhcK5OEllbaENr2zsAAgU7YqhH8Oydh6ly0OV5C+0sbhA
+u5g5NbLUzE1G1dkqYrUBGMOqgfduAPjd/dHkfKDISNqx05pfX2v3zHnaRJCAb8iG
+dyCWnrdBXFBFpPF2plWCDeOu6K450LMRgomYitm/GZkO8dRusPnigOoQuSs529yv
+eiGgMolH0mBSMHmvXj/u5wyxO/thJiErAgMBAAGjggIoMIICJDAJBgNVHRMEAjAA
+MB8GA1UdIwQYMBaAFP4GuSyVfi/m0Lio8S+38i6F1dfAMIGABggrBgEFBQcBAQR0
+MHIwRgYIKwYBBQUHMAKGOmh0dHA6Ly9jY2QuYWNzb2x1dGkuY29tLmJyL2xjci9h
+Yy1zb2x1dGktc3NsLWV2LXYxMC1nNC5jcnQwKAYIKwYBBQUHMAGGHGh0dHA6Ly9v
+Y3NwMy5hY3NvbHV0aS5jb20uYnIwLAYDVR0RBCUwI4IhaG9tb2xvZ2FjYW8ubmZl
+LmZhemVuZGEuc3AuZ292LmJyMGQGA1UdIARdMFswBwYFZ4EMAQEwUAYGYEwBAgFw
+MEYwRAYIKwYBBQUHAgEWOGh0dHA6Ly9jY2QuYWNzb2x1dGkuY29tLmJyL2RvY3Mv
+ZHBjLWFjLXNvbHV0aS1zc2wtZXYucGRmMB0GA1UdJQQWMBQGCCsGAQUFBwMCBggr
+BgEFBQcDATCBkAYDVR0fBIGIMIGFMECgPqA8hjpodHRwOi8vY2NkLmFjc29sdXRp
+LmNvbS5ici9sY3IvYWMtc29sdXRpLXNzbC1ldi12MTAtZzQuY3JsMEGgP6A9hjto
+dHRwOi8vY2NkMi5hY3NvbHV0aS5jb20uYnIvbGNyL2FjLXNvbHV0aS1zc2wtZXYt
+djEwLWc0LmNybDAdBgNVHQ4EFgQU+RP9URlWYfWhLFrLPi33nrXYcf8wDgYDVR0P
+AQH/BAQDAgWgMA0GCSqGSIb3DQEBDQUAA4ICAQAAKxWfwH+UgP+vPY40VP3niYZ6
+BIhK9djDrxQxSlMRLxyKJLQ/bIfEPf0Me8QzMdiP0Uehh/oNw9nvkJ0JY11AD+Kt
+6kEeWNJbTvchYcnFCxXeDovWVhgKsdnKqg7RvO5Kcrdi9phZP0gdahKua5AIOKXL
+vXoSEFA1VoG63RlXLOkIaDkHEaIfhvanNwqVO0vPjqHF3FBPm8Zc3uXsYzwQ40my
+SEY+rAIlIGcSJmRUhMd558zDXdz4YfwQ+GFGkNPH35MFuHfMj9tDuCH5nZXKKuzL
+Oj1GOLm9deK04MLoQyykdGvgZHkHGZKUyYy+zsvsY9sNN9PTzpD8WWfJjj3zZT52
+X+rcr9C2s9KSo4B0jmf5NvLd/z7oPm0oOWtBe2rggFUjLUuJ6u89gtzYF7fSoe0r
+VB3hz9p1U7zX8CdhdgWZhy3sDSx5GSeZ6qhoQI0yYCz8wiN4z+pxpE9YCriV0LSx
+TcS42OArvzyARsmh0vyEZICCle8mq8riPbW1SjyqC5Tx8AK+8N4ISr4qhDyeIm8H
+Kda5fkwYQJOzFpDMvWzm7Qope3dbgWB2jv77BQvtrgebG5EX9+FaHNCKEZx1T7XZ
+P5Yikp2X1oYFUmZVkufFbtpFfZwRDd43wC8bIfPznuXFn45V+P56v5WQ9WROa/Q3
+PauL90AAXfDOXoCxkQ==
+-----END CERTIFICATE-----
+------------------
+        ASN.1Cert, length=1976
+------details-----
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            d8:c6:97:a1:79:e5:50:fe
+        Signature Algorithm: sha512WithRSAEncryption
+        Issuer: C = BR, O = ICP-Brasil, OU = Instituto Nacional de Tecnologia da Informacao - ITI, CN = Autoridade Certificadora Raiz Brasileira v10
+        Validity
+            Not Before: Mar 22 18:09:11 2023 GMT
+            Not After : Jul  1 12:00:59 2032 GMT
+        Subject: C = BR, O = ICP-Brasil, OU = Autoridade Certificadora Raiz Brasileira v10, CN = AC SOLUTI SSL EV G4
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (4096 bit)
+                Modulus:
+                    00:c7:bf:72:af:a0:43:eb:36:bc:c8:98:83:e7:d7:
+                    b1:88:e6:f7:68:57:18:21:b2:6e:84:54:b3:14:8e:
+                    73:38:25:d0:a9:0c:40:fe:d0:1a:99:17:49:32:73:
+                    26:5a:89:6b:7b:8e:a4:91:bd:c1:a6:eb:a4:4a:cd:
+                    21:9c:1c:99:54:81:a8:69:f6:a7:17:02:64:b0:32:
+                    7d:34:a7:0b:e0:04:a6:fe:e2:1b:69:e3:cb:d0:73:
+                    5f:f9:31:6a:5a:07:34:16:e0:38:bf:b5:6b:cd:92:
+                    1f:54:46:d3:32:86:d9:6d:7f:6b:b7:b3:da:f9:be:
+                    01:75:d9:f7:fb:98:2b:b7:a2:3d:1b:0c:12:1a:1a:
+                    cf:da:f4:4b:4c:2a:80:9f:c3:fc:e2:29:4a:7b:d7:
+                    52:58:bb:57:db:21:65:4e:81:b5:bd:88:71:36:e2:
+                    88:84:df:72:c6:2e:6f:ae:4e:80:96:a6:31:8b:de:
+                    7f:43:fa:af:ab:c9:f2:18:16:87:ac:ea:03:c2:61:
+                    84:ad:b9:d0:d4:07:d9:5f:a5:ef:37:20:e5:5c:56:
+                    c9:4b:dc:39:98:77:6a:04:9d:c1:82:a2:03:b7:ab:
+                    36:8c:48:7d:ce:54:b3:0e:e1:18:39:79:d1:11:a4:
+                    cc:39:53:4b:40:31:ec:8e:d2:4e:7f:b6:69:c5:7d:
+                    43:38:ef:a9:59:97:e7:1e:d8:e9:79:ea:9e:d1:db:
+                    28:ca:c4:72:62:cd:e0:8e:4a:6c:03:13:91:57:cf:
+                    b9:65:f9:9a:bd:0b:b4:16:53:3a:0f:42:dc:93:ef:
+                    7f:54:18:47:81:45:30:33:e0:ab:0e:ef:b7:eb:0a:
+                    d7:62:7c:64:6f:5f:79:4c:7c:8f:2a:78:c9:df:bd:
+                    fd:3c:04:af:5e:d9:d4:64:08:7c:03:8a:fd:b7:03:
+                    0e:d0:22:2c:43:4b:d3:e2:4a:c3:31:39:b8:23:1f:
+                    0a:e8:12:a0:00:37:63:30:cf:50:75:cc:0b:b3:65:
+                    55:07:ee:4e:8c:c9:04:3f:20:8f:c6:0d:4a:53:8d:
+                    3e:15:2a:78:63:74:87:f3:e5:a1:05:1f:1e:c1:cb:
+                    65:e3:32:4c:75:87:27:8e:34:b4:bf:d9:2a:03:9c:
+                    a8:ad:13:dc:98:fc:f0:12:a9:60:c2:3c:2a:52:a0:
+                    9f:b1:7c:47:72:66:fa:1a:c0:46:c9:7c:bf:82:32:
+                    15:39:23:b2:17:81:ff:5f:ee:08:9b:82:12:1c:d8:
+                    21:b8:6d:fe:9d:7d:50:1d:3d:c1:a4:62:47:23:c3:
+                    6d:5d:b6:af:c6:d5:5d:9d:1e:93:97:eb:b0:5b:8a:
+                    14:e1:01:5a:fc:67:b3:53:81:50:2f:e2:70:ba:30:
+                    fa:40:cb
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Certificate Policies: 
+                Policy: 2.16.76.1.1.0
+                  CPS: http://acraiz.icpbrasil.gov.br/DPCacraiz.pdf
+                Policy: 2.16.76.1.1.130
+                  CPS: http://ccd.acsoluti.com.br/docs/dpc-ac-soluti-ssl-ev.pdf
+                Policy: 2.16.76.1.2.1.112
+                  CPS: http://ccd.acsoluti.com.br/docs/dpc-ac-soluti-ssl-ev.pdf
+                Policy: 2.23.140.1.1
+                Policy: 2.23.140.1.2.2
+            X509v3 CRL Distribution Points: 
+                Full Name:
+                  URI:http://acraiz.icpbrasil.gov.br/LCRacraizv10.crl
+
+            X509v3 Authority Key Identifier: 
+                74:F3:7E:FF:FC:9F:53:7A:F1:7C:EB:AB:3E:A4:A6:DA:18:BA:45:63
+            X509v3 Subject Key Identifier: 
+                FE:06:B9:2C:95:7E:2F:E6:D0:B8:A8:F1:2F:B7:F2:2E:85:D5:D7:C0
+            X509v3 Basic Constraints: critical
+                CA:TRUE
+            X509v3 Key Usage: critical
+                Digital Signature, Certificate Sign, CRL Sign
+            X509v3 Extended Key Usage: 
+                TLS Web Server Authentication, TLS Web Client Authentication
+            Authority Information Access: 
+                CA Issuers - URI:http://acraiz.icpbrasil.gov.br/ICP-Brasilv10.crt
+    Signature Algorithm: sha512WithRSAEncryption
+    Signature Value:
+        00:1c:5a:c9:e1:e2:b7:02:f5:f1:07:97:49:0b:d1:67:67:a2:
+        35:bf:36:22:56:13:ba:f1:11:e0:94:4c:cd:90:d6:a1:a9:8a:
+        3a:a9:83:ec:a5:d2:4a:3f:ac:74:14:e1:62:24:64:90:d8:95:
+        16:23:27:da:aa:18:01:dc:a5:23:62:38:c3:59:e9:6f:1c:ab:
+        ba:47:d7:43:bb:5a:75:31:22:30:21:6f:6b:4b:87:1f:0f:65:
+        a4:1c:7e:a3:2c:bd:ad:c2:cc:ee:a0:b9:aa:ab:a4:b3:28:42:
+        db:6d:98:b7:75:9b:a8:2e:85:95:af:8b:a3:71:a5:4c:ea:68:
+        82:a7:b1:7b:27:3d:86:0b:c0:43:17:8c:9a:af:b1:c8:37:23:
+        48:bc:ca:9a:64:66:30:a4:3d:cb:7c:3b:c2:9b:9f:5d:33:bf:
+        d0:ae:6e:38:b2:d9:b1:fc:97:65:3c:3e:31:86:1e:22:4d:be:
+        18:db:f5:a9:00:5b:5a:8d:e0:9b:09:43:d5:6d:29:24:41:de:
+        fb:f2:b1:88:24:64:0c:7a:49:63:b2:e4:d9:19:b8:6d:20:d9:
+        46:be:01:9f:c6:e4:fd:72:56:a6:2b:bb:16:6f:5b:f2:98:8f:
+        2a:34:ed:b2:d0:d8:4f:3b:b8:d1:c7:0f:46:1f:54:09:60:d4:
+        cf:89:ca:17:de:dd:5e:32:20:61:ff:9a:4c:0d:2f:9c:a7:65:
+        9e:93:d4:0d:e0:55:a5:fc:97:6a:f8:46:7f:f6:a4:16:1e:40:
+        3b:bf:ef:eb:19:33:58:e5:25:6b:09:f9:83:ad:78:99:68:4e:
+        43:a2:13:c2:6b:9a:cb:5b:29:9e:90:4e:eb:ce:1d:d1:bc:a7:
+        15:07:cc:a1:91:92:e5:f7:4a:a1:82:8a:0f:3a:76:f7:18:41:
+        9b:7b:3d:58:3d:5f:fe:83:fb:f4:87:b4:78:3a:e2:6e:93:af:
+        8f:75:ec:8f:3e:f6:31:31:b8:f9:45:71:ba:fd:0e:21:8b:97:
+        0d:cf:31:d5:fa:0c:cd:53:9c:a3:a0:f1:b8:b7:a5:e8:a1:b9:
+        44:7f:a6:d2:d5:a6:5f:8a:2e:0a:00:4a:4c:d5:10:0b:bd:00:
+        58:70:5a:e0:f0:85:e5:80:3b:1f:ca:95:9c:7d:84:50:13:e8:
+        de:bc:4e:63:4c:0d:e8:6c:f2:31:b8:3d:f8:3f:65:e5:ed:97:
+        72:0e:ff:ca:da:98:04:80:67:64:a2:cf:8f:34:b7:3a:a5:2c:
+        33:d5:20:50:a1:b0:70:49:da:1e:79:91:c4:7f:2f:c9:51:0c:
+        1a:7a:0a:d5:c6:4d:7f:db:83:33:db:0c:1a:04:14:cc:ac:15:
+        c2:2c:70:c8:83:4e:33:c5
+-----BEGIN CERTIFICATE-----
+MIIHtDCCBZygAwIBAgIJANjGl6F55VD+MA0GCSqGSIb3DQEBDQUAMIGYMQswCQYD
+VQQGEwJCUjETMBEGA1UECgwKSUNQLUJyYXNpbDE9MDsGA1UECww0SW5zdGl0dXRv
+IE5hY2lvbmFsIGRlIFRlY25vbG9naWEgZGEgSW5mb3JtYWNhbyAtIElUSTE1MDMG
+A1UEAwwsQXV0b3JpZGFkZSBDZXJ0aWZpY2Fkb3JhIFJhaXogQnJhc2lsZWlyYSB2
+MTAwHhcNMjMwMzIyMTgwOTExWhcNMzIwNzAxMTIwMDU5WjB3MQswCQYDVQQGEwJC
+UjETMBEGA1UEChMKSUNQLUJyYXNpbDE1MDMGA1UECxMsQXV0b3JpZGFkZSBDZXJ0
+aWZpY2Fkb3JhIFJhaXogQnJhc2lsZWlyYSB2MTAxHDAaBgNVBAMTE0FDIFNPTFVU
+SSBTU0wgRVYgRzQwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQDHv3Kv
+oEPrNrzImIPn17GI5vdoVxghsm6EVLMUjnM4JdCpDED+0BqZF0kycyZaiWt7jqSR
+vcGm66RKzSGcHJlUgahp9qcXAmSwMn00pwvgBKb+4htp48vQc1/5MWpaBzQW4Di/
+tWvNkh9URtMyhtltf2u3s9r5vgF12ff7mCu3oj0bDBIaGs/a9EtMKoCfw/ziKUp7
+11JYu1fbIWVOgbW9iHE24oiE33LGLm+uToCWpjGL3n9D+q+ryfIYFoes6gPCYYSt
+udDUB9lfpe83IOVcVslL3DmYd2oEncGCogO3qzaMSH3OVLMO4Rg5edERpMw5U0tA
+MeyO0k5/tmnFfUM476lZl+ce2Ol56p7R2yjKxHJizeCOSmwDE5FXz7ll+Zq9C7QW
+UzoPQtyT739UGEeBRTAz4KsO77frCtdifGRvX3lMfI8qeMnfvf08BK9e2dRkCHwD
+iv23Aw7QIixDS9PiSsMxObgjHwroEqAAN2Mwz1B1zAuzZVUH7k6MyQQ/II/GDUpT
+jT4VKnhjdIfz5aEFHx7By2XjMkx1hyeONLS/2SoDnKitE9yY/PASqWDCPCpSoJ+x
+fEdyZvoawEbJfL+CMhU5I7IXgf9f7gibghIc2CG4bf6dfVAdPcGkYkcjw21dtq/G
+1V2dHpOX67BbihThAVr8Z7NTgVAv4nC6MPpAywIDAQABo4ICHzCCAhswggEHBgNV
+HSAEgf8wgfwwQwYFYEwBAQAwOjA4BggrBgEFBQcCARYsaHR0cDovL2FjcmFpei5p
+Y3BicmFzaWwuZ292LmJyL0RQQ2FjcmFpei5wZGYwUAYGYEwBAYECMEYwRAYIKwYB
+BQUHAgEWOGh0dHA6Ly9jY2QuYWNzb2x1dGkuY29tLmJyL2RvY3MvZHBjLWFjLXNv
+bHV0aS1zc2wtZXYucGRmMFAGBmBMAQIBcDBGMEQGCCsGAQUFBwIBFjhodHRwOi8v
+Y2NkLmFjc29sdXRpLmNvbS5ici9kb2NzL2RwYy1hYy1zb2x1dGktc3NsLWV2LnBk
+ZjAHBgVngQwBATAIBgZngQwBAgIwQAYDVR0fBDkwNzA1oDOgMYYvaHR0cDovL2Fj
+cmFpei5pY3BicmFzaWwuZ292LmJyL0xDUmFjcmFpenYxMC5jcmwwHwYDVR0jBBgw
+FoAUdPN+//yfU3rxfOurPqSm2hi6RWMwHQYDVR0OBBYEFP4GuSyVfi/m0Lio8S+3
+8i6F1dfAMA8GA1UdEwEB/wQFMAMBAf8wDgYDVR0PAQH/BAQDAgGGMB0GA1UdJQQW
+MBQGCCsGAQUFBwMBBggrBgEFBQcDAjBMBggrBgEFBQcBAQRAMD4wPAYIKwYBBQUH
+MAKGMGh0dHA6Ly9hY3JhaXouaWNwYnJhc2lsLmdvdi5ici9JQ1AtQnJhc2lsdjEw
+LmNydDANBgkqhkiG9w0BAQ0FAAOCAgEAABxayeHitwL18QeXSQvRZ2eiNb82IlYT
+uvER4JRMzZDWoamKOqmD7KXSSj+sdBThYiRkkNiVFiMn2qoYAdylI2I4w1npbxyr
+ukfXQ7tadTEiMCFva0uHHw9lpBx+oyy9rcLM7qC5qquksyhC222Yt3WbqC6Fla+L
+o3GlTOpogqexeyc9hgvAQxeMmq+xyDcjSLzKmmRmMKQ9y3w7wpufXTO/0K5uOLLZ
+sfyXZTw+MYYeIk2+GNv1qQBbWo3gmwlD1W0pJEHe+/KxiCRkDHpJY7Lk2Rm4bSDZ
+Rr4Bn8bk/XJWpiu7Fm9b8piPKjTtstDYTzu40ccPRh9UCWDUz4nKF97dXjIgYf+a
+TA0vnKdlnpPUDeBVpfyXavhGf/akFh5AO7/v6xkzWOUlawn5g614mWhOQ6ITwmua
+y1spnpBO684d0bynFQfMoZGS5fdKoYKKDzp29xhBm3s9WD1f/oP79Ie0eDribpOv
+j3Xsjz72MTG4+UVxuv0OIYuXDc8x1foMzVOco6DxuLel6KG5RH+m0tWmX4ouCgBK
+TNUQC70AWHBa4PCF5YA7H8qVnH2EUBPo3rxOY0wN6GzyMbg9+D9l5e2Xcg7/ytqY
+BIBnZKLPjzS3OqUsM9UgUKGwcEnaHnmRxH8vyVEMGnoK1cZNf9uDM9sMGgQUzKwV
+wixwyINOM8U=
+-----END CERTIFICATE-----
+------------------
+
+    ServerKeyExchange, Length=361
+      KeyExchangeAlgorithm=ECDHE
+        named_curve: secp384r1 (P-384) (24)
+        point (len=97): 04CE146A2FA82B215A8DF876E6A345FBAC0048701453859EABE0DD2A6FB1056B56F2E2496A38688C26795178BDDCE7E3DB1BEDBABC182F1929D45D607A789BC7F13537828BE58B06F37068FC937C23256FD20C7FB1D7170DB304555EFC94ED0F8A
+      Signature Algorithm: rsa_pss_rsae_sha256 (0x0804)
+      Signature (len=256): BD45D178F906F9D131F65028C333E043CB17D69745DDC05CCD82A95D240C207C1C202DD408088EFC6EF31FF1065E6B017987CE211CAE90F974A82059CC230EA3A247369C7D04B1547AF30B051AD5108F2919AF8231FBA0D59DED1EA2EBA63DF18FA76C7E160114281E8FC6EE35E9C5CB8703A205F97B2AEE8F1D21115E4C37D4839050E9DE5BE4F4E97331426B9AD49498A4369F729A504FF16AB8E3966DE45BBFD727048BBCAF0BF880DDB451BE38DDC145DB14578ADCECA136C2364AF2B04BFEAC50112E6F57F90BE4842EA14641EF4D2B08A42806A8BF6588C9419C8BAC7E8CA6007266302F123702595382D1B38B1FEB93FFC4F4A6A94A0838517EA09726
+
+    ServerHelloDone, Length=0
+
+Sent TLS Record
+Header:
+  Version = TLS 1.2 (0x303)
+  Content Type = Handshake (22)
+  Length = 102
+    ClientKeyExchange, Length=98
+      KeyExchangeAlgorithm=ECDHE
+        ecdh_Yc (len=97): 040FB9511CF46BC0AFD40716A7D1BD5EA87040A84D126E8257CF5C74E22CDB25AE29D80A92F85C67C028334212376F3D9BC3AA760912F5A21A5E423AFF6BF154A8EAF3A3134A7A9A38FC9D97D3778BB1294BD6357C7C9BD09C3EB847C8A1B34363
+
+Sent TLS Record
+Header:
+  Version = TLS 1.2 (0x303)
+  Content Type = ChangeCipherSpec (20)
+  Length = 1
+    change_cipher_spec (1)
+
+Sent TLS Record
+Header:
+  Version = TLS 1.2 (0x303)
+  Content Type = Handshake (22)
+  Length = 40
+    Finished, Length=12
+      verify_data (len=12): 70ADCE2A19DB2324E1CB8B94
+
+Received TLS Record
+Header:
+  Version = TLS 1.2 (0x303)
+  Content Type = ChangeCipherSpec (20)
+  Length = 1
+Received TLS Record
+Header:
+  Version = TLS 1.2 (0x303)
+  Content Type = Handshake (22)
+  Length = 40
+    Finished, Length=12
+      verify_data (len=12): 061B8717FF4CC6AEC7FE92FF
+
+Sent TLS Record
+Header:
+  Version = TLS 1.2 (0x303)
+  Content Type = ApplicationData (23)
+  Length = 202
+Received TLS Record
+Header:
+  Version = TLS 1.2 (0x303)
+  Content Type = Handshake (22)
+  Length = 28
+    HelloRequest, Length=0
+      Unsupported, hex dump follows:
+
+Sent TLS Record
+Header:
+  Version = TLS 1.2 (0x303)
+  Content Type = Handshake (22)
+  Length = 340
+    ClientHello, Length=312
+      client_version=0x303 (TLS 1.2)
+      Random:
+        gmt_unix_time=0x19245F56
+        random_bytes (len=28): 2E799E01CBB5F2CE5BACFC8B04037C2D860839E012212917CD410BFA
+      session_id (len=32): FD2A00003BBFF911F5FEF400D82ADA13D8AAC0D85AEE68B94BA2FD90E318DD74
+      cipher_suites (len=98)
+        {0xC0, 0x2F} TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        {0xC0, 0x2B} TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+        {0xC0, 0x30} TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        {0xC0, 0x2C} TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+        {0x00, 0x9E} TLS_DHE_RSA_WITH_AES_128_GCM_SHA256
+        {0xC0, 0x27} TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
+        {0x00, 0x67} TLS_DHE_RSA_WITH_AES_128_CBC_SHA256
+        {0xC0, 0x28} TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384
+        {0x00, 0x6B} TLS_DHE_RSA_WITH_AES_256_CBC_SHA256
+        {0x00, 0xA3} TLS_DHE_DSS_WITH_AES_256_GCM_SHA384
+        {0x00, 0x9F} TLS_DHE_RSA_WITH_AES_256_GCM_SHA384
+        {0xCC, 0xA9} TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
+        {0xCC, 0xA8} TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+        {0xCC, 0xAA} TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+        {0xC0, 0xAD} TLS_ECDHE_ECDSA_WITH_AES_256_CCM
+        {0xC0, 0x9F} TLS_DHE_RSA_WITH_AES_256_CCM
+        {0xC0, 0x5D} TLS_ECDHE_ECDSA_WITH_ARIA_256_GCM_SHA384
+        {0xC0, 0x61} TLS_ECDHE_RSA_WITH_ARIA_256_GCM_SHA384
+        {0xC0, 0x57} TLS_DHE_DSS_WITH_ARIA_256_GCM_SHA384
+        {0xC0, 0x53} TLS_DHE_RSA_WITH_ARIA_256_GCM_SHA384
+        {0x00, 0xA2} TLS_DHE_DSS_WITH_AES_128_GCM_SHA256
+        {0xC0, 0xAC} TLS_ECDHE_ECDSA_WITH_AES_128_CCM
+        {0xC0, 0x9E} TLS_DHE_RSA_WITH_AES_128_CCM
+        {0xC0, 0x5C} TLS_ECDHE_ECDSA_WITH_ARIA_128_GCM_SHA256
+        {0xC0, 0x60} TLS_ECDHE_RSA_WITH_ARIA_128_GCM_SHA256
+        {0xC0, 0x56} TLS_DHE_DSS_WITH_ARIA_128_GCM_SHA256
+        {0xC0, 0x52} TLS_DHE_RSA_WITH_ARIA_128_GCM_SHA256
+        {0xC0, 0x24} TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+        {0x00, 0x6A} TLS_DHE_DSS_WITH_AES_256_CBC_SHA256
+        {0xC0, 0x23} TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256
+        {0x00, 0x40} TLS_DHE_DSS_WITH_AES_128_CBC_SHA256
+        {0xC0, 0x0A} TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA
+        {0xC0, 0x14} TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
+        {0x00, 0x39} TLS_DHE_RSA_WITH_AES_256_CBC_SHA
+        {0x00, 0x38} TLS_DHE_DSS_WITH_AES_256_CBC_SHA
+        {0xC0, 0x09} TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA
+        {0xC0, 0x13} TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA
+        {0x00, 0x33} TLS_DHE_RSA_WITH_AES_128_CBC_SHA
+        {0x00, 0x32} TLS_DHE_DSS_WITH_AES_128_CBC_SHA
+        {0x00, 0x9D} TLS_RSA_WITH_AES_256_GCM_SHA384
+        {0xC0, 0x9D} TLS_RSA_WITH_AES_256_CCM
+        {0xC0, 0x51} TLS_RSA_WITH_ARIA_256_GCM_SHA384
+        {0x00, 0x9C} TLS_RSA_WITH_AES_128_GCM_SHA256
+        {0xC0, 0x9C} TLS_RSA_WITH_AES_128_CCM
+        {0xC0, 0x50} TLS_RSA_WITH_ARIA_128_GCM_SHA256
+        {0x00, 0x3D} TLS_RSA_WITH_AES_256_CBC_SHA256
+        {0x00, 0x3C} TLS_RSA_WITH_AES_128_CBC_SHA256
+        {0x00, 0x35} TLS_RSA_WITH_AES_256_CBC_SHA
+        {0x00, 0x2F} TLS_RSA_WITH_AES_128_CBC_SHA
+      compression_methods (len=1)
+        No Compression (0x00)
+      extensions, length = 141
+        extension_type=renegotiate(65281), length=13
+            client_verify_data (len=12): 70ADCE2A19DB2324E1CB8B94
+        extension_type=server_name(0), length=38
+          0000 - 00 24 00 00 21 68 6f 6d-6f 6c 6f 67 61 63 61   .$..!homologaca
+          000f - 6f 2e 6e 66 65 2e 66 61-7a 65 6e 64 61 2e 73   o.nfe.fazenda.s
+          001e - 70 2e 67 6f 76 2e 62 72-                       p.gov.br
+        extension_type=ec_point_formats(11), length=4
+          uncompressed (0)
+          ansiX962_compressed_prime (1)
+          ansiX962_compressed_char2 (2)
+        extension_type=supported_groups(10), length=12
+          ecdh_x25519 (29)
+          secp256r1 (P-256) (23)
+          ecdh_x448 (30)
+          secp384r1 (P-384) (24)
+          secp521r1 (P-521) (25)
+        extension_type=session_ticket(35), length=0
+        extension_type=encrypt_then_mac(22), length=0
+        extension_type=extended_master_secret(23), length=0
+        extension_type=signature_algorithms(13), length=42
+          ecdsa_secp256r1_sha256 (0x0403)
+          ecdsa_secp384r1_sha384 (0x0503)
+          ecdsa_secp521r1_sha512 (0x0603)
+          ed25519 (0x0807)
+          ed448 (0x0808)
+          rsa_pss_pss_sha256 (0x0809)
+          rsa_pss_pss_sha384 (0x080a)
+          rsa_pss_pss_sha512 (0x080b)
+          rsa_pss_rsae_sha256 (0x0804)
+          rsa_pss_rsae_sha384 (0x0805)
+          rsa_pss_rsae_sha512 (0x0806)
+          rsa_pkcs1_sha256 (0x0401)
+          rsa_pkcs1_sha384 (0x0501)
+          rsa_pkcs1_sha512 (0x0601)
+          ecdsa_sha224 (0x0303)
+          rsa_pkcs1_sha224 (0x0301)
+          dsa_sha224 (0x0302)
+          dsa_sha256 (0x0402)
+          dsa_sha384 (0x0502)
+          dsa_sha512 (0x0602)
+
+Received TLS Record
+Header:
+  Version = TLS 1.2 (0x303)
+  Content Type = Handshake (22)
+  Length = 4316
+    ServerHello, Length=105
+      server_version=0x303 (TLS 1.2)
+      Random:
+        gmt_unix_time=0x6AB70429
+        random_bytes (len=28): FA3143EE42B18341A75F405D2AB5000B002034A3BEC3083E4C193F14
+      session_id (len=32): 5D400000488A0E28EA82384D5B44E5E3B6860CCB9D4DD17090774C156675A4CD
+      cipher_suite {0xC0, 0x30} TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+      compression_method: No Compression (0x00)
+      extensions, length = 33
+        extension_type=extended_master_secret(23), length=0
+        extension_type=renegotiate(65281), length=25
+            client_verify_data (len=12): 70ADCE2A19DB2324E1CB8B94
+            server_verify_data (len=12): 061B8717FF4CC6AEC7FE92FF
+
+    Certificate, Length=3774
+      certificate_list, length=3771
+        ASN.1Cert, length=1789
+------details-----
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            4c:51:26:04:13:6d:27:88:8d:a4
+        Signature Algorithm: sha512WithRSAEncryption
+        Issuer: C = BR, O = ICP-Brasil, OU = Autoridade Certificadora Raiz Brasileira v10, CN = AC SOLUTI SSL EV G4
+        Validity
+            Not Before: Apr 16 13:52:00 2026 GMT
+            Not After : Apr 16 13:52:00 2027 GMT
+        Subject: C = BR, O = SECRETARIA DA FAZENDA E PLANEJAMENTO, ST = SP, L = Sao Paulo, serialNumber = 46377222000129, CN = homologacao.nfe.fazenda.sp.gov.br, businessCategory = Government Entity, jurisdictionC = BR
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (2048 bit)
+                Modulus:
+                    00:c6:5e:18:1a:95:2e:cd:01:46:6b:7a:4a:b6:c2:
+                    6c:cc:21:d1:7d:e3:bf:e7:76:96:10:12:f5:3b:92:
+                    b5:25:2f:22:ec:3f:69:74:ea:6b:3c:e3:c2:b8:a6:
+                    06:02:b6:a3:1e:01:81:d7:0f:90:81:f1:e8:17:ad:
+                    44:41:9a:ad:f2:99:1a:46:87:fb:85:ef:d5:cd:1c:
+                    87:5c:0f:93:38:64:c7:72:7d:3a:b8:e3:dc:8a:53:
+                    28:d1:e9:5f:19:f1:7e:bf:a9:9a:d2:68:3b:54:85:
+                    c2:b9:38:49:65:6d:a1:0d:af:6c:ec:00:08:14:ed:
+                    8a:a1:1f:c3:b2:76:1e:a5:cb:43:95:e4:2f:b4:b1:
+                    b8:40:bb:98:39:35:b2:d4:cc:4d:46:d5:d9:2a:62:
+                    b5:01:18:c3:aa:81:f7:6e:00:f8:dd:fd:d1:e4:7c:
+                    a0:c8:48:da:b1:d3:9a:5f:5f:6b:f7:cc:79:da:44:
+                    90:80:6f:c8:86:77:20:96:9e:b7:41:5c:50:45:a4:
+                    f1:76:a6:55:82:0d:e3:ae:e8:ae:39:d0:b3:11:82:
+                    89:98:8a:d9:bf:19:99:0e:f1:d4:6e:b0:f9:e2:80:
+                    ea:10:b9:2b:39:db:dc:af:7a:21:a0:32:89:47:d2:
+                    60:52:30:79:af:5e:3f:ee:e7:0c:b1:3b:fb:61:26:
+                    21:2b
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Basic Constraints: 
+                CA:FALSE
+            X509v3 Authority Key Identifier: 
+                FE:06:B9:2C:95:7E:2F:E6:D0:B8:A8:F1:2F:B7:F2:2E:85:D5:D7:C0
+            Authority Information Access: 
+                CA Issuers - URI:http://ccd.acsoluti.com.br/lcr/ac-soluti-ssl-ev-v10-g4.crt
+                OCSP - URI:http://ocsp3.acsoluti.com.br
+            X509v3 Subject Alternative Name: 
+                DNS:homologacao.nfe.fazenda.sp.gov.br
+            X509v3 Certificate Policies: 
+                Policy: 2.23.140.1.1
+                Policy: 2.16.76.1.2.1.112
+                  CPS: http://ccd.acsoluti.com.br/docs/dpc-ac-soluti-ssl-ev.pdf
+            X509v3 Extended Key Usage: 
+                TLS Web Client Authentication, TLS Web Server Authentication
+            X509v3 CRL Distribution Points: 
+                Full Name:
+                  URI:http://ccd.acsoluti.com.br/lcr/ac-soluti-ssl-ev-v10-g4.crl
+
+                Full Name:
+                  URI:http://ccd2.acsoluti.com.br/lcr/ac-soluti-ssl-ev-v10-g4.crl
+
+            X509v3 Subject Key Identifier: 
+                F9:13:FD:51:19:56:61:F5:A1:2C:5A:CB:3E:2D:F7:9E:B5:D8:71:FF
+            X509v3 Key Usage: critical
+                Digital Signature, Key Encipherment
+    Signature Algorithm: sha512WithRSAEncryption
+    Signature Value:
+        00:2b:15:9f:c0:7f:94:80:ff:af:3d:8e:34:54:fd:e7:89:86:
+        7a:04:88:4a:f5:d8:c3:af:14:31:4a:53:11:2f:1c:8a:24:b4:
+        3f:6c:87:c4:3d:fd:0c:7b:c4:33:31:d8:8f:d1:47:a1:87:fa:
+        0d:c3:d9:ef:90:9d:09:63:5d:40:0f:e2:ad:ea:41:1e:58:d2:
+        5b:4e:f7:21:61:c9:c5:0b:15:de:0e:8b:d6:56:18:0a:b1:d9:
+        ca:aa:0e:d1:bc:ee:4a:72:b7:62:f6:98:59:3f:48:1d:6a:12:
+        ae:6b:90:08:38:a5:cb:bd:7a:12:10:50:35:56:81:ba:dd:19:
+        57:2c:e9:08:68:39:07:11:a2:1f:86:f6:a7:37:0a:95:3b:4b:
+        cf:8e:a1:c5:dc:50:4f:9b:c6:5c:de:e5:ec:63:3c:10:e3:49:
+        b2:48:46:3e:ac:02:25:20:67:12:26:64:54:84:c7:79:e7:cc:
+        c3:5d:dc:f8:61:fc:10:f8:61:46:90:d3:c7:df:93:05:b8:77:
+        cc:8f:db:43:b8:21:f9:9d:95:ca:2a:ec:cb:3a:3d:46:38:b9:
+        bd:75:e2:b4:e0:c2:e8:43:2c:a4:74:6b:e0:64:79:07:19:92:
+        94:c9:8c:be:ce:cb:ec:63:db:0d:37:d3:d3:ce:90:fc:59:67:
+        c9:8e:3d:f3:65:3e:76:5f:ea:dc:af:d0:b6:b3:d2:92:a3:80:
+        74:8e:67:f9:36:f2:dd:ff:3e:e8:3e:6d:28:39:6b:41:7b:6a:
+        e0:80:55:23:2d:4b:89:ea:ef:3d:82:dc:d8:17:b7:d2:a1:ed:
+        2b:54:1d:e1:cf:da:75:53:bc:d7:f0:27:61:76:05:99:87:2d:
+        ec:0d:2c:79:19:27:99:ea:a8:68:40:8d:32:60:2c:fc:c2:23:
+        78:cf:ea:71:a4:4f:58:0a:b8:95:d0:b4:b1:4d:c4:b8:d8:e0:
+        2b:bf:3c:80:46:c9:a1:d2:fc:84:64:80:82:95:ef:26:ab:ca:
+        e2:3d:b5:b5:4a:3c:aa:0b:94:f1:f0:02:be:f0:de:08:4a:be:
+        2a:84:3c:9e:22:6f:07:29:d6:b9:7e:4c:18:40:93:b3:16:90:
+        cc:bd:6c:e6:ed:0a:29:7b:77:5b:81:60:76:8e:fe:fb:05:0b:
+        ed:ae:07:9b:1b:91:17:f7:e1:5a:1c:d0:8a:11:9c:75:4f:b5:
+        d9:3f:96:22:92:9d:97:d6:86:05:52:66:55:92:e7:c5:6e:da:
+        45:7d:9c:11:0d:de:37:c0:2f:1b:21:f3:f3:9e:e5:c5:9f:8e:
+        55:f8:fe:7a:bf:95:90:f5:64:4e:6b:f4:37:3d:ab:8b:f7:40:
+        00:5d:f0:ce:5e:80:b1:91
+-----BEGIN CERTIFICATE-----
+MIIG+TCCBOGgAwIBAgIKTFEmBBNtJ4iNpDANBgkqhkiG9w0BAQ0FADB3MQswCQYD
+VQQGEwJCUjETMBEGA1UEChMKSUNQLUJyYXNpbDE1MDMGA1UECxMsQXV0b3JpZGFk
+ZSBDZXJ0aWZpY2Fkb3JhIFJhaXogQnJhc2lsZWlyYSB2MTAxHDAaBgNVBAMTE0FD
+IFNPTFVUSSBTU0wgRVYgRzQwHhcNMjYwNDE2MTM1MjAwWhcNMjcwNDE2MTM1MjAw
+WjCB0zELMAkGA1UEBhMCQlIxLTArBgNVBAoMJFNFQ1JFVEFSSUEgREEgRkFaRU5E
+QSBFIFBMQU5FSkFNRU5UTzELMAkGA1UECAwCU1AxEjAQBgNVBAcMCVNhbyBQYXVs
+bzEXMBUGA1UEBRMONDYzNzcyMjIwMDAxMjkxKjAoBgNVBAMMIWhvbW9sb2dhY2Fv
+Lm5mZS5mYXplbmRhLnNwLmdvdi5icjEaMBgGA1UEDwwRR292ZXJubWVudCBFbnRp
+dHkxEzARBgsrBgEEAYI3PAIBAxMCQlIwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAw
+ggEKAoIBAQDGXhgalS7NAUZrekq2wmzMIdF947/ndpYQEvU7krUlLyLsP2l06ms8
+48K4pgYCtqMeAYHXD5CB8egXrURBmq3ymRpGh/uF79XNHIdcD5M4ZMdyfTq449yK
+UyjR6V8Z8X6/qZrSaDtUhcK5OEllbaENr2zsAAgU7YqhH8Oydh6ly0OV5C+0sbhA
+u5g5NbLUzE1G1dkqYrUBGMOqgfduAPjd/dHkfKDISNqx05pfX2v3zHnaRJCAb8iG
+dyCWnrdBXFBFpPF2plWCDeOu6K450LMRgomYitm/GZkO8dRusPnigOoQuSs529yv
+eiGgMolH0mBSMHmvXj/u5wyxO/thJiErAgMBAAGjggIoMIICJDAJBgNVHRMEAjAA
+MB8GA1UdIwQYMBaAFP4GuSyVfi/m0Lio8S+38i6F1dfAMIGABggrBgEFBQcBAQR0
+MHIwRgYIKwYBBQUHMAKGOmh0dHA6Ly9jY2QuYWNzb2x1dGkuY29tLmJyL2xjci9h
+Yy1zb2x1dGktc3NsLWV2LXYxMC1nNC5jcnQwKAYIKwYBBQUHMAGGHGh0dHA6Ly9v
+Y3NwMy5hY3NvbHV0aS5jb20uYnIwLAYDVR0RBCUwI4IhaG9tb2xvZ2FjYW8ubmZl
+LmZhemVuZGEuc3AuZ292LmJyMGQGA1UdIARdMFswBwYFZ4EMAQEwUAYGYEwBAgFw
+MEYwRAYIKwYBBQUHAgEWOGh0dHA6Ly9jY2QuYWNzb2x1dGkuY29tLmJyL2RvY3Mv
+ZHBjLWFjLXNvbHV0aS1zc2wtZXYucGRmMB0GA1UdJQQWMBQGCCsGAQUFBwMCBggr
+BgEFBQcDATCBkAYDVR0fBIGIMIGFMECgPqA8hjpodHRwOi8vY2NkLmFjc29sdXRp
+LmNvbS5ici9sY3IvYWMtc29sdXRpLXNzbC1ldi12MTAtZzQuY3JsMEGgP6A9hjto
+dHRwOi8vY2NkMi5hY3NvbHV0aS5jb20uYnIvbGNyL2FjLXNvbHV0aS1zc2wtZXYt
+djEwLWc0LmNybDAdBgNVHQ4EFgQU+RP9URlWYfWhLFrLPi33nrXYcf8wDgYDVR0P
+AQH/BAQDAgWgMA0GCSqGSIb3DQEBDQUAA4ICAQAAKxWfwH+UgP+vPY40VP3niYZ6
+BIhK9djDrxQxSlMRLxyKJLQ/bIfEPf0Me8QzMdiP0Uehh/oNw9nvkJ0JY11AD+Kt
+6kEeWNJbTvchYcnFCxXeDovWVhgKsdnKqg7RvO5Kcrdi9phZP0gdahKua5AIOKXL
+vXoSEFA1VoG63RlXLOkIaDkHEaIfhvanNwqVO0vPjqHF3FBPm8Zc3uXsYzwQ40my
+SEY+rAIlIGcSJmRUhMd558zDXdz4YfwQ+GFGkNPH35MFuHfMj9tDuCH5nZXKKuzL
+Oj1GOLm9deK04MLoQyykdGvgZHkHGZKUyYy+zsvsY9sNN9PTzpD8WWfJjj3zZT52
+X+rcr9C2s9KSo4B0jmf5NvLd/z7oPm0oOWtBe2rggFUjLUuJ6u89gtzYF7fSoe0r
+VB3hz9p1U7zX8CdhdgWZhy3sDSx5GSeZ6qhoQI0yYCz8wiN4z+pxpE9YCriV0LSx
+TcS42OArvzyARsmh0vyEZICCle8mq8riPbW1SjyqC5Tx8AK+8N4ISr4qhDyeIm8H
+Kda5fkwYQJOzFpDMvWzm7Qope3dbgWB2jv77BQvtrgebG5EX9+FaHNCKEZx1T7XZ
+P5Yikp2X1oYFUmZVkufFbtpFfZwRDd43wC8bIfPznuXFn45V+P56v5WQ9WROa/Q3
+PauL90AAXfDOXoCxkQ==
+-----END CERTIFICATE-----
+------------------
+        ASN.1Cert, length=1976
+------details-----
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            d8:c6:97:a1:79:e5:50:fe
+        Signature Algorithm: sha512WithRSAEncryption
+        Issuer: C = BR, O = ICP-Brasil, OU = Instituto Nacional de Tecnologia da Informacao - ITI, CN = Autoridade Certificadora Raiz Brasileira v10
+        Validity
+            Not Before: Mar 22 18:09:11 2023 GMT
+            Not After : Jul  1 12:00:59 2032 GMT
+        Subject: C = BR, O = ICP-Brasil, OU = Autoridade Certificadora Raiz Brasileira v10, CN = AC SOLUTI SSL EV G4
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (4096 bit)
+                Modulus:
+                    00:c7:bf:72:af:a0:43:eb:36:bc:c8:98:83:e7:d7:
+                    b1:88:e6:f7:68:57:18:21:b2:6e:84:54:b3:14:8e:
+                    73:38:25:d0:a9:0c:40:fe:d0:1a:99:17:49:32:73:
+                    26:5a:89:6b:7b:8e:a4:91:bd:c1:a6:eb:a4:4a:cd:
+                    21:9c:1c:99:54:81:a8:69:f6:a7:17:02:64:b0:32:
+                    7d:34:a7:0b:e0:04:a6:fe:e2:1b:69:e3:cb:d0:73:
+                    5f:f9:31:6a:5a:07:34:16:e0:38:bf:b5:6b:cd:92:
+                    1f:54:46:d3:32:86:d9:6d:7f:6b:b7:b3:da:f9:be:
+                    01:75:d9:f7:fb:98:2b:b7:a2:3d:1b:0c:12:1a:1a:
+                    cf:da:f4:4b:4c:2a:80:9f:c3:fc:e2:29:4a:7b:d7:
+                    52:58:bb:57:db:21:65:4e:81:b5:bd:88:71:36:e2:
+                    88:84:df:72:c6:2e:6f:ae:4e:80:96:a6:31:8b:de:
+                    7f:43:fa:af:ab:c9:f2:18:16:87:ac:ea:03:c2:61:
+                    84:ad:b9:d0:d4:07:d9:5f:a5:ef:37:20:e5:5c:56:
+                    c9:4b:dc:39:98:77:6a:04:9d:c1:82:a2:03:b7:ab:
+                    36:8c:48:7d:ce:54:b3:0e:e1:18:39:79:d1:11:a4:
+                    cc:39:53:4b:40:31:ec:8e:d2:4e:7f:b6:69:c5:7d:
+                    43:38:ef:a9:59:97:e7:1e:d8:e9:79:ea:9e:d1:db:
+                    28:ca:c4:72:62:cd:e0:8e:4a:6c:03:13:91:57:cf:
+                    b9:65:f9:9a:bd:0b:b4:16:53:3a:0f:42:dc:93:ef:
+                    7f:54:18:47:81:45:30:33:e0:ab:0e:ef:b7:eb:0a:
+                    d7:62:7c:64:6f:5f:79:4c:7c:8f:2a:78:c9:df:bd:
+                    fd:3c:04:af:5e:d9:d4:64:08:7c:03:8a:fd:b7:03:
+                    0e:d0:22:2c:43:4b:d3:e2:4a:c3:31:39:b8:23:1f:
+                    0a:e8:12:a0:00:37:63:30:cf:50:75:cc:0b:b3:65:
+                    55:07:ee:4e:8c:c9:04:3f:20:8f:c6:0d:4a:53:8d:
+                    3e:15:2a:78:63:74:87:f3:e5:a1:05:1f:1e:c1:cb:
+                    65:e3:32:4c:75:87:27:8e:34:b4:bf:d9:2a:03:9c:
+                    a8:ad:13:dc:98:fc:f0:12:a9:60:c2:3c:2a:52:a0:
+                    9f:b1:7c:47:72:66:fa:1a:c0:46:c9:7c:bf:82:32:
+                    15:39:23:b2:17:81:ff:5f:ee:08:9b:82:12:1c:d8:
+                    21:b8:6d:fe:9d:7d:50:1d:3d:c1:a4:62:47:23:c3:
+                    6d:5d:b6:af:c6:d5:5d:9d:1e:93:97:eb:b0:5b:8a:
+                    14:e1:01:5a:fc:67:b3:53:81:50:2f:e2:70:ba:30:
+                    fa:40:cb
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Certificate Policies: 
+                Policy: 2.16.76.1.1.0
+                  CPS: http://acraiz.icpbrasil.gov.br/DPCacraiz.pdf
+                Policy: 2.16.76.1.1.130
+                  CPS: http://ccd.acsoluti.com.br/docs/dpc-ac-soluti-ssl-ev.pdf
+                Policy: 2.16.76.1.2.1.112
+                  CPS: http://ccd.acsoluti.com.br/docs/dpc-ac-soluti-ssl-ev.pdf
+                Policy: 2.23.140.1.1
+                Policy: 2.23.140.1.2.2
+            X509v3 CRL Distribution Points: 
+                Full Name:
+                  URI:http://acraiz.icpbrasil.gov.br/LCRacraizv10.crl
+
+            X509v3 Authority Key Identifier: 
+                74:F3:7E:FF:FC:9F:53:7A:F1:7C:EB:AB:3E:A4:A6:DA:18:BA:45:63
+            X509v3 Subject Key Identifier: 
+                FE:06:B9:2C:95:7E:2F:E6:D0:B8:A8:F1:2F:B7:F2:2E:85:D5:D7:C0
+            X509v3 Basic Constraints: critical
+                CA:TRUE
+            X509v3 Key Usage: critical
+                Digital Signature, Certificate Sign, CRL Sign
+            X509v3 Extended Key Usage: 
+                TLS Web Server Authentication, TLS Web Client Authentication
+            Authority Information Access: 
+                CA Issuers - URI:http://acraiz.icpbrasil.gov.br/ICP-Brasilv10.crt
+    Signature Algorithm: sha512WithRSAEncryption
+    Signature Value:
+        00:1c:5a:c9:e1:e2:b7:02:f5:f1:07:97:49:0b:d1:67:67:a2:
+        35:bf:36:22:56:13:ba:f1:11:e0:94:4c:cd:90:d6:a1:a9:8a:
+        3a:a9:83:ec:a5:d2:4a:3f:ac:74:14:e1:62:24:64:90:d8:95:
+        16:23:27:da:aa:18:01:dc:a5:23:62:38:c3:59:e9:6f:1c:ab:
+        ba:47:d7:43:bb:5a:75:31:22:30:21:6f:6b:4b:87:1f:0f:65:
+        a4:1c:7e:a3:2c:bd:ad:c2:cc:ee:a0:b9:aa:ab:a4:b3:28:42:
+        db:6d:98:b7:75:9b:a8:2e:85:95:af:8b:a3:71:a5:4c:ea:68:
+        82:a7:b1:7b:27:3d:86:0b:c0:43:17:8c:9a:af:b1:c8:37:23:
+        48:bc:ca:9a:64:66:30:a4:3d:cb:7c:3b:c2:9b:9f:5d:33:bf:
+        d0:ae:6e:38:b2:d9:b1:fc:97:65:3c:3e:31:86:1e:22:4d:be:
+        18:db:f5:a9:00:5b:5a:8d:e0:9b:09:43:d5:6d:29:24:41:de:
+        fb:f2:b1:88:24:64:0c:7a:49:63:b2:e4:d9:19:b8:6d:20:d9:
+        46:be:01:9f:c6:e4:fd:72:56:a6:2b:bb:16:6f:5b:f2:98:8f:
+        2a:34:ed:b2:d0:d8:4f:3b:b8:d1:c7:0f:46:1f:54:09:60:d4:
+        cf:89:ca:17:de:dd:5e:32:20:61:ff:9a:4c:0d:2f:9c:a7:65:
+        9e:93:d4:0d:e0:55:a5:fc:97:6a:f8:46:7f:f6:a4:16:1e:40:
+        3b:bf:ef:eb:19:33:58:e5:25:6b:09:f9:83:ad:78:99:68:4e:
+        43:a2:13:c2:6b:9a:cb:5b:29:9e:90:4e:eb:ce:1d:d1:bc:a7:
+        15:07:cc:a1:91:92:e5:f7:4a:a1:82:8a:0f:3a:76:f7:18:41:
+        9b:7b:3d:58:3d:5f:fe:83:fb:f4:87:b4:78:3a:e2:6e:93:af:
+        8f:75:ec:8f:3e:f6:31:31:b8:f9:45:71:ba:fd:0e:21:8b:97:
+        0d:cf:31:d5:fa:0c:cd:53:9c:a3:a0:f1:b8:b7:a5:e8:a1:b9:
+        44:7f:a6:d2:d5:a6:5f:8a:2e:0a:00:4a:4c:d5:10:0b:bd:00:
+        58:70:5a:e0:f0:85:e5:80:3b:1f:ca:95:9c:7d:84:50:13:e8:
+        de:bc:4e:63:4c:0d:e8:6c:f2:31:b8:3d:f8:3f:65:e5:ed:97:
+        72:0e:ff:ca:da:98:04:80:67:64:a2:cf:8f:34:b7:3a:a5:2c:
+        33:d5:20:50:a1:b0:70:49:da:1e:79:91:c4:7f:2f:c9:51:0c:
+        1a:7a:0a:d5:c6:4d:7f:db:83:33:db:0c:1a:04:14:cc:ac:15:
+        c2:2c:70:c8:83:4e:33:c5
+-----BEGIN CERTIFICATE-----
+MIIHtDCCBZygAwIBAgIJANjGl6F55VD+MA0GCSqGSIb3DQEBDQUAMIGYMQswCQYD
+VQQGEwJCUjETMBEGA1UECgwKSUNQLUJyYXNpbDE9MDsGA1UECww0SW5zdGl0dXRv
+IE5hY2lvbmFsIGRlIFRlY25vbG9naWEgZGEgSW5mb3JtYWNhbyAtIElUSTE1MDMG
+A1UEAwwsQXV0b3JpZGFkZSBDZXJ0aWZpY2Fkb3JhIFJhaXogQnJhc2lsZWlyYSB2
+MTAwHhcNMjMwMzIyMTgwOTExWhcNMzIwNzAxMTIwMDU5WjB3MQswCQYDVQQGEwJC
+UjETMBEGA1UEChMKSUNQLUJyYXNpbDE1MDMGA1UECxMsQXV0b3JpZGFkZSBDZXJ0
+aWZpY2Fkb3JhIFJhaXogQnJhc2lsZWlyYSB2MTAxHDAaBgNVBAMTE0FDIFNPTFVU
+SSBTU0wgRVYgRzQwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQDHv3Kv
+oEPrNrzImIPn17GI5vdoVxghsm6EVLMUjnM4JdCpDED+0BqZF0kycyZaiWt7jqSR
+vcGm66RKzSGcHJlUgahp9qcXAmSwMn00pwvgBKb+4htp48vQc1/5MWpaBzQW4Di/
+tWvNkh9URtMyhtltf2u3s9r5vgF12ff7mCu3oj0bDBIaGs/a9EtMKoCfw/ziKUp7
+11JYu1fbIWVOgbW9iHE24oiE33LGLm+uToCWpjGL3n9D+q+ryfIYFoes6gPCYYSt
+udDUB9lfpe83IOVcVslL3DmYd2oEncGCogO3qzaMSH3OVLMO4Rg5edERpMw5U0tA
+MeyO0k5/tmnFfUM476lZl+ce2Ol56p7R2yjKxHJizeCOSmwDE5FXz7ll+Zq9C7QW
+UzoPQtyT739UGEeBRTAz4KsO77frCtdifGRvX3lMfI8qeMnfvf08BK9e2dRkCHwD
+iv23Aw7QIixDS9PiSsMxObgjHwroEqAAN2Mwz1B1zAuzZVUH7k6MyQQ/II/GDUpT
+jT4VKnhjdIfz5aEFHx7By2XjMkx1hyeONLS/2SoDnKitE9yY/PASqWDCPCpSoJ+x
+fEdyZvoawEbJfL+CMhU5I7IXgf9f7gibghIc2CG4bf6dfVAdPcGkYkcjw21dtq/G
+1V2dHpOX67BbihThAVr8Z7NTgVAv4nC6MPpAywIDAQABo4ICHzCCAhswggEHBgNV
+HSAEgf8wgfwwQwYFYEwBAQAwOjA4BggrBgEFBQcCARYsaHR0cDovL2FjcmFpei5p
+Y3BicmFzaWwuZ292LmJyL0RQQ2FjcmFpei5wZGYwUAYGYEwBAYECMEYwRAYIKwYB
+BQUHAgEWOGh0dHA6Ly9jY2QuYWNzb2x1dGkuY29tLmJyL2RvY3MvZHBjLWFjLXNv
+bHV0aS1zc2wtZXYucGRmMFAGBmBMAQIBcDBGMEQGCCsGAQUFBwIBFjhodHRwOi8v
+Y2NkLmFjc29sdXRpLmNvbS5ici9kb2NzL2RwYy1hYy1zb2x1dGktc3NsLWV2LnBk
+ZjAHBgVngQwBATAIBgZngQwBAgIwQAYDVR0fBDkwNzA1oDOgMYYvaHR0cDovL2Fj
+cmFpei5pY3BicmFzaWwuZ292LmJyL0xDUmFjcmFpenYxMC5jcmwwHwYDVR0jBBgw
+FoAUdPN+//yfU3rxfOurPqSm2hi6RWMwHQYDVR0OBBYEFP4GuSyVfi/m0Lio8S+3
+8i6F1dfAMA8GA1UdEwEB/wQFMAMBAf8wDgYDVR0PAQH/BAQDAgGGMB0GA1UdJQQW
+MBQGCCsGAQUFBwMBBggrBgEFBQcDAjBMBggrBgEFBQcBAQRAMD4wPAYIKwYBBQUH
+MAKGMGh0dHA6Ly9hY3JhaXouaWNwYnJhc2lsLmdvdi5ici9JQ1AtQnJhc2lsdjEw
+LmNydDANBgkqhkiG9w0BAQ0FAAOCAgEAABxayeHitwL18QeXSQvRZ2eiNb82IlYT
+uvER4JRMzZDWoamKOqmD7KXSSj+sdBThYiRkkNiVFiMn2qoYAdylI2I4w1npbxyr
+ukfXQ7tadTEiMCFva0uHHw9lpBx+oyy9rcLM7qC5qquksyhC222Yt3WbqC6Fla+L
+o3GlTOpogqexeyc9hgvAQxeMmq+xyDcjSLzKmmRmMKQ9y3w7wpufXTO/0K5uOLLZ
+sfyXZTw+MYYeIk2+GNv1qQBbWo3gmwlD1W0pJEHe+/KxiCRkDHpJY7Lk2Rm4bSDZ
+Rr4Bn8bk/XJWpiu7Fm9b8piPKjTtstDYTzu40ccPRh9UCWDUz4nKF97dXjIgYf+a
+TA0vnKdlnpPUDeBVpfyXavhGf/akFh5AO7/v6xkzWOUlawn5g614mWhOQ6ITwmua
+y1spnpBO684d0bynFQfMoZGS5fdKoYKKDzp29xhBm3s9WD1f/oP79Ie0eDribpOv
+j3Xsjz72MTG4+UVxuv0OIYuXDc8x1foMzVOco6DxuLel6KG5RH+m0tWmX4ouCgBK
+TNUQC70AWHBa4PCF5YA7H8qVnH2EUBPo3rxOY0wN6GzyMbg9+D9l5e2Xcg7/ytqY
+BIBnZKLPjzS3OqUsM9UgUKGwcEnaHnmRxH8vyVEMGnoK1cZNf9uDM9sMGgQUzKwV
+wixwyINOM8U=
+-----END CERTIFICATE-----
+------------------
+
+    ServerKeyExchange, Length=361
+      KeyExchangeAlgorithm=ECDHE
+        named_curve: secp384r1 (P-384) (24)
+        point (len=97): 04CE146A2FA82B215A8DF876E6A345FBAC0048701453859EABE0DD2A6FB1056B56F2E2496A38688C26795178BDDCE7E3DB1BEDBABC182F1929D45D607A789BC7F13537828BE58B06F37068FC937C23256FD20C7FB1D7170DB304555EFC94ED0F8A
+      Signature Algorithm: rsa_pss_rsae_sha256 (0x0804)
+      Signature (len=256): 9F0E2C21C147AFD8B77F39BE0157B7BBA8C3A8F316B6EDDD27A35C6AA0AA43EAC8F55B2289FF5F097A2BDDF66FCAD0C8D9A84F1B914F589D5EA6B8C43C213DDD034E01ABFBFC409BE26126EA5DB67BA87F1958A291DF15A461869305775E6D421F80EB24595FF58F2E21B624D178DEB919FCF0E486ECCC8F06A6D42410FBCD41C408405017485F14C3CD88F22EF7A3F189BDD03200DE6D2E267C045BF369E63FA5A28A668CE336B6DD089A2C2D353C93390E11E0AD6CE35B1E4E311EC9E7ECB8EE5047EC54FF1C393DE095D4FCD765FA24172AB2DA582EAE34F59D183DA0311CC3C01259232B20DDF808AF70E4D551F156A5A38CEE7418A48F785D931FF80DEB
+
+    CertificateRequest, Length=32
+      certificate_types (len=3)
+        rsa_sign (1)
+        dss_sign (2)
+        ecdsa_sign (64)
+      signature_algorithms (len=24)
+        rsa_pss_rsae_sha256 (0x0804)
+        rsa_pss_rsae_sha384 (0x0805)
+        rsa_pss_rsae_sha512 (0x0806)
+        rsa_pkcs1_sha256 (0x0401)
+        rsa_pkcs1_sha384 (0x0501)
+        rsa_pkcs1_sha1 (0x0201)
+        ecdsa_secp256r1_sha256 (0x0403)
+        ecdsa_secp384r1_sha384 (0x0503)
+        ecdsa_sha1 (0x0203)
+        dsa_sha1 (0x0202)
+        rsa_pkcs1_sha512 (0x0601)
+        ecdsa_secp521r1_sha512 (0x0603)
+      certificate_authorities (len=0)
+
+    ServerHelloDone, Length=0
+
+Sent TLS Record
+Header:
+  Version = TLS 1.2 (0x303)
+  Content Type = Handshake (22)
+  Length = 907
+    Certificate, Length=879
+      certificate_list, length=876
+        ASN.1Cert, length=873
+------details-----
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            2d:61:ef:02:58:a8:27:43:6f:15:6e:4e:1b:29:aa:34:2c:bc:9e:05
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: CN = sinete-spike-throwaway-client, O = sinete spike S2
+        Validity
+            Not Before: Sep 25 23:19:19 2026 GMT
+            Not After : Sep 28 23:19:19 2026 GMT
+        Subject: CN = sinete-spike-throwaway-client, O = sinete spike S2
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (2048 bit)
+                Modulus:
+                    00:c4:f9:d1:52:83:cf:cd:cb:ac:e7:2b:dd:6b:ba:
+                    69:f9:ae:bc:52:5f:e8:e8:03:95:f6:83:73:ce:27:
+                    7e:9e:a5:f4:ad:d7:3a:ad:16:87:f8:c3:65:30:64:
+                    1e:07:78:51:fc:e9:8e:b6:c9:a0:46:15:7e:5e:1f:
+                    18:23:7b:f1:6b:9c:6a:e4:2d:4d:86:40:7c:db:36:
+                    35:87:13:a0:21:3b:22:06:2c:6c:d6:e9:1c:6f:63:
+                    6d:64:08:dd:6f:65:99:88:ee:02:41:10:90:9d:fe:
+                    8c:46:12:1d:fd:54:fa:ac:8b:0b:a6:f0:a5:a4:da:
+                    f6:3d:69:5f:e0:8e:b3:52:71:d9:af:a0:55:ea:c3:
+                    16:ac:47:8d:c1:45:28:d4:71:f5:ac:ca:89:88:02:
+                    f9:e6:3b:e5:ba:0b:73:9a:d1:25:23:4a:52:65:ea:
+                    42:44:52:a7:0b:3e:04:74:51:d9:50:54:d7:48:4d:
+                    8d:01:9d:11:6b:cc:ef:bb:94:33:de:3b:55:c0:5a:
+                    ed:f1:4a:c7:f1:56:43:dc:f3:5f:12:4b:fc:c1:d4:
+                    f0:66:46:0c:00:9a:3d:74:5d:c0:cf:f0:61:06:4c:
+                    0b:22:05:e0:98:f1:4a:9a:70:89:4e:91:d7:70:26:
+                    32:ed:cc:52:ef:d3:7f:8c:01:53:97:05:76:72:93:
+                    f9:ef
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Subject Key Identifier: 
+                EA:72:D9:70:BB:C3:15:42:8B:EB:75:55:DD:6F:4E:64:9B:01:F9:5B
+            X509v3 Authority Key Identifier: 
+                EA:72:D9:70:BB:C3:15:42:8B:EB:75:55:DD:6F:4E:64:9B:01:F9:5B
+            X509v3 Basic Constraints: critical
+                CA:TRUE
+    Signature Algorithm: sha256WithRSAEncryption
+    Signature Value:
+        5e:77:91:68:60:04:5a:45:5b:48:b2:ba:c4:68:28:52:c7:87:
+        e7:d6:3e:48:0c:63:f4:55:86:ca:08:e5:20:48:63:79:ee:2f:
+        db:e9:ab:13:b0:39:f1:c5:f8:dd:c5:d1:67:32:b9:c8:20:c5:
+        7e:ec:38:d6:4e:17:49:ef:bf:4f:51:f0:10:a5:dc:b4:d0:99:
+        c4:2d:e8:73:c3:3a:0c:2e:33:c8:10:79:c5:25:4d:d1:a3:74:
+        68:b3:76:78:67:f1:c8:e8:9f:0a:89:3d:16:55:9f:17:6b:1a:
+        8f:41:fd:21:d2:f6:99:39:2c:91:42:19:f5:9d:bd:44:b4:1b:
+        70:86:e7:82:51:45:6e:67:0f:6e:b0:48:bb:be:0d:73:14:7e:
+        72:f9:e0:39:a2:64:2d:25:dc:ad:dd:e4:da:c4:03:14:25:0e:
+        21:6b:43:d5:f5:31:99:de:d1:e8:47:26:4a:73:cd:c3:ba:13:
+        bd:70:c6:53:64:0a:92:8e:89:66:77:28:c1:4a:97:3e:34:66:
+        31:f7:0f:66:a6:88:36:d3:59:a3:08:4c:0a:6c:ab:cd:e5:22:
+        65:5f:fe:f6:c7:ef:a5:aa:67:a5:3a:b4:3a:ef:7b:b5:8a:a6:
+        cc:90:8e:18:9e:ad:9f:37:b0:b2:0f:a3:66:08:fd:98:55:ca:
+        ff:8c:23:0e
+-----BEGIN CERTIFICATE-----
+MIIDZTCCAk2gAwIBAgIULWHvAlioJ0NvFW5OGymqNCy8ngUwDQYJKoZIhvcNAQEL
+BQAwQjEmMCQGA1UEAwwdc2luZXRlLXNwaWtlLXRocm93YXdheS1jbGllbnQxGDAW
+BgNVBAoMD3NpbmV0ZSBzcGlrZSBTMjAeFw0yNjA5MjUyMzE5MTlaFw0yNjA5Mjgy
+MzE5MTlaMEIxJjAkBgNVBAMMHXNpbmV0ZS1zcGlrZS10aHJvd2F3YXktY2xpZW50
+MRgwFgYDVQQKDA9zaW5ldGUgc3Bpa2UgUzIwggEiMA0GCSqGSIb3DQEBAQUAA4IB
+DwAwggEKAoIBAQDE+dFSg8/Ny6znK91rumn5rrxSX+joA5X2g3POJ36epfSt1zqt
+Fof4w2UwZB4HeFH86Y62yaBGFX5eHxgje/FrnGrkLU2GQHzbNjWHE6AhOyIGLGzW
+6RxvY21kCN1vZZmI7gJBEJCd/oxGEh39VPqsiwum8KWk2vY9aV/gjrNScdmvoFXq
+wxasR43BRSjUcfWsyomIAvnmO+W6C3Oa0SUjSlJl6kJEUqcLPgR0UdlQVNdITY0B
+nRFrzO+7lDPeO1XAWu3xSsfxVkPc818SS/zB1PBmRgwAmj10XcDP8GEGTAsiBeCY
+8UqacIlOkddwJjLtzFLv03+MAVOXBXZyk/nvAgMBAAGjUzBRMB0GA1UdDgQWBBTq
+ctlwu8MVQovrdVXdb05kmwH5WzAfBgNVHSMEGDAWgBTqctlwu8MVQovrdVXdb05k
+mwH5WzAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQBed5FoYARa
+RVtIsrrEaChSx4fn1j5IDGP0VYbKCOUgSGN57i/b6asTsDnxxfjdxdFnMrnIIMV+
+7DjWThdJ779PUfAQpdy00JnELehzwzoMLjPIEHnFJU3Ro3Ros3Z4Z/HI6J8KiT0W
+VZ8XaxqPQf0h0vaZOSyRQhn1nb1EtBtwhueCUUVuZw9usEi7vg1zFH5y+eA5omQt
+Jdyt3eTaxAMUJQ4ha0PV9TGZ3tHoRyZKc83DuhO9cMZTZAqSjolmdyjBSpc+NGYx
+9w9mpog201mjCEwKbKvN5SJlX/72x++lqmelOrQ673u1iqbMkI4Ynq2fN7CyD6Nm
+CP2YVcr/jCMO
+-----END CERTIFICATE-----
+------------------
+
+Sent TLS Record
+Header:
+  Version = TLS 1.2 (0x303)
+  Content Type = Handshake (22)
+  Length = 126
+    ClientKeyExchange, Length=98
+      KeyExchangeAlgorithm=ECDHE
+        ecdh_Yc (len=97): 0448A36E1EF2BD1924BD519FE0F0D45F0D30C096B9D463F979BADE4B2071D79B284F28AD029032FA92993B73A2C6721FCA5FA7027FB5FC52C76AD9EB113B7EDF2C3821E9A605DD6B3EEF608BA029C39DF28BDB1668D2EC21E883A30C99B5B9B66B
+
+Sent TLS Record
+Header:
+  Version = TLS 1.2 (0x303)
+  Content Type = Handshake (22)
+  Length = 288
+    CertificateVerify, Length=260
+      Signature Algorithm: rsa_pss_rsae_sha256 (0x0804)
+      Signature (len=256): A0351EE8A19C056E5993D0368794C15F02453A8F8373CDA452F087380A2923287E15638825BC72DF65E5D97BD430FC2FB2EF7A9E8C68D43825339B4553DB40C871AAA9B579D119D33D954FDE882F09FBF88B929E3099C29DC9509F40403AC31C85FC3E81C549CCADF397AA07F44EAC9CB8BB7528195ED190C27C91763A42D39C58A74A5BDD5F5E21BA84890C42C34EFEB0F6F76C548ECF5A5A3E7136ADCD9545A17A32111B7EC36FEF507244F92B19B335EFAF34500D7551173766B45F0E4BD9F0BC1CD32B1F9AA05CFBA09EE5FE5F70AEB5C118541C0979706CC686C1BBD5F425E568490F02580BB012F2D82763EBBBCED7A2C01AB8D5C467134252B971DC46
+
+Sent TLS Record
+Header:
+  Version = TLS 1.2 (0x303)
+  Content Type = ChangeCipherSpec (20)
+  Length = 25
+    change_cipher_spec (1)
+
+Sent TLS Record
+Header:
+  Version = TLS 1.2 (0x303)
+  Content Type = Handshake (22)
+  Length = 40
+    Finished, Length=12
+      verify_data (len=12): 5A9E7294F39E5749249B2EAE
+
+Received TLS Record
+Header:
+  Version = TLS 1.2 (0x303)
+  Content Type = ChangeCipherSpec (20)
+  Length = 25
+Received TLS Record
+Header:
+  Version = TLS 1.2 (0x303)
+  Content Type = Handshake (22)
+  Length = 40
+    Finished, Length=12
+      verify_data (len=12): AB18221AF0216E2DEFE63B32
+
+Received TLS Record
+Header:
+  Version = TLS 1.2 (0x303)
+  Content Type = ApplicationData (23)
+  Length = 1437
+Sent TLS Record
+Header:
+  Version = TLS 1.2 (0x303)
+  Content Type = Alert (21)
+  Length = 26
+    Level=warning(1), description=close notify(0)
+
+RESULT 403 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"> <html xml

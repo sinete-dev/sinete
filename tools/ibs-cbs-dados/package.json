@@ -1,0 +1,8 @@
+{
+  "name": "@sinete/tool-ibs-cbs-dados",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Extrator reprodutível do @sinete/ibs-cbs-dados e do @sinete/ibs-cbs/aliquotas a partir da Calculadora offline da RFB e das tabelas do IT 2025.002, com diff semântico e verificação cruzada",
+  "license": "Apache-2.0",
+  "type": "module"
+}

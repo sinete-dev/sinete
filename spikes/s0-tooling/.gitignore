@@ -1,0 +1,22 @@
+# Artefatos gerados pelo spike S0 (reproduzíveis pelos scripts)
+registry/storage/
+registry/bin/
+registry/htpasswd
+registry/*.log
+registry/*.out
+registry/*.pid
+tarballs/
+tools/
+consumers/*/
+!consumers/src/
+big/src/
+big/node_modules
+jsr-dryrun/
+**/.deno-cache/
+testrunners/worker-runtime.log
+a-bun/variants/core-dual/dist/
+big/tscdist/
+**/.release/
+**/smoke/.work/
+split-probe/out-*/
+big/dist-bun/

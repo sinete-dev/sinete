@@ -1,0 +1,333 @@
+/**
+ * Montagem da DPS: entrada do domínio (`DpsInput`) para o XML canônico do leiaute 1.01 vigente, validado no XSD antes
+ * de devolver, e assinatura por splice (`signDps`).
+ *
+ * O XML sai com a declaração `<?xml version="1.0" encoding="UTF-8"?>`: a Sefin Nacional recusa sem ela (E1229,
+ * aprendido no spike S2, ADR 0004). A declaração fica fora do elemento assinado (`infDPS`), então a assinatura é a
+ * mesma com ou sem ela; o sinete a põe antes de assinar para que a string assinada seja exatamente a enviada.
+ */
+
+import type { Ambiente, Clock, Signer, TimeContext, ValidationIssue } from '@sinete/core';
+import { ConfigError, formatarVerProc, formatDateTimeOffset, tpAmbOf } from '@sinete/core';
+import { signXml, XmlError } from '@sinete/core/xml';
+import type { RootElement } from '@sinete/schemas';
+import { SerializeError, serializeRoot, validateRoot } from '@sinete/schemas';
+import type {
+  TCInfDPS,
+  TCInfoValores,
+  TCRTCInfoIBSCBS,
+  TCServ,
+  TCTribMunicipal,
+  TCTribTotal,
+} from '@sinete/schemas/nfse/1.01-20260727';
+import { isValidCnpj, isValidCpf } from '@sinete/validators';
+import type { InscricaoFederal } from './codigos.ts';
+import { cTribNacDps, idDps } from './codigos.ts';
+import { leiauteVigente, VERSAO_LEIAUTE } from './leiaute.ts';
+import type { DpsInput, IbsCbsDps, Pessoa, Prestador } from './model.ts';
+import { formatValor } from './valores.ts';
+import { VERSAO_PACOTE } from './versao-gerada.ts';
+
+/** Declaração XML exigida pela Sefin Nacional (E1229). */
+export const DECLARACAO_XML = '<?xml version="1.0" encoding="UTF-8"?>';
+
+/** Fuso de Brasília, o padrão do `dhEmi` e da data de competência. */
+const BRASILIA = -180;
+
+export interface BuildDpsOptions {
+  readonly ambiente: Ambiente;
+  /** Relógios de emissão (`dhEmi`, escolha do leiaute) e de fato gerador (`dCompet` padrão). */
+  readonly time: TimeContext;
+  /** Versão do aplicativo (`verAplic`, até 20 caracteres). Padrão `sinete <versão do @sinete/nfse>` (`formatarVerProc`). */
+  readonly verAplic?: string;
+  /** Fuso do `dhEmi` e da competência padrão, em minutos. Padrão -180 (Brasília). */
+  readonly offsetMinutes?: number;
+}
+
+/** DPS montada e validada, pronta para assinar. */
+export interface DpsMontada {
+  /** XML com a declaração UTF-8 e sem assinatura. */
+  readonly xml: string;
+  /** Id do `infDPS` (`DPS` + 42 posições). */
+  readonly id: string;
+  readonly ambiente: Ambiente;
+  /** Subpath do módulo de schema usado (`nfse/1.01-20260727`). */
+  readonly modulo: string;
+  readonly dhEmi: string;
+  readonly dCompet: string;
+}
+
+export type BuildDpsResult =
+  | { readonly ok: true; readonly value: DpsMontada }
+  | { readonly ok: false; readonly issues: readonly ValidationIssue[] };
+
+type Doc = { CNPJ?: string; CPF?: string; NIF?: string; cNaoNIF?: string };
+
+function conferirDocumento(doc: Doc | undefined, path: string, issues: ValidationIssue[]): void {
+  if (doc === undefined) return;
+  if (doc.CNPJ !== undefined && !isValidCnpj(doc.CNPJ)) {
+    issues.push({ path: `${path}.CNPJ`, code: 'documento_invalido', message: 'CNPJ inválido (DV)' });
+  }
+  if (doc.CPF !== undefined && !isValidCpf(doc.CPF)) {
+    issues.push({ path: `${path}.CPF`, code: 'documento_invalido', message: 'CPF inválido (DV)' });
+  }
+}
+
+function inscricaoDoEmitente(input: DpsInput, issues: ValidationIssue[]): InscricaoFederal | undefined {
+  const tp = input.tpEmit ?? '1';
+  const [quem, path]: [Doc | undefined, string] =
+    tp === '1'
+      ? [input.prestador as Doc, 'prestador']
+      : tp === '2'
+        ? [input.tomador as Doc | undefined, 'tomador']
+        : [input.intermediario as Doc | undefined, 'intermediario'];
+  if (quem?.CNPJ !== undefined) return { CNPJ: quem.CNPJ };
+  if (quem?.CPF !== undefined) return { CPF: quem.CPF };
+  issues.push({
+    path,
+    code: 'emitente_sem_inscricao',
+    message: `o emitente da DPS (tpEmit ${tp}) precisa de CNPJ ou CPF: é a inscrição que forma o Id`,
+  });
+  return undefined;
+}
+
+function texto(v: string | number | bigint, pattern: RegExp, path: string, issues: ValidationIssue[]): string {
+  const s = String(v).trim();
+  if (!pattern.test(s)) issues.push({ path, code: 'campo_invalido', message: `valor fora do formato: ${s}` });
+  return s;
+}
+
+function ibsCbsDps(g: IbsCbsDps, issues: ValidationIssue[]): TCRTCInfoIBSCBS {
+  const c = g.classificacao;
+  const dif = c.diferimento;
+  const pct = (v: string | number, campo: string): string =>
+    formatValor(v, `ibsCbs.classificacao.diferimento.${campo}`, issues) ?? '0';
+  return {
+    finNFSe: g.finNFSe ?? '0',
+    ...(g.indFinal === undefined ? {} : { indFinal: g.indFinal }),
+    cIndOp: g.cIndOp,
+    ...(g.tpOper === undefined ? {} : { tpOper: g.tpOper }),
+    ...(g.refNFSe === undefined ? {} : { gRefNFSe: { refNFSe: [...g.refNFSe] } }),
+    ...(g.tpEnteGov === undefined ? {} : { tpEnteGov: g.tpEnteGov }),
+    indDest: g.indDest,
+    ...(g.destinatario === undefined ? {} : { dest: g.destinatario }),
+    ...(g.imovel === undefined ? {} : { imovel: g.imovel }),
+    valores: {
+      ...(g.reembolsos === undefined ? {} : { gReeRepRes: g.reembolsos }),
+      trib: {
+        gIBSCBS: {
+          CST: c.CST,
+          cClassTrib: c.cClassTrib,
+          ...(c.cCredPres === undefined ? {} : { cCredPres: c.cCredPres }),
+          ...(c.tributacaoRegular === undefined ? {} : { gTribRegular: c.tributacaoRegular }),
+          ...(dif === undefined
+            ? {}
+            : {
+                gDif: {
+                  pDifUF: pct(dif.pDifUF, 'pDifUF'),
+                  pDifMun: pct(dif.pDifMun, 'pDifMun'),
+                  pDifCBS: pct(dif.pDifCBS, 'pDifCBS'),
+                },
+              }),
+        },
+      },
+    },
+  };
+}
+
+function servico(input: DpsInput, issues: ValidationIssue[]): TCServ {
+  const s = input.servico;
+  let cTribNac = s.cTribNac;
+  try {
+    cTribNac = cTribNacDps(s.cTribNac);
+  } catch (e) {
+    issues.push({ path: 'servico.cTribNac', code: 'campo_invalido', message: (e as Error).message });
+  }
+  return {
+    locPrest: s.local,
+    cServ: {
+      cTribNac,
+      ...(s.cTribMun === undefined ? {} : { cTribMun: s.cTribMun }),
+      xDescServ: s.xDescServ,
+      ...(s.cNBS === undefined ? {} : { cNBS: s.cNBS }),
+      ...(s.cIntContrib === undefined ? {} : { cIntContrib: s.cIntContrib }),
+    },
+    ...(s.comExt === undefined ? {} : { comExt: s.comExt }),
+    ...(s.obra === undefined ? {} : { obra: s.obra }),
+    ...(s.atvEvento === undefined ? {} : { atvEvento: s.atvEvento }),
+    ...(s.infoCompl === undefined ? {} : { infoCompl: s.infoCompl }),
+  };
+}
+
+/**
+ * Total aproximado dos tributos (Lei 12.741/2012) pelo regime do prestador no Simples Nacional, como o Anexo I exige:
+ * `indTotTrib` só no MEI (E0712 no ME/EPP, E0713 no não optante) e `pTotTribSN` nunca no MEI (E0710) nem no não
+ * optante (E0713). Sem o grupo, o MEI recebe `indTotTrib` 0 (não informado); os outros regimes precisam informar,
+ * porque não há valor neutro permitido para eles. Com tomador ou intermediário emitindo, o grupo é obrigatório e não é
+ * conferido: o regime do emitente não está na DPS.
+ */
+function totalTributos(input: DpsInput, issues: ValidationIssue[]): TCTribTotal {
+  // As regras olham o regime do emitente. A DPS só traz o do prestador: com tomador ou intermediário emitindo
+  // (tpEmit 2 e 3), o regime é desconhecido aqui, então nada é presumido nem recusado localmente.
+  const regime = (input.tpEmit ?? '1') === '1' ? input.prestador.regTrib.opSimpNac : undefined;
+  const t = input.tributacao.totTrib;
+  const path = 'tributacao.totTrib';
+  if (t === undefined) {
+    if (regime === '2') return { indTotTrib: '0' };
+    issues.push({
+      path,
+      code: 'campo_obrigatorio',
+      message:
+        regime === undefined
+          ? 'informe o total de tributos do emitente (tomador ou intermediário): o regime dele não vem na DPS'
+          : 'informe vTotTrib ou pTotTrib (e pTotTribSN no ME/EPP): indTotTrib só vale para o MEI (E0712, E0713)',
+    });
+    return { indTotTrib: '0' };
+  }
+  const recusa = (codigo: string, campo: string): void => {
+    issues.push({
+      path: `${path}.${campo}`,
+      code: 'campo_proibido',
+      message: `${campo} não é permitido para este regime do Simples Nacional (${codigo})`,
+    });
+  };
+  if (t.indTotTrib !== undefined && regime === '3') recusa('E0712', 'indTotTrib');
+  if (t.indTotTrib !== undefined && regime === '1') recusa('E0713', 'indTotTrib');
+  if (t.pTotTribSN !== undefined && regime === '2') recusa('E0710', 'pTotTribSN');
+  if (t.pTotTribSN !== undefined && regime === '1') recusa('E0713', 'pTotTribSN');
+  return t;
+}
+
+function valores(input: DpsInput, issues: ValidationIssue[]): TCInfoValores {
+  const v = input.valores;
+  const money = (x: string | number | undefined, campo: string): string | undefined =>
+    x === undefined ? undefined : formatValor(x, `valores.${campo}`, issues);
+  const vServ = money(v.vServ, 'vServ') ?? '0.00';
+  const vReceb = money(v.vReceb, 'vReceb');
+  const vDescIncond = money(v.vDescIncond, 'vDescIncond');
+  const vDescCond = money(v.vDescCond, 'vDescCond');
+  const iss = input.tributacao.issqn;
+  const pAliq = iss.pAliq === undefined ? undefined : formatValor(iss.pAliq, 'tributacao.issqn.pAliq', issues);
+  const tribMun: TCTribMunicipal = {
+    tribISSQN: iss.tribISSQN,
+    ...(iss.cPaisResult === undefined ? {} : { cPaisResult: iss.cPaisResult }),
+    ...(iss.tpImunidade === undefined ? {} : { tpImunidade: iss.tpImunidade }),
+    ...(iss.exigSusp === undefined ? {} : { exigSusp: iss.exigSusp }),
+    ...(iss.BM === undefined ? {} : { BM: iss.BM }),
+    tpRetISSQN: iss.tpRetISSQN,
+    ...(pAliq === undefined ? {} : { pAliq }),
+  };
+  return {
+    vServPrest: { ...(vReceb === undefined ? {} : { vReceb }), vServ },
+    ...(vDescIncond === undefined && vDescCond === undefined
+      ? {}
+      : {
+          vDescCondIncond: {
+            ...(vDescIncond === undefined ? {} : { vDescIncond }),
+            ...(vDescCond === undefined ? {} : { vDescCond }),
+          },
+        }),
+    ...(v.deducaoReducao === undefined ? {} : { vDedRed: v.deducaoReducao }),
+    trib: {
+      tribMun,
+      ...(input.tributacao.federal === undefined ? {} : { tribFed: input.tributacao.federal }),
+      totTrib: totalTributos(input, issues),
+    },
+  };
+}
+
+/**
+ * Monta e valida a DPS. Nunca lança por dado de entrada: tudo o que impede a DPS vira `ValidationIssue` (formato,
+ * documento com DV errado, competência depois da emissão, schema). Lança `ConfigError` só por opção inválida.
+ */
+export function buildDps(input: DpsInput, options: BuildDpsOptions): BuildDpsResult {
+  const issues: ValidationIssue[] = [];
+  const offset = options.offsetMinutes ?? BRASILIA;
+  const verAplic = options.verAplic ?? formatarVerProc('sinete', VERSAO_PACOTE);
+  if (verAplic.length === 0 || verAplic.length > 20) throw new ConfigError('verAplic precisa ter de 1 a 20 caracteres');
+  const { vigencia, leiaute } = leiauteVigente(options.ambiente, options.time.emissao);
+  const dhEmi = formatDateTimeOffset(options.time.emissao.now(), offset);
+  const dCompet = input.dCompet ?? formatDateTimeOffset(options.time.fatoGerador.now(), offset).slice(0, 10);
+  if (dCompet > dhEmi.slice(0, 10)) {
+    issues.push({
+      path: 'dCompet',
+      code: 'competencia_posterior_emissao',
+      message: 'a data de competência não pode ser posterior à data de emissão (E0015)',
+    });
+  }
+  const serie = texto(input.serie, /^(?:\d{1,4}|[0-8]\d{4})$/, 'serie', issues);
+  const nDPS = texto(input.nDPS, /^[1-9]\d{0,14}$/, 'nDPS', issues);
+  conferirDocumento(input.prestador as Doc, 'prestador', issues);
+  conferirDocumento(input.tomador as Doc | undefined, 'tomador', issues);
+  conferirDocumento(input.intermediario as Doc | undefined, 'intermediario', issues);
+  const emitente = inscricaoDoEmitente(input, issues);
+  let id = '';
+  if (emitente !== undefined) {
+    try {
+      id = idDps({ cLocEmi: input.cLocEmi, emitente, serie, nDPS });
+    } catch (e) {
+      issues.push({ path: 'cLocEmi', code: 'campo_invalido', message: (e as Error).message });
+    }
+  }
+  const inf: TCInfDPS = {
+    Id: id,
+    tpAmb: tpAmbOf(options.ambiente),
+    dhEmi,
+    verAplic,
+    serie,
+    nDPS,
+    dCompet,
+    tpEmit: input.tpEmit ?? '1',
+    ...(input.cMotivoEmisTI === undefined ? {} : { cMotivoEmisTI: input.cMotivoEmisTI }),
+    ...(input.chNFSeRej === undefined ? {} : { chNFSeRej: input.chNFSeRej }),
+    cLocEmi: input.cLocEmi,
+    ...(input.substituicao === undefined ? {} : { subst: input.substituicao }),
+    prest: input.prestador as Prestador,
+    ...(input.tomador === undefined ? {} : { toma: input.tomador as Pessoa }),
+    ...(input.intermediario === undefined ? {} : { interm: input.intermediario as Pessoa }),
+    serv: servico(input, issues),
+    valores: valores(input, issues),
+    ...(input.ibsCbs === undefined ? {} : { IBSCBS: ibsCbsDps(input.ibsCbs, issues) }),
+  };
+  // Tudo o que foi conferido até aqui é da entrada (ADR 0011); daqui para baixo, do XML montado.
+  if (issues.length > 0) return { ok: false, issues: issues.map((i) => ({ ...i, origem: i.origem ?? 'entrada' })) };
+  let corpo: string;
+  try {
+    corpo = serializeRoot(leiaute.DPSElement, { versao: VERSAO_LEIAUTE, infDPS: inf });
+  } catch (e) {
+    if (!(e instanceof SerializeError)) throw e;
+    return { ok: false, issues: [{ path: e.path, code: 'schema', message: e.message, origem: 'montagem' }] };
+  }
+  const xml = DECLARACAO_XML + corpo;
+  const schema = validarNoSchema(leiaute.DPSElement, xml);
+  if (schema.length > 0) return { ok: false, issues: schema };
+  return { ok: true, value: { xml, id, ambiente: options.ambiente, modulo: vigencia.modulo, dhEmi, dCompet } };
+}
+
+/**
+ * Validação estrita no schema, como ocorrências de `montagem` (ADR 0011). Texto com caractere proibido no XML (`\u0000` e afins) faz o parser
+ * recusar o documento inteiro; isso também volta como ocorrência (`caractere_invalido`), nunca como exceção.
+ */
+export function validarNoSchema(raiz: RootElement<unknown>, xml: string): ValidationIssue[] {
+  try {
+    return validateRoot(raiz, xml).map((i) => ({
+      path: i.path,
+      code: 'schema',
+      message: `${i.code}: ${i.message}`,
+      origem: 'montagem',
+    }));
+  } catch (e) {
+    if (!(e instanceof XmlError)) throw e;
+    return [{ path: '/', code: 'caractere_invalido', message: `XML inválido: ${e.message}`, origem: 'montagem' }];
+  }
+}
+
+/** Assina a DPS (enveloped, `Reference` para o `infDPS`). A string devolvida é a que vai para a Sefin e para o banco. */
+export async function signDps(dps: DpsMontada, signer: Signer): Promise<string> {
+  return signXml(dps.xml, { id: dps.id }, signer);
+}
+
+/** Relógio de emissão no fuso de Brasília, para quem monta outros documentos (`dhEvento`). */
+export function dataHora(relogio: Clock, offsetMinutes: number = BRASILIA): string {
+  return formatDateTimeOffset(relogio.now(), offsetMinutes);
+}

@@ -1,0 +1,40 @@
+{
+  "host": "nfe.sefaz.ba.gov.br",
+  "probedAt": "2026-09-25T23:12:08.644Z",
+  "connected": true,
+  "protocol": "TLSv1.2",
+  "cipher": "ECDHE-RSA-AES256-SHA384",
+  "peerSigType": "rsa_pkcs1_sha256",
+  "tempKey": "ECDH, prime256v1, 256 bits",
+  "serverKey": "2048",
+  "secureRenegotiation": true,
+  "alpn": null,
+  "ocspStapled": true,
+  "sessionTicketHint": null,
+  "certificateRequest": true,
+  "clientCaNames": [],
+  "clientCertTypes": null,
+  "requestedSigAlgs": null,
+  "verifyReturn": "20 (unable to get local issuer certificate)",
+  "chain": [
+    {
+      "s": "C=BR, O=BAHIA SECRETARIA DA FAZENDA, CN=nfe.sefaz.ba.gov.br, ST=BA, L=Salvador, businessCategory=Government Entity, serialNumber=13937073000156, jurisdictionC=BR",
+      "i": "C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v10, CN=AC Certisign ICP-Brasil SSL EV G4",
+      "key": "PKEY: RSA, 2048 (bit); sigalg: sha256WithRSAEncryption",
+      "validity": "NotBefore: Feb 23 22:09:34 2026 GMT; NotAfter: Feb 23 22:09:34 2027 GMT"
+    },
+    {
+      "s": "C=BR, O=ICP-Brasil, OU=Autoridade Certificadora Raiz Brasileira v10, CN=AC Certisign ICP-Brasil SSL EV G4",
+      "i": "C=BR, O=ICP-Brasil, OU=Instituto Nacional de Tecnologia da Informacao - ITI, CN=Autoridade Certificadora Raiz Brasileira v10",
+      "key": "PKEY: RSA, 4096 (bit); sigalg: sha512WithRSAEncryption",
+      "validity": "NotBefore: Apr 12 19:17:38 2023 GMT; NotAfter: Jul  1 12:00:59 2032 GMT"
+    }
+  ],
+  "resumed": true,
+  "versions": {
+    "1.0": "ECDHE-RSA-AES256-SHA",
+    "1.1": "ECDHE-RSA-AES256-SHA",
+    "1.2": "ECDHE-RSA-AES256-SHA384",
+    "1.3": false
+  }
+}

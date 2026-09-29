@@ -1,0 +1,119 @@
+{
+  "description": "Erros do contrato: guarda antes do socket, recusa do dono da chave, versão de protocolo, método desconhecido, identidade não aberta e falha de transporte com o alerta TLS em data.",
+  "frames": [
+    {
+      "from": "client",
+      "frame": {
+        "v": 1,
+        "id": "c20",
+        "method": "http.request",
+        "params": {
+          "identity": "emitente-11222333000181",
+          "url": "https://nfe.fazenda.sp.gov.br/ws/nfestatusservico4.asmx",
+          "method": "POST",
+          "headers": {},
+          "body": ""
+        }
+      }
+    },
+    {
+      "from": "helper",
+      "frame": {
+        "v": 1,
+        "id": "c20",
+        "error": { "code": "guard", "message": "host fora da allowlist: nfe.fazenda.sp.gov.br" }
+      }
+    },
+    {
+      "from": "helper",
+      "frame": {
+        "v": 1,
+        "id": "h9",
+        "method": "sign",
+        "params": {
+          "identity": "emitente-11222333000181",
+          "scheme": "rsa_pkcs1_sha256",
+          "mode": "digest",
+          "digest": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+          "context": {
+            "purpose": "tls12-client-certificate-verify",
+            "host": "cav.receita.fazenda.gov.br",
+            "conn": 3,
+            "handshake": 1
+          }
+        }
+      }
+    },
+    {
+      "from": "client",
+      "frame": {
+        "v": 1,
+        "id": "h9",
+        "error": {
+          "code": "sign_refused",
+          "message": "host fora da política do dono da chave: cav.receita.fazenda.gov.br"
+        }
+      }
+    },
+    { "from": "client", "frame": { "v": 2, "id": "c21", "method": "hello", "params": {} } },
+    {
+      "from": "helper",
+      "frame": { "v": 1, "id": "c21", "error": { "code": "protocol_version", "message": "helper fala v1, frame v2" } }
+    },
+    {
+      "from": "client",
+      "frame": {
+        "v": 1,
+        "id": "c22",
+        "method": "sign",
+        "params": {
+          "identity": "x",
+          "scheme": "rsa_pkcs1_sha256",
+          "mode": "digest",
+          "digest": "AA==",
+          "context": { "purpose": "tls12-client-certificate-verify", "host": "x", "conn": 1, "handshake": 1 }
+        }
+      }
+    },
+    {
+      "from": "helper",
+      "frame": { "v": 1, "id": "c22", "error": { "code": "unknown_method", "message": "método desconhecido: sign" } }
+    },
+    {
+      "from": "client",
+      "frame": { "v": 1, "id": "c23", "method": "pool.reset", "params": { "identity": "nunca-aberta" } }
+    },
+    {
+      "from": "helper",
+      "frame": {
+        "v": 1,
+        "id": "c23",
+        "error": { "code": "unknown_identity", "message": "identidade \"nunca-aberta\" não aberta" }
+      }
+    },
+    {
+      "from": "helper",
+      "frame": {
+        "v": 1,
+        "id": "c24",
+        "error": {
+          "code": "transport",
+          "message": "remote error: tls: handshake failure",
+          "data": { "stage": "handshake", "alert": 40 }
+        }
+      }
+    },
+    {
+      "from": "helper",
+      "frame": {
+        "v": 1,
+        "id": "c25",
+        "error": {
+          "code": "sign_refused",
+          "message": "host fora da política do dono da chave: localhost",
+          "data": { "stage": "handshake" }
+        }
+      }
+    }
+  ]
+}

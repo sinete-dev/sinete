@@ -1,0 +1,9 @@
+{
+  // Ferramenta do repo: roda em Node, Bun e Deno. Os pacotes resolvem pelo `dist` (forma publicada); rode o build antes.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["bun"],
+    "isolatedDeclarations": false
+  },
+  "include": ["src", "test"]
+}

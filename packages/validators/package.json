@@ -1,0 +1,49 @@
+{
+  "name": "@sinete/validators",
+  "version": "0.0.0",
+  "description": "Validadores de documentos fiscais: CPF, CNPJ numérico e alfanumérico, CAEPF, chave de acesso e inscrição estadual das 27 UFs",
+  "keywords": [
+    "nfe",
+    "dfe",
+    "cpf",
+    "cnpj",
+    "cnpj-alfanumerico",
+    "inscricao-estadual",
+    "chave-de-acesso",
+    "brasil"
+  ],
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src",
+    "NOTICE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sinete-dev/sinete.git",
+    "directory": "packages/validators"
+  },
+  "homepage": "https://github.com/sinete-dev/sinete/tree/main/packages/validators#readme",
+  "bugs": "https://github.com/sinete-dev/sinete/issues",
+  "scripts": {
+    "build": "bun ../../scripts/build.ts ."
+  },
+  "dependencies": {
+    "@sinete/core": "workspace:^"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

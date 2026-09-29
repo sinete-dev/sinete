@@ -1,0 +1,6 @@
+[
+  {"v":1,"id":"c4","method":"http.request","params":{"identity":"emitente-59554465000137","url":"https://homologacao.nfe.fazenda.sp.gov.br/ws/nfestatusservico4.asmx","method":"POST","headers":{"content-type":"application/soap+xml; charset=utf-8; action=\"http://www.portalfiscal.inf.br/nfe/wsdl/NFeStatusServico4/nfeStatusServicoNF\""},"body":"PD94bWwg...","timeoutMs":60000,"service":"NfeStatusServico"}},
+  {"v":1,"id":"h1","method":"sign","params":{"identity":"emitente-59554465000137","scheme":"rsa_pkcs1_sha256","mode":"digest","digest":"q1w2e3...32 bytes em base64","context":{"purpose":"tls12-client-certificate-verify","host":"homologacao.nfe.fazenda.sp.gov.br","conn":1,"handshake":2}}},
+  {"v":1,"id":"h1","result":{"signature":"MEUCIQ...256 bytes em base64"}},
+  {"v":1,"id":"c4","result":{"status":200,"headers":{"Content-Type":"application/soap+xml; charset=utf-8"},"body":"PD94bWwg...","ms":244,"tls":{"version":"TLS 1.2","cipher":"TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384","conn":1,"connReused":false,"handshakes":2,"renegotiations":1,"resumed":[false,false],"certRequests":1,"signatures":[{"scheme":"rsa_pkcs1_sha256","mode":"digest","ms":1.07}],"handshakeMs":[57.6],"peerChain":["homologacao.nfe.fazenda.sp.gov.br","<intermediária>"]}}}
+]

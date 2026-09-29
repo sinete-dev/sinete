@@ -1,0 +1,1170 @@
+[
+  {
+    "actor": 1,
+    "cClassTrib": "000002",
+    "classTribKey": "CBS_IBS:000002:2026-01-01",
+    "key": "001:Fornecedor:CBS_IBS:000002:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 1,
+    "cClassTrib": "820006",
+    "classTribKey": "CBS_IBS:820006:2026-01-01",
+    "key": "001:Fornecedor:CBS_IBS:820006:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 2,
+    "cClassTrib": "000003",
+    "classTribKey": "CBS_IBS:000003:2026-01-01",
+    "key": "002:Fornecedor:CBS_IBS:000003:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 3,
+    "cClassTrib": "000004",
+    "classTribKey": "CBS_IBS:000004:2026-01-01",
+    "key": "003:Fornecedor:CBS_IBS:000004:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 4,
+    "cClassTrib": "010001",
+    "classTribKey": "CBS_IBS:010001:2026-01-01",
+    "key": "004:Fornecedor:CBS_IBS:010001:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 5,
+    "cClassTrib": "010001",
+    "classTribKey": "CBS_IBS:010001:2026-01-01",
+    "key": "005:Fornecedor:CBS_IBS:010001:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 6,
+    "cClassTrib": "010002",
+    "classTribKey": "CBS_IBS:010002:2026-01-01",
+    "key": "006:Fornecedor:CBS_IBS:010002:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 6,
+    "cClassTrib": "820007",
+    "classTribKey": "CBS_IBS:820007:2026-01-01",
+    "key": "006:Fornecedor:CBS_IBS:820007:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 7,
+    "cClassTrib": "011001",
+    "classTribKey": "CBS_IBS:011001:2026-01-01",
+    "key": "007:Fornecedor:CBS_IBS:011001:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 7,
+    "cClassTrib": "820002",
+    "classTribKey": "CBS_IBS:820002:2026-01-01",
+    "key": "007:Fornecedor:CBS_IBS:820002:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 8,
+    "cClassTrib": "011002",
+    "classTribKey": "CBS_IBS:011002:2026-01-01",
+    "key": "008:Fornecedor:CBS_IBS:011002:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 8,
+    "cClassTrib": "820001",
+    "classTribKey": "CBS_IBS:820001:2026-01-01",
+    "key": "008:Fornecedor:CBS_IBS:820001:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 9,
+    "cClassTrib": "011003",
+    "classTribKey": "CBS_IBS:011003:2026-01-01",
+    "key": "009:Fornecedor:CBS_IBS:011003:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 10,
+    "cClassTrib": "011004",
+    "classTribKey": "CBS_IBS:011004:2026-01-01",
+    "key": "010:Fornecedor:CBS_IBS:011004:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 10,
+    "cClassTrib": "820004",
+    "classTribKey": "CBS_IBS:820004:2026-01-01",
+    "key": "010:Fornecedor:CBS_IBS:820004:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 11,
+    "cClassTrib": "011005",
+    "classTribKey": "CBS_IBS:011005:2026-01-01",
+    "key": "011:Fornecedor:CBS_IBS:011005:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 11,
+    "cClassTrib": "820003",
+    "classTribKey": "CBS_IBS:820003:2026-01-01",
+    "key": "011:Fornecedor:CBS_IBS:820003:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 12,
+    "cClassTrib": "200001",
+    "classTribKey": "CBS_IBS:200001:2026-01-01",
+    "key": "012:Fornecedor:CBS_IBS:200001:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 13,
+    "cClassTrib": "200001",
+    "classTribKey": "CBS_IBS:200001:2026-01-01",
+    "key": "013:Adquirente:CBS_IBS:200001:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 13,
+    "cClassTrib": "550014",
+    "classTribKey": "CBS_IBS:550014:2026-01-01",
+    "key": "013:Adquirente:CBS_IBS:550014:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 14,
+    "cClassTrib": "200002",
+    "classTribKey": "CBS_IBS:200002:2026-01-01",
+    "key": "014:Adquirente:CBS_IBS:200002:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 14,
+    "cClassTrib": "410014",
+    "classTribKey": "CBS_IBS:410014:2026-01-01",
+    "key": "014:Fornecedor:CBS_IBS:410014:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 15,
+    "cClassTrib": "200002",
+    "classTribKey": "CBS_IBS:200002:2026-01-01",
+    "key": "015:Adquirente:CBS_IBS:200002:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 15,
+    "cClassTrib": "410015",
+    "classTribKey": "CBS_IBS:410015:2026-01-01",
+    "key": "015:Fornecedor:CBS_IBS:410015:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 16,
+    "cClassTrib": "200005",
+    "classTribKey": "CBS_IBS:200005:2026-01-01",
+    "key": "016:Adquirente:CBS_IBS:200005:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 16,
+    "cClassTrib": "200008",
+    "classTribKey": "CBS_IBS:200008:2026-01-01",
+    "key": "016:Adquirente:CBS_IBS:200008:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 16,
+    "cClassTrib": "200010",
+    "classTribKey": "CBS_IBS:200010:2026-01-01",
+    "key": "016:Adquirente:CBS_IBS:200010:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 16,
+    "cClassTrib": "200011",
+    "classTribKey": "CBS_IBS:200011:2026-01-01",
+    "key": "016:Adquirente:CBS_IBS:200011:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 16,
+    "cClassTrib": "200016",
+    "classTribKey": "CBS_IBS:200016:2026-01-01",
+    "key": "016:Adquirente:CBS_IBS:200016:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 16,
+    "cClassTrib": "200040",
+    "classTribKey": "CBS_IBS:200040:2026-01-01",
+    "key": "016:Adquirente:CBS_IBS:200040:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 16,
+    "cClassTrib": "200043",
+    "classTribKey": "CBS_IBS:200043:2026-01-01",
+    "key": "016:Adquirente:CBS_IBS:200043:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 17,
+    "cClassTrib": "200005",
+    "classTribKey": "CBS_IBS:200005:2026-01-01",
+    "key": "017:Adquirente:CBS_IBS:200005:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 17,
+    "cClassTrib": "200008",
+    "classTribKey": "CBS_IBS:200008:2026-01-01",
+    "key": "017:Adquirente:CBS_IBS:200008:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 17,
+    "cClassTrib": "200010",
+    "classTribKey": "CBS_IBS:200010:2026-01-01",
+    "key": "017:Adquirente:CBS_IBS:200010:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 17,
+    "cClassTrib": "200011",
+    "classTribKey": "CBS_IBS:200011:2026-01-01",
+    "key": "017:Adquirente:CBS_IBS:200011:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 18,
+    "cClassTrib": "200015",
+    "classTribKey": "CBS_IBS:200015:2026-01-01",
+    "key": "018:Adquirente:CBS_IBS:200015:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 19,
+    "cClassTrib": "200015",
+    "classTribKey": "CBS_IBS:200015:2026-01-01",
+    "key": "019:Adquirente:CBS_IBS:200015:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 20,
+    "cClassTrib": "200016",
+    "classTribKey": "CBS_IBS:200016:2026-01-01",
+    "key": "020:Fornecedor:CBS_IBS:200016:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 21,
+    "cClassTrib": "200016",
+    "classTribKey": "CBS_IBS:200016:2026-01-01",
+    "key": "021:Fornecedor:CBS_IBS:200016:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 22,
+    "cClassTrib": "200016",
+    "classTribKey": "CBS_IBS:200016:2026-01-01",
+    "key": "022:Adquirente:CBS_IBS:200016:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 22,
+    "cClassTrib": "200019",
+    "classTribKey": "CBS_IBS:200019:2026-01-01",
+    "key": "022:Adquirente:CBS_IBS:200019:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 22,
+    "cClassTrib": "410015",
+    "classTribKey": "CBS_IBS:410015:2026-01-01",
+    "key": "022:Adquirente:CBS_IBS:410015:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 22,
+    "cClassTrib": "410016",
+    "classTribKey": "CBS_IBS:410016:2026-01-01",
+    "key": "022:Adquirente:CBS_IBS:410016:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 22,
+    "cClassTrib": "410017",
+    "classTribKey": "CBS_IBS:410017:2026-01-01",
+    "key": "022:Adquirente:CBS_IBS:410017:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 22,
+    "cClassTrib": "410030",
+    "classTribKey": "CBS_IBS:410030:2026-01-01",
+    "key": "022:Adquirente:CBS_IBS:410030:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 22,
+    "cClassTrib": "550018",
+    "classTribKey": "CBS_IBS:550018:2026-01-01",
+    "key": "022:Adquirente:CBS_IBS:550018:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 23,
+    "cClassTrib": "200017",
+    "classTribKey": "CBS_IBS:200017:2026-01-01",
+    "key": "023:Fornecedor:CBS_IBS:200017:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 24,
+    "cClassTrib": "200018",
+    "classTribKey": "CBS_IBS:200018:2026-01-01",
+    "key": "024:Fornecedor:CBS_IBS:200018:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 25,
+    "cClassTrib": "200018",
+    "classTribKey": "CBS_IBS:200018:2026-01-01",
+    "key": "025:Adquirente:CBS_IBS:200018:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 25,
+    "cClassTrib": "200018",
+    "classTribKey": "CBS_IBS:200018:2026-01-01",
+    "key": "025:Fornecedor:CBS_IBS:200018:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 26,
+    "cClassTrib": "200019",
+    "classTribKey": "CBS_IBS:200019:2026-01-01",
+    "key": "026:Fornecedor:CBS_IBS:200019:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 27,
+    "cClassTrib": "200020",
+    "classTribKey": "CBS_IBS:200020:2026-01-01",
+    "key": "027:Adquirente:CBS_IBS:200020:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 27,
+    "cClassTrib": "200020",
+    "classTribKey": "CBS_IBS:200020:2026-01-01",
+    "key": "027:Fornecedor:CBS_IBS:200020:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 27,
+    "cClassTrib": "200054",
+    "classTribKey": "CBS_IBS:200054:2026-01-01",
+    "key": "027:Fornecedor:CBS_IBS:200054:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 28,
+    "cClassTrib": "200054",
+    "classTribKey": "CBS_IBS:200054:2026-01-01",
+    "key": "028:Adquirente:CBS_IBS:200054:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 28,
+    "cClassTrib": "200020",
+    "classTribKey": "CBS_IBS:200020:2026-01-01",
+    "key": "028:Fornecedor:CBS_IBS:200020:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 29,
+    "cClassTrib": "200020",
+    "classTribKey": "CBS_IBS:200020:2026-01-01",
+    "key": "029:Adquirente:CBS_IBS:200020:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 30,
+    "cClassTrib": "200022",
+    "classTribKey": "CBS_IBS:200022:2026-01-01",
+    "key": "030:Fornecedor:CBS_IBS:200022:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 31,
+    "cClassTrib": "200022",
+    "classTribKey": "CBS_IBS:200022:2026-01-01",
+    "key": "031:Adquirente:CBS_IBS:200022:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 32,
+    "cClassTrib": "200023",
+    "classTribKey": "CBS_IBS:200023:2026-01-01",
+    "key": "032:Adquirente:CBS_IBS:200023:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 32,
+    "cClassTrib": "550019",
+    "classTribKey": "CBS_IBS:550019:2026-01-01",
+    "key": "032:Adquirente:CBS_IBS:550019:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 32,
+    "cClassTrib": "200023",
+    "classTribKey": "CBS_IBS:200023:2026-01-01",
+    "key": "032:Fornecedor:CBS_IBS:200023:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 32,
+    "cClassTrib": "810001",
+    "classTribKey": "CBS_IBS:810001:2026-01-01",
+    "key": "032:Fornecedor:CBS_IBS:810001:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 33,
+    "cClassTrib": "200024",
+    "classTribKey": "CBS_IBS:200024:2026-01-01",
+    "key": "033:Fornecedor:CBS_IBS:200024:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 34,
+    "cClassTrib": "200024",
+    "classTribKey": "CBS_IBS:200024:2026-01-01",
+    "key": "034:Adquirente:CBS_IBS:200024:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 35,
+    "cClassTrib": "200025",
+    "classTribKey": "CBS_IBS:200025:2026-01-01",
+    "key": "035:Fornecedor:CBS_IBS:200025:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 36,
+    "cClassTrib": "200042",
+    "classTribKey": "CBS_IBS:200042:2026-01-01",
+    "key": "036:Fornecedor:CBS_IBS:200042:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 37,
+    "cClassTrib": "200044",
+    "classTribKey": "CBS_IBS:200044:2026-01-01",
+    "key": "037:Fornecedor:CBS_IBS:200044:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 38,
+    "cClassTrib": "200051",
+    "classTribKey": "CBS_IBS:200051:2026-01-01",
+    "key": "038:Fornecedor:CBS_IBS:200051:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 39,
+    "cClassTrib": "200052",
+    "classTribKey": "CBS_IBS:200052:2026-01-01",
+    "key": "039:Fornecedor:CBS_IBS:200052:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 40,
+    "cClassTrib": "200021",
+    "classTribKey": "CBS_IBS:200021:2026-01-01",
+    "key": "040:Fornecedor:CBS_IBS:200021:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 41,
+    "cClassTrib": "400001",
+    "classTribKey": "CBS_IBS:400001:2026-01-01",
+    "key": "041:Fornecedor:CBS_IBS:400001:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 41,
+    "cClassTrib": "400002",
+    "classTribKey": "CBS_IBS:400002:2026-01-01",
+    "key": "041:Fornecedor:CBS_IBS:400002:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 42,
+    "cClassTrib": "410005",
+    "classTribKey": "CBS_IBS:410005:2026-01-01",
+    "key": "042:Fornecedor:CBS_IBS:410005:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 43,
+    "cClassTrib": "410005",
+    "classTribKey": "CBS_IBS:410005:2026-01-01",
+    "key": "043:Fornecedor:CBS_IBS:410005:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 44,
+    "cClassTrib": "410005",
+    "classTribKey": "CBS_IBS:410005:2026-01-01",
+    "key": "044:Fornecedor:CBS_IBS:410005:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 45,
+    "cClassTrib": "410005",
+    "classTribKey": "CBS_IBS:410005:2026-01-01",
+    "key": "045:Fornecedor:CBS_IBS:410005:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 46,
+    "cClassTrib": "410005",
+    "classTribKey": "CBS_IBS:410005:2026-01-01",
+    "key": "046:Fornecedor:CBS_IBS:410005:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 47,
+    "cClassTrib": "410005",
+    "classTribKey": "CBS_IBS:410005:2026-01-01",
+    "key": "047:Fornecedor:CBS_IBS:410005:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 48,
+    "cClassTrib": "410005",
+    "classTribKey": "CBS_IBS:410005:2026-01-01",
+    "key": "048:Fornecedor:CBS_IBS:410005:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 49,
+    "cClassTrib": "410006",
+    "classTribKey": "CBS_IBS:410006:2026-01-01",
+    "key": "049:Fornecedor:CBS_IBS:410006:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 50,
+    "cClassTrib": "410007",
+    "classTribKey": "CBS_IBS:410007:2026-01-01",
+    "key": "050:Fornecedor:CBS_IBS:410007:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 51,
+    "cClassTrib": "410007",
+    "classTribKey": "CBS_IBS:410007:2026-01-01",
+    "key": "051:Fornecedor:CBS_IBS:410007:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 52,
+    "cClassTrib": "410007",
+    "classTribKey": "CBS_IBS:410007:2026-01-01",
+    "key": "052:Fornecedor:CBS_IBS:410007:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 53,
+    "cClassTrib": "410007",
+    "classTribKey": "CBS_IBS:410007:2026-01-01",
+    "key": "053:Fornecedor:CBS_IBS:410007:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 54,
+    "cClassTrib": "410012",
+    "classTribKey": "CBS_IBS:410012:2026-01-01",
+    "key": "054:Fornecedor:CBS_IBS:410012:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 55,
+    "cClassTrib": "410016",
+    "classTribKey": "CBS_IBS:410016:2026-01-01",
+    "key": "055:Fornecedor:CBS_IBS:410016:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 56,
+    "cClassTrib": "410017",
+    "classTribKey": "CBS_IBS:410017:2026-01-01",
+    "key": "056:Fornecedor:CBS_IBS:410017:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 56,
+    "cClassTrib": "410028",
+    "classTribKey": "CBS_IBS:410028:2026-01-01",
+    "key": "056:Fornecedor:CBS_IBS:410028:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 57,
+    "cClassTrib": "410015",
+    "classTribKey": "CBS_IBS:410015:2026-01-01",
+    "key": "057:Fornecedor:CBS_IBS:410015:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 57,
+    "cClassTrib": "410017",
+    "classTribKey": "CBS_IBS:410017:2026-01-01",
+    "key": "057:Fornecedor:CBS_IBS:410017:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 58,
+    "cClassTrib": "410018",
+    "classTribKey": "CBS_IBS:410018:2026-01-01",
+    "key": "058:Fornecedor:CBS_IBS:410018:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 59,
+    "cClassTrib": "200047",
+    "classTribKey": "CBS_IBS:200047:2026-01-01",
+    "key": "059:Fornecedor:CBS_IBS:200047:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 59,
+    "cClassTrib": "410019",
+    "classTribKey": "CBS_IBS:410019:2026-01-01",
+    "key": "059:Fornecedor:CBS_IBS:410019:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 59,
+    "cClassTrib": "410020",
+    "classTribKey": "CBS_IBS:410020:2026-01-01",
+    "key": "059:Fornecedor:CBS_IBS:410020:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 60,
+    "cClassTrib": "510001",
+    "classTribKey": "CBS_IBS:510001:2026-01-01",
+    "key": "060:Adquirente:CBS_IBS:510001:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 60,
+    "cClassTrib": "510001",
+    "classTribKey": "CBS_IBS:510001:2026-01-01",
+    "key": "060:Fornecedor:CBS_IBS:510001:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 61,
+    "cClassTrib": "410033",
+    "classTribKey": "CBS_IBS:410033:2026-01-01",
+    "key": "061:Fornecedor:CBS_IBS:410033:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 62,
+    "cClassTrib": "410033",
+    "classTribKey": "CBS_IBS:410033:2026-01-01",
+    "key": "062:Fornecedor:CBS_IBS:410033:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 63,
+    "cClassTrib": "410034",
+    "classTribKey": "CBS_IBS:410034:2026-01-01",
+    "key": "063:Fornecedor:CBS_IBS:410034:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 64,
+    "cClassTrib": "550001",
+    "classTribKey": "CBS_IBS:550001:2026-01-01",
+    "key": "064:Adquirente:CBS_IBS:550001:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 65,
+    "cClassTrib": "550004",
+    "classTribKey": "CBS_IBS:550004:2026-01-01",
+    "key": "065:Adquirente:CBS_IBS:550004:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 66,
+    "cClassTrib": "550005",
+    "classTribKey": "CBS_IBS:550005:2026-01-01",
+    "key": "066:Adquirente:CBS_IBS:550005:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 67,
+    "cClassTrib": "550013",
+    "classTribKey": "CBS_IBS:550013:2026-01-01",
+    "key": "067:Adquirente:CBS_IBS:550013:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 68,
+    "cClassTrib": "550015",
+    "classTribKey": "CBS_IBS:550015:2026-01-01",
+    "key": "068:Adquirente:CBS_IBS:550015:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 69,
+    "cClassTrib": "550016",
+    "classTribKey": "CBS_IBS:550016:2026-01-01",
+    "key": "069:Adquirente:CBS_IBS:550016:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 70,
+    "cClassTrib": "550017",
+    "classTribKey": "CBS_IBS:550017:2026-01-01",
+    "key": "070:Adquirente:CBS_IBS:550017:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 70,
+    "cClassTrib": "550024",
+    "classTribKey": "CBS_IBS:550024:2026-01-01",
+    "key": "070:Adquirente:CBS_IBS:550024:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 70,
+    "cClassTrib": "550025",
+    "classTribKey": "CBS_IBS:550025:2026-01-01",
+    "key": "070:Adquirente:CBS_IBS:550025:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 71,
+    "cClassTrib": "550022",
+    "classTribKey": "CBS_IBS:550022:2026-01-01",
+    "key": "071:Adquirente:CBS_IBS:550022:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 72,
+    "cClassTrib": "550020",
+    "classTribKey": "CBS_IBS:550020:2026-01-01",
+    "key": "072:Adquirente:CBS_IBS:550020:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 73,
+    "cClassTrib": "550021",
+    "classTribKey": "CBS_IBS:550021:2026-01-01",
+    "key": "073:Adquirente:CBS_IBS:550021:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 74,
+    "cClassTrib": "550023",
+    "classTribKey": "CBS_IBS:550023:2026-01-01",
+    "key": "074:Adquirente:CBS_IBS:550023:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 74,
+    "cClassTrib": "620002",
+    "classTribKey": "CBS_IBS:620002:2026-01-01",
+    "key": "074:Fornecedor:CBS_IBS:620002:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 74,
+    "cClassTrib": "620003",
+    "classTribKey": "CBS_IBS:620003:2026-01-01",
+    "key": "074:Fornecedor:CBS_IBS:620003:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 75,
+    "cClassTrib": "550023",
+    "classTribKey": "CBS_IBS:550023:2026-01-01",
+    "key": "075:Fornecedor:CBS_IBS:550023:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 76,
+    "cClassTrib": "550023",
+    "classTribKey": "CBS_IBS:550023:2026-01-01",
+    "key": "076:Fornecedor:CBS_IBS:550023:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 76,
+    "cClassTrib": "620002",
+    "classTribKey": "CBS_IBS:620002:2026-01-01",
+    "key": "076:Fornecedor:CBS_IBS:620002:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 76,
+    "cClassTrib": "620003",
+    "classTribKey": "CBS_IBS:620003:2026-01-01",
+    "key": "076:Fornecedor:CBS_IBS:620003:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 76,
+    "cClassTrib": "620006",
+    "classTribKey": "CBS_IBS:620006:2026-01-01",
+    "key": "076:Fornecedor:CBS_IBS:620006:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 77,
+    "cClassTrib": "620001",
+    "classTribKey": "CBS_IBS:620001:2026-01-01",
+    "key": "077:Fornecedor:CBS_IBS:620001:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 78,
+    "cClassTrib": "620002",
+    "classTribKey": "CBS_IBS:620002:2026-01-01",
+    "key": "078:Fornecedor:CBS_IBS:620002:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 78,
+    "cClassTrib": "620003",
+    "classTribKey": "CBS_IBS:620003:2026-01-01",
+    "key": "078:Fornecedor:CBS_IBS:620003:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 78,
+    "cClassTrib": "620006",
+    "classTribKey": "CBS_IBS:620006:2026-01-01",
+    "key": "078:Fornecedor:CBS_IBS:620006:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 80,
+    "cClassTrib": "410035",
+    "classTribKey": "CBS_IBS:410035:2026-01-01",
+    "key": "080:Fornecedor:CBS_IBS:410035:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 81,
+    "cClassTrib": "200048",
+    "classTribKey": "CBS_IBS:200048:2026-01-01",
+    "key": "081:Fornecedor:CBS_IBS:200048:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 82,
+    "cClassTrib": "200050",
+    "classTribKey": "CBS_IBS:200050:2026-01-01",
+    "key": "082:Fornecedor:CBS_IBS:200050:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 83,
+    "cClassTrib": "800002",
+    "classTribKey": "CBS_IBS:800002:2026-01-01",
+    "key": "083:Fornecedor:CBS_IBS:800002:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 84,
+    "cClassTrib": "800002",
+    "classTribKey": "CBS_IBS:800002:2026-01-01",
+    "key": "084:Adquirente:CBS_IBS:800002:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 84,
+    "cClassTrib": "800002",
+    "classTribKey": "CBS_IBS:800002:2026-01-01",
+    "key": "084:Fornecedor:CBS_IBS:800002:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 85,
+    "cClassTrib": "800002",
+    "classTribKey": "CBS_IBS:800002:2026-01-01",
+    "key": "085:Adquirente:CBS_IBS:800002:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 86,
+    "cClassTrib": "410021",
+    "classTribKey": "CBS_IBS:410021:2026-01-01",
+    "key": "086:Fornecedor:CBS_IBS:410021:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 86,
+    "cClassTrib": "830001",
+    "classTribKey": "CBS_IBS:830001:2026-01-01",
+    "key": "086:Fornecedor:CBS_IBS:830001:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 87,
+    "cClassTrib": "410024",
+    "classTribKey": "CBS_IBS:410024:2026-01-01",
+    "key": "087:Fornecedor:CBS_IBS:410024:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 87,
+    "cClassTrib": "410025",
+    "classTribKey": "CBS_IBS:410025:2026-01-01",
+    "key": "087:Fornecedor:CBS_IBS:410025:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 88,
+    "cClassTrib": "620001",
+    "classTribKey": "CBS_IBS:620001:2026-01-01",
+    "key": "088:Adquirente:CBS_IBS:620001:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 88,
+    "cClassTrib": "620002",
+    "classTribKey": "CBS_IBS:620002:2026-01-01",
+    "key": "088:Adquirente:CBS_IBS:620002:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 88,
+    "cClassTrib": "620003",
+    "classTribKey": "CBS_IBS:620003:2026-01-01",
+    "key": "088:Adquirente:CBS_IBS:620003:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 88,
+    "cClassTrib": "620006",
+    "classTribKey": "CBS_IBS:620006:2026-01-01",
+    "key": "088:Adquirente:CBS_IBS:620006:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 88,
+    "cClassTrib": "620004",
+    "classTribKey": "CBS_IBS:620004:2026-01-01",
+    "key": "088:Fornecedor:CBS_IBS:620004:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 88,
+    "cClassTrib": "620005",
+    "classTribKey": "CBS_IBS:620005:2026-01-01",
+    "key": "088:Fornecedor:CBS_IBS:620005:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 88,
+    "cClassTrib": "620006",
+    "classTribKey": "CBS_IBS:620006:2026-01-01",
+    "key": "088:Fornecedor:CBS_IBS:620006:2026-01-01:2026-01-01",
+    "role": "Fornecedor",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 89,
+    "cClassTrib": "620004",
+    "classTribKey": "CBS_IBS:620004:2026-01-01",
+    "key": "089:Adquirente:CBS_IBS:620004:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 89,
+    "cClassTrib": "620005",
+    "classTribKey": "CBS_IBS:620005:2026-01-01",
+    "key": "089:Adquirente:CBS_IBS:620005:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 89,
+    "cClassTrib": "620006",
+    "classTribKey": "CBS_IBS:620006:2026-01-01",
+    "key": "089:Adquirente:CBS_IBS:620006:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "actor": 90,
+    "cClassTrib": "830001",
+    "classTribKey": "CBS_IBS:830001:2026-01-01",
+    "key": "090:Adquirente:CBS_IBS:830001:2026-01-01:2026-01-01",
+    "role": "Adquirente",
+    "validity": { "from": "2026-01-01", "to": null }
+  }
+]

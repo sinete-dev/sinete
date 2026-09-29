@@ -1,0 +1,19 @@
+# Registry descartável do spike S0. @sinete/* nunca sai para o npmjs (sem proxy).
+storage: ./storage
+auth:
+  htpasswd:
+    file: ./htpasswd
+    max_users: 1000
+uplinks:
+  npmjs:
+    url: https://registry.npmjs.org/
+packages:
+  '@sinete/*':
+    access: $all
+    publish: $all
+    unpublish: $all
+  '**':
+    access: $all
+    publish: $authenticated
+    proxy: npmjs
+log: { type: file, path: ./verdaccio.log, level: warn }

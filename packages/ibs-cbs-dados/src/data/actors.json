@@ -1,0 +1,722 @@
+[
+  {
+    "description": "Praça de Pedágio",
+    "group": 13,
+    "id": 1,
+    "key": "001",
+    "order": 1,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Empresa com projeto habilitado (Lei nº 9.440/1997, art. 11-C)",
+    "group": 16,
+    "id": 2,
+    "key": "002",
+    "order": 1,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Empresa com projeto habilitado (Lei nº 9.826/1999, arts. 1º a 4º)",
+    "group": 16,
+    "id": 3,
+    "key": "003",
+    "order": 2,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Agente financeiro do FGTS  (exceto CEF)",
+    "group": 7,
+    "id": 4,
+    "key": "004",
+    "order": 1,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Estabelecimento bancário (exceto CEF)",
+    "group": 7,
+    "id": 5,
+    "key": "005",
+    "order": 2,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Instituição financeira",
+    "group": 7,
+    "id": 6,
+    "key": "006",
+    "order": 3,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Prestadora de plano de assistência funerária",
+    "group": 8,
+    "id": 7,
+    "key": "007",
+    "order": 1,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Prestadora de plano de assistência à saúde",
+    "group": 8,
+    "id": 8,
+    "key": "008",
+    "order": 2,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Intermediadora de plano de assistência à saúde",
+    "group": 8,
+    "id": 9,
+    "key": "009",
+    "order": 3,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Operadora de concursos de prognósticos",
+    "group": 8,
+    "id": 10,
+    "key": "010",
+    "order": 4,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Prestadora de plano de assistência à saúde de animais domésticos",
+    "group": 8,
+    "id": 11,
+    "key": "011",
+    "order": 5,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Prestador de serviço de transporte de bens",
+    "group": 13,
+    "id": 12,
+    "key": "012",
+    "order": 2,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Empresa autorizada a operar em ZPE",
+    "group": 14,
+    "id": 13,
+    "key": "013",
+    "order": 1,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Produtor rural não contribuinte",
+    "group": 3,
+    "id": 14,
+    "key": "014",
+    "order": 1,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Transportador autônomo de carga pessoa física não contribuinte",
+    "group": 3,
+    "id": 15,
+    "key": "015",
+    "order": 2,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Órgão da administração pública direta, autarquia ou fundação pública",
+    "group": 5,
+    "id": 16,
+    "key": "016",
+    "order": 1,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Entidade de saúde imune ao IBS/CBS com CEBAS e comprovação de prestação ao SUS",
+    "group": 6,
+    "id": 17,
+    "key": "017",
+    "order": 1,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Taxista (condutor autônomo de passageiros) com autorização, permissão ou concessão",
+    "group": 3,
+    "id": 18,
+    "key": "018",
+    "order": 3,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Pessoa com deficiência ou transtorno do espectro autista",
+    "group": 3,
+    "id": 19,
+    "key": "019",
+    "order": 4,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Instituição Científica, Tecnológica e de Inovação (ICT) sem fins lucrativos",
+    "group": 17,
+    "id": 20,
+    "key": "020",
+    "order": 1,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Fundação de apoio credenciada na forma da lei",
+    "group": 17,
+    "id": 21,
+    "key": "021",
+    "order": 2,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Contribuinte sujeito ao regime regular do IBS e da CBS",
+    "group": 1,
+    "id": 22,
+    "key": "022",
+    "order": 1,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Agente operador do FGTS (Caixa Econômica Federal)",
+    "group": 7,
+    "id": 23,
+    "key": "023",
+    "order": 4,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Seguradora",
+    "group": 7,
+    "id": 24,
+    "key": "024",
+    "order": 5,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Resseguradora",
+    "group": 7,
+    "id": 25,
+    "key": "025",
+    "order": 6,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Instituição financeira domiciliada no exterior",
+    "group": 7,
+    "id": 26,
+    "key": "026",
+    "order": 7,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Sociedade cooperativa",
+    "group": 9,
+    "id": 27,
+    "key": "027",
+    "order": 1,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Associado da cooperativa",
+    "group": 9,
+    "id": 28,
+    "key": "028",
+    "order": 2,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Associado da cooperativa sujeito ao regime regular do IBS e da CBS",
+    "group": 9,
+    "id": 29,
+    "key": "029",
+    "order": 3,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Contribuinte estabelecido fora da ZFM",
+    "group": 15,
+    "id": 30,
+    "key": "030",
+    "order": 1,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Contribuinte habilitado na ZFM (regime regular ou Simples Nacional)",
+    "group": 15,
+    "id": 31,
+    "key": "031",
+    "order": 2,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Indústria incentivada habilitada na ZFM",
+    "group": 15,
+    "id": 32,
+    "key": "032",
+    "order": 3,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Contribuinte estabelecido fora de Área de Livre Comércio (ALC)",
+    "group": 15,
+    "id": 33,
+    "key": "033",
+    "order": 4,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Contribuinte habilitado em Área de Livre Comércio (ALC) (regime regular ou Simples Nacional)",
+    "group": 15,
+    "id": 34,
+    "key": "034",
+    "order": 5,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Instituição privada de ensino superior aderente ao Prouni",
+    "group": 17,
+    "id": 35,
+    "key": "035",
+    "order": 3,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Associação ou clube esportivo filiado ao órgão estadual ou federal responsável pela coordenação dos desportos",
+    "group": 17,
+    "id": 36,
+    "key": "036",
+    "order": 4,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Sociedade com sócio brasileiro com no mínimo 20% do capital social",
+    "group": 17,
+    "id": 37,
+    "key": "037",
+    "order": 5,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Agência de turismo",
+    "group": 12,
+    "id": 38,
+    "key": "038",
+    "order": 1,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Profissional de atividade intelectual submetida a conselho profissional (art. 127)",
+    "group": 17,
+    "id": 39,
+    "key": "039",
+    "order": 6,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Prestador de transporte público coletivo de passageiros ferroviário e hidroviário (urbano, semiurbano e metropolitano) sob autorização, permissão ou concessão",
+    "group": 13,
+    "id": 40,
+    "key": "040",
+    "order": 3,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Prestador de transporte público coletivo de passageiros rodoviário e metroviário (urbano, semiurbano e metropolitano) sob autorização, permissão ou concessão",
+    "group": 13,
+    "id": 41,
+    "key": "041",
+    "order": 4,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "União",
+    "group": 5,
+    "id": 42,
+    "key": "042",
+    "order": 2,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Estado",
+    "group": 5,
+    "id": 43,
+    "key": "043",
+    "order": 3,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Distrito Federal",
+    "group": 5,
+    "id": 44,
+    "key": "044",
+    "order": 4,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Município",
+    "group": 5,
+    "id": 45,
+    "key": "045",
+    "order": 5,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Autarquia",
+    "group": 5,
+    "id": 46,
+    "key": "046",
+    "order": 6,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Fundação pública",
+    "group": 5,
+    "id": 47,
+    "key": "047",
+    "order": 7,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Empresa pública prestadora de serviço postal",
+    "group": 5,
+    "id": 48,
+    "key": "048",
+    "order": 8,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Entidade religiosa ou templo de qualquer culto (inclui organizações assistenciais e beneficentes)",
+    "group": 6,
+    "id": 49,
+    "key": "049",
+    "order": 2,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Partido político (inclui institutos e fundações)",
+    "group": 6,
+    "id": 50,
+    "key": "050",
+    "order": 3,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Entidade sindical dos trabalhadores",
+    "group": 6,
+    "id": 51,
+    "key": "051",
+    "order": 4,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Instituição de educação sem fins lucrativos",
+    "group": 6,
+    "id": 52,
+    "key": "052",
+    "order": 5,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Instituição de assistência social sem fins lucrativos",
+    "group": 6,
+    "id": 53,
+    "key": "053",
+    "order": 6,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Condomínio edilício não optante pelo regime regular (condições do art. 26, § 2º, II)",
+    "group": 3,
+    "id": 54,
+    "key": "054",
+    "order": 5,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Coletor incentivado de resíduos sólidos",
+    "group": 3,
+    "id": 55,
+    "key": "055",
+    "order": 6,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Pessoa física não contribuinte do IBS e da CBS",
+    "group": 3,
+    "id": 56,
+    "key": "056",
+    "order": 7,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Microempreendedor Individual (MEI)",
+    "group": 2,
+    "id": 57,
+    "key": "057",
+    "order": 1,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Fundo garantidor ou executor de políticas públicas previsto em lei",
+    "group": 7,
+    "id": 58,
+    "key": "058",
+    "order": 8,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Bar ou restaurante",
+    "group": 12,
+    "id": 59,
+    "key": "059",
+    "order": 2,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Setor elétrico (geração, comercialização, distribuição e transmissão)",
+    "group": 11,
+    "id": 60,
+    "key": "060",
+    "order": 1,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Fundo de Investimento Imobiliário (FII)",
+    "group": 4,
+    "id": 61,
+    "key": "061",
+    "order": 1,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Fundo de Investimento nas Cadeias Produtivas do Agronegócio (Fiagro)",
+    "group": 4,
+    "id": 62,
+    "key": "062",
+    "order": 2,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Fundo de investimento com patrimônio constituído exclusivamente por ativos financeiros permitidos pela CVM",
+    "group": 4,
+    "id": 63,
+    "key": "063",
+    "order": 3,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Empresa comercial exportadora",
+    "group": 14,
+    "id": 64,
+    "key": "064",
+    "order": 2,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Operador de loja franca",
+    "group": 14,
+    "id": 65,
+    "key": "065",
+    "order": 3,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Companhia aérea operadora de aeronaves exclusivamente em tráfego internacional",
+    "group": 14,
+    "id": 66,
+    "key": "066",
+    "order": 4,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Empresa sediada no exterior (contratante)",
+    "group": 14,
+    "id": 67,
+    "key": "067",
+    "order": 5,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Beneficiário habilitado do Reporto",
+    "group": 14,
+    "id": 68,
+    "key": "068",
+    "order": 6,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Beneficiário habilitado do Reidi",
+    "group": 14,
+    "id": 69,
+    "key": "069",
+    "order": 7,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Beneficiário previamente habilitado do Renaval",
+    "group": 14,
+    "id": 70,
+    "key": "070",
+    "order": 8,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Beneficiário do Rehidro",
+    "group": 14,
+    "id": 71,
+    "key": "071",
+    "order": 9,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Indústria habilitada em Área de Livre Comércio (ALC) sujeita ao regime regular do IBS e da CBS",
+    "group": 15,
+    "id": 72,
+    "key": "072",
+    "order": 6,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Contribuinte do regime regular que promova industrialização destinada à exportação",
+    "group": 14,
+    "id": 73,
+    "key": "073",
+    "order": 10,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Central petroquímica autorizada pela ANP",
+    "group": 10,
+    "id": 74,
+    "key": "074",
+    "order": 1,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Unidade de Processamento de Gás Natural",
+    "group": 10,
+    "id": 75,
+    "key": "075",
+    "order": 2,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Refinaria de petróleo ou suas bases",
+    "group": 10,
+    "id": 76,
+    "key": "076",
+    "order": 3,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Usina de Álcool",
+    "group": 10,
+    "id": 77,
+    "key": "077",
+    "order": 4,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Formulador de combustíveis",
+    "group": 10,
+    "id": 78,
+    "key": "078",
+    "order": 5,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Importador",
+    "group": 10,
+    "id": 79,
+    "key": "079",
+    "order": 6,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Nanoempreendedor",
+    "group": 3,
+    "id": 80,
+    "key": "080",
+    "order": 8,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Hotelaria, Parques de Diversão e Parques Temáticos",
+    "group": 12,
+    "id": 81,
+    "key": "081",
+    "order": 3,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Aviação regional doméstica",
+    "group": 13,
+    "id": 82,
+    "key": "082",
+    "order": 5,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Associado da cooperativa sujeito ao regime regular",
+    "group": 9,
+    "id": 83,
+    "key": "083",
+    "order": 4,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Cooperativa Singular",
+    "group": 9,
+    "id": 84,
+    "key": "084",
+    "order": 5,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Federação ou Confederação de Cooperativas",
+    "group": 9,
+    "id": 85,
+    "key": "085",
+    "order": 6,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Distribuidor de energia elétrica",
+    "group": 11,
+    "id": 86,
+    "key": "086",
+    "order": 2,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Administradora de consórcio",
+    "group": 7,
+    "id": 87,
+    "key": "087",
+    "order": 9,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Distribuidor de combustível",
+    "group": 10,
+    "id": 88,
+    "key": "088",
+    "order": 7,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Postos de combustível e grandes consumidores",
+    "group": 10,
+    "id": 89,
+    "key": "089",
+    "order": 8,
+    "validity": { "from": "2026-01-01", "to": null }
+  },
+  {
+    "description": "Participante do Sistema de Compensação de Energia Elétrica (Lei nº 14.300/2022)",
+    "group": 11,
+    "id": 90,
+    "key": "090",
+    "order": 3,
+    "validity": { "from": "2026-01-01", "to": null }
+  }
+]

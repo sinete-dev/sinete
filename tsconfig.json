@@ -1,0 +1,9 @@
+{
+  // Tooling do repo (scripts, smoke) roda no Bun; os pacotes têm tsconfig próprio.
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["bun"],
+    "isolatedDeclarations": false
+  },
+  "include": ["scripts", "smoke/*.ts", "helpers/*/scripts"]
+}

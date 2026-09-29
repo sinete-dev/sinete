@@ -1,0 +1,432 @@
+{
+  "runtime": "node",
+  "version": "26.3.1",
+  "at": "2026-09-25T23:15:47.527Z",
+  "rootCount": 120,
+  "hosts": {
+    "nfe.sefaz.am.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "socket: 809DA7F501000000:error:0A000412:SSL routines:ssl3_read_bytes:ssl/tls alert bad certificate:../deps/openssl/openssl/ssl/record/rec_layer_s3.c:918:SSL alert number 42\n"
+      },
+      "withIcp": {
+        "ok": false,
+        "error": "socket: 809DA7F501000000:error:0A000412:SSL routines:ssl3_read_bytes:ssl/tls alert bad certificate:../deps/openssl/openssl/ssl/record/rec_layer_s3.c:918:SSL alert number 42\n"
+      }
+    },
+    "nfe.sefaz.ba.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "UNABLE_TO_GET_ISSUER_CERT_LOCALLY",
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-SHA384"
+      },
+      "withIcp": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-SHA384"
+      }
+    },
+    "nfe.sefaz.go.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "socket: 809DA7F501000000:error:0A000416:SSL routines:ssl3_read_bytes:ssl/tls alert certificate unknown:../deps/openssl/openssl/ssl/record/rec_layer_s3.c:918:SSL alert number 46\n"
+      },
+      "withIcp": {
+        "ok": false,
+        "error": "socket: 809DA7F501000000:error:0A000416:SSL routines:ssl3_read_bytes:ssl/tls alert certificate unknown:../deps/openssl/openssl/ssl/record/rec_layer_s3.c:918:SSL alert number 46\n"
+      }
+    },
+    "nfe.fazenda.mg.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "socket: 809DA7F501000000:error:0A000410:SSL routines:ssl3_read_bytes:ssl/tls alert handshake failure:../deps/openssl/openssl/ssl/record/rec_layer_s3.c:918:SSL alert number 40\n"
+      },
+      "withIcp": {
+        "ok": false,
+        "error": "socket: 809DA7F501000000:error:0A000410:SSL routines:ssl3_read_bytes:ssl/tls alert handshake failure:../deps/openssl/openssl/ssl/record/rec_layer_s3.c:918:SSL alert number 40\n"
+      }
+    },
+    "nfe.sefaz.ms.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "SELF_SIGNED_CERT_IN_CHAIN",
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES128-GCM-SHA256"
+      },
+      "withIcp": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES128-GCM-SHA256"
+      }
+    },
+    "nfe.sefaz.mt.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "SELF_SIGNED_CERT_IN_CHAIN",
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES128-GCM-SHA256"
+      },
+      "withIcp": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES128-GCM-SHA256"
+      }
+    },
+    "nfe.sefaz.pe.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "SELF_SIGNED_CERT_IN_CHAIN",
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      },
+      "withIcp": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      }
+    },
+    "nfe.sefa.pr.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "socket: 809DA7F501000000:error:0A000412:SSL routines:ssl3_read_bytes:ssl/tls alert bad certificate:../deps/openssl/openssl/ssl/record/rec_layer_s3.c:918:SSL alert number 42\n"
+      },
+      "withIcp": {
+        "ok": false,
+        "error": "socket: 809DA7F501000000:error:0A000412:SSL routines:ssl3_read_bytes:ssl/tls alert bad certificate:../deps/openssl/openssl/ssl/record/rec_layer_s3.c:918:SSL alert number 42\n"
+      }
+    },
+    "nfe.sefazrs.rs.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "UNABLE_TO_GET_ISSUER_CERT_LOCALLY",
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      },
+      "withIcp": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      }
+    },
+    "cad.svrs.rs.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "UNABLE_TO_GET_ISSUER_CERT_LOCALLY",
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      },
+      "withIcp": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      }
+    },
+    "nfe.fazenda.sp.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "UNABLE_TO_GET_ISSUER_CERT_LOCALLY",
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      },
+      "withIcp": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      }
+    },
+    "www.sefazvirtual.fazenda.gov.br": {
+      "default": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      },
+      "withIcp": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      }
+    },
+    "nfe.svrs.rs.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "UNABLE_TO_GET_ISSUER_CERT_LOCALLY",
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      },
+      "withIcp": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      }
+    },
+    "www1.nfe.fazenda.gov.br": {
+      "default": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      },
+      "withIcp": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      }
+    },
+    "www.nfe.fazenda.gov.br": {
+      "default": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-SHA384"
+      },
+      "withIcp": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-SHA384"
+      }
+    },
+    "homnfe.sefaz.am.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "socket: 809DA7F501000000:error:0A000412:SSL routines:ssl3_read_bytes:ssl/tls alert bad certificate:../deps/openssl/openssl/ssl/record/rec_layer_s3.c:918:SSL alert number 42\n"
+      },
+      "withIcp": {
+        "ok": false,
+        "error": "socket: 809DA7F501000000:error:0A000412:SSL routines:ssl3_read_bytes:ssl/tls alert bad certificate:../deps/openssl/openssl/ssl/record/rec_layer_s3.c:918:SSL alert number 42\n"
+      }
+    },
+    "hnfe.sefaz.ba.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "UNABLE_TO_GET_ISSUER_CERT_LOCALLY",
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      },
+      "withIcp": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      }
+    },
+    "homolog.sefaz.go.gov.br": {
+      "default": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES128-GCM-SHA256"
+      },
+      "withIcp": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES128-GCM-SHA256"
+      }
+    },
+    "hnfe.fazenda.mg.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "socket: 809DA7F501000000:error:0A000410:SSL routines:ssl3_read_bytes:ssl/tls alert handshake failure:../deps/openssl/openssl/ssl/record/rec_layer_s3.c:918:SSL alert number 40\n"
+      },
+      "withIcp": {
+        "ok": false,
+        "error": "socket: 809DA7F501000000:error:0A000410:SSL routines:ssl3_read_bytes:ssl/tls alert handshake failure:../deps/openssl/openssl/ssl/record/rec_layer_s3.c:918:SSL alert number 40\n"
+      }
+    },
+    "hom.nfe.sefaz.ms.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "UNABLE_TO_GET_ISSUER_CERT_LOCALLY",
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES128-GCM-SHA256"
+      },
+      "withIcp": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES128-GCM-SHA256"
+      }
+    },
+    "homologacao.sefaz.mt.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "SELF_SIGNED_CERT_IN_CHAIN",
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES128-GCM-SHA256"
+      },
+      "withIcp": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES128-GCM-SHA256"
+      }
+    },
+    "nfehomolog.sefaz.pe.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "SELF_SIGNED_CERT_IN_CHAIN",
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      },
+      "withIcp": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      }
+    },
+    "homologacao.nfe.sefa.pr.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "socket: 809DA7F501000000:error:0A000412:SSL routines:ssl3_read_bytes:ssl/tls alert bad certificate:../deps/openssl/openssl/ssl/record/rec_layer_s3.c:918:SSL alert number 42\n"
+      },
+      "withIcp": {
+        "ok": false,
+        "error": "socket: 809DA7F501000000:error:0A000412:SSL routines:ssl3_read_bytes:ssl/tls alert bad certificate:../deps/openssl/openssl/ssl/record/rec_layer_s3.c:918:SSL alert number 42\n"
+      }
+    },
+    "nfe-homologacao.sefazrs.rs.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "UNABLE_TO_GET_ISSUER_CERT_LOCALLY",
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      },
+      "withIcp": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      }
+    },
+    "cad-homologacao.svrs.rs.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "UNABLE_TO_GET_ISSUER_CERT_LOCALLY",
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      },
+      "withIcp": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      }
+    },
+    "homologacao.nfe.fazenda.sp.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "UNABLE_TO_GET_ISSUER_CERT_LOCALLY",
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      },
+      "withIcp": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      }
+    },
+    "hom.sefazvirtual.fazenda.gov.br": {
+      "default": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      },
+      "withIcp": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      }
+    },
+    "nfe-homologacao.svrs.rs.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "UNABLE_TO_GET_ISSUER_CERT_LOCALLY",
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      },
+      "withIcp": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      }
+    },
+    "hom1.nfe.fazenda.gov.br": {
+      "default": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-SHA384"
+      },
+      "withIcp": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-SHA384"
+      }
+    },
+    "mdfe.svrs.rs.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "UNABLE_TO_GET_ISSUER_CERT_LOCALLY",
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      },
+      "withIcp": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      }
+    },
+    "mdfe-homologacao.svrs.rs.gov.br": {
+      "default": {
+        "ok": false,
+        "error": "UNABLE_TO_GET_ISSUER_CERT_LOCALLY",
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      },
+      "withIcp": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      }
+    },
+    "sefin.producaorestrita.nfse.gov.br": {
+      "default": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      },
+      "withIcp": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      }
+    },
+    "adn.producaorestrita.nfse.gov.br": {
+      "default": {
+        "ok": true,
+        "protocol": "TLSv1.3",
+        "cipher": "TLS_CHACHA20_POLY1305_SHA256"
+      },
+      "withIcp": {
+        "ok": true,
+        "protocol": "TLSv1.3",
+        "cipher": "TLS_CHACHA20_POLY1305_SHA256"
+      }
+    },
+    "sefin.nfse.gov.br": {
+      "default": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      },
+      "withIcp": {
+        "ok": true,
+        "protocol": "TLSv1.2",
+        "cipher": "ECDHE-RSA-AES256-GCM-SHA384"
+      }
+    },
+    "adn.nfse.gov.br": {
+      "default": {
+        "ok": true,
+        "protocol": "TLSv1.3",
+        "cipher": "TLS_CHACHA20_POLY1305_SHA256"
+      },
+      "withIcp": {
+        "ok": true,
+        "protocol": "TLSv1.3",
+        "cipher": "TLS_CHACHA20_POLY1305_SHA256"
+      }
+    }
+  }
+}

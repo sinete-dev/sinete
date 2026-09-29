@@ -1,0 +1,68 @@
+# Esboço do CI do sinete (spike S0, não executado no GitHub). Bun é a toolchain; Node, Deno e
+# Chromium entram só como consumidores dos tarballs.
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with: { bun-version-file: package.json }
+      - run: bun install --frozen-lockfile
+      - run: bunx biome ci .
+      - run: bun run typecheck
+      - run: bun test --coverage
+      - run: bun run build
+      # gates sobre o artefato real, não sobre o fonte
+      - run: |
+          mkdir -p .packs
+          for d in packages/*/; do (cd "$d" && bun pm pack --quiet --destination ../../.packs); done
+          for t in .packs/*.tgz; do bunx publint run "$t" --strict && bunx attw "$t" --profile esm-only; done
+      - uses: denoland/setup-deno@v2
+      - run: deno publish --dry-run --allow-dirty # lint de slow types, sem publicar no JSR
+
+  smoke:
+    needs: check
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ['20.19', '22', '24', '26']
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-node@v5
+        with: { node-version: '${{ matrix.node }}' }
+      - uses: denoland/setup-deno@v2
+      - run: bun install --frozen-lockfile && bun run build
+      - run: bun add -g verdaccio@6
+      # Deno e Chromium não dependem da versão do Node: rodam só numa perna da matriz
+      - if: matrix.node == '24'
+        run: bunx playwright install --with-deps chromium
+      - run: bun smoke/run.ts
+        env:
+          VERDACCIO_BIN: verdaccio
+          SMOKE_SKIP: ${{ matrix.node != '24' && 'deno,browser' || '' }}
+
+  release:
+    if: github.ref == 'refs/heads/main'
+    needs: [check, smoke]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write # trusted publishing (OIDC) e provenance no npm
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-node@v5
+        with: { node-version: '24' } # npm >= 11.5.1 para OIDC
+      - run: bun install --frozen-lockfile
+      - uses: changesets/action@v1
+        with:
+          version: bun run version # changeset version && bun install (atualiza o bun.lock)
+          publish: bun run release # build + scripts/release.ts (bun pm pack + npm publish <tgz>) + changeset git-tag

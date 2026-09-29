@@ -1,0 +1,198 @@
+{
+  "poppler": "26.06.0",
+  "dpi": 100,
+  "casos": {
+    "basica": {
+      "sha256": "89bca61b573aa6e4f02acb955288e23c5e3f0379d2f40161b20b977188253296",
+      "paginas": 1
+    },
+    "muitos-itens": {
+      "sha256": "0cdb8c9338510d2394d8153686c9e14f942b4f91bf75ab0d1d390c0bd47dc283",
+      "paginas": 2
+    },
+    "textos-longos": {
+      "sha256": "cd76ff95e70458cac5a0ce5472b2a0c3cdd9efa5d679b65cca81f64a36d8d817",
+      "paginas": 3
+    },
+    "duplicatas-40": {
+      "sha256": "dfade677d8c5c7c6e8b1d255d9c86eafd27961717da14cbcd8de057e9ac2d5ae",
+      "paginas": 1
+    },
+    "homologacao": {
+      "sha256": "6f229f94df28ae8f01a097fe2477666563624f9c063f6d3d8e87b2e63fc24d19",
+      "paginas": 1
+    },
+    "caracteres": {
+      "sha256": "a48e1c675f51fe7fe7295aff5925cc7bc4071017250250ac6e59170009544d7b",
+      "paginas": 1
+    },
+    "ibscbs-st": {
+      "sha256": "91f86b53643f41d5cad6998f9aaf38042e9df90346fe4fd21f534afc02d51607",
+      "paginas": 1
+    },
+    "issqn-locais": {
+      "sha256": "3674db5874f32172f9b0f6584eb479a475f75e364e559dd9a2468e10fab6eed9",
+      "paginas": 1
+    },
+    "fsda": {
+      "sha256": "bedd99a79c690ec702d779306e9d0407c3faf354b69ef2f72d5d988a7df2394f",
+      "paginas": 1
+    },
+    "epec": {
+      "sha256": "849ab72c8e302db4eb560968fd4a5c993ea1bbd4a395bc5b155534ed2db8f087",
+      "paginas": 1
+    },
+    "paisagem": {
+      "sha256": "f7d3e916a7990d09843ca945975645ac10e7fcdac0fd5b6cd14abaa4e48d0c85",
+      "paginas": 2
+    },
+    "simplificado": {
+      "sha256": "4731e6aa0b372ee3d31854a381dd346cc72c1c63488b20cf2e4fa656121fe408",
+      "paginas": 1
+    },
+    "nfce": {
+      "sha256": "b39f6205e046b84b27230cc909a683cab64c66878bd12dd6e29cfd9a4156816f",
+      "paginas": 1
+    },
+    "nfce-contingencia": {
+      "sha256": "ee42a0552d4a07d268faaa52d73e9389e74f52ec990c9cf1c01be5571e73aedd",
+      "paginas": 1
+    },
+    "tipo2": {
+      "sha256": "8e4493bb7800606995546483a9c1e34523a58a1e91b616e681e05f64bef81736",
+      "paginas": 1
+    },
+    "previa": {
+      "sha256": "7222194b944bb26e6d1b924ca010d09f94ffad7789b3d82e50b69c5721db539c",
+      "paginas": 1
+    },
+    "denegada": {
+      "sha256": "5f73a9939b67a74cec205157e8c721615f5e96ea513b579ac7f44a9b7e9b0ae2",
+      "paginas": 1
+    },
+    "previa-paisagem": {
+      "sha256": "3372cf3feffdb88701d8f0c0b55a35b8240f7f6441d8eed9fb773983e1bfbc55",
+      "paginas": 1
+    },
+    "denegada-paisagem": {
+      "sha256": "714bb113075f20ae4e2269e3fa2f8b67de64fcddd2ff51ca12a7a8467af63451",
+      "paginas": 1
+    },
+    "previa-simplificado": {
+      "sha256": "6b76078e1d6dfbea643aadcefffebed9693b3c20d5f5d15ce8a225f2b91e8750",
+      "paginas": 1
+    },
+    "denegada-simplificado": {
+      "sha256": "683680b6f92710a2a4d1e8d0645a8adef50001544d5624944fb1f3c1ee5804df",
+      "paginas": 1
+    },
+    "previa-nfce": {
+      "sha256": "84e71cf6c236501034c3097f6884c696b22bc94c7e4cd294ff37d00b00dded91",
+      "paginas": 1
+    },
+    "denegada-nfce": {
+      "sha256": "ac5b69b21b152dda932050b88ff2b68df77f12e25e0f4c543d8a9c6b9553bbc1",
+      "paginas": 1
+    },
+    "previa-tipo2": {
+      "sha256": "e5e51c3388cfa0406582dc9dc221067ffc2e22555a52f0ee136bf6f5dc53ac0d",
+      "paginas": 1
+    },
+    "denegada-tipo2": {
+      "sha256": "9996248c32ea0f773e0109b937f8a934ab71df90752ccdf080a67a48fc03035d",
+      "paginas": 1
+    },
+    "cancelada-protocolo": {
+      "sha256": "488b33bb9f248582d7171229712ac6bb6e9696b8aa9341d4fbca5e0f20849a61",
+      "paginas": 1
+    },
+    "cancelada-protocolo-nfce": {
+      "sha256": "c50afb03f79ab1c4818a1d246e633d0ab9680dbbb3b12d683e290236270ed12d",
+      "paginas": 1
+    },
+    "damdfe-rodo": {
+      "sha256": "b5452c7d85ef89f80854e616c9983e5ef32c78995e319911d1fd138b57325985",
+      "paginas": 1
+    },
+    "damdfe-contingencia": {
+      "sha256": "2110efcc73d887a411c9a8f86fa607fc1a08cecd10ebf5933bcbdc631414d733",
+      "paginas": 2
+    },
+    "damdfe-aereo": {
+      "sha256": "50d7884ab3a2f46a0b59c2797de2934a0a2996ecae4214d8393c37e42cf29773",
+      "paginas": 1
+    },
+    "damdfe-aquav": {
+      "sha256": "406df81489d28998d1196e7479d02804333d49ac49f963dd7c821a47d3b332a9",
+      "paginas": 1
+    },
+    "damdfe-ferrov": {
+      "sha256": "70d49ceb338a63655c881659c7f7029fb26f98a67357903dc587de6a2d39ae7f",
+      "paginas": 1
+    },
+    "damdfe-previa": {
+      "sha256": "078fbd0e0fe3dadccf01e3a3b857348ee37ff49c2c9b36a821aa0ed4e5ff944e",
+      "paginas": 1
+    },
+    "damdfe-cancelado": {
+      "sha256": "44e2a28290566ac70c5a5b3917a0c1f4b4a269992d3bb88157ec9696f518c5b1",
+      "paginas": 1
+    },
+    "dacce": {
+      "sha256": "9adce2ad8d1420f5405d8c3cb27a289eeed6e6d92125c4ef1c6c49fc1cdb06fe",
+      "paginas": 1
+    },
+    "cancelada": {
+      "sha256": "d8e2e0ff48cb194d47bf782e6948ee45caeb6fc5ffd4e030e9e245f26837ba80",
+      "paginas": 1
+    },
+    "cancelada-protocolo-evento": {
+      "sha256": "d8e2e0ff48cb194d47bf782e6948ee45caeb6fc5ffd4e030e9e245f26837ba80",
+      "paginas": 1
+    },
+    "logo": {
+      "sha256": "e93a553e9f3507dbe2413ee14fa5c09e9d0d5d6945aff7f0cdfe65cd2cd08c30",
+      "paginas": 1
+    },
+    "etiqueta": {
+      "sha256": "cfd7fd0f97343d3b334b6beae54e06752f94dd73002c5e8f45eb68f25843499e",
+      "paginas": 1
+    },
+    "previa-etiqueta": {
+      "sha256": "014fc849e97856ed5ce0c42ef84b90a5a1d01d6872ef24072235458494591d03",
+      "paginas": 1
+    },
+    "danfse-completa": {
+      "sha256": "b74477f3fa22f5c1c034576ab478de77b22a9e45169c72122571f1057b9b7d0b",
+      "paginas": 1
+    },
+    "danfse-alfanumerico-homologacao": {
+      "sha256": "c4b317bf7ae84849f04b6f5ad8ee9f37c424a7b1147be2d91393f6fa5e542ca1",
+      "paginas": 1
+    },
+    "danfse-minima": {
+      "sha256": "c8e11dcb8539cf724e495a24fe05018a362ef36c11f5096674bbed5f995f8212",
+      "paginas": 1
+    },
+    "danfse-textos-longos": {
+      "sha256": "7b06485d424159fc5649a18586a689d6f5f1540b36ecea8682953e9616c15dbc",
+      "paginas": 1
+    },
+    "danfse-cancelada": {
+      "sha256": "1791c7135f7e625efb7ce940593f2fa167228108418ee66a789224791773c26a",
+      "paginas": 1
+    },
+    "danfse-substituida": {
+      "sha256": "c9679503578e80dd159fbb854c921b64f1e4ea28475b7f9ff6cf26660d3b225d",
+      "paginas": 1
+    },
+    "danfse-sem-canhoto": {
+      "sha256": "45b38d562953850d62aaad598551e73cda6b9683ec2af9bc990e84ac6ccc9f1e",
+      "paginas": 1
+    },
+    "denegada-etiqueta": {
+      "sha256": "b3f823635e741665e62c2b8e75ee39d0f58e1c5b7d74ee9eee33b54e5aaf18be",
+      "paginas": 1
+    }
+  }
+}

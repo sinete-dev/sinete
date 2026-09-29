@@ -1,0 +1,612 @@
+[
+  {
+    "host": "adn.nfse.gov.br",
+    "leafCN": "adn.nfse.gov.br",
+    "san": "DNS:adn.nfse.gov.br",
+    "leafNotAfter": "2026-11-22",
+    "leafKey": "rsa-4096",
+    "chainSent": [
+      "adn.nfse.gov.br",
+      "YR1",
+      "Root YR"
+    ],
+    "rootCN": "ISRG Root X1",
+    "rootSentByServer": false,
+    "icpBrasil": false,
+    "rootInBundle": null,
+    "ocsp": null,
+    "caIssuers": "http://yr1.i.lencr.org/"
+  },
+  {
+    "host": "adn.producaorestrita.nfse.gov.br",
+    "leafCN": "adn.producaorestrita.nfse.gov.br",
+    "san": "DNS:adn.producaorestrita.nfse.gov.br",
+    "leafNotAfter": "2026-11-04",
+    "leafKey": "rsa-4096",
+    "chainSent": [
+      "adn.producaorestrita.nfse.gov.br",
+      "YR1",
+      "Root YR"
+    ],
+    "rootCN": "ISRG Root X1",
+    "rootSentByServer": false,
+    "icpBrasil": false,
+    "rootInBundle": null,
+    "ocsp": null,
+    "caIssuers": "http://yr1.i.lencr.org/"
+  },
+  {
+    "host": "cad-homologacao.svrs.rs.gov.br",
+    "leafCN": "*.svrs.rs.gov.br",
+    "san": "DNS:*.svrs.rs.gov.br",
+    "leafNotAfter": "2027-07-03",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "*.svrs.rs.gov.br",
+      "Autoridade Certificadora do SERPRO SSLv1"
+    ],
+    "rootCN": "Autoridade Certificadora Raiz Brasileira v10",
+    "rootSentByServer": false,
+    "icpBrasil": true,
+    "rootInBundle": true,
+    "ocsp": "http://ocsp.serpro.gov.br/acserprosslv1",
+    "caIssuers": "http://repositorio.serpro.gov.br/cadeias/serprossl.p7b"
+  },
+  {
+    "host": "cad.svrs.rs.gov.br",
+    "leafCN": "*.svrs.rs.gov.br",
+    "san": "DNS:*.svrs.rs.gov.br",
+    "leafNotAfter": "2027-07-03",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "*.svrs.rs.gov.br",
+      "Autoridade Certificadora do SERPRO SSLv1"
+    ],
+    "rootCN": "Autoridade Certificadora Raiz Brasileira v10",
+    "rootSentByServer": false,
+    "icpBrasil": true,
+    "rootInBundle": true,
+    "ocsp": "http://ocsp.serpro.gov.br/acserprosslv1",
+    "caIssuers": "http://repositorio.serpro.gov.br/cadeias/serprossl.p7b"
+  },
+  {
+    "host": "hnfe.fazenda.mg.gov.br",
+    "leafCN": "*.fazenda.mg.gov.br",
+    "san": "DNS:*.fazenda.mg.gov.br, DNS:fazenda.mg.gov.br",
+    "leafNotAfter": "2026-10-21",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "*.fazenda.mg.gov.br",
+      "Valid Certificadora RSA OV SSL CA 2",
+      "Sectigo Public Server Authentication Root R46"
+    ],
+    "rootCN": "Sectigo Public Server Authentication Root R46",
+    "rootSentByServer": true,
+    "icpBrasil": false,
+    "rootInBundle": null,
+    "ocsp": "http://ocsp.sectigo.com",
+    "caIssuers": "http://crt.sectigo.com/ValidCertificadoraRSAOVSSLCA2.crt"
+  },
+  {
+    "host": "hnfe.sefaz.ba.gov.br",
+    "leafCN": "hnfe.sefaz.ba.gov.br",
+    "san": "DNS:hnfe.sefaz.ba.gov.br",
+    "leafNotAfter": "2027-02-23",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "hnfe.sefaz.ba.gov.br",
+      "AC Certisign ICP-Brasil SSL EV G4"
+    ],
+    "rootCN": "Autoridade Certificadora Raiz Brasileira v10",
+    "rootSentByServer": false,
+    "icpBrasil": true,
+    "rootInBundle": true,
+    "ocsp": "http://ocsp-ac-certisign-icp-br-ssl.certisign.com.br",
+    "caIssuers": "http://icp-brasil.certisign.com.br/repositorio/certificados/AC_Certisign_Icp_Br_Ssl_EV_G4.p7c"
+  },
+  {
+    "host": "hom.nfe.sefaz.ms.gov.br",
+    "leafCN": "hom.nfe.sefaz.ms.gov.br",
+    "san": "DNS:hom.nfe.sefaz.ms.gov.br",
+    "leafNotAfter": "2027-02-18",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "hom.nfe.sefaz.ms.gov.br",
+      "AC SOLUTI SSL EV G4"
+    ],
+    "rootCN": "Autoridade Certificadora Raiz Brasileira v10",
+    "rootSentByServer": false,
+    "icpBrasil": true,
+    "rootInBundle": true,
+    "ocsp": "http://ocsp3.acsoluti.com.br",
+    "caIssuers": "http://ccd.acsoluti.com.br/lcr/ac-soluti-ssl-ev-v10-g4.crt"
+  },
+  {
+    "host": "hom.sefazvirtual.fazenda.gov.br",
+    "leafCN": "hom.sefazvirtual.fazenda.gov.br",
+    "san": "DNS:hom.sefazvirtual.fazenda.gov.br",
+    "leafNotAfter": "2026-11-07",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "hom.sefazvirtual.fazenda.gov.br",
+      "AC SERPRO AR46 OV TLS CA 2025"
+    ],
+    "rootCN": "GlobalSign Root R46",
+    "rootSentByServer": false,
+    "icpBrasil": false,
+    "rootInBundle": null,
+    "ocsp": "http://ocsp.globalsign.com/ca/acserproar46ovtlsca2025",
+    "caIssuers": "http://secure.globalsign.com/cacert/acserproar46ovtlsca2025.crt"
+  },
+  {
+    "host": "hom1.nfe.fazenda.gov.br",
+    "leafCN": "hom1.nfe.fazenda.gov.br",
+    "san": "DNS:hom1.nfe.fazenda.gov.br",
+    "leafNotAfter": "2026-12-19",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "hom1.nfe.fazenda.gov.br",
+      "AC SERPRO AR46 OV TLS CA 2025"
+    ],
+    "rootCN": "GlobalSign Root R46",
+    "rootSentByServer": false,
+    "icpBrasil": false,
+    "rootInBundle": null,
+    "ocsp": "http://ocsp.globalsign.com/ca/acserproar46ovtlsca2025",
+    "caIssuers": "http://secure.globalsign.com/cacert/acserproar46ovtlsca2025.crt"
+  },
+  {
+    "host": "homnfe.sefaz.am.gov.br",
+    "leafCN": "*.sefaz.am.gov.br",
+    "san": "DNS:*.sefaz.am.gov.br",
+    "leafNotAfter": "2027-08-03",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "*.sefaz.am.gov.br",
+      "Autoridade Certificadora do SERPRO SSLv1",
+      "Autoridade Certificadora Raiz Brasileira v10"
+    ],
+    "rootCN": "Autoridade Certificadora Raiz Brasileira v10",
+    "rootSentByServer": true,
+    "icpBrasil": true,
+    "rootInBundle": true,
+    "ocsp": "http://ocsp.serpro.gov.br/acserprosslv1",
+    "caIssuers": "http://repositorio.serpro.gov.br/cadeias/serprossl.p7b"
+  },
+  {
+    "host": "homolog.sefaz.go.gov.br",
+    "leafCN": "homolog.sefaz.go.gov.br",
+    "san": "DNS:homolog.sefaz.go.gov.br",
+    "leafNotAfter": "2026-12-19",
+    "leafKey": "rsa-4096",
+    "chainSent": [
+      "homolog.sefaz.go.gov.br",
+      "YR1",
+      "Root YR"
+    ],
+    "rootCN": "ISRG Root X1",
+    "rootSentByServer": false,
+    "icpBrasil": false,
+    "rootInBundle": null,
+    "ocsp": null,
+    "caIssuers": "http://yr1.i.lencr.org/"
+  },
+  {
+    "host": "homologacao.nfe.fazenda.sp.gov.br",
+    "leafCN": "homologacao.nfe.fazenda.sp.gov.br",
+    "san": "DNS:homologacao.nfe.fazenda.sp.gov.br",
+    "leafNotAfter": "2027-04-16",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "homologacao.nfe.fazenda.sp.gov.br",
+      "AC SOLUTI SSL EV G4"
+    ],
+    "rootCN": "Autoridade Certificadora Raiz Brasileira v10",
+    "rootSentByServer": false,
+    "icpBrasil": true,
+    "rootInBundle": true,
+    "ocsp": "http://ocsp3.acsoluti.com.br",
+    "caIssuers": "http://ccd.acsoluti.com.br/lcr/ac-soluti-ssl-ev-v10-g4.crt"
+  },
+  {
+    "host": "homologacao.nfe.sefa.pr.gov.br",
+    "leafCN": "homologacao.nfe.sefa.pr.gov.br",
+    "san": "DNS:homologacao.nfe.sefa.pr.gov.br",
+    "leafNotAfter": "2027-06-19",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "homologacao.nfe.sefa.pr.gov.br",
+      "AC SOLUTI SSL EV G4",
+      "Autoridade Certificadora Raiz Brasileira v10"
+    ],
+    "rootCN": "Autoridade Certificadora Raiz Brasileira v10",
+    "rootSentByServer": true,
+    "icpBrasil": true,
+    "rootInBundle": true,
+    "ocsp": "http://ocsp3.acsoluti.com.br",
+    "caIssuers": "http://ccd.acsoluti.com.br/lcr/ac-soluti-ssl-ev-v10-g4.crt"
+  },
+  {
+    "host": "homologacao.sefaz.mt.gov.br",
+    "leafCN": "homologacao.sefaz.mt.gov.br",
+    "san": "DNS:homologacao.sefaz.mt.gov.br",
+    "leafNotAfter": "2027-02-26",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "homologacao.sefaz.mt.gov.br",
+      "AC SOLUTI SSL EV G4",
+      "Autoridade Certificadora Raiz Brasileira v10"
+    ],
+    "rootCN": "Autoridade Certificadora Raiz Brasileira v10",
+    "rootSentByServer": true,
+    "icpBrasil": true,
+    "rootInBundle": true,
+    "ocsp": "http://ocsp3.acsoluti.com.br",
+    "caIssuers": "http://ccd.acsoluti.com.br/lcr/ac-soluti-ssl-ev-v10-g4.crt"
+  },
+  {
+    "host": "mdfe-homologacao.svrs.rs.gov.br",
+    "leafCN": "*.svrs.rs.gov.br",
+    "san": "DNS:*.svrs.rs.gov.br",
+    "leafNotAfter": "2027-07-03",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "*.svrs.rs.gov.br",
+      "Autoridade Certificadora do SERPRO SSLv1"
+    ],
+    "rootCN": "Autoridade Certificadora Raiz Brasileira v10",
+    "rootSentByServer": false,
+    "icpBrasil": true,
+    "rootInBundle": true,
+    "ocsp": "http://ocsp.serpro.gov.br/acserprosslv1",
+    "caIssuers": "http://repositorio.serpro.gov.br/cadeias/serprossl.p7b"
+  },
+  {
+    "host": "mdfe.svrs.rs.gov.br",
+    "leafCN": "*.svrs.rs.gov.br",
+    "san": "DNS:*.svrs.rs.gov.br",
+    "leafNotAfter": "2027-07-03",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "*.svrs.rs.gov.br",
+      "Autoridade Certificadora do SERPRO SSLv1"
+    ],
+    "rootCN": "Autoridade Certificadora Raiz Brasileira v10",
+    "rootSentByServer": false,
+    "icpBrasil": true,
+    "rootInBundle": true,
+    "ocsp": "http://ocsp.serpro.gov.br/acserprosslv1",
+    "caIssuers": "http://repositorio.serpro.gov.br/cadeias/serprossl.p7b"
+  },
+  {
+    "host": "nfe-homologacao.sefazrs.rs.gov.br",
+    "leafCN": "*.sefazrs.rs.gov.br",
+    "san": "DNS:*.sefazrs.rs.gov.br",
+    "leafNotAfter": "2027-07-03",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "*.sefazrs.rs.gov.br",
+      "Autoridade Certificadora do SERPRO SSLv1"
+    ],
+    "rootCN": "Autoridade Certificadora Raiz Brasileira v10",
+    "rootSentByServer": false,
+    "icpBrasil": true,
+    "rootInBundle": true,
+    "ocsp": "http://ocsp.serpro.gov.br/acserprosslv1",
+    "caIssuers": "http://repositorio.serpro.gov.br/cadeias/serprossl.p7b"
+  },
+  {
+    "host": "nfe-homologacao.svrs.rs.gov.br",
+    "leafCN": "*.svrs.rs.gov.br",
+    "san": "DNS:*.svrs.rs.gov.br",
+    "leafNotAfter": "2027-07-03",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "*.svrs.rs.gov.br",
+      "Autoridade Certificadora do SERPRO SSLv1"
+    ],
+    "rootCN": "Autoridade Certificadora Raiz Brasileira v10",
+    "rootSentByServer": false,
+    "icpBrasil": true,
+    "rootInBundle": true,
+    "ocsp": "http://ocsp.serpro.gov.br/acserprosslv1",
+    "caIssuers": "http://repositorio.serpro.gov.br/cadeias/serprossl.p7b"
+  },
+  {
+    "host": "nfe.fazenda.mg.gov.br",
+    "leafCN": "*.fazenda.mg.gov.br",
+    "san": "DNS:*.fazenda.mg.gov.br, DNS:fazenda.mg.gov.br",
+    "leafNotAfter": "2026-10-21",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "*.fazenda.mg.gov.br",
+      "Valid Certificadora RSA OV SSL CA 2",
+      "Sectigo Public Server Authentication Root R46"
+    ],
+    "rootCN": "Sectigo Public Server Authentication Root R46",
+    "rootSentByServer": true,
+    "icpBrasil": false,
+    "rootInBundle": null,
+    "ocsp": "http://ocsp.sectigo.com",
+    "caIssuers": "http://crt.sectigo.com/ValidCertificadoraRSAOVSSLCA2.crt"
+  },
+  {
+    "host": "nfe.fazenda.sp.gov.br",
+    "leafCN": "nfe.fazenda.sp.gov.br",
+    "san": "DNS:nfe.fazenda.sp.gov.br",
+    "leafNotAfter": "2027-04-16",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "nfe.fazenda.sp.gov.br",
+      "AC SOLUTI SSL EV G4"
+    ],
+    "rootCN": "Autoridade Certificadora Raiz Brasileira v10",
+    "rootSentByServer": false,
+    "icpBrasil": true,
+    "rootInBundle": true,
+    "ocsp": "http://ocsp3.acsoluti.com.br",
+    "caIssuers": "http://ccd.acsoluti.com.br/lcr/ac-soluti-ssl-ev-v10-g4.crt"
+  },
+  {
+    "host": "nfe.sefa.pr.gov.br",
+    "leafCN": "nfe.sefa.pr.gov.br",
+    "san": "DNS:nfe.sefa.pr.gov.br",
+    "leafNotAfter": "2027-06-18",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "nfe.sefa.pr.gov.br",
+      "AC SOLUTI SSL EV G4",
+      "Autoridade Certificadora Raiz Brasileira v10"
+    ],
+    "rootCN": "Autoridade Certificadora Raiz Brasileira v10",
+    "rootSentByServer": true,
+    "icpBrasil": true,
+    "rootInBundle": true,
+    "ocsp": "http://ocsp3.acsoluti.com.br",
+    "caIssuers": "http://ccd.acsoluti.com.br/lcr/ac-soluti-ssl-ev-v10-g4.crt"
+  },
+  {
+    "host": "nfe.sefaz.am.gov.br",
+    "leafCN": "*.sefaz.am.gov.br",
+    "san": "DNS:*.sefaz.am.gov.br",
+    "leafNotAfter": "2027-08-03",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "*.sefaz.am.gov.br",
+      "Autoridade Certificadora do SERPRO SSLv1",
+      "Autoridade Certificadora Raiz Brasileira v10"
+    ],
+    "rootCN": "Autoridade Certificadora Raiz Brasileira v10",
+    "rootSentByServer": true,
+    "icpBrasil": true,
+    "rootInBundle": true,
+    "ocsp": "http://ocsp.serpro.gov.br/acserprosslv1",
+    "caIssuers": "http://repositorio.serpro.gov.br/cadeias/serprossl.p7b"
+  },
+  {
+    "host": "nfe.sefaz.ba.gov.br",
+    "leafCN": "nfe.sefaz.ba.gov.br",
+    "san": "DNS:nfe.sefaz.ba.gov.br",
+    "leafNotAfter": "2027-02-23",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "nfe.sefaz.ba.gov.br",
+      "AC Certisign ICP-Brasil SSL EV G4"
+    ],
+    "rootCN": "Autoridade Certificadora Raiz Brasileira v10",
+    "rootSentByServer": false,
+    "icpBrasil": true,
+    "rootInBundle": true,
+    "ocsp": "http://ocsp-ac-certisign-icp-br-ssl.certisign.com.br",
+    "caIssuers": "http://icp-brasil.certisign.com.br/repositorio/certificados/AC_Certisign_Icp_Br_Ssl_EV_G4.p7c"
+  },
+  {
+    "host": "nfe.sefaz.go.gov.br",
+    "leafCN": "nfe.sefaz.go.gov.br",
+    "san": "DNS:nfe.sefaz.go.gov.br",
+    "leafNotAfter": "2027-04-24",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "nfe.sefaz.go.gov.br",
+      "AC SOLUTI SSL EV G4"
+    ],
+    "rootCN": "Autoridade Certificadora Raiz Brasileira v10",
+    "rootSentByServer": false,
+    "icpBrasil": true,
+    "rootInBundle": true,
+    "ocsp": "http://ocsp3.acsoluti.com.br",
+    "caIssuers": "http://ccd.acsoluti.com.br/lcr/ac-soluti-ssl-ev-v10-g4.crt"
+  },
+  {
+    "host": "nfe.sefaz.ms.gov.br",
+    "leafCN": "nfe.sefaz.ms.gov.br",
+    "san": "DNS:nfe.sefaz.ms.gov.br",
+    "leafNotAfter": "2027-03-13",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "nfe.sefaz.ms.gov.br",
+      "Autoridade Certificadora do SERPRO SSLv1",
+      "Autoridade Certificadora Raiz Brasileira v10"
+    ],
+    "rootCN": "Autoridade Certificadora Raiz Brasileira v10",
+    "rootSentByServer": true,
+    "icpBrasil": true,
+    "rootInBundle": true,
+    "ocsp": "http://ocsp.serpro.gov.br/acserprosslv1",
+    "caIssuers": "http://repositorio.serpro.gov.br/cadeias/serprossl.p7b"
+  },
+  {
+    "host": "nfe.sefaz.mt.gov.br",
+    "leafCN": "nfe.sefaz.mt.gov.br",
+    "san": "DNS:nfe.sefaz.mt.gov.br",
+    "leafNotAfter": "2027-02-26",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "nfe.sefaz.mt.gov.br",
+      "AC SOLUTI SSL EV G4",
+      "Autoridade Certificadora Raiz Brasileira v10"
+    ],
+    "rootCN": "Autoridade Certificadora Raiz Brasileira v10",
+    "rootSentByServer": true,
+    "icpBrasil": true,
+    "rootInBundle": true,
+    "ocsp": "http://ocsp3.acsoluti.com.br",
+    "caIssuers": "http://ccd.acsoluti.com.br/lcr/ac-soluti-ssl-ev-v10-g4.crt"
+  },
+  {
+    "host": "nfe.sefaz.pe.gov.br",
+    "leafCN": "nfe.sefaz.pe.gov.br",
+    "san": "DNS:nfe.sefaz.pe.gov.br",
+    "leafNotAfter": "2027-05-19",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "nfe.sefaz.pe.gov.br",
+      "Autoridade Certificadora do SERPRO SSLv1",
+      "Autoridade Certificadora Raiz Brasileira v10"
+    ],
+    "rootCN": "Autoridade Certificadora Raiz Brasileira v10",
+    "rootSentByServer": true,
+    "icpBrasil": true,
+    "rootInBundle": true,
+    "ocsp": "http://ocsp.serpro.gov.br/acserprosslv1",
+    "caIssuers": "http://repositorio.serpro.gov.br/cadeias/serprossl.p7b"
+  },
+  {
+    "host": "nfe.sefazrs.rs.gov.br",
+    "leafCN": "*.sefazrs.rs.gov.br",
+    "san": "DNS:*.sefazrs.rs.gov.br",
+    "leafNotAfter": "2027-07-03",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "*.sefazrs.rs.gov.br",
+      "Autoridade Certificadora do SERPRO SSLv1"
+    ],
+    "rootCN": "Autoridade Certificadora Raiz Brasileira v10",
+    "rootSentByServer": false,
+    "icpBrasil": true,
+    "rootInBundle": true,
+    "ocsp": "http://ocsp.serpro.gov.br/acserprosslv1",
+    "caIssuers": "http://repositorio.serpro.gov.br/cadeias/serprossl.p7b"
+  },
+  {
+    "host": "nfe.svrs.rs.gov.br",
+    "leafCN": "*.svrs.rs.gov.br",
+    "san": "DNS:*.svrs.rs.gov.br",
+    "leafNotAfter": "2027-07-03",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "*.svrs.rs.gov.br",
+      "Autoridade Certificadora do SERPRO SSLv1"
+    ],
+    "rootCN": "Autoridade Certificadora Raiz Brasileira v10",
+    "rootSentByServer": false,
+    "icpBrasil": true,
+    "rootInBundle": true,
+    "ocsp": "http://ocsp.serpro.gov.br/acserprosslv1",
+    "caIssuers": "http://repositorio.serpro.gov.br/cadeias/serprossl.p7b"
+  },
+  {
+    "host": "nfehomolog.sefaz.pe.gov.br",
+    "leafCN": "nfehomolog.sefaz.pe.gov.br",
+    "san": "DNS:nfehomolog.sefaz.pe.gov.br",
+    "leafNotAfter": "2027-05-19",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "nfehomolog.sefaz.pe.gov.br",
+      "Autoridade Certificadora do SERPRO SSLv1",
+      "Autoridade Certificadora Raiz Brasileira v10"
+    ],
+    "rootCN": "Autoridade Certificadora Raiz Brasileira v10",
+    "rootSentByServer": true,
+    "icpBrasil": true,
+    "rootInBundle": true,
+    "ocsp": "http://ocsp.serpro.gov.br/acserprosslv1",
+    "caIssuers": "http://repositorio.serpro.gov.br/cadeias/serprossl.p7b"
+  },
+  {
+    "host": "sefin.nfse.gov.br",
+    "leafCN": "*.nfse.gov.br",
+    "san": "DNS:*.nfse.gov.br",
+    "leafNotAfter": "2027-03-22",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "*.nfse.gov.br",
+      "AC SERPRO AR46 OV TLS CA 2025"
+    ],
+    "rootCN": "GlobalSign Root R46",
+    "rootSentByServer": false,
+    "icpBrasil": false,
+    "rootInBundle": null,
+    "ocsp": "http://ocsp.globalsign.com/ca/acserproar46ovtlsca2025",
+    "caIssuers": "http://secure.globalsign.com/cacert/acserproar46ovtlsca2025.crt"
+  },
+  {
+    "host": "sefin.producaorestrita.nfse.gov.br",
+    "leafCN": "*.producaorestrita.nfse.gov.br",
+    "san": "DNS:*.producaorestrita.nfse.gov.br",
+    "leafNotAfter": "2027-03-02",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "*.producaorestrita.nfse.gov.br",
+      "AC SERPRO AR46 OV TLS CA 2025"
+    ],
+    "rootCN": "GlobalSign Root R46",
+    "rootSentByServer": false,
+    "icpBrasil": false,
+    "rootInBundle": null,
+    "ocsp": "http://ocsp.globalsign.com/ca/acserproar46ovtlsca2025",
+    "caIssuers": "http://secure.globalsign.com/cacert/acserproar46ovtlsca2025.crt"
+  },
+  {
+    "host": "www.nfe.fazenda.gov.br",
+    "leafCN": "www.nfe.fazenda.gov.br",
+    "san": "DNS:www.nfe.fazenda.gov.br",
+    "leafNotAfter": "2026-11-22",
+    "leafKey": "rsa-3072",
+    "chainSent": [
+      "www.nfe.fazenda.gov.br",
+      "YR1",
+      "Root YR"
+    ],
+    "rootCN": "ISRG Root X1",
+    "rootSentByServer": false,
+    "icpBrasil": false,
+    "rootInBundle": null,
+    "ocsp": null,
+    "caIssuers": "http://yr1.i.lencr.org/"
+  },
+  {
+    "host": "www.sefazvirtual.fazenda.gov.br",
+    "leafCN": "sefazvirtual.fazenda.gov.br",
+    "san": "DNS:sefazvirtual.fazenda.gov.br, DNS:www.sefazvirtual.fazenda.gov.br",
+    "leafNotAfter": "2026-11-08",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "sefazvirtual.fazenda.gov.br",
+      "AC SERPRO AR46 OV TLS CA 2025"
+    ],
+    "rootCN": "GlobalSign Root R46",
+    "rootSentByServer": false,
+    "icpBrasil": false,
+    "rootInBundle": null,
+    "ocsp": "http://ocsp.globalsign.com/ca/acserproar46ovtlsca2025",
+    "caIssuers": "http://secure.globalsign.com/cacert/acserproar46ovtlsca2025.crt"
+  },
+  {
+    "host": "www1.nfe.fazenda.gov.br",
+    "leafCN": "www1.nfe.fazenda.gov.br",
+    "san": "DNS:www1.nfe.fazenda.gov.br",
+    "leafNotAfter": "2026-10-29",
+    "leafKey": "rsa-2048",
+    "chainSent": [
+      "www1.nfe.fazenda.gov.br",
+      "AC SERPRO AR46 OV TLS CA 2025"
+    ],
+    "rootCN": "GlobalSign Root R46",
+    "rootSentByServer": false,
+    "icpBrasil": false,
+    "rootInBundle": null,
+    "ocsp": "http://ocsp.globalsign.com/ca/acserproar46ovtlsca2025",
+    "caIssuers": "http://secure.globalsign.com/cacert/acserproar46ovtlsca2025.crt"
+  }
+]

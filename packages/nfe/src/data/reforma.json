@@ -1,0 +1,6 @@
+{
+  "descricao": "Parâmetros da reforma tributária no total do item e da nota. vItemSomaTributosDesde: a partir desta data do fato gerador (Brasília), vItem soma vIBS, vCBS, vIS e os totais monofásicos; antes dela, não soma (exceção de 2025 e 2026).",
+  "atualizadoEm": "2026-09-26",
+  "vItemSomaTributosDesde": "2027-01-01",
+  "fonte": "NT 2025.002 v1.51, RV VB01-10 e VB01-20, Exceção 1: em 2025 e 2026 não somar vIBS, vCBS, vIS, vTotIBSMonoItem e vTotCBSMonoItem."
+}

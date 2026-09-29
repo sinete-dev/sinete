@@ -1,0 +1,6 @@
+{
+  // Typecheck de src e test. Os testes rodam no Bun, então aqui entram os tipos do Bun.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": { "types": ["bun"] },
+  "include": ["src"]
+}

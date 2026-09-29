@@ -1,0 +1,21 @@
+{
+  // A IR em ir/ é saída do gerador (JSON.stringify), conferida byte a byte pelo `--check`; o Biome não a formata.
+  // Numa config aninhada os globs dos overrides da raiz ficam relativos a esta pasta, então a regra de tooling
+  // (Bun, Node e console liberados) é repetida aqui.
+  "root": false,
+  "extends": "//",
+  "files": { "includes": ["**", "!ir"] },
+  "overrides": [
+    {
+      "includes": ["**"],
+      "linter": {
+        "rules": {
+          "correctness": { "noNodejsModules": "off", "noProcessGlobal": "off" },
+          "suspicious": { "noConsole": "off" },
+          "nursery": { "useExplicitType": "off" },
+          "style": { "noRestrictedGlobals": "off" }
+        }
+      }
+    }
+  ]
+}

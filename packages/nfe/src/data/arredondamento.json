@@ -1,0 +1,30 @@
+{
+  "descricao": "Modo de arredondamento dos valores calculados pelo builder, por família de campo. HALF_UP é o arredondamento comercial; HALF_EVEN é o bancário (NBR 5891). Quem emite pode sobrepor por família em BuildNfeOptions.arredondamento.",
+  "atualizadoEm": "2026-09-26",
+  "familias": {
+    "produto": {
+      "modo": "HALF_UP",
+      "fonte": "MOC 7.0 Anexo I, nota (*4): o produto de multiplicações arredonda em 2 casas, com tolerância de R$ 0,01; o modo não é fixado. vProd = qCom x vUnCom (I11)."
+    },
+    "icms": {
+      "modo": "HALF_UP",
+      "fonte": "MOC 7.0 Anexo I, nota (*4) das regras N17, N16a, N16c, N23d: 2 casas, tolerância de R$ 0,01, modo não fixado."
+    },
+    "ipi": {
+      "modo": "HALF_UP",
+      "fonte": "MOC 7.0 Anexo I, nota (*4): 2 casas, tolerância de R$ 0,01."
+    },
+    "pisCofins": {
+      "modo": "HALF_UP",
+      "fonte": "MOC 7.0 Anexo I, nota (*4): 2 casas, tolerância de R$ 0,01."
+    },
+    "issqn": {
+      "modo": "HALF_UP",
+      "fonte": "MOC 7.0 Anexo I, nota (*4): 2 casas, tolerância de R$ 0,01."
+    },
+    "ibsCbs": {
+      "modo": "HALF_EVEN",
+      "fonte": "NT 2025.002 v1.51, RV UB35-10 e seguintes (tolerância de 0,01) e ADR 0007 (a Calculadora da RFB arredonda em HALF_EVEN)."
+    }
+  }
+}
