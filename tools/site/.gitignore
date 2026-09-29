@@ -1,2 +1,4 @@
 src/content/docs/
 .astro/
+.vercel
+.env*
