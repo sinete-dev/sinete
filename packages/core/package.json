@@ -1,6 +1,6 @@
 {
   "name": "@sinete/core",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Base do sinete: erros tipados, resultados da SEFAZ, relógio injetável, logger, ambiente, tabela de UFs e, em @sinete/core/xml, parser XML estrito, C14N e XMLDSig no perfil dos DF-e",
   "keywords": [
     "nfe",

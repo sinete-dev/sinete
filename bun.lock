@@ -16,7 +16,7 @@
     },
     "packages/cert": {
       "name": "@sinete/cert",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "@sinete/core": "workspace:^",
         "node-forge": "^1.4.0",
@@ -27,7 +27,7 @@
     },
     "packages/cli": {
       "name": "@sinete/cli",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "bin": {
         "sinete": "./dist/cli.js",
       },
@@ -42,11 +42,11 @@
     },
     "packages/core": {
       "name": "@sinete/core",
-      "version": "0.0.0",
+      "version": "0.1.0",
     },
     "packages/da": {
       "name": "@sinete/da",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "@sinete/core": "workspace:^",
         "@sinete/schemas": "workspace:^",
@@ -59,7 +59,7 @@
     },
     "packages/emissor": {
       "name": "@sinete/emissor",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "@sinete/cert": "workspace:^",
         "@sinete/core": "workspace:^",
@@ -88,7 +88,7 @@
     },
     "packages/ibs-cbs": {
       "name": "@sinete/ibs-cbs",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "@sinete/core": "workspace:^",
         "@sinete/ibs-cbs-dados": "workspace:^",
@@ -99,14 +99,14 @@
     },
     "packages/ibs-cbs-dados": {
       "name": "@sinete/ibs-cbs-dados",
-      "version": "2026.9.0",
+      "version": "2026.9.1",
       "dependencies": {
         "@sinete/core": "workspace:^",
       },
     },
     "packages/mdfe": {
       "name": "@sinete/mdfe",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "@sinete/core": "workspace:^",
         "@sinete/rejeicoes": "workspace:^",
@@ -120,7 +120,7 @@
     },
     "packages/nfe": {
       "name": "@sinete/nfe",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "@sinete/core": "workspace:^",
         "@sinete/ibs-cbs": "workspace:^",
@@ -136,7 +136,7 @@
     },
     "packages/nfse": {
       "name": "@sinete/nfse",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "@sinete/core": "workspace:^",
         "@sinete/rejeicoes": "workspace:^",
@@ -150,21 +150,21 @@
     },
     "packages/rejeicoes": {
       "name": "@sinete/rejeicoes",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "@sinete/core": "workspace:^",
       },
     },
     "packages/schemas": {
       "name": "@sinete/schemas",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "@sinete/core": "workspace:^",
       },
     },
     "packages/sefaz-sim": {
       "name": "@sinete/sefaz-sim",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "@sinete/cert": "workspace:^",
         "@sinete/core": "workspace:^",
@@ -181,7 +181,7 @@
     },
     "packages/sinete": {
       "name": "sinete",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "bin": {
         "sinete": "./dist/cli.js",
       },
@@ -204,7 +204,7 @@
     },
     "packages/transport": {
       "name": "@sinete/transport",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "@sinete/cert": "workspace:^",
         "@sinete/core": "workspace:^",
@@ -215,7 +215,7 @@
     },
     "packages/validators": {
       "name": "@sinete/validators",
-      "version": "0.0.0",
+      "version": "0.1.0",
       "dependencies": {
         "@sinete/core": "workspace:^",
       },
