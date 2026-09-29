@@ -84,6 +84,20 @@ describe.skipIf(!openssl)('transporte node:https', () => {
     await expect(t.send({ url })).rejects.toMatchObject({ code: 'config_invalida' });
   });
 
+  test('NODE_TLS_REJECT_UNAUTHORIZED=0 no processo não desliga a conferência do servidor', async () => {
+    const url = bunServer(() => new Response('ok'));
+    const antes = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    const t = createNodeTransport({ identity: identity() });
+    try {
+      await expect(t.send({ url })).rejects.toMatchObject({ code: 'cadeia_servidor_nao_confiavel' });
+    } finally {
+      if (antes === undefined) delete process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+      else process.env.NODE_TLS_REJECT_UNAUTHORIZED = antes;
+      await t.close();
+    }
+  });
+
   test('HTTP 403 vira certificado_ausente_ou_recusado, salvo rejectOn403: false', async () => {
     const url = bunServer(() => new Response('403.7 Forbidden', { status: 403 }));
     const events: AuditEvent[] = [];
