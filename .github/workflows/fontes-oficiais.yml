@@ -1,0 +1,61 @@
+# Vigia das fontes oficiais (tools/fontes-oficiais): lê as páginas do portal da NF-e, do portal DF-e da SVRS, da
+# documentação da NFS-e Nacional e a Calculadora da RFB, e compara com o estado versionado. No agendamento, mantém uma
+# issue aberta enquanto houver diferença e a fecha quando o estado versionado alcançar as páginas. Em PR que mexe no
+# vigia, só lê e escreve o relatório no resumo do job, o que também prova que o runner alcança as fontes.
+name: fontes-oficiais
+
+on:
+  schedule:
+    # todo dia, 09:41 UTC (06:41 em Brasília): os portais publicam em horário comercial
+    - cron: '41 9 * * *'
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - tools/fontes-oficiais/**
+      - .github/workflows/fontes-oficiais.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fontes-oficiais-${{ github.event_name }}
+  cancel-in-progress: false
+
+jobs:
+  vigiar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - id: vigia
+        run: bun tools/fontes-oficiais/src/vigiar.ts --relatorio relatorio.md
+      - run: cat relatorio.md >> "$GITHUB_STEP_SUMMARY"
+      - name: issue
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MUDOU: ${{ steps.vigia.outputs.mudou }}
+        run: |
+          titulo='Fontes oficiais publicaram novidades'
+          numero="$(gh issue list --state open --limit 100 --json number,title \
+            --jq "map(select(.title == \"$titulo\")) | first | .number // empty")"
+          if [ "$MUDOU" = "true" ]; then
+            if [ -n "$numero" ]; then
+              gh issue edit "$numero" --body-file relatorio.md
+            else
+              gh issue create --title "$titulo" --body-file relatorio.md
+            fi
+          elif [ -n "$numero" ]; then
+            gh issue close "$numero" --comment 'O estado versionado alcançou as páginas oficiais.'
+          fi
+      - name: falhas de leitura
+        if: steps.vigia.outputs.falhas != '0'
+        run: |
+          echo "::error::${{ steps.vigia.outputs.falhas }} fonte(s) não puderam ser lidas; veja o resumo do job"
+          exit 1

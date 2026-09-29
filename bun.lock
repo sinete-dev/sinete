@@ -228,6 +228,10 @@
         "@sinete/da": "workspace:^",
       },
     },
+    "tools/fontes-oficiais": {
+      "name": "@sinete/tool-fontes-oficiais",
+      "version": "0.0.0",
+    },
     "tools/homologacao": {
       "name": "@sinete/tool-homologacao",
       "version": "0.0.0",
@@ -654,6 +658,8 @@
     "@sinete/sefaz-sim": ["@sinete/sefaz-sim@workspace:packages/sefaz-sim"],
 
     "@sinete/tool-danfe-corpus": ["@sinete/tool-danfe-corpus@workspace:tools/danfe-corpus"],
+
+    "@sinete/tool-fontes-oficiais": ["@sinete/tool-fontes-oficiais@workspace:tools/fontes-oficiais"],
 
     "@sinete/tool-homologacao": ["@sinete/tool-homologacao@workspace:tools/homologacao"],
 
