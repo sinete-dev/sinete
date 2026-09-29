@@ -4,7 +4,7 @@ import starlightLinksValidator from 'starlight-links-validator';
 import starlightLlmsTxt from 'starlight-llms-txt';
 
 export default defineConfig({
-  site: 'https://sinete.fazer.ai',
+  site: 'https://sinete.vercel.app', // domínio temporário; sinete.fazer.ai quando o DNS existir
   integrations: [
     starlight({
       title: 'sinete',
