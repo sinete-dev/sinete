@@ -6,12 +6,6 @@
     "motivo": "`Date.now()` do JavaScript ou `NOW()` do SQL, não `Relogio.agora`"
   },
   {
-    "arquivo": "CLAUDE.md",
-    "nome": "source",
-    "trecho": "- **Dados como dados.** Endpoints, tabelas, rejeições, cadeia ICP e regras por UF em arquivos versionados com `source` e vigência. Nunca `if (uf === 'MT')`.",
-    "motivo": "convenção dos arquivos de dados do repo inteiro; os pacotes das fases seguintes ainda usam `source`"
-  },
-  {
     "arquivo": "CONTRIBUTING.md",
     "nome": "authorized",
     "trecho": "- **No real data in the repository**: no certificates or private keys, no real authorized XML, no personal or third-party tax ids, no corpus. Fixtures are synthetic or anonymized.",
@@ -42,112 +36,10 @@
     "motivo": "prosa em inglês (texto da Apache-2.0 e resumo em inglês do CONTRIBUTING), não é nome da API"
   },
   {
-    "arquivo": "docs/guia/bloco-agents.md",
-    "nome": "ref",
-    "trecho": "- Nunca remonte documento assinado ainda sem desfecho definitivo. Depois de um envio sem resposta, retome com os mesmos bytes: `emitir(ref, ...)` com a mesma `ref` (ele acha os bytes gravados e ignora a entrada) ou `retomar(ref)`. Remontar gera outro cNF e outro dhEmi: 539 ou uma segunda nota para o mesmo número.",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/bloco-agents.md",
-    "nome": "ref",
-    "trecho": "- `ref` é o id estável do documento no sistema (o pedido, o rascunho), igual em todas as tentativas.",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/bloco-agents.md",
-    "nome": "ref",
-    "trecho": "- `aoDecidir` é idempotente (upsert por `ref`): roda de novo depois de uma queda. Vai no emissor ou em cada chamada (`emitir(ref, entrada, { aoDecidir, jaGuardado })`); o `jaGuardado` compara a chave (`registro.id`), não só a `ref`.",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/como-fazer/browser.md",
-    "nome": "issues",
-    "trecho": "for (const i of r.issues.filter((x) => x.origem === 'entrada')) mostrarNoCampo(i.caminho, rotuloDoCaminho(i.caminho), i.mensagem);",
-    "motivo": "resultado da montagem (`buildNfe`, `buildMdfe`, `buildDps`) dos pacotes de documento, que tem `value`/`issues` próprios, fora da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/como-fazer/browser.md",
-    "nome": "ref",
-    "trecho": "async function receberAssinada(ref: string, xml: string) {",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/como-fazer/cancelamento.md",
-    "nome": "hint",
-    "trecho": "console.log(d.cStat, d.xMotivo, d.hint?.comoCorrigir);",
-    "motivo": "`hint` do desfecho do `@sinete/emissor`, fora da fase 1 (o `Recusado` do core já usa `dica`)"
-  },
-  {
-    "arquivo": "docs/guia/como-fazer/contingencia.md",
-    "nome": "ref",
-    "trecho": "- **O que já está gravado continua como está.** Um pedido com XML assinado gravado em emissão normal, por exemplo, porque a resposta se perdeu ou a SEFAZ (Secretaria da Fazenda) caiu durante o envio, é retomado com os mesmos bytes. A chamada a `emitir` com a mesma `ref`, o identificador do pedido no sistema do integrador, ignora a entrada nova enquanto essa gravação existir. A contingência só é aplicada na montagem de documentos novos. Não reassine um pendente em SVC com o mesmo número: se a SEFAZ da UF autorizou os bytes originais, você teria duas notas para o mesmo número.",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/como-fazer/contingencia.md",
-    "nome": "ref",
-    "trecho": "- **SVC não ativada.** Com o autorizador normal indisponível e a SVC sem ativação, não há onde autorizar a NF-e. As emissões continuam no ambiente normal: podem ficar pendentes por falta de resposta ou ser recusadas por serviço paralisado. O aviso `svc-indisponivel` pode se repetir nas novas consultas à SVC, provocadas por falhas após o intervalo de `sondaMs`. A ativação depende da SEFAZ da UF; para a NFC-e, a contingência off-line continua disponível. Não trate toda rejeição como indisponibilidade: corrigir uma nota recusada continua sendo necessário. Com a barreira de recusa repetida habilitada e os métodos correspondentes no store, três recusas definitivas iguais em uma hora barram, por padrão, a próxima emissão da mesma `ref` com o mesmo conteúdo, com `recusa_repetida`. Isso ajuda a evitar consumo indevido, código 656. As recusas transitórias 108, 109 e 114 não entram nessa contagem.",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
-  },
-  {
     "arquivo": "docs/guia/como-fazer/contingencia.md",
     "nome": "sign",
     "trecho": "O MDF-e em contingência off-line (`tpEmis` 2) pode ser emitido sem autorização prévia da SEFAZ. O QR Code leva o parâmetro `sign` com a assinatura da chave de acesso, e o DAMDFE, o documento auxiliar do MDF-e, sai com \"EMISSÃO EM CONTINGÊNCIA\". O documento tem 168 horas a partir da emissão para ser transmitido com o mesmo `cMDF`, o código numérico que compõe a chave (MOC MDF-e, Visão Geral, item 11.1). A forma de emissão é uma opção da montagem, então use um emissor só para a contingência:",
     "motivo": "método `sign`/`dfe.sign` do protocolo do helper, uso `sign` da WebCrypto ou parâmetro `sign` do QR Code do MDF-e (MOC)"
-  },
-  {
-    "arquivo": "docs/guia/como-fazer/ibs-cbs.md",
-    "nome": "issues",
-    "trecho": "As ocorrências do IBS/CBS voltam como as outras da montagem: `ErroDeValidacao` no emissor e `issues` no `buildNfe`. As ocorrências de um item apontam para `itens[n].impostos.ibsCbs` ou seus campos, com índice iniciado em zero. Há também ocorrências em outros caminhos: alíquota desconhecida aponta para `impostos.ibsCbs`, e violações das regras de totalização apontam para `total.IBSCBSTot`. A propriedade `origem` vale `entrada` quando a ocorrência aponta um valor informado na nota e `montagem` quando decorre do cálculo ou dos dados usados pelo sinete. As violações das regras da NT usam o código `ibscbs_regra_nt`, com a identificação da regra, o código de rejeição e a fonte na mensagem. Veja [como tratar as ocorrências de validação](ocorrencias-de-validacao.md).",
-    "motivo": "resultado da montagem (`buildNfe`, `buildMdfe`, `buildDps`) dos pacotes de documento, que tem `value`/`issues` próprios, fora da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/como-fazer/nfse.md",
-    "nome": "hint",
-    "trecho": "- **Rejeição.** A Sefin responde com códigos `E` seguidos de quatro dígitos, que vão em `cStat`. Quando o catálogo de rejeições do sinete tem uma orientação para o código do Anexo I do leiaute, ela vem em `hint`. E0312 indica que o código de tributação nacional não está administrado pelo município de incidência do ISSQN (Imposto Sobre Serviços de Qualquer Natureza) na data de competência informada na DPS. É uma regra de nível 3, dependente da parametrização municipal.",
-    "motivo": "`hint` do desfecho do `@sinete/emissor`, fora da fase 1 (o `Recusado` do core já usa `dica`)"
-  },
-  {
-    "arquivo": "docs/guia/como-fazer/retomada.md",
-    "nome": "ref",
-    "trecho": "`emitir(ref, entrada)` com uma `ref` que já tem bytes gravados retoma com eles e ignora a entrada. É o que acontece quando a pessoa clica em \"emitir\" de novo no mesmo pedido. Não há nada a fazer além de usar sempre a mesma `ref` para o mesmo documento.",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/como-fazer/retomada.md",
-    "nome": "ref",
-    "trecho": "`retomar(ref)` retoma pelos bytes gravados e devolve o desfecho, ou `undefined` se não há nada gravado para a `ref`. Não recebe entrada. Assim como `emitir`, exige uma função `aoDecidir` para guardar o documento decidido, definida no emissor ou nas opções da chamada.",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/como-fazer/retomada.md",
-    "nome": "ref",
-    "trecho": "aoAlertar: (registro, ultimo, tentativas) => filaDeAlertas.gravar({ ref: registro.ref, id: registro.id, ultimo, tentativas }),",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/como-fazer/retomada.md",
-    "nome": "ref",
-    "trecho": "| `recusado` | o serviço autorizador recusou; os bytes foram descartados, exceto quando o `cStat` está entre os códigos indefinidos do documento | se os bytes foram descartados, mostrar a rejeição e deixar a pessoa corrigir e emitir de novo com a mesma `ref`. Se foram mantidos, continuar a retomada: uma nova chamada a `emitir` ainda ignora a entrada e usa os bytes gravados |",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/como-fazer/retomada.md",
-    "nome": "ref",
-    "trecho": "- **Remontar para \"tentar de novo\".** Chamar `buildNfe` remonta o documento; chamar `emitir` com outra `ref` permite uma nova montagem e transmissão, mesmo para o mesmo pedido e número fiscal. A `ref` é o id estável do documento no seu sistema.",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/como-fazer/retomada.md",
-    "nome": "ref",
-    "trecho": "- **Reemitir a mesma nota recusada sem corrigir a causa.** Com `registrarRecusa` e `recusaRecente` implementados no store e a barreira `recusaRepetida` habilitada, três recusas definitivas iguais em uma hora barram, por padrão, a próxima emissão da mesma `ref` com o mesmo conteúdo. O emissor lança `RecusaRepetidaError` antes de gravar e enviar. Essa proteção ajuda a evitar a rejeição 656, de consumo indevido; mudar apenas campos que variam automaticamente na montagem pode não liberar o envio. Corrija a causa da rejeição antes de tentar novamente.",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/como-fazer/store-sql.md",
-    "nome": "ref",
-    "trecho": "`registrarRecusa` e `recusaRecente` são opcionais e devem ser implementados juntos. Com os dois, a barreira de recusas fica ligada por padrão: o emissor conta as recusas definitivas iguais de cada par (`tipo`, `ref`), comparando o resumo SHA-256 do conteúdo recusado e o mesmo `cStat`, o código de status da resposta fiscal. Recusas transitórias do serviço, identificadas pelo perfil do documento, não entram nessa conta.",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
   },
   {
     "arquivo": "docs/guia/como-fazer/store-sql.md",
@@ -156,58 +48,10 @@
     "motivo": "tipo `text` do SQL"
   },
   {
-    "arquivo": "docs/guia/como-fazer/varios-emitentes.md",
-    "nome": "ref",
-    "trecho": "aoDecidir: (registro, d) => db.notas.guardar(registro.ref, d), // upsert pela ref",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/como-fazer/varios-emitentes.md",
-    "nome": "ref",
-    "trecho": "jaGuardado: async (registro) => (await db.notas.chave(registro.ref)) === registro.id,",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/como-fazer/varios-emitentes.md",
-    "nome": "ref",
-    "trecho": "No exemplo, `pedido`, `db`, `certificadoDoEmitente` e `notaDe` pertencem à aplicação. `registro.ref` é a referência do documento no sistema, aqui `pedido.id`, e `registro.id` é a chave de acesso da NF-e. `db.notas.guardar` precisa ser idempotente: chamadas repetidas com o mesmo documento devem preservar o mesmo resultado, sem duplicá-lo.",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/erros/transmissao_em_andamento.md",
-    "nome": "ref",
-    "trecho": "Mostre \"em processamento\" e consulte o resultado depois pelo seu sistema. A função `aoDecidir`, implementada por você, guarda o documento quando o emissor obtém um desfecho autorizado ou denegado. Para tentar novamente, chame `emitir` ou `retomar` mais tarde, com a mesma `ref`. Se já houver bytes do documento assinado gravados, ambos retomam a transmissão com esses bytes. Sem bytes gravados, `retomar` devolve `undefined`, enquanto `emitir` monta o documento a partir da entrada fornecida.",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/erros/validacao_falhou.md",
-    "nome": "ref",
-    "trecho": "Quando a validação da montagem falha durante `emitir`, o emissor ainda não gravou os bytes do documento no store, o armazenamento das transmissões, nem enviou o documento à autoridade fiscal. Nesse caso, corrigir a entrada e chamar `emitir` de novo com a mesma `ref`, a referência da transmissão, é seguro. Não decida pela `mensagem` de uma ocorrência, pois ela muda entre versões, e não mostre ocorrência de `montagem` como erro de preenchimento.",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
-  },
-  {
     "arquivo": "docs/guia/explicacao/assinatura-por-splice.md",
     "nome": "text",
     "trecho": "- **Guarde a string como veio.** Use um campo de texto (`text`, `TEXT`, `VARCHAR`), sem reformatação. Evite tipos XML do banco que normalizem o documento e não passe o texto armazenado por um ciclo de parser e serializador.",
     "motivo": "tipo `text` do SQL"
-  },
-  {
-    "arquivo": "docs/guia/explicacao/bytes-antes-do-envio.md",
-    "nome": "ref",
-    "trecho": "2. **Retomar pelos bytes gravados.** Toda tentativa seguinte do mesmo documento, seja outro clique, outro processo, a tarefa automática de retomada ou uma chamada depois de um reinício, encontra os bytes gravados. O emissor consulta a chave e, se a nota não consta, reenvia os mesmos bytes. Na NFS-e, a Nota Fiscal de Serviço Eletrônica, a consulta usa o identificador da DPS, a Declaração de Prestação de Serviços que dá origem à nota. `emitir(ref, entrada)` com bytes gravados para a mesma referência `ref` ignora a entrada.",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/referencia/cli.md",
-    "nome": "err",
-    "trecho": "- `CliIo`: Membros: `out`, `err`, `env`, `promptPassword`, `readFile`, `writeFile`, `doctor`.",
-    "motivo": "membro `err` do `CliIo` ou parâmetro de `classifyTransportFailure`, fora da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/referencia/cli.md",
-    "nome": "formatCnpj",
-    "trecho": "- `formatCnpj`: `formatCnpj(cnpj: string): string`",
-    "motivo": "`formatCnpj` próprio do `@sinete/cli`, fora da fase 1"
   },
   {
     "arquivo": "docs/guia/referencia/core.md",
@@ -234,12 +78,6 @@
     "motivo": "caminho da pasta `data/`, campo `data` do protocolo do helper, evento `data` de stream do Node ou a palavra portuguesa \"data\""
   },
   {
-    "arquivo": "docs/guia/referencia/sefaz-sim.md",
-    "nome": "pending",
-    "trecho": "- `LoteRecord`: Membros: `nRec`, `autorizador`, `svc`, `receivedAt`, `availableAt`, `dhRecbto`, `payload`, `pending`, `transmissor`, `protNFe`, `processedAt`.",
-    "motivo": "membro de tipo do `@sinete/ibs-cbs` ou do `@sinete/sefaz-sim`, fora dos três pacotes da fase 1"
-  },
-  {
     "arquivo": "docs/guia/referencia/validators.md",
     "nome": "mod",
     "trecho": "- `ChaveAcesso`: Chave de acesso decomposta. Os campos têm a forma lexical do leiaute (strings com zeros à esquerda). Membros: `chave`, `cUF`, `uf`, `aamm`, `ano`, `mes`, `emitente`, `cnpj`, `cpf`, `mod`, `documento`, `serie`, `nNF`, `leiaute`, `tpEmis`, `cNF`, `cDV`.",
@@ -250,30 +88,6 @@
     "nome": "mod",
     "trecho": "- `PartesChaveAcesso`: Membros: `cUF`, `aamm`, `emitente`, `mod`, `serie`, `nNF`, `tpEmis`, `cNF`.",
     "motivo": "campo `mod` da chave de acesso, nome oficial do leiaute"
-  },
-  {
-    "arquivo": "docs/guia/tutorial/primeira-nfe.md",
-    "nome": "hint",
-    "trecho": "console.log('recusada', d1.cStat, d1.xMotivo, d1.hint?.comoCorrigir);",
-    "motivo": "`hint` do desfecho do `@sinete/emissor`, fora da fase 1 (o `Recusado` do core já usa `dica`)"
-  },
-  {
-    "arquivo": "docs/guia/tutorial/primeira-nfe.md",
-    "nome": "ref",
-    "trecho": "notas.set(registro.ref, desfecho.proc ?? desfecho.protocolo.protNFe);",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/tutorial/primeira-nfe.md",
-    "nome": "ref",
-    "trecho": "A nota sai com `tipo: 'autorizado'` e `cStat` 100. O `aoDecidir` já guardou o `nfeProc`, e os bytes da transmissão foram apagados do `store` depois disso. Se a SEFAZ recusasse definitivamente a nota (`recusado`), os bytes seriam descartados e você corrigiria a entrada e emitiria de novo com a mesma `ref`.",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/tutorial/primeira-nfe.md",
-    "nome": "kind",
-    "trecho": "sim.injectFault({ kind: 'drop', phase: 'after' }, { servico: 'NFeAutorizacao' });",
-    "motivo": "`kind` de `injectFault` do `@sinete/sefaz-sim`, fora da fase 1"
   },
   {
     "arquivo": "docs/signer-contract/PROTOCOL.md",
@@ -348,48 +162,6 @@
     "motivo": "método `sign`/`dfe.sign` do protocolo do helper, uso `sign` da WebCrypto ou parâmetro `sign` do QR Code do MDF-e (MOC)"
   },
   {
-    "arquivo": "packages/cli/README.md",
-    "nome": "status",
-    "trecho": "| `status` | só com `--status`: `cStat` do status do serviço | erro de transporte (403 do IIS, alertas); aviso se `cStat` diferente de 107 |",
-    "motivo": "verificação `status` do `doctor` do CLI ou comando `status` da homologação"
-  },
-  {
-    "arquivo": "packages/cli/src/doctor.ts",
-    "nome": "details",
-    "trecho": "details: NonNullable<DoctorCheck['details']>,",
-    "motivo": "`details` do `DoctorCheck` do CLI, fora da fase 1"
-  },
-  {
-    "arquivo": "packages/cli/src/doctor.ts",
-    "nome": "status",
-    "trecho": "readonly id: 'pfx' | 'cadeia' | 'relogio' | 'tls' | 'status';",
-    "motivo": "verificação `status` do `doctor` do CLI ou comando `status` da homologação"
-  },
-  {
-    "arquivo": "packages/cli/src/doctor.ts",
-    "nome": "status",
-    "trecho": "for (const id of ['cadeia', 'relogio', 'tls', 'status'] as const) checks.push(skipped(id, 'sem PFX aberto'));",
-    "motivo": "verificação `status` do `doctor` do CLI ou comando `status` da homologação"
-  },
-  {
-    "arquivo": "packages/cli/src/doctor.ts",
-    "nome": "status",
-    "trecho": "const order = ['pfx', 'cadeia', 'relogio', 'tls', 'status'];",
-    "motivo": "verificação `status` do `doctor` do CLI ou comando `status` da homologação"
-  },
-  {
-    "arquivo": "packages/cli/src/main.ts",
-    "nome": "status",
-    "trecho": "status: values.status === true,",
-    "motivo": "verificação `status` do `doctor` do CLI ou comando `status` da homologação"
-  },
-  {
-    "arquivo": "packages/cli/test/doctor.test.ts",
-    "nome": "clock",
-    "trecho": "const base = (): Pick<DoctorOptions, 'pfx' | 'password' | 'clock' | 'extraCaPem' | 'timeoutMs'> => ({",
-    "motivo": "opção `clock` dos clientes, do CLI e do IBS/CBS, fora da fase 1"
-  },
-  {
     "arquivo": "packages/core/src/clock.ts",
     "nome": "now",
     "trecho": "* Nenhuma função do sinete chama `new Date()` ou `Date.now()` por conta própria: quem precisa do tempo recebe um",
@@ -462,64 +234,10 @@
     "motivo": "caminho da pasta `data/`, campo `data` do protocolo do helper, evento `data` de stream do Node ou a palavra portuguesa \"data\""
   },
   {
-    "arquivo": "packages/da/src/render/html.ts",
-    "nome": "text",
-    "trecho": "case 'text': {",
-    "motivo": "operação `'text'` do render do `@sinete/da`, fora da fase 1"
-  },
-  {
     "arquivo": "packages/da/test/layout.test.ts",
     "nome": "Instant",
     "trecho": "'Pagamento Instantâneo (PIX) Dinâmico',",
     "motivo": "palavra \"Instantâneo\" (Pagamento Instantâneo, PIX)"
-  },
-  {
-    "arquivo": "packages/da/test/situacao.test.ts",
-    "nome": "text",
-    "trecho": "doc.pages.flatMap((p) => p.ops.flatMap((o) => (o.t === 'text' ? [o.s] : []))).join(' ');",
-    "motivo": "operação `'text'` do render do `@sinete/da`, fora da fase 1"
-  },
-  {
-    "arquivo": "packages/da/test/situacao.test.ts",
-    "nome": "text",
-    "trecho": "p.ops.flatMap((o) => (o.t === 'text' && o.rot !== undefined && o.rot > 0 && o.rot < 90 ? [o.s] : [])).join(' | '),",
-    "motivo": "operação `'text'` do render do `@sinete/da`, fora da fase 1"
-  },
-  {
-    "arquivo": "packages/emissor/README.md",
-    "nome": "hint",
-    "trecho": "console.log(desfecho.cStat, desfecho.xMotivo, desfecho.hint);",
-    "motivo": "`hint` do desfecho do `@sinete/emissor`, fora da fase 1 (o `Recusado` do core já usa `dica`)"
-  },
-  {
-    "arquivo": "packages/emissor/README.md",
-    "nome": "hint",
-    "trecho": "| `recusado` | a SEFAZ recusou os bytes (`cStat`, `xMotivo`, `hint`) | apagados, menos os `cStat` indefinidos do documento (a duplicidade que a consulta não resolveu, o lote em processamento), que ficam |",
-    "motivo": "`hint` do desfecho do `@sinete/emissor`, fora da fase 1 (o `Recusado` do core já usa `dica`)"
-  },
-  {
-    "arquivo": "packages/emissor/README.md",
-    "nome": "ref",
-    "trecho": "await db.notas.upsert(registro.ref, { chave: desfecho.id, xml: desfecho.proc ?? registro.xml, protNFe, situacao });",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "packages/emissor/README.md",
-    "nome": "ref",
-    "trecho": "`emitir(ref, entrada)` trava o documento `ref`, lê o que estiver gravado para ele e:",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "packages/emissor/README.md",
-    "nome": "ref",
-    "trecho": "**Recusa repetida.** Reenviar a mesma nota com a mesma rejeição é o que a SEFAZ conta como consumo indevido e pune com até uma hora de bloqueio do emitente (rejeição 656, MOC 7.0 Anexo I, item 4.3.1). Com um `store` que lembra recusas (`registrarRecusa` e `recusaRecente`, opcionais), o emissor conta as recusas da nota pelo SHA-256 do conteúdo descartado (sem a hora de emissão, o código numérico da chave e a assinatura, que mudam a cada montagem) e pelo `cStat`. Quando a mesma recusa chega ao limite dentro da janela (`recusaRepetida: { janelaMs, limite }`, 3 vezes em 1 hora por padrão, contada desde a primeira), a próxima emissão da mesma `ref` com o mesmo conteúdo lança `RecusaRepetidaError` antes de gravar e sem ir à SEFAZ: a 4ª tentativa igual não sai, bem antes das 30 da regra. Abaixo do limite a mesma nota vai, para quem resolveu a causa fora dela. A nota corrigida (outro conteúdo) passa e recomeça a conta; a retomada de bytes gravados nunca é barrada; a recusa do serviço (108, 109, 999) não conta. Depois de resolver uma causa que está fora da nota (o credenciamento do emitente, 203), `emitir(ref, entrada, { reenviarRecusado: true })` envia assim mesmo. `recusaRepetida: false` desliga.",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "packages/emissor/README.md",
-    "nome": "ref",
-    "trecho": "aoDecidir: guardarDocumento, // opcional: senão, vale o do emissor; `registro.tipo` e `registro.ref` dizem qual",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
   },
   {
     "arquivo": "packages/emissor/src/contingencia.ts",
@@ -546,46 +264,10 @@
     "motivo": "`ref` de teste `'doc'` da suíte de contrato do emissor"
   },
   {
-    "arquivo": "packages/emissor/src/emissor.ts",
-    "nome": "ref",
-    "trecho": "* Transmite o documento `ref` (o id dele no sistema do integrador). Com bytes já gravados para `ref`, retoma com eles",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "packages/emissor/src/mdfe.ts",
-    "nome": "clock",
-    "trecho": "readonly cliente?: Omit<Partial<MdfeClientOptions>, 'transport' | 'signer' | 'ambiente' | 'clock'>;",
-    "motivo": "opção `clock` dos clientes, do CLI e do IBS/CBS, fora da fase 1"
-  },
-  {
-    "arquivo": "packages/emissor/src/nfe.ts",
-    "nome": "clock",
-    "trecho": "'transport' | 'signer' | 'ambiente' | 'uf' | 'clock' | 'contingencia'",
-    "motivo": "opção `clock` dos clientes, do CLI e do IBS/CBS, fora da fase 1"
-  },
-  {
-    "arquivo": "packages/emissor/src/nfse.ts",
-    "nome": "clock",
-    "trecho": "readonly cliente?: Omit<Partial<NfseClientOptions>, 'transport' | 'signer' | 'ambiente' | 'clock'>;",
-    "motivo": "opção `clock` dos clientes, do CLI e do IBS/CBS, fora da fase 1"
-  },
-  {
     "arquivo": "packages/emissor/src/store.ts",
     "nome": "now",
     "trecho": "* compara com o `NOW()` do banco (`lockUntil <= NOW(6)` no MySQL, `now()` no Postgres). O adaptador em memória",
     "motivo": "`Date.now()` do JavaScript ou `NOW()` do SQL, não `Relogio.agora`"
-  },
-  {
-    "arquivo": "packages/emissor/src/store.ts",
-    "nome": "ref",
-    "trecho": "* Identifica esta gravação. Outra gravação do mesmo `ref` (depois de um descarte) tem outro valor: a contagem de",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "packages/emissor/src/store.ts",
-    "nome": "ref",
-    "trecho": "* Opcional, junto com `recusaRecente`: conta as recusas definitivas do documento (uma sequência por `tipo` e `ref`).",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
   },
   {
     "arquivo": "packages/emissor/test/emissor.test.ts",
@@ -594,58 +276,10 @@
     "motivo": "caminho da pasta `data/`, campo `data` do protocolo do helper, evento `data` de stream do Node ou a palavra portuguesa \"data\""
   },
   {
-    "arquivo": "packages/emissor/test/mdfe.test.ts",
-    "nome": "rejected",
-    "trecho": "expect(r[1].status === 'rejected' && r[1].reason).toBeInstanceOf(TransmissaoEmAndamentoError);",
-    "motivo": "`status: 'rejected'` do `Promise.allSettled`"
-  },
-  {
-    "arquivo": "packages/emissor/test/nfe.test.ts",
-    "nome": "rejected",
-    "trecho": "expect(r[1].status === 'rejected' && r[1].reason).toBeInstanceOf(TransmissaoEmAndamentoError);",
-    "motivo": "`status: 'rejected'` do `Promise.allSettled`"
-  },
-  {
-    "arquivo": "packages/emissor/test/nfe.test.ts",
-    "nome": "rejected",
-    "trecho": "expect(usuario.status === 'rejected' && usuario.reason).toBeInstanceOf(TransmissaoEmAndamentoError);",
-    "motivo": "`status: 'rejected'` do `Promise.allSettled`"
-  },
-  {
-    "arquivo": "packages/emissor/test/nfse.test.ts",
-    "nome": "text",
-    "trecho": "renders[i]?.doc.pages[0]?.ops.find((op) => op.t === 'text' && op.rot !== undefined && op.rot !== 0)?.[",
-    "motivo": "operação `'text'` do render do `@sinete/da`, fora da fase 1"
-  },
-  {
-    "arquivo": "packages/emissor/test/retomada.test.ts",
-    "nome": "ref",
-    "trecho": "/** Grava bytes para `ref` e deixa o relógio andar `parada` (a gravação fica parada esse tempo). */",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
-  },
-  {
     "arquivo": "packages/ibs-cbs/test/validar/engine.test.ts",
     "nome": "error",
     "trecho": "(c) => !('error' in c.engine) && (c.op.modelo === 55 || c.op.modelo === 65),",
     "motivo": "campo `error` do caso do motor de IBS/CBS ou texto de erro da runtime"
-  },
-  {
-    "arquivo": "packages/mdfe/README.md",
-    "nome": "value",
-    "trecho": "const assinado = await signMdfe(r.value, signer); // grave esta string antes de enviar",
-    "motivo": "resultado da montagem (`buildNfe`, `buildMdfe`, `buildDps`) dos pacotes de documento, que tem `value`/`issues` próprios, fora da fase 1"
-  },
-  {
-    "arquivo": "packages/mdfe/README.md",
-    "nome": "value",
-    "trecho": "await client.encerrar({ chave: r.value.chave, nProt: desfecho.valor.nProt ?? '', uf: 'SP', cMun: '3550308' });",
-    "motivo": "resultado da montagem (`buildNfe`, `buildMdfe`, `buildDps`) dos pacotes de documento, que tem `value`/`issues` próprios, fora da fase 1"
-  },
-  {
-    "arquivo": "packages/mdfe/README.md",
-    "nome": "sign",
-    "trecho": "`signMdfe` coloca o `infMDFeSupl` com o QR Code (`src/data/qrcode.json`) antes de `</MDFe>` e depois insere a `Signature` como último filho, por splice. Em contingência off-line (`tpEmis: '2'`), o QR Code leva `sign`, a assinatura RSA-SHA1 da chave em Base64, e o MDF-e tem 168 horas para ser transmitido com o mesmo cMDF (`prazoContingencia`). Na emissão normal, transmitir depois de 24 horas é recusado com 228 (F80). `comQrCode` e `assinaturaQrCode` estão exportados para quem assina de outro jeito.",
-    "motivo": "método `sign`/`dfe.sign` do protocolo do helper, uso `sign` da WebCrypto ou parâmetro `sign` do QR Code do MDF-e (MOC)"
   },
   {
     "arquivo": "packages/mdfe/src/build/build.ts",
@@ -715,21 +349,9 @@
   },
   {
     "arquivo": "packages/mdfe/test/build.test.ts",
-    "nome": "value",
-    "trecho": "function ok(r: BuildMdfeResult): Extract<BuildMdfeResult, { ok: true }>['value'] {",
-    "motivo": "resultado da montagem (`buildNfe`, `buildMdfe`, `buildDps`) dos pacotes de documento, que tem `value`/`issues` próprios, fora da fase 1"
-  },
-  {
-    "arquivo": "packages/mdfe/test/build.test.ts",
     "nome": "sign",
     "trecho": "expect(xml).toMatch(/&amp;tpAmb=2&amp;sign=[A-Za-z0-9+/=]+<\\/qrCodMDFe>/);",
     "motivo": "método `sign`/`dfe.sign` do protocolo do helper, uso `sign` da WebCrypto ou parâmetro `sign` do QR Code do MDF-e (MOC)"
-  },
-  {
-    "arquivo": "packages/nfe/README.md",
-    "nome": "value",
-    "trecho": "const assinada = await signNfe(r.value, signer); // grave esta string antes de enviar",
-    "motivo": "resultado da montagem (`buildNfe`, `buildMdfe`, `buildDps`) dos pacotes de documento, que tem `value`/`issues` próprios, fora da fase 1"
   },
   {
     "arquivo": "packages/nfe/src/build/build.ts",
@@ -822,24 +444,6 @@
     "motivo": "caminho da pasta `data/`, campo `data` do protocolo do helper, evento `data` de stream do Node ou a palavra portuguesa \"data\""
   },
   {
-    "arquivo": "packages/nfse/README.md",
-    "nome": "value",
-    "trecho": "const assinada = await signDps(r.value, signer); // grave esta string antes de enviar",
-    "motivo": "resultado da montagem (`buildNfe`, `buildMdfe`, `buildDps`) dos pacotes de documento, que tem `value`/`issues` próprios, fora da fase 1"
-  },
-  {
-    "arquivo": "packages/nfse/README.md",
-    "nome": "map",
-    "trecho": "if (!r.ok) throw new Error(r.issues.map((i) => `${i.caminho}: ${i.mensagem}`).join('\\n'));",
-    "motivo": "resultado da montagem (`buildNfe`, `buildMdfe`, `buildDps`) dos pacotes de documento, que tem `value`/`issues` próprios, fora da fase 1"
-  },
-  {
-    "arquivo": "packages/nfse/src/valores.ts",
-    "nome": "issues",
-    "trecho": "* Converte para texto com `casas` casas decimais. Devolve `undefined` e acrescenta a ocorrência em `issues` quando o",
-    "motivo": "resultado da montagem (`buildNfe`, `buildMdfe`, `buildDps`) dos pacotes de documento, que tem `value`/`issues` próprios, fora da fase 1"
-  },
-  {
     "arquivo": "packages/rejeicoes/src/index.ts",
     "nome": "data",
     "trecho": "* O catálogo vive em `data/rejeicoes.json`, gerado por `tools/rejeicoes-data` a partir dos PDFs oficiais (MOC 7.0",
@@ -859,33 +463,9 @@
   },
   {
     "arquivo": "packages/sefaz-sim/README.md",
-    "nome": "set",
-    "trecho": "aoDecidir: (registro, desfecho) => decididas.set(registro.ref, desfecho),",
-    "motivo": "membro de tipo do `@sinete/ibs-cbs` ou do `@sinete/sefaz-sim`, fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "packages/sefaz-sim/README.md",
-    "nome": "ref",
-    "trecho": "aoDecidir: (registro, desfecho) => decididas.set(registro.ref, desfecho),",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "packages/sefaz-sim/README.md",
-    "nome": "kind",
-    "trecho": "sim.injectFault({ kind: 'hang', phase: 'after' }, { servico: 'NFeAutorizacao' });",
-    "motivo": "membro de tipo do `@sinete/ibs-cbs` ou do `@sinete/sefaz-sim`, fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "packages/sefaz-sim/README.md",
     "nome": "sign",
     "trecho": "Fora do simulador: cadastro de emitente e de municípios (405, 406, 408), bases da ANTT (RNTRC, CIOT) e das NF-e e CT-e referenciados, e a conferência do `sign` do QR Code (F119).",
     "motivo": "método `sign`/`dfe.sign` do protocolo do helper, uso `sign` da WebCrypto ou parâmetro `sign` do QR Code do MDF-e (MOC)"
-  },
-  {
-    "arquivo": "packages/sefaz-sim/src/mdfe/comum.ts",
-    "nome": "root",
-    "trecho": "/** Grupos A, B-0, B e C. `root` é o schema da área de dados. */",
-    "motivo": "membro de tipo do `@sinete/ibs-cbs` ou do `@sinete/sefaz-sim`, fora dos três pacotes da fase 1"
   },
   {
     "arquivo": "packages/sefaz-sim/src/messages.ts",
@@ -898,18 +478,6 @@
     "nome": "data",
     "trecho": "* Mensagem de um `cStat` do MDF-e: resultado (`data/mdfe-status.json`) ou rejeição do catálogo do MDF-e no",
     "motivo": "caminho da pasta `data/`, campo `data` do protocolo do helper, evento `data` de stream do Node ou a palavra portuguesa \"data\""
-  },
-  {
-    "arquivo": "packages/sefaz-sim/src/nfse/sim.ts",
-    "nome": "times",
-    "trecho": "readonly times?: FaultTarget['times'];",
-    "motivo": "membro de tipo do `@sinete/ibs-cbs` ou do `@sinete/sefaz-sim`, fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "packages/sefaz-sim/src/rules.ts",
-    "nome": "source",
-    "trecho": "* (`DEFAULT_RULES`) são um subconjunto útil do MOC 7.0, cada uma com a origem em `source`. Para trocar, acrescentar ou",
-    "motivo": "membro de tipo do `@sinete/ibs-cbs` ou do `@sinete/sefaz-sim`, fora dos três pacotes da fase 1"
   },
   {
     "arquivo": "packages/sefaz-sim/src/services.ts",
@@ -936,30 +504,6 @@
     "motivo": "sufixo `Result` dos elementos SOAP dos WSDL da SEFAZ ou das definições do JSON Schema do helper"
   },
   {
-    "arquivo": "packages/sefaz-sim/src/services/inutilizacao.ts",
-    "nome": "mod",
-    "trecho": "mod: facts.mod as TRetInutNFe['infInut']['mod'] & string,",
-    "motivo": "membro de tipo do `@sinete/ibs-cbs` ou do `@sinete/sefaz-sim`, fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "packages/sefaz-sim/src/soap.ts",
-    "nome": "Result",
-    "trecho": "? `<nfeResultMsg xmlns=\"${ns}\"><${def.operation}Result>${ret}</${def.operation}Result></nfeResultMsg>`",
-    "motivo": "sufixo `Result` dos elementos SOAP dos WSDL da SEFAZ ou das definições do JSON Schema do helper"
-  },
-  {
-    "arquivo": "packages/sefaz-sim/src/soap.ts",
-    "nome": "Result",
-    "trecho": "? `<${def.operation}Response xmlns=\"${ns}\"><${def.operation}Result>${ret}</${def.operation}Result></${def.operation}Response>`",
-    "motivo": "sufixo `Result` dos elementos SOAP dos WSDL da SEFAZ ou das definições do JSON Schema do helper"
-  },
-  {
-    "arquivo": "packages/sefaz-sim/src/soap.ts",
-    "nome": "Result",
-    "trecho": "? `<${def.operation}Result xmlns=\"${ns}\">${ret}</${def.operation}Result>`",
-    "motivo": "sufixo `Result` dos elementos SOAP dos WSDL da SEFAZ ou das definições do JSON Schema do helper"
-  },
-  {
     "arquivo": "packages/sefaz-sim/src/soap.ts",
     "nome": "code",
     "trecho": "function reject(reason: string, code: SoapReject['code'] = 'soap:Sender'): SoapReject {",
@@ -976,18 +520,6 @@
     "nome": "data",
     "trecho": "* para a UF do emitente). Os textos estão em `data/svc.json`.",
     "motivo": "caminho da pasta `data/`, campo `data` do protocolo do helper, evento `data` de stream do Node ou a palavra portuguesa \"data\""
-  },
-  {
-    "arquivo": "packages/sefaz-sim/test/mdfe-helpers.ts",
-    "nome": "Result",
-    "trecho": "expect(holder.local).toBe(`${MDFE_SERVICES[servico].operation}Result`);",
-    "motivo": "sufixo `Result` dos elementos SOAP dos WSDL da SEFAZ ou das definições do JSON Schema do helper"
-  },
-  {
-    "arquivo": "packages/sefaz-sim/test/nfse.test.ts",
-    "nome": "path",
-    "trecho": "const comCanal = (canal: SyntheticCertificate | null | undefined): Omit<Pedido, 'path'> =>",
-    "motivo": "`path` do `SerializeError` do `@sinete/schemas` ou do pedido HTTP do simulador, fora da fase 1"
   },
   {
     "arquivo": "packages/transport/README.md",
@@ -1068,12 +600,6 @@
     "motivo": "método `sign`/`dfe.sign` do protocolo do helper, uso `sign` da WebCrypto ou parâmetro `sign` do QR Code do MDF-e (MOC)"
   },
   {
-    "arquivo": "packages/transport/src/types.ts",
-    "nome": "message",
-    "trecho": "readonly mode: 'digest' | 'message';",
-    "motivo": "modo `message` do `TlsSigner` do `@sinete/transport`, fora da fase 1"
-  },
-  {
     "arquivo": "packages/transport/test/lab/client-core.ts",
     "nome": "message",
     "trecho": "const err = e as Partial<Pick<ErroSinete, 'name' | 'code' | 'detalhes' | 'message'>>;",
@@ -1102,12 +628,6 @@
     "nome": "docs",
     "trecho": "* O cliente TS contra o contrato de `docs/signer-contract/`: todo frame das fixtures passa pelo JSON Schema, os casos",
     "motivo": "pasta `docs/` do pacote ou do repositório"
-  },
-  {
-    "arquivo": "packages/transport/test/signer-contract.test.ts",
-    "nome": "message",
-    "trecho": "mode: 'message',",
-    "motivo": "modo `message` do `TlsSigner` do `@sinete/transport`, fora da fase 1"
   },
   {
     "arquivo": "packages/transport/test/signer-contract.test.ts",
@@ -1327,39 +847,9 @@
   },
   {
     "arquivo": "tools/danfe-corpus/check.ts",
-    "nome": "text",
-    "trecho": "const textos = doc.pages.flatMap((p) => p.ops.flatMap((o) => (o.t === 'text' ? [o] : [])));",
-    "motivo": "operação `'text'` do render do `@sinete/da`, fora da fase 1"
-  },
-  {
-    "arquivo": "tools/danfe-corpus/check.ts",
     "nome": "mod",
     "trecho": "if (/<mod>65</.test(t)) qr = /<qrCode>(?:<!\\[CDATA\\[)?(.*?)(?:\\]\\]>)?<\\/qrCode>/.exec(t)?.[1];",
     "motivo": "campo `mod` da chave de acesso, nome oficial do leiaute"
-  },
-  {
-    "arquivo": "tools/homologacao/src/df.ts",
-    "nome": "status",
-    "trecho": "if (!['status', 'emitir', 'consultar', 'cce', 'cancelar', 'dist'].includes(comando)) {",
-    "motivo": "verificação `status` do `doctor` do CLI ou comando `status` da homologação"
-  },
-  {
-    "arquivo": "tools/homologacao/src/df.ts",
-    "nome": "status",
-    "trecho": "if (comando === 'status') await status();",
-    "motivo": "verificação `status` do `doctor` do CLI ou comando `status` da homologação"
-  },
-  {
-    "arquivo": "tools/homologacao/src/run.ts",
-    "nome": "status",
-    "trecho": "if (opt.help || !comando || !['status', 'consultas', 'autorizacao', 'doctor'].includes(comando)) {",
-    "motivo": "verificação `status` do `doctor` do CLI ou comando `status` da homologação"
-  },
-  {
-    "arquivo": "tools/homologacao/src/run.ts",
-    "nome": "status",
-    "trecho": "if (comando === 'status') await status();",
-    "motivo": "verificação `status` do `doctor` do CLI ou comando `status` da homologação"
   },
   {
     "arquivo": "tools/homologacao/test/policy.test.ts",
@@ -1414,12 +904,6 @@
     "nome": "entries",
     "trecho": "function nfse(pacote: string): Pick<ModuleSpec, 'documento' | 'pacotes' | 'entries' | 'roots' | 'opaqueElements'> {",
     "motivo": "nomes do XSD (`element`, `pattern`, `length`) e do codegen, ou texto do xmllint"
-  },
-  {
-    "arquivo": "tools/xsd-codegen/src/xsd.ts",
-    "nome": "ref",
-    "trecho": "if (!('ref' in tr)) throw new Error(`raiz ${r.element} precisa ser de tipo complexo`);",
-    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
   },
   {
     "arquivo": "tools/xsd-codegen/src/xsd.ts",
@@ -1500,18 +984,6 @@
     "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
   },
   {
-    "arquivo": "docs/guia/como-fazer/browser.md",
-    "nome": "value",
-    "trecho": "const assinada = await signNfe(r.value, await ks.assinador());",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
-  },
-  {
-    "arquivo": "docs/guia/como-fazer/browser.md",
-    "nome": "time",
-    "trecho": "const r = await buildNfe(nota, { ambiente: 'homologacao', time: contextoDeTempo({ emissao: relogioDoSistema }) });",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
-  },
-  {
     "arquivo": "docs/guia/como-fazer/certificado-a3.md",
     "nome": "sign",
     "trecho": "- Não oferece assinatura avulsa: a chave só é usada num handshake com host aprovado ou numa chamada validada de `dfe.sign`, o método de assinatura de documentos do protocolo.",
@@ -1572,12 +1044,6 @@
     "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
   },
   {
-    "arquivo": "docs/guia/erros/codigo_barras_invalido.md",
-    "nome": "code",
-    "trecho": "O conteúdo do código de barras ou do QR Code não pode ser codificado. O erro é uma instância de `DanfeError` (`@sinete/da`), que estende `ErroSinete`, com `code: 'codigo_barras_invalido'`. Identifique o erro pelo `code`, usando `ehErroSinete(e, 'codigo_barras_invalido')` de `@sinete/core`, nunca pela mensagem.",
-    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
-  },
-  {
     "arquivo": "docs/guia/erros/ibscbs_dados_invalidos.md",
     "nome": "code",
     "trecho": "Uma data inválida passada a `dataset.em(data)`, seja pelo formato diferente de `AAAA-MM-DD` ou por não existir no calendário, gera `ErroDeConfiguracao` com `code: 'config_invalida'`.",
@@ -1608,12 +1074,6 @@
     "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
   },
   {
-    "arquivo": "docs/guia/erros/sefaz_rejeitou.md",
-    "nome": "code",
-    "trecho": "Pelo emissor, o desfecho já vem normalizado no campo `tipo`: `autorizado`, `denegado`, `recusado`, `pendente` ou `divergente`. Esses desfechos são retornados como valores. Há, porém, erros locais que podem impedir uma nova tentativa: quando a barreira de recusa repetida está ativa e o limite é atingido, o emissor lança `RecusaRepetidaError`, com `code: 'recusa_repetida'`, antes de gravar ou enviar o documento novamente. Essa barreira depende de o store implementar `registrarRecusa` e `recusaRecente` e ajuda a evitar consumo indevido, associado ao código `656`.",
-    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
-  },
-  {
     "arquivo": "docs/guia/erros/serializacao_invalida.md",
     "nome": "code",
     "trecho": "O serializador canônico do `@sinete/schemas` recebeu um valor incompatível com a estrutura esperada pelo XSD, o arquivo que define os tipos e a estrutura do XML. Ele lança `ErroSerializacao`, exportado por `@sinete/schemas`, que é um `ErroSinete` com `code: 'serializacao_invalida'`. A mensagem começa pelo caminho do campo, também disponível em `caminho`. Identifique o erro pelo `code`, usando `ehErroSinete(e, 'serializacao_invalida')` de `@sinete/core`, nunca pela mensagem.",
@@ -1638,18 +1098,6 @@
     "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
   },
   {
-    "arquivo": "docs/guia/erros/transmissao_em_andamento.md",
-    "nome": "code",
-    "trecho": "O emissor tentou adquirir a trava que impede transmissões simultâneas do mesmo documento, identificado pelo par `tipo` (tipo de documento) e `ref` (identificador no seu sistema). Outro processo, ou outra chamada do mesmo processo, já tem essa trava em vigor. O erro lançado é `TransmissaoEmAndamentoError`, de `@sinete/emissor`, que estende `ErroSinete` e tem `code: 'transmissao_em_andamento'`. Identifique-o pelo `code`, usando `ehErroSinete(e, 'transmissao_em_andamento')`, de `@sinete/core`, nunca pela mensagem.",
-    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
-  },
-  {
-    "arquivo": "docs/guia/erros/transmissao_ja_gravada.md",
-    "nome": "code",
-    "trecho": "O `TransmissaoStore`, responsável por persistir o XML assinado e controlar a trava de transmissão, recusou uma gravação porque já existem bytes assinados para o mesmo `tipo` de documento e a mesma `ref`, o identificador do documento no sistema do integrador. O erro é uma instância de `TransmissaoJaGravadaError` (`@sinete/emissor`), que estende `ErroSinete` e tem `code: 'transmissao_ja_gravada'`. Identifique-o pelo `code`, usando `ehErroSinete(e, 'transmissao_ja_gravada')` de `@sinete/core`, nunca pela mensagem.",
-    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
-  },
-  {
     "arquivo": "docs/guia/erros/validacao_falhou.md",
     "nome": "code",
     "trecho": "Percorra `e.ocorrencias`. Cada ocorrência tem `caminho`, `code` e `mensagem`. Os montadores também preenchem `origem`: `entrada` quando a conferência aponta um valor da entrada que pode ser corrigido naquele caminho, ou `montagem` quando a conferência é sobre o que o sinete produziu, como o XML contra o XSD, a chave ou um grupo calculado. Uma ocorrência de `montagem` ainda pode ter sido causada por um valor da entrada, mas não identifica diretamente o campo a corrigir. Em validadores avulsos, `origem` pode estar ausente, indicando que a ocorrência não foi classificada.",
@@ -1665,12 +1113,6 @@
     "arquivo": "docs/guia/explicacao/bytes-antes-do-envio.md",
     "nome": "code",
     "trecho": "Pelo mesmo motivo, a rejeição recebida da SEFAZ não é lançada como exceção: é um resultado discriminado (`tipo: 'recusado'` no cliente, `tipo: 'recusado'` no emissor), que o código precisa tratar. Exceções representam falhas locais ou na execução, como configuração inválida, validação local, problemas de transporte ou resposta fora do leiaute. No emissor, as falhas que podem ter ocorrido depois de o documento chegar ao autorizador levam à consulta; se ela não resolver, o resultado pode ser `pendente`. As exceções próprias do sinete têm um `code` estável, documentado em [erros](../erros/index.md). Erros lançados pelo store ou pelas funções do integrador também podem se propagar.",
-    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
-  },
-  {
-    "arquivo": "docs/guia/explicacao/bytes-antes-do-envio.md",
-    "nome": "code",
-    "trecho": "Há ainda uma proteção local contra repetir uma recusa definitiva: quando o store implementa `registrarRecusa` e `recusaRecente` e a barreira está habilitada, o emissor conta recusas do mesmo conteúdo com o mesmo `cStat`. Por padrão, depois de três recusas iguais em uma janela de uma hora, a próxima emissão do mesmo documento com o mesmo conteúdo lança `RecusaRepetidaError`, com `code: 'recusa_repetida'`, antes de gravar ou enviar. Essa barreira ajuda a evitar o consumo indevido, rejeição 656 da NF-e. Corrigir o conteúdo permite uma nova tentativa; se a causa foi resolvida fora da nota, a opção `reenviarRecusado: true` permite o reenvio consciente. Essa exceção local não é uma nova rejeição recebida da SEFAZ.",
     "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
   },
   {
@@ -1980,46 +1422,10 @@
     "motivo": "campo do certificado X.509 com o nome da RFC 5280, mantido (ADR 0015, exceção 1)"
   },
   {
-    "arquivo": "packages/cli/src/doctor.ts",
-    "nome": "status",
-    "trecho": "* 3. Relógio: a validade do certificado contra o relógio local e, com referência (`--status` ou `--relogio-url`), a",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
-  },
-  {
-    "arquivo": "packages/cli/src/doctor.ts",
-    "nome": "status",
-    "trecho": "*    pedem o certificado por renegociação, o handshake sozinho não prova a aceitação: é o que `--status` faz.",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
-  },
-  {
-    "arquivo": "packages/cli/src/doctor.ts",
-    "nome": "status",
-    "trecho": "* 5. Status (só com `--status`): consulta de status do serviço (NF-e ou MDF-e), a única requisição que o doctor envia.",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
-  },
-  {
-    "arquivo": "packages/cli/src/doctor.ts",
-    "nome": "expired",
-    "trecho": "* Com `allowLeafExpiry` (o `--allow-expired`), a validade do titular já foi tratada na verificação `pfx` e não conta",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
-  },
-  {
-    "arquivo": "packages/cli/src/doctor.ts",
-    "nome": "date",
-    "trecho": "const server = parseHttpDate(res.cabecalhos.date);",
-    "motivo": "termo do HTTP ou do SOAP 1.2 (`status`, `connection: close`, `action` do `Content-Type`, `https.request`, cabeçalho `date`)"
-  },
-  {
     "arquivo": "packages/cli/src/main.ts",
     "nome": "code",
     "trecho": "/** Lê um arquivo; lança com `code: 'ENOENT'` quando ele não existe. */",
     "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
-  },
-  {
-    "arquivo": "packages/cli/test/doctor.test.ts",
-    "nome": "password",
-    "trecho": "const base = (): Pick<DoctorOptions, 'pfx' | 'password' | 'clock' | 'extraCaPem' | 'timeoutMs'> => ({",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
   },
   {
     "arquivo": "packages/core/README.md",
@@ -2076,54 +1482,6 @@
     "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
   },
   {
-    "arquivo": "packages/da/src/input/mdfe.ts",
-    "nome": "docs",
-    "trecho": "const docs: MdfeView['docs'][number][] = [];",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
-  },
-  {
-    "arquivo": "packages/da/src/render/html.ts",
-    "nome": "line",
-    "trecho": "case 'line': {",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
-  },
-  {
-    "arquivo": "packages/da/src/render/html.ts",
-    "nome": "none",
-    "trecho": "const fill = op.fill === undefined ? 'none' : gray(op.fill);",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
-  },
-  {
-    "arquivo": "packages/emissor/src/mdfe.ts",
-    "nome": "signer",
-    "trecho": "readonly cliente?: Omit<Partial<MdfeClientOptions>, 'transport' | 'signer' | 'ambiente' | 'clock'>;",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
-  },
-  {
-    "arquivo": "packages/emissor/src/nfe.ts",
-    "nome": "signer",
-    "trecho": "'transport' | 'signer' | 'ambiente' | 'uf' | 'clock' | 'contingencia'",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
-  },
-  {
-    "arquivo": "packages/emissor/src/nfse.ts",
-    "nome": "signer",
-    "trecho": "readonly cliente?: Omit<Partial<NfseClientOptions>, 'transport' | 'signer' | 'ambiente' | 'clock'>;",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
-  },
-  {
-    "arquivo": "packages/emissor/test/retomada.test.ts",
-    "nome": "resolve",
-    "trecho": "type Comportamento = 'resolve' | 'falha' | 'ocupada' | 'divergente' | 'sem-bytes' | 'descarta' | 'pendente';",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
-  },
-  {
-    "arquivo": "packages/emissor/test/retomada.test.ts",
-    "nome": "resolve",
-    "trecho": "if (c === 'resolve') {",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
-  },
-  {
     "arquivo": "packages/emissor/test/signer-a3.test.ts",
     "nome": "signer",
     "trecho": "* `@sinete/transport/signer` a partir de um token PKCS#11 (SoftHSM, com o par gerado dentro do token) e emite contra o",
@@ -2134,12 +1492,6 @@
     "nome": "code",
     "trecho": "| Erro | `code` | Quando |",
     "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
-  },
-  {
-    "arquivo": "packages/ibs-cbs-dados/src/bundled.ts",
-    "nome": "bundled",
-    "trecho": "* `@sinete/ibs-cbs-dados/bundled`: o dataset embarcado nesta versão do pacote, extraído por `tools/ibs-cbs-dados` das fontes",
-    "motivo": "subpath `/bundled` do `@sinete/ibs-cbs-dados`, que a fase 2 não renomeia"
   },
   {
     "arquivo": "packages/ibs-cbs-dados/src/data/manifest.json",
@@ -2154,22 +1506,10 @@
     "motivo": "`data` em português (data civil), a pasta `data/` ou o campo `data` do erro do protocolo do helper; nenhum é a chave renomeada"
   },
   {
-    "arquivo": "packages/ibs-cbs-dados/src/dataset.ts",
-    "nome": "bundled",
-    "trecho": "* `carregarDataset` aceita qualquer `BundleDoDataset`: o embarcado neste pacote (`@sinete/ibs-cbs-dados/bundled`) ou um obtido em",
-    "motivo": "subpath `/bundled` do `@sinete/ibs-cbs-dados`, que a fase 2 não renomeia"
-  },
-  {
     "arquivo": "packages/ibs-cbs-dados/src/dates.ts",
     "nome": "data",
     "trecho": "export function exigirDataIso(valor: unknown, oQue = 'data'): DataIso {",
     "motivo": "`data` em português (data civil), a pasta `data/` ou o campo `data` do erro do protocolo do helper; nenhum é a chave renomeada"
-  },
-  {
-    "arquivo": "packages/ibs-cbs-dados/src/index.ts",
-    "nome": "bundled",
-    "trecho": "* embarcado está em `@sinete/ibs-cbs-dados/bundled`, e qualquer outro bundle compatível pode ser carregado em runtime com",
-    "motivo": "subpath `/bundled` do `@sinete/ibs-cbs-dados`, que a fase 2 não renomeia"
   },
   {
     "arquivo": "packages/ibs-cbs-dados/test/dataset.test.ts",
@@ -2214,78 +1554,6 @@
     "motivo": "`data` em português (data civil), a pasta `data/` ou o campo `data` do erro do protocolo do helper; nenhum é a chave renomeada"
   },
   {
-    "arquivo": "packages/ibs-cbs/test/calcular/oracle.test.ts",
-    "nome": "error",
-    "trecho": "const agree = cases.filter((c) => c.divergences.length === 0 && !('error' in c.engine)).length;",
-    "motivo": "formato das respostas gravadas pelo oráculo (`tools/ibs-cbs-oraculo`), fora da fase 2"
-  },
-  {
-    "arquivo": "packages/ibs-cbs/test/calcular/oracle.test.ts",
-    "nome": "error",
-    "trecho": "if ('error' in c.engine) {",
-    "motivo": "formato das respostas gravadas pelo oráculo (`tools/ibs-cbs-oraculo`), fora da fase 2"
-  },
-  {
-    "arquivo": "packages/ibs-cbs/test/calcular/oracle.test.ts",
-    "nome": "record",
-    "trecho": "* Regressão contra respostas gravadas da Calculadora offline (`tools/ibs-cbs-oraculo/run.ts --record`). Cada caso guarda a",
-    "motivo": "formato das respostas gravadas pelo oráculo (`tools/ibs-cbs-oraculo`), fora da fase 2"
-  },
-  {
-    "arquivo": "packages/mdfe/README.md",
-    "nome": "code",
-    "trecho": "- **Validação estrita.** Cada problema volta como `Ocorrencia` (`caminho`, `code`, `mensagem` com a regra do MOC e a rejeição, por exemplo `(F90, rejeição 663)`), nunca como exceção. Os códigos estão em `MDFE_ISSUE_CODES`. `origem` diz se a ocorrência veio da conferência da entrada (`entrada`, com o caminho da `MdfeInput`) ou do documento montado (`montagem`: schema, chave, `tpEmis` das opções), e `rotuloDoCaminho(path)` dá o caminho em português para a tela (`Condutor 1, CPF`); veja o [ADR 0011](../../docs/adr/0011-origem-e-rotulo-das-ocorrencias.md).",
-    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
-  },
-  {
-    "arquivo": "packages/mdfe/README.md",
-    "nome": "code",
-    "trecho": "- Cancelamento: todo método que vai à rede aceita `opcoes?: OpcoesEnvio` como último parâmetro, com o `signal` que cancela a requisição em curso. Abortar rejeita com `ErroTransporte` de `code: 'cancelado'` (com o transporte do `@sinete/transport`), e um pedido que já saiu pode ter sido processado: confirme por consulta antes de repetir.",
-    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
-  },
-  {
-    "arquivo": "packages/nfe/README.md",
-    "nome": "code",
-    "trecho": "- **Validação estrita.** O XML canônico é validado contra o schema do PL vigente antes de devolver; qualquer problema volta como lista de `Ocorrencia` (`caminho`, `code`, `mensagem`, `origem`), nunca como exceção. Os códigos estão em `NFE_ISSUE_CODES`. `origem` é `entrada` quando a conferência foi sobre a `NfeInput` (o caminho é dela) e `montagem` quando foi sobre o que o pacote produziu (schema e PL do XML, chave gerada, grupo IBS/CBS da calculadora); `rotuloDoCaminho(path)` dá o caminho em português para a tela (`Item 2, Descrição do produto`), nos dois formatos de caminho. Veja o [ADR 0011](../../docs/adr/0011-origem-e-rotulo-das-ocorrencias.md).",
-    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
-  },
-  {
-    "arquivo": "packages/nfe/README.md",
-    "nome": "code",
-    "trecho": "- Cancelamento: todo método que vai à rede aceita `signal` (`OpcoesEnvio`) no último parâmetro de opções. Em `statusServico`, `autorizar`, `consultarRecibo`, `aguardarRecibo` e `distribuicaoDFe`, ele fica no mesmo objeto das outras opções; nos demais, é um `opcoes?: OpcoesEnvio` a mais no fim. Abortar rejeita com `ErroTransporte` de `code: 'cancelado'` (com o transporte do `@sinete/transport`), e um pedido que já saiu pode ter sido processado: confirme por consulta antes de repetir.",
-    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
-  },
-  {
-    "arquivo": "packages/nfe/README.md",
-    "nome": "rates",
-    "trecho": "const ibsCbs = ibsCbsCalculator({ base: (item) => item.vProd.minus(item.vDesc).toFixed(2), rates: minhasAliquotas });",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
-  },
-  {
-    "arquivo": "packages/nfe/README.md",
-    "nome": "rates",
-    "trecho": "| `rates` | `aliquotasOficiais()` | um provedor com alíquotas informadas |",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
-  },
-  {
-    "arquivo": "packages/nfe/README.md",
-    "nome": "utcOffsetMinutes",
-    "trecho": "| `utcOffsetMinutes` | -180 | fuso para a data civil do fato gerador |",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
-  },
-  {
-    "arquivo": "packages/nfe/src/rtc.ts",
-    "nome": "options",
-    "trecho": "* `options.ibsCbs` não é informado; crie a sua para trocar dataset, alíquotas, base ou regras. Com `dataset` informado",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
-  },
-  {
-    "arquivo": "packages/nfse/README.md",
-    "nome": "code",
-    "trecho": "- **Validação estrita.** O XML é validado contra o schema vigente antes de devolver; problemas voltam como `Ocorrencia` (`caminho`, `code`, `mensagem`, `origem`: `entrada` na conferência da `DpsInput`, `montagem` no schema do XML), nunca como exceção. Competência depois da emissão (E0015) é conferida localmente.",
-    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
-  },
-  {
     "arquivo": "packages/rejeicoes/test/rejeicoes.test.ts",
     "nome": "no",
     "trecho": "const dangling = /\\s(a|o|as|os|ao|aos|e|ou|de|da|do|das|dos|com|para|por|no|na|nos|nas|em|um|uma|que|se|sem)$/i;",
@@ -2322,66 +1590,6 @@
     "motivo": "vocabulário do XSD (`use=\"required\"`, tipos embutidos `date`/`time`, verbo \"serialize\" em português), mantido (ADR 0015, exceção 1)"
   },
   {
-    "arquivo": "packages/sefaz-sim/README.md",
-    "nome": "source",
-    "trecho": "- Regras como dados: cada regra de negócio é um `SimRule` com `id` e `source` (item do MOC 7.0 Anexo I ou da Visão Geral) e a lista é trocável por `options.rules` (`DEFAULT_RULES` é o ponto de partida). Nada de `if (uf === ...)`: o que muda por autorizador está em `NFE_SERVICES` e nas opções.",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
-  },
-  {
-    "arquivo": "packages/sefaz-sim/README.md",
-    "nome": "rules",
-    "trecho": "- Regras como dados: cada regra de negócio é um `SimRule` com `id` e `source` (item do MOC 7.0 Anexo I ou da Visão Geral) e a lista é trocável por `options.rules` (`DEFAULT_RULES` é o ponto de partida). Nada de `if (uf === ...)`: o que muda por autorizador está em `NFE_SERVICES` e nas opções.",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
-  },
-  {
-    "arquivo": "packages/sefaz-sim/README.md",
-    "nome": "signer",
-    "trecho": "signer: servidor.signer, // a Sefin simulada assina a NFS-e e o evento",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
-  },
-  {
-    "arquivo": "packages/sefaz-sim/README.md",
-    "nome": "signer",
-    "trecho": "- **Documentos.** A NFS-e leva a DPS recebida byte a byte, os valores do ISSQN e do IBS/CBS calculados em centavos inteiros (contas simples do simulador, não a apuração da Sefin) e a assinatura do `signer`. A chave tem DV módulo 11, escolha do simulador: o Anexo I não publica o algoritmo. A substituta registra sozinha o e105102 na substituída.",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
-  },
-  {
-    "arquivo": "packages/sefaz-sim/README.md",
-    "nome": "key",
-    "trecho": "const server = await startSefazSimServer(sim, { cert: servidor.pem, key: servidor.keyPem });",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
-  },
-  {
-    "arquivo": "packages/sefaz-sim/README.md",
-    "nome": "key",
-    "trecho": "const server = await startSimServer(sim, { cert: servidor.pem, key: servidor.keyPem });",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
-  },
-  {
-    "arquivo": "packages/sefaz-sim/README.md",
-    "nome": "close",
-    "trecho": "await server.close();",
-    "motivo": "termo do HTTP ou do SOAP 1.2 (`status`, `connection: close`, `action` do `Content-Type`, `https.request`, cabeçalho `date`)"
-  },
-  {
-    "arquivo": "packages/sefaz-sim/README.md",
-    "nome": "tlsIdentity",
-    "trecho": "const t = criarTransporteNode({ identidade: emitente.tlsIdentity, acsAdicionais: [ac.pem] });",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
-  },
-  {
-    "arquivo": "packages/sefaz-sim/README.md",
-    "nome": "tlsIdentity",
-    "trecho": "const transport = redirectNfseToSim(criarTransporte({ identidade: prestador.tlsIdentity, acsAdicionais: [ac.pem] }), server.baseUrl);",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
-  },
-  {
-    "arquivo": "packages/sefaz-sim/README.md",
-    "nome": "tlsIdentity",
-    "trecho": "`syntheticCertificate({ clock, role })` gera na hora (WebCrypto, RSA-2048, sha256WithRSA) a AC, o e-CNPJ (`otherName` 2.16.76.1.3.3), o e-CPF (2.16.76.1.3.1 posicional) e o certificado do servidor (SAN com IP e DNS), com `signer` (`AssinadorDeDados` do core), `tlsIdentity` (`pem` do transporte) e PEM da chave. Não são ICP-Brasil e nada vai para o repo. No Bun, um certificado de AC apresentado como cliente derruba o handshake no servidor; use um de titular.",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
-  },
-  {
     "arquivo": "packages/sefaz-sim/src/server.node.ts",
     "nome": "close",
     "trecho": "`connection: ${keepAlive ? 'keep-alive' : 'close'}`,",
@@ -2398,24 +1606,6 @@
     "nome": "action",
     "trecho": "const m = /;\\s*action\\s*=\\s*\"?([^\";]+)\"?/i.exec(contentType ?? '');",
     "motivo": "termo do HTTP ou do SOAP 1.2 (`status`, `connection: close`, `action` do `Content-Type`, `https.request`, cabeçalho `date`)"
-  },
-  {
-    "arquivo": "packages/sefaz-sim/src/synthetic.ts",
-    "nome": "clock",
-    "trecho": "/** Dias de validade a partir de `clock.agora()`. Padrão: 365. Negativo gera um certificado já vencido. */",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
-  },
-  {
-    "arquivo": "packages/sefaz-sim/src/transport.ts",
-    "nome": "path",
-    "trecho": "/** Cria o transporte em processo. As URLs são `SIM_BASE_URL` + `sim.path(...)`. */",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
-  },
-  {
-    "arquivo": "packages/sinete/src/ibs-cbs-dados/bundled.ts",
-    "nome": "bundled",
-    "trecho": "/** `sinete/ibs-cbs-dados/bundled`: reexporta `@sinete/ibs-cbs-dados/bundled`. Gerado por `scripts/umbrella.ts`; não edite. */",
-    "motivo": "subpath `/bundled` do `@sinete/ibs-cbs-dados`, que a fase 2 não renomeia"
   },
   {
     "arquivo": "packages/transport/README.md",
@@ -2850,12 +2040,6 @@
     "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
   },
   {
-    "arquivo": "tools/danfe-corpus/check.ts",
-    "nome": "stats",
-    "trecho": "fit?: Doc['stats'];",
-    "motivo": "formato de ferramenta fora da API dos pacotes (colunas do SQLite da Calculadora, rótulos do registro de conflitos e do ledger do oráculo, API do módulo de referência do ie-crosscheck, tabela do DANFE)"
-  },
-  {
     "arquivo": "tools/ibs-cbs-dados/diff.ts",
     "nome": "data",
     "trecho": "* Cada lado é um diretório com `manifest.json` e as tabelas (como `packages/ibs-cbs-dados/src/data`) ou `git:<ref>`, que lê",
@@ -2988,15 +2172,1191 @@
     "motivo": "campo do certificado X.509 com o nome da RFC 5280, mantido (ADR 0015, exceção 1)"
   },
   {
-    "arquivo": "packages/nfe/test/services/eventos.test.ts",
-    "nome": "offsetMinutes",
-    "trecho": "test('offsetMinutes sobrepõe o fuso da UF; autor explícito CPF', async () => {",
-    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
-  },
-  {
     "arquivo": "tools/ibs-cbs-dados/src/merge.ts",
     "nome": "rateKind",
     "trecho": "check('rateKind', c.tipoDeAliquota, i.rateKind);",
     "motivo": "formato de ferramenta fora da API dos pacotes (colunas do SQLite da Calculadora, rótulos do registro de conflitos e do ledger do oráculo, API do módulo de referência do ie-crosscheck, tabela do DANFE)"
+  },
+  {
+    "arquivo": "README.md",
+    "nome": "Runtime",
+    "trecho": "| Runtime | Suporte |",
+    "motivo": "`runtime` no jargão da exceção 2 (ADR 0015), título de seção ou coluna"
+  },
+  {
+    "arquivo": "docs/guia/bloco-agents.md",
+    "nome": "ref",
+    "trecho": "- Nunca remonte documento assinado ainda sem desfecho definitivo. Depois de um envio sem resposta, retome com os mesmos bytes: `emitir(ref, ...)` com a mesma `ref` (ele acha os bytes gravados e ignora a entrada) ou `retomar(ref)`. Remontar gera outro cNF e outro dhEmi: 539 ou uma segunda nota para o mesmo número.",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/bloco-agents.md",
+    "nome": "ref",
+    "trecho": "- `ref` é o id estável do documento no sistema (o pedido, o rascunho), igual em todas as tentativas.",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/bloco-agents.md",
+    "nome": "ref",
+    "trecho": "- `aoDecidir` é idempotente (upsert por `ref`): roda de novo depois de uma queda. Vai no emissor ou em cada chamada (`emitir(ref, entrada, { aoDecidir, jaGuardado })`); o `jaGuardado` compara a chave (`registro.id`), não só a `ref`.",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/browser.md",
+    "nome": "ref",
+    "trecho": "async function receberAssinada(ref: string, xml: string) {",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/browser.md",
+    "nome": "method",
+    "trecho": "method: 'POST',",
+    "motivo": "termo do HTTP ou da `fetch` (`method`, `headers`, `body`, `status`, cabeçalho `date`), da plataforma (ADR 0015, exceção 3)"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/browser.md",
+    "nome": "headers",
+    "trecho": "headers: { 'content-type': 'application/xml; charset=utf-8' },",
+    "motivo": "termo do HTTP ou da `fetch` (`method`, `headers`, `body`, `status`, cabeçalho `date`), da plataforma (ADR 0015, exceção 3)"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/browser.md",
+    "nome": "body",
+    "trecho": "body: assinada,",
+    "motivo": "termo do HTTP ou da `fetch` (`method`, `headers`, `body`, `status`, cabeçalho `date`), da plataforma (ADR 0015, exceção 3)"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/contingencia.md",
+    "nome": "ref",
+    "trecho": "- **O que já está gravado continua como está.** Um pedido com XML assinado gravado em emissão normal, por exemplo, porque a resposta se perdeu ou a SEFAZ (Secretaria da Fazenda) caiu durante o envio, é retomado com os mesmos bytes. A chamada a `emitir` com a mesma `ref`, o identificador do pedido no sistema do integrador, ignora a entrada nova enquanto essa gravação existir. A contingência só é aplicada na montagem de documentos novos. Não reassine um pendente em SVC com o mesmo número: se a SEFAZ da UF autorizou os bytes originais, você teria duas notas para o mesmo número.",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/contingencia.md",
+    "nome": "ref",
+    "trecho": "- **SVC não ativada.** Com o autorizador normal indisponível e a SVC sem ativação, não há onde autorizar a NF-e. As emissões continuam no ambiente normal: podem ficar pendentes por falta de resposta ou ser recusadas por serviço paralisado. O aviso `svc-indisponivel` pode se repetir nas novas consultas à SVC, provocadas por falhas após o intervalo de `sondaMs`. A ativação depende da SEFAZ da UF; para a NFC-e, a contingência off-line continua disponível. Não trate toda rejeição como indisponibilidade: corrigir uma nota recusada continua sendo necessário. Com a barreira de recusa repetida habilitada e os métodos correspondentes no store, três recusas definitivas iguais em uma hora barram, por padrão, a próxima emissão da mesma `ref` com o mesmo conteúdo, com `recusa_repetida`. Isso ajuda a evitar consumo indevido, código 656. As recusas transitórias 108, 109 e 114 não entram nessa contagem.",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/nfse.md",
+    "nome": "ref",
+    "trecho": "- **Outra DPS para o mesmo número.** Depois de uma resposta perdida, uma DPS com o mesmo identificador e outro conteúdo não é um reenvio: a Sefin já pode ter gerado a NFS-e da primeira. Retome pelos bytes gravados, chamando `emitir` com a mesma `ref`, a referência da transmissão definida pela aplicação.",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/retomada.md",
+    "nome": "ref",
+    "trecho": "`emitir(ref, entrada)` com uma `ref` que já tem bytes gravados retoma com eles e ignora a entrada. É o que acontece quando a pessoa clica em \"emitir\" de novo no mesmo pedido. Não há nada a fazer além de usar sempre a mesma `ref` para o mesmo documento.",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/retomada.md",
+    "nome": "ref",
+    "trecho": "`retomar(ref)` retoma pelos bytes gravados e devolve o desfecho, ou `undefined` se não há nada gravado para a `ref`. Não recebe entrada. Assim como `emitir`, exige uma função `aoDecidir` para guardar o documento decidido, definida no emissor ou nas opções da chamada.",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/retomada.md",
+    "nome": "ref",
+    "trecho": "aoAlertar: (registro, ultimo, tentativas) => filaDeAlertas.gravar({ ref: registro.ref, id: registro.id, ultimo, tentativas }),",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/retomada.md",
+    "nome": "ref",
+    "trecho": "| `recusado` | o serviço autorizador recusou; os bytes foram descartados, exceto quando o `cStat` está entre os códigos indefinidos do documento | se os bytes foram descartados, mostrar a rejeição e deixar a pessoa corrigir e emitir de novo com a mesma `ref`. Se foram mantidos, continuar a retomada: uma nova chamada a `emitir` ainda ignora a entrada e usa os bytes gravados |",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/retomada.md",
+    "nome": "ref",
+    "trecho": "- **Remontar para \"tentar de novo\".** Chamar `montarNfe` remonta o documento; chamar `emitir` com outra `ref` permite uma nova montagem e transmissão, mesmo para o mesmo pedido e número fiscal. A `ref` é o id estável do documento no seu sistema.",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/retomada.md",
+    "nome": "ref",
+    "trecho": "- **Reemitir a mesma nota recusada sem corrigir a causa.** Com `registrarRecusa` e `recusaRecente` implementados no store e a barreira `recusaRepetida` habilitada, três recusas definitivas iguais em uma hora barram, por padrão, a próxima emissão da mesma `ref` com o mesmo conteúdo. O emissor lança `ErroRecusaRepetida` antes de gravar e enviar. Essa proteção ajuda a evitar a rejeição 656, de consumo indevido; mudar apenas campos que variam automaticamente na montagem pode não liberar o envio. Corrija a causa da rejeição antes de tentar novamente.",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/retomada.md",
+    "nome": "cert",
+    "trecho": "criar: (cert) => criarEmissorNfe({ ...cert, ambiente: 'producao', store, aoDecidir }),",
+    "motivo": "nome interno do render ou do teste, fora da API pública (parâmetro, variável local ou literal de teste)"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/store-sql.md",
+    "nome": "ref",
+    "trecho": "Uma linha por documento (`tipo`, `ref`), com a trava e os bytes na mesma linha:",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/store-sql.md",
+    "nome": "ref",
+    "trecho": "ref: string;",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/store-sql.md",
+    "nome": "ref",
+    "trecho": "ref: l.ref,",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/store-sql.md",
+    "nome": "ref",
+    "trecho": "[t.tipo, t.ref, t.token, prazoMs],",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/store-sql.md",
+    "nome": "ref",
+    "trecho": "t.ref,",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/store-sql.md",
+    "nome": "ref",
+    "trecho": "[t.tipo, t.ref, t.token],",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/store-sql.md",
+    "nome": "ref",
+    "trecho": "[t.tipo, t.ref, t.token, g.xml, g.id, JSON.stringify(g.meta), crypto.randomUUID()],",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/store-sql.md",
+    "nome": "ref",
+    "trecho": "WHERE t.tipo = $1 AND t.ref = $2 AND t.gravacao = $3",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/store-sql.md",
+    "nome": "ref",
+    "trecho": "[reg.tipo, reg.ref, reg.gravacao, alertar],",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/store-sql.md",
+    "nome": "ref",
+    "trecho": "`registrarRecusa` e `recusaRecente` são opcionais e devem ser implementados juntos. Com os dois, a barreira de recusas fica ligada por padrão: o emissor conta as recusas definitivas iguais de cada par (`tipo`, `ref`), comparando o resumo SHA-256 do conteúdo recusado e o mesmo `cStat`, o código de status da resposta fiscal. Recusas transitórias do serviço, identificadas pelo perfil do documento, não entram nessa conta.",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/varios-emitentes.md",
+    "nome": "ref",
+    "trecho": "aoDecidir: (registro, d) => db.notas.guardar(registro.ref, d), // upsert pela ref",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/varios-emitentes.md",
+    "nome": "ref",
+    "trecho": "jaGuardado: async (registro) => (await db.notas.chave(registro.ref)) === registro.id,",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/varios-emitentes.md",
+    "nome": "ref",
+    "trecho": "No exemplo, `pedido`, `db`, `certificadoDoEmitente` e `notaDe` pertencem à aplicação. `registro.ref` é a referência do documento no sistema, aqui `pedido.id`, e `registro.id` é a chave de acesso da NF-e. `db.notas.guardar` precisa ser idempotente: chamadas repetidas com o mesmo documento devem preservar o mesmo resultado, sem duplicá-lo.",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/erros/codigo_barras_invalido.md",
+    "nome": "code",
+    "trecho": "O conteúdo do código de barras ou do QR Code não pode ser codificado. O erro é uma instância de `ErroDa` (`@sinete/da`), que estende `ErroSinete`, com `code: 'codigo_barras_invalido'`. Identifique o erro pelo `code`, usando `ehErroSinete(e, 'codigo_barras_invalido')` de `@sinete/core`, nunca pela mensagem.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper) e das ocorrências, mantido (ADR 0015, códigos de erro)"
+  },
+  {
+    "arquivo": "docs/guia/erros/pfx_invalido.md",
+    "nome": "readFile",
+    "trecho": "Passe os bytes do arquivo original (`await readFile('empresa.pfx')`, com `readFile` de `node:fs/promises`, ou o base64 decodificado para `Uint8Array`). Confira o arquivo com `npx sinete doctor --pfx arquivo.pfx`, que abre o PFX, mostra titular, emissor e validade e nunca imprime chave nem senha. A senha é lida da variável de ambiente `SINETE_PFX_SENHA` ou, se ela não estiver definida, solicitada no terminal sem exibir o que você digita.",
+    "motivo": "API da plataforma ou do JavaScript (`Promise.allSettled` com `'rejected'`, `Array.map`, `Map.set`, níveis do logger compatível com `console`, `none` do SVG, `/Page` do PDF, palavra-chave `get`/`type`)"
+  },
+  {
+    "arquivo": "docs/guia/erros/sefaz_rejeitou.md",
+    "nome": "code",
+    "trecho": "Pelo emissor, o desfecho já vem normalizado no campo `tipo`: `autorizado`, `denegado`, `recusado`, `pendente` ou `divergente`. Esses desfechos são retornados como valores. Há, porém, erros locais que podem impedir uma nova tentativa: quando a barreira de recusa repetida está ativa e o limite é atingido, o emissor lança `ErroRecusaRepetida`, com `code: 'recusa_repetida'`, antes de gravar ou enviar o documento novamente. Essa barreira depende de o store implementar `registrarRecusa` e `recusaRecente` e ajuda a evitar consumo indevido, associado ao código `656`.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper) e das ocorrências, mantido (ADR 0015, códigos de erro)"
+  },
+  {
+    "arquivo": "docs/guia/erros/transmissao_em_andamento.md",
+    "nome": "ref",
+    "trecho": "Mostre \"em processamento\" e consulte o resultado depois pelo seu sistema. A função `aoDecidir`, implementada por você, guarda o documento quando o emissor obtém um desfecho autorizado ou denegado. Para tentar novamente, chame `emitir` ou `retomar` mais tarde, com a mesma `ref`. Se já houver bytes do documento assinado gravados, ambos retomam a transmissão com esses bytes. Sem bytes gravados, `retomar` devolve `undefined`, enquanto `emitir` monta o documento a partir da entrada fornecida.",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/erros/transmissao_em_andamento.md",
+    "nome": "code",
+    "trecho": "O emissor tentou adquirir a trava que impede transmissões simultâneas do mesmo documento, identificado pelo par `tipo` (tipo de documento) e `ref` (identificador no seu sistema). Outro processo, ou outra chamada do mesmo processo, já tem essa trava em vigor. O erro lançado é `ErroTransmissaoEmAndamento`, de `@sinete/emissor`, que estende `ErroSinete` e tem `code: 'transmissao_em_andamento'`. Identifique-o pelo `code`, usando `ehErroSinete(e, 'transmissao_em_andamento')`, de `@sinete/core`, nunca pela mensagem.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper) e das ocorrências, mantido (ADR 0015, códigos de erro)"
+  },
+  {
+    "arquivo": "docs/guia/erros/transmissao_ja_gravada.md",
+    "nome": "code",
+    "trecho": "O `TransmissaoStore`, responsável por persistir o XML assinado e controlar a trava de transmissão, recusou uma gravação porque já existem bytes assinados para o mesmo `tipo` de documento e a mesma `ref`, o identificador do documento no sistema do integrador. O erro é uma instância de `ErroTransmissaoJaGravada` (`@sinete/emissor`), que estende `ErroSinete` e tem `code: 'transmissao_ja_gravada'`. Identifique-o pelo `code`, usando `ehErroSinete(e, 'transmissao_ja_gravada')` de `@sinete/core`, nunca pela mensagem.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper) e das ocorrências, mantido (ADR 0015, códigos de erro)"
+  },
+  {
+    "arquivo": "docs/guia/erros/validacao_falhou.md",
+    "nome": "ref",
+    "trecho": "Quando a validação da montagem falha durante `emitir`, o emissor ainda não gravou os bytes do documento no store, o armazenamento das transmissões, nem enviou o documento à autoridade fiscal. Nesse caso, corrigir a entrada e chamar `emitir` de novo com a mesma `ref`, a referência da transmissão, é seguro. Não decida pela `mensagem` de uma ocorrência, pois ela muda entre versões, e não mostre ocorrência de `montagem` como erro de preenchimento.",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/explicacao/bytes-antes-do-envio.md",
+    "nome": "ref",
+    "trecho": "2. **Retomar pelos bytes gravados.** Toda tentativa seguinte do mesmo documento, seja outro clique, outro processo, a tarefa automática de retomada ou uma chamada depois de um reinício, encontra os bytes gravados. O emissor consulta a chave e, se a nota não consta, reenvia os mesmos bytes. Na NFS-e, a Nota Fiscal de Serviço Eletrônica, a consulta usa o identificador da DPS, a Declaração de Prestação de Serviços que dá origem à nota. `emitir(ref, entrada)` com bytes gravados para a mesma referência `ref` ignora a entrada.",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/explicacao/bytes-antes-do-envio.md",
+    "nome": "code",
+    "trecho": "Há ainda uma proteção local contra repetir uma recusa definitiva: quando o store implementa `registrarRecusa` e `recusaRecente` e a barreira está habilitada, o emissor conta recusas do mesmo conteúdo com o mesmo `cStat`. Por padrão, depois de três recusas iguais em uma janela de uma hora, a próxima emissão do mesmo documento com o mesmo conteúdo lança `ErroRecusaRepetida`, com `code: 'recusa_repetida'`, antes de gravar ou enviar. Essa barreira ajuda a evitar o consumo indevido, rejeição 656 da NF-e. Corrigir o conteúdo permite uma nova tentativa; se a causa foi resolvida fora da nota, a opção `reenviarRecusado: true` permite o reenvio consciente. Essa exceção local não é uma nova rejeição recebida da SEFAZ.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper) e das ocorrências, mantido (ADR 0015, códigos de erro)"
+  },
+  {
+    "arquivo": "docs/guia/referencia/emissor.md",
+    "nome": "ref",
+    "trecho": "- `RegistroTransmissao`: Bytes gravados de um documento, com a contagem da retomada automática. Membros: `tipo`, `ref`, `xml`, `id`, `gravacao`, `assinadoEm`, `meta`, `tentativas`, `ultimaTentativaEm`, `alertadoEm`.",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/referencia/emissor.md",
+    "nome": "ref",
+    "trecho": "- `Trava`: Trava de um documento. `token` identifica o dono: renovar, soltar, descartar e concluir só valem com ele. Membros: `tipo`, `ref`, `token`.",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/referencia/mdfe.md",
+    "nome": "sign",
+    "trecho": "- `montarMdfe`: entrada do domínio (`DadosMdfe`) para o `<MDFe>` canônico validado contra o schema vigente, com a chave de acesso, os derivados em decimal exato e as regras do MOC conferidas antes de serializar. - `assinarMdfe`: QR Code (com `sign` em contingência off-line) e assinatura por splice; a string devolvida é a final. - `criarClienteMdfe`: status, autorização síncrona, consulta, não encerrados e eventos (cancelamento, encerramento, inclusão de condutor e de DF-e, pagamento da operação), com os desfechos como `ResultadoSefaz` do core. - O emissor (bytes gravados antes do envio, trava, retomada, cancelamento com recuperação) está em `@sinete/emissor/mdfe` (ADR 0010). - Percurso por divisas (`conferirPercurso`, `sugerirPercurso`) e o resolvedor de envio sem resposta.",
+    "motivo": "parâmetro `sign` do QR Code do MDF-e em contingência (MOC MDF-e, Visão Geral 9.2), nome oficial (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/guia/referencia/mdfe.md",
+    "nome": "sign",
+    "trecho": "- `assinarMdfe`: Assina o MDF-e montado: QR Code (com `sign` em contingência) e `Signature` como último filho de `MDFe`, ambos por splice, e devolve a string final. É essa string que vai para a SEFAZ e para o banco. `assinarMdfe(manifesto: MdfeMontado, assinador: Assinador): Promise<string>`",
+    "motivo": "parâmetro `sign` do QR Code do MDF-e em contingência (MOC MDF-e, Visão Geral 9.2), nome oficial (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/guia/referencia/mdfe.md",
+    "nome": "sign",
+    "trecho": "- `assinaturaQrCode`: `sign` do QR Code: RSA PKCS#1 v1.5 com SHA-1 sobre os 44 caracteres da chave, com o certificado que assina o MDF-e. `assinaturaQrCode(chave: string, assinador: Assinador): Promise<string>`",
+    "motivo": "parâmetro `sign` do QR Code do MDF-e em contingência (MOC MDF-e, Visão Geral 9.2), nome oficial (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/guia/referencia/mdfe.md",
+    "nome": "sign",
+    "trecho": "- `qrCodeMdfe`: URL do QR Code (`qrCodMDFe`): endereço do portal, `chMDFe` e `tpAmb`; em contingência off-line, também `sign`, a assinatura RSA-SHA1 da chave em Base64 (MOC Visão Geral, item 9.2). `qrCodeMdfe(chave: string, tpAmb: '1' | '2', assinatura?: string): string`",
+    "motivo": "parâmetro `sign` do QR Code do MDF-e em contingência (MOC MDF-e, Visão Geral 9.2), nome oficial (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/guia/referencia/nfe.md",
+    "nome": "data",
+    "trecho": "- `exigenciaRespTec`: Exigência de infRespTec ou CSRT para a UF no ambiente e na data (tabela `data/resp-tec.json`). `exigenciaRespTec(uf: Uf, ambiente: Ambiente, data: Instante): { readonly infRespTec: ExigenciaRespTec; readonly csrt: ExigenciaRespTec; }`",
+    "motivo": "`data` em português (data civil) ou a pasta `data/`, não a chave renomeada"
+  },
+  {
+    "arquivo": "docs/guia/referencia/nfe.md",
+    "nome": "data",
+    "trecho": "- `formatarDh`: `TDateTimeUTC` do instante no deslocamento dado. `formatarDh(data: Instante, deslocamentoMin: number): string`",
+    "motivo": "`data` em português (data civil) ou a pasta `data/`, não a chave renomeada"
+  },
+  {
+    "arquivo": "docs/guia/referencia/nfe.md",
+    "nome": "min",
+    "trecho": "- `FormatoDecimal`: Membros: `nome`, `min`, `max`, `minimoAbaixoDeUm`, `naoNulo`, `digitosInteiros`.",
+    "motivo": "membros `min` e `max` do `FormatoDecimal`, abreviações matemáticas iguais nas duas línguas"
+  },
+  {
+    "arquivo": "docs/guia/referencia/nfe.md",
+    "nome": "max",
+    "trecho": "- `FormatoDecimal`: Membros: `nome`, `min`, `max`, `minimoAbaixoDeUm`, `naoNulo`, `digitosInteiros`.",
+    "motivo": "membros `min` e `max` do `FormatoDecimal`, abreviações matemáticas iguais nas duas línguas"
+  },
+  {
+    "arquivo": "docs/guia/referencia/nfe.md",
+    "nome": "mod",
+    "trecho": "- `ConsultaReciboOpcoes` (estende `EnvioOpcoes`): Opções da consulta de um recibo. Membros: `mod`.",
+    "motivo": "campo `mod` do leiaute da NF-e (modelo 55 ou 65), nome oficial (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/guia/referencia/nfe.md",
+    "nome": "mod",
+    "trecho": "- `InutilizacaoPedido`: Membros: `ano`, `serie`, `nNFIni`, `nNFFin`, `xJust`, `mod`, `autor`.",
+    "motivo": "campo `mod` do leiaute da NF-e (modelo 55 ou 65), nome oficial (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/guia/referencia/nfe.md",
+    "nome": "mod",
+    "trecho": "- `NfeMontada`: Membros: `chave`, `id`, `cNF`, `cDV`, `mod`, `tpEmis`, `dhEmi`, `nfce`, `pl`, `infNFe`, `xml`.",
+    "motivo": "campo `mod` do leiaute da NF-e (modelo 55 ou 65), nome oficial (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/guia/referencia/nfe.md",
+    "nome": "mod",
+    "trecho": "- `PedidoIbsCbsNota`: Dados da nota que decidem a regra aplicável (local da operação, vigência, compra governamental). Membros: `fatoGerador`, `emissao`, `ambiente`, `mod`, `tpNF`, `finNFe`, `tpNFDebito`, `tpNFCredito`, `indFinal`, `indPres`, `emitente`, `destino`, `cMunFGIBS`, `compraGov`.",
+    "motivo": "campo `mod` do leiaute da NF-e (modelo 55 ou 65), nome oficial (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/guia/referencia/nfe.md",
+    "nome": "mod",
+    "trecho": "- `StatusServicoOpcoes` (estende `EnvioOpcoes`): Opções do status do serviço. Membros: `mod`.",
+    "motivo": "campo `mod` do leiaute da NF-e (modelo 55 ou 65), nome oficial (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/guia/referencia/nfse.md",
+    "nome": "status",
+    "trecho": "- `EntradaCache`: Resposta crua guardada no cache. Membros: `status`, `corpo`, `expiraEm`.",
+    "motivo": "termo do HTTP ou da `fetch` (`method`, `headers`, `body`, `status`, cabeçalho `date`), da plataforma (ADR 0015, exceção 3)"
+  },
+  {
+    "arquivo": "docs/guia/referencia/sefaz-sim.md",
+    "nome": "status",
+    "trecho": "- `RespostaSim`: Membros: `status`, `cabecalhos`, `corpo`, `efeito`, `atrasoMs`.",
+    "motivo": "termo do HTTP ou da `fetch` (`method`, `headers`, `body`, `status`, cabeçalho `date`), da plataforma (ADR 0015, exceção 3)"
+  },
+  {
+    "arquivo": "docs/guia/referencia/sefaz-sim.md",
+    "nome": "mod",
+    "trecho": "- `FatosInutilizacao`: Membros: `id`, `tpAmb`, `cUF`, `ano`, `CNPJ`, `mod`, `serie`, `nNFIni`, `nNFFin`.",
+    "motivo": "campo `mod` do leiaute da NF-e (modelo 55 ou 65), nome oficial (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/guia/referencia/sefaz-sim.md",
+    "nome": "mod",
+    "trecho": "- `FatosNfe`: Campos da NF-e usados pelas regras de autorização. Membros: `id`, `cUF`, `cNF`, `mod`, `serie`, `nNF`, `dhEmi`, `tpEmis`, `cDV`, `tpAmb`, `emitente`, `ide`, `vNF`, `destinatario`, `supl`.",
+    "motivo": "campo `mod` do leiaute da NF-e (modelo 55 ou 65), nome oficial (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/guia/referencia/sefaz-sim.md",
+    "nome": "mod",
+    "trecho": "- `NfePendente`: NF-e de um lote assíncrono ainda não processado. Membros: `chave`, `chaveDoEmitente`, `mod`, `serie`, `nNF`.",
+    "motivo": "campo `mod` do leiaute da NF-e (modelo 55 ou 65), nome oficial (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/guia/referencia/sefaz-sim.md",
+    "nome": "mod",
+    "trecho": "- `RegistroInutilizacao`: Membros: `cUF`, `ano`, `CNPJ`, `mod`, `serie`, `nNFIni`, `nNFFin`, `nProt`, `dhRecbto`, `xml`.",
+    "motivo": "campo `mod` do leiaute da NF-e (modelo 55 ou 65), nome oficial (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/guia/referencia/sefaz-sim.md",
+    "nome": "mod",
+    "trecho": "- `RegistroNfe`: Membros: `chave`, `cUF`, `mod`, `serie`, `nNF`, `cNF`, `tpEmis`, `tpNF`, `dhEmi`, `dhEmiMs`, `vNF`, `emitente`, `destinatario`, `terceiros`, `xml`, `digVal`, `nRec`, `nProt`, `cStat`, `xMotivo`, `dhRecbto`, `dhRecbtoMs`, `prot`, `situacao`, `liberadaAoDestinatario`.",
+    "motivo": "campo `mod` do leiaute da NF-e (modelo 55 ou 65), nome oficial (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/guia/referencia/transport.md",
+    "nome": "nfceEndpoint",
+    "trecho": "- `nfceEndpoint`: Resolve o endpoint de um serviço da NFC-e 4.00 (modelo 65). Em várias UFs o host é outro que o da NF-e (SP, MG, PR, RS, a SVRS). A NFC-e não tem Distribuição DF-e nem SVC, e a consulta cadastro só existe onde a tabela a lista. `nfceEndpoint(busca: BuscaEndpointNfce): EndpointResolvido`",
+    "motivo": "função `nfceEndpoint` do `@sinete/transport`, mantida na fase 2 (`endpoint` é jargão da exceção 2); a opção do cliente é que virou `endpointNfce`"
+  },
+  {
+    "arquivo": "docs/guia/tutorial/primeira-nfe.md",
+    "nome": "ref",
+    "trecho": "notas.set(registro.ref, desfecho.proc ?? desfecho.protocolo.protNFe);",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/guia/tutorial/primeira-nfe.md",
+    "nome": "ref",
+    "trecho": "A nota sai com `tipo: 'autorizado'` e `cStat` 100. O `aoDecidir` já guardou o `nfeProc`, e os bytes da transmissão foram apagados do `store` depois disso. Se a SEFAZ recusasse definitivamente a nota (`recusado`), os bytes seriam descartados e você corrigiria a entrada e emitiria de novo com a mesma `ref`.",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "docs/signer-contract/PROTOCOL.md",
+    "nome": "request",
+    "trecho": "**`http.request`** faz uma requisição HTTP/1.1 com mTLS pela identidade. Parâmetros: `identity`, `url`, `method` (`POST` ou `GET`), `headers`, `body` (base64), `timeoutMs` (prazo total, padrão 60 s), `service` (rótulo para a auditoria) e `freshConn` (fecha as conexões ociosas antes, para medir retomada). Redirecionamento nunca é seguido: o 3xx volta como resposta. A resposta traz `status`, `headers` (nomes em minúsculas, valores repetidos juntados por `, `), `body` (base64), `ms` e o bloco `tls`: `version`, `cipher`, `conn` (número da conexão), `connReused`, `handshakes` e `renegotiations` da conexão, `resumed` por handshake, `certRequests`, `handshakeMs`, `peerChain` (CN da cadeia do servidor) e `signatures`, as assinaturas pedidas **durante esta requisição**. É esse bloco que permite ao cliente contabilizar a cota de um PSC.",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/signer-contract/PROTOCOL.md",
+    "nome": "request",
+    "trecho": "**`cancel`** (`id`) cancela a requisição do cliente com esse `id` que ainda estiver em andamento (hoje, na prática, um `http.request` cujo chamador desistiu) e devolve `cancelled` (`false` se ela já terminou ou nunca existiu). A requisição cancelada para de esperar o servidor e responde com o erro que o cancelamento provocar, que o cliente ignora. O cancelamento não desfaz o que já saiu: se o corpo já foi enviado, a SEFAZ pode tê-lo recebido, e o chamador trata o envio como de resultado incerto. Um handshake em andamento pode terminar em segundo plano e deixar a conexão no pool, sem enviar a requisição.",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/signer-contract/PROTOCOL.md",
+    "nome": "request",
+    "trecho": "| `transport` | rede, TLS ou HTTP; `data.stage` (`dial`, `handshake`, `request`, `response`) e, quando houver, `alert` (alerta TLS recebido), `x509` (`unknown_authority`, `hostname`, `invalid`), `timeout`, `reset`, `refused`, `dns`, `notTls` |",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/signer-contract/PROTOCOL.md",
+    "nome": "method",
+    "trecho": "**`http.request`** faz uma requisição HTTP/1.1 com mTLS pela identidade. Parâmetros: `identity`, `url`, `method` (`POST` ou `GET`), `headers`, `body` (base64), `timeoutMs` (prazo total, padrão 60 s), `service` (rótulo para a auditoria) e `freshConn` (fecha as conexões ociosas antes, para medir retomada). Redirecionamento nunca é seguido: o 3xx volta como resposta. A resposta traz `status`, `headers` (nomes em minúsculas, valores repetidos juntados por `, `), `body` (base64), `ms` e o bloco `tls`: `version`, `cipher`, `conn` (número da conexão), `connReused`, `handshakes` e `renegotiations` da conexão, `resumed` por handshake, `certRequests`, `handshakeMs`, `peerChain` (CN da cadeia do servidor) e `signatures`, as assinaturas pedidas **durante esta requisição**. É esse bloco que permite ao cliente contabilizar a cota de um PSC.",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/signer-contract/PROTOCOL.md",
+    "nome": "headers",
+    "trecho": "**`http.request`** faz uma requisição HTTP/1.1 com mTLS pela identidade. Parâmetros: `identity`, `url`, `method` (`POST` ou `GET`), `headers`, `body` (base64), `timeoutMs` (prazo total, padrão 60 s), `service` (rótulo para a auditoria) e `freshConn` (fecha as conexões ociosas antes, para medir retomada). Redirecionamento nunca é seguido: o 3xx volta como resposta. A resposta traz `status`, `headers` (nomes em minúsculas, valores repetidos juntados por `, `), `body` (base64), `ms` e o bloco `tls`: `version`, `cipher`, `conn` (número da conexão), `connReused`, `handshakes` e `renegotiations` da conexão, `resumed` por handshake, `certRequests`, `handshakeMs`, `peerChain` (CN da cadeia do servidor) e `signatures`, as assinaturas pedidas **durante esta requisição**. É esse bloco que permite ao cliente contabilizar a cota de um PSC.",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/signer-contract/PROTOCOL.md",
+    "nome": "body",
+    "trecho": "**`http.request`** faz uma requisição HTTP/1.1 com mTLS pela identidade. Parâmetros: `identity`, `url`, `method` (`POST` ou `GET`), `headers`, `body` (base64), `timeoutMs` (prazo total, padrão 60 s), `service` (rótulo para a auditoria) e `freshConn` (fecha as conexões ociosas antes, para medir retomada). Redirecionamento nunca é seguido: o 3xx volta como resposta. A resposta traz `status`, `headers` (nomes em minúsculas, valores repetidos juntados por `, `), `body` (base64), `ms` e o bloco `tls`: `version`, `cipher`, `conn` (número da conexão), `connReused`, `handshakes` e `renegotiations` da conexão, `resumed` por handshake, `certRequests`, `handshakeMs`, `peerChain` (CN da cadeia do servidor) e `signatures`, as assinaturas pedidas **durante esta requisição**. É esse bloco que permite ao cliente contabilizar a cota de um PSC.",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/signer-contract/PROTOCOL.md",
+    "nome": "module",
+    "trecho": "- `backend: \"pkcs11\"`: o helper abre o módulo (`module`, caminho absoluto), acha o token pelo rótulo (`token`; `serial` desempata), faz login com `pin` e usa o certificado de rótulo `label` (ou de `keyId`, o `CKA_ID` em hexadecimal) e a chave privada com o mesmo `CKA_ID` do certificado. `chain` completa as intermediárias. O PIN atravessa o canal e nunca vai para argv ou env.",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/signer-contract/PROTOCOL.md",
+    "nome": "stats",
+    "trecho": "**`stats`** devolve, em `identities`, as assinaturas feitas por identidade (handshakes e `dfe.sign`).",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/cli/README.md",
+    "nome": "status",
+    "trecho": "| `status` | só com `--status`: `cStat` do status do serviço | erro de transporte (403 do IIS, alertas); aviso se `cStat` diferente de 107 |",
+    "motivo": "verificação `status` do `doctor`, flag `--status` ou comando `status` da ferramenta de homologação: o serviço de status da SEFAZ (`NfeStatusServico`), nome oficial"
+  },
+  {
+    "arquivo": "packages/cli/src/doctor.ts",
+    "nome": "status",
+    "trecho": "* 3. Relógio: a validade do certificado contra o relógio local e, com referência (`--status` ou `--relogio-url`), a",
+    "motivo": "verificação `status` do `doctor`, flag `--status` ou comando `status` da ferramenta de homologação: o serviço de status da SEFAZ (`NfeStatusServico`), nome oficial"
+  },
+  {
+    "arquivo": "packages/cli/src/doctor.ts",
+    "nome": "status",
+    "trecho": "*    pedem o certificado por renegociação, o handshake sozinho não prova a aceitação: é o que `--status` faz.",
+    "motivo": "verificação `status` do `doctor`, flag `--status` ou comando `status` da ferramenta de homologação: o serviço de status da SEFAZ (`NfeStatusServico`), nome oficial"
+  },
+  {
+    "arquivo": "packages/cli/src/doctor.ts",
+    "nome": "status",
+    "trecho": "* 5. Status (só com `--status`): consulta de status do serviço (NF-e ou MDF-e), a única requisição que o doctor envia.",
+    "motivo": "verificação `status` do `doctor`, flag `--status` ou comando `status` da ferramenta de homologação: o serviço de status da SEFAZ (`NfeStatusServico`), nome oficial"
+  },
+  {
+    "arquivo": "packages/cli/src/doctor.ts",
+    "nome": "status",
+    "trecho": "readonly id: 'pfx' | 'cadeia' | 'relogio' | 'tls' | 'status';",
+    "motivo": "verificação `status` do `doctor`, flag `--status` ou comando `status` da ferramenta de homologação: o serviço de status da SEFAZ (`NfeStatusServico`), nome oficial"
+  },
+  {
+    "arquivo": "packages/cli/src/doctor.ts",
+    "nome": "status",
+    "trecho": "for (const id of ['cadeia', 'relogio', 'tls', 'status'] as const) checks.push(skipped(id, 'sem PFX aberto'));",
+    "motivo": "verificação `status` do `doctor`, flag `--status` ou comando `status` da ferramenta de homologação: o serviço de status da SEFAZ (`NfeStatusServico`), nome oficial"
+  },
+  {
+    "arquivo": "packages/cli/src/doctor.ts",
+    "nome": "status",
+    "trecho": "const order = ['pfx', 'cadeia', 'relogio', 'tls', 'status'];",
+    "motivo": "verificação `status` do `doctor`, flag `--status` ou comando `status` da ferramenta de homologação: o serviço de status da SEFAZ (`NfeStatusServico`), nome oficial"
+  },
+  {
+    "arquivo": "packages/cli/src/doctor.ts",
+    "nome": "date",
+    "trecho": "const server = lerDataHttp(res.cabecalhos.date);",
+    "motivo": "termo do HTTP ou da `fetch` (`method`, `headers`, `body`, `status`, cabeçalho `date`), da plataforma (ADR 0015, exceção 3)"
+  },
+  {
+    "arquivo": "packages/cli/src/main.ts",
+    "nome": "status",
+    "trecho": "consultarStatus: values.status === true,",
+    "motivo": "verificação `status` do `doctor`, flag `--status` ou comando `status` da ferramenta de homologação: o serviço de status da SEFAZ (`NfeStatusServico`), nome oficial"
+  },
+  {
+    "arquivo": "packages/core/src/logger.ts",
+    "nome": "info",
+    "trecho": "export type NivelDeLog = 'debug' | 'info' | 'warn' | 'error';",
+    "motivo": "API da plataforma ou do JavaScript (`Promise.allSettled` com `'rejected'`, `Array.map`, `Map.set`, níveis do logger compatível com `console`, `none` do SVG, `/Page` do PDF, palavra-chave `get`/`type`)"
+  },
+  {
+    "arquivo": "packages/da/src/data/leiaute-danfse.ts",
+    "nome": "Doc",
+    "trecho": "docRef: 'Doc. Ref.:',",
+    "motivo": "texto do leiaute ou de fixture (\"Doc. Ref.\", \"Doc. Tec.\"), não o tipo `Doc` renomeado"
+  },
+  {
+    "arquivo": "packages/da/src/data/leiaute-danfse.ts",
+    "nome": "Doc",
+    "trecho": "docTec: 'Doc. Tec.:',",
+    "motivo": "texto do leiaute ou de fixture (\"Doc. Ref.\", \"Doc. Tec.\"), não o tipo `Doc` renomeado"
+  },
+  {
+    "arquivo": "packages/da/src/data/leiaute.ts",
+    "nome": "data",
+    "trecho": "* Os motivos são os textos oficiais das tabelas; o mesmo conjunto está em `@sinete/nfe` (`data/cstat.json`).",
+    "motivo": "`data` em português (data civil) ou a pasta `data/`, não a chave renomeada"
+  },
+  {
+    "arquivo": "packages/da/src/input/mdfe.ts",
+    "nome": "docs",
+    "trecho": "const docs: MdfeView['docs'][number][] = [];",
+    "motivo": "nome interno do render ou do teste, fora da API pública (parâmetro, variável local ou literal de teste)"
+  },
+  {
+    "arquivo": "packages/da/src/layout/common.ts",
+    "nome": "size",
+    "trecho": "* QR Code num quadrado de lado `size`, com a zona de silêncio dentro. A norma fixa o total das duas margens: no mínimo",
+    "motivo": "nome interno do render ou do teste, fora da API pública (parâmetro, variável local ou literal de teste)"
+  },
+  {
+    "arquivo": "packages/da/src/layout/danfe-a4.ts",
+    "nome": "data",
+    "trecho": "* Um layout só, parametrizado pelas medidas de `data/leiaute-a4.ts`: no retrato o título de cada quadro fica acima dele;",
+    "motivo": "`data` em português (data civil) ou a pasta `data/`, não a chave renomeada"
+  },
+  {
+    "arquivo": "packages/da/src/layout/marcas.ts",
+    "nome": "data",
+    "trecho": "* de `data/leiaute.ts`:",
+    "motivo": "`data` em português (data civil) ou a pasta `data/`, não a chave renomeada"
+  },
+  {
+    "arquivo": "packages/da/src/render/html.ts",
+    "nome": "none",
+    "trecho": "const fill = op.preenchimento === undefined ? 'none' : gray(op.preenchimento);",
+    "motivo": "API da plataforma ou do JavaScript (`Promise.allSettled` com `'rejected'`, `Array.map`, `Map.set`, níveis do logger compatível com `console`, `none` do SVG, `/Page` do PDF, palavra-chave `get`/`type`)"
+  },
+  {
+    "arquivo": "packages/da/src/render/pdf.ts",
+    "nome": "Page",
+    "trecho": "`<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 ${n((p.w * K) / u)} ${n((p.h * K) / u)}]${unit} /Resources << ${fontRes}${xobj} >> /Contents ${cid} 0 R >>`,",
+    "motivo": "API da plataforma ou do JavaScript (`Promise.allSettled` com `'rejected'`, `Array.map`, `Map.set`, níveis do logger compatível com `console`, `none` do SVG, `/Page` do PDF, palavra-chave `get`/`type`)"
+  },
+  {
+    "arquivo": "packages/da/src/render/text.ts",
+    "nome": "size",
+    "trecho": "/** Maior tamanho, de `size` para baixo em passos de 0,25 pt até `min`, em que o texto cabe em `maxW`. */",
+    "motivo": "nome interno do render ou do teste, fora da API pública (parâmetro, variável local ou literal de teste)"
+  },
+  {
+    "arquivo": "packages/da/test/danfse.test.ts",
+    "nome": "Doc",
+    "trecho": "'Inf. Cont.: CONTRATO FICTICIO 123/2026 | Doc. Ref.: PEDIDO-REF-01 | Cod. Obra: OBRA-0001 | Insc. Imob.: 000.111.222-3',",
+    "motivo": "texto do leiaute ou de fixture (\"Doc. Ref.\", \"Doc. Tec.\"), não o tipo `Doc` renomeado"
+  },
+  {
+    "arquivo": "packages/da/test/vr.test.ts",
+    "nome": "version",
+    "trecho": "return /version (\\S+)/.exec(`${r.stdout}${r.stderr}`)?.[1];",
+    "motivo": "nome interno do render ou do teste, fora da API pública (parâmetro, variável local ou literal de teste)"
+  },
+  {
+    "arquivo": "packages/emissor/README.md",
+    "nome": "ref",
+    "trecho": "await db.notas.upsert(registro.ref, { chave: desfecho.id, xml: desfecho.proc ?? registro.xml, protNFe, situacao });",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "packages/emissor/README.md",
+    "nome": "ref",
+    "trecho": "`emitir(ref, entrada)` trava o documento `ref`, lê o que estiver gravado para ele e:",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "packages/emissor/README.md",
+    "nome": "ref",
+    "trecho": "**Recusa repetida.** Reenviar a mesma nota com a mesma rejeição é o que a SEFAZ conta como consumo indevido e pune com até uma hora de bloqueio do emitente (rejeição 656, MOC 7.0 Anexo I, item 4.3.1). Com um `store` que lembra recusas (`registrarRecusa` e `recusaRecente`, opcionais), o emissor conta as recusas da nota pelo SHA-256 do conteúdo descartado (sem a hora de emissão, o código numérico da chave e a assinatura, que mudam a cada montagem) e pelo `cStat`. Quando a mesma recusa chega ao limite dentro da janela (`recusaRepetida: { janelaMs, limite }`, 3 vezes em 1 hora por padrão, contada desde a primeira), a próxima emissão da mesma `ref` com o mesmo conteúdo lança `ErroRecusaRepetida` antes de gravar e sem ir à SEFAZ: a 4ª tentativa igual não sai, bem antes das 30 da regra. Abaixo do limite a mesma nota vai, para quem resolveu a causa fora dela. A nota corrigida (outro conteúdo) passa e recomeça a conta; a retomada de bytes gravados nunca é barrada; a recusa do serviço (108, 109, 999) não conta. Depois de resolver uma causa que está fora da nota (o credenciamento do emitente, 203), `emitir(ref, entrada, { reenviarRecusado: true })` envia assim mesmo. `recusaRepetida: false` desliga.",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "packages/emissor/README.md",
+    "nome": "ref",
+    "trecho": "aoDecidir: guardarDocumento, // opcional: senão, vale o do emissor; `registro.tipo` e `registro.ref` dizem qual",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "packages/emissor/README.md",
+    "nome": "cert",
+    "trecho": "const pool = criarPoolDeEmissores({ criar: (cert) => criarEmissorNfe({ ...cert, ambiente, store, aoDecidir }) });",
+    "motivo": "nome interno do render ou do teste, fora da API pública (parâmetro, variável local ou literal de teste)"
+  },
+  {
+    "arquivo": "packages/emissor/src/certificado.ts",
+    "nome": "cert",
+    "trecho": "* Completa a cadeia do mTLS com as ACs da ICP-Brasil que o pacote conhece (as intermediárias do `@sinete/cert`, além",
+    "motivo": "nome do pacote `@sinete/transport` ou `@sinete/cert` (nome próprio), não o membro renomeado"
+  },
+  {
+    "arquivo": "packages/emissor/src/cstat.ts",
+    "nome": "data",
+    "trecho": "/** Leitura de `data/cstat.json`: os códigos que o emissor trata de forma própria em cada documento. */",
+    "motivo": "`data` em português (data civil) ou a pasta `data/`, não a chave renomeada"
+  },
+  {
+    "arquivo": "packages/emissor/src/emissor.ts",
+    "nome": "ref",
+    "trecho": "* Transmite o documento `ref` (o id dele no sistema do integrador). Com bytes já gravados para `ref`, retoma com eles",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "packages/emissor/src/pool.ts",
+    "nome": "cert",
+    "trecho": "* Cria o emissor do certificado (em geral `criarEmissorNfe({ ...cert, ...comum })`, ou com `certificado:",
+    "motivo": "nome interno do render ou do teste, fora da API pública (parâmetro, variável local ou literal de teste)"
+  },
+  {
+    "arquivo": "packages/emissor/src/store.ts",
+    "nome": "ref",
+    "trecho": "* Identifica esta gravação. Outra gravação do mesmo `ref` (depois de um descarte) tem outro valor: a contagem de",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "packages/emissor/src/store.ts",
+    "nome": "ref",
+    "trecho": "* Opcional, junto com `recusaRecente`: conta as recusas definitivas do documento (uma sequência por `tipo` e `ref`).",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "packages/emissor/test/mdfe.test.ts",
+    "nome": "rejected",
+    "trecho": "expect(r[1].status === 'rejected' && r[1].reason).toBeInstanceOf(ErroTransmissaoEmAndamento);",
+    "motivo": "API da plataforma ou do JavaScript (`Promise.allSettled` com `'rejected'`, `Array.map`, `Map.set`, níveis do logger compatível com `console`, `none` do SVG, `/Page` do PDF, palavra-chave `get`/`type`)"
+  },
+  {
+    "arquivo": "packages/emissor/test/nfe.test.ts",
+    "nome": "rejected",
+    "trecho": "expect(r[1].status === 'rejected' && r[1].reason).toBeInstanceOf(ErroTransmissaoEmAndamento);",
+    "motivo": "API da plataforma ou do JavaScript (`Promise.allSettled` com `'rejected'`, `Array.map`, `Map.set`, níveis do logger compatível com `console`, `none` do SVG, `/Page` do PDF, palavra-chave `get`/`type`)"
+  },
+  {
+    "arquivo": "packages/emissor/test/nfe.test.ts",
+    "nome": "rejected",
+    "trecho": "expect(usuario.status === 'rejected' && usuario.reason).toBeInstanceOf(ErroTransmissaoEmAndamento);",
+    "motivo": "API da plataforma ou do JavaScript (`Promise.allSettled` com `'rejected'`, `Array.map`, `Map.set`, níveis do logger compatível com `console`, `none` do SVG, `/Page` do PDF, palavra-chave `get`/`type`)"
+  },
+  {
+    "arquivo": "packages/emissor/test/retomada.test.ts",
+    "nome": "ref",
+    "trecho": "/** Grava bytes para `ref` e deixa o relógio andar `parada` (a gravação fica parada esse tempo). */",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "packages/emissor/test/retomada.test.ts",
+    "nome": "resolve",
+    "trecho": "type Comportamento = 'resolve' | 'falha' | 'ocupada' | 'divergente' | 'sem-bytes' | 'descarta' | 'pendente';",
+    "motivo": "nome interno do render ou do teste, fora da API pública (parâmetro, variável local ou literal de teste)"
+  },
+  {
+    "arquivo": "packages/emissor/test/retomada.test.ts",
+    "nome": "resolve",
+    "trecho": "if (c === 'resolve') {",
+    "motivo": "nome interno do render ou do teste, fora da API pública (parâmetro, variável local ou literal de teste)"
+  },
+  {
+    "arquivo": "packages/ibs-cbs/test/calcular/oracle.test.ts",
+    "nome": "error",
+    "trecho": "const agree = cases.filter((c) => c.divergences.length === 0 && !('error' in c.engine)).length;",
+    "motivo": "formato interno de ferramenta fora da API dos pacotes (homologação, oráculo, gerador de dados, codegen, site)"
+  },
+  {
+    "arquivo": "packages/ibs-cbs/test/calcular/oracle.test.ts",
+    "nome": "error",
+    "trecho": "if ('error' in c.engine) {",
+    "motivo": "formato interno de ferramenta fora da API dos pacotes (homologação, oráculo, gerador de dados, codegen, site)"
+  },
+  {
+    "arquivo": "packages/ibs-cbs/test/calcular/oracle.test.ts",
+    "nome": "record",
+    "trecho": "* Regressão contra respostas gravadas da Calculadora offline (`tools/ibs-cbs-oraculo/run.ts --record`). Cada caso guarda a",
+    "motivo": "nome de arquivo ou pasta (`client.ts`, `resolver.ts`, `--record`, `bun run format`)"
+  },
+  {
+    "arquivo": "packages/mdfe/README.md",
+    "nome": "sign",
+    "trecho": "`assinarMdfe` coloca o `infMDFeSupl` com o QR Code (`src/data/qrcode.json`) antes de `</MDFe>` e depois insere a `Signature` como último filho, por splice. Em contingência off-line (`tpEmis: '2'`), o QR Code leva `sign`, a assinatura RSA-SHA1 da chave em Base64, e o MDF-e tem 168 horas para ser transmitido com o mesmo cMDF (`prazoContingencia`). Na emissão normal, transmitir depois de 24 horas é recusado com 228 (F80). `comQrCode` e `assinaturaQrCode` estão exportados para quem assina de outro jeito.",
+    "motivo": "parâmetro `sign` do QR Code do MDF-e em contingência (MOC MDF-e, Visão Geral 9.2), nome oficial (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/mdfe/README.md",
+    "nome": "code",
+    "trecho": "- **Validação estrita.** Cada problema volta como `Ocorrencia` (`caminho`, `code`, `mensagem` com a regra do MOC e a rejeição, por exemplo `(F90, rejeição 663)`), nunca como exceção. Os códigos estão em `CODIGOS_OCORRENCIA_MDFE`. `origem` diz se a ocorrência veio da conferência da entrada (`entrada`, com o caminho da `DadosMdfe`) ou do documento montado (`montagem`: schema, chave, `tpEmis` das opções), e `rotuloDoCaminho(path)` dá o caminho em português para a tela (`Condutor 1, CPF`); veja o [ADR 0011](../../docs/adr/0011-origem-e-rotulo-das-ocorrencias.md).",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper) e das ocorrências, mantido (ADR 0015, códigos de erro)"
+  },
+  {
+    "arquivo": "packages/mdfe/README.md",
+    "nome": "code",
+    "trecho": "- Cancelamento: todo método que vai à rede aceita `opcoes?: EnvioOpcoes` como último parâmetro, com o `signal` que cancela a requisição em curso. Abortar rejeita com `ErroTransporte` de `code: 'cancelado'` (com o transporte do `@sinete/transport`), e um pedido que já saiu pode ter sido processado: confirme por consulta antes de repetir.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper) e das ocorrências, mantido (ADR 0015, códigos de erro)"
+  },
+  {
+    "arquivo": "packages/mdfe/src/build/build.ts",
+    "nome": "sign",
+    "trecho": "* URL do QR Code (`qrCodMDFe`): endereço do portal, `chMDFe` e `tpAmb`; em contingência off-line, também `sign`, a",
+    "motivo": "parâmetro `sign` do QR Code do MDF-e em contingência (MOC MDF-e, Visão Geral 9.2), nome oficial (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/mdfe/src/build/build.ts",
+    "nome": "sign",
+    "trecho": "* assinatura. Em contingência off-line, informe o `sign` (`assinaturaQrCode`). Para assinar em três fases (A3, HSM),",
+    "motivo": "parâmetro `sign` do QR Code do MDF-e em contingência (MOC MDF-e, Visão Geral 9.2), nome oficial (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/mdfe/src/build/build.ts",
+    "nome": "line",
+    "trecho": "* `1` emissão normal (padrão) ou `2` contingência off-line: o QR Code leva o parâmetro `sign` e o MDF-e tem 168",
+    "motivo": "palavra \"off-line\" (contingência off-line), não o membro `line`"
+  },
+  {
+    "arquivo": "packages/mdfe/src/build/build.ts",
+    "nome": "line",
+    "trecho": "/** Prazo para transmitir um MDF-e emitido em contingência off-line: 168 horas depois da emissão (Visão Geral, 11.1). */",
+    "motivo": "palavra \"off-line\" (contingência off-line), não o membro `line`"
+  },
+  {
+    "arquivo": "packages/mdfe/src/index.ts",
+    "nome": "sign",
+    "trecho": "* - `assinarMdfe`: QR Code (com `sign` em contingência off-line) e assinatura por splice; a string devolvida é a final.",
+    "motivo": "parâmetro `sign` do QR Code do MDF-e em contingência (MOC MDF-e, Visão Geral 9.2), nome oficial (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/mdfe/src/services/client.ts",
+    "nome": "transport",
+    "trecho": "* Serviços do MDF-e 3.00 (autorizador único, a SVRS) sobre o `@sinete/transport` e a assinatura do `@sinete/core/xml`:",
+    "motivo": "nome do pacote `@sinete/transport` ou `@sinete/cert` (nome próprio), não o membro renomeado"
+  },
+  {
+    "arquivo": "packages/mdfe/src/services/index.ts",
+    "nome": "client",
+    "trecho": "/** Serviços do MDF-e. Veja `client.ts` para o contrato de cada operação e `resolver.ts` para a idempotência. */",
+    "motivo": "nome de arquivo ou pasta (`client.ts`, `resolver.ts`, `--record`, `bun run format`)"
+  },
+  {
+    "arquivo": "packages/mdfe/src/services/index.ts",
+    "nome": "resolver",
+    "trecho": "/** Serviços do MDF-e. Veja `client.ts` para o contrato de cada operação e `resolver.ts` para a idempotência. */",
+    "motivo": "nome de arquivo ou pasta (`client.ts`, `resolver.ts`, `--record`, `bun run format`)"
+  },
+  {
+    "arquivo": "packages/mdfe/test/e2e/sefaz-sim.test.ts",
+    "nome": "transport",
+    "trecho": "* Ponta a ponta: o `@sinete/mdfe` contra o `@sinete/sefaz-sim` pelo `@sinete/transport` real, em HTTPS com mTLS. A",
+    "motivo": "nome do pacote `@sinete/transport` ou `@sinete/cert` (nome próprio), não o membro renomeado"
+  },
+  {
+    "arquivo": "packages/nfe/README.md",
+    "nome": "code",
+    "trecho": "- **Validação estrita.** O XML canônico é validado contra o schema do PL vigente antes de devolver; qualquer problema volta como lista de `Ocorrencia` (`caminho`, `code`, `mensagem`, `origem`), nunca como exceção. Os códigos estão em `CODIGOS_OCORRENCIA_NFE`. `origem` é `entrada` quando a conferência foi sobre a `DadosNfe` (o caminho é dela) e `montagem` quando foi sobre o que o pacote produziu (schema e PL do XML, chave gerada, grupo IBS/CBS da calculadora); `rotuloDoCaminho(path)` dá o caminho em português para a tela (`Item 2, Descrição do produto`), nos dois formatos de caminho. Veja o [ADR 0011](../../docs/adr/0011-origem-e-rotulo-das-ocorrencias.md).",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper) e das ocorrências, mantido (ADR 0015, códigos de erro)"
+  },
+  {
+    "arquivo": "packages/nfe/README.md",
+    "nome": "code",
+    "trecho": "- Cancelamento: todo método que vai à rede aceita `signal` (`EnvioOpcoes`) no último parâmetro de opções. Em `statusServico`, `autorizar`, `consultarRecibo`, `aguardarRecibo` e `distribuicaoDFe`, ele fica no mesmo objeto das outras opções; nos demais, é um `opcoes?: EnvioOpcoes` a mais no fim. Abortar rejeita com `ErroTransporte` de `code: 'cancelado'` (com o transporte do `@sinete/transport`), e um pedido que já saiu pode ter sido processado: confirme por consulta antes de repetir.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper) e das ocorrências, mantido (ADR 0015, códigos de erro)"
+  },
+  {
+    "arquivo": "packages/nfe/README.md",
+    "nome": "nfceEndpoint",
+    "trecho": "- NFC-e (modelo 65, pela chave ou pelo `mod`): endpoints da tabela da NFC-e do `@sinete/transport` (`nfceEndpoint`), que em várias UFs é outro host; `ClienteNfeOpcoes.endpointNfce` sobrepõe. A NFC-e não tem SVC: com o cliente em contingência, ela continua indo ao autorizador normal.",
+    "motivo": "função `nfceEndpoint` do `@sinete/transport`, mantida na fase 2 (`endpoint` é jargão da exceção 2); a opção do cliente é que virou `endpointNfce`"
+  },
+  {
+    "arquivo": "packages/nfe/src/build/nfce.ts",
+    "nome": "line",
+    "trecho": "/** Versão 3 em contingência off-line: os parâmetros são assinados com o certificado da nota (Manual 6.0, 4.4.2). */",
+    "motivo": "palavra \"off-line\" (contingência off-line), não o membro `line`"
+  },
+  {
+    "arquivo": "packages/nfe/src/build/nfce.ts",
+    "nome": "line",
+    "trecho": "* `digVal` do QR Code versão 2 off-line: o DigestValue do `infNFe` (SHA-1 do C14N, em Base64, o mesmo da assinatura)",
+    "motivo": "palavra \"off-line\" (contingência off-line), não o membro `line`"
+  },
+  {
+    "arquivo": "packages/nfe/src/build/nfce.ts",
+    "nome": "line",
+    "trecho": "* Assinatura dos parâmetros 1 a 7 do QR Code versão 3 off-line: RSA com SHA-1 (PKCS#1 v1.5), em Base64, com o mesmo",
+    "motivo": "palavra \"off-line\" (contingência off-line), não o membro `line`"
+  },
+  {
+    "arquivo": "packages/nfe/src/build/values.ts",
+    "nome": "data",
+    "trecho": "/** Famílias de campo com modo de arredondamento próprio (`data/arredondamento.json`). */",
+    "motivo": "`data` em português (data civil) ou a pasta `data/`, não a chave renomeada"
+  },
+  {
+    "arquivo": "packages/nfe/src/index.ts",
+    "nome": "transport",
+    "trecho": "* estrita (`montarNfe`), assinatura por splice (`assinarNfe`) e os serviços da SEFAZ sobre `@sinete/transport`",
+    "motivo": "nome do pacote `@sinete/transport` ou `@sinete/cert` (nome próprio), não o membro renomeado"
+  },
+  {
+    "arquivo": "packages/nfe/src/model.ts",
+    "nome": "transport",
+    "trecho": "* `@sinete/transport`); FS-DA e EPEC (4 e 5) ficam para outra versão, mas o modelo já os comporta. A NFC-e não tem SVC:",
+    "motivo": "nome do pacote `@sinete/transport` ou `@sinete/cert` (nome próprio), não o membro renomeado"
+  },
+  {
+    "arquivo": "packages/nfe/src/services/client.ts",
+    "nome": "transport",
+    "trecho": "* Distribuição DF-e. Contingência SVC por dado: o autorizador SVC-AN ou SVC-RS de cada UF vem do `@sinete/transport`.",
+    "motivo": "nome do pacote `@sinete/transport` ou `@sinete/cert` (nome próprio), não o membro renomeado"
+  },
+  {
+    "arquivo": "packages/nfe/src/services/client.ts",
+    "nome": "transport",
+    "trecho": "* Sobrepõe o endpoint da NFC-e (modelo 65) por serviço e UF. Sem ela, vale a tabela da NFC-e do `@sinete/transport`",
+    "motivo": "nome do pacote `@sinete/transport` ou `@sinete/cert` (nome próprio), não o membro renomeado"
+  },
+  {
+    "arquivo": "packages/nfe/src/services/client.ts",
+    "nome": "nfceEndpoint",
+    "trecho": "* (`nfceEndpoint`), que em várias UFs (SP, MG, PR, RS, SVRS) é outro host que o da NF-e. A NFC-e não tem SVC: com",
+    "motivo": "função `nfceEndpoint` do `@sinete/transport`, mantida na fase 2 (`endpoint` é jargão da exceção 2); a opção do cliente é que virou `endpointNfce`"
+  },
+  {
+    "arquivo": "packages/nfe/src/services/client.ts",
+    "nome": "nfceEndpoint",
+    "trecho": "* Modelo do lote, para escolher o serviço (NFC-e vai pelo `nfceEndpoint`). Com a NF-e assinada o modelo vem da",
+    "motivo": "função `nfceEndpoint` do `@sinete/transport`, mantida na fase 2 (`endpoint` é jargão da exceção 2); a opção do cliente é que virou `endpointNfce`"
+  },
+  {
+    "arquivo": "packages/nfe/src/services/index.ts",
+    "nome": "resolver",
+    "trecho": "* operação e `resolver.ts` para a regra de idempotência da autorização.",
+    "motivo": "nome de arquivo ou pasta (`client.ts`, `resolver.ts`, `--record`, `bun run format`)"
+  },
+  {
+    "arquivo": "packages/nfe/test/e2e/sefaz-sim.test.ts",
+    "nome": "transport",
+    "trecho": "* Ponta a ponta: o `@sinete/nfe` contra o `@sinete/sefaz-sim` pelo `@sinete/transport` real, em HTTPS com mTLS. A AC,",
+    "motivo": "nome do pacote `@sinete/transport` ou `@sinete/cert` (nome próprio), não o membro renomeado"
+  },
+  {
+    "arquivo": "packages/nfse/README.md",
+    "nome": "code",
+    "trecho": "- **Validação estrita.** O XML é validado contra o schema vigente antes de devolver; problemas voltam como `Ocorrencia` (`caminho`, `code`, `mensagem`, `origem`: `entrada` na conferência da `DadosDps`, `montagem` no schema do XML), nunca como exceção. Competência depois da emissão (E0015) é conferida localmente.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper) e das ocorrências, mantido (ADR 0015, códigos de erro)"
+  },
+  {
+    "arquivo": "packages/nfse/README.md",
+    "nome": "map",
+    "trecho": "if (!r.ok) throw new Error(r.ocorrencias.map((i) => `${i.caminho}: ${i.mensagem}`).join('\\n'));",
+    "motivo": "API da plataforma ou do JavaScript (`Promise.allSettled` com `'rejected'`, `Array.map`, `Map.set`, níveis do logger compatível com `console`, `none` do SVG, `/Page` do PDF, palavra-chave `get`/`type`)"
+  },
+  {
+    "arquivo": "packages/nfse/src/client.ts",
+    "nome": "transport",
+    "trecho": "/** Sobrepõe a base de uma API (padrão: `nfseEndpoint` do `@sinete/transport`). */",
+    "motivo": "nome do pacote `@sinete/transport` ou `@sinete/cert` (nome próprio), não o membro renomeado"
+  },
+  {
+    "arquivo": "packages/nfse/test/e2e.test.ts",
+    "nome": "transport",
+    "trecho": "* Ponta a ponta: o `@sinete/nfse` contra a NFS-e simulada do `@sinete/sefaz-sim`, pelo `@sinete/transport` real em",
+    "motivo": "nome do pacote `@sinete/transport` ou `@sinete/cert` (nome próprio), não o membro renomeado"
+  },
+  {
+    "arquivo": "packages/schemas/README.md",
+    "nome": "Runtime",
+    "trecho": "## Runtime",
+    "motivo": "`runtime` no jargão da exceção 2 (ADR 0015), título de seção ou coluna"
+  },
+  {
+    "arquivo": "packages/sefaz-sim/README.md",
+    "nome": "set",
+    "trecho": "aoDecidir: (registro, desfecho) => decididas.set(registro.ref, desfecho),",
+    "motivo": "API da plataforma ou do JavaScript (`Promise.allSettled` com `'rejected'`, `Array.map`, `Map.set`, níveis do logger compatível com `console`, `none` do SVG, `/Page` do PDF, palavra-chave `get`/`type`)"
+  },
+  {
+    "arquivo": "packages/sefaz-sim/README.md",
+    "nome": "ref",
+    "trecho": "aoDecidir: (registro, desfecho) => decididas.set(registro.ref, desfecho),",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
+  },
+  {
+    "arquivo": "packages/sefaz-sim/src/mdfe/comum.ts",
+    "nome": "root",
+    "trecho": "/** Grupos A, B-0, B e C. `root` é o schema da área de dados. */",
+    "motivo": "vocabulário do XSD (`root`), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/sefaz-sim/src/nfce.ts",
+    "nome": "line",
+    "trecho": "* Confere a assinatura (parâmetro 8) sobre os parâmetros 1 a 7 da versão 3 off-line: RSA com SHA-1 (PKCS#1 v1.5),",
+    "motivo": "palavra \"off-line\" (contingência off-line), não o membro `line`"
+  },
+  {
+    "arquivo": "packages/sefaz-sim/src/nfse/transport.ts",
+    "nome": "transport",
+    "trecho": "* `@sinete/transport`: a base de cada API (`nfseEndpoint`) vira `urlBase` + o prefixo da API no simulador, e o resto",
+    "motivo": "nome do pacote `@sinete/transport` ou `@sinete/cert` (nome próprio), não o membro renomeado"
+  },
+  {
+    "arquivo": "packages/sefaz-sim/src/services/inutilizacao.ts",
+    "nome": "mod",
+    "trecho": "mod: facts.mod as TRetInutNFe['infInut']['mod'] & string,",
+    "motivo": "campo `mod` do leiaute da NF-e (modelo 55 ou 65), nome oficial (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/sefaz-sim/src/soap.ts",
+    "nome": "Result",
+    "trecho": "? `<nfeResultMsg xmlns=\"${ns}\"><${def.operacao}Result>${ret}</${def.operacao}Result></nfeResultMsg>`",
+    "motivo": "sufixo `Result` dos elementos SOAP dos WSDL da SEFAZ, nome oficial (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/sefaz-sim/src/soap.ts",
+    "nome": "Result",
+    "trecho": "? `<${def.operacao}Response xmlns=\"${ns}\"><${def.operacao}Result>${ret}</${def.operacao}Result></${def.operacao}Response>`",
+    "motivo": "sufixo `Result` dos elementos SOAP dos WSDL da SEFAZ, nome oficial (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/sefaz-sim/src/soap.ts",
+    "nome": "Result",
+    "trecho": "? `<${def.operacao}Result xmlns=\"${ns}\">${ret}</${def.operacao}Result>`",
+    "motivo": "sufixo `Result` dos elementos SOAP dos WSDL da SEFAZ, nome oficial (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/sefaz-sim/src/transport.ts",
+    "nome": "transport",
+    "trecho": "* Autorizador simulado de um endpoint dos dados do `@sinete/transport`: o Ambiente Nacional (`AN`), a contingência",
+    "motivo": "nome do pacote `@sinete/transport` ou `@sinete/cert` (nome próprio), não o membro renomeado"
+  },
+  {
+    "arquivo": "packages/sefaz-sim/test/mdfe-helpers.ts",
+    "nome": "Result",
+    "trecho": "expect(holder.local).toBe(`${SERVICOS_MDFE[servico].operacao}Result`);",
+    "motivo": "sufixo `Result` dos elementos SOAP dos WSDL da SEFAZ, nome oficial (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/sefaz-sim/test/nfce.test.ts",
+    "nome": "line",
+    "trecho": "// Off-line: a nota de teste tem o destinatário CNPJ e vNF 10.00, emitida no dia 26.",
+    "motivo": "palavra \"off-line\" (contingência off-line), não o membro `line`"
+  },
+  {
+    "arquivo": "packages/transport/README.md",
+    "nome": "Runtime",
+    "trecho": "| Runtime | Renegociação | Só CBC | Só DHE |",
+    "motivo": "`runtime` no jargão da exceção 2 (ADR 0015), título de seção ou coluna"
+  },
+  {
+    "arquivo": "packages/transport/README.md",
+    "nome": "nfceEndpoint",
+    "trecho": "- `nfeEndpoint`, `nfceEndpoint`, `nfceAutorizadorDaUf`, `urlsConsultaNfce`, `mdfeEndpoint`, `nfseEndpoint`, `todosOsEndpoints`, `hostsDoAmbiente`, `perfilTlsDoHost`. A sondagem TLS não cobriu os hosts só de NFC-e: eles vêm sem perfil (`tls: undefined`), e o transporte não os recusa por capacidade antes do socket.",
+    "motivo": "função `nfceEndpoint` do `@sinete/transport`, mantida na fase 2 (`endpoint` é jargão da exceção 2); a opção do cliente é que virou `endpointNfce`"
+  },
+  {
+    "arquivo": "packages/transport/src/classify.ts",
+    "nome": "config",
+    "trecho": "if ('config' in r) return new ErroDeConfiguracao(r.config, { cause: erro, detalhes: { host: contexto.host } });",
+    "motivo": "variante `config` do resultado interno da classificação de falha do transporte"
+  },
+  {
+    "arquivo": "packages/transport/src/classify.ts",
+    "nome": "hostname",
+    "trecho": "readonly x509?: 'unknown_authority' | 'hostname' | 'invalid';",
+    "motivo": "valor `hostname` do campo `x509` do protocolo do helper, mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/src/classify.ts",
+    "nome": "hostname",
+    "trecho": "} else if (dados.x509 === 'hostname') code = 'nome_servidor_divergente';",
+    "motivo": "valor `hostname` do campo `x509` do protocolo do helper, mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/src/classify.ts",
+    "nome": "hang",
+    "trecho": "/ECONNRESET|socket hang up|EPIPE|ECONNREFUSED|connection reset|connection refused|connection closed/i.test(text)",
+    "motivo": "texto externo casado por regex (mensagem de Node ou de ferramenta), não é nome do sinete"
+  },
+  {
+    "arquivo": "packages/transport/src/signer.ts",
+    "nome": "mode",
+    "trecho": "if (p.mode !== key.signer.mode) return refuse(`modo ${String(p.mode)} diferente do da chave (${key.signer.mode})`);",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/src/signer.ts",
+    "nome": "transport",
+    "trecho": "case 'transport':",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/src/types.ts",
+    "nome": "message",
+    "trecho": "readonly mode: 'digest' | 'message';",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-contract.test.ts",
+    "nome": "message",
+    "trecho": "mode: 'message',",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-contract.test.ts",
+    "nome": "transport",
+    "trecho": "'https://timeout.invalid/': { code: 'transport', message: 'x', data: { stage: 'response', timeout: true } },",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-contract.test.ts",
+    "nome": "transport",
+    "trecho": "'https://reset.invalid/': { code: 'transport', message: 'EOF', data: { stage: 'response', reset: true } },",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-contract.test.ts",
+    "nome": "transport",
+    "trecho": "code: 'transport',",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-contract.test.ts",
+    "nome": "params",
+    "trecho": "reply({ v: 1, id: f.id, result: { ...OPENED, id: (f.params as { id: string }).id } });",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-contract.test.ts",
+    "nome": "params",
+    "trecho": "const identity = (f.params as { identity: string }).identity;",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-contract.test.ts",
+    "nome": "params",
+    "trecho": "else if (f.method === 'http.request') reply({ v: 1, id: f.id, error: errs[(f.params as { url: string }).url] });",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-contract.test.ts",
+    "nome": "params",
+    "trecho": "const params = f.params as Record<string, unknown>;",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-contract.test.ts",
+    "nome": "params",
+    "trecho": "const closes = sent.filter((f) => f.method === 'identity.close').map((f) => f.params);",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-contract.test.ts",
+    "nome": "params",
+    "trecho": "expect(cancel?.params).toEqual({ id: req?.id });",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "scripts/check-docs.ts",
+    "nome": "name",
+    "trecho": "* - a skill (`skill-sinete.md`) tem o frontmatter do padrão Agent Skills (`name: sinete`, `description` de até 1024",
+    "motivo": "campos `name` e `description` do frontmatter do `SKILL.md` e do `package.json`"
+  },
+  {
+    "arquivo": "scripts/check-docs.ts",
+    "nome": "description",
+    "trecho": "* - a skill (`skill-sinete.md`) tem o frontmatter do padrão Agent Skills (`name: sinete`, `description` de até 1024",
+    "motivo": "campos `name` e `description` do frontmatter do `SKILL.md` e do `package.json`"
+  },
+  {
+    "arquivo": "scripts/docs-gerados.ts",
+    "nome": "get",
+    "trecho": "const m = /^(?:readonly\\s+|static\\s+|protected\\s+|private\\s+|get\\s+)*(\\w+)(\\?)?\\s*(\\(|<|:)/.exec(linha.trim());",
+    "motivo": "API da plataforma ou do JavaScript (`Promise.allSettled` com `'rejected'`, `Array.map`, `Map.set`, níveis do logger compatível com `console`, `none` do SVG, `/Page` do PDF, palavra-chave `get`/`type`)"
+  },
+  {
+    "arquivo": "scripts/lib/docs.ts",
+    "nome": "name",
+    "trecho": "manifests.set(path.dirname(f), (await Bun.file(path.join(root, f)).json()).name);",
+    "motivo": "campos `name` e `description` do frontmatter do `SKILL.md` e do `package.json`"
+  },
+  {
+    "arquivo": "scripts/lib/docs.ts",
+    "nome": "type",
+    "trecho": "for (const m of texto.matchAll(/export type (\\w+)\\s*=([^;]*);/g)) aliases.set(m[1] ?? '', literais(m[2] ?? ''));",
+    "motivo": "API da plataforma ou do JavaScript (`Promise.allSettled` com `'rejected'`, `Array.map`, `Map.set`, níveis do logger compatível com `console`, `none` do SVG, `/Page` do PDF, palavra-chave `get`/`type`)"
+  },
+  {
+    "arquivo": "smoke/fixtures/sinete/checks.mjs",
+    "nome": "cert",
+    "trecho": "['cert', m_u_cert, m_p_cert],",
+    "motivo": "nome do pacote `@sinete/transport` ou `@sinete/cert` (nome próprio), não o membro renomeado"
+  },
+  {
+    "arquivo": "smoke/fixtures/sinete/checks.mjs",
+    "nome": "transport",
+    "trecho": "['transport', m_u_transport, m_p_transport],",
+    "motivo": "nome do pacote `@sinete/transport` ou `@sinete/cert` (nome próprio), não o membro renomeado"
+  },
+  {
+    "arquivo": "smoke/fixtures/sinete/cjs.cjs",
+    "nome": "code",
+    "trecho": "if (e.code !== 'ERR_PACKAGE_PATH_NOT_EXPORTED') failures.push(`raiz: ${e.code}`);",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper) e das ocorrências, mantido (ADR 0015, códigos de erro)"
+  },
+  {
+    "arquivo": "tools/homologacao/src/df.ts",
+    "nome": "status",
+    "trecho": "if (!['status', 'emitir', 'consultar', 'cce', 'cancelar', 'dist'].includes(comando)) {",
+    "motivo": "verificação `status` do `doctor`, flag `--status` ou comando `status` da ferramenta de homologação: o serviço de status da SEFAZ (`NfeStatusServico`), nome oficial"
+  },
+  {
+    "arquivo": "tools/homologacao/src/df.ts",
+    "nome": "status",
+    "trecho": "if (comando === 'status') await status();",
+    "motivo": "verificação `status` do `doctor`, flag `--status` ou comando `status` da ferramenta de homologação: o serviço de status da SEFAZ (`NfeStatusServico`), nome oficial"
+  },
+  {
+    "arquivo": "tools/homologacao/src/df.ts",
+    "nome": "outcome",
+    "trecho": "const semOutcome = <R extends { outcome?: unknown }>(r: R): Omit<R, 'outcome'> => {",
+    "motivo": "formato interno de ferramenta fora da API dos pacotes (homologação, oráculo, gerador de dados, codegen, site)"
+  },
+  {
+    "arquivo": "tools/homologacao/src/run.ts",
+    "nome": "status",
+    "trecho": "if (opt.help || !comando || !['status', 'consultas', 'autorizacao', 'doctor'].includes(comando)) {",
+    "motivo": "verificação `status` do `doctor`, flag `--status` ou comando `status` da ferramenta de homologação: o serviço de status da SEFAZ (`NfeStatusServico`), nome oficial"
+  },
+  {
+    "arquivo": "tools/homologacao/src/run.ts",
+    "nome": "status",
+    "trecho": "if (comando === 'status') await status();",
+    "motivo": "verificação `status` do `doctor`, flag `--status` ou comando `status` da ferramenta de homologação: o serviço de status da SEFAZ (`NfeStatusServico`), nome oficial"
+  },
+  {
+    "arquivo": "tools/ibs-cbs-dados/extract.ts",
+    "nome": "format",
+    "trecho": "// Formatado pelo Biome do repo (como o tools/rejeicoes-data), para o `bun run format` não reescrever o gerado. Os hashes",
+    "motivo": "nome de arquivo ou pasta (`client.ts`, `resolver.ts`, `--record`, `bun run format`)"
+  },
+  {
+    "arquivo": "tools/ibs-cbs-oraculo/src/container.ts",
+    "nome": "image",
+    "trecho": "* Garante uma imagem local cuja camada confere com o pin. Usa `image` se informada (e conferida); senão a tag",
+    "motivo": "formato interno de ferramenta fora da API dos pacotes (homologação, oráculo, gerador de dados, codegen, site)"
+  },
+  {
+    "arquivo": "tools/rejeicoes-data/build.ts",
+    "nome": "format",
+    "trecho": "// Formatado pelo Biome do repo, para o `bun run format` não reescrever o arquivo gerado.",
+    "motivo": "nome de arquivo ou pasta (`client.ts`, `resolver.ts`, `--record`, `bun run format`)"
+  },
+  {
+    "arquivo": "tools/site/src/abertura.mdx",
+    "nome": "title",
+    "trecho": "title: Nota fiscal eletrônica",
+    "motivo": "formato interno de ferramenta fora da API dos pacotes (homologação, oráculo, gerador de dados, codegen, site)"
+  },
+  {
+    "arquivo": "tools/site/src/abertura.mdx",
+    "nome": "title",
+    "trecho": "title: Nota fiscal eletrônica, do XML à autorização na SEFAZ.",
+    "motivo": "formato interno de ferramenta fora da API dos pacotes (homologação, oráculo, gerador de dados, codegen, site)"
+  },
+  {
+    "arquivo": "tools/xsd-codegen/src/xsd.ts",
+    "nome": "ref",
+    "trecho": "if (!('ref' in tr)) throw new Error(`raiz ${r.element} precisa ser de tipo complexo`);",
+    "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), nome escolhido no ADR 0010; não é o `ref` do render do `@sinete/da` renomeado na fase 3"
   }
 ]
