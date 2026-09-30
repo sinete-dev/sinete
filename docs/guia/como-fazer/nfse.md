@@ -7,12 +7,12 @@ A NFS-e Nacional (Nota Fiscal de Serviço eletrônica, leiaute 1.01) é emitida 
 No exemplo, `pfx` contém os bytes do certificado A1, `senha` permite abri-lo, `store` persiste os bytes da DPS e coordena as transmissões, e `aoDecidir` recebe o desfecho para que a aplicação o guarde. `cnpjPrestador`, `cnpjTomador` e `nomeTomador` vêm dos dados da aplicação. O ambiente `homologacao` corresponde à produção restrita. Nas recusas, `cStat` contém o código retornado pela Sefin e `xMotivo`, a descrição.
 
 ```ts
-import { createNfseEmissor } from 'sinete/emissor/nfse';
-import type { DpsInput } from 'sinete/nfse';
+import { criarEmissorNfse } from 'sinete/emissor/nfse';
+import type { DadosDps } from 'sinete/nfse';
 
-const emissor = await createNfseEmissor({ pfx, senha, ambiente: 'homologacao', store, aoDecidir });
+const emissor = await criarEmissorNfse({ pfx, senha, ambiente: 'homologacao', store, aoDecidir });
 
-const dps: DpsInput = {
+const dps: DadosDps = {
   serie: '1',
   nDPS: '1',
   cLocEmi: '3550308',
@@ -34,7 +34,7 @@ else if (d.tipo === 'recusado') console.log(d.cStat, d.xMotivo); // código E da
 ```
 
 - **Identidade dos bytes.** Na NFS-e, o `id` do desfecho é o identificador da DPS, formado pelo município, tipo e número da inscrição federal do emitente, série e número da DPS. Esse identificador existe antes da resposta; a chave da NFS-e só vem depois, em `protocolo.chaveAcesso`. O XML da NFS-e fica em `proc`.
-- **Rejeição.** A Sefin responde com códigos `E` seguidos de quatro dígitos, que vão em `cStat`. Quando o catálogo de rejeições do sinete tem uma orientação para o código do Anexo I do leiaute, ela vem em `hint`. E0312 indica que o código de tributação nacional não está administrado pelo município de incidência do ISSQN (Imposto Sobre Serviços de Qualquer Natureza) na data de competência informada na DPS. É uma regra de nível 3, dependente da parametrização municipal.
+- **Rejeição.** A Sefin responde com códigos `E` seguidos de quatro dígitos, que vão em `cStat`. Quando o catálogo de rejeições do sinete tem uma orientação para o código do Anexo I do leiaute, ela vem em `dica`. E0312 indica que o código de tributação nacional não está administrado pelo município de incidência do ISSQN (Imposto Sobre Serviços de Qualquer Natureza) na data de competência informada na DPS. É uma regra de nível 3, dependente da parametrização municipal.
 - **Resposta perdida.** O emissor consulta a DPS pelo identificador e, se encontrar a chave, consulta a NFS-e. Compara o `DigestValue`, o resumo criptográfico do conteúdo assinado, quando ele está presente nas duas DPS. Se os valores diferirem, o desfecho é `divergente`; se coincidirem, é `autorizado`. Na ausência de um dos resumos, a confirmação usa o identificador da DPS. Se a consulta indicar que a DPS não gerou NFS-e, o emissor reenvia os mesmos bytes uma vez. A duplicidade E0014 também leva à consulta. Se a comunicação continuar sem resposta, o desfecho pode ficar `pendente`.
 - **Declaração XML.** A DPS sai com `<?xml version="1.0" encoding="UTF-8"?>`; sem ela, a Sefin recusa com E1229 antes de validar o esquema XML. Não retire a declaração ao guardar ou reenviar.
 - **Total aproximado dos tributos.** O Anexo I vincula o grupo `totTrib` ao regime do emitente no Simples Nacional (E0710, E0712, E0713). Quando o prestador é o emitente, o sinete confere esse regime e uma combinação proibida gera a ocorrência `campo_proibido` antes do envio. Se o emitente for o tomador ou o intermediário, o grupo continua obrigatório, mas essa conferência local não é feita porque a DPS não informa o regime dele.
@@ -50,9 +50,9 @@ A Sefin pede o certificado por renegociação TLS 1.2, uma etapa adicional de au
 A substituição troca uma NFS-e por outra, por exemplo, para corrigir o valor ou o tomador. A nova DPS leva o grupo `substituicao` com a chave da nota substituída. A Sefin gera a nova NFS-e e registra automaticamente o cancelamento por substituição da anterior (evento e105102). `substituir` tem a mesma gravação e retomada de `emitir`.
 
 ```ts
-import { createNfseEmissor } from 'sinete/emissor/nfse';
+import { criarEmissorNfse } from 'sinete/emissor/nfse';
 
-const emissor = await createNfseEmissor({ pfx, senha, ambiente: 'homologacao', store, aoDecidir });
+const emissor = await criarEmissorNfse({ pfx, senha, ambiente: 'homologacao', store, aoDecidir });
 const d = await emissor.substituir('servico-9-v2', {
   ...dps,
   nDPS: '2',

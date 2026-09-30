@@ -10,7 +10,7 @@ Usar um grupo de outro pacote de liberação (PL), que reúne os schemas de uma 
 
 ## Correção
 
-Monte os documentos pela API correspondente: `buildNfe` de `@sinete/nfe`, `buildMdfe` de `@sinete/mdfe` ou `buildDps` de `@sinete/nfse`. Essas funções convertem os dados de entrada para os tipos do schema. Ao usar o serializador diretamente, passe os valores simples como texto já formatado e os grupos como objetos compatíveis com o schema escolhido. Respeite as alternativas exclusivas e use um array de strings para `$any`.
+Monte os documentos pela API correspondente: `montarNfe` de `@sinete/nfe`, `montarMdfe` de `@sinete/mdfe` ou `montarDps` de `@sinete/nfse`. Essas funções convertem os dados de entrada para os tipos do schema. Ao usar o serializador diretamente, passe os valores simples como texto já formatado e os grupos como objetos compatíveis com o schema escolhido. Respeite as alternativas exclusivas e use um array de strings para `$any`.
 
 ## Armadilha
 

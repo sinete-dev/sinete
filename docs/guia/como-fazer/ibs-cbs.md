@@ -4,12 +4,12 @@ O IBS (Imposto sobre Bens e Serviços) e a CBS (Contribuição sobre Bens e Serv
 
 ## NF-e: classificar o item e deixar o sinete calcular
 
-Cada item leva a classificação em `impostos.ibsCbs.classificacao`: o CST (Código de Situação Tributária), o `cClassTrib` (código de classificação tributária) do cadastro do item e a base de cálculo. Por padrão, a montagem (`buildNfe`, também usada pelo emissor) usa a calculadora do sinete. Ela consulta os dados do `@sinete/ibs-cbs-dados`, extraídos das fontes oficiais, incluindo a Calculadora da Receita Federal, e as alíquotas oficiais disponíveis para a data do fato gerador, o momento da operação que dá origem ao tributo. Antes de montar a nota, confere o resultado pelas regras de validação da Nota Técnica (NT) 2025.002 aplicáveis à data de emissão e ao ambiente.
+Cada item leva a classificação em `impostos.ibsCbs.classificacao`: o CST (Código de Situação Tributária), o `cClassTrib` (código de classificação tributária) do cadastro do item e a base de cálculo. Por padrão, a montagem (`montarNfe`, também usada pelo emissor) usa a calculadora do sinete. Ela consulta os dados do `@sinete/ibs-cbs-dados`, extraídos das fontes oficiais, incluindo a Calculadora da Receita Federal, e as alíquotas oficiais disponíveis para a data do fato gerador, o momento da operação que dá origem ao tributo. Antes de montar a nota, confere o resultado pelas regras de validação da Nota Técnica (NT) 2025.002 aplicáveis à data de emissão e ao ambiente.
 
 ```ts
-import type { NfeInput } from 'sinete/nfe';
+import type { DadosNfe } from 'sinete/nfe';
 
-const item: NfeInput['itens'][number] = {
+const item: DadosNfe['itens'][number] = {
   produto: { cProd: '1', xProd: 'PARAFUSO', NCM: '73181500', CFOP: '5102', uCom: 'UN', qCom: '10', vUnCom: '1.00' },
   impostos: {
     icms: { CST: '00', orig: '0', pICMS: '18' },
@@ -24,20 +24,20 @@ const item: NfeInput['itens'][number] = {
 - **Base por função.** Para não repetir a conta em todo item, passe `base` na calculadora. Ela recebe os valores do item já calculados, como objetos `Decimal`, e os dados da nota. A função é usada quando a classificação não informa `vBC`:
 
 ```ts
-import { createNfeEmissor } from 'sinete/emissor/nfe';
-import { ibsCbsCalculator } from 'sinete/nfe';
+import { criarEmissorNfe } from 'sinete/emissor/nfe';
+import { calculadoraIbsCbs } from 'sinete/nfe';
 
-const ibsCbs = ibsCbsCalculator({ base: (item) => item.vProd.minus(item.vDesc).toFixed(2) });
-const nfe = await createNfeEmissor({ pfx, senha, ambiente: 'homologacao', store, aoDecidir, montagem: { ibsCbs } });
+const ibsCbs = calculadoraIbsCbs({ base: (item) => item.vProd.minus(item.vDesc).toFixed(2) });
+const nfe = await criarEmissorNfe({ pfx, senha, ambiente: 'homologacao', store, aoDecidir, montagem: { ibsCbs } });
 ```
 
 - **Datas.** A data do fato gerador determina os dados e as alíquotas; a data de emissão determina quais regras da NT já estão implantadas no ambiente. Os dois relógios vêm do `ContextoDeTempo`; sem fato gerador explícito, vale a data da emissão.
 - **Local da operação.** O sinete usa `cMunFGIBS`, o código do município do fato gerador informado na nota (campo B12a), quando consegue identificar sua unidade federativa (UF). Caso contrário, usa o destino da mercadoria: primeiro o endereço de entrega, depois o endereço do destinatário, conforme o critério de local da entrega da LC 214/2025, art. 11. Sem destino ou com destino no exterior, usa o município e a UF do emitente.
-- **Alíquota não publicada.** Uma alíquota necessária ao cálculo que não está disponível no provedor nunca vira zero: a calculadora retorna a ocorrência `ibscbs_aliquota_desconhecida`, e a nota não é montada. Para simular, informe as alíquotas (`ibsCbsCalculator({ rates })`, com `comAliquotasInformadas` do `sinete/nfe/ibs-cbs`). No resultado do motor de cálculo avulso, `simulado` indica o uso de alíquotas informadas; a calculadora integrada à montagem não repassa esse indicador.
+- **Alíquota não publicada.** Uma alíquota necessária ao cálculo que não está disponível no provedor nunca vira zero: a calculadora retorna a ocorrência `ibscbs_aliquota_desconhecida`, e a nota não é montada. Para simular, informe as alíquotas (`calculadoraIbsCbs({ rates })`, com `comAliquotasInformadas` do `sinete/nfe/ibs-cbs`). No resultado do motor de cálculo avulso, `simulado` indica o uso de alíquotas informadas; a calculadora integrada à montagem não repassa esse indicador.
 - **Grupo pronto.** Se outro sistema já calcula, mande o grupo do leiaute em `ibsCbs.grupo` no lugar da classificação; a calculadora não roda para esse item.
 - **Crédito presumido, diferimento e devolução de tributos.** Para informar esses valores, use o grupo pronto. A classificação aceita `cCredPres`, mas a calculadora padrão retorna `ibscbs_nao_suportado` quando ele é informado, pois precisa dos percentuais de crédito por tributo. A classificação não tem campos para informar percentuais de diferimento nem de devolução de tributos.
 
-As ocorrências do IBS/CBS voltam como as outras da montagem: `ErroDeValidacao` no emissor e `issues` no `buildNfe`. As ocorrências de um item apontam para `itens[n].impostos.ibsCbs` ou seus campos, com índice iniciado em zero. Há também ocorrências em outros caminhos: alíquota desconhecida aponta para `impostos.ibsCbs`, e violações das regras de totalização apontam para `total.IBSCBSTot`. A propriedade `origem` vale `entrada` quando a ocorrência aponta um valor informado na nota e `montagem` quando decorre do cálculo ou dos dados usados pelo sinete. As violações das regras da NT usam o código `ibscbs_regra_nt`, com a identificação da regra, o código de rejeição e a fonte na mensagem. Veja [como tratar as ocorrências de validação](ocorrencias-de-validacao.md).
+As ocorrências do IBS/CBS voltam como as outras da montagem: `ErroDeValidacao` no emissor e `ocorrencias` no `montarNfe`. As ocorrências de um item apontam para `itens[n].impostos.ibsCbs` ou seus campos, com índice iniciado em zero. Há também ocorrências em outros caminhos: alíquota desconhecida aponta para `impostos.ibsCbs`, e violações das regras de totalização apontam para `total.IBSCBSTot`. A propriedade `origem` vale `entrada` quando a ocorrência aponta um valor informado na nota e `montagem` quando decorre do cálculo ou dos dados usados pelo sinete. As violações das regras da NT usam o código `ibscbs_regra_nt`, com a identificação da regra, o código de rejeição e a fonte na mensagem. Veja [como tratar as ocorrências de validação](ocorrencias-de-validacao.md).
 
 ## Chegar ao CST e ao `cClassTrib`
 
@@ -68,9 +68,9 @@ Um fato desconhecido não exclui candidatos por si só: sem NCM (Nomenclatura Co
 Na DPS (Declaração de Prestação de Serviços, enviada para gerar a NFS-e), o grupo `ibsCbs` leva a classificação e os indicadores da operação. Também permite informar, quando aplicáveis, o código de crédito presumido, a classificação da tributação regular e os percentuais de diferimento, que adiam parte do recolhimento. A base, as alíquotas e os valores do IBS estadual e municipal e da CBS são calculados pela Sefin e vêm na NFS-e gerada (NT SE/CGNFS-e 004). O sinete não calcula esses tributos na NFS-e.
 
 ```ts
-import type { DpsInput } from 'sinete/nfse';
+import type { DadosDps } from 'sinete/nfse';
 
-const ibsCbs: DpsInput['ibsCbs'] = {
+const ibsCbs: DadosDps['ibsCbs'] = {
   cIndOp: '100301', // código indicador da operação (Anexo C, 6 dígitos)
   indDest: '0', // o destinatário é o próprio tomador
   classificacao: { CST: '000', cClassTrib: '000001' },

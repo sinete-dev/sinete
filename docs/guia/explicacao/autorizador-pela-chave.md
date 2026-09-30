@@ -1,6 +1,6 @@
 # Por que o autorizador sai do documento e da chave
 
-No sinete, o endereço de autorização de uma NF-e (Nota Fiscal Eletrônica) sai do próprio documento, sem uma UF fixa no emissor. A chave de acesso identifica a unidade federativa (UF) pelo código `cUF` e a forma de emissão pelo campo `tpEmis`. Na contingência, usada quando o serviço normal está indisponível, esse campo também identifica a Sefaz Virtual de Contingência (SVC). A autorização, a consulta, o cancelamento e a consulta do recibo acompanhada da nota assinada seguem essas informações. A decisão está no registro de decisão arquitetural ADR 0010 do sinete e na implementação do `NfeClient` do `@sinete/nfe`.
+No sinete, o endereço de autorização de uma NF-e (Nota Fiscal Eletrônica) sai do próprio documento, sem uma UF fixa no emissor. A chave de acesso identifica a unidade federativa (UF) pelo código `cUF` e a forma de emissão pelo campo `tpEmis`. Na contingência, usada quando o serviço normal está indisponível, esse campo também identifica a Sefaz Virtual de Contingência (SVC). A autorização, a consulta, o cancelamento e a consulta do recibo acompanhada da nota assinada seguem essas informações. A decisão está no registro de decisão arquitetural ADR 0010 do sinete e na implementação do `ClienteNfe` do `@sinete/nfe`.
 
 ## O problema de uma UF fixa
 

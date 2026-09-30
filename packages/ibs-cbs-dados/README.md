@@ -5,7 +5,7 @@ Dados oficiais do IBS e da CBS, versionados e com proveniência: CST, cClassTrib
 Status: pré-alfa, API instável até a 1.0.
 
 ```ts
-import { datasetEmbarcado } from '@sinete/ibs-cbs-dados/bundled';
+import { datasetEmbarcado } from '@sinete/ibs-cbs-dados/embarcado';
 
 const ds = datasetEmbarcado();
 ds.versaoDoConteudo; // '2026.09+V0057+v1.60+v1.60#2ec26a84383c'
@@ -21,7 +21,7 @@ O pacote é versionado pelo mês dos dados, `AAAA.M.patch` (`2026.9.1`), indepen
 
 ## Carga em runtime
 
-`@sinete/ibs-cbs-dados/bundled` embarca o dataset. Para atualizar dados sem atualizar código, obtenha outro bundle (arquivo, URL) e passe por `conferirDataset` (confere os hashes do manifesto com WebCrypto) antes do `carregarDataset`. Bundle com `versaoDoFormato` diferente de `VERSAO_DO_FORMATO_DOS_DADOS` é recusado.
+`@sinete/ibs-cbs-dados/embarcado` embarca o dataset. Para atualizar dados sem atualizar código, obtenha outro bundle (arquivo, URL) e passe por `conferirDataset` (confere os hashes do manifesto com WebCrypto) antes do `carregarDataset`. Bundle com `versaoDoFormato` diferente de `VERSAO_DO_FORMATO_DOS_DADOS` é recusado.
 
 | Erro | `code` | Quando |
 |---|---|---|

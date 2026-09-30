@@ -51,7 +51,7 @@ Cálculo puro e determinístico do IBS e da CBS a partir de uma operação já c
 
 ```ts
 import { relogioFixo, contextoDeTempo } from '@sinete/core';
-import { datasetEmbarcado } from '@sinete/ibs-cbs-dados/bundled';
+import { datasetEmbarcado } from '@sinete/ibs-cbs-dados/embarcado';
 import { calcular } from '@sinete/ibs-cbs/calcular';
 import { aliquotasOficiais } from '@sinete/ibs-cbs/aliquotas';
 
@@ -94,7 +94,7 @@ Regras de validação da NT 2025.002-RTC v1.51 (grupos UB e W da NF-e e da NFC-e
 
 ```ts
 import { relogioFixo, contextoDeTempo } from '@sinete/core';
-import { datasetEmbarcado } from '@sinete/ibs-cbs-dados/bundled';
+import { datasetEmbarcado } from '@sinete/ibs-cbs-dados/embarcado';
 import { documentoDoRoc, validar } from '@sinete/ibs-cbs/validar';
 
 const doc = documentoDoRoc(roc, { modelo: 55, crt: 3, finNFe: 1 });
@@ -128,7 +128,7 @@ Determinação do CST e do cClassTrib do IBS e da CBS a partir de fatos de negó
 
 ```ts
 import { relogioFixo, contextoDeTempo } from '@sinete/core';
-import { datasetEmbarcado } from '@sinete/ibs-cbs-dados/bundled';
+import { datasetEmbarcado } from '@sinete/ibs-cbs-dados/embarcado';
 import { determinar, idDaPergunta, paraClassificado } from '@sinete/ibs-cbs/determinar';
 
 const opts = { dataset: datasetEmbarcado(), tempo: contextoDeTempo({ emissao: relogioFixo('2026-10-10T12:00:00-03:00') }) };

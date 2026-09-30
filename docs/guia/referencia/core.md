@@ -91,7 +91,7 @@ Erros tipados, desfechos discriminados da SEFAZ, relógio injetável, logger est
 - `HashDaAssinatura`: Hash aceito pelos leiautes de DF-e; SHA-256 fica para leiautes futuros e para o TLS. `type HashDaAssinatura = 'SHA-1' | 'SHA-256'`
 - `InstanteInformado`: Instante aceito pelos relógios de teste: `Date`, epoch em milissegundos ou texto ISO 8601 com fuso. `type InstanteInformado = Date | number | string`
 - `NivelDeLog`: Logger estruturado e injetável. `type NivelDeLog = 'debug' | 'info' | 'warn' | 'error'`
-- `OrigemOcorrencia`: De onde vem uma ocorrência (ADR 0011): - `entrada`: conferência feita sobre a entrada do domínio (`NfeInput`, `MdfeInput`, `DpsInput`), antes de montar o documento. `type OrigemOcorrencia = 'entrada' | 'montagem'`
+- `OrigemOcorrencia`: De onde vem uma ocorrência (ADR 0011): - `entrada`: conferência feita sobre a entrada do domínio (`DadosNfe`, `DadosMdfe`, `DadosDps`), antes de montar o documento. `type OrigemOcorrencia = 'entrada' | 'montagem'`
 - `Regiao`: `type Regiao = 'N' | 'NE' | 'SE' | 'S' | 'CO'`
 - `Resultado`: Resultado genérico para operações locais que podem falhar sem exceção (parse tolerante, validação). `type Resultado<T, E = Error> = { readonly ok: true; readonly valor: T; } | { readonly ok: false; readonly erro: E; }`
 - `ResultadoSefaz`: Desfecho de uma chamada à SEFAZ. `D` é o tipo do valor na denegação, por padrão o mesmo da autorização. `type ResultadoSefaz<T, D = T> = Autorizado<T> | Recusado | Denegado<D> | Pendente`

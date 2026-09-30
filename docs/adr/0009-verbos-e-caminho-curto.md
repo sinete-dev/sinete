@@ -4,6 +4,7 @@
 - Data: 26/set/2026
 - Complementa o [ADR 0008](0008-divisao-de-pacotes.md), que decide os pacotes, mas não os nomes dentro deles.
 - A decisão 3 (emissores curtos dentro de cada pacote de documento, com `aoAssinar`) foi revista pelo [ADR 0010](0010-fronteira-emissor.md): os emissores estão no `@sinete/emissor`, com `TransmissaoStore` obrigatório.
+- 30/set/2026, na fase 3 do [ADR 0015](0015-nomes-em-portugues.md): os três montadores têm a mesma forma, assíncrona (`montarNfe`, `montarMdfe` e `montarDps` devolvem `Promise`). A NF-e precisa dela: a calculadora de IBS/CBS pode ser assíncrona (`CalculadoraIbsCbs.calcular` devolve o resultado ou uma `Promise`), e a padrão importa o dataset embarcado na primeira nota. MDF-e e DPS não esperavam nada, mas a forma única deixa o emissor e o código do integrador tratarem a montagem igual nos três documentos, e deixa um passo assíncrono futuro na DPS (o IBS/CBS da NFS-e, por exemplo) entrar sem outra quebra de assinatura. O custo é um `await` a mais onde a montagem era síncrona.
 
 ## Contexto
 

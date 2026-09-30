@@ -13,20 +13,20 @@ Status: pré-alfa, API instável até a 1.0.
 | `@sinete/da/mdfe` | `damdfe`: DAMDFE, sem nenhum layout nem schema da NF-e |
 | `@sinete/da/cce` | `dacce`: DACCe da Carta de Correção |
 | `@sinete/da/nfse` | `danfse`: DANFSe v2 da NFS-e Nacional, sem nenhum layout nem schema da NF-e |
-| `@sinete/da` | o que é comum: `toPdf`, `toHtml`, `toSvg`, o modelo `Doc`, `DanfeError`, CODE-128 e QR Code |
+| `@sinete/da` | o que é comum: `gerarPdf`, `gerarHtml`, `gerarSvg`, o modelo `Documento`, `ErroDa`, CODE-128 e QR Code |
 
-Cada subpath reexporta os renderizadores, então um import basta. Quem importa só `@sinete/da/mdfe` ou `@sinete/da/nfse` não leva ao bundle o layout nem o schema da NF-e: `test/subpaths.test.ts` confere isso no fonte e a smoke confere no pacote publicado, com o `@sinete/schemas` dentro do bundle. Raiz e subpaths saem do mesmo build com splitting, então `DanfeError` é uma classe só por qualquer caminho.
+Cada subpath reexporta os renderizadores, então um import basta. Quem importa só `@sinete/da/mdfe` ou `@sinete/da/nfse` não leva ao bundle o layout nem o schema da NF-e: `test/subpaths.test.ts` confere isso no fonte e a smoke confere no pacote publicado, com o `@sinete/schemas` dentro do bundle. Raiz e subpaths saem do mesmo build com splitting, então `ErroDa` é uma classe só por qualquer caminho.
 
 ```ts
-import { danfe, toHtml, toPdf } from '@sinete/da/nfe';
+import { danfe, gerarHtml, gerarPdf } from '@sinete/da/nfe';
 import { dacce } from '@sinete/da/cce';
 import { damdfe } from '@sinete/da/mdfe';
 import { danfce } from '@sinete/da/nfce';
 import { danfse } from '@sinete/da/nfse';
 
 const doc = danfe(nfeProcXml); // formato pelo XML: modelo 65 é NFC-e; no 55, pelo tpImp
-const pdf: Uint8Array = toPdf(doc); // PDF 1.4, determinístico
-const html: string = toHtml(doc); // uma <svg> por página, pronta para window.print()
+const pdf: Uint8Array = gerarPdf(doc); // PDF 1.4, determinístico
+const html: string = gerarHtml(doc); // uma <svg> por página, pronta para window.print()
 
 danfe(nfeProcXml, { formato: 'paisagem', logo: pngOuJpeg, cancelamento: procEventoCancelamentoXml });
 danfce(nfceProcXml, { largura: 58, via: 'estabelecimento' }); // ou danfe(nfceProcXml, { ... })
@@ -70,16 +70,16 @@ Sem `formato`, o modelo 65 vai para `nfce` e o 55 segue o `tpImp`: 2 paisagem, 3
 
 ## Decisões (ADR 0006)
 
-- **Layout como função pura** do XML para um `Doc` (páginas de operações em mm); `toPdf`, `toHtml` e `toSvg` só desenham. O `Doc` é público e serve para inspecionar ou escrever outro backend.
+- **Layout como função pura** do XML para um `Documento` (páginas de operações em mm); `gerarPdf`, `gerarHtml` e `gerarSvg` só desenham. O `Documento` é público e serve para inspecionar ou escrever outro backend.
 - **Entrada pelo `@sinete/schemas`**: o XML é lido pelo decoder tolerante (PL_010f da NF-e, 3.00b do MDF-e, PL_010d dos eventos, 1.01 da NFS-e), nunca por parse próprio. Elemento desconhecido não impede o documento.
-- **Encaixe de texto** (decisão 7): uma linha no tamanho nominal; senão, reduz em passos de 0,25 pt até 6 pt; senão, quebra em linhas de 6 pt até onde a altura deixa; só então corta com reticências. `doc.stats` conta os textos de dado reduzidos, quebrados e cortados.
+- **Encaixe de texto** (decisão 7): uma linha no tamanho nominal; senão, reduz em passos de 0,25 pt até 6 pt; senão, quebra em linhas de 6 pt até onde a altura deixa; só então corta com reticências. `documento.estatisticas` conta os textos de dado reduzidos, quebrados e cortados.
 - **Escritor PDF próprio** com as fontes padrão (Times no DANFE, como pede o MOC 3.7; Helvetica na bobina, no DAMDFE e no DANFSe, no lugar da Arial da NT 008/2026) em WinAnsi. Texto fora do CP1252 perde o diacrítico ou vira `?`.
 - **CODE-128 e QR Code próprios**, da norma (ISO/IEC 15417 e 18004), sem dependência. A chave sai em CODE-128C; com CNPJ alfanumérico, no híbrido C/A da NT 2025.001 (`code128Chave`). O QR vai em UTF-8, nível M, com a zona de silêncio dentro do quadrado mínimo de 25 mm.
 - Medidas e textos que o MOC e as NTs fixam ficam em `src/data/`, com a origem: `leiaute.ts` com o que é comum e um arquivo por documento (`leiaute-a4.ts`, `leiaute-bobina.ts`, `leiaute-mdfe.ts`, `leiaute-danfse.ts`), para que um subpath não leve os dados de outro.
 
 ## Erros
 
-`DanfeError` (`ErroSinete`) com `code`: `xml_invalido`, `documento_inesperado`, `campo_ausente` (ex.: NFC-e sem `infNFeSupl/qrCode`), `evento_incompativel`, `formato_incompativel`, `imagem_invalida`, `codigo_barras_invalido`.
+`ErroDa` (`ErroSinete`) com `code`: `xml_invalido`, `documento_inesperado`, `campo_ausente` (ex.: NFC-e sem `infNFeSupl/qrCode`), `evento_incompativel`, `formato_incompativel`, `imagem_invalida`, `codigo_barras_invalido`.
 
 ## Testes
 

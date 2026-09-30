@@ -10,11 +10,11 @@ Também é possível usar o helper nativo `sinete-signer`, distribuído no npm c
 
 ```ts
 import { relogioDoSistema, contextoDeTempo } from 'sinete/core';
-import { buildNfe, rotuloDoCaminho } from 'sinete/nfe';
+import { montarNfe, rotuloDoCaminho } from 'sinete/nfe';
 
-const r = await buildNfe(nota, { ambiente: 'homologacao', time: contextoDeTempo({ emissao: relogioDoSistema }) });
+const r = await montarNfe(nota, { ambiente: 'homologacao', tempo: contextoDeTempo({ emissao: relogioDoSistema }) });
 if (!r.ok) {
-  for (const i of r.issues.filter((x) => x.origem === 'entrada')) mostrarNoCampo(i.caminho, rotuloDoCaminho(i.caminho), i.mensagem);
+  for (const i of r.ocorrencias.filter((x) => x.origem === 'entrada')) mostrarNoCampo(i.caminho, rotuloDoCaminho(i.caminho), i.mensagem);
 } else {
   await fetch(`/api/pedidos/${pedido.id}/nfe`, { method: 'POST', body: JSON.stringify(nota) });
 }
@@ -31,12 +31,12 @@ No browser:
 ```ts
 import { abrirPfx } from 'sinete/cert';
 import { relogioDoSistema, contextoDeTempo } from 'sinete/core';
-import { buildNfe, signNfe } from 'sinete/nfe';
+import { montarNfe, assinarNfe } from 'sinete/nfe';
 
 const ks = await abrirPfx(new Uint8Array(await arquivoPfx.arrayBuffer()), { senha: senha, relogio: relogioDoSistema });
-const r = await buildNfe(nota, { ambiente: 'homologacao', time: contextoDeTempo({ emissao: relogioDoSistema }) });
+const r = await montarNfe(nota, { ambiente: 'homologacao', tempo: contextoDeTempo({ emissao: relogioDoSistema }) });
 if (r.ok) {
-  const assinada = await signNfe(r.value, await ks.assinador());
+  const assinada = await assinarNfe(r.valor, await ks.assinador());
   await fetch(`/api/pedidos/${pedido.id}/nfe-assinada`, {
     method: 'POST',
     headers: { 'content-type': 'application/xml; charset=utf-8' },
@@ -49,11 +49,11 @@ No servidor, confira a assinatura e se a chave de acesso corresponde ao emitente
 
 ```ts
 import { conferirAssinatura } from 'sinete/core/xml';
-import { TransmissaoEmAndamentoError } from 'sinete/emissor';
-import { createNfeEmissor } from 'sinete/emissor/nfe';
+import { ErroTransmissaoEmAndamento } from 'sinete/emissor';
+import { criarEmissorNfe } from 'sinete/emissor/nfe';
 import { documentoAssinado } from 'sinete/nfe';
 
-const transmissor = await createNfeEmissor({ pfx: pfxDoTransmissor, senha: senhaDoTransmissor, ambiente: 'homologacao', store, aoDecidir });
+const transmissor = await criarEmissorNfe({ pfx: pfxDoTransmissor, senha: senhaDoTransmissor, ambiente: 'homologacao', store, aoDecidir });
 
 async function receberAssinada(ref: string, xml: string) {
   const { id } = documentoAssinado(xml, 'NFe', 'infNFe'); // 'NFe' + chave de acesso
@@ -61,7 +61,7 @@ async function receberAssinada(ref: string, xml: string) {
   if (!v.ok) throw new Error(`assinatura não confere: ${v.motivo}`);
   conferirChaveDoPedido(ref, id.slice(3)); // emitente, série e número do pedido
   const trava = await store.travar('nfe', ref, 60_000);
-  if (trava === undefined) throw new TransmissaoEmAndamentoError('outra transmissão deste pedido está em curso');
+  if (trava === undefined) throw new ErroTransmissaoEmAndamento('outra transmissão deste pedido está em curso');
   try {
     // Com bytes já gravados para o pedido, vale o que já estava lá: estes são ignorados.
     if ((await store.ler('nfe', ref)) === undefined) await store.gravar(trava, { xml, id: id.slice(3), meta: {} });

@@ -13,7 +13,7 @@ O `iniciarSigner` de `sinete/transport/signer` recebe o caminho do executável e
 ## 2. Token A3 (PKCS#11)
 
 ```ts
-import { createNfeEmissor } from 'sinete/emissor/nfe';
+import { criarEmissorNfe } from 'sinete/emissor/nfe';
 import { certificadoAberto, iniciarSigner } from 'sinete/transport/signer';
 
 const signer = await iniciarSigner({ pkcs11: true, ambientes: ['homologacao'], tpAmb: '2' });
@@ -23,7 +23,7 @@ const a3 = await signer.abrirPkcs11({
   rotulo: 'certificado',
   pin: () => pedirPinAoUsuario(),
 });
-const nfe = await createNfeEmissor({ certificado: certificadoAberto(a3), ambiente: 'homologacao', store, aoDecidir });
+const nfe = await criarEmissorNfe({ certificado: certificadoAberto(a3), ambiente: 'homologacao', store, aoDecidir });
 ```
 
 No exemplo, `modulo` é o caminho absoluto do módulo PKCS#11 do fabricante, e `token` é o rótulo do dispositivo. `pedirPinAoUsuario`, `store` e `aoDecidir` são fornecidos pela aplicação.
@@ -34,7 +34,7 @@ O helper encontra o certificado pelo rótulo (`rotulo`) ou pelo atributo `CKA_ID
 
 Essa validação abrange a Nota Fiscal Eletrônica (NF-e), a Nota Fiscal de Consumidor Eletrônica (NFC-e), o Manifesto Eletrônico de Documentos Fiscais (MDF-e), o Conhecimento de Transporte Eletrônico (CT-e), eventos, inutilização de numeração, a Declaração de Prestação de Serviço (DPS) e pedidos de registro de evento da Nota Fiscal de Serviço Eletrônica Nacional (NFS-e). Nos documentos da SEFAZ, o certificado da matriz cobre as filiais do mesmo CNPJ-base, os oito primeiros caracteres do CNPJ.
 
-O `assinadorDeDocumentos` envia também o elemento referenciado quando recebe esse contexto da assinatura. O helper confere seu resumo criptográfico e, em eventos, o autor informado no próprio elemento. Isso permite assinar a manifestação do destinatário, o evento em que ele se pronuncia sobre uma NF-e recebida, embora o `Id` contenha a chave de acesso de outro emitente. O mesmo `certificadoAberto` serve para `createMdfeEmissor` e `createNfseEmissor`, e a identidade (`a3.identidadeTls`) serve para qualquer `criarTransporte`.
+O `assinadorDeDocumentos` envia também o elemento referenciado quando recebe esse contexto da assinatura. O helper confere seu resumo criptográfico e, em eventos, o autor informado no próprio elemento. Isso permite assinar a manifestação do destinatário, o evento em que ele se pronuncia sobre uma NF-e recebida, embora o `Id` contenha a chave de acesso de outro emitente. O mesmo `certificadoAberto` serve para `criarEmissorMdfe` e `criarEmissorNfse`, e a identidade (`a3.identidadeTls`) serve para qualquer `criarTransporte`.
 
 ## 3. A3 em nuvem, OpenBao ou `CryptoKey`
 

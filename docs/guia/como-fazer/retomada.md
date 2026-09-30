@@ -11,9 +11,9 @@ Há três jeitos de retomar, e os três usam a mesma trava, então podem convive
 `emitir(ref, entrada)` com uma `ref` que já tem bytes gravados retoma com eles e ignora a entrada. É o que acontece quando a pessoa clica em "emitir" de novo no mesmo pedido. Não há nada a fazer além de usar sempre a mesma `ref` para o mesmo documento.
 
 ```ts
-import { createNfeEmissor } from 'sinete/emissor/nfe';
+import { criarEmissorNfe } from 'sinete/emissor/nfe';
 
-const nfe = await createNfeEmissor({ pfx, senha, ambiente: 'homologacao', store, aoDecidir });
+const nfe = await criarEmissorNfe({ pfx, senha, ambiente: 'homologacao', store, aoDecidir });
 const desfecho = await nfe.emitir(pedido.id, nota); // com bytes gravados para pedido.id, `nota` é ignorada
 ```
 
@@ -22,9 +22,9 @@ const desfecho = await nfe.emitir(pedido.id, nota); // com bytes gravados para p
 `retomar(ref)` retoma pelos bytes gravados e devolve o desfecho, ou `undefined` se não há nada gravado para a `ref`. Não recebe entrada. Assim como `emitir`, exige uma função `aoDecidir` para guardar o documento decidido, definida no emissor ou nas opções da chamada.
 
 ```ts
-import { createNfeEmissor } from 'sinete/emissor/nfe';
+import { criarEmissorNfe } from 'sinete/emissor/nfe';
 
-const nfe = await createNfeEmissor({ pfx, senha, ambiente: 'homologacao', store, aoDecidir });
+const nfe = await criarEmissorNfe({ pfx, senha, ambiente: 'homologacao', store, aoDecidir });
 const desfecho = await nfe.retomar('pedido-42');
 if (desfecho === undefined) console.log('nada gravado para pedido-42');
 else if (desfecho.tipo === 'pendente') console.log('ainda sem decisão:', desfecho.motivo);
@@ -35,12 +35,12 @@ else if (desfecho.tipo === 'pendente') console.log('ainda sem decisão:', desfec
 `retomarPendentes` roda uma execução da retomada automática: seleciona no store as gravações paradas, sem trava em vigor e dentro da idade máxima, obtém o emissor do certificado de cada uma e chama `retomar`. O agendamento é seu (cron, fila, timer). Use um intervalo maior que `prazoMs`, de 7 minutos por padrão, para reduzir a sobreposição entre execuções. Esse prazo impede o início de novas retomadas, mas não interrompe uma que já começou; por isso, o intervalo sozinho não garante que as execuções nunca se sobreponham.
 
 ```ts
-import { createPoolDeEmissores, retomarPendentes } from 'sinete/emissor';
-import { createNfeEmissor } from 'sinete/emissor/nfe';
+import { criarPoolDeEmissores, retomarPendentes } from 'sinete/emissor';
+import { criarEmissorNfe } from 'sinete/emissor/nfe';
 
 // Um emissor por certificado, reaproveitado entre emissões e retomadas.
-const pool = createPoolDeEmissores({
-  criar: (cert) => createNfeEmissor({ ...cert, ambiente: 'producao', store, aoDecidir }),
+const pool = criarPoolDeEmissores({
+  criar: (cert) => criarEmissorNfe({ ...cert, ambiente: 'producao', store, aoDecidir }),
 });
 
 const resumo = await retomarPendentes({
@@ -79,11 +79,11 @@ No resumo, `candidatas` conta todas as gravações encontradas pela seleção, i
 
 ## Armadilhas
 
-- **Remontar para "tentar de novo".** Chamar `buildNfe` remonta o documento; chamar `emitir` com outra `ref` permite uma nova montagem e transmissão, mesmo para o mesmo pedido e número fiscal. A `ref` é o id estável do documento no seu sistema.
+- **Remontar para "tentar de novo".** Chamar `montarNfe` remonta o documento; chamar `emitir` com outra `ref` permite uma nova montagem e transmissão, mesmo para o mesmo pedido e número fiscal. A `ref` é o id estável do documento no seu sistema.
 - **Apagar os bytes pendentes à mão** para destravar a tela. O documento pode estar autorizado no serviço autorizador; apagar os bytes não cancela a autorização e impede a retomada. Na NF-e e no MDF-e, `emissor.consultar(id)` consulta pela chave de acesso. Na NFS-e, o `id` gravado identifica a DPS, não a chave da nota: `emissor.cliente.consultarDps(id)` permite obter a chave para consultar a NFS-e. Consultar não substitui guardar o documento no seu sistema.
 - **Retomada sem `aoDecidir` idempotente.** Se o processo cair entre guardar o documento e apagar os bytes, a retomada decide de novo e chama o `aoDecidir` outra vez com o mesmo documento. O `jaGuardado` evita essa segunda decisão quando identifica o documento salvo, mas não dispensa uma gravação idempotente, como um upsert, que insere ou atualiza sem duplicar o registro.
 - **Agendar mais de uma execução ao mesmo tempo** não produz documento duplicado, pois a trava impede transmissões simultâneas dos mesmos bytes, mas pode gerar consultas extras. Use um intervalo maior que `prazoMs` e, se precisar impedir qualquer sobreposição, controle também a execução no agendador.
-- **Reemitir a mesma nota recusada sem corrigir a causa.** Com `registrarRecusa` e `recusaRecente` implementados no store e a barreira `recusaRepetida` habilitada, três recusas definitivas iguais em uma hora barram, por padrão, a próxima emissão da mesma `ref` com o mesmo conteúdo. O emissor lança `RecusaRepetidaError` antes de gravar e enviar. Essa proteção ajuda a evitar a rejeição 656, de consumo indevido; mudar apenas campos que variam automaticamente na montagem pode não liberar o envio. Corrija a causa da rejeição antes de tentar novamente.
+- **Reemitir a mesma nota recusada sem corrigir a causa.** Com `registrarRecusa` e `recusaRecente` implementados no store e a barreira `recusaRepetida` habilitada, três recusas definitivas iguais em uma hora barram, por padrão, a próxima emissão da mesma `ref` com o mesmo conteúdo. O emissor lança `ErroRecusaRepetida` antes de gravar e enviar. Essa proteção ajuda a evitar a rejeição 656, de consumo indevido; mudar apenas campos que variam automaticamente na montagem pode não liberar o envio. Corrija a causa da rejeição antes de tentar novamente.
 
 ## Veja também
 

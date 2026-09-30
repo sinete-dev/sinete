@@ -20,22 +20,22 @@ O simulador gera na hora uma autoridade certificadora (AC) de teste e um e-CNPJ,
 ```ts completo
 import { writeFile } from 'node:fs/promises';
 import {
-  createSefazSim,
-  redirectToSim,
-  SIM_BASE_URL,
-  simTransport,
-  syntheticCertificate,
-  syntheticPfx,
+  criarSefazSim,
+  redirecionarParaSim,
+  URL_BASE_SIM,
+  transporteSim,
+  certificadoSintetico,
+  pfxSintetico,
 } from '@sinete/sefaz-sim';
 import { relogioManual } from 'sinete/core';
-import { createMemoriaStore } from 'sinete/emissor/memoria';
-import { createNfeEmissor } from 'sinete/emissor/nfe';
-import type { NfeInput } from 'sinete/nfe';
+import { criarMemoriaStore } from 'sinete/emissor/memoria';
+import { criarEmissorNfe } from 'sinete/emissor/nfe';
+import type { DadosNfe } from 'sinete/nfe';
 
 const clock = relogioManual('2026-09-26T10:00:00-03:00');
-const ac = await syntheticCertificate({ clock, role: 'ac' });
-const titular = await syntheticCertificate({ clock, role: 'titular', cnpj: '11222333000181', issuer: ac });
-const sim = createSefazSim({ clock });
+const ac = await certificadoSintetico({ relogio: clock, papel: 'ac' });
+const titular = await certificadoSintetico({ relogio: clock, papel: 'titular', cnpj: '11222333000181', emissor: ac });
+const sim = criarSefazSim({ relogio: clock });
 ```
 
 ## 2. O emissor
@@ -50,26 +50,26 @@ A opção `transporte` permite personalizar o transporte. Neste tutorial, ela tr
 ```ts continua
 const notas = new Map<string, string>();
 
-const emissor = await createNfeEmissor({
-  pfx: syntheticPfx(titular, 'senha-de-teste', { chain: [ac] }),
+const emissor = await criarEmissorNfe({
+  pfx: pfxSintetico(titular, 'senha-de-teste', { cadeia: [ac] }),
   senha: 'senha-de-teste',
   ambiente: 'homologacao',
-  clock,
-  store: createMemoriaStore({ clock }),
+  relogio: clock,
+  store: criarMemoriaStore({ relogio: clock }),
   aoDecidir: (registro, desfecho) => {
     // A denegação cujo protocolo veio sem digVal não traz nfeProc: na aplicação, guarde os bytes (`xml`) e o protNFe.
     notas.set(registro.ref, desfecho.proc ?? desfecho.protocolo.protNFe);
   },
-  transporte: () => redirectToSim(simTransport(sim, { clientCertificate: titular.der }), SIM_BASE_URL),
+  transporte: () => redirecionarParaSim(transporteSim(sim, { certificadoDoCliente: titular.der }), URL_BASE_SIM),
 });
 ```
 
 ## 3. A nota
 
-A entrada (`NfeInput`) usa os nomes do leiaute nos campos e nomes em português nos grupos. Valores decimais vão como texto (`'10.00'`) para evitar perda de precisão. A montagem calcula os totais e os valores do Imposto sobre Circulação de Mercadorias e Serviços (ICMS) a partir dos dados informados, além de gerar a chave de acesso e, quando omitido, o código numérico da nota. O IBS e a CBS do item são calculados pela calculadora padrão a partir de `CST`, o Código de Situação Tributária, e `cClassTrib`, o código de classificação tributária, com a base de cálculo informada em `vBC`.
+A entrada (`DadosNfe`) usa os nomes do leiaute nos campos e nomes em português nos grupos. Valores decimais vão como texto (`'10.00'`) para evitar perda de precisão. A montagem calcula os totais e os valores do Imposto sobre Circulação de Mercadorias e Serviços (ICMS) a partir dos dados informados, além de gerar a chave de acesso e, quando omitido, o código numérico da nota. O IBS e a CBS do item são calculados pela calculadora padrão a partir de `CST`, o Código de Situação Tributária, e `cClassTrib`, o código de classificação tributária, com a base de cálculo informada em `vBC`.
 
 ```ts continua
-const nota: NfeInput = {
+const nota: DadosNfe = {
   serie: 1,
   nNF: 1,
   natOp: 'VENDA DE MERCADORIA',
@@ -130,7 +130,7 @@ switch (d1.tipo) {
     console.log('autorizada', d1.id, d1.cStat, 'guardada:', notas.has('pedido-1'));
     break;
   case 'recusado':
-    console.log('recusada', d1.cStat, d1.xMotivo, d1.hint?.comoCorrigir);
+    console.log('recusada', d1.cStat, d1.xMotivo, d1.dica?.comoCorrigir);
     break;
   default:
     console.log(d1.tipo);
@@ -139,14 +139,14 @@ switch (d1.tipo) {
 
 A nota sai com `tipo: 'autorizado'` e `cStat` 100. O `aoDecidir` já guardou o `nfeProc`, e os bytes da transmissão foram apagados do `store` depois disso. Se a SEFAZ recusasse definitivamente a nota (`recusado`), os bytes seriam descartados e você corrigiria a entrada e emitiria de novo com a mesma `ref`.
 
-Evite reenviar repetidamente a nota sem corrigir a causa da recusa. Com um `store` que implementa `registrarRecusa` e `recusaRecente`, como o adaptador em memória, a barreira de recusa repetida fica ativa por padrão. Depois de três recusas iguais do mesmo conteúdo para a mesma referência em uma hora, a próxima tentativa igual lança `RecusaRepetidaError` antes de gravar e enviar. Isso ajuda a evitar o bloqueio por consumo indevido, identificado pela SEFAZ com `cStat` 656. Corrigir o conteúdo permite uma nova tentativa.
+Evite reenviar repetidamente a nota sem corrigir a causa da recusa. Com um `store` que implementa `registrarRecusa` e `recusaRecente`, como o adaptador em memória, a barreira de recusa repetida fica ativa por padrão. Depois de três recusas iguais do mesmo conteúdo para a mesma referência em uma hora, a próxima tentativa igual lança `ErroRecusaRepetida` antes de gravar e enviar. Isso ajuda a evitar o bloqueio por consumo indevido, identificado pela SEFAZ com `cStat` 656. Corrigir o conteúdo permite uma nova tentativa.
 
 ## 5. A conexão cai depois de a SEFAZ autorizar
 
 Este é um caso em que uma implementação sem recuperação pode tentar emitir novamente uma nota já autorizada: a SEFAZ processa, a resposta não chega e a aplicação monta a nota de novo. Se o código numérico não foi informado, remontar pode gerar outro; com o relógio do sistema, `dhEmi`, a data e hora de emissão, também pode mudar. A nova chave pode causar a rejeição 539, duplicidade de NF-e com diferença na chave de acesso. Se a aplicação tentar resolver isso usando outro número, pode autorizar uma segunda nota para a mesma operação. O simulador reproduz a queda:
 
 ```ts continua
-sim.injectFault({ kind: 'drop', phase: 'after' }, { servico: 'NFeAutorizacao' });
+sim.injetarFalha({ tipo: 'derrubar', fase: 'depois' }, { servico: 'NFeAutorizacao' });
 const d2 = await emissor.emitir('pedido-2', { ...nota, nNF: 2 });
 console.log(d2.tipo, notas.has('pedido-2'));
 ```
@@ -166,18 +166,18 @@ Em homologação, o DANFE sai com a marca "SEM VALOR FISCAL". Na montagem da NF-
 
 ## 7. Onde entra o certificado real
 
-Para emitir na SEFAZ de homologação de verdade com um certificado A1, mude três coisas no emissor: substitua o PFX e a senha pelos do certificado real, remova `transporte` e remova `clock`. O transporte padrão usa mTLS, permite os hosts de homologação e confere `tpAmb`, o código do ambiente, no corpo da requisição.
+Para emitir na SEFAZ de homologação de verdade com um certificado A1, mude três coisas no emissor: substitua o PFX e a senha pelos do certificado real, remova `transporte` e remova `relogio`. O transporte padrão usa mTLS, permite os hosts de homologação e confere `tpAmb`, o código do ambiente, no corpo da requisição.
 
 A nota precisa trazer a identidade fiscal do emitente, com a inscrição estadual (`IE`) e o endereço reais. Para e-CNPJ, os oito primeiros caracteres do CNPJ do emitente, o CNPJ-base, precisam coincidir com os do certificado; a divergência corresponde à rejeição 213. Para e-CPF, o CPF precisa coincidir integralmente; a divergência corresponde à rejeição 227. O emissor confere essa correspondência localmente e lança `ErroDeValidacao` antes de transmitir.
 
 ```ts sem-execucao
 import { readFile } from 'node:fs/promises';
-import { createNfeEmissor } from 'sinete/emissor/nfe';
+import { criarEmissorNfe } from 'sinete/emissor/nfe';
 
 const senha = process.env.SINETE_PFX_SENHA;
 if (senha === undefined) throw new Error('defina SINETE_PFX_SENHA');
 
-const emissor = await createNfeEmissor({
+const emissor = await criarEmissorNfe({
   pfx: await readFile('empresa.pfx'),
   senha,
   ambiente: 'homologacao',

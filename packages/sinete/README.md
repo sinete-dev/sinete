@@ -16,10 +16,10 @@ A senha do PFX vem do ambiente, em `SINETE_PFX_SENHA`. O `doctor` nunca mostra a
 Os imports escolhem a parte usada pelo sistema:
 
 ```ts
-import { buildNfe, createNfeClient, signNfe } from 'sinete/nfe';
-import { createNfeEmissor } from 'sinete/emissor/nfe';
+import { montarNfe, criarClienteNfe, assinarNfe } from 'sinete/nfe';
+import { criarEmissorNfe } from 'sinete/emissor/nfe';
 import { determinar } from 'sinete/nfe/ibs-cbs';
-import { danfe, toPdf } from 'sinete/da/nfe';
+import { danfe, gerarPdf } from 'sinete/da/nfe';
 import { damdfe } from 'sinete/da/mdfe';
 import { cnpjValido } from 'sinete/validators';
 ```
@@ -58,7 +58,7 @@ O bin `sinete` executa a CLI de `@sinete/cli`, com `doctor` e `agents-md`. O sim
 | `sinete/emissor`, `sinete/emissor/nfe`, `/mdfe`, `/nfse`, `/memoria`, `/contrato` | `@sinete/emissor` |
 | `sinete/da`, `sinete/da/nfe`, `sinete/da/nfce`, `sinete/da/mdfe`, `sinete/da/cce` | `@sinete/da` |
 | `sinete/ibs-cbs`, `sinete/ibs-cbs/aliquotas`, `/calcular`, `/validar`, `/determinar` | `@sinete/ibs-cbs` |
-| `sinete/ibs-cbs-dados`, `sinete/ibs-cbs-dados/bundled` | `@sinete/ibs-cbs-dados` |
+| `sinete/ibs-cbs-dados`, `sinete/ibs-cbs-dados/embarcado` | `@sinete/ibs-cbs-dados` |
 | `sinete/validators` | `@sinete/validators` |
 | `sinete/cert` | `@sinete/cert` |
 | `sinete/transport` | `@sinete/transport` |

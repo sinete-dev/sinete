@@ -27,7 +27,7 @@ const { cadeia, chave } = ks.tlsPem(); // para o @sinete/transport; só em memó
 
 ## PFX
 
-`abrirPfx(bytes, { password, clock, allowExpired?, reader? })`:
+`abrirPfx(bytes, { senha, relogio, aceitarVencido?, leitor? })`:
 
 - Lê PBES2/AES, 3DES e o legado RC2-40 + 3DES (perfil de A1 antigo exportado pelo Windows). RC2-128 não é lido (`pfx_nao_suportado`).
 - Senha com acento: tenta a conversão correta (UTF-16, como o OpenSSL 3) e, se o MAC não conferir, a variante de ferramentas antigas que convertiam byte a byte (`senhaNoFormatoLegado`).

@@ -1,6 +1,6 @@
 # `contrato_violado`: o adaptador do store não cumpre o contrato
 
-Um caso da suíte de contrato do `TransmissaoStore`, a interface que guarda os documentos assinados e controla as travas entre processos, falhou. A suíte está em `sinete/emissor/contrato` e lança `ContratoVioladoError`, exportado por esse mesmo módulo ou por `@sinete/emissor/contrato`. O erro é um `ErroSinete` com `code: 'contrato_violado'`, e `detalhes.caso` identifica o caso que falhou. Decida pelo `code` (`ehErroSinete(e, 'contrato_violado')`, com `ehErroSinete` de `@sinete/core`), nunca pela mensagem.
+Um caso da suíte de contrato do `TransmissaoStore`, a interface que guarda os documentos assinados e controla as travas entre processos, falhou. A suíte está em `sinete/emissor/contrato` e lança `ErroContratoViolado`, exportado por esse mesmo módulo ou por `@sinete/emissor/contrato`. O erro é um `ErroSinete` com `code: 'contrato_violado'`, e `detalhes.caso` identifica o caso que falhou. Decida pelo `code` (`ehErroSinete(e, 'contrato_violado')`, com `ehErroSinete` de `@sinete/core`), nunca pela mensagem.
 
 ## Causa
 

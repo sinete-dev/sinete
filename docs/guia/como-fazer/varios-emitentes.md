@@ -9,8 +9,8 @@ Um servidor que emite para muitas empresas precisa administrar certificados por 
 O pool identifica cada certificado por uma chave e reutiliza o emissor correspondente enquanto ele permanecer no pool. A opção `chave` permite usar, por exemplo, o identificador do certificado no banco. Sem essa opção, o pool calcula a chave a partir de `pfx` e `senha`; ela é obrigatória quando esses campos não estão disponíveis. O PFX é aberto novamente quando o pool precisa criar outro emissor para o certificado.
 
 ```ts
-import { abrirCertificado, createPoolDeEmissores } from 'sinete/emissor';
-import { createNfeEmissor } from 'sinete/emissor/nfe';
+import { abrirCertificado, criarPoolDeEmissores } from 'sinete/emissor';
+import { criarEmissorNfe } from 'sinete/emissor/nfe';
 
 interface CertificadoDoBanco {
   id: string;
@@ -18,11 +18,11 @@ interface CertificadoDoBanco {
   senha: string;
 }
 
-const pool = createPoolDeEmissores({
+const pool = criarPoolDeEmissores({
   chave: (c: CertificadoDoBanco) => c.id,
   criar: async (c) => {
     const certificado = await abrirCertificado(c, { completarCadeia: true });
-    return createNfeEmissor({ certificado, ambiente: 'producao', store, situacaoPosterior: 'divergente' });
+    return criarEmissorNfe({ certificado, ambiente: 'producao', store, situacaoPosterior: 'divergente' });
   },
 });
 ```

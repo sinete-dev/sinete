@@ -1,6 +1,6 @@
 # `documento_inesperado`: o XML é de outro documento
 
-O XML informado não tem a raiz esperada pela função que gera o documento auxiliar. O erro é um `DanfeError` (`@sinete/da`), que estende `ErroSinete`, com `code: 'documento_inesperado'`. Identifique-o pelo `code` (`ehErroSinete(e, 'documento_inesperado')`), nunca pela mensagem.
+O XML informado não tem a raiz esperada pela função que gera o documento auxiliar. O erro é um `ErroDa` (`@sinete/da`), que estende `ErroSinete`, com `code: 'documento_inesperado'`. Identifique-o pelo `code` (`ehErroSinete(e, 'documento_inesperado')`), nunca pela mensagem.
 
 ## Causa
 

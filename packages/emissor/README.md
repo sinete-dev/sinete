@@ -12,9 +12,9 @@ A documentação de uso vem no pacote, em `node_modules/@sinete/emissor/docs/` (
 
 ```ts
 import { readFile } from 'node:fs/promises';
-import { createNfeEmissor } from '@sinete/emissor/nfe';
+import { criarEmissorNfe } from '@sinete/emissor/nfe';
 
-const nfe = await createNfeEmissor({
+const nfe = await criarEmissorNfe({
   pfx: await readFile('empresa.pfx'),
   senha,
   ambiente: 'homologacao',
@@ -35,7 +35,7 @@ switch (desfecho.tipo) {
   case 'ja-guardado': // guardado antes de uma queda (gancho jaGuardado, abaixo)
     break;
   case 'recusado': // bytes descartados: corrija e emita de novo
-    console.log(desfecho.cStat, desfecho.xMotivo, desfecho.hint);
+    console.log(desfecho.cStat, desfecho.xMotivo, desfecho.dica);
     break;
   case 'pendente': // bytes gravados: o job (ou o próximo emitir) retoma
   case 'divergente': // a SEFAZ tem outro documento no número: alguém precisa olhar
@@ -67,9 +67,9 @@ O `aoDecidir` e o `jaGuardado` vão no emissor (padrão de todas as chamadas) ou
 
 **`jaGuardado`.** Se a transmissão cai depois de o integrador guardar o documento e antes de a gravação ser apagada, a próxima transmissão acha os bytes. Com o gancho, o emissor pergunta, com a trava e antes de ir à SEFAZ, se o documento destes bytes já foi guardado; se sim, apaga a gravação e devolve `ja-guardado`. Sem ele, a consulta da chave decide de novo e o `aoDecidir` roda outra vez (por isso ele é idempotente), e um documento cancelado ou encerrado nesse meio tempo volta com `situacaoAtual`.
 
-Enquanto espera a SEFAZ, renova a trava (padrão: prazo de 10 minutos, renovado a cada terço). Antes de guardar o desfecho, e antes de devolver um desfecho que mantém os bytes, confere que a trava ainda é dela: quem perdeu a trava lança `TravaPerdidaError` e não grava nada, e quem assumiu retoma pelos bytes (a retomada automática conta isso como `ocupada`, sem tentativa). No fim, solta a trava, dê certo ou não. Outro processo com a trava em vigor recebe `TransmissaoEmAndamentoError` sem tocar a SEFAZ.
+Enquanto espera a SEFAZ, renova a trava (padrão: prazo de 10 minutos, renovado a cada terço). Antes de guardar o desfecho, e antes de devolver um desfecho que mantém os bytes, confere que a trava ainda é dela: quem perdeu a trava lança `ErroTravaPerdida` e não grava nada, e quem assumiu retoma pelos bytes (a retomada automática conta isso como `ocupada`, sem tentativa). No fim, solta a trava, dê certo ou não. Outro processo com a trava em vigor recebe `ErroTransmissaoEmAndamento` sem tocar a SEFAZ.
 
-**Recusa repetida.** Reenviar a mesma nota com a mesma rejeição é o que a SEFAZ conta como consumo indevido e pune com até uma hora de bloqueio do emitente (rejeição 656, MOC 7.0 Anexo I, item 4.3.1). Com um `store` que lembra recusas (`registrarRecusa` e `recusaRecente`, opcionais), o emissor conta as recusas da nota pelo SHA-256 do conteúdo descartado (sem a hora de emissão, o código numérico da chave e a assinatura, que mudam a cada montagem) e pelo `cStat`. Quando a mesma recusa chega ao limite dentro da janela (`recusaRepetida: { janelaMs, limite }`, 3 vezes em 1 hora por padrão, contada desde a primeira), a próxima emissão da mesma `ref` com o mesmo conteúdo lança `RecusaRepetidaError` antes de gravar e sem ir à SEFAZ: a 4ª tentativa igual não sai, bem antes das 30 da regra. Abaixo do limite a mesma nota vai, para quem resolveu a causa fora dela. A nota corrigida (outro conteúdo) passa e recomeça a conta; a retomada de bytes gravados nunca é barrada; a recusa do serviço (108, 109, 999) não conta. Depois de resolver uma causa que está fora da nota (o credenciamento do emitente, 203), `emitir(ref, entrada, { reenviarRecusado: true })` envia assim mesmo. `recusaRepetida: false` desliga.
+**Recusa repetida.** Reenviar a mesma nota com a mesma rejeição é o que a SEFAZ conta como consumo indevido e pune com até uma hora de bloqueio do emitente (rejeição 656, MOC 7.0 Anexo I, item 4.3.1). Com um `store` que lembra recusas (`registrarRecusa` e `recusaRecente`, opcionais), o emissor conta as recusas da nota pelo SHA-256 do conteúdo descartado (sem a hora de emissão, o código numérico da chave e a assinatura, que mudam a cada montagem) e pelo `cStat`. Quando a mesma recusa chega ao limite dentro da janela (`recusaRepetida: { janelaMs, limite }`, 3 vezes em 1 hora por padrão, contada desde a primeira), a próxima emissão da mesma `ref` com o mesmo conteúdo lança `ErroRecusaRepetida` antes de gravar e sem ir à SEFAZ: a 4ª tentativa igual não sai, bem antes das 30 da regra. Abaixo do limite a mesma nota vai, para quem resolveu a causa fora dela. A nota corrigida (outro conteúdo) passa e recomeça a conta; a retomada de bytes gravados nunca é barrada; a recusa do serviço (108, 109, 999) não conta. Depois de resolver uma causa que está fora da nota (o credenciamento do emitente, 203), `emitir(ref, entrada, { reenviarRecusado: true })` envia assim mesmo. `recusaRepetida: false` desliga.
 
 O envio espera o recibo quando a SEFAZ responde 103 (mesmo no envio síncrono), trata o envio sem resposta (timeout, conexão caída, resposta fora do leiaute, abort depois de o pedido sair) e a duplicidade (204, 539; E0014 na NFS-e) pela consulta da chave com os mesmos bytes, e reenvia os mesmos bytes uma vez quando o documento não consta. Vai sempre ao autorizador do documento e da chave (cUF e, em SVC, o tpEmis): um emissor atende todas as UFs do certificado.
 
@@ -82,7 +82,7 @@ Normalizado entre os documentos, com o desfecho bruto do pacote do documento em 
 | `autorizado` | autorizado; `proc` é o `nfeProc`/`mdfeProc`/NFS-e com os bytes gravados; `situacaoAtual` (`cancelado`, `encerrado`) quando a consulta acha o documento já cancelado ou encerrado fora deste fluxo | `aoDecidir`, depois apagados |
 | `denegado` | uso denegado (só NF-e); o número fica consumido. A denegação é da chave, então é definitiva mesmo quando o protocolo não prova o conteúdo: `conteudo` diz se o `digVal` confere (`confere`, com o `proc`), falta (`sem-digval`) ou prova outro conteúdo na mesma chave (`difere`); sem `proc`, o desfecho traz os bytes em `xml` e o `protNFe` em `protocolo` | `aoDecidir`, depois apagados |
 | `ja-guardado` | o gancho `jaGuardado` disse que o documento destes bytes já foi guardado; nada foi à SEFAZ | apagados, sem `aoDecidir` |
-| `recusado` | a SEFAZ recusou os bytes (`cStat`, `xMotivo`, `hint`) | apagados, menos os `cStat` indefinidos do documento (a duplicidade que a consulta não resolveu, o lote em processamento), que ficam |
+| `recusado` | a SEFAZ recusou os bytes (`cStat`, `xMotivo`, `dica`) | apagados, menos os `cStat` indefinidos do documento (a duplicidade que a consulta não resolveu, o lote em processamento), que ficam |
 | `pendente` | `motivo`: `sem-resposta` (o erro em `causa`), `consulta-indefinida` (serviço paralisado, por exemplo) ou `lote-em-processamento` (o recibo em `nRec`); `anterior` traz a recusa que levou à consulta (a duplicidade, 204 ou 539) quando a consulta não decidiu | ficam |
 | `divergente` | a SEFAZ tem outro documento no número: a mesma chave com outro conteúdo (`conteudo: 'difere'`), ou outra chave (539, E0014; a registrada em `chaveRegistrada`). Também a chave autorizada cujo protocolo não traz o `digVal` nem na resposta nem na consulta (`conteudo: 'sem-digval'`): nada prova que o documento autorizado é o destes bytes. Com a opção `situacaoPosterior: 'divergente'`, também o documento autorizado que a consulta acha cancelado ou encerrado fora deste fluxo (`situacaoAtual` e `proc`), para quem não o guarda como ativo | ficam |
 
@@ -114,14 +114,14 @@ for (const caso of casosDoContrato({
 }
 ```
 
-**`@sinete/emissor/memoria`** é o adaptador de referência, em memória: só para testes e scripts de um processo. Se o processo cair depois de a SEFAZ autorizar e antes da resposta, a gravação some junto. Dois stores sobre o mesmo `createBancoMemoria()` simulam dois processos.
+**`@sinete/emissor/memoria`** é o adaptador de referência, em memória: só para testes e scripts de um processo. Se o processo cair depois de a SEFAZ autorizar e antes da resposta, a gravação some junto. Dois stores sobre o mesmo `criarBancoMemoria()` simulam dois processos.
 
 ## Retomada automática
 
 `retomarPendentes` roda uma execução; o agendamento (cron, fila) é do integrador. Nunca monta: só retoma o que foi gravado, pelo mesmo `retomar` do emissor, com a mesma trava.
 
 ```ts
-import { createPoolDeEmissores, retomarPendentes } from '@sinete/emissor';
+import { criarPoolDeEmissores, retomarPendentes } from '@sinete/emissor';
 
 const resumo = await retomarPendentes({
   store,
@@ -137,20 +137,20 @@ Política (`PoliticaRetomada`, todos com padrão): só gravações de até `idad
 ## Pool de emissores
 
 ```ts
-const pool = createPoolDeEmissores({ criar: (cert) => createNfeEmissor({ ...cert, ambiente, store, aoDecidir }) });
+const pool = criarPoolDeEmissores({ criar: (cert) => criarEmissorNfe({ ...cert, ambiente, store, aoDecidir }) });
 const desfecho = await pool.usar({ pfx, senha }, (nfe) => nfe.emitir(ref, nota));
 ```
 
-Um emissor por PFX e senha, por até `ttlMs` (10 minutos) e no máximo `maximo` (32) certificados; o transporte só fecha quando o último empréstimo termina. O empréstimo é por escopo (`usar`), sem `AsyncLocalStorage`. A chave do pool é o SHA-256 do PFX e da senha: nunca vai a log nem sai do pool.
+Um emissor por PFX e senha, por até `validadeMs` (10 minutos) e no máximo `maximo` (32) certificados; o transporte só fecha quando o último empréstimo termina. O empréstimo é por escopo (`usar`), sem `AsyncLocalStorage`. A chave do pool é o SHA-256 do PFX e da senha: nunca vai a log nem sai do pool.
 
 **Certificado aberto.** Quem emite mais de um documento por certificado abre o PFX uma vez (`abrirCertificado`, com `completarCadeia` para mandar a cadeia inteira no mTLS) e passa `certificado` no lugar de `pfx` e `senha`. O pool aceita qualquer tipo de certificado com a opção `chave` (o id do certificado no seu banco, por exemplo):
 
 ```ts
-const pool = createPoolDeEmissores({
+const pool = criarPoolDeEmissores({
   chave: (c: { id: string; pfx: Uint8Array; senha: string }) => c.id,
   criar: async (c) => {
     const certificado = await abrirCertificado(c, { completarCadeia: true });
-    return createNfeEmissor({ certificado, ambiente, store, aoDecidir });
+    return criarEmissorNfe({ certificado, ambiente, store, aoDecidir });
   },
 });
 ```
@@ -159,19 +159,19 @@ const pool = createPoolDeEmissores({
 
 | | NF-e (`/nfe`) | MDF-e (`/mdfe`) | NFS-e (`/nfse`) |
 |---|---|---|---|
-| emitir, retomar, assinar | `emitir(ref, NfeInput)` ou `{ nfe, montagem }` | `emitir(ref, MdfeInput)` ou `{ mdfe, montagem }` | `emitir(ref, DpsInput)`, `substituir(ref, dps)` |
+| emitir, retomar, assinar | `emitir(ref, DadosNfe)` ou `{ nfe, montagem }` | `emitir(ref, DadosMdfe)` ou `{ mdfe, montagem }` | `emitir(ref, DadosDps)`, `substituir(ref, dps)` |
 | consultar | `consultar(chave, xml?)` | `consultar(chave, xml?)` | `consultar(chave)` |
 | cancelar | com recuperação: sem `nProt`, pela consulta; sem resposta, 573 ou 580, confirma pela consulta (`recuperado: true`) | idem, com 631 | sem resposta ou E0840, confirma pelo evento 101101 na Sefin (`recuperado: true`) |
-| outros eventos | `cartaCorrecao` | `encerrar` | pelo `cliente` |
+| outros eventos | `cartaCorrecao`, com a mesma recuperação, pela sequência e pelo texto | `encerrar`, com a mesma recuperação, pelo município | pelo `cliente` |
 | PDF | `pdf(nfeProc)`, `pdfCancelado(nfeProc, procEventoNFe)` | `pdf(mdfeProc)`, `pdfCancelado(mdfeProc, procEventoMDFe)` | `pdf(nfse)`, `pdfCancelado(nfse, evento)` e `pdfPorChave(chave)`: o DANFSe v2 local |
 
-`cancelar` devolve um `DesfechoEvento` (`registrado`, `recusado`, `pendente`) e nunca conclui pelo `cStat` sozinho: 573, 580 e E0840 dizem que algo foi registrado, não que foi este evento; a prova é o evento na consulta (`recuperarEventoRegistrado` do pacote do documento, `consultarEventos` na NFS-e).
+`cancelar`, `cartaCorrecao` e `encerrar` devolvem um `DesfechoEvento` (`registrado`, `recusado`, `pendente`) e nunca concluem pelo `cStat` sozinho: 573, 580 e E0840 dizem que algo foi registrado, não que foi este evento; a prova é o evento na consulta (`recuperarEventoRegistrado` do pacote do documento, `consultarEventos` na NFS-e).
 
-`assinar(entrada)` monta e assina sem gravar nem usar a rede (roda no browser). `cliente` é o cliente completo do documento, com o mesmo transporte e signer, para o resto. Cada subpath exporta também o perfil (`perfilNfe`, `perfilMdfe`, `perfilNfse`), para quem compõe o próprio emissor com `createEmissor(perfil, opcoes)` da raiz.
+`assinar(entrada)` monta e assina sem gravar nem usar a rede (roda no browser). `cliente` é o cliente completo do documento, com o mesmo transporte e signer, para o resto. Cada subpath exporta também o perfil (`perfilNfe`, `perfilMdfe`, `perfilNfse`), para quem compõe o próprio emissor com `criarEmissor(perfil, opcoes)` da raiz.
 
-Opções comuns: `pfx` e `senha` ou `certificado`, `ambiente` e `store` (obrigatórias), `aoDecidir` e `jaGuardado` (no emissor ou em cada chamada), `situacaoPosterior` (`guardar`, padrão, ou `divergente`), `recusaRepetida` (`{ janelaMs, limite }` ou `false`), `trava` (`prazoMs`, `renovarACadaMs`), `clock`, `logger`, `timeoutMs`, `transporte` (recebe as opções padrão do transporte e devolve outro: somar uma AC de teste, apontar para o simulador). As do documento: `montagem` (de todos os documentos; a de um documento vai com ele, `{ nfe, montagem }`), `cliente`, `recibo` e `uf` (NF-e), `da` (NF-e, MDF-e e NFS-e).
+Opções comuns: `pfx` e `senha` ou `certificado`, `ambiente` e `store` (obrigatórias), `aoDecidir` e `jaGuardado` (no emissor ou em cada chamada), `situacaoPosterior` (`guardar`, padrão, ou `divergente`), `recusaRepetida` (`{ janelaMs, limite }` ou `false`), `trava` (`prazoMs`, `renovarACadaMs`), `relogio`, `logger`, `timeoutMs`, `transporte` (recebe as opções padrão do transporte e devolve outro: somar uma AC de teste, apontar para o simulador). As do documento: `montagem` (de todos os documentos; a de um documento vai com ele, `{ nfe, montagem }`), `cliente`, `recibo` e `uf` (NF-e), `da` (NF-e, MDF-e e NFS-e).
 
-**PDF.** O `@sinete/da` é peer dependency opcional. Em Node e Bun o emissor o importa na primeira chamada; sem o pacote, `pdf()` lança `ErroDeConfiguracao`. No browser e no Deno, importe-o de forma estática e passe o módulo: `import * as da from '@sinete/da/nfe'` e `createNfeEmissor({ ..., da })`. Se a marca de cancelado falhar (evento de outro documento), `pdfCancelado` lança, e o integrador decide manter o PDF antigo.
+**PDF.** O `@sinete/da` é peer dependency opcional. Em Node e Bun o emissor o importa na primeira chamada; sem o pacote, `pdf()` lança `ErroDeConfiguracao`. No browser e no Deno, importe-o de forma estática e passe o módulo: `import * as da from '@sinete/da/nfe'` e `criarEmissorNfe({ ..., da })`. Se a marca de cancelado falhar (evento de outro documento), `pdfCancelado` lança, e o integrador decide manter o PDF antigo. As opções do PDF são tipadas no emissor (`PdfNfeOpcoes`, `PdfMdfeOpcoes`, `PdfNfseOpcoes`) com os mesmos membros das do `@sinete/da` (`DanfeOpcoes`, `DamdfeOpcoes`, `DanfseOpcoes`), sem exigir o pacote para compilar.
 
 **DANFSe.** A API de geração do ADN foi suspensa em 03/08/2026 (NT SE/CGNFS-e 008/2026, 1), então o emissor de NFS-e gera o DANFSe v2 pelo `@sinete/da/nfse`, como os outros documentos. `pdf(nfse)` usa o XML da NFS-e (o `proc` do desfecho autorizado, que o `aoDecidir` guardou) e não vai à rede. `pdfCancelado(nfse, evento)` põe a marca d'água pelo evento registrado: "SUBSTITUÍDA" com o e105102, "CANCELADA" com o e101101, o e105104 ou o e305101. Quem não guardou o XML usa `pdfPorChave(chave)`: consulta a NFS-e e os quatro eventos que marcam o documento na Sefin, põe a marca que achar e devolve `undefined` se a Sefin não conhece a chave.
 
@@ -179,11 +179,11 @@ Opções comuns: `pfx` e `senha` ou `certificado`, `ambiente` e `store` (obrigat
 
 `@sinete/core`, `@sinete/cert` e `@sinete/transport`. Os pacotes de documento e o `@sinete/da` são peer dependencies opcionais: quem só emite NF-e instala só o `@sinete/nfe`. A raiz não importa nenhum pacote de documento, e cada subpath importa só o seu (`test/subpaths.test.ts` confere no fonte).
 
-**Deno com `npm:`.** Sem `node_modules`, o Deno só resolve a peer opcional que está no grafo estático do app: `import { createNfeEmissor } from 'npm:@sinete/emissor/nfe'` sozinho falha com `Could not find package '@sinete/nfe'`. Importe também o pacote do documento, em qualquer ponto do app (a ordem não importa); declará-lo só no `imports` do `deno.json` não basta. Com `package.json` e `node_modules`, vale a resolução do Node e nada disso é preciso. A raiz e o `/memoria` não têm peer. Medido no Deno 2.9.1 e conferido pela smoke (ADR 0010).
+**Deno com `npm:`.** Sem `node_modules`, o Deno só resolve a peer opcional que está no grafo estático do app: `import { criarEmissorNfe } from 'npm:@sinete/emissor/nfe'` sozinho falha com `Could not find package '@sinete/nfe'`. Importe também o pacote do documento, em qualquer ponto do app (a ordem não importa); declará-lo só no `imports` do `deno.json` não basta. Com `package.json` e `node_modules`, vale a resolução do Node e nada disso é preciso. A raiz e o `/memoria` não têm peer. Medido no Deno 2.9.1 e conferido pela smoke (ADR 0010).
 
 ```ts sem-checagem
 import 'npm:@sinete/nfe';
-import { createNfeEmissor } from 'npm:@sinete/emissor/nfe';
+import { criarEmissorNfe } from 'npm:@sinete/emissor/nfe';
 ```
 
 ## Licença

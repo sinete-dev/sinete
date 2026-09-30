@@ -10,11 +10,11 @@ A NF-e em SVC é outro documento: a forma de emissão (`tpEmis` 6 para SVC-AN, 7
 
 ```ts
 import { relogioManual } from 'sinete/core';
-import { createNfeEmissor } from 'sinete/emissor/nfe';
+import { criarEmissorNfe } from 'sinete/emissor/nfe';
 import { autorizadorContingencia } from 'sinete/nfe';
 
 const clock = relogioManual('2026-09-26T10:00:00-03:00');
-const nfe = await createNfeEmissor({ pfx, senha, ambiente: 'homologacao', clock, store, aoDecidir });
+const nfe = await criarEmissorNfe({ pfx, senha, ambiente: 'homologacao', relogio: clock, store, aoDecidir });
 
 // Qual SVC atende a UF do emitente e o tpEmis que a nota leva.
 const { autorizador, tpEmis } = autorizadorContingencia('SP', 'homologacao');
@@ -32,7 +32,7 @@ console.log(autorizador, d.tipo);
 - **O que já está gravado continua como está.** Um pedido com XML assinado gravado em emissão normal, por exemplo, porque a resposta se perdeu ou a SEFAZ (Secretaria da Fazenda) caiu durante o envio, é retomado com os mesmos bytes. A chamada a `emitir` com a mesma `ref`, o identificador do pedido no sistema do integrador, ignora a entrada nova enquanto essa gravação existir. A contingência só é aplicada na montagem de documentos novos. Não reassine um pendente em SVC com o mesmo número: se a SEFAZ da UF autorizou os bytes originais, você teria duas notas para o mesmo número.
 - **Consulta e cancelamento no SVC.** A nota autorizada em SVC é consultada e cancelada na SVC que a autorizou, mesmo depois de o autorizador normal voltar (NT 2013.007). O cliente determina esse destino pela chave. A carta de correção vai sempre ao autorizador normal da UF.
 - **Justificativa.** `xJust` deve ter de 15 a 256 caracteres. Informe `dhCont` como um `Date` e use fuso explícito ao construí-lo a partir de uma string. A entrada em contingência não pode ser posterior à emissão.
-- **Serviços sem documento** (status do serviço, recibo consultado sem a nota) vão à SVC num cliente criado com `createNfeClient({ ..., contingencia: 'svc' })`; a emissão não precisa disso.
+- **Serviços sem documento** (status do serviço, recibo consultado sem a nota) vão à SVC num cliente criado com `criarClienteNfe({ ..., contingencia: 'svc' })`; a emissão não precisa disso.
 - **Inutilização só no ambiente normal.** A inutilização comunica que uma faixa de números não será usada. A SVC não oferece esse serviço (NT 2013.007 v1.03, item 04.5), e o cliente com `contingencia: 'svc'` o recusa com `servico_nao_oferecido`: guarde a faixa e inutilize no autorizador normal da UF quando ele voltar.
 
 Para verificar a disponibilidade antes de decidir, `nfe.cliente.statusServico()` devolve o `cStat`, o código de status da resposta do serviço: 107 significa em operação; 108, paralisado momentaneamente; 109, paralisado sem previsão (MOC 7.0, tabela 4.4.1). A consulta usa a UF configurada no cliente. A decisão de entrar em contingência é do emitente, mas a SVC só autoriza depois que a SEFAZ da UF a ativa manualmente, para uma parada programada ou não (NT 2013.007 v1.03, item 03).
@@ -44,10 +44,10 @@ Antes de mandar a nota à SVC, consulte o status nela, num cliente criado com `c
 O MDF-e em contingência off-line (`tpEmis` 2) pode ser emitido sem autorização prévia da SEFAZ. O QR Code leva o parâmetro `sign` com a assinatura da chave de acesso, e o DAMDFE, o documento auxiliar do MDF-e, sai com "EMISSÃO EM CONTINGÊNCIA". O documento tem 168 horas a partir da emissão para ser transmitido com o mesmo `cMDF`, o código numérico que compõe a chave (MOC MDF-e, Visão Geral, item 11.1). A forma de emissão é uma opção da montagem, então use um emissor só para a contingência:
 
 ```ts
-import { damdfe, toPdf } from 'sinete/da/mdfe';
-import { createMdfeEmissor } from 'sinete/emissor/mdfe';
+import { damdfe, gerarPdf } from 'sinete/da/mdfe';
+import { criarEmissorMdfe } from 'sinete/emissor/mdfe';
 
-const offline = await createMdfeEmissor({
+const offline = await criarEmissorMdfe({
   pfx,
   senha,
   ambiente: 'homologacao',
@@ -60,7 +60,7 @@ if (d.tipo === 'pendente') {
   // A autorização não foi confirmada: os bytes ficaram gravados e a viagem sai com o DAMDFE deles.
   const gravado = await store.ler('mdfe', 'viagem-8');
   if (gravado !== undefined) {
-    await imprimir(toPdf(damdfe(gravado.xml)));
+    await imprimir(gerarPdf(damdfe(gravado.xml)));
   }
 }
 ```
@@ -74,9 +74,9 @@ Retome dentro das 168 horas, que é o prazo do MOC para a transmissão. A funç�
 Com `contingencia: { automatica: true }`, o emissor de NF-e e NFC-e decide sozinho quando entrar e sair de contingência, conforme a decisão de arquitetura ADR 0013. Essa opção vem desligada por padrão: mudar o tipo de emissão muda o documento fiscal, e quem a habilita precisa estar preparado para notas com `tpEmis` 6, 7 ou 9.
 
 ```ts
-import { createNfeEmissor } from 'sinete/emissor/nfe';
+import { criarEmissorNfe } from 'sinete/emissor/nfe';
 
-const nfe = await createNfeEmissor({
+const nfe = await criarEmissorNfe({
   pfx,
   senha,
   ambiente: 'producao',

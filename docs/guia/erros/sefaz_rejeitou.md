@@ -12,7 +12,7 @@ A SEFAZ recusou a operação; corrigir a causa e reenviar é possível. Os campo
 
 Trate os quatro desfechos de `ResultadoSefaz` (`autorizado`, `recusado`, `denegado` e `pendente`) com `tratarResultado`, do `@sinete/core`, ou um `switch` no `tipo`. Prefira esse tratamento a `exigirAutorizado` quando o resultado não autorizado for esperado no fluxo.
 
-Pelo emissor, o desfecho já vem normalizado no campo `tipo`: `autorizado`, `denegado`, `recusado`, `pendente` ou `divergente`. Esses desfechos são retornados como valores. Há, porém, erros locais que podem impedir uma nova tentativa: quando a barreira de recusa repetida está ativa e o limite é atingido, o emissor lança `RecusaRepetidaError`, com `code: 'recusa_repetida'`, antes de gravar ou enviar o documento novamente. Essa barreira depende de o store implementar `registrarRecusa` e `recusaRecente` e ajuda a evitar consumo indevido, associado ao código `656`.
+Pelo emissor, o desfecho já vem normalizado no campo `tipo`: `autorizado`, `denegado`, `recusado`, `pendente` ou `divergente`. Esses desfechos são retornados como valores. Há, porém, erros locais que podem impedir uma nova tentativa: quando a barreira de recusa repetida está ativa e o limite é atingido, o emissor lança `ErroRecusaRepetida`, com `code: 'recusa_repetida'`, antes de gravar ou enviar o documento novamente. Essa barreira depende de o store implementar `registrarRecusa` e `recusaRecente` e ajuda a evitar consumo indevido, associado ao código `656`.
 
 ## Armadilha
 

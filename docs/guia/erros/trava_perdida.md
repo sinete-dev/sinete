@@ -1,6 +1,6 @@
 # `trava_perdida`: a trava venceu antes de o emissor terminar
 
-O emissor (ou o store, que armazena as transmissões) percebeu que a trava do documento não está mais em vigor: ela venceu e pode ter sido assumida por outro processo. A trava garante que só um processo por vez possa trabalhar na transmissão daquele documento. O erro é um `TravaPerdidaError` (`@sinete/emissor`), que estende `ErroSinete` e tem `code: 'trava_perdida'`. Identifique-o pelo `code`, usando `ehErroSinete(e, 'trava_perdida')` de `@sinete/core`, nunca pela mensagem.
+O emissor (ou o store, que armazena as transmissões) percebeu que a trava do documento não está mais em vigor: ela venceu e pode ter sido assumida por outro processo. A trava garante que só um processo por vez possa trabalhar na transmissão daquele documento. O erro é um `ErroTravaPerdida` (`@sinete/emissor`), que estende `ErroSinete` e tem `code: 'trava_perdida'`. Identifique-o pelo `code`, usando `ehErroSinete(e, 'trava_perdida')` de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 

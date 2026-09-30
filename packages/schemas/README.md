@@ -14,7 +14,7 @@ selecionarPl('nfe', 'producao', relogioFixo('2026-09-25T10:00:00-03:00')).modulo
 const inf: TNFe_infNFe = { Id: 'NFe35...', versao: '4.00', ide, emit, det, total, transp, pag }; // os grupos montados
 const xml = serializar(TNFe_infNFe, 'infNFe', inf); // forma canônica: é o C14N do elemento, pronto para assinar
 
-const { valor: value, ocorrencias: issues } = decodificarXml(nfeProcElement, recebido); // tolerante: issues em vez de exceção
+const { valor, ocorrencias } = decodificarXml(nfeProcElement, recebido); // tolerante: ocorrências em vez de exceção
 const erros = validarRaiz(nfeProcElement, recebido); // estrito: [] = válido
 ```
 

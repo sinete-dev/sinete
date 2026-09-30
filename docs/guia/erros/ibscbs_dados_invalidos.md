@@ -12,7 +12,7 @@ Uma data inválida passada a `dataset.em(data)`, seja pelo formato diferente de 
 
 ## Correção
 
-Use o conjunto de dados incluído no pacote: `datasetEmbarcado()` de `sinete/ibs-cbs-dados/bundled`, ou `await carregarDatasetEmbarcado()` de `sinete/nfe`. Para um bundle externo, execute `await conferirDataset(bundle)` antes de `carregarDataset(bundle)`, ambos de `sinete/ibs-cbs-dados`. `carregarDataset` valida a estrutura e os vínculos, mas não confere os hashes.
+Use o conjunto de dados incluído no pacote: `datasetEmbarcado()` de `sinete/ibs-cbs-dados/embarcado`, ou `await carregarDatasetEmbarcado()` de `sinete/nfe`. Para um bundle externo, execute `await conferirDataset(bundle)` antes de `carregarDataset(bundle)`, ambos de `sinete/ibs-cbs-dados`. `carregarDataset` valida a estrutura e os vínculos, mas não confere os hashes.
 
 Se a verificação falhar, obtenha novamente as tabelas e o manifesto correspondentes à mesma versão dos dados. Garanta que `versaoDoFormato` seja um inteiro compatível com o leitor; um inteiro diferente da versão suportada gera `ibscbs_dados_versao_incompativel`. Nas consultas, use datas existentes no formato `AAAA-MM-DD`.
 

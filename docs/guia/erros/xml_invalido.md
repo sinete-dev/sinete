@@ -1,6 +1,6 @@
 # `xml_invalido`: o XML do documento auxiliar é malformado
 
-O `@sinete/da` não conseguiu ler o XML passado ao `danfe`, `danfce`, `damdfe`, `dacce` ou `danfse` (de `@sinete/da/nfse`). O erro também pode ocorrer ao ler um XML de evento informado nas opções, como o de cancelamento. A exceção é um `DanfeError` (`@sinete/da`), que estende `ErroSinete`, com `code: 'xml_invalido'`. Identifique o erro pelo `code`, usando `ehErroSinete(e, 'xml_invalido')` de `@sinete/core`, nunca pela mensagem.
+O `@sinete/da` não conseguiu ler o XML passado ao `danfe`, `danfce`, `damdfe`, `dacce` ou `danfse` (de `@sinete/da/nfse`). O erro também pode ocorrer ao ler um XML de evento informado nas opções, como o de cancelamento. A exceção é um `ErroDa` (`@sinete/da`), que estende `ErroSinete`, com `code: 'xml_invalido'`. Identifique o erro pelo `code`, usando `ehErroSinete(e, 'xml_invalido')` de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 
