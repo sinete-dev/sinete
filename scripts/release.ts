@@ -18,6 +18,7 @@
 import { mkdir, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { $ } from 'bun';
+import { jaPublicada } from './lib/publicado.ts';
 import type { Manifest } from './lib/workspace.ts';
 import { binTargets, exportTargets, root, topoSort, workspacePackages } from './lib/workspace.ts';
 
@@ -95,6 +96,7 @@ for (const { dir, manifest: m } of order) {
 }
 
 // Fase 2: publica o tarball com npm (único caminho com OIDC e provenance).
+let skipped = 0;
 for (const { m, tgz } of pending) {
   const flags = ['--access', m.publishConfig?.access ?? 'public', '--tag', tag ?? 'latest'];
   // Provenance só no release real para o npmjs: a smoke do CI publica num verdaccio efêmero sem id-token.
@@ -102,7 +104,17 @@ for (const { m, tgz } of pending) {
   if (dryRun) flags.push('--dry-run');
   // Fora do diretório do pacote: o npm 10.8 (Node 20) publica o manifesto do package.json do cwd, com `workspace:`, em
   // vez do que está no tarball.
-  await $`npm publish ${tgz} ${flags}`.cwd(outDir).quiet();
+  const r = await $`npm publish ${tgz} ${flags}`.cwd(outDir).quiet().nothrow();
+  if (r.exitCode !== 0) {
+    // O `isPublished` da fase 1 lê o registry, que leva minutos para mostrar uma versão recém-publicada: um segundo run
+    // (duas tags do mesmo release) passa por ele e recebe esta recusa. A versão já está lá; o resto segue.
+    if (jaPublicada(r.stderr.toString())) {
+      console.log(`= ${m.name}@${m.version} já publicado (o registry ainda não mostrava), pulando`);
+      skipped++;
+      continue;
+    }
+    throw new Error(`npm publish ${m.name}@${m.version} falhou:\n${r.stderr.toString()}`);
+  }
   console.log(`${dryRun ? '~' : '+'} ${m.name}@${m.version} (${path.basename(tgz)})`);
 }
-console.log(`${pending.length} pacote(s) ${dryRun ? 'simulados' : 'publicados'}`);
+console.log(`${pending.length - skipped} pacote(s) ${dryRun ? 'simulados' : 'publicados'}`);
