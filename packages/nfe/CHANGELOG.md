@@ -126,7 +126,7 @@
   - @sinete/core@0.2.0
   - @sinete/transport@0.2.0
   - @sinete/schemas@0.2.0
-  - @sinete/ibs-cbs-dados@2026.10.0
+  - @sinete/ibs-cbs-dados@2026.9.2
   - @sinete/ibs-cbs@0.2.0
   - @sinete/rejeicoes@0.2.0
 
