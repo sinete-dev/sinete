@@ -100,7 +100,7 @@ export async function runChecks() {
   }
   const dup = await client.autorizar(assinado);
   expect('duplicidade enriquecida', dup.tipo === 'recusado' && dup.cStat === '204' && dup.dica !== undefined);
-  await transport.close();
+  await transport.fechar();
 
   return failures;
 }

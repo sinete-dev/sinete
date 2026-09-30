@@ -14,7 +14,7 @@ import {
 } from '@sinete/core';
 import type { SyntheticCertificate } from '@sinete/sefaz-sim';
 import { syntheticCertificate } from '@sinete/sefaz-sim';
-import type { EndpointRef, Transport, TransportRequest, TransportResponse } from '@sinete/transport';
+import type { EndpointResolvido, PedidoTransporte, RespostaTransporte, Transporte } from '@sinete/transport';
 import { nfseEndpoint } from '@sinete/transport';
 import type { NfseClient } from '../src/index.ts';
 import {
@@ -32,31 +32,31 @@ import { dps, EMISSAO, PRESTADOR, SAO_PAULO } from './helpers.ts';
 
 type Resposta = { readonly status: number; readonly body?: string | Uint8Array };
 
-function falso(respostas: Resposta[]): Transport & { readonly pedidos: TransportRequest[] } {
-  const pedidos: TransportRequest[] = [];
+function falso(respostas: Resposta[]): Transporte & { readonly pedidos: PedidoTransporte[] } {
+  const pedidos: PedidoTransporte[] = [];
   return {
     pedidos,
-    capabilities: {
-      runtime: 'custom',
-      renegotiation: true,
+    capacidades: {
+      runtime: 'personalizada',
+      renegociacao: true,
       tls12Cbc: true,
       tls12Dhe: true,
-      sigalgsControl: false,
-      clientCertificateCheck: false,
+      controleDeSigalgs: false,
+      conferenciaDoCertificadoLocal: false,
     },
-    async send(req: TransportRequest): Promise<TransportResponse> {
+    async enviar(req: PedidoTransporte): Promise<RespostaTransporte> {
       pedidos.push(req);
       const r = respostas.shift() ?? { status: 599 };
       const body = typeof r.body === 'string' ? new TextEncoder().encode(r.body) : (r.body ?? new Uint8Array());
       return {
         status: r.status,
-        headers: {},
-        body,
-        tls: { protocol: undefined, cipher: undefined, resumed: undefined, clientCertificateLoaded: undefined },
-        text: (): string => new TextDecoder().decode(body),
+        cabecalhos: {},
+        corpo: body,
+        tls: { protocolo: undefined, cifra: undefined, retomada: undefined, certificadoLocalCarregado: undefined },
+        texto: (): string => new TextDecoder().decode(body),
       };
     },
-    close: async (): Promise<void> => undefined,
+    fechar: async (): Promise<void> => undefined,
   };
 }
 
@@ -75,7 +75,7 @@ beforeAll(async () => {
   assinada = await signDps(r.value, cert.signer);
 }, 30_000);
 
-function cliente(t: Transport, extra: Partial<Parameters<typeof createNfseClient>[0]> = {}): NfseClient {
+function cliente(t: Transporte, extra: Partial<Parameters<typeof createNfseClient>[0]> = {}): NfseClient {
   return createNfseClient({ transport: t, ambiente: 'homologacao', clock, ...extra });
 }
 
@@ -105,7 +105,7 @@ describe('emissão fora do contrato', () => {
     await expect(c.autorizar(assinada)).rejects.toThrow('não é uma NFS-e');
     await expect(c.autorizar(assinada)).rejects.toThrow('bem formado');
     await expect(c.autorizar(assinada)).rejects.toBeInstanceOf(ErroRespostaInvalida);
-    expect(t.pedidos[0]?.headers).toMatchObject({ 'content-type': 'application/json' });
+    expect(t.pedidos[0]?.cabecalhos).toMatchObject({ 'content-type': 'application/json' });
     expect(t.pedidos[0]?.url).toBe('https://sefin.producaorestrita.nfse.gov.br/API/SefinNacional/nfse');
   });
 
@@ -262,7 +262,7 @@ describe('consultas e eventos fora do contrato', () => {
         dhProc: '2026-09-28T18:17:10-03:00',
       },
     ]);
-    expect(t.pedidos[0]).toMatchObject({ method: 'GET', url: expect.stringContaining(`/eventos/101101/1`) });
+    expect(t.pedidos[0]).toMatchObject({ metodo: 'GET', url: expect.stringContaining(`/eventos/101101/1`) });
   });
 
   test('registrarEvento confere o pedido antes do envio', async () => {
@@ -285,7 +285,7 @@ describe('consultas e eventos fora do contrato', () => {
 
   test('endpoint sobreposto e sinal de cancelamento repassado', async () => {
     const t = falso([{ status: 404 }]);
-    const ep: EndpointRef = {
+    const ep: EndpointResolvido = {
       ...nfseEndpoint({ ambiente: 'producao', api: 'sefin' }),
       url: 'https://exemplo.invalid/base/',
     };

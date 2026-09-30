@@ -3,7 +3,7 @@
  * regras H01 a H05).
  */
 
-import { serializeRoot } from '@sinete/schemas';
+import { serializarRaiz } from '@sinete/schemas';
 import type { TRetConsMDFeNaoEnc, TRetConsSitMDFe, TRetConsStatServ } from '@sinete/schemas/mdfe/servicos/3.00b';
 import {
   consMDFeNaoEncElement,
@@ -34,7 +34,7 @@ export async function statusServicoMdfe(ctx: RequestContext): Promise<string> {
       dhRecbto: dhMdfe(ctx, ctx.now),
       tMed: '1',
     };
-    return serializeRoot(retConsStatServMDFeElement, value);
+    return serializarRaiz(retConsStatServMDFeElement, value);
   };
   if (!pre.ok) return ret(pre.status);
   if (text(pre.doc.raiz, 'tpAmb') !== ctx.rt.config.tpAmb) return ret(statusMdfe('252'));
@@ -53,7 +53,7 @@ export async function consultaMdfe(ctx: RequestContext): Promise<string> {
       xMotivo: s.xMotivo,
       cUF: CUF_SVRS as TRetConsSitMDFe['cUF'],
     };
-    const xml = serializeRoot(retConsSitMDFeElement, value);
+    const xml = serializarRaiz(retConsSitMDFeElement, value);
     // protMDFe e procEventoMDFe entram como texto, na ordem do leiaute, sem reserializar o que foi assinado.
     const fim = xml.lastIndexOf('</retConsSitMDFe>');
     return `${xml.slice(0, fim)}${prot ?? ''}${eventos.join('')}${xml.slice(fim)}`;
@@ -107,7 +107,7 @@ export async function consNaoEncMdfe(ctx: RequestContext): Promise<string> {
       cUF: CUF_SVRS as TRetConsMDFeNaoEnc['cUF'],
       ...(lista === undefined ? {} : { infMDFe: lista }),
     };
-    return serializeRoot(retConsMDFeNaoEncElement, value);
+    return serializarRaiz(retConsMDFeNaoEncElement, value);
   };
   if (!pre.ok) return ret(pre.status);
   const root = pre.doc.raiz;

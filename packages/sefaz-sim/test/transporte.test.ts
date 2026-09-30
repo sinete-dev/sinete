@@ -1,20 +1,20 @@
-/** Rotas, SOAP, falhas injetadas e o `Transport` em processo. */
+/** Rotas, SOAP, falhas injetadas e o `Transporte` em processo. */
 import { describe, expect, test } from 'bun:test';
 import { ErroDeConfiguracao, ErroDeTempoEsgotado } from '@sinete/core';
-import type { TransportRequest } from '@sinete/transport';
+import type { PedidoTransporte } from '@sinete/transport';
 import {
-  allowlistPolicy,
+  contentTypeSoap12,
+  ErroPolitica,
+  ErroTransporte,
   mdfeEndpoint,
   nfceEndpoint,
   nfeEndpoint,
-  PolicyError,
-  soap12ContentType,
-  TransportError,
+  politicaDeHostsPermitidos,
 } from '@sinete/transport';
 import { NFE_SERVICES, redirectToSim, SIM_BASE_URL, simAutorizadorOf, simTransport, soapAction } from '../src/index.ts';
 import { consStatServ, envelope, enviNFe, harness, nfe, tag, unwrap } from './helpers.ts';
 
-const STATUS_CT = soap12ContentType(soapAction(NFE_SERVICES.NfeStatusServico));
+const STATUS_CT = contentTypeSoap12(soapAction(NFE_SERVICES.NfeStatusServico));
 
 describe('rotas e envelope SOAP', () => {
   test('404, 405 e 403 sem certificado', async () => {
@@ -41,7 +41,7 @@ describe('rotas e envelope SOAP', () => {
     };
     expect(await fault(ok, 'text/xml')).toContain('SOAP 1.2');
     expect(await fault(ok, null)).toContain('nenhum');
-    expect(await fault(ok, soap12ContentType(`${soapAction(NFE_SERVICES.NfeStatusServico)}X`))).toContain('action');
+    expect(await fault(ok, contentTypeSoap12(`${soapAction(NFE_SERVICES.NfeStatusServico)}X`))).toContain('action');
     expect(await fault('<a>')).toContain('malformado');
     expect(await fault('<Envelope/>')).toContain('Envelope');
     expect(await fault('<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/"/>')).toContain('VersionMismatch');
@@ -58,7 +58,7 @@ describe('rotas e envelope SOAP', () => {
     expect(semAction.status).toBe(200);
     // Distribuição usa o elemento da operação em volta do nfeDadosMsg.
     const distPath = h.sim.path('NFeDistribuicaoDFe');
-    const distCt = soap12ContentType(soapAction(NFE_SERVICES.NFeDistribuicaoDFe));
+    const distCt = contentTypeSoap12(soapAction(NFE_SERVICES.NFeDistribuicaoDFe));
     const r = await h.raw({
       path: distPath,
       body: soap('<s:Body><nfeDadosMsg/></s:Body>'),
@@ -106,82 +106,82 @@ describe('falhas injetadas', () => {
     const t = simTransport(h.sim, { clientCertificate: h.c.terceiro.der, timeoutMs: 20 });
     const req = {
       url: h.sim.url(SIM_BASE_URL, 'NfeStatusServico'),
-      headers: { 'Content-Type': STATUS_CT },
-      body: envelope('NfeStatusServico', consStatServ()),
+      cabecalhos: { 'Content-Type': STATUS_CT },
+      corpo: envelope('NfeStatusServico', consStatServ()),
     };
     h.sim.injectFault({ kind: 'drop', phase: 'after' });
-    const drop = await t.send(req).catch((e: unknown) => e);
-    expect(drop).toBeInstanceOf(TransportError);
-    expect((drop as TransportError).code).toBe('conexao_recusada');
+    const drop = await t.enviar(req).catch((e: unknown) => e);
+    expect(drop).toBeInstanceOf(ErroTransporte);
+    expect((drop as ErroTransporte).code).toBe('conexao_recusada');
     h.sim.injectFault({ kind: 'hang', phase: 'after' });
-    expect(await t.send(req).catch((e: unknown) => e)).toBeInstanceOf(ErroDeTempoEsgotado);
+    expect(await t.enviar(req).catch((e: unknown) => e)).toBeInstanceOf(ErroDeTempoEsgotado);
     h.sim.injectFault({ kind: 'delay', ms: 50 });
-    expect(await t.send(req).catch((e: unknown) => e)).toBeInstanceOf(ErroDeTempoEsgotado);
+    expect(await t.enviar(req).catch((e: unknown) => e)).toBeInstanceOf(ErroDeTempoEsgotado);
     h.sim.injectFault({ kind: 'delay', ms: 5 });
-    const res = await t.send(req);
+    const res = await t.enviar(req);
     expect(res.status).toBe(200);
-    expect(new TextDecoder().decode(res.body)).toBe(res.text());
-    expect(t.capabilities.runtime).toBe('custom');
+    expect(new TextDecoder().decode(res.corpo)).toBe(res.texto());
+    expect(t.capacidades.runtime).toBe('personalizada');
     // Cancelamento pelo sinal durante a espera.
     h.sim.injectFault({ kind: 'delay', ms: 10 });
     const ac = new AbortController();
-    const p = t.send({ ...req, signal: ac.signal, timeoutMs: 1000 });
+    const p = t.enviar({ ...req, signal: ac.signal, timeoutMs: 1000 });
     ac.abort();
     const cancel = await p.catch((e: unknown) => e);
-    expect((cancel as TransportError).code).toBe('cancelado');
+    expect((cancel as ErroTransporte).code).toBe('cancelado');
     // Cancelamento logo depois do envio, sem falha injetada: o prazo e o sinal cobrem o atendimento inteiro.
     const logo = new AbortController();
-    const semFalha = t.send({ ...req, signal: logo.signal, timeoutMs: 1000 });
+    const semFalha = t.enviar({ ...req, signal: logo.signal, timeoutMs: 1000 });
     logo.abort();
-    expect(((await semFalha.catch((e: unknown) => e)) as TransportError).code).toBe('cancelado');
+    expect(((await semFalha.catch((e: unknown) => e)) as ErroTransporte).code).toBe('cancelado');
     // Sinal já cancelado e cancelamento no meio da espera.
     expect(
-      ((await t.send({ ...req, signal: AbortSignal.abort() }).catch((e: unknown) => e)) as TransportError).code,
+      ((await t.enviar({ ...req, signal: AbortSignal.abort() }).catch((e: unknown) => e)) as ErroTransporte).code,
     ).toBe('cancelado');
     h.sim.injectFault({ kind: 'delay', ms: 500 });
     const meio = new AbortController();
     setTimeout(() => meio.abort(), 5);
-    const noMeio = await t.send({ ...req, signal: meio.signal, timeoutMs: 1000 }).catch((e: unknown) => e);
-    expect((noMeio as TransportError).code).toBe('cancelado');
-    await t.close();
-    expect(await t.send(req).catch((e: unknown) => (e as Error).name)).toBe('ErroDeConfiguracao');
+    const noMeio = await t.enviar({ ...req, signal: meio.signal, timeoutMs: 1000 }).catch((e: unknown) => e);
+    expect((noMeio as ErroTransporte).code).toBe('cancelado');
+    await t.fechar();
+    expect(await t.enviar(req).catch((e: unknown) => (e as Error).name)).toBe('ErroDeConfiguracao');
   });
 
   test('403 vira erro tipado ou resposta, e a política de hosts roda antes', async () => {
     const h = await harness();
-    const req = { url: h.sim.url(SIM_BASE_URL, 'NfeStatusServico'), body: 'x' };
+    const req = { url: h.sim.url(SIM_BASE_URL, 'NfeStatusServico'), corpo: 'x' };
     const e = await simTransport(h.sim)
-      .send(req)
+      .enviar(req)
       .catch((x: unknown) => x);
-    expect((e as TransportError).code).toBe('certificado_ausente_ou_recusado');
-    expect((await simTransport(h.sim, { rejectOn403: false }).send(req)).status).toBe(403);
+    expect((e as ErroTransporte).code).toBe('certificado_ausente_ou_recusado');
+    expect((await simTransport(h.sim, { rejectOn403: false }).enviar(req)).status).toBe(403);
     // Cancelado enquanto a política decide: o simulador não chega a ver o pedido.
     const ac = new AbortController();
     const lenta = {
-      async check(): Promise<void> {
+      async conferir(): Promise<void> {
         ac.abort();
       },
     };
     const n = await nfe();
     const t = simTransport(h.sim, { clientCertificate: h.c.emitente.der, policy: lenta });
     const cancelado = await t
-      .send({
+      .enviar({
         url: h.sim.url(SIM_BASE_URL, 'NFeAutorizacao'),
-        headers: { 'content-type': soap12ContentType(soapAction(NFE_SERVICES.NFeAutorizacao)) },
-        body: envelope('NFeAutorizacao', enviNFe([n.xml])),
+        cabecalhos: { 'content-type': contentTypeSoap12(soapAction(NFE_SERVICES.NFeAutorizacao)) },
+        corpo: envelope('NFeAutorizacao', enviNFe([n.xml])),
         signal: ac.signal,
       })
       .catch((e: unknown) => e);
-    expect((cancelado as TransportError).code).toBe('cancelado');
+    expect((cancelado as ErroTransporte).code).toBe('cancelado');
     expect(h.sim.inspect.nfe(n.chave)).toBeUndefined();
-    const policy = allowlistPolicy({ hosts: ['outro.invalid'] });
+    const policy = politicaDeHostsPermitidos({ hosts: ['outro.invalid'] });
     expect(
       await simTransport(h.sim, { policy })
-        .send(req)
+        .enviar(req)
         .catch((x: unknown) => x),
-    ).toBeInstanceOf(PolicyError);
+    ).toBeInstanceOf(ErroPolitica);
     // GET sem corpo chega como 405.
-    const get = await simTransport(h.sim, { clientCertificate: h.c.terceiro.der }).send({ url: req.url });
+    const get = await simTransport(h.sim, { clientCertificate: h.c.terceiro.der }).enviar({ url: req.url });
     expect(get.status).toBe(405);
   });
 
@@ -207,31 +207,31 @@ describe('falhas injetadas', () => {
 describe('redirectToSim', () => {
   test('troca a URL do endpoint pelo caminho do autorizador simulado e atende pelo transporte envolvido', async () => {
     const h = await harness();
-    const vistos: TransportRequest[] = [];
+    const vistos: PedidoTransporte[] = [];
     const inner = simTransport(h.sim, { clientCertificate: h.c.emitente.der });
     const t = redirectToSim(
       {
-        capabilities: inner.capabilities,
-        send: (r) => {
+        capacidades: inner.capacidades,
+        enviar: (r) => {
           vistos.push(r);
-          return inner.send(r);
+          return inner.enviar(r);
         },
-        close: () => inner.close(),
+        fechar: () => inner.fechar(),
       },
       `${SIM_BASE_URL}/qualquer/coisa`,
     );
     const endpoint = nfeEndpoint({ ambiente: 'homologacao', uf: 'SP', servico: 'NfeStatusServico' });
-    const res = await t.send({
+    const res = await t.enviar({
       url: endpoint.url,
       endpoint,
-      headers: { 'content-type': STATUS_CT },
-      body: envelope('NfeStatusServico', consStatServ()),
+      cabecalhos: { 'content-type': STATUS_CT },
+      corpo: envelope('NfeStatusServico', consStatServ()),
     });
-    expect(tag(unwrap('NfeStatusServico', res.text()), 'cStat')).toBe('107');
+    expect(tag(unwrap('NfeStatusServico', res.texto()), 'cStat')).toBe('107');
     expect(vistos[0]?.url).toBe(`${SIM_BASE_URL}/uf/ws/NFeStatusServico4`);
     expect(vistos[0]?.endpoint).toMatchObject({ host: 'sefaz-sim.invalid', tls: undefined, autorizador: 'SP' });
-    await t.close();
-    await expect(inner.send({ url: `${SIM_BASE_URL}/uf/ws/NFeStatusServico4` })).rejects.toBeInstanceOf(
+    await t.fechar();
+    await expect(inner.enviar({ url: `${SIM_BASE_URL}/uf/ws/NFeStatusServico4` })).rejects.toBeInstanceOf(
       ErroDeConfiguracao,
     );
   });
@@ -247,19 +247,19 @@ describe('redirectToSim', () => {
 
   test('sem endpoint, documento ou serviço que o simulador não atende, ou base sem https: ErroDeConfiguracao', async () => {
     const nunca = {
-      capabilities: simTransport((await harness()).sim).capabilities,
-      send: (): never => {
+      capacidades: simTransport((await harness()).sim).capacidades,
+      enviar: (): never => {
         throw new Error('não deveria enviar');
       },
-      close: async (): Promise<void> => undefined,
+      fechar: async (): Promise<void> => undefined,
     };
     const t = redirectToSim(nunca, SIM_BASE_URL);
-    await expect(t.send({ url: 'https://nfe.fazenda.sp.gov.br/ws/nfestatusservico4.asmx' })).rejects.toBeInstanceOf(
+    await expect(t.enviar({ url: 'https://nfe.fazenda.sp.gov.br/ws/nfestatusservico4.asmx' })).rejects.toBeInstanceOf(
       ErroDeConfiguracao,
     );
     // O MDF-e é atendido; a distribuição de DF-e do MDF-e, não.
     const mdfe = mdfeEndpoint({ ambiente: 'homologacao', servico: 'MDFeDistribuicaoDFe' });
-    await expect(t.send({ url: mdfe.url, endpoint: mdfe })).rejects.toThrow('não atende mdfe MDFeDistribuicaoDFe');
+    await expect(t.enviar({ url: mdfe.url, endpoint: mdfe })).rejects.toThrow('não atende mdfe MDFeDistribuicaoDFe');
     expect(() => redirectToSim(nunca, 'http://127.0.0.1:1')).toThrow(ErroDeConfiguracao);
   });
 });

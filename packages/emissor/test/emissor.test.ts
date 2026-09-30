@@ -457,13 +457,13 @@ describe('createEmissor: guarda por chamada, preparação, já guardado, situaç
     const e = await createEmissor(perfil([autorizado()]), { ...resto, certificado });
     expect(e.titular.cnpj).toBe('11222333000181');
     expect((await e.emitir('r', { n: 1 })).tipo).toBe('autorizado');
-    expect(certificado.identidade.kind).toBe('pem');
+    expect(certificado.identidade.tipo).toBe('pem');
     // Com a cadeia completada (a AC sintética é raiz, e a raiz não vai no mTLS), o titular continua lá.
     const completo = await abrirCertificado(
       { pfx, senha: SENHA },
       { clock: relogioManual(EMISSAO), completarCadeia: true },
     );
-    const pem = completo.identidade.kind === 'pem' ? completo.identidade.certChain : '';
+    const pem = completo.identidade.tipo === 'pem' ? completo.identidade.cadeia : '';
     expect(pem.match(/BEGIN CERTIFICATE/g)?.length).toBeGreaterThanOrEqual(1);
     expect(completo.titular.cnpj).toBe('11222333000181');
   });

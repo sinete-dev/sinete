@@ -348,9 +348,9 @@ describe('autorizar assíncrono e recibo', () => {
     const vistos: (AbortSignal | undefined)[] = [];
     const t: typeof base = {
       ...base,
-      send: (req) => {
+      enviar: (req) => {
         vistos.push(req.signal);
-        return base.send(req);
+        return base.enviar(req);
       },
     };
     const { c } = await client(t);

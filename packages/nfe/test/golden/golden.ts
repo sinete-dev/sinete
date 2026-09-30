@@ -19,7 +19,7 @@ import { homedir } from 'node:os';
 import path from 'node:path';
 import { contextoDeTempo, relogioFixo } from '@sinete/core';
 import { descendentes, lerXml } from '@sinete/core/xml';
-import { decode } from '@sinete/schemas';
+import { decodificar } from '@sinete/schemas';
 import type { TNFe_infNFe } from '@sinete/schemas/nfe/PL_010f';
 import { TNFe_infNFe as InfNFe } from '@sinete/schemas/nfe/PL_010f';
 import type { BuildNfeOptions, Icms, Item, NfeInput } from '../../src/index.ts';
@@ -326,7 +326,7 @@ for (const pasta of PASTAS) {
       inc(r.ignorados, 'sem infNFe');
       continue;
     }
-    const inf = decode(InfNFe, el).value;
+    const inf = decodificar(InfNFe, el).valor;
     if (inf.ide.mod !== '55') {
       inc(r.ignorados, `modelo ${inf.ide.mod}`);
       continue;

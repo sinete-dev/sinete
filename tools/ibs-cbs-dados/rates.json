@@ -1,93 +1,120 @@
 {
-  "comment": "Alíquotas de referência do @sinete/ibs-cbs/aliquotas por tributo e vigência (tempo do fato gerador). As linhas de 2026 são conferidas contra a Calculadora (ALIQUOTA_REFERENCIA) e, para a CBS, contra a planilha do IT 2026.002: divergência falha a extração. As de 2027 em diante saem da lei; 'unknown' é estado explícito até o ato oficial ser publicado, nunca um default.",
-  "legalSources": [
+  "comentario": "Alíquotas de referência do @sinete/ibs-cbs/aliquotas por tributo e vigência (tempo do fato gerador). As linhas de 2026 são conferidas contra a Calculadora (ALIQUOTA_REFERENCIA) e, para a CBS, contra a planilha do IT 2026.002: divergência falha a extração. As de 2027 em diante saem da lei; 'desconhecida' é estado explícito até o ato oficial ser publicado, nunca um default.",
+  "fontesLegais": [
     {
       "id": "lc214-2025",
-      "title": "Lei Complementar nº 214, de 16 de janeiro de 2025",
+      "titulo": "Lei Complementar nº 214, de 16 de janeiro de 2025",
       "url": "https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp214.htm"
     },
     {
       "id": "it-2025.002-v1.60",
-      "title": "IT 2025.002 v1.60, item 05 (Alíquotas padrão do IBS e da CBS)",
+      "titulo": "IT 2025.002 v1.60, item 05 (Alíquotas padrão do IBS e da CBS)",
       "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=jxTMMQeEVM8="
     }
   ],
-  "reference": [
+  "referencia": [
     {
       "tributo": "CBS",
-      "validity": { "from": "2026-01-01", "to": "2026-12-31" },
-      "status": "official",
-      "rate": "0.9",
+      "vigencia": {
+        "inicio": "2026-01-01",
+        "fim": "2026-12-31"
+      },
+      "situacao": "oficial",
+      "aliquota": "0.9",
       "legal": "LC 214/2025, art. 346",
-      "sources": ["calculadora", "it-aliquotas-cbs", "lc214-2025"]
+      "fontes": ["calculadora", "it-aliquotas-cbs", "lc214-2025"]
     },
     {
       "tributo": "IBSUF",
-      "validity": { "from": "2026-01-01", "to": "2026-12-31" },
-      "status": "official",
-      "rate": "0.1",
+      "vigencia": {
+        "inicio": "2026-01-01",
+        "fim": "2026-12-31"
+      },
+      "situacao": "oficial",
+      "aliquota": "0.1",
       "legal": "LC 214/2025, art. 343",
-      "sources": ["calculadora", "lc214-2025", "it-2025.002-v1.60"]
+      "fontes": ["calculadora", "lc214-2025", "it-2025.002-v1.60"]
     },
     {
       "tributo": "IBSMun",
-      "validity": { "from": "2026-01-01", "to": "2026-12-31" },
-      "status": "official",
-      "rate": "0",
+      "vigencia": {
+        "inicio": "2026-01-01",
+        "fim": "2026-12-31"
+      },
+      "situacao": "oficial",
+      "aliquota": "0",
       "legal": "LC 214/2025, art. 343 (em 2026 só há a alíquota estadual)",
-      "sources": ["calculadora", "lc214-2025", "it-2025.002-v1.60"]
+      "fontes": ["calculadora", "lc214-2025", "it-2025.002-v1.60"]
     },
     {
       "tributo": "CBS",
-      "validity": { "from": "2027-01-01", "to": "2028-12-31" },
-      "status": "unknown",
-      "rate": null,
+      "vigencia": {
+        "inicio": "2027-01-01",
+        "fim": "2028-12-31"
+      },
+      "situacao": "desconhecida",
+      "aliquota": null,
       "legal": "LC 214/2025, art. 347: alíquota de referência fixada pelo Senado (art. 14, I, e §§ 2º e 3º) reduzida em 0,1 ponto percentual",
-      "note": "Aguarda a resolução do Senado Federal; o IT 2026.002 publica 'aguarda legislação' para 2027.",
-      "sources": ["lc214-2025", "it-aliquotas-cbs"]
+      "nota": "Aguarda a resolução do Senado Federal; o IT 2026.002 publica 'aguarda legislação' para 2027.",
+      "fontes": ["lc214-2025", "it-aliquotas-cbs"]
     },
     {
       "tributo": "IBSUF",
-      "validity": { "from": "2027-01-01", "to": "2028-12-31" },
-      "status": "official",
-      "rate": "0.05",
+      "vigencia": {
+        "inicio": "2027-01-01",
+        "fim": "2028-12-31"
+      },
+      "situacao": "oficial",
+      "aliquota": "0.05",
       "legal": "LC 214/2025, art. 344",
-      "sources": ["lc214-2025", "it-2025.002-v1.60"]
+      "fontes": ["lc214-2025", "it-2025.002-v1.60"]
     },
     {
       "tributo": "IBSMun",
-      "validity": { "from": "2027-01-01", "to": "2028-12-31" },
-      "status": "official",
-      "rate": "0.05",
+      "vigencia": {
+        "inicio": "2027-01-01",
+        "fim": "2028-12-31"
+      },
+      "situacao": "oficial",
+      "aliquota": "0.05",
       "legal": "LC 214/2025, art. 344",
-      "sources": ["lc214-2025", "it-2025.002-v1.60"]
+      "fontes": ["lc214-2025", "it-2025.002-v1.60"]
     },
     {
       "tributo": "CBS",
-      "validity": { "from": "2029-01-01", "to": null },
-      "status": "unknown",
-      "rate": null,
+      "vigencia": {
+        "inicio": "2029-01-01",
+        "fim": null
+      },
+      "situacao": "desconhecida",
+      "aliquota": null,
       "legal": "LC 214/2025, arts. 14 e 18: alíquota de referência fixada por resolução do Senado Federal",
-      "note": "Aguarda publicação.",
-      "sources": ["lc214-2025", "it-2025.002-v1.60"]
+      "nota": "Aguarda publicação.",
+      "fontes": ["lc214-2025", "it-2025.002-v1.60"]
     },
     {
       "tributo": "IBSUF",
-      "validity": { "from": "2029-01-01", "to": null },
-      "status": "unknown",
-      "rate": null,
+      "vigencia": {
+        "inicio": "2029-01-01",
+        "fim": null
+      },
+      "situacao": "desconhecida",
+      "aliquota": null,
       "legal": "LC 214/2025, arts. 14 e 18: alíquota própria por lei do Estado ou, na falta, a de referência",
-      "note": "Aguarda publicação.",
-      "sources": ["lc214-2025", "it-2025.002-v1.60"]
+      "nota": "Aguarda publicação.",
+      "fontes": ["lc214-2025", "it-2025.002-v1.60"]
     },
     {
       "tributo": "IBSMun",
-      "validity": { "from": "2029-01-01", "to": null },
-      "status": "unknown",
-      "rate": null,
+      "vigencia": {
+        "inicio": "2029-01-01",
+        "fim": null
+      },
+      "situacao": "desconhecida",
+      "aliquota": null,
       "legal": "LC 214/2025, arts. 14 e 18: alíquota própria por lei do Município ou, na falta, a de referência",
-      "note": "Aguarda publicação.",
-      "sources": ["lc214-2025", "it-2025.002-v1.60"]
+      "nota": "Aguarda publicação.",
+      "fontes": ["lc214-2025", "it-2025.002-v1.60"]
     }
   ]
 }

@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { certificateToPem, openPfx } from '@sinete/cert';
+import { abrirPfx, pemDoCertificado } from '@sinete/cert';
 import { relogioFixo, relogioManual } from '@sinete/core';
 import type { Pki } from '../../transport/test/lab/pki.ts';
 import { createPki, findOpenssl } from '../../transport/test/lab/pki.ts';
@@ -36,8 +36,8 @@ describe('runDoctor sem rede', () => {
     const r = await runDoctor({ pfx: pfx('ecnpj-legacy.pfx'), password: 'sinete-teste', clock });
     expect(byId(r.checks, 'cadeia')).toMatchObject({ status: 'aviso' });
     expect(byId(r.checks, 'cadeia')?.message).toContain('AC SINTETICA SINETE v1');
-    const full = await openPfx(pfx('ecnpj-3des-cadeia.pfx'), { password: 'sinete-teste', clock });
-    const extraChainPem = full.extraCertificates.map((c) => certificateToPem(c)).join('');
+    const full = await abrirPfx(pfx('ecnpj-3des-cadeia.pfx'), { senha: 'sinete-teste', relogio: clock });
+    const extraChainPem = full.certificadosExtras.map((c) => pemDoCertificado(c)).join('');
     const r2 = await runDoctor({ pfx: pfx('ecnpj-legacy.pfx'), password: 'sinete-teste', clock, extraChainPem });
     expect(byId(r2.checks, 'cadeia')?.details).toMatchObject({ status: 'raiz_desconhecida' });
   });
@@ -271,12 +271,12 @@ describe.skipIf(!findOpenssl())('runDoctor contra servidor TLS local', () => {
   });
 
   test('--cadeia entra também na identidade TLS: servidor que exige a intermediária aceita', async () => {
-    const full = await openPfx(pfx('ecnpj-3des-cadeia.pfx'), { password: 'sinete-teste', clock });
-    const root = full.extraCertificates.find((c) => c.selfIssued);
-    const inter = full.extraCertificates.find((c) => !c.selfIssued);
+    const full = await abrirPfx(pfx('ecnpj-3des-cadeia.pfx'), { senha: 'sinete-teste', relogio: clock });
+    const root = full.certificadosExtras.find((c) => c.selfIssued);
+    const inter = full.certificadosExtras.find((c) => !c.selfIssued);
     if (!root || !inter) throw new Error('fixture sem cadeia');
     const rootFile = path.join(pki.dir, 'raiz-sintetica.pem');
-    await Bun.write(rootFile, certificateToPem(root));
+    await Bun.write(rootFile, pemDoCertificado(root));
     // -attime fixa a conferência do certificado de cliente no relógio dos testes (a fixture vale em 2026).
     const args = [
       '-tls1_2',
@@ -298,7 +298,7 @@ describe.skipIf(!findOpenssl())('runDoctor contra servidor TLS local', () => {
     const r2 = await runDoctor({
       ...base(),
       pfx: pfx('ecnpj-legacy.pfx'),
-      extraChainPem: certificateToPem(inter),
+      extraChainPem: pemDoCertificado(inter),
       endpoint: { url: comCadeia.url },
     });
     await comCadeia.finished(500);
@@ -343,36 +343,41 @@ describe('utilitários', () => {
   });
 
   test('--allow-expired não conta de novo a validade do titular na cadeia; emissor vencido ainda falha', () => {
-    const cert = (cn: string) => ({ subject: { commonName: cn, text: `CN=${cn}` } }) as never;
+    const cert = (cn: string) => ({ subject: { commonName: cn, texto: `CN=${cn}` } }) as never;
     const leaf = cert('folha');
     const inter = cert('AC');
     const root = cert('raiz');
-    const base = { status: 'confiavel' as const, chain: [leaf, inter, root], anchor: root, missingIssuer: undefined };
-    expect(chainMessage({ ...base, expired: [leaf] }, false).status).toBe('falha');
-    expect(chainMessage({ ...base, expired: [leaf] }, true).status).toBe('ok');
-    const r = chainMessage({ ...base, expired: [leaf, inter] }, true);
+    const base = {
+      situacao: 'confiavel' as const,
+      cadeia: [leaf, inter, root],
+      ancora: root,
+      emissorAusente: undefined,
+    };
+    expect(chainMessage({ ...base, vencidos: [leaf] }, false).status).toBe('falha');
+    expect(chainMessage({ ...base, vencidos: [leaf] }, true).status).toBe('ok');
+    const r = chainMessage({ ...base, vencidos: [leaf, inter] }, true);
     expect(r.status).toBe('falha');
     expect(r.message).toBe('elos vencidos: AC');
     for (const status of ['incompleta', 'raiz_desconhecida'] as const) {
-      const c = chainMessage({ ...base, status, anchor: undefined, expired: [leaf, inter] }, true);
+      const c = chainMessage({ ...base, situacao: status, ancora: undefined, vencidos: [leaf, inter] }, true);
       expect(c.status).toBe('falha');
       expect(c.message.startsWith('elos vencidos: AC; ')).toBe(true);
     }
-    expect(chainMessage({ ...base, status: 'incompleta', expired: [leaf] }, true).status).toBe('aviso');
+    expect(chainMessage({ ...base, situacao: 'incompleta', vencidos: [leaf] }, true).status).toBe('aviso');
   });
 
   test('extensão crítica não suportada na cadeia é falha e cita o OID', () => {
     const leaf = {
-      subject: { commonName: 'folha', text: 'CN=folha' },
-      unsupportedCriticalExtensions: ['2.5.29.30'],
+      subject: { commonName: 'folha', texto: 'CN=folha' },
+      extensoesCriticasNaoSuportadas: ['2.5.29.30'],
     } as never;
     const r = chainMessage(
       {
-        status: 'extensao_critica_nao_suportada',
-        chain: [leaf],
-        anchor: undefined,
-        missingIssuer: undefined,
-        expired: [],
+        situacao: 'extensao_critica_nao_suportada',
+        cadeia: [leaf],
+        ancora: undefined,
+        emissorAusente: undefined,
+        vencidos: [],
       },
       false,
     );

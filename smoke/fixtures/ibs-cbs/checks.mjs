@@ -23,6 +23,6 @@ export async function runChecks() {
       if (raiz[k] !== v) failures.push(`raiz não reexporta ${nome}.${k}`);
     }
   }
-  if (raiz.calculate === undefined || raiz.determine === undefined) failures.push('raiz sem calculate/determine');
+  if (raiz.calcular === undefined || raiz.determinar === undefined) failures.push('raiz sem calcular/determinar');
   return failures;
 }

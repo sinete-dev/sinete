@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { contextoDeTempo, formatarVerProc, relogioFixo } from '@sinete/core';
 import { conferirAssinatura, lerXml } from '@sinete/core/xml';
-import { validateRoot } from '@sinete/schemas';
+import { validarRaiz } from '@sinete/schemas';
 import { MDFeElement } from '@sinete/schemas/mdfe/3.00b';
 import { syntheticCertificate } from '@sinete/sefaz-sim';
 import { lerChaveAcesso, montarChaveAcesso } from '@sinete/validators';
@@ -476,7 +476,7 @@ describe('QR Code, assinatura e contingência', () => {
     expect(xml).toContain(
       `<infMDFeSupl><qrCodMDFe>https://dfe-portal.svrs.rs.gov.br/mdfe/qrCode?chMDFe=${v.chave}&amp;tpAmb=2</qrCodMDFe></infMDFeSupl><Signature`,
     );
-    expect(validateRoot(MDFeElement, lerXml(xml))).toEqual([]);
+    expect(validarRaiz(MDFeElement, lerXml(xml))).toEqual([]);
     expect((await conferirAssinatura(xml, { id: v.id, elemento: 'infMDFe' })).ok).toBe(true);
   });
 
@@ -491,7 +491,7 @@ describe('QR Code, assinatura e contingência', () => {
     expect(() => comQrCode(normal, 'x')).toThrow('F118');
     const xml = await signMdfe(cont, cert.signer);
     expect(xml).toMatch(/&amp;tpAmb=2&amp;sign=[A-Za-z0-9+/=]+<\/qrCodMDFe>/);
-    expect(validateRoot(MDFeElement, lerXml(xml))).toEqual([]);
+    expect(validarRaiz(MDFeElement, lerXml(xml))).toEqual([]);
     const limite = prazoContingencia(contextoDeTempo({ emissao: relogioFixo(EMISSAO) }).emissao.agora());
     expect(limite.getTime() - relogioFixo(EMISSAO).agora().getTime()).toBe(168 * 3_600_000);
   });

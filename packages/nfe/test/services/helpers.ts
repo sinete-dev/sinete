@@ -5,7 +5,7 @@
 import type { Assinador } from '@sinete/core';
 import { loggerEmMemoria, relogioFixo } from '@sinete/core';
 import { assinarXml } from '@sinete/core/xml';
-import type { Transport, TransportRequest, TransportResponse } from '@sinete/transport';
+import type { PedidoTransporte, RespostaTransporte, Transporte } from '@sinete/transport';
 import { montarChaveAcesso } from '@sinete/validators';
 import type { NfeClient, NfeClientOptions } from '../../src/services/index.ts';
 import { createNfeClient } from '../../src/services/index.ts';
@@ -69,7 +69,7 @@ export interface Gravada {
 
 export type Resposta = string | { readonly status?: number; readonly body: string } | ((r: Gravada) => string);
 
-export interface FakeTransport extends Transport {
+export interface FakeTransport extends Transporte {
   readonly requests: Gravada[];
   push(...r: Resposta[]): void;
 }
@@ -79,23 +79,23 @@ export function fakeTransport(...inicial: Resposta[]): FakeTransport {
   const requests: Gravada[] = [];
   const te = new TextEncoder();
   return {
-    capabilities: {
-      runtime: 'custom',
-      renegotiation: true,
+    capacidades: {
+      runtime: 'personalizada',
+      renegociacao: true,
       tls12Cbc: true,
       tls12Dhe: true,
-      sigalgsControl: false,
-      clientCertificateCheck: false,
+      controleDeSigalgs: false,
+      conferenciaDoCertificadoLocal: false,
     },
     requests,
     push(...r) {
       fila.push(...r);
     },
-    async send(req: TransportRequest): Promise<TransportResponse> {
-      const body = typeof req.body === 'string' ? req.body : new TextDecoder().decode(req.body ?? new Uint8Array());
+    async enviar(req: PedidoTransporte): Promise<RespostaTransporte> {
+      const body = typeof req.corpo === 'string' ? req.corpo : new TextDecoder().decode(req.corpo ?? new Uint8Array());
       const g: Gravada = {
         url: req.url,
-        headers: req.headers ?? {},
+        headers: req.cabecalhos ?? {},
         body,
         ...(req.timeoutMs === undefined ? {} : { timeoutMs: req.timeoutMs }),
       };
@@ -106,13 +106,13 @@ export function fakeTransport(...inicial: Resposta[]): FakeTransport {
       const bytes = te.encode(r.body);
       return {
         status: r.status ?? 200,
-        headers: { 'content-type': 'application/soap+xml; charset=utf-8' },
-        body: bytes,
-        tls: { protocol: 'TLSv1.2', cipher: undefined, resumed: false, clientCertificateLoaded: undefined },
-        text: () => r.body,
+        cabecalhos: { 'content-type': 'application/soap+xml; charset=utf-8' },
+        corpo: bytes,
+        tls: { protocolo: 'TLSv1.2', cifra: undefined, retomada: false, certificadoLocalCarregado: undefined },
+        texto: () => r.body,
       };
     },
-    async close() {},
+    async fechar() {},
   };
 }
 
@@ -183,7 +183,7 @@ export function retEnvEvento(p: {
 export const CLOCK_ISO = '2026-09-10T12:00:00Z';
 
 export function client(
-  transport: Transport,
+  transport: Transporte,
   over: Partial<NfeClientOptions> = {},
 ): Promise<{ c: NfeClient; logger: ReturnType<typeof loggerEmMemoria>; sleeps: number[] }> {
   return testSigner().then((signer) => {
@@ -226,7 +226,7 @@ export async function gzipBase64(text: string): Promise<string> {
  * como o `fetch`. Sem `signal` rejeita na hora, o que acusa o método que não repassou o sinal. `enviou` resolve quando a
  * requisição chega ao transporte.
  */
-export interface TransportePendente extends Transport {
+export interface TransportePendente extends Transporte {
   readonly sinais: AbortSignal[];
   readonly enviou: Promise<void>;
 }
@@ -242,7 +242,7 @@ export function transportePendente(): TransportePendente {
     ...base,
     sinais,
     enviou,
-    send(req: TransportRequest): Promise<TransportResponse> {
+    enviar(req: PedidoTransporte): Promise<RespostaTransporte> {
       avisar();
       const signal = req.signal;
       if (signal === undefined) return Promise.reject(new Error('requisição sem signal'));

@@ -18,7 +18,7 @@ import {
   TipoPagamento,
   XNOME_HOMOLOGACAO,
 } from '@sinete/nfe';
-import { determine, officialRates, RULES, verifyDataset } from '@sinete/nfe/ibs-cbs';
+import { determinar, aliquotasOficiais, REGRAS, conferirDataset } from '@sinete/nfe/ibs-cbs';
 import {
   createSefazSim,
   redirectToSim,
@@ -95,7 +95,7 @@ export async function runChecks() {
     expect('autorizada no simulador', aut.tipo === 'autorizado' && aut.valor.nfeProc?.includes(assinada) === true);
     const consulta = await client.consultar(r.value.chave, assinada);
     expect('consulta confere o digVal', consulta.tipo === 'autorizado' && consulta.valor.digValConfere === true);
-    await transport.close();
+    await transport.fechar();
   }
 
   // IBS/CBS sem calculadora nas opções: o buildNfe usa o ibsCbsCalculator e importa o dataset embarcado na hora.
@@ -120,13 +120,13 @@ export async function runChecks() {
   const ds = await carregarDatasetEmbarcado();
   expect('dataset embarcado sob demanda', typeof ds === 'object' && ds !== null);
   // O subpath @sinete/nfe/ibs-cbs dá o motor e o leitor do dataset sem importar os pacotes do IBS/CBS.
-  expect('nfe/ibs-cbs: alíquotas', officialRates().nominal('2026-10-10').CBS.value === '0.9');
-  expect('nfe/ibs-cbs: regras e dados', RULES.length > 0 && typeof verifyDataset === 'function');
-  const det = await determine(
-    { modelo: 55, kind: 'transferencia', items: [{ n: 1, ncm: '10063021' }] },
-    { dataset: ds, time: contextoDeTempo({ emissao: quando }) },
+  expect('nfe/ibs-cbs: alíquotas', aliquotasOficiais().nominal('2026-10-10').CBS.valor === '0.9');
+  expect('nfe/ibs-cbs: regras e dados', REGRAS.length > 0 && typeof conferirDataset === 'function');
+  const det = await determinar(
+    { modelo: 55, tipo: 'transferencia', itens: [{ n: 1, ncm: '10063021' }] },
+    { dataset: ds, tempo: contextoDeTempo({ emissao: quando }) },
   );
-  expect('nfe/ibs-cbs: determinação', det.items[0]?.decided?.candidate.cClassTrib === '410002');
+  expect('nfe/ibs-cbs: determinação', det.itens[0]?.decidido?.candidato.cClassTrib === '410002');
   const zero = Decimal.of('0');
   const semBase = await ibsCbsCalculator({ regras: false }).calcular({
     nota: {

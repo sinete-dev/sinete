@@ -6,8 +6,8 @@
  * de teste são sintéticos, então essas regras só fariam sentido com uma AC configurável; ficam como pendência.
  */
 
-import type { CertificateInfo } from '@sinete/cert';
-import { icpIdentity, parseCertificate } from '@sinete/cert';
+import type { CertificadoX509 } from '@sinete/cert';
+import { identidadeIcp, lerCertificado } from '@sinete/cert';
 import type { DocumentoXml, ElementoXml } from '@sinete/core/xml';
 import {
   atributoDe,
@@ -22,21 +22,21 @@ import type { Documento } from './state.ts';
 
 /** Identidade lida de um certificado: CNPJ ou CPF do `otherName` ICP-Brasil, quando houver. */
 export interface CertIdentity extends Documento {
-  readonly info: CertificateInfo;
+  readonly info: CertificadoX509;
 }
 
-function readCert(der: Uint8Array): CertificateInfo | undefined {
+function readCert(der: Uint8Array): CertificadoX509 | undefined {
   try {
-    return parseCertificate(der);
+    return lerCertificado(der);
   } catch {
     return undefined;
   }
 }
 
-function identityOf(info: CertificateInfo): Documento {
-  const id = icpIdentity(info);
+function identityOf(info: CertificadoX509): Documento {
+  const id = identidadeIcp(info);
   // A07 e E03 pedem a extensão otherName; o CN no padrão NOME:DOCUMENTO não conta.
-  if (id.source !== 'san') return {};
+  if (id.origem !== 'san') return {};
   if (id.cnpj !== undefined) return { CNPJ: id.cnpj };
   return id.cpf === undefined ? {} : { CPF: id.cpf };
 }

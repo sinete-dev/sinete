@@ -25,8 +25,8 @@ import {
 } from '@sinete/core';
 import type { DocumentoXml, ElementoXml } from '@sinete/core/xml';
 import { assinarXml, elementosFilhos, lerXml, primeiroFilho, textoDe } from '@sinete/core/xml';
-import type { SchemaIssue } from '@sinete/schemas';
-import { decode, serialize, serializeRoot, validate } from '@sinete/schemas';
+import type { OcorrenciaSchema } from '@sinete/schemas';
+import { decodificar, serializar, serializarRaiz, validar } from '@sinete/schemas';
 import { TProtMDFe, TRetMDFe } from '@sinete/schemas/mdfe/3.00b';
 import type {
   TEvento_infEvento_detEvento,
@@ -41,8 +41,8 @@ import {
   TRetConsMDFeNaoEnc,
   TRetConsStatServ,
 } from '@sinete/schemas/mdfe/servicos/3.00b';
-import type { EndpointRef, Transport } from '@sinete/transport';
-import { mdfeEndpoint, PolicyError } from '@sinete/transport';
+import type { EndpointResolvido, Transporte } from '@sinete/transport';
+import { ErroPolitica, mdfeEndpoint } from '@sinete/transport';
 import type { ChaveAcesso } from '@sinete/validators';
 import { lerChaveAcesso, lerCnpj, lerCpf } from '@sinete/validators';
 import { pagamentosDoLeiaute } from '../build/build.ts';
@@ -65,7 +65,7 @@ export type AutorDocumento =
   | { readonly CPF: string; readonly CNPJ?: never };
 
 export interface MdfeClientOptions {
-  readonly transport: Transport;
+  readonly transport: Transporte;
   /** Assina o MDF-e e os eventos (A1 WebCrypto, A3 via PKCS#11, HSM). */
   readonly signer: Assinador;
   readonly ambiente: Ambiente;
@@ -79,7 +79,7 @@ export interface MdfeClientOptions {
   /** CNPJ ou CPF do emitente, padrão da consulta dos não encerrados. */
   readonly autor?: AutorDocumento;
   /** Sobrepõe o endpoint por serviço (padrão: a tabela do MDF-e do `@sinete/transport`). */
-  readonly endpoint?: (servico: MdfeServicoCliente) => EndpointRef;
+  readonly endpoint?: (servico: MdfeServicoCliente) => EndpointResolvido;
 }
 
 /** Status do serviço (cStat 107). */
@@ -210,7 +210,7 @@ export interface MdfeClient {
   statusServico(opcoes?: OpcoesEnvio): Promise<ResultadoSefaz<StatusServico, never>>;
   /**
    * Envia um MDF-e assinado (a string devolvida pelo `signMdfe`, sem outra alteração). O `tpAmb` do MDF-e diferente do
-   * ambiente do cliente lança `PolicyError` antes do envio.
+   * ambiente do cliente lança `ErroPolitica` antes do envio.
    */
   autorizar(mdfeAssinado: string, opcoes?: AutorizarOpcoes): Promise<AutorizacaoOutcome>;
   /** Situação do MDF-e; com o MDF-e assinado, confere o `digVal` e monta o `mdfeProc`. */
@@ -244,7 +244,7 @@ function chaveValida(chave: string, path: string): ChaveAcesso {
   return r.valor;
 }
 
-function schemaIssues(what: string, issues: readonly SchemaIssue[]): void {
+function schemaIssues(what: string, issues: readonly OcorrenciaSchema[]): void {
   if (issues.length > 0) throw new ErroDeValidacao(`${what} não confere com o schema`, issues);
 }
 
@@ -283,7 +283,7 @@ interface ProtocoloLido {
 }
 
 function lerProtocolo(doc: DocumentoXml, el: ElementoXml): ProtocoloLido {
-  const inf = decode(TProtMDFe, el, doc.texto).value.infProt;
+  const inf = decodificar(TProtMDFe, el, doc.texto).valor.infProt;
   if (!inf) throw new ErroRespostaInvalida('protMDFe sem infProt');
   const p = {
     chMDFe: inf.chMDFe,
@@ -314,8 +314,8 @@ function comProc({ p, embutido }: ProtocoloLido, a: DocumentoAssinado): Protocol
 
 /**
  * O `tpAmb` do MDF-e assinado tem de ser o do cliente. O MDF-e vai em GZip e Base64 no `mdfeDadosMsg`, onde a
- * `allowlistPolicy` do transporte não enxerga o `tpAmb` (ela confere o corpo em texto, como faz com a NF-e): sem esta
- * conferência, um MDF-e de produção iria ao ambiente de homologação, ou o contrário. Recusa com o `PolicyError` do
+ * `politicaDeHostsPermitidos` do transporte não enxerga o `tpAmb` (ela confere o corpo em texto, como faz com a NF-e): sem esta
+ * conferência, um MDF-e de produção iria ao ambiente de homologação, ou o contrário. Recusa com o `ErroPolitica` do
  * transporte, o mesmo que a NF-e recebe da política, antes de qualquer socket.
  */
 function conferirAmbiente(a: DocumentoAssinado, tpAmb: string): void {
@@ -324,7 +324,7 @@ function conferirAmbiente(a: DocumentoAssinado, tpAmb: string): void {
   const el = ide === undefined ? undefined : primeiroFilho(ide, 'tpAmb', MDFE_NS);
   const doDocumento = el === undefined ? undefined : textoDe(el).trim();
   if (doDocumento !== tpAmb) {
-    throw new PolicyError(`tpAmb ${doDocumento ?? 'ausente'} no MDF-e, o cliente é do tpAmb ${tpAmb}`, {
+    throw new ErroPolitica(`tpAmb ${doDocumento ?? 'ausente'} no MDF-e, o cliente é do tpAmb ${tpAmb}`, {
       tpAmb: doDocumento ?? '',
       esperado: tpAmb,
     });
@@ -350,7 +350,7 @@ interface EventoPedido {
 export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
   const logger = (options.logger ?? loggerSilencioso).child({ modulo: 'mdfe', ambiente: options.ambiente });
   const tpAmb = tpAmbDoAmbiente(options.ambiente);
-  const endpoint = (servico: MdfeServicoCliente): EndpointRef =>
+  const endpoint = (servico: MdfeServicoCliente): EndpointResolvido =>
     options.endpoint ? options.endpoint(servico) : mdfeEndpoint({ ambiente: options.ambiente, servico });
   const offsetDe = (c: ChaveAcesso): number => options.offsetMinutes ?? offsetDaUf(c.uf);
 
@@ -390,13 +390,13 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
       nSeqEvento,
       detEvento: { versaoEvento: VERSAO, [p.detalhe.nome]: p.detalhe.valor },
     };
-    const infXml = serialize(TEvento_infEvento, 'infEvento', inf as unknown as TEvento_infEventoT, MDFE_NS);
+    const infXml = serializar(TEvento_infEvento, 'infEvento', inf as unknown as TEvento_infEventoT, MDFE_NS);
     const evento = `<eventoMDFe xmlns="${MDFE_NS}" versao="${VERSAO}">${infXml}</eventoMDFe>`;
     const infEl = primeiroFilho(lerXml(evento).raiz, 'infEvento', MDFE_NS) as ElementoXml;
-    schemaIssues('evento', validate(TEvento_infEvento, infEl));
+    schemaIssues('evento', validar(TEvento_infEvento, infEl));
     const assinado = await assinarXml(evento, { id }, options.signer);
     const r = await call('MDFeRecepcaoEvento', assinado, 'retEventoMDFe', p.signal, 'infEvento');
-    const ret = decode(TRetEvento, r.ret, r.doc.texto).value.infEvento;
+    const ret = decodificar(TRetEvento, r.ret, r.doc.texto).valor.infEvento;
     logger.info('mdfe.evento', { chMDFe: p.c.chave, tpEvento: p.tpEvento, cStat: ret.cStat });
     const status = { cStat: ret.cStat, xMotivo: ret.xMotivo };
     if (!cstatEm(ret.cStat, 'eventoRegistrado')) return rejeitado(status);
@@ -434,9 +434,9 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
     options,
 
     async statusServico(opcoes?: OpcoesEnvio): Promise<ResultadoSefaz<StatusServico, never>> {
-      const msg = serializeRoot(consStatServMDFeElement, { versao: VERSAO, tpAmb, xServ: 'STATUS' });
+      const msg = serializarRaiz(consStatServMDFeElement, { versao: VERSAO, tpAmb, xServ: 'STATUS' });
       const r = await call('MDFeStatusServico', msg, 'retConsStatServMDFe', opcoes?.signal);
-      const v = decode(TRetConsStatServ, r.ret, r.doc.texto).value;
+      const v = decodificar(TRetConsStatServ, r.ret, r.doc.texto).valor;
       const status = { cStat: v.cStat, xMotivo: v.xMotivo };
       logger.info('mdfe.status', { cStat: v.cStat });
       if (!cstatEm(v.cStat, 'servicoEmOperacao')) return rejeitado(status);
@@ -454,7 +454,7 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
       const a = documentoAssinado(mdfeAssinado, 'MDFe', 'infMDFe');
       conferirAmbiente(a, tpAmb);
       const r = await call('MDFeRecepcaoSinc', a.xml, 'retMDFe', opcoes.signal);
-      const v = decode(TRetMDFe, r.ret, r.doc.texto).value;
+      const v = decodificar(TRetMDFe, r.ret, r.doc.texto).valor;
       const chave = a.id.slice(4);
       logger.info('mdfe.autorizacao', { chMDFe: chave, cStat: v.cStat });
       const protEl = primeiroFilho(r.ret, 'protMDFe', MDFE_NS);
@@ -469,7 +469,7 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
       const c = chaveValida(chave, 'chMDFe');
       const a = mdfeAssinado === undefined ? undefined : documentoAssinado(mdfeAssinado, 'MDFe', 'infMDFe');
       if (a && a.id !== `MDFe${c.chave}`) throw new ErroDeConfiguracao('o MDF-e assinado não é o da chave consultada');
-      const msg = serializeRoot(consSitMDFeElement, { versao: VERSAO, tpAmb, xServ: 'CONSULTAR', chMDFe: c.chave });
+      const msg = serializarRaiz(consSitMDFeElement, { versao: VERSAO, tpAmb, xServ: 'CONSULTAR', chMDFe: c.chave });
       const r = await call('MDFeConsulta', msg, 'retConsSitMDFe', opcoes?.signal);
       const txt = (local: string): string => {
         const el = primeiroFilho(r.ret, local, MDFE_NS);
@@ -526,14 +526,14 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
       if (!quem)
         throw new ErroDeConfiguracao('informe o CNPJ ou CPF do emitente (argumento ou MdfeClientOptions.autor)');
       const doc = documentoAutor(quem, 'autor');
-      const msg = serializeRoot(consMDFeNaoEncElement, {
+      const msg = serializarRaiz(consMDFeNaoEncElement, {
         versao: VERSAO,
         tpAmb,
         xServ: 'CONSULTAR NÃO ENCERRADOS',
         ...doc,
       } as TConsMDFeNaoEnc);
       const r = await call('MDFeConsNaoEnc', msg, 'retConsMDFeNaoEnc', opcoes?.signal);
-      const v = decode(TRetConsMDFeNaoEnc, r.ret, r.doc.texto).value;
+      const v = decodificar(TRetConsMDFeNaoEnc, r.ret, r.doc.texto).valor;
       const status = { cStat: v.cStat, xMotivo: v.xMotivo };
       logger.info('mdfe.nao-encerrados', { cStat: v.cStat, quantidade: v.infMDFe?.length ?? 0 });
       if (cstatEm(v.cStat, 'naoEncerradosNenhum')) return criarAutorizado(status, []);

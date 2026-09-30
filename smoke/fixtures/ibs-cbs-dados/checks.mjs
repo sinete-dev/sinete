@@ -1,26 +1,26 @@
 // Verificações do @sinete/ibs-cbs-dados compartilhadas por Node, Deno e Chromium. Devolve a lista de falhas (vazia = ok).
-import { diffDatasets, loadDataset, IbsCbsDataError, verifyDataset } from '@sinete/ibs-cbs-dados';
-import { BUNDLED_DATASET, bundledDataset } from '@sinete/ibs-cbs-dados/bundled';
+import { compararDatasets, carregarDataset, ErroDadosIbsCbs, conferirDataset } from '@sinete/ibs-cbs-dados';
+import { DATASET_EMBARCADO, datasetEmbarcado } from '@sinete/ibs-cbs-dados/bundled';
 
 export async function runChecks() {
   const failures = [];
   const expect = (name, cond) => {
     if (!cond) failures.push(name);
   };
-  const ds = bundledDataset();
-  expect('contentVersion', /^\d{4}\.\d{2}\+V\d{4}/.test(ds.contentVersion));
-  const at = ds.at('2026-10-10');
+  const ds = datasetEmbarcado();
+  expect('versaoDoConteudo', /^\d{4}\.\d{2}\+V\d{4}/.test(ds.versaoDoConteudo));
+  const at = ds.em('2026-10-10');
   const rice = at.classTrib('200003');
-  expect('cClassTrib vigente', rice?.cst === '200' && at.reduction(rice, 'CBS') === '100');
-  expect('NCM do Anexo I', rice !== undefined && at.applicableNcm(rice, '10063021').result === 'yes');
+  expect('cClassTrib vigente', rice?.cst === '200' && at.reducao(rice, 'CBS') === '100');
+  expect('NCM do Anexo I', rice !== undefined && at.ncmAplicavel(rice, '10063021').resultado === 'sim');
   expect('fora de vigência', at.classTrib('220001') === undefined);
-  await verifyDataset(BUNDLED_DATASET);
-  expect('diff vazio', diffDatasets(BUNDLED_DATASET, BUNDLED_DATASET).unchanged.length === ds.manifest.tables.length);
+  await conferirDataset(DATASET_EMBARCADO);
+  expect('diff vazio', compararDatasets(DATASET_EMBARCADO, DATASET_EMBARCADO).inalteradas.length === ds.manifesto.tabelas.length);
   try {
-    loadDataset({ manifest: {}, tables: {} });
+    carregarDataset({ manifesto: {}, tabelas: {} });
     failures.push('bundle inválido aceito');
   } catch (e) {
-    expect('erro tipado', e instanceof IbsCbsDataError && e.code === 'ibscbs_dados_invalidos');
+    expect('erro tipado', e instanceof ErroDadosIbsCbs && e.code === 'ibscbs_dados_invalidos');
   }
   return failures;
 }

@@ -12,13 +12,13 @@ import {
   textoDe,
 } from '../../../../packages/core/src/xml/index.ts';
 /**
- * Round-trip no corpus local: parse, decode tolerante, serialize canônico do elemento assinado e comparação com o
+ * Round-trip no corpus local: parse, decodificação tolerante, serialização canônica do elemento assinado e comparação com o
  * original (bytes, C14N e SHA-1 contra o DigestValue). Também roda o validador. Só agregados na saída.
  *
  * Uso: bun src/corpus-check/roundtrip.ts   (resultado também em ~/.local/state/sinete/results/roundtrip.json)
  */
-import type { ComplexType, RootElement } from '../../../../packages/schemas/src/index.ts';
-import { decodeRoot, serialize, validate } from '../../../../packages/schemas/src/index.ts';
+import type { ComplexType, ElementoRaiz } from '../../../../packages/schemas/src/index.ts';
+import { decodificarRaiz, serializar, validar } from '../../../../packages/schemas/src/index.ts';
 import * as mdfe300b from '../../../../packages/schemas/src/mdfe/3.00b.ts';
 import * as cancelamento from '../../../../packages/schemas/src/nfe/evento-cancelamento/PL_010d.ts';
 import * as cce from '../../../../packages/schemas/src/nfe/evento-cce/PL_010d.ts';
@@ -28,7 +28,7 @@ import { corpusDocs, inc, runtimeName, schemaPath, writeResult } from './common.
 
 interface Target {
   readonly label: string;
-  readonly root: RootElement<unknown>;
+  readonly root: ElementoRaiz<unknown>;
   /** Tipo e nome do elemento assinado. */
   readonly signedType: ComplexType;
   readonly signedName: string;
@@ -38,21 +38,21 @@ interface Target {
 
 const nfeTarget = (label: string, m: typeof nfe010f | typeof nfe010e): Target => ({
   label,
-  root: m.nfeProcElement as RootElement<unknown>,
+  root: m.nfeProcElement as ElementoRaiz<unknown>,
   signedType: m.TNFe_infNFe as ComplexType,
   signedName: 'infNFe',
   pick: (v) => (v.NFe as Record<string, unknown> | undefined)?.infNFe,
 });
 const eventoTarget = (label: string, m: typeof cancelamento | typeof cce): Target => ({
   label,
-  root: m.procEventoNFeElement as RootElement<unknown>,
+  root: m.procEventoNFeElement as ElementoRaiz<unknown>,
   signedType: m.TEvento_infEvento as ComplexType,
   signedName: 'infEvento',
   pick: (v) => (v.evento as Record<string, unknown> | undefined)?.infEvento,
 });
 const mdfeTarget: Target = {
   label: 'mdfe/3.00b',
-  root: mdfe300b.mdfeProcElement as RootElement<unknown>,
+  root: mdfe300b.mdfeProcElement as ElementoRaiz<unknown>,
   signedType: mdfe300b.TMDFe_infMDFe as ComplexType,
   signedName: 'infMDFe',
   pick: (v) => (v.MDFe as Record<string, unknown> | undefined)?.infMDFe,
@@ -94,9 +94,10 @@ async function processDoc(src: string, t: Target, s: Record<string, unknown>): P
     }
     throw e;
   }
-  const d = decodeRoot(t.root, doc);
-  for (const i of d.issues) inc(s.ocorrenciasDecode as Record<string, number>, `${i.code} ${schemaPath(i.caminho)}`);
-  const vi = validate(t.root.type as ComplexType, doc.raiz);
+  const d = decodificarRaiz(t.root, doc);
+  for (const i of d.ocorrencias)
+    inc(s.ocorrenciasDecode as Record<string, number>, `${i.code} ${schemaPath(i.caminho)}`);
+  const vi = validar(t.root.tipo as ComplexType, doc.raiz);
   if (vi.length === 0) n('validos');
   for (const k of new Set(vi.map((i) => `${i.code} ${schemaPath(i.caminho)}`))) {
     inc(s.ocorrenciasValidacao as Record<string, number>, k);
@@ -109,11 +110,11 @@ async function processDoc(src: string, t: Target, s: Record<string, unknown>): P
       break;
     }
   }
-  const value = t.pick(d.value as Record<string, unknown>);
+  const value = t.pick(d.valor as Record<string, unknown>);
   if (!signed || value === undefined) return;
-  const ours = serialize(t.signedType, t.signedName, value, signed.pai?.ns ?? '');
+  const ours = serializar(t.signedType, t.signedName, value, signed.pai?.ns ?? '');
   if (ours === src.slice(signed.inicio, signed.fim)) n('igualBytesOriginal');
-  const withNs = serialize(t.signedType, t.signedName, value, '');
+  const withNs = serializar(t.signedType, t.signedName, value, '');
   if (withNs === c14n(signed)) n('igualC14nOriginal');
 
   const id = atributoDe(signed, 'Id') ?? '';

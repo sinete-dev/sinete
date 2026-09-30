@@ -10,11 +10,11 @@
  * `@sinete/emissor/nfe`, `/mdfe` e `/nfse`. Esta raiz não importa nenhum pacote de documento.
  */
 
-import type { IcpIdentity } from '@sinete/cert';
+import type { IdentidadeIcp } from '@sinete/cert';
 import type { Ambiente, Assinador, Logger, Relogio } from '@sinete/core';
 import { ErroDeConfiguracao, loggerSilencioso, relogioDoSistema, tpAmbDoAmbiente } from '@sinete/core';
-import type { CreateTransportOptions, Transport } from '@sinete/transport';
-import { allowlistPolicy, ambienteHosts, createTransport } from '@sinete/transport';
+import type { CriarTransporteOpcoes, Transporte } from '@sinete/transport';
+import { criarTransporte, hostsDoAmbiente, politicaDeHostsPermitidos } from '@sinete/transport';
 import type { CertificadoAberto } from './certificado.ts';
 import { abrirCertificado } from './certificado.ts';
 import type { ContingenciaDoPerfil, MudancaContingencia, OpcoesContingencia } from './contingencia.ts';
@@ -30,11 +30,11 @@ export interface ContextoEmissor {
   readonly clock: Relogio;
   readonly signer: Assinador;
   /** Titular do certificado (CNPJ ou CPF, nome). */
-  readonly titular: IcpIdentity;
+  readonly titular: IdentidadeIcp;
   readonly logger: Logger | undefined;
   readonly timeoutMs: number | undefined;
   /** Transporte mTLS do certificado, criado na primeira chamada (no browser, `assinar` não chega a criá-lo). */
-  transporte(): Transport;
+  transporte(): Transporte;
 }
 
 /** Documento montado e assinado. `id` é a chave de acesso, ou o Id da DPS na NFS-e. */
@@ -173,10 +173,10 @@ export interface OpcoesEmissor<P = unknown, B = unknown> extends OpcoesGuarda<P,
   readonly timeoutMs?: number;
   /**
    * Cria o transporte a partir das opções padrão (identidade do PFX, allowlist dos hosts do ambiente, `tpAmb` do
-   * corpo). Padrão: `createTransport` do `@sinete/transport`. Serve para somar uma AC de teste ou apontar para o
+   * corpo). Padrão: `criarTransporte` do `@sinete/transport`. Serve para somar uma AC de teste ou apontar para o
    * `@sinete/sefaz-sim`.
    */
-  readonly transporte?: (padrao: CreateTransportOptions) => Transport;
+  readonly transporte?: (padrao: CriarTransporteOpcoes) => Transporte;
 }
 
 /** Opções de `retomar`. */
@@ -213,7 +213,7 @@ export type PrepararEntrada<Entrada> = () => Promise<EntradaPreparada<Entrada>>;
 
 export interface Emissor<Entrada, Cliente, P = unknown, B = unknown> {
   readonly tipo: TipoDocumento;
-  readonly titular: IcpIdentity;
+  readonly titular: IdentidadeIcp;
   /**
    * Transmite o documento `ref` (o id dele no sistema do integrador). Com bytes já gravados para `ref`, retoma com eles
    * e ignora `entrada`: o documento nunca é montado de novo. Sem bytes, monta, valida, assina, grava e envia. `entrada`
@@ -328,7 +328,7 @@ function comoDivergente<P, B>(d: Desfecho<P, B>): Desfecho<P, B> {
 
 /**
  * Abre o PFX (ou usa o certificado aberto) e devolve o emissor. Nada vai à rede até a primeira operação que precisa
- * dela; o certificado fora da validade é recusado aqui (`CertError`).
+ * dela; o certificado fora da validade é recusado aqui (`ErroCertificado`).
  */
 export async function createEmissor<Entrada, Cliente, P, B>(
   perfil: PerfilDocumento<Entrada, Cliente, P, B>,
@@ -353,8 +353,8 @@ export async function createEmissor<Entrada, Cliente, P, B>(
   const cert: CertificadoAberto =
     opcoes.certificado ??
     (await abrirCertificado({ pfx: opcoes.pfx as Uint8Array, senha: opcoes.senha as string }, { clock }));
-  const { signer } = cert;
-  let transport: Transport | undefined;
+  const { assinador: signer } = cert;
+  let transport: Transporte | undefined;
   let client: Cliente | undefined;
 
   const ctx: ContextoEmissor = {
@@ -364,15 +364,15 @@ export async function createEmissor<Entrada, Cliente, P, B>(
     titular: cert.titular,
     logger: opcoes.logger,
     timeoutMs: opcoes.timeoutMs,
-    transporte(): Transport {
+    transporte(): Transporte {
       if (transport !== undefined) return transport;
-      const padrao: CreateTransportOptions = {
-        identity: cert.identidade,
-        policy: allowlistPolicy({ hosts: ambienteHosts(ambiente), tpAmb: tpAmbDoAmbiente(ambiente) }),
+      const padrao: CriarTransporteOpcoes = {
+        identidade: cert.identidade,
+        politica: politicaDeHostsPermitidos({ hosts: hostsDoAmbiente(ambiente), tpAmb: tpAmbDoAmbiente(ambiente) }),
         ...(opcoes.timeoutMs === undefined ? {} : { timeoutMs: opcoes.timeoutMs }),
         ...(opcoes.logger === undefined ? {} : { logger: opcoes.logger }),
       };
-      transport = (opcoes.transporte ?? createTransport)(padrao);
+      transport = (opcoes.transporte ?? criarTransporte)(padrao);
       return transport;
     },
   };
@@ -585,7 +585,7 @@ export async function createEmissor<Entrada, Cliente, P, B>(
       const t = transport;
       transport = undefined;
       client = undefined;
-      await t?.close();
+      await t?.fechar();
     },
   };
 }

@@ -7,7 +7,7 @@
 
 import type { Assinador } from '@sinete/core';
 import { assinarXml, codificarBase64, decodificarBase64 } from '@sinete/core/xml';
-import { serialize } from '@sinete/schemas';
+import { serializar } from '@sinete/schemas';
 import type {
   TCDPS,
   TCEmitente,
@@ -189,8 +189,8 @@ export async function gerarNfse(g: GeracaoNfse): Promise<string> {
       : { IBSCBS: ibsCbsDe(g, g.cLocIncid ?? g.dps.infDPS.cLocEmi, g.xLocIncid ?? g.xLocEmi) }),
     DPS: marcador,
   };
-  const corpo = serialize(TCInfNFSeDesc, 'infNFSe', inf, NFSE_NS);
-  const dpsSerializada = serialize(TCDPSDesc, 'DPS', marcador, NFSE_NS);
+  const corpo = serializar(TCInfNFSeDesc, 'infNFSe', inf, NFSE_NS);
+  const dpsSerializada = serializar(TCDPSDesc, 'DPS', marcador, NFSE_NS);
   const i = corpo.lastIndexOf(dpsSerializada);
   const infXml = corpo.slice(0, i) + g.dpsXml + corpo.slice(i + dpsSerializada.length);
   const xml = `<NFSe xmlns="${NFSE_NS}" versao="1.01">${infXml}</NFSe>`;
@@ -211,7 +211,7 @@ export interface GeracaoEvento {
 /** Evento (Anexo II) com o pedido embutido e a assinatura da Sefin simulada. */
 export async function gerarEvento(g: GeracaoEvento): Promise<string> {
   const marcador: TCPedRegEvt = { versao: '1.01', infPedReg: g.pedido.infPedReg };
-  const corpo = serialize(
+  const corpo = serializar(
     TCInfEvento,
     'infEvento',
     {
@@ -225,7 +225,7 @@ export async function gerarEvento(g: GeracaoEvento): Promise<string> {
     },
     NFSE_NS,
   );
-  const pedidoSerializado = serialize(TCPedRegEvtDesc, 'pedRegEvento', marcador, NFSE_NS);
+  const pedidoSerializado = serializar(TCPedRegEvtDesc, 'pedRegEvento', marcador, NFSE_NS);
   const i = corpo.lastIndexOf(pedidoSerializado);
   const inf = corpo.slice(0, i) + g.pedidoXml + corpo.slice(i + pedidoSerializado.length);
   return assinarXml(`<evento xmlns="${NFSE_NS}" versao="1.01">${inf}</evento>`, { id: g.id }, g.signer);

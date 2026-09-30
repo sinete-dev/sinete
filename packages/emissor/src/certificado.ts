@@ -6,12 +6,12 @@
  * `abrirCertificado` faz a abertura do jeito que o emissor faria, com a cadeia completada se pedida.
  */
 
-import type { IcpIdentity } from '@sinete/cert';
-import { buildChain, icpBrasilCertificates, openPfx, parseCertificate } from '@sinete/cert';
+import type { IdentidadeIcp } from '@sinete/cert';
+import { abrirPfx, certificadosIcpBrasil, lerCertificado, montarCadeia } from '@sinete/cert';
 import type { Assinador, Relogio } from '@sinete/core';
 import { relogioDoSistema } from '@sinete/core';
-import type { TlsIdentity } from '@sinete/transport';
-import { pemIdentity } from '@sinete/transport';
+import type { IdentidadeTls } from '@sinete/transport';
+import { identidadePem } from '@sinete/transport';
 
 /** Certificado A1 como arquivo e senha. */
 export interface CertificadoA1 {
@@ -21,11 +21,11 @@ export interface CertificadoA1 {
 
 /** Certificado já aberto: o signer dos documentos, o titular e a identidade do mTLS. */
 export interface CertificadoAberto {
-  readonly signer: Assinador;
+  readonly assinador: Assinador;
   /** Titular do certificado (CNPJ ou CPF, nome): é o autor dos eventos. */
-  readonly titular: IcpIdentity;
-  /** Identidade do mTLS. `pemIdentity(keyStore, { chain })` leva a cadeia completada. */
-  readonly identidade: TlsIdentity;
+  readonly titular: IdentidadeIcp;
+  /** Identidade do mTLS. `identidadePem(certificado, { cadeia })` leva a cadeia completada. */
+  readonly identidade: IdentidadeTls;
 }
 
 export interface OpcoesAbrirCertificado {
@@ -38,29 +38,29 @@ export interface OpcoesAbrirCertificado {
   readonly completarCadeia?: boolean;
 }
 
-/** Abre o PFX (fora da validade, `CertError`) e devolve o certificado aberto. Os bytes não ficam guardados. */
+/** Abre o PFX (fora da validade, `ErroCertificado`) e devolve o certificado aberto. Os bytes não ficam guardados. */
 export async function abrirCertificado(
   cert: CertificadoA1,
   opcoes: OpcoesAbrirCertificado = {},
 ): Promise<CertificadoAberto> {
   const clock = opcoes.clock ?? relogioDoSistema;
-  const ks = await openPfx(cert.pfx, { password: cert.senha, clock });
+  const ks = await abrirPfx(cert.pfx, { senha: cert.senha, relogio: clock });
   const cadeia = opcoes.completarCadeia
     ? (
-        await buildChain(ks.certificate, {
-          intermediates: [
-            ...ks.extraCertificates,
-            ...icpBrasilCertificates()
-              .filter((c) => c.kind !== 'root')
-              .map((c) => parseCertificate(c.der)),
+        await montarCadeia(ks.certificado, {
+          intermediarias: [
+            ...ks.certificadosExtras,
+            ...certificadosIcpBrasil()
+              .filter((c) => c.tipo !== 'raiz')
+              .map((c) => lerCertificado(c.der)),
           ],
-          clock,
+          relogio: clock,
         })
-      ).chain
+      ).cadeia
     : undefined;
   return {
-    signer: await ks.signer(),
-    titular: ks.identity,
-    identidade: pemIdentity(ks, cadeia === undefined ? {} : { chain: cadeia }),
+    assinador: await ks.assinador(),
+    titular: ks.identidade,
+    identidade: identidadePem(ks, cadeia === undefined ? {} : { cadeia: cadeia }),
   };
 }

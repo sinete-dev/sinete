@@ -8,7 +8,7 @@
 import { relogioFixo } from '@sinete/core';
 import type { ElementoXml } from '@sinete/core/xml';
 import { primeiroFilho, textoDe } from '@sinete/core/xml';
-import type { RootElement } from '@sinete/schemas';
+import type { ElementoRaiz } from '@sinete/schemas';
 import { selecionarPl } from '@sinete/schemas';
 import * as v20260209 from '@sinete/schemas/nfse/1.01-20260209';
 import * as v20260727 from '@sinete/schemas/nfse/1.01-20260727';
@@ -20,7 +20,7 @@ const NS = 'http://www.sped.fazenda.gov.br/nfse';
 const ANTIGO = 'nfse/1.01-20260209';
 
 const MODULOS: Readonly<
-  Record<string, { readonly NFSeElement: RootElement<unknown>; readonly eventoElement: RootElement<unknown> }>
+  Record<string, { readonly NFSeElement: ElementoRaiz<unknown>; readonly eventoElement: ElementoRaiz<unknown> }>
 > = {
   'nfse/1.01-20260209': v20260209 as never,
   'nfse/1.01-20260727': v20260727 as never,

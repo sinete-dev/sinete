@@ -26,14 +26,14 @@ import { contextoDeTempo, ehErroSinete, ehUf, relogioDoSistema, UFS } from '@sin
 import { conferirAssinatura } from '@sinete/core/xml';
 import type { NfeClient, NfeInput } from '@sinete/nfe';
 import { buildNfe, createNfeClient, signNfe } from '@sinete/nfe';
-import type { AuditEvent, Transport, TransportRequest, TransportResponse } from '@sinete/transport';
+import type { EventoDeAuditoria, PedidoTransporte, RespostaTransporte, Transporte } from '@sinete/transport';
 import {
-  createTransport,
-  detectRuntime,
+  criarTransporte,
+  detectarRuntime,
+  identidadePem,
   nfeAutorizadorDaUf,
   nfeContingenciaDaUf,
   nfeEndpoint,
-  pemIdentity,
 } from '@sinete/transport';
 import type { Certificado } from './certificado.ts';
 import { abrirCertificado } from './certificado.ts';
@@ -89,7 +89,7 @@ if (opt.help || !comando || !['status', 'consultas', 'autorizacao', 'doctor'].in
 }
 const uf = (opt.uf ?? 'SP').toUpperCase();
 if (!ehUf(uf)) throw new Error(`UF inválida: ${opt.uf}`);
-const runtime = detectRuntime();
+const runtime = detectarRuntime();
 const estado = opt.estado as string;
 mkdirSync(estado, { recursive: true });
 const led = ledger(opt.ledger);
@@ -101,14 +101,14 @@ const cert: Certificado = await abrirCertificado({
   ...(opt['senha-env'] === undefined ? {} : { senhaEnv: opt['senha-env'] }),
   ...(opt.cadeia === undefined ? {} : { cadeia: opt.cadeia }),
 });
-const titular = cert.ks.identity;
+const titular = cert.ks.identidade;
 if (titular.tipo !== 'e-CNPJ' || !titular.cnpj) throw new Error('esta validação usa um e-CNPJ');
 const CNPJ = titular.cnpj;
 console.log(
-  `[${runtime}] certificado ${titular.nome ?? '?'} (CNPJ ${CNPJ}), serial ${cert.ks.certificate.serialNumber}, válido até ${cert.ks.certificate.notAfterIso}; cadeia ${cert.cadeia.status}: ${cert.cadeia.chain.map((c) => c.subject.commonName ?? '?').join(' > ')}`,
+  `[${runtime}] certificado ${titular.nome ?? '?'} (CNPJ ${CNPJ}), serial ${cert.ks.certificado.serialNumber}, válido até ${cert.ks.certificado.notAfterIso}; cadeia ${cert.cadeia.situacao}: ${cert.cadeia.cadeia.map((c) => c.subject.commonName ?? '?').join(' > ')}`,
 );
 
-const signer = await cert.ks.signer();
+const signer = await cert.ks.assinador();
 
 // ---------------------------------------------------------------------------------------------------------------
 // Transporte com a guarda, auditoria e a última resposta guardada em memória
@@ -116,8 +116,8 @@ const signer = await cert.ks.signer();
 
 /** Último evento de auditoria e última resposta do envio em curso (reiniciados por operação). */
 const envio: {
-  audit?: AuditEvent | undefined;
-  resposta?: { texto: string; tls: TransportResponse['tls']; status: number } | undefined;
+  audit?: EventoDeAuditoria | undefined;
+  resposta?: { texto: string; tls: RespostaTransporte['tls']; status: number } | undefined;
 } = {};
 
 function limparEnvio(): void {
@@ -125,27 +125,27 @@ function limparEnvio(): void {
   envio.resposta = undefined;
 }
 
-function transporte(): Transport {
-  const inner = createTransport({
-    identity: pemIdentity(cert.ks, { chain: cert.cadeia.chain }),
-    policy: homologacaoPolicy(),
+function transporte(): Transporte {
+  const inner = criarTransporte({
+    identidade: identidadePem(cert.ks, { cadeia: cert.cadeia.cadeia }),
+    politica: homologacaoPolicy(),
     timeoutMs: 60_000,
-    audit: (e) => {
+    auditoria: (e) => {
       envio.audit = e;
     },
   });
   return {
-    capabilities: inner.capabilities,
-    close: () => inner.close(),
-    async send(req: TransportRequest): Promise<TransportResponse> {
-      const res = await inner.send(req);
-      envio.resposta = { texto: res.text(), tls: res.tls, status: res.status };
+    capacidades: inner.capacidades,
+    fechar: () => inner.fechar(),
+    async enviar(req: PedidoTransporte): Promise<RespostaTransporte> {
+      const res = await inner.enviar(req);
+      envio.resposta = { texto: res.texto(), tls: res.tls, status: res.status };
       return res;
     },
   };
 }
 
-function cliente(t: Transport, extra: { uf?: Uf; contingencia?: 'svc' } = {}): NfeClient {
+function cliente(t: Transporte, extra: { uf?: Uf; contingencia?: 'svc' } = {}): NfeClient {
   return createNfeClient({
     transport: t,
     signer,
@@ -166,7 +166,7 @@ interface Registro {
   readonly cStat?: string;
   readonly xMotivo?: string;
   readonly erro?: { readonly code: string; readonly message: string };
-  readonly tls?: TransportResponse['tls'];
+  readonly tls?: RespostaTransporte['tls'];
   readonly ms?: number;
 }
 
@@ -191,7 +191,7 @@ async function operar(
       xMotivo: o.xMotivo,
       outcome: o,
       ...(envio.resposta ? { http: envio.resposta.status, tls: envio.resposta.tls } : {}),
-      ...(envio.audit ? { ms: envio.audit.durationMs } : {}),
+      ...(envio.audit ? { ms: envio.audit.duracaoMs } : {}),
     };
   } catch (e) {
     const code = ehErroSinete(e) ? e.code : 'desconhecido';
@@ -206,7 +206,7 @@ async function operar(
 
 function linha(r: Registro): string {
   const tls = r.tls
-    ? ` ${r.tls.protocol ?? '?'} ${r.tls.cipher ?? '?'} certCliente=${r.tls.clientCertificateLoaded}`
+    ? ` ${r.tls.protocolo ?? '?'} ${r.tls.cifra ?? '?'} certCliente=${r.tls.certificadoLocalCarregado}`
     : '';
   if (r.erro) return `[${runtime}] ${r.rotulo} (${r.host}): ${r.erro.code}: ${r.erro.message}`;
   return `[${runtime}] ${r.rotulo} (${r.host}): HTTP ${r.http} ${r.status} cStat ${r.cStat} ${r.xMotivo}${tls} ${r.ms ?? '?'} ms`;
@@ -258,7 +258,7 @@ async function status(): Promise<void> {
       await pausa(500);
     }
   } finally {
-    await t.close();
+    await t.fechar();
   }
   salvar(`status-${runtime}.json`, { runtime, em: relogioDoSistema.agora().toISOString(), alvos: out.map(semOutcome) });
 }
@@ -291,7 +291,7 @@ async function consultas(): Promise<void> {
     out.push(semOutcome(d));
     console.log(linha(dist), v ? `ultNSU=${v.ultNSU} maxNSU=${v.maxNSU}` : '');
   } finally {
-    await t.close();
+    await t.fechar();
   }
   salvar(`consultas-${runtime}.json`, {
     runtime,
@@ -408,7 +408,7 @@ async function autorizacao(): Promise<void> {
     console.log(linha(r));
     console.log(JSON.stringify({ lote: rec.lote, protocolo: { cStat: r.cStat, xMotivo: r.xMotivo } }));
   } finally {
-    await t.close();
+    await t.fechar();
   }
 }
 
@@ -430,9 +430,9 @@ function xsdOficial(pl: string, xml: string): string {
 }
 
 async function doctor(): Promise<void> {
-  // O doctor não recebe HostPolicy: a guarda confere o endpoint que ele vai resolver antes de chamá-lo.
+  // O doctor não recebe PoliticaDeHosts: a guarda confere o endpoint que ele vai resolver antes de chamá-lo.
   const ep = nfeEndpoint({ ambiente: AMBIENTE, servico: 'NfeStatusServico', uf: uf as Uf });
-  await homologacaoPolicy().check({ url: new URL(ep.url), method: 'POST', body: undefined, endpoint: ep });
+  await homologacaoPolicy().conferir({ url: new URL(ep.url), metodo: 'POST', corpo: undefined, endpoint: ep });
   const PFX = 'memoria:pfx';
   const CADEIA = 'memoria:cadeia';
   const cadeiaPem = cert.extras.length ? readFileSync(opt.cadeia as string) : undefined;

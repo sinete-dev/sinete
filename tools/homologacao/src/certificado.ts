@@ -6,14 +6,14 @@
  * - `--pfx <arquivo>`: lê o PFX do disco (o do operador) e a senha da variável de `--senha-env` (padrão
  *   `SINETE_PFX_SENHA`), como o `sinete doctor`.
  *
- * Nada daqui imprime, grava ou devolve senha, chave ou PFX: quem chama recebe o `KeyStore` e a cadeia.
+ * Nada daqui imprime, grava ou devolve senha, chave ou PFX: quem chama recebe o `Certificado` e a cadeia.
  */
 
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import process from 'node:process';
-import type { A1KeyStore, CertificateInfo, ChainResult } from '@sinete/cert';
-import { buildChain, openPfx, parseCertificate, pemToDers } from '@sinete/cert';
+import type { CertificadoA1, CertificadoX509, ResultadoCadeia } from '@sinete/cert';
+import { abrirPfx, dersDoPem, lerCertificado, montarCadeia } from '@sinete/cert';
 import { relogioDoSistema } from '@sinete/core';
 
 export interface OrigemCertificado {
@@ -26,13 +26,13 @@ export interface OrigemCertificado {
 }
 
 export interface Certificado {
-  readonly ks: A1KeyStore;
+  readonly ks: CertificadoA1;
   /** Bytes do PFX, só em memória: o `sinete doctor` programático abre de novo. */
   readonly pfx: Uint8Array;
   readonly senha: string;
-  readonly cadeia: ChainResult;
+  readonly cadeia: ResultadoCadeia;
   /** Intermediárias extras lidas de `--cadeia`. */
-  readonly extras: readonly CertificateInfo[];
+  readonly extras: readonly CertificadoX509[];
 }
 
 function opRead(bin: string, ref: string): string {
@@ -77,11 +77,11 @@ export async function abrirCertificado(o: OrigemCertificado): Promise<Certificad
   } else {
     throw new Error('informe --op <referência> ou --pfx <arquivo>');
   }
-  const ks = await openPfx(pfx, { password: senha, clock: relogioDoSistema });
-  const extras = o.cadeia ? pemToDers(readFileSync(o.cadeia, 'utf8')).map((d) => parseCertificate(d)) : [];
-  const cadeia = await buildChain(ks.certificate, {
-    intermediates: [...ks.extraCertificates, ...extras],
-    clock: relogioDoSistema,
+  const ks = await abrirPfx(pfx, { senha: senha, relogio: relogioDoSistema });
+  const extras = o.cadeia ? dersDoPem(readFileSync(o.cadeia, 'utf8')).map((d) => lerCertificado(d)) : [];
+  const cadeia = await montarCadeia(ks.certificado, {
+    intermediarias: [...ks.certificadosExtras, ...extras],
+    relogio: relogioDoSistema,
   });
   return { ks, pfx, senha, cadeia, extras };
 }

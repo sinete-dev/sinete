@@ -2,18 +2,18 @@ import { describe, expect, test } from 'bun:test';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { openPfx } from '@sinete/cert';
+import { abrirPfx } from '@sinete/cert';
 import { relogioFixo } from '@sinete/core';
-import type { HostPolicy, PolicyRequest } from '@sinete/transport';
+import type { PedidoParaPolitica, PoliticaDeHosts } from '@sinete/transport';
 import {
-  allEndpoints,
-  ambienteHosts,
-  createTransport,
+  criarTransporte,
+  ErroPolitica,
+  hostsDoAmbiente,
+  identidadePem,
   mdfeEndpoint,
   nfeEndpoint,
   nfseEndpoint,
-  PolicyError,
-  pemIdentity,
+  todosOsEndpoints,
 } from '@sinete/transport';
 import { ledger } from '../src/ledger.ts';
 import {
@@ -25,16 +25,16 @@ import {
   SERVICOS_DF,
 } from '../src/policy.ts';
 
-const req = (url: string, body?: string): PolicyRequest => ({
+const req = (url: string, body?: string): PedidoParaPolitica => ({
   url: new URL(url),
-  method: body === undefined ? 'GET' : 'POST',
-  body,
+  metodo: body === undefined ? 'GET' : 'POST',
+  corpo: body,
   endpoint: undefined,
 });
 
-async function recusa(p: HostPolicy, r: PolicyRequest): Promise<unknown> {
+async function recusa(p: PoliticaDeHosts, r: PedidoParaPolitica): Promise<unknown> {
   try {
-    await p.check(r);
+    await p.conferir(r);
   } catch (e) {
     return e;
   }
@@ -49,13 +49,13 @@ describe('homologacaoPolicy', () => {
   const p = homologacaoPolicy();
 
   test('cada host da allowlist existe nos dados de homologação do transporte', () => {
-    const hom = new Set(ambienteHosts('homologacao'));
+    const hom = new Set(hostsDoAmbiente('homologacao'));
     for (const h of HOSTS_HOMOLOGACAO.keys()) expect(hom.has(h)).toBe(true);
     expect(HOSTS_HOMOLOGACAO.size).toBe(15);
   });
 
   test('todo endpoint de NF-e e MDF-e de homologação passa, com tpAmb 2', async () => {
-    const eps = allEndpoints('homologacao').filter(
+    const eps = todosOsEndpoints('homologacao').filter(
       (e) => (e.documento === 'nfe' || e.documento === 'mdfe') && HOSTS_HOMOLOGACAO.has(e.host),
     );
     expect(eps.length).toBeGreaterThan(80);
@@ -66,38 +66,38 @@ describe('homologacaoPolicy', () => {
   });
 
   test('nenhum endpoint de produção passa', async () => {
-    const eps = allEndpoints('producao');
+    const eps = todosOsEndpoints('producao');
     expect(eps.length).toBeGreaterThan(90);
-    for (const e of eps) expect(await recusa(p, req(e.url, status('2')))).toBeInstanceOf(PolicyError);
+    for (const e of eps) expect(await recusa(p, req(e.url, status('2')))).toBeInstanceOf(ErroPolitica);
     for (const h of ['nfe.fazenda.sp.gov.br', 'www1.nfe.fazenda.gov.br', 'nfe.svrs.rs.gov.br', 'mdfe.svrs.rs.gov.br']) {
-      expect(await recusa(p, req(`https://${h}/ws`))).toBeInstanceOf(PolicyError);
+      expect(await recusa(p, req(`https://${h}/ws`))).toBeInstanceOf(ErroPolitica);
     }
   });
 
   test('NFC-e e NFS-e (mesmo de homologação ou produção restrita) ficam fora', async () => {
-    const fora = allEndpoints('homologacao').filter((e) => !HOSTS_HOMOLOGACAO.has(e.host));
+    const fora = todosOsEndpoints('homologacao').filter((e) => !HOSTS_HOMOLOGACAO.has(e.host));
     expect(fora.some((e) => e.documento === 'nfce')).toBe(true);
-    for (const e of fora) expect(await recusa(p, req(e.url))).toBeInstanceOf(PolicyError);
+    for (const e of fora) expect(await recusa(p, req(e.url))).toBeInstanceOf(ErroPolitica);
     const adn = nfseEndpoint({ ambiente: 'homologacao', api: 'adn' });
-    expect(await recusa(p, req(adn.url))).toBeInstanceOf(PolicyError);
+    expect(await recusa(p, req(adn.url))).toBeInstanceOf(ErroPolitica);
   });
 
   test('tpAmb diferente de 2 no corpo é recusado, inclusive com prefixo, atributo ou vazio', async () => {
-    expect(await recusa(p, req(SP, status('1')))).toBeInstanceOf(PolicyError);
-    expect(await recusa(p, req(SP, `${status('2')}<x:tpAmb a="b">1</x:tpAmb>`))).toBeInstanceOf(PolicyError);
-    expect(await recusa(p, req(SP, '<tpAmb/>'))).toBeInstanceOf(PolicyError);
+    expect(await recusa(p, req(SP, status('1')))).toBeInstanceOf(ErroPolitica);
+    expect(await recusa(p, req(SP, `${status('2')}<x:tpAmb a="b">1</x:tpAmb>`))).toBeInstanceOf(ErroPolitica);
+    expect(await recusa(p, req(SP, '<tpAmb/>'))).toBeInstanceOf(ErroPolitica);
     // comentário não esconde nem simula tpAmb
-    expect(await recusa(p, req(SP, `<!-- <tpAmb>2</tpAmb> -->${status('1')}`))).toBeInstanceOf(PolicyError);
+    expect(await recusa(p, req(SP, `<!-- <tpAmb>2</tpAmb> -->${status('1')}`))).toBeInstanceOf(ErroPolitica);
     // ConsCad não tem tpAmb: passa pelo host
     expect(await recusa(p, req(SP.replace('nfestatusservico4', 'cadconsultacadastro4'), '<ConsCad/>'))).toBe(undefined);
   });
 
   test('porta diferente de 443 e sufixo enganoso são recusados', async () => {
-    expect(await recusa(p, req(SP.replace('.gov.br/', '.gov.br:8443/')))).toBeInstanceOf(PolicyError);
+    expect(await recusa(p, req(SP.replace('.gov.br/', '.gov.br:8443/')))).toBeInstanceOf(ErroPolitica);
     expect(await recusa(p, req('https://homologacao.nfe.fazenda.sp.gov.br.exemplo.com/ws'))).toBeInstanceOf(
-      PolicyError,
+      ErroPolitica,
     );
-    expect(await recusa(p, req('https://xhomologacao.nfe.fazenda.sp.gov.br/ws'))).toBeInstanceOf(PolicyError);
+    expect(await recusa(p, req('https://xhomologacao.nfe.fazenda.sp.gov.br/ws'))).toBeInstanceOf(ErroPolitica);
   });
 
   test('o transporte real aplica a guarda antes do socket e sem usar a identidade', async () => {
@@ -105,20 +105,20 @@ describe('homologacaoPolicy', () => {
     const pfx = new Uint8Array(
       readFileSync(join(import.meta.dir, '../../../packages/cert/test/fixtures/ecnpj-aes.pfx')),
     );
-    const ks = await openPfx(pfx, { password: 'sinete-teste', clock: relogioFixo('2026-09-25T12:00:00Z') });
+    const ks = await abrirPfx(pfx, { senha: 'sinete-teste', relogio: relogioFixo('2026-09-25T12:00:00Z') });
     const eventos: unknown[] = [];
-    const t = createTransport({
-      identity: pemIdentity(ks),
-      policy: homologacaoPolicy(),
-      audit: (e) => eventos.push(e),
+    const t = criarTransporte({
+      identidade: identidadePem(ks),
+      politica: homologacaoPolicy(),
+      auditoria: (e) => eventos.push(e),
     });
     const prod = nfeEndpoint({ ambiente: 'producao', uf: 'SP', servico: 'NfeStatusServico' });
-    await expect(t.send({ url: prod.url, endpoint: prod, body: status('1') })).rejects.toBeInstanceOf(PolicyError);
+    await expect(t.enviar({ url: prod.url, endpoint: prod, corpo: status('1') })).rejects.toBeInstanceOf(ErroPolitica);
     const hom = nfeEndpoint({ ambiente: 'homologacao', uf: 'SP', servico: 'NfeStatusServico' });
-    await expect(t.send({ url: hom.url, endpoint: hom, body: status('1') })).rejects.toBeInstanceOf(PolicyError);
-    await expect(t.send({ url: hom.url.replace('https:', 'http:'), body: status('2') })).rejects.toThrow(/https/);
+    await expect(t.enviar({ url: hom.url, endpoint: hom, corpo: status('1') })).rejects.toBeInstanceOf(ErroPolitica);
+    await expect(t.enviar({ url: hom.url.replace('https:', 'http:'), corpo: status('2') })).rejects.toThrow(/https/);
     expect(eventos).toHaveLength(0);
-    await t.close();
+    await t.fechar();
   });
 });
 
@@ -129,7 +129,7 @@ describe('homologacaoDfPolicy', () => {
     `<envEvento versao="1.00"><idLote>1</idLote><evento versao="1.00"><infEvento><cOrgao>53</cOrgao><tpAmb>2</tpAmb><tpEvento>${tp}</tpEvento></infEvento></evento></envEvento>`;
 
   test('só SVRS, SVC-AN e AN, todos nos dados de homologação e dentro da allowlist geral', () => {
-    const hom = new Set(ambienteHosts('homologacao'));
+    const hom = new Set(hostsDoAmbiente('homologacao'));
     expect([...HOSTS_HOMOLOGACAO_DF.keys()].sort()).toEqual([
       'hom.sefazvirtual.fazenda.gov.br',
       'hom1.nfe.fazenda.gov.br',
@@ -155,36 +155,36 @@ describe('homologacaoDfPolicy', () => {
   });
 
   test('todo outro host de homologação e todo endpoint de produção são recusados', async () => {
-    const fora = allEndpoints('homologacao').filter((e) => !HOSTS_HOMOLOGACAO_DF.has(e.host));
+    const fora = todosOsEndpoints('homologacao').filter((e) => !HOSTS_HOMOLOGACAO_DF.has(e.host));
     expect(fora.length).toBeGreaterThan(100);
-    for (const e of fora) expect(await recusa(p, req(e.url, status('2')))).toBeInstanceOf(PolicyError);
-    for (const e of allEndpoints('producao')) {
-      expect(await recusa(p, req(e.url, status('2')))).toBeInstanceOf(PolicyError);
+    for (const e of fora) expect(await recusa(p, req(e.url, status('2')))).toBeInstanceOf(ErroPolitica);
+    for (const e of todosOsEndpoints('producao')) {
+      expect(await recusa(p, req(e.url, status('2')))).toBeInstanceOf(ErroPolitica);
     }
   });
 
   test('inutilização, cadastro e serviço fora da lista são recusados mesmo no host permitido', async () => {
-    const naoUsados = allEndpoints('homologacao').filter(
+    const naoUsados = todosOsEndpoints('homologacao').filter(
       (e) => HOSTS_HOMOLOGACAO_DF.has(e.host) && !SERVICOS_DF.has(e.servico),
     );
     expect(naoUsados.some((e) => e.servico === 'NfeInutilizacao')).toBe(true);
-    for (const e of naoUsados) expect(await recusa(p, req(e.url, status('2')))).toBeInstanceOf(PolicyError);
-    expect(await recusa(p, req(SVRS.replace('NfeStatusServico4', 'Outro4'), status('2')))).toBeInstanceOf(PolicyError);
+    for (const e of naoUsados) expect(await recusa(p, req(e.url, status('2')))).toBeInstanceOf(ErroPolitica);
+    expect(await recusa(p, req(SVRS.replace('NfeStatusServico4', 'Outro4'), status('2')))).toBeInstanceOf(ErroPolitica);
   });
 
   test('tpAmb 1, ausente ou escondido é recusado', async () => {
-    expect(await recusa(p, req(SVRS, status('1')))).toBeInstanceOf(PolicyError);
-    expect(await recusa(p, req(SVRS, '<consStatServ/>'))).toBeInstanceOf(PolicyError);
-    expect(await recusa(p, req(SVRS, `<!-- <tpAmb>2</tpAmb> --><consStatServ/>`))).toBeInstanceOf(PolicyError);
-    expect(await recusa(p, req(SVRS, `${status('2')}<a:tpAmb>1</a:tpAmb>`))).toBeInstanceOf(PolicyError);
+    expect(await recusa(p, req(SVRS, status('1')))).toBeInstanceOf(ErroPolitica);
+    expect(await recusa(p, req(SVRS, '<consStatServ/>'))).toBeInstanceOf(ErroPolitica);
+    expect(await recusa(p, req(SVRS, `<!-- <tpAmb>2</tpAmb> --><consStatServ/>`))).toBeInstanceOf(ErroPolitica);
+    expect(await recusa(p, req(SVRS, `${status('2')}<a:tpAmb>1</a:tpAmb>`))).toBeInstanceOf(ErroPolitica);
   });
 
   test('evento fora de CC-e e cancelamento é recusado, inclusive manifestação e evento vazio', async () => {
     const ev = nfeEndpoint({ ambiente: 'homologacao', uf: 'DF', servico: 'RecepcaoEvento' }).url;
     for (const tp of ['210200', '210210', '110112', '110140', '']) {
-      expect(await recusa(p, req(ev, evento(tp)))).toBeInstanceOf(PolicyError);
+      expect(await recusa(p, req(ev, evento(tp)))).toBeInstanceOf(ErroPolitica);
     }
-    expect(await recusa(p, req(ev, `${evento('110110')}${evento('210200')}`))).toBeInstanceOf(PolicyError);
+    expect(await recusa(p, req(ev, `${evento('110110')}${evento('210200')}`))).toBeInstanceOf(ErroPolitica);
   });
 });
 

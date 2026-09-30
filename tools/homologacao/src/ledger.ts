@@ -7,7 +7,7 @@ import { appendFileSync, mkdirSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { relogioDoSistema } from '@sinete/core';
-import { detectRuntime } from '@sinete/transport';
+import { detectarRuntime } from '@sinete/transport';
 
 export const LEDGER_PADRAO: string = join(homedir(), '.local/state/sinete/cert-usage.log');
 
@@ -23,7 +23,7 @@ export function ledger(path: string = LEDGER_PADRAO, now: () => Date = () => rel
     path,
     registrar(host, servico, desfecho): void {
       mkdirSync(dirname(path), { recursive: true });
-      const linha = [now().toISOString(), detectRuntime(), host, servico, desfecho].map(limpo).join('\t');
+      const linha = [now().toISOString(), detectarRuntime(), host, servico, desfecho].map(limpo).join('\t');
       appendFileSync(path, `${linha}\n`);
     },
   };

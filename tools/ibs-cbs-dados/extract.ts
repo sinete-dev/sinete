@@ -22,14 +22,19 @@
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import { $ } from 'bun';
-import type { DataSource, DatasetManifest, DatasetTables, TableName } from '../../packages/ibs-cbs-dados/src/types.ts';
+import type {
+  FonteDoDataset,
+  ManifestoDoDataset,
+  NomeDaTabela,
+  TabelasDoDataset,
+} from '../../packages/ibs-cbs-dados/src/types.ts';
 import type { CalculadoraPin } from './src/artifact.ts';
 import { layerDiffId, rebuildFromFlyway, unpackCalculadora } from './src/artifact.ts';
 import type { CalcTables } from './src/calculadora.ts';
 import { extractCalculadora } from './src/calculadora.ts';
 import { defaultCacheDir, ensureFile } from './src/fetch.ts';
 import { readItClassTrib, readItCredPres } from './src/it.ts';
-import { canonicalPretty, canonicalTable, sha256 } from './src/lib.ts';
+import { canonicalPretty, sha256, tabelaCanonica } from './src/lib.ts';
 import type { LedgerEntry } from './src/merge.ts';
 import { merge, reconcile } from './src/merge.ts';
 import { readXlsx } from './src/xlsx.ts';
@@ -67,16 +72,16 @@ interface Sources {
 }
 interface CuratedRate {
   readonly tributo: string;
-  readonly validity: { readonly from: string; readonly to: string | null };
-  readonly status: 'official' | 'unknown';
-  readonly rate: string | null;
+  readonly vigencia: { readonly inicio: string; readonly fim: string | null };
+  readonly situacao: 'oficial' | 'desconhecida';
+  readonly aliquota: string | null;
   readonly legal: string;
-  readonly note?: string;
-  readonly sources: readonly string[];
+  readonly nota?: string;
+  readonly fontes: readonly string[];
 }
 interface CuratedRates {
-  readonly legalSources: readonly { id: string; title: string; url: string }[];
-  readonly reference: readonly CuratedRate[];
+  readonly fontesLegais: readonly { id: string; titulo: string; url: string }[];
+  readonly referencia: readonly CuratedRate[];
 }
 
 const log = (msg: string): void => console.error(`ibs-cbs-dados: ${msg}`);
@@ -116,7 +121,7 @@ const tableBytes = (t: CalcTables): Record<string, string> =>
   Object.fromEntries(
     Object.entries(t)
       .filter(([k]) => k !== 'versao')
-      .map(([k, v]) => [k, canonicalTable(v as unknown[])]),
+      .map(([k, v]) => [k, tabelaCanonica(v as unknown[])]),
   );
 if (!args['skip-flyway']) {
   const rebuiltDb = await rebuildFromFlyway(unpacked.sourceZip, pin.versao.versaoDb, cacheDir);
@@ -153,29 +158,29 @@ const cbs2026 = cbsSheet?.rows.find((r) => r.A === '2026')?.B;
 if (cbs2026 === undefined || Math.abs(Number(cbs2026) * 100 - 0.9) > 1e-9) {
   fail(`IT 2026.002: CBS 2026 = ${cbs2026}, esperado 0,9% (fração 0,009)`);
 }
-for (const r of shipped.referenceRates) {
-  const c = curatedRates.reference.find(
-    (x) => x.tributo === r.tributo && x.validity.from === r.validity.from && x.validity.to === r.validity.to,
+for (const r of shipped.aliquotasDeReferencia) {
+  const c = curatedRates.referencia.find(
+    (x) => x.tributo === r.tributo && x.vigencia.inicio === r.vigencia.inicio && x.vigencia.fim === r.vigencia.fim,
   );
-  if (c?.status !== 'official' || Number(c.rate) !== Number(r.rate)) {
+  if (c?.situacao !== 'oficial' || Number(c.aliquota) !== Number(r.aliquota)) {
     fail(
-      `alíquota de referência da Calculadora ${r.tributo} ${r.validity.from} = ${r.rate} sem par igual em rates.json`,
+      `alíquota de referência da Calculadora ${r.tributo} ${r.vigencia.inicio} = ${r.aliquota} sem par igual em rates.json`,
     );
   }
 }
-for (const c of curatedRates.reference.filter((x) => x.sources.includes('calculadora'))) {
-  if (!shipped.referenceRates.some((r) => r.tributo === c.tributo && r.validity.from === c.validity.from)) {
-    fail(`rates.json cita a Calculadora para ${c.tributo} ${c.validity.from}, mas ela não tem a linha`);
+for (const c of curatedRates.referencia.filter((x) => x.fontes.includes('calculadora'))) {
+  if (!shipped.aliquotasDeReferencia.some((r) => r.tributo === c.tributo && r.vigencia.inicio === c.vigencia.inicio)) {
+    fail(`rates.json cita a Calculadora para ${c.tributo} ${c.vigencia.inicio}, mas ela não tem a linha`);
   }
 }
 
 // 4. saída
-const calcSource: DataSource = {
+const calcSource: FonteDoDataset = {
   id: pin.id,
-  kind: 'CALCULADORA_OFFLINE',
-  title: pin.title,
-  version: pin.versao.versaoDb,
-  date: pin.versao.dataVersaoDb,
+  tipo: 'CALCULADORA_OFFLINE',
+  titulo: pin.title,
+  versao: pin.versao.versaoDb,
+  data: pin.versao.dataVersaoDb,
   url: pin.url,
   sha256: pin.zipSha256,
   pins: {
@@ -185,56 +190,56 @@ const calcSource: DataSource = {
     [pin.db.pathInTar]: pin.db.sha256,
     versaoApp: pin.versao.versaoApp,
   },
-  notes: pin.versao.descricaoVersaoDb,
+  notas: pin.versao.descricaoVersaoDb,
 };
-const itSource = (p: ItPin): DataSource => ({
+const itSource = (p: ItPin): FonteDoDataset => ({
   id: p.id,
-  kind: 'IT',
-  title: p.title,
-  version: p.version,
-  date: p.date,
+  tipo: 'IT',
+  titulo: p.title,
+  versao: p.version,
+  data: p.date,
   url: p.url,
   sha256: p.sha256,
 });
-const tables: DatasetTables = {
+const tables: TabelasDoDataset = {
   cst: merged.cst,
   classTrib: merged.classTrib,
-  treatments: shipped.treatments,
+  tratamentos: shipped.tratamentos,
   credPres: credPres,
-  ncmApplicability: shipped.ncmApplicability,
-  nbsApplicability: shipped.nbsApplicability,
-  annexes: shipped.annexes,
+  aplicabilidadeNcm: shipped.aplicabilidadeNcm,
+  aplicabilidadeNbs: shipped.aplicabilidadeNbs,
+  anexos: shipped.anexos,
   nfseNbs: shipped.nfseNbs,
-  actorGroups: shipped.actorGroups,
-  actors: shipped.actors,
-  actorClassTrib: shipped.actorClassTrib,
-  dfeTypes: shipped.dfeTypes,
-  govPurchaseReducer: shipped.govPurchaseReducer,
-  cbsTransfer: shipped.cbsTransfer,
+  gruposDeAtores: shipped.gruposDeAtores,
+  atores: shipped.atores,
+  atorClassTrib: shipped.atorClassTrib,
+  tiposDfe: shipped.tiposDfe,
+  redutorCompraGov: shipped.redutorCompraGov,
+  transferenciaCbs: shipped.transferenciaCbs,
 };
-for (const [name, records] of Object.entries(tables) as [TableName, readonly { key: string }[]][]) {
-  const keys = new Set(records.map((r) => r.key));
+for (const [name, records] of Object.entries(tables) as [NomeDaTabela, readonly { chave: string }[]][]) {
+  const keys = new Set(records.map((r) => r.chave));
   if (keys.size !== records.length) fail(`tabela ${name} com chave repetida`);
 }
 const files: Record<string, string> = {};
-const tableManifest = (Object.keys(tables) as TableName[]).map((name) => {
-  const body = canonicalTable(tables[name]);
+const tableManifest = (Object.keys(tables) as NomeDaTabela[]).map((name) => {
+  const body = tabelaCanonica(tables[name]);
   files[`${name}.json`] = body;
-  return { name, records: tables[name].length, sha256: sha256(body) };
+  return { nome: name, registros: tables[name].length, sha256: sha256(body) };
 });
 const dataSources = [calcSource, itSource(it.classTrib), itSource(it.credPres)];
 const knownAt =
   dataSources
-    .map((s) => s.date)
+    .map((s) => s.data)
     .sort()
     .at(-1) ?? '';
-const manifest: DatasetManifest = {
-  dataSchemaVersion: 1,
-  dataVersion: knownAt.slice(0, 7).replace('-', '.'),
-  knownAt,
-  sources: dataSources,
-  tables: tableManifest,
-  datasetSha256: sha256(tableManifest.map((t) => `${t.sha256}  ${t.name}`).join('\n')),
+const manifest: ManifestoDoDataset = {
+  versaoDoFormato: 2,
+  versaoDosDados: knownAt.slice(0, 7).replace('-', '.'),
+  conhecidoEm: knownAt,
+  fontes: dataSources,
+  tabelas: tableManifest,
+  sha256DoDataset: sha256(tableManifest.map((t) => `${t.sha256}  ${t.nome}`).join('\n')),
 };
 files['manifest.json'] = canonicalPretty(manifest);
 
@@ -243,9 +248,9 @@ const rateSourceIds = new Map<string, unknown>([
     'calculadora',
     {
       id: pin.id,
-      title: pin.title,
-      version: pin.versao.versaoDb,
-      date: pin.versao.dataVersaoDb,
+      titulo: pin.title,
+      versao: pin.versao.versaoDb,
+      data: pin.versao.dataVersaoDb,
       url: pin.url,
       sha256: pin.zipSha256,
     },
@@ -254,30 +259,30 @@ const rateSourceIds = new Map<string, unknown>([
     'it-aliquotas-cbs',
     {
       id: it.aliquotasCbs.id,
-      title: it.aliquotasCbs.title,
-      version: it.aliquotasCbs.version,
-      date: it.aliquotasCbs.date,
+      titulo: it.aliquotasCbs.title,
+      versao: it.aliquotasCbs.version,
+      data: it.aliquotasCbs.date,
       url: it.aliquotasCbs.url,
       sha256: it.aliquotasCbs.sha256,
     },
   ],
-  ...curatedRates.legalSources.map((s) => [s.id, s] as const),
+  ...curatedRates.fontesLegais.map((s) => [s.id, s] as const),
 ]);
-const usedSources = [...new Set(curatedRates.reference.flatMap((r) => r.sources))].sort();
+const usedSources = [...new Set(curatedRates.referencia.flatMap((r) => r.fontes))].sort();
 for (const s of usedSources) if (!rateSourceIds.has(s)) fail(`rates.json cita a fonte ${s}, que não existe`);
 const ratesOut = canonicalPretty({
-  schemaVersion: 1,
-  dataVersion: manifest.dataVersion,
-  knownAt,
-  sources: usedSources.map((s) => rateSourceIds.get(s)),
-  reference: curatedRates.reference.map((r) => ({
+  versaoDoFormato: 2,
+  versaoDosDados: manifest.versaoDosDados,
+  conhecidoEm: knownAt,
+  fontes: usedSources.map((s) => rateSourceIds.get(s)),
+  referencia: curatedRates.referencia.map((r) => ({
     ...r,
-    sources: r.sources.map((s) => {
+    fontes: r.fontes.map((s) => {
       const src = rateSourceIds.get(s) as { id?: string };
       return src.id ?? s;
     }),
   })),
-  standard: [],
+  padrao: [],
 });
 
 // Formatado pelo Biome do repo (como o tools/rejeicoes-data), para o `bun run format` não reescrever o gerado. Os hashes
@@ -298,8 +303,8 @@ if (args.check) {
     if (!(await f.exists()) || (await f.text()) !== body) differ.push(path.relative(root, file));
   }
   if (differ.length) fail(`dados versionados diferem do gerado: ${differ.join(', ')}`);
-  log(`--check ok: ${outputs.length} arquivos idênticos (datasetSha256 ${manifest.datasetSha256.slice(0, 12)})`);
+  log(`--check ok: ${outputs.length} arquivos idênticos (sha256DoDataset ${manifest.sha256DoDataset.slice(0, 12)})`);
 } else {
   for (const [file, body] of outputs) await Bun.write(file, body);
-  log(`gravados ${outputs.length} arquivos; datasetSha256 ${manifest.datasetSha256}`);
+  log(`gravados ${outputs.length} arquivos; sha256DoDataset ${manifest.sha256DoDataset}`);
 }

@@ -40,9 +40,9 @@ if (!retrievedAt || !/^\d{4}-\d{2}-\d{2}$/.test(retrievedAt)) {
 }
 
 interface Selection {
-  roots: { file: string; sha256: string }[];
-  intermediates: { file: string; sha256: string; seenOn: number; source: string }[];
-  excluded: { file: string; reason: string }[];
+  raizes: { arquivo: string; sha256: string }[];
+  intermediarias: { arquivo: string; sha256: string; vistoEm: number; fonte: string }[];
+  excluidos: { arquivo: string; motivo: string }[];
 }
 const selection = (await Bun.file(path.join(import.meta.dir, 'selecao.json')).json()) as Selection;
 
@@ -69,50 +69,51 @@ try {
     return new X509Certificate(await $`unzip -p ${zipPath} ${file}`.arrayBuffer().then((b) => Buffer.from(b)));
   };
   const cn = (dn: string): string => /CN=([^\n]+)/.exec(dn)?.[1] ?? dn;
-  const describe = (c: X509Certificate, file: string, kind: 'root' | 'intermediate', source: string) => {
+  const describe = (c: X509Certificate, file: string, kind: 'raiz' | 'intermediaria', source: string) => {
     const k = c.publicKey.asymmetricKeyDetails;
     return {
-      id: kind === 'root' ? `icp-brasil-${file.replace(/^ICP-Brasil|\.crt$/g, '')}` : file.replace(/\.crt$/, ''),
-      kind,
+      id: kind === 'raiz' ? `icp-brasil-${file.replace(/^ICP-Brasil|\.crt$/g, '')}` : file.replace(/\.crt$/, ''),
+      tipo: kind,
       tls: true,
-      file,
+      arquivo: file,
       subject: c.subject.replace(/\n/g, ', '),
       subjectCN: cn(c.subject),
       issuerCN: cn(c.issuer),
       sha256: c.fingerprint256,
       notBefore: new Date(c.validFrom).toISOString().replace('.000', ''),
       notAfter: new Date(c.validTo).toISOString().replace('.000', ''),
-      keyType: `${c.publicKey.asymmetricKeyType}-${k?.modulusLength ?? '?'}`,
-      source,
+      tipoDeChave: `${c.publicKey.asymmetricKeyType}-${k?.modulusLength ?? '?'}`,
+      fonte: source,
       der: c.raw.toString('base64'),
     };
   };
   const certificates = [];
-  for (const { file, sha256 } of selection.roots) {
+  for (const { arquivo: file, sha256 } of selection.raizes) {
     const c = await read(file);
     if (c.subject !== c.issuer) throw new Error(`${file} não é autoassinado`);
     // Fixado fora do zip: zip e hash chegam por HTTP, e uma raiz trocada no caminho viraria âncora de confiança.
     if (c.fingerprint256 !== sha256)
       throw new Error(`${file}: SHA-256 ${c.fingerprint256} diverge do fixado ${sha256}`);
-    certificates.push(describe(c, file, 'root', `${ZIP_URL}#${file}`));
+    certificates.push(describe(c, file, 'raiz', `${ZIP_URL}#${file}`));
   }
-  for (const i of selection.intermediates) {
-    const c = await read(i.file);
-    if (c.fingerprint256 !== i.sha256) throw new Error(`${i.file}: SHA-256 ${c.fingerprint256} diverge de ${i.sha256}`);
+  for (const i of selection.intermediarias) {
+    const c = await read(i.arquivo);
+    if (c.fingerprint256 !== i.sha256)
+      throw new Error(`${i.arquivo}: SHA-256 ${c.fingerprint256} diverge de ${i.sha256}`);
     certificates.push({
-      ...describe(c, i.file, 'intermediate', `${ZIP_URL}#${i.file}`),
-      seenOn: i.seenOn,
-      why: i.source,
+      ...describe(c, i.arquivo, 'intermediaria', `${ZIP_URL}#${i.arquivo}`),
+      vistoEm: i.vistoEm,
+      motivo: i.fonte,
     });
   }
   const doc = {
     $comment:
       'Gerado por tools/icp-bundle/build-bundle.ts; não edite à mão. Atualizar o bundle é release minor do @sinete/cert.',
-    schemaVersion: 1,
-    version: retrievedAt.replace(/-/g, '.'),
-    source: { url: ZIP_URL, sha512, hashUrl: HASH_URL, retrievedAt, zipCertificates: entries.length },
-    excluded: selection.excluded,
-    certificates,
+    versaoDoFormato: 2,
+    versao: retrievedAt.replace(/-/g, '.'),
+    fonte: { url: ZIP_URL, sha512, urlDoHash: HASH_URL, coletadoEm: retrievedAt, certificadosNoZip: entries.length },
+    excluidos: selection.excluidos,
+    certificados: certificates,
   };
   const text = `${JSON.stringify(doc, null, 2)}\n`;
   if (args.check) {

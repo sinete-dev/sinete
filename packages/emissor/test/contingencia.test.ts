@@ -18,7 +18,7 @@ import {
   syntheticCertificate,
   syntheticPfx,
 } from '@sinete/sefaz-sim';
-import { createTransport } from '@sinete/transport';
+import { criarTransporte } from '@sinete/transport';
 import type { Desfecho, MudancaContingencia, TransmissaoStore } from '../src/index.ts';
 import { retomarPendentes } from '../src/index.ts';
 import { createMdfeEmissor } from '../src/mdfe.ts';
@@ -102,18 +102,18 @@ async function cenario(extra: Partial<NfeEmissorOptions> = {}): Promise<Cenario>
       },
       transporte: (o) => {
         // A política padrão é a allowlist dos hosts reais; o simulador em 127.0.0.1 fica fora dela.
-        const { policy: _policy, ...semPolitica } = o;
-        const real = createTransport({ ...semPolitica, additionalCa: [ac.pem] });
+        const { politica: _policy, ...semPolitica } = o;
+        const real = criarTransporte({ ...semPolitica, acsAdicionais: [ac.pem] });
         return redirectToSim(
           {
-            capabilities: real.capabilities,
-            send: (r) => {
+            capacidades: real.capacidades,
+            enviar: (r) => {
               const caminho = new URL(r.url).pathname;
               caminhos.push(caminho);
               ganchos.aoPedir?.(caminho);
-              return real.send(r);
+              return real.enviar(r);
             },
-            close: () => real.close(),
+            fechar: () => real.fechar(),
           },
           server.baseUrl,
         );

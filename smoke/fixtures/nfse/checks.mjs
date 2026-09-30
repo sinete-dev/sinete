@@ -84,7 +84,7 @@ export async function runChecks() {
   await client.parametros.convenio(SAO_PAULO);
   expect('convênio', conv?.aderenteEmissorNacional === true);
   expect('cache de parâmetros', sim.inspect.nfses().length === 1);
-  await transport.close();
+  await transport.fechar();
 
   return failures;
 }

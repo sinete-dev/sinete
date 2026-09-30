@@ -9,8 +9,8 @@ import type { Logger } from '@sinete/core';
 import { ErroRespostaInvalida } from '@sinete/core';
 import type { DocumentoXml, ElementoXml } from '@sinete/core/xml';
 import { descendentes, lerXml, primeiroFilho } from '@sinete/core/xml';
-import type { EndpointRef, MdfeServico, Transport } from '@sinete/transport';
-import { soap12ContentType, soap12Envelope, soapFault } from '@sinete/transport';
+import type { EndpointResolvido, MdfeServico, Transporte } from '@sinete/transport';
+import { contentTypeSoap12, envelopeSoap12, lerSoapFault } from '@sinete/transport';
 import servicos from '../data/servicos.json' with { type: 'json' };
 import { gzipBase64 } from './gzip.ts';
 import { MDFE_NS } from './proc.ts';
@@ -46,8 +46,8 @@ export interface RespostaSoap {
 }
 
 export interface ChamadaSoap {
-  readonly transport: Transport;
-  readonly endpoint: EndpointRef;
+  readonly transport: Transporte;
+  readonly endpoint: EndpointResolvido;
   readonly servico: MdfeServicoCliente;
   readonly mensagem: string;
   /** Nome local do elemento de retorno (`retMDFe`, `retConsSitMDFe`...). */
@@ -66,17 +66,17 @@ export interface ChamadaSoap {
 export async function chamar(c: ChamadaSoap): Promise<RespostaSoap> {
   const s = servicoInfo(c.servico);
   const started = { servico: c.servico, autorizador: c.endpoint.autorizador, host: c.endpoint.host };
-  const res = await c.transport.send({
+  const res = await c.transport.enviar({
     url: c.endpoint.url,
     endpoint: c.endpoint,
-    method: 'POST',
-    headers: { 'content-type': soap12ContentType(`${s.namespace}/${s.operacao}`) },
-    body: soap12Envelope(await soapBodyFor(c.servico, c.mensagem)),
+    metodo: 'POST',
+    cabecalhos: { 'content-type': contentTypeSoap12(`${s.namespace}/${s.operacao}`) },
+    corpo: envelopeSoap12(await soapBodyFor(c.servico, c.mensagem)),
     ...(c.timeoutMs === undefined ? {} : { timeoutMs: c.timeoutMs }),
     ...(c.signal === undefined ? {} : { signal: c.signal }),
   });
-  const text = res.text();
-  const fault = soapFault(text);
+  const text = res.texto();
+  const fault = lerSoapFault(text);
   if (fault) {
     c.logger.warn('mdfe.soap.fault', { ...started, status: res.status, code: fault.code });
     throw new ErroRespostaInvalida(`SOAP fault de ${c.endpoint.host}: ${fault.reason ?? fault.code ?? 'sem motivo'}`, {

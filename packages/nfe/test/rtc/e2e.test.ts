@@ -6,12 +6,12 @@
  */
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import { relogioManual } from '@sinete/core';
-import { decodeXml } from '@sinete/schemas';
+import { decodificarXml } from '@sinete/schemas';
 import { nfeProcElement } from '@sinete/schemas/nfe/PL_010f';
 import type { SefazSimServer, SyntheticCertificate } from '@sinete/sefaz-sim';
 import { createSefazSim, redirectToSim, startSefazSimServer, syntheticCertificate } from '@sinete/sefaz-sim';
-import type { Transport } from '@sinete/transport';
-import { createTransport } from '@sinete/transport';
+import type { Transporte } from '@sinete/transport';
+import { criarTransporte } from '@sinete/transport';
 import fixture from '../../../ibs-cbs/test/calcular/fixtures/oracle-cases.json' with { type: 'json' };
 import { buildNfe, createNfeClient, signNfe } from '../../src/index.ts';
 import type { ItemRtc, Local } from './helpers.ts';
@@ -22,8 +22,8 @@ interface Caso {
   readonly date: string;
   readonly op: {
     readonly modelo: number;
-    readonly place: { readonly uf: string; readonly cMun: string };
-    readonly items: readonly {
+    readonly local: { readonly uf: string; readonly cMun: string };
+    readonly itens: readonly {
       readonly n: number;
       readonly cst: string;
       readonly cClassTrib: string;
@@ -68,15 +68,15 @@ describe('IBS/CBS pelo @sinete/ibs-cbs, autorizado na SEFAZ simulada, conferido 
   for (const id of IDS) {
     test(`caso ${id}`, async () => {
       const caso = casos.find((c) => c.id === id) as Caso;
-      const local = LOCAIS[caso.op.place.uf as Local['UF']];
-      expect(local.cMun).toBe(caso.op.place.cMun);
+      const local = LOCAIS[caso.op.local.uf as Local['UF']];
+      expect(local.cMun).toBe(caso.op.local.cMun);
       // Emissão e fato gerador no dia do caso, ao meio-dia de Brasília.
       const clock = relogioManual(`${caso.date}T12:00:00-03:00`);
       const sim = createSefazSim({ clock, uf: local.UF });
       const server: SefazSimServer = await startSefazSimServer(sim, { cert: servidor.pem, key: servidor.keyPem });
-      const real: Transport = createTransport({ identity: emitente.tlsIdentity, additionalCa: [ac.pem] });
+      const real: Transporte = criarTransporte({ identidade: emitente.tlsIdentity, acsAdicionais: [ac.pem] });
       fechar.push(async () => {
-        await real.close();
+        await real.fechar();
         await server.close();
       });
       const client = createNfeClient({
@@ -87,7 +87,7 @@ describe('IBS/CBS pelo @sinete/ibs-cbs, autorizado na SEFAZ simulada, conferido 
         clock,
       });
 
-      const itens: ItemRtc[] = caso.op.items.map((i) => ({ CST: i.cst, cClassTrib: i.cClassTrib, base: i.base }));
+      const itens: ItemRtc[] = caso.op.itens.map((i) => ({ CST: i.cst, cClassTrib: i.cClassTrib, base: i.base }));
       // Sem `ibsCbs` nas opções: a calculadora padrão do buildNfe, com o dataset embarcado importado sob demanda.
       const r = await buildNfe(notaRtc(local, itens), opcoesRtc(clock));
       if (!r.ok) throw new Error(r.issues.map((i) => `${i.caminho}: ${i.mensagem}`).join('\n'));
@@ -97,7 +97,7 @@ describe('IBS/CBS pelo @sinete/ibs-cbs, autorizado na SEFAZ simulada, conferido 
       if (aut.tipo !== 'autorizado') return;
 
       // O que foi autorizado, lido de volta do nfeProc: os grupos do XML contra a saída gravada da Calculadora.
-      const proc = decodeXml(nfeProcElement, aut.valor.nfeProc as string).value;
+      const proc = decodificarXml(nfeProcElement, aut.valor.nfeProc as string).valor;
       const inf = proc.NFe.infNFe;
       const autorizado: Record<string, string> = {};
       for (const det of inf.det) flatten(`item${det.nItem}`, det.imposto.IBSCBS, autorizado);

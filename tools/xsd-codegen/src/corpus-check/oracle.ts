@@ -13,8 +13,8 @@
 import { copyFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { c14n, descendentes, ErroXml, lerXml } from '../../../../packages/core/src/xml/index.ts';
-import type { RootElement } from '../../../../packages/schemas/src/index.ts';
-import { validateRoot } from '../../../../packages/schemas/src/index.ts';
+import type { ElementoRaiz } from '../../../../packages/schemas/src/index.ts';
+import { validarRaiz } from '../../../../packages/schemas/src/index.ts';
 import * as mdfe300b from '../../../../packages/schemas/src/mdfe/3.00b.ts';
 import * as cancelamento from '../../../../packages/schemas/src/nfe/evento-cancelamento/PL_010d.ts';
 import * as cce from '../../../../packages/schemas/src/nfe/evento-cce/PL_010d.ts';
@@ -85,7 +85,7 @@ function xmllint(schema: string, src: string): Lint {
 interface Group {
   readonly label: string;
   readonly dir: string;
-  readonly root: RootElement<unknown>;
+  readonly root: ElementoRaiz<unknown>;
   readonly accept: (src: string) => boolean;
   readonly oracle: (src: string) => Lint;
 }
@@ -93,7 +93,7 @@ interface Group {
 const nfeGroup = (dir: string, label: string, m: typeof nfe010f, pl: string): Group => ({
   label: `${dir} :: ${label}`,
   dir,
-  root: m.nfeProcElement as RootElement<unknown>,
+  root: m.nfeProcElement as ElementoRaiz<unknown>,
   accept: () => true,
   oracle: (
     (schema: string) => (src: string) =>
@@ -107,7 +107,7 @@ function eventoGroup(label: string, m: typeof cancelamento, tp: string, eventoFi
   return {
     label: `eventos-nfe :: ${label}`,
     dir: 'eventos-nfe',
-    root: m.procEventoNFeElement as RootElement<unknown>,
+    root: m.procEventoNFeElement as ElementoRaiz<unknown>,
     accept: (src) => new RegExp(`<tpEvento>${tp}</tpEvento>`).test(src),
     oracle: (src) => {
       const a = xmllint(envelope, src);
@@ -160,7 +160,7 @@ const groups: Group[] = [
   {
     label: 'mdfe :: mdfe/3.00b',
     dir: 'mdfe',
-    root: mdfe300b.mdfeProcElement as RootElement<unknown>,
+    root: mdfe300b.mdfeProcElement as ElementoRaiz<unknown>,
     accept: (src) => /^(?:<\?xml[^>]*\?>)?\s*<mdfeProc[\s>]/.test(src),
     oracle: (src) => {
       // Também em duas etapas: o infModal é xs:any (skip) e o modal é validado pelo schema dele.
@@ -201,9 +201,9 @@ for (const g of groups) {
     if (!g.accept(src)) continue;
     s.docs++;
     const x = g.oracle(src);
-    let ours: ReturnType<typeof validateRoot>;
+    let ours: ReturnType<typeof validarRaiz>;
     try {
-      ours = validateRoot(g.root, src);
+      ours = validarRaiz(g.root, src);
     } catch (e) {
       if (!(e instanceof ErroXml)) throw e;
       s.xmlMalformado++;
@@ -293,7 +293,7 @@ for (const g of [groups[0], groups[4], groups[6]] as Group[]) {
   let taken = 0;
   for (const src of corpusDocs(g.dir)) {
     if (!g.accept(src) || taken >= 150) continue;
-    if (validateRoot(g.root, src).length > 0 || !g.oracle(src).valid) continue;
+    if (validarRaiz(g.root, src).length > 0 || !g.oracle(src).valid) continue;
     taken++;
     for (const [nome, mut] of Object.entries(MUTATIONS)) {
       const m = mut(src);
@@ -302,7 +302,7 @@ for (const g of [groups[0], groups[4], groups[6]] as Group[]) {
       const x = g.oracle(m);
       let oursValid: boolean;
       try {
-        oursValid = validateRoot(g.root, m).length === 0;
+        oursValid = validarRaiz(g.root, m).length === 0;
       } catch {
         oursValid = false;
       }
@@ -310,7 +310,7 @@ for (const g of [groups[0], groups[4], groups[6]] as Group[]) {
       else {
         s.discorda = (s.discorda ?? 0) + 1;
         const detalhe = x.valid
-          ? validateRoot(g.root, m)
+          ? validarRaiz(g.root, m)
               .map((o) => `${o.code} ${o.caminho.replace(/\[\d+\]/g, '')}`)
               .join(', ')
           : (x.kinds[0] ?? '?');

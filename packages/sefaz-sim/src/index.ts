@@ -6,7 +6,7 @@
  * consulta cadastro, distribuição de DF-e) com as validações do MOC 7.0 na ordem da SEFAZ; e os do MDF-e 3.00 na SVRS
  * (recepção síncrona, consulta, não encerrados, status e eventos de cancelamento, encerramento, inclusão de condutor e
  * de DF-e e pagamento da operação), com as regras do MOC do MDF-e, relógio injetado, números
- * determinísticos e cenários de falha. Esta entrada roda em qualquer runtime (o simulador em processo e o `Transport`
+ * determinísticos e cenários de falha. Esta entrada roda em qualquer runtime (o simulador em processo e o `Transporte`
  * sem socket); a entrada `node` acrescenta o servidor HTTPS com mTLS.
  *
  * A NFS-e Nacional tem simulador próprio (`createNfseSim`): Sefin Nacional (emissão síncrona, consultas, eventos) e

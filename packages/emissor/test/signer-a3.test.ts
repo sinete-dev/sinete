@@ -21,10 +21,10 @@ import {
   startSimServer,
   syntheticCertificate,
 } from '@sinete/sefaz-sim';
-import type { CreateTransportOptions, Transport } from '@sinete/transport';
-import { createTransport } from '@sinete/transport';
-import type { SignerConnection, SignerIdentity } from '@sinete/transport/signer';
-import { certificadoAberto, startSigner } from '@sinete/transport/signer';
+import type { CriarTransporteOpcoes, Transporte } from '@sinete/transport';
+import { criarTransporte } from '@sinete/transport';
+import type { ConexaoSigner, IdentidadeSigner } from '@sinete/transport/signer';
+import { certificadoAberto, iniciarSigner } from '@sinete/transport/signer';
 import type { SignerBinaries } from '../../transport/test/lab/signer-bin.ts';
 import { signerBinaries } from '../../transport/test/lab/signer-bin.ts';
 import { createMdfeEmissor } from '../src/mdfe.ts';
@@ -43,9 +43,9 @@ describe.skipIf(!pronto)('A3 em token PKCS#11 pelo sinete-signer, emissor contra
   let dir: string;
   let ac: SyntheticCertificate;
   let servidor: SyntheticCertificate;
-  let signer: SignerConnection;
-  let eCnpj: SignerIdentity;
-  let eCpf: SignerIdentity;
+  let signer: ConexaoSigner;
+  let eCnpj: IdentidadeSigner;
+  let eCpf: IdentidadeSigner;
 
   /** Um token por titular, com o certificado emitido pela AC do simulador e validade que cobre as emissões. */
   const token = (label: string, doc: ['--cnpj' | '--cpf', string]): void => {
@@ -73,9 +73,9 @@ describe.skipIf(!pronto)('A3 em token PKCS#11 pelo sinete-signer, emissor contra
   };
 
   const viaSim =
-    (redirect: (t: Transport) => Transport) =>
-    ({ policy: _p, ...o }: CreateTransportOptions): Transport =>
-      redirect(createTransport(o));
+    (redirect: (t: Transporte) => Transporte) =>
+    ({ politica: _p, ...o }: CriarTransporteOpcoes): Transporte =>
+      redirect(criarTransporte(o));
 
   beforeAll(async () => {
     const clock = relogioManual(EMISSAO);
@@ -87,25 +87,25 @@ describe.skipIf(!pronto)('A3 em token PKCS#11 pelo sinete-signer, emissor contra
     token('a3-cnpj', ['--cnpj', CNPJ_EMIT]);
     token('a3-cpf', ['--cpf', CPF_EMIT]);
     rmSync(path.join(dir, 'ac.key'));
-    signer = await startSigner({
-      binary: b.p11 as string,
+    signer = await iniciarSigner({
+      binario: b.p11 as string,
       lab: true,
       env: { SOFTHSM2_CONF: path.join(dir, 'softhsm2.conf') },
     });
-    const abrir = (tok: string): Promise<SignerIdentity> =>
-      signer.openPkcs11({
-        module: b.softhsmModule as string,
+    const abrir = (tok: string): Promise<IdentidadeSigner> =>
+      signer.abrirPkcs11({
+        modulo: b.softhsmModule as string,
         token: tok,
-        label: 'certificado-a3',
+        rotulo: 'certificado-a3',
         pin: async () => '2468',
-        additionalCa: [ac.pem],
+        acsAdicionais: [ac.pem],
       });
     eCnpj = await abrir('a3-cnpj');
     eCpf = await abrir('a3-cpf');
   }, 120_000);
 
   afterAll(async () => {
-    await signer?.close();
+    await signer?.fechar();
     if (dir) rmSync(dir, { recursive: true, force: true });
   });
 
@@ -133,7 +133,7 @@ describe.skipIf(!pronto)('A3 em token PKCS#11 pelo sinete-signer, emissor contra
       if (d.tipo !== 'autorizado') throw new Error(`esperava autorizado, veio ${JSON.stringify(d)}`);
       expect(d.cStat).toBe('100');
       // O XML guardado leva o certificado do token no KeyInfo.
-      const leaf = Buffer.from(eCnpj.chain[0] as Uint8Array).toString('base64');
+      const leaf = Buffer.from(eCnpj.cadeia[0] as Uint8Array).toString('base64');
       expect(d.proc).toContain(`<X509Certificate>${leaf}</X509Certificate>`);
       clock.avancar(60_000);
       const cce = await emissor.cartaCorrecao({ chave: d.id, xCorrecao: 'CORRECAO PELO TOKEN A3', nSeqEvento: 1 });
@@ -145,7 +145,7 @@ describe.skipIf(!pronto)('A3 em token PKCS#11 pelo sinete-signer, emissor contra
       });
       expect(canc.tipo).toBe('registrado');
       // Assinaturas no token: a do handshake (keep-alive depois) e três de documento.
-      const n = (await signer.stats())[eCnpj.id]?.signatures ?? 0;
+      const n = (await signer.estatisticas())[eCnpj.id]?.signatures ?? 0;
       expect(n).toBeGreaterThanOrEqual(4);
     } finally {
       await emissor.fechar();

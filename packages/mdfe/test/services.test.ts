@@ -8,7 +8,7 @@ import type { RelogioManual } from '@sinete/core';
 import { contextoDeTempo, ErroDeTempoEsgotado, ErroDeValidacao, relogioManual } from '@sinete/core';
 import type { SefazSim, SefazSimOptions, SyntheticCertificate } from '@sinete/sefaz-sim';
 import { createSefazSim, redirectToSim, SIM_BASE_URL, simTransport, syntheticCertificate } from '@sinete/sefaz-sim';
-import { PolicyError } from '@sinete/transport';
+import { ErroPolitica } from '@sinete/transport';
 import type { BuildMdfeOptions, MdfeClient, MdfeInput } from '../src/index.ts';
 import {
   buildMdfe,
@@ -124,11 +124,11 @@ describe('status e autorização', () => {
     expect(s.sim.inspect.mdfe(e.chave)?.situacao).toBe('autorizado');
   });
 
-  test('MDF-e de outro ambiente é recusado com PolicyError antes do envio', async () => {
+  test('MDF-e de outro ambiente é recusado com ErroPolitica antes do envio', async () => {
     const s = cenario();
     const producao = await s.emitir(cargaPropria(), { ambiente: 'producao' });
     const erro = await s.client.autorizar(producao.xml).catch((e: unknown) => e);
-    expect(erro).toBeInstanceOf(PolicyError);
+    expect(erro).toBeInstanceOf(ErroPolitica);
     expect(erro).toMatchObject({ code: 'politica_recusou', detalhes: { tpAmb: '1', esperado: '2' } });
     expect(s.sim.inspect.mdfes()).toHaveLength(0);
 

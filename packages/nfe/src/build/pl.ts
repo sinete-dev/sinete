@@ -8,8 +8,8 @@
 
 import type { Ambiente, Relogio } from '@sinete/core';
 import { ErroNaoSuportado } from '@sinete/core';
-import type { ComplexType, Particle, VigenciaEntry } from '@sinete/schemas';
-import { isComplexType, isElementParticle, isWildcard, selecionarPl } from '@sinete/schemas';
+import type { ComplexType, EntradaDeVigencia, Particle } from '@sinete/schemas';
+import { ehComplexType, ehElementParticle, ehWildcard, selecionarPl } from '@sinete/schemas';
 import { TNFe_infNFe as Inf010e } from '@sinete/schemas/nfe/PL_010e';
 import { TNFe_infNFe as Inf010f } from '@sinete/schemas/nfe/PL_010f';
 import type { Issues } from '../issues.ts';
@@ -21,7 +21,7 @@ const INF_NFE: Readonly<Record<string, ComplexType>> = {
 };
 
 export interface PlEscolhido {
-  readonly vigencia: VigenciaEntry;
+  readonly vigencia: EntradaDeVigencia;
   readonly infNFe: ComplexType;
 }
 
@@ -37,16 +37,16 @@ export function escolherPl(ambiente: Ambiente, emissao: Relogio): PlEscolhido {
 }
 
 function memberNames(p: Particle, acc: Set<string>): Set<string> {
-  if (isWildcard(p)) acc.add('$any');
-  else if (isElementParticle(p)) acc.add(p.e);
+  if (ehWildcard(p)) acc.add('$any');
+  else if (ehElementParticle(p)) acc.add(p.e);
   else for (const i of p.i) memberNames(i, acc);
   return acc;
 }
 
 function elementTypes(p: Particle, acc: Map<string, ComplexType>): Map<string, ComplexType> {
-  if (isWildcard(p)) return acc;
-  if (isElementParticle(p)) {
-    if (isComplexType(p.t)) acc.set(p.e, p.t);
+  if (ehWildcard(p)) return acc;
+  if (ehElementParticle(p)) {
+    if (ehComplexType(p.t)) acc.set(p.e, p.t);
   } else for (const i of p.i) elementTypes(i, acc);
   return acc;
 }

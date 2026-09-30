@@ -4,7 +4,7 @@
  */
 
 import type { ElementoXml } from '@sinete/core/xml';
-import { serialize } from '@sinete/schemas';
+import { serializar } from '@sinete/schemas';
 import type { resEvento, resNFe } from '@sinete/schemas/nfe/dist-dfe/PL_NFeDistDFe_104';
 import { resEvento as ResEvento, resNFe as ResNFe } from '@sinete/schemas/nfe/dist-dfe/PL_NFeDistDFe_104';
 import type { TRetEvento } from '@sinete/schemas/nfe/evento-cancelamento/PL_010d';
@@ -40,7 +40,7 @@ function escAttr(value: string): string {
 }
 
 export function protNFeXml(prot: TProtNFe, inherited: string): string {
-  return serialize(ProtNFe, 'protNFe', prot, inherited);
+  return serializar(ProtNFe, 'protNFe', prot, inherited);
 }
 
 /** `nfeProc` (procNFe_v4.00.xsd): a NF-e recebida e o protocolo. */
@@ -49,7 +49,7 @@ export function nfeProcXml(nfe: NfeRecord, prot: TProtNFe): string {
 }
 
 export function retEventoXml(ret: TRetEvento, inherited: string): string {
-  return serialize(RetEvento, 'retEvento', ret, inherited);
+  return serializar(RetEvento, 'retEvento', ret, inherited);
 }
 
 /** `procEventoNFe` (procEventoNFe_v1.00.xsd): o evento recebido e o registro. */
@@ -77,7 +77,7 @@ export function resNFeXml(nfe: NfeRecord): string {
     nProt: nfe.nProt,
     cSitNFe,
   };
-  return serialize(ResNFe, 'resNFe', value);
+  return serializar(ResNFe, 'resNFe', value);
 }
 
 /** `resEvento` (resEvento_v1.01.xsd). */
@@ -95,5 +95,5 @@ export function resEventoXml(evento: EventoRecord): string {
     dhRecbto: evento.dhRegEvento,
     nProt: evento.nProt,
   };
-  return serialize(ResEvento, 'resEvento', value);
+  return serializar(ResEvento, 'resEvento', value);
 }

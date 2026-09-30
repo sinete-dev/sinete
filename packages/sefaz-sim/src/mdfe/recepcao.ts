@@ -19,7 +19,7 @@
 import { ehUf, ufPorSigla } from '@sinete/core';
 import type { ElementoXml } from '@sinete/core/xml';
 import { atributoDe } from '@sinete/core/xml';
-import { serializeRoot } from '@sinete/schemas';
+import { serializarRaiz } from '@sinete/schemas';
 import type { TProtMDFe, TRetMDFe } from '@sinete/schemas/mdfe/3.00b';
 import { MDFeElement, retMDFeElement } from '@sinete/schemas/mdfe/3.00b';
 import { calcularDvChaveAcesso, cnpjValido, cpfValido } from '@sinete/validators';
@@ -69,7 +69,7 @@ export async function recepcaoMdfe(ctx: RequestContext): Promise<string> {
       xMotivo: s.xMotivo,
       ...(prot === undefined ? {} : { protMDFe: prot }),
     };
-    return serializeRoot(retMDFeElement, value);
+    return serializarRaiz(retMDFeElement, value);
   };
   const pre = await preludeMdfe(ctx, MDFeElement);
   if (!pre.ok) return ret(pre.status);

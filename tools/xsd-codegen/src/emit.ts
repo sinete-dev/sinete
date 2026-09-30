@@ -1,6 +1,6 @@
 /**
  * IR para um módulo TS: tipos exportados (custo zero em runtime) e descritores `const` com o mesmo identificador,
- * para que `serialize(TNFe, 'NFe', valor)` infira o tipo do valor. Toda exportação tem anotação de tipo explícita
+ * para que `serializar(TNFe, 'NFe', valor)` infira o tipo do valor. Toda exportação tem anotação de tipo explícita
  * (`isolatedDeclarations`, ADR 0001).
  */
 import type { AttrIR, ComplexIR, ParticleIR, SchemaIR, SimpleIR, TypeRef } from './ir.ts';
@@ -17,7 +17,7 @@ export interface EmitOptions {
   /** Caminho de import do runtime a partir do módulo gerado. */
   readonly runtimeImport: string;
   readonly fontes: readonly EmitSource[];
-  /** Correções de pattern sobre o XSD oficial, publicadas em `schema.patches`. */
+  /** Correções de pattern sobre o XSD oficial, publicadas em `schema.ajustes`. */
   readonly patches?: readonly {
     readonly tipo: string;
     readonly de: string;
@@ -268,7 +268,7 @@ export function emitModule(ir: SchemaIR, opts: EmitOptions): EmitResult {
   const roots = ir.roots.map((r) => {
     const n = claim(`${ident(r.name)}Element`, 'elemento raiz');
     const t = ident(r.type);
-    return `${jsdoc([`Elemento raiz \`${r.name}\` (tipo ${r.type}).`], '')}export const ${n}: RootElement<${t}> = { name: ${lit(r.name)}, ns: ${lit(r.ns)}, type: ${t} };`;
+    return `${jsdoc([`Elemento raiz \`${r.name}\` (tipo ${r.type}).`], '')}export const ${n}: ElementoRaiz<${t}> = { nome: ${lit(r.name)}, ns: ${lit(r.ns)}, tipo: ${t} };`;
   });
   claim('schema', 'metadados');
   const info = {
@@ -276,7 +276,7 @@ export function emitModule(ir: SchemaIR, opts: EmitOptions): EmitResult {
     documento: opts.documento,
     pl: ir.pl,
     fontes: opts.fontes,
-    ...(opts.patches ? { patches: opts.patches } : {}),
+    ...(opts.patches ? { ajustes: opts.patches } : {}),
   };
 
   const out: string[] = [];
@@ -290,15 +290,17 @@ export function emitModule(ir: SchemaIR, opts: EmitOptions): EmitResult {
       .map((f) => ` * - ${f.pacote} (${f.arquivo})`)
       .join('\n')}${
       opts.patches
-        ? `\n *\n * Correções sobre o XSD oficial (schema.patches):\n${opts.patches
+        ? `\n *\n * Correções sobre o XSD oficial (schema.ajustes):\n${opts.patches
             .map((p) => ` * - ${p.tipo}: pattern \`${p.de}\` gerado como \`${p.para}\``)
             .join('\n')}`
         : ''
     }\n */`,
   );
-  out.push(`import type { ComplexType, RootElement, SchemaModuleInfo, SimpleType } from ${lit(opts.runtimeImport)};\n`);
   out.push(
-    `/** Proveniência deste módulo. */\nexport const schema: SchemaModuleInfo = ${JSON.stringify(info, null, 2)};\n`,
+    `import type { ComplexType, DescricaoModuloSchema, ElementoRaiz, SimpleType } from ${lit(opts.runtimeImport)};\n`,
+  );
+  out.push(
+    `/** Proveniência deste módulo. */\nexport const schema: DescricaoModuloSchema = ${JSON.stringify(info, null, 2)};\n`,
   );
   out.push('// ---------- tipos ----------\n');
   out.push(...typeDecls);

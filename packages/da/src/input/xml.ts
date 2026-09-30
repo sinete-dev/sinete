@@ -6,8 +6,8 @@
 
 import type { DocumentoXml } from '@sinete/core/xml';
 import { lerXml } from '@sinete/core/xml';
-import type { RootElement } from '@sinete/schemas';
-import { decodeRoot } from '@sinete/schemas';
+import type { ElementoRaiz } from '@sinete/schemas';
+import { decodificarRaiz } from '@sinete/schemas';
 import { DanfeError } from '../errors.ts';
 
 export function parse(xml: string): DocumentoXml {
@@ -21,16 +21,16 @@ export function parse(xml: string): DocumentoXml {
 /** Decodifica pela raiz esperada entre as aceitas; outra raiz é `documento_inesperado`. */
 export function decodeAs<T>(
   doc: DocumentoXml,
-  roots: readonly RootElement<T>[],
+  roots: readonly ElementoRaiz<T>[],
   what: string,
 ): { root: string; value: T } {
-  const root = roots.find((r) => r.name === doc.raiz.local && r.ns === doc.raiz.ns);
+  const root = roots.find((r) => r.nome === doc.raiz.local && r.ns === doc.raiz.ns);
   if (!root) {
     throw new DanfeError('documento_inesperado', `esperado ${what}, recebido <${doc.raiz.local}>`, {
-      detalhes: { raiz: doc.raiz.local, esperado: roots.map((r) => r.name) },
+      detalhes: { raiz: doc.raiz.local, esperado: roots.map((r) => r.nome) },
     });
   }
-  return { root: root.name, value: decodeRoot(root, doc).value };
+  return { root: root.nome, value: decodificarRaiz(root, doc).valor };
 }
 
 /** Registro solto para os grupos de escolha do leiaute (ICMS00, ICMS10...), lidos por nome de campo. */

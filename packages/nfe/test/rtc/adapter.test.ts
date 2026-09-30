@@ -1,17 +1,17 @@
 /** A calculadora padrão sobre o motor: pedido da porta para a operação do motor, grupo do motor para o leiaute, erros e regras como ocorrências. */
 import { describe, expect, test } from 'bun:test';
 import { relogioFixo } from '@sinete/core';
-import type { RateProvider } from '@sinete/ibs-cbs/aliquotas';
-import { officialRates } from '@sinete/ibs-cbs/aliquotas';
-import { calculateAt } from '@sinete/ibs-cbs/calcular';
-import type { Rule } from '@sinete/ibs-cbs/validar';
-import { bundledDataset } from '@sinete/ibs-cbs-dados/bundled';
+import type { ProvedorDeAliquotas } from '@sinete/ibs-cbs/aliquotas';
+import { aliquotasOficiais } from '@sinete/ibs-cbs/aliquotas';
+import { calcularEm } from '@sinete/ibs-cbs/calcular';
+import type { Regra } from '@sinete/ibs-cbs/validar';
+import { datasetEmbarcado } from '@sinete/ibs-cbs-dados/bundled';
 import type { IbsCbsItemRequest, IbsCbsNotaRequest, Item } from '../../src/index.ts';
 import { buildNfe, carregarDatasetEmbarcado, Decimal, ibsCbsCalculator, localDaOperacao } from '../../src/index.ts';
 import { LOCAIS, notaRtc, opcoesRtc } from './helpers.ts';
 
-const dataset = bundledDataset();
-const rates = officialRates();
+const dataset = datasetEmbarcado();
+const rates = aliquotasOficiais();
 const QUANDO = relogioFixo('2026-10-10T12:00:00-03:00').agora();
 
 function nota(extra: Partial<IbsCbsNotaRequest> = {}): IbsCbsNotaRequest {
@@ -65,15 +65,15 @@ describe('ibsCbsCalculator', () => {
   test('tributação integral: o grupo do leiaute é o do motor, na data do fato gerador', async () => {
     const r = await ibsCbsCalculator({ dataset, rates }).calcular({ nota: nota(), itens: [item()] });
     expect(r.issues).toBeUndefined();
-    const motor = calculateAt(
+    const motor = calcularEm(
       {
         modelo: 55,
-        place: { uf: 'SP', cMun: '3550308' },
-        items: [{ n: 1, cst: '000', cClassTrib: '000001', base: '1000.00' }],
+        local: { uf: 'SP', cMun: '3550308' },
+        itens: [{ n: 1, cst: '000', cClassTrib: '000001', base: '1000.00' }],
       },
-      { dataset, rates, date: '2026-10-10' },
+      { dataset, aliquotas: rates, data: '2026-10-10' },
     );
-    expect(r.itens).toEqual([{ nItem: 1, IBSCBS: motor.items[0]?.IBSCBS as never }]);
+    expect(r.itens).toEqual([{ nItem: 1, IBSCBS: motor.itens[0]?.IBSCBS as never }]);
     expect(r.itens[0]?.IBSCBS.gIBSCBS).toMatchObject({
       gIBSUF: { pIBSUF: '0.10', vIBSUF: '1.00' },
       gCBS: { vCBS: '9.00' },
@@ -235,12 +235,12 @@ describe('ibsCbsCalculator', () => {
     expect(futuro.issues?.map((i) => [i.caminho, i.code])).toEqual([
       ['impostos.ibsCbs', 'ibscbs_aliquota_desconhecida'],
     ]);
-    const quebrado: RateProvider = {
+    const quebrado: ProvedorDeAliquotas = {
       id: 'quebrado',
       nominal: () => {
         throw new Error('provedor quebrado');
       },
-      reference: () => {
+      referencia: () => {
         throw new Error('provedor quebrado');
       },
     };
@@ -250,14 +250,14 @@ describe('ibsCbsCalculator', () => {
   });
 
   test('regras da NT: violação vira ocorrência com a regra, a rejeição e a fonte; `false` desliga', async () => {
-    const sempre: Rule = {
+    const sempre: Regra = {
       id: 'TESTE-10',
       cStat: '9999',
-      title: 'regra de teste',
+      titulo: 'regra de teste',
       modelos: [55],
-      activation: [{ homologacao: '2020-01-01', producao: '2020-01-01' }],
-      source: 'teste',
-      check: (_ctx, report) => {
+      ativacao: [{ homologacao: '2020-01-01', producao: '2020-01-01' }],
+      fonte: 'teste',
+      conferir: (_ctx, report) => {
         report(1, 'item reprovado');
         report(undefined, 'total reprovado');
       },

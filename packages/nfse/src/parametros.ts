@@ -16,7 +16,7 @@
 
 import type { Logger, Relogio } from '@sinete/core';
 import { ErroDeConfiguracao, ErroRespostaInvalida, loggerSilencioso } from '@sinete/core';
-import type { EndpointRef, Transport } from '@sinete/transport';
+import type { EndpointResolvido, Transporte } from '@sinete/transport';
 import { codigoServicoParametrizacao } from './codigos.ts';
 import { lerJson } from './respostas.ts';
 
@@ -100,8 +100,8 @@ export interface ParametrosMunicipais {
 }
 
 export interface ParametrosOptions {
-  readonly transport: Transport;
-  readonly endpoint: EndpointRef;
+  readonly transport: Transporte;
+  readonly endpoint: EndpointResolvido;
   readonly clock: Relogio;
   /** `false` desliga. Padrão: `cacheEmMemoria()`. */
   readonly cache?: CacheParametros | false;
@@ -197,17 +197,17 @@ export function createParametrosMunicipais(o: ParametrosOptions): ParametrosMuni
     let pendente = emVoo.get(url);
     if (pendente === undefined) {
       pendente = (async (): Promise<EntradaCache> => {
-        const res = await o.transport.send({
+        const res = await o.transport.enviar({
           url,
-          method: 'GET',
-          headers: { accept: 'application/json' },
+          metodo: 'GET',
+          cabecalhos: { accept: 'application/json' },
           endpoint: o.endpoint,
           ...(o.timeoutMs === undefined ? {} : { timeoutMs: o.timeoutMs }),
         });
         logger.debug('nfse.parametros', { caminho, status: res.status });
         return {
           status: res.status,
-          corpo: res.text(),
+          corpo: res.texto(),
           expiraEm: o.clock.agora().getTime() + (res.status === 404 ? ttlNaoEncontrado : ttl),
         };
       })();

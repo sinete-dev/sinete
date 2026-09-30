@@ -3,7 +3,7 @@
  * cClassTrib e data, filtro por atores e listas de cClassTrib e CST vigentes. Aqui não há ledger: o dataset é extraído
  * do mesmo SQLite, então qualquer diferença é defeito do extrator ou do leitor.
  */
-import type { IbsCbsDataset } from '@sinete/ibs-cbs-dados';
+import type { DatasetIbsCbs } from '@sinete/ibs-cbs-dados';
 import type { Nomenclatures } from './generate.ts';
 import { prng } from './generate.ts';
 
@@ -56,23 +56,23 @@ export function siglaParam(sigla: string): string {
 
 export async function collectData(
   api: string,
-  dataset: IbsCbsDataset,
+  dataset: DatasetIbsCbs,
   nom: Nomenclatures,
   opts: { seed: number; pairs: number; actors: number },
 ): Promise<{ pairs: ApplicabilityPair[]; actors: ActorsCase[]; lists: ListCase[] }> {
   const rnd = prng(opts.seed);
   const pick = <T>(xs: readonly T[]): T => xs[Math.floor(rnd() * xs.length)] as T;
-  const t = dataset.tables;
+  const t = dataset.tabelas;
   const pairs: ApplicabilityPair[] = [];
   for (let i = 0; i < opts.pairs; i++) {
     const kind = rnd() < 0.7 ? 'ncm' : 'nbs';
     const date = pick(DATES);
-    const links = kind === 'ncm' ? t.ncmApplicability : t.nbsApplicability;
+    const links = kind === 'ncm' ? t.aplicabilidadeNcm : t.aplicabilidadeNbs;
     // Metade dos pares em códigos com anexo, perto dos prefixos (e das exceções), para exercitar as bordas.
     const link = pick(links);
-    const cClassTrib = rnd() < 0.8 ? link.cClassTrib : pick(t.classTrib.filter((c) => c.family === 'CBS_IBS')).code;
+    const cClassTrib = rnd() < 0.8 ? link.cClassTrib : pick(t.classTrib.filter((c) => c.familia === 'CBS_IBS')).codigo;
     const all = kind === 'ncm' ? nom.ncm : nom.nbs;
-    const near = [...link.exceptions.map((e) => e.prefix), link.prefix];
+    const near = [...link.excecoes.map((e) => e.prefixo), link.prefixo];
     const pref = pick(near);
     const pool = rnd() < 0.7 ? all.filter((x) => x.startsWith(pref.slice(0, Math.max(2, pref.length)))) : all;
     const code = pool.length > 0 ? pick(pool) : pick(all);
@@ -89,9 +89,11 @@ export async function collectData(
   const models = [55, 65, 91, 57, 63];
   for (let i = 0; i < opts.actors; i++) {
     const date = pick(DATES);
-    const ids = t.actors.filter((a) => a.validity.from <= date && (a.validity.to ?? '9999') >= date).map((a) => a.id);
+    const ids = t.atores
+      .filter((a) => a.vigencia.inicio <= date && (a.vigencia.fim ?? '9999') >= date)
+      .map((a) => a.id);
     const modelo = pick(models);
-    const type = t.dfeTypes.find((d) => d.modelo === modelo);
+    const type = t.tiposDfe.find((d) => d.modelo === modelo);
     if (!type || ids.length === 0) continue;
     const supplier = pick(ids);
     const buyer = pick(ids);
@@ -113,12 +115,12 @@ export async function collectData(
 
 /** Confronta o dataset com o que o oráculo respondeu (usado ao vivo e nos testes com as fixtures gravadas). */
 export function checkData(
-  dataset: IbsCbsDataset,
+  dataset: DatasetIbsCbs,
   data: { pairs: readonly ApplicabilityPair[]; actors: readonly ActorsCase[]; lists: readonly ListCase[] },
 ): DataMismatch[] {
   const out: DataMismatch[] = [];
   for (const p of data.pairs) {
-    const c = dataset.at(p.date);
+    const c = dataset.em(p.date);
     const ct = c.classTrib(p.cClassTrib);
     if (!ct) {
       out.push({
@@ -128,13 +130,15 @@ export function checkData(
       });
       continue;
     }
-    const r = p.kind === 'ncm' ? c.applicableNcm(ct, p.code) : c.applicableNbs(ct, p.code);
-    const ours = r.result !== 'no';
+    const r = p.kind === 'ncm' ? c.ncmAplicavel(ct, p.code) : c.nbsAplicavel(ct, p.code);
+    const ours = r.resultado !== 'nao';
     if (ours !== p.valid)
-      out.push({ what: `${p.kind} ${p.cClassTrib} ${p.code} ${p.date}`, ours: r.result, theirs: String(p.valid) });
+      out.push({ what: `${p.kind} ${p.cClassTrib} ${p.code} ${p.date}`, ours: r.resultado, theirs: String(p.valid) });
   }
   for (const a of data.actors) {
-    const ours = [...dataset.at(a.date).byActors({ supplier: a.supplier, buyer: a.buyer, modelo: a.modelo })].sort();
+    const ours = [
+      ...dataset.em(a.date).porAtores({ fornecedor: a.supplier, adquirente: a.buyer, modelo: a.modelo }),
+    ].sort();
     if (ours.join(',') !== a.codes.join(',')) {
       out.push({
         what: `por-atores ${a.supplier}x${a.buyer} ${a.sigla} ${a.date}`,
@@ -144,14 +148,14 @@ export function checkData(
     }
   }
   for (const l of data.lists) {
-    const c = dataset.at(l.date);
+    const c = dataset.em(l.date);
     const ct = c
       .classTribs()
-      .map((x) => x.code)
+      .map((x) => x.codigo)
       .sort();
-    const cst = dataset.tables.cst
-      .filter((x) => x.family === 'CBS_IBS' && x.validity.from <= l.date && (x.validity.to ?? '9999') >= l.date)
-      .map((x) => x.code)
+    const cst = dataset.tabelas.cst
+      .filter((x) => x.familia === 'CBS_IBS' && x.vigencia.inicio <= l.date && (x.vigencia.fim ?? '9999') >= l.date)
+      .map((x) => x.codigo)
       .sort();
     if (ct.join(',') !== l.classTrib.join(','))
       out.push({ what: `classTrib ${l.date}`, ours: ct.join(','), theirs: l.classTrib.join(',') });

@@ -7,15 +7,15 @@ import type { Ambiente, Assinador } from '@sinete/core';
 import { relogioFixo } from '@sinete/core';
 import type { DocumentoXml } from '@sinete/core/xml';
 import { assinarXml } from '@sinete/core/xml';
-import type { RootElement } from '@sinete/schemas';
-import { decodeRoot, selecionarPl, serializeRoot, validateRoot } from '@sinete/schemas';
+import type { ElementoRaiz } from '@sinete/schemas';
+import { decodificarRaiz, selecionarPl, serializarRaiz, validarRaiz } from '@sinete/schemas';
 import * as v20260209 from '@sinete/schemas/nfse/1.01-20260209';
 import type { TCDPS, TCPedRegEvt, TSCodJustSubst } from '@sinete/schemas/nfse/1.01-20260727';
 import * as v20260727 from '@sinete/schemas/nfse/1.01-20260727';
 
 interface Modulo {
-  readonly DPSElement: RootElement<TCDPS>;
-  readonly pedRegEventoElement: RootElement<TCPedRegEvt>;
+  readonly DPSElement: ElementoRaiz<TCDPS>;
+  readonly pedRegEventoElement: ElementoRaiz<TCPedRegEvt>;
 }
 
 const MODULOS: Readonly<Record<string, Modulo>> = {
@@ -45,18 +45,18 @@ export interface LeiauteSim {
 export function leiauteNfseEm(ambiente: Ambiente, ms: number): LeiauteSim {
   const modulo = selecionarPl('nfse', ambiente, relogioFixo(ms)).modulo;
   const m = MODULOS[modulo] as Modulo;
-  const raiz = (tipo: 'dps' | 'pedRegEvento'): RootElement<unknown> =>
+  const raiz = (tipo: 'dps' | 'pedRegEvento'): ElementoRaiz<unknown> =>
     tipo === 'dps' ? m.DPSElement : m.pedRegEventoElement;
   return {
     modulo,
     validar: (tipo: 'dps' | 'pedRegEvento', doc: DocumentoXml): string[] =>
-      validateRoot(raiz(tipo), doc).map((i) => `${i.caminho}: ${i.code}`),
-    lerDps: (doc: DocumentoXml): TCDPS => decodeRoot(m.DPSElement, doc).value,
-    lerPedido: (doc: DocumentoXml): TCPedRegEvt => decodeRoot(m.pedRegEventoElement, doc).value,
+      validarRaiz(raiz(tipo), doc).map((i) => `${i.caminho}: ${i.code}`),
+    lerDps: (doc: DocumentoXml): TCDPS => decodificarRaiz(m.DPSElement, doc).valor,
+    lerPedido: (doc: DocumentoXml): TCPedRegEvt => decodificarRaiz(m.pedRegEventoElement, doc).valor,
     async pedidoDaSefin(p: PedidoDaSefin): Promise<string> {
       const id = `PRE${p.chave}105102`;
       const autor = p.autor.CNPJ !== undefined ? { CNPJAutor: p.autor.CNPJ } : { CPFAutor: p.autor.CPF ?? '' };
-      const xml = serializeRoot(m.pedRegEventoElement, {
+      const xml = serializarRaiz(m.pedRegEventoElement, {
         versao: '1.01',
         infPedReg: {
           Id: id,

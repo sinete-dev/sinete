@@ -7,8 +7,8 @@ import type { RelogioManual } from '@sinete/core';
 import { contextoDeTempo, relogioManual } from '@sinete/core';
 import type { MunicipioSim, NfseSim, NfseSimFullOptions, SimServer, SyntheticCertificate } from '@sinete/sefaz-sim';
 import { createNfseSim, redirectNfseToSim, startSimServer, syntheticCertificate } from '@sinete/sefaz-sim';
-import type { Transport } from '@sinete/transport';
-import { createTransport } from '@sinete/transport';
+import type { Transporte } from '@sinete/transport';
+import { criarTransporte } from '@sinete/transport';
 import { calcularDvCnpj, calcularDvCpf } from '@sinete/validators';
 import type { DpsInput, NfseClient, NfseClientOptions } from '../src/index.ts';
 import { buildDps, createNfseClient, signDps } from '../src/index.ts';
@@ -86,7 +86,7 @@ export interface Cenario {
   readonly clock: RelogioManual;
   readonly sim: NfseSim;
   readonly server: SimServer;
-  readonly transport: Transport;
+  readonly transport: Transporte;
   readonly client: NfseClient;
   /** Caminhos pedidos ao simulador, na ordem. */
   readonly caminhos: string[];
@@ -115,7 +115,7 @@ export async function cenario(
     { cert: c.servidor.pem, key: c.servidor.keyPem },
   );
   const transport = redirectNfseToSim(
-    createTransport({ identity: (o.canal ?? c.prestador).tlsIdentity, additionalCa: [c.ac.pem], timeoutMs: 5_000 }),
+    criarTransporte({ identidade: (o.canal ?? c.prestador).tlsIdentity, acsAdicionais: [c.ac.pem], timeoutMs: 5_000 }),
     server.baseUrl,
   );
   const client = createNfseClient({
@@ -138,7 +138,7 @@ export async function cenario(
       return signDps(r.value, assinante.signer);
     },
     async close(): Promise<void> {
-      await transport.close();
+      await transport.fechar();
       await server.close();
     },
   };

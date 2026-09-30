@@ -10,8 +10,8 @@
 import type { Ambiente, Assinador, ContextoDeTempo, Ocorrencia, Relogio } from '@sinete/core';
 import { ErroDeConfiguracao, formatarDataHoraComFuso, formatarVerProc, tpAmbDoAmbiente } from '@sinete/core';
 import { assinarXml, ErroXml } from '@sinete/core/xml';
-import type { RootElement } from '@sinete/schemas';
-import { SerializeError, serializeRoot, validateRoot } from '@sinete/schemas';
+import type { ElementoRaiz } from '@sinete/schemas';
+import { ErroSerializacao, serializarRaiz, validarRaiz } from '@sinete/schemas';
 import type {
   TCInfDPS,
   TCInfoValores,
@@ -294,10 +294,10 @@ export function buildDps(input: DpsInput, options: BuildDpsOptions): BuildDpsRes
   if (issues.length > 0) return { ok: false, issues: issues.map((i) => ({ ...i, origem: i.origem ?? 'entrada' })) };
   let corpo: string;
   try {
-    corpo = serializeRoot(leiaute.DPSElement, { versao: VERSAO_LEIAUTE, infDPS: inf });
+    corpo = serializarRaiz(leiaute.DPSElement, { versao: VERSAO_LEIAUTE, infDPS: inf });
   } catch (e) {
-    if (!(e instanceof SerializeError)) throw e;
-    return { ok: false, issues: [{ caminho: e.path, code: 'schema', mensagem: e.message, origem: 'montagem' }] };
+    if (!(e instanceof ErroSerializacao)) throw e;
+    return { ok: false, issues: [{ caminho: e.caminho, code: 'schema', mensagem: e.message, origem: 'montagem' }] };
   }
   const xml = DECLARACAO_XML + corpo;
   const schema = validarNoSchema(leiaute.DPSElement, xml);
@@ -309,9 +309,9 @@ export function buildDps(input: DpsInput, options: BuildDpsOptions): BuildDpsRes
  * Validação estrita no schema, como ocorrências de `montagem` (ADR 0011). Texto com caractere proibido no XML (`\u0000` e afins) faz o parser
  * recusar o documento inteiro; isso também volta como ocorrência (`caractere_invalido`), nunca como exceção.
  */
-export function validarNoSchema(raiz: RootElement<unknown>, xml: string): Ocorrencia[] {
+export function validarNoSchema(raiz: ElementoRaiz<unknown>, xml: string): Ocorrencia[] {
   try {
-    return validateRoot(raiz, xml).map((i) => ({
+    return validarRaiz(raiz, xml).map((i) => ({
       caminho: i.caminho,
       code: 'schema',
       mensagem: `${i.code}: ${i.mensagem}`,

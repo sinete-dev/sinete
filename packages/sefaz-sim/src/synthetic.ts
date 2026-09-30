@@ -136,7 +136,7 @@ export interface SyntheticCertificate {
   /** `AssinadorDeDados` do `@sinete/core` (RSASSA-PKCS1-v1_5), para o `assinarXml` do `@sinete/core/xml`. */
   readonly signer: AssinadorDeDados;
   /** Identidade `pem` do `@sinete/transport` (certificado seguido da AC, quando houver). */
-  readonly tlsIdentity: { readonly kind: 'pem'; readonly certChain: string; readonly key: string };
+  readonly tlsIdentity: { readonly tipo: 'pem'; readonly cadeia: string; readonly chave: string };
   readonly commonName: string;
   /** Uso interno: assina o TBSCertificate dos certificados emitidos por esta AC. */
   readonly signTbs: (tbs: Uint8Array<ArrayBuffer>) => Promise<Uint8Array>;
@@ -237,7 +237,7 @@ export async function syntheticCertificate(options: SyntheticCertificateOptions)
     pem,
     keyPem,
     signer,
-    tlsIdentity: { kind: 'pem', certChain: pem + (options.issuer?.pem ?? ''), key: keyPem },
+    tlsIdentity: { tipo: 'pem', cadeia: pem + (options.issuer?.pem ?? ''), chave: keyPem },
     commonName,
     signTbs,
   };

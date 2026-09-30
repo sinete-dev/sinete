@@ -23,9 +23,9 @@ export interface LedgerMatch {
   readonly cClassTrib?: readonly string[];
   /** Trecho do `detail` do erro da Calculadora. */
   readonly oracleError?: string;
-  /** `code` ou `reason`/`regime` do erro do motor. */
+  /** `code` ou `motivo`/`regime` do erro do motor. */
   readonly engineError?: string;
-  /** Algum item do caso informa este grupo de entrada do motor (`presumedCredit`, `creditReversal`...). */
+  /** Algum item do caso informa este grupo de entrada do motor (`creditoPresumido`, `estornoDeCredito`...). */
   readonly withInput?: string;
 }
 
@@ -61,12 +61,12 @@ export function matches(e: LedgerEntry, c: OracleCase, d: Divergence): boolean {
   const m = e.match;
   if (m.outcome !== d.outcome) return false;
   const year = Number(c.date.slice(0, 4));
-  if (m.gov !== undefined && (c.op.governmentPurchase !== undefined) !== m.gov) return false;
+  if (m.gov !== undefined && (c.op.compraGovernamental !== undefined) !== m.gov) return false;
   if (m.yearFrom !== undefined && year < m.yearFrom) return false;
   if (m.yearTo !== undefined && year > m.yearTo) return false;
   // Divergência num campo de item só se explica pelo próprio item; total e erro do caso olham o caso inteiro.
   const at = d.diff ? /^item(\d+)\./.exec(d.diff.path) : null;
-  const items = at ? c.op.items.filter((i) => i.n === Number(at[1])) : c.op.items;
+  const items = at ? c.op.itens.filter((i) => i.n === Number(at[1])) : c.op.itens;
   if (m.cClassTrib && !items.some((i) => m.cClassTrib?.includes(i.cClassTrib))) return false;
   if (
     m.withInput !== undefined &&

@@ -7,7 +7,7 @@
  * O parser é por nome de coluna, não por posição: o IT já trocou indicadores de tabela entre versões (v1.20, v1.30),
  * e coluna desconhecida ou ausente falha a extração em vez de deslocar dados em silêncio.
  */
-import type { CredPresRecord, Indicator, IsoDate, Validity } from '../../../packages/ibs-cbs-dados/src/types.ts';
+import type { DataIso, Indicador, RegistroCredPres, Vigencia } from '../../../packages/ibs-cbs-dados/src/types.ts';
 import { excelDate, sheetDecimal } from './lib.ts';
 import { readXlsx, recordsByHeader } from './xlsx.ts';
 
@@ -29,8 +29,8 @@ export interface ItClassTrib {
   readonly pRedCBS: string;
   readonly indicators: Readonly<Record<string, boolean>>;
   readonly tpRBSN: number;
-  readonly validity: Validity;
-  readonly updatedAt: IsoDate | null;
+  readonly validity: Vigencia;
+  readonly updatedAt: DataIso | null;
   readonly annex: string | null;
   /** Modelos de DF-e habilitados pelos indicadores `ind<DFe>`. */
   readonly dfe: readonly number[];
@@ -170,7 +170,7 @@ export async function readItClassTrib(file: string): Promise<{ cst: ItCst[]; cla
       pRedCBS: sheetDecimal(r.pRedCBS) ?? '0',
       indicators: Object.fromEntries(CLASS_INDICATOR_COLUMNS.map((c) => [c, flag(r[c], `${where} ${c}`)])),
       tpRBSN: Number(r.tpRBSN ?? '0'),
-      validity: { from, to: excelDate(r.dFimVig) },
+      validity: { inicio: from, fim: excelDate(r.dFimVig) },
       updatedAt: excelDate(r.DataAtualização),
       annex: r.ANEXO ?? null,
       dfe: Object.entries(IT_DFE_COLUMNS)
@@ -215,12 +215,12 @@ function numberOrText(v: string | undefined): string | null {
   return v;
 }
 
-function validityOf(from: string | undefined, to: string | undefined): Validity | null {
+function validityOf(from: string | undefined, to: string | undefined): Vigencia | null {
   const f = excelDate(from);
-  return f ? { from: f, to: excelDate(to) } : null;
+  return f ? { inicio: f, fim: excelDate(to) } : null;
 }
 
-export async function readItCredPres(file: string, sourceId: string): Promise<CredPresRecord[]> {
+export async function readItCredPres(file: string, sourceId: string): Promise<RegistroCredPres[]> {
   const sheets = await readXlsx(file);
   const main = sheets.find((s) => s.name === 'cCredPres');
   const calc = sheets.find((s) => s.name !== 'cCredPres');
@@ -233,44 +233,44 @@ export async function readItCredPres(file: string, sourceId: string): Promise<Cr
   const calcByCode = new Map(
     normalizeRecords(recordsByHeader(calc, 'cCredPres')).map((r) => [r.cCredPres ?? '', r] as const),
   );
-  const ind = (v: string | undefined, where: string): Indicator => (flag(v, where) ? 'required' : 'forbidden');
+  const ind = (v: string | undefined, where: string): Indicador => (flag(v, where) ? 'obrigatorio' : 'vedado');
   return normalizeRecords(recordsByHeader(main, 'cCredPres'))
     .filter((r) => /^\d+$/.test(r.cCredPres ?? ''))
-    .map((r): CredPresRecord => {
+    .map((r): RegistroCredPres => {
       const code = Number(r.cCredPres);
       const where = `cCredPres ${code}`;
       const c = calcByCode.get(String(code));
       return {
-        key: String(code).padStart(2, '0'),
-        code,
-        description: r.Descrição ?? '',
+        chave: String(code).padStart(2, '0'),
+        codigo: code,
+        descricao: r.Descrição ?? '',
         legal: r['LC 214/2025'] ?? '',
-        viaDocument: flag(r['Apropria via NF?'], `${where} via NF`),
-        viaEvent: flag(r['Apropria via evento?'], `${where} via evento`),
-        deductsFromTax: flag(r.ind_DeduzCredPres, `${where} ind_DeduzCredPres`),
-        groups: {
+        viaDocumento: flag(r['Apropria via NF?'], `${where} via NF`),
+        viaEvento: flag(r['Apropria via evento?'], `${where} via evento`),
+        deduzDoTributo: flag(r.ind_DeduzCredPres, `${where} ind_DeduzCredPres`),
+        grupos: {
           gCBSCredPres: ind(r.ind_gCBSCredPres, `${where} ind_gCBSCredPres`),
           gIBSCredPres: ind(r.ind_gIBSCredPres, `${where} ind_gIBSCredPres`),
         },
-        rates: {
+        aliquotas: {
           cbs: r['Alíquota CBS'] ?? null,
           ibs: r['Alíquota IBS'] ?? null,
           pAliqCredPresCBS: numberOrText(r.pAliqCredPresCBS),
           pAliqCredPresIBS: numberOrText(r.pAliqCredPresIBS),
           pRedTransicaoIBS: numberOrText(r.pRedTransicaoIBS),
         },
-        referencedClassTrib: r['cClass nota referenciada'] ?? null,
-        validity: {
+        classTribReferenciado: r['cClass nota referenciada'] ?? null,
+        vigencia: {
           cbs: validityOf(r.dIniVigCBS, r.dFimVigCBS),
           ibs: validityOf(r.dIniVigIBS, r.dFimVigIBS),
         },
-        calculation: {
+        calculo: {
           pAliq: c?.pAliq ?? null,
           base: c?.vBC_CredPres ?? null,
           formula: c?.['vCred Pres'] ?? null,
-          impediment: c?.['Impedimento de CredPres'] ?? null,
+          impedimento: c?.['Impedimento de CredPres'] ?? null,
         },
-        sources: [sourceId],
+        fontes: [sourceId],
       };
     });
 }

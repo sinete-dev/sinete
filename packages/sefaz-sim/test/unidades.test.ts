@@ -1,6 +1,6 @@
 /** Datas sem `Date`, mensagens oficiais e certificados sintéticos. */
 import { describe, expect, test } from 'bun:test';
-import { icpIdentity, parseCertificate } from '@sinete/cert';
+import { identidadeIcp, lerCertificado } from '@sinete/cert';
 import { relogioManual } from '@sinete/core';
 import { isDenegacao, isResultado, motivo, motivoRejeicao, syntheticCertificate } from '../src/index.ts';
 import { civilFromDays, daysFromCivil, formatInstant, parseDateTime, utcParts, yearOf } from '../src/time.ts';
@@ -56,11 +56,11 @@ describe('certificados sintéticos', () => {
     const pj = await syntheticCertificate({ clock, role: 'titular', cnpj: '11222333000181', issuer: ac });
     const pf = await syntheticCertificate({ clock, role: 'titular', cpf: '11144477735', issuer: ac, commonName: 'PF' });
     const srv = await syntheticCertificate({ clock, role: 'servidor', issuer: ac, hosts: ['10.0.0.1', 'sim.local'] });
-    expect(icpIdentity(parseCertificate(pj.der)).cnpj).toBe('11222333000181');
-    expect(icpIdentity(parseCertificate(pf.der)).cpf).toBe('11144477735');
+    expect(identidadeIcp(lerCertificado(pj.der)).cnpj).toBe('11222333000181');
+    expect(identidadeIcp(lerCertificado(pf.der)).cpf).toBe('11144477735');
     expect(pf.commonName).toBe('PF');
-    expect(srv.tlsIdentity.certChain).toContain(ac.pem.trim());
-    expect(parseCertificate(ac.der).notAfterIso).toStartWith('2056-');
+    expect(srv.tlsIdentity.cadeia).toContain(ac.pem.trim());
+    expect(lerCertificado(ac.der).notAfterIso).toStartWith('2056-');
     const sig = await pj.signer.assinar(new Uint8Array([1, 2, 3]), 'SHA-1');
     expect(sig.length).toBe(256);
     expect(await pj.signer.assinar(new Uint8Array([1]), 'SHA-1')).toHaveLength(256);

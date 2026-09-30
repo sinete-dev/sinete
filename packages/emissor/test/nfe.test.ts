@@ -29,8 +29,8 @@ import {
   syntheticCertificate,
   syntheticPfx,
 } from '@sinete/sefaz-sim';
-import type { CreateTransportOptions } from '@sinete/transport';
-import { createTransport, PolicyError, TransportError } from '@sinete/transport';
+import type { CriarTransporteOpcoes } from '@sinete/transport';
+import { criarTransporte, ErroPolitica, ErroTransporte } from '@sinete/transport';
 import { conteudoNfe } from '../src/conteudo.ts';
 import type { Desfecho, RegistroTransmissao, TransmissaoStore } from '../src/index.ts';
 import {
@@ -85,7 +85,7 @@ interface Cenario {
   readonly conhecidaAoGravar: boolean[];
   /** Caminhos pedidos ao simulador, na ordem. */
   readonly caminhos: string[];
-  readonly padrao: () => CreateTransportOptions;
+  readonly padrao: () => CriarTransporteOpcoes;
   /** "Reinício": emissor novo sobre o mesmo banco, sem nada em memória. */
   novoEmissor(extra?: Partial<NfeEmissorOptions>): Promise<NfeEmissor>;
 }
@@ -111,7 +111,7 @@ async function cenario(extra: Partial<NfeEmissorOptions> = {}, opcoes: OpcoesCen
   const guardados: Cenario['guardados'] = [];
   const conhecidaAoGravar: boolean[] = [];
   const caminhos: string[] = [];
-  let padrao: CreateTransportOptions | undefined;
+  let padrao: CriarTransporteOpcoes | undefined;
   const emissores: NfeEmissor[] = [];
 
   const storeDoProcesso = (): TransmissaoStore => {
@@ -148,19 +148,19 @@ async function cenario(extra: Partial<NfeEmissorOptions> = {}, opcoes: OpcoesCen
       transporte: (o) => {
         padrao = o;
         // A política padrão é a allowlist dos hosts reais; o simulador em 127.0.0.1 fica fora dela.
-        const { policy: _policy, ...semPolitica } = o;
-        const real = createTransport({ ...semPolitica, additionalCa: [ac.pem] });
+        const { politica: _policy, ...semPolitica } = o;
+        const real = criarTransporte({ ...semPolitica, acsAdicionais: [ac.pem] });
         return redirectToSim(
           {
-            capabilities: real.capabilities,
-            send: async (r) => {
+            capacidades: real.capacidades,
+            enviar: async (r) => {
               const caminho = new URL(r.url).pathname;
               caminhos.push(caminho);
-              const resposta = await real.send(r);
+              const resposta = await real.enviar(r);
               opcoes.depois?.(caminho);
               return resposta;
             },
-            close: () => real.close(),
+            fechar: () => real.fechar(),
           },
           server.baseUrl,
         );
@@ -220,13 +220,13 @@ describe('createNfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
 
     // O transporte padrão vem do certificado, com a allowlist do ambiente e o tpAmb do corpo.
     const o = c.padrao();
-    expect(o.identity.kind).toBe('pem');
-    const politica = o.policy;
+    expect(o.identidade.tipo).toBe('pem');
+    const politica = o.politica;
     if (politica === undefined) throw new Error('sem política');
     const pedido = (url: string, body: string) =>
-      politica.check({ url: new URL(url), method: 'POST', body, endpoint: undefined });
-    expect(() => pedido('https://127.0.0.1/ws', '<tpAmb>2</tpAmb>')).toThrow(PolicyError);
-    expect(() => pedido('https://homologacao.nfe.fazenda.sp.gov.br/ws', '<tpAmb>1</tpAmb>')).toThrow(PolicyError);
+      politica.conferir({ url: new URL(url), metodo: 'POST', corpo: body, endpoint: undefined });
+    expect(() => pedido('https://127.0.0.1/ws', '<tpAmb>2</tpAmb>')).toThrow(ErroPolitica);
+    expect(() => pedido('https://homologacao.nfe.fazenda.sp.gov.br/ws', '<tpAmb>1</tpAmb>')).toThrow(ErroPolitica);
     expect(() => pedido('https://homologacao.nfe.fazenda.sp.gov.br/ws', '<tpAmb>2</tpAmb>')).not.toThrow();
 
     const chave = d.id;
@@ -261,7 +261,7 @@ describe('createNfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
     const d = await c.emissor.emitir('nota-2', n(2));
     if (d.tipo !== 'pendente') throw new Error(`esperava pendente, veio ${d.tipo}`);
     expect(d.motivo).toBe('sem-resposta');
-    expect(d.causa).toBeInstanceOf(TransportError);
+    expect(d.causa).toBeInstanceOf(ErroTransporte);
     // Na SEFAZ: autorizada. No integrador: nada guardado, com os bytes gravados.
     const naSefaz = noSim(c, 2);
     expect(naSefaz).toHaveLength(1);
@@ -301,7 +301,7 @@ describe('createNfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
         depois: (caminho) => {
           if (!caminho.endsWith('/NFeAutorizacao4') || cancelou) return;
           cancelou = true;
-          throw new TransportError('cancelado', 'envio cancelado');
+          throw new ErroTransporte('cancelado', 'envio cancelado');
         },
       },
     );

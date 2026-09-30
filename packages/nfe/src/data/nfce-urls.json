@@ -4,7 +4,7 @@
   "fontes": [
     "Portal Nacional da NFC-e (ENCAT), URL por UF utilizada QR code: https://nfce.encat.org/desenvolvedor/qrcode/ (coletada em 26/09/2026)",
     "Portal Nacional da NFC-e (ENCAT), URL por UF utilizada para consulta chave, QR Code versão 2.0: https://nfce.encat.org/desenvolvedor/httpnfce-encat-orgconsulte-sua-nota-qr-code-versao-2-0/ (coletada em 26/09/2026)",
-    "SEFAZ-MG, web services da NFC-e: https://portalsped.fazenda.mg.gov.br/spedmg/nfce/web-services/ (a mesma fonte do nfceConsultaUrls do @sinete/transport) (coletada em 26/09/2026)",
+    "SEFAZ-MG, web services da NFC-e: https://portalsped.fazenda.mg.gov.br/spedmg/nfce/web-services/ (a mesma fonte do urlsConsultaNfce do @sinete/transport) (coletada em 26/09/2026)",
     "MOC 7.0 Anexo I, regras ZX02-20 e ZX03-20; NT 2025.001 v1.03, grupo ZX (campos ZX02 qrCode e ZX03 urlChave)"
   ],
   "qrCode": {

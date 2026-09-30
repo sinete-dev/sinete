@@ -64,8 +64,8 @@ const literais = (s: string): string[] => [...s.matchAll(/'([a-z0-9_]+)'/g)].map
 /**
  * Códigos de erro tipados, levantados do fonte de `packages/*\/src`: o argumento de tipo de cada classe que estende um
  * erro (`extends ErroSinete<'x'>`, ou um alias `type XErrorCode = 'a' | 'b'` do mesmo arquivo) e o literal passado a
- * `super('x', ...)` dentro da classe, que é o mais específico (o `PolicyError` lança `politica_recusou` do
- * `TransportErrorCode`). Os aliases `*ErrorCode` e `CodigoErro*` entram também, para um código declarado e nunca ligado
+ * `super('x', ...)` dentro da classe, que é o mais específico (o `ErroPolitica` lança `politica_recusou` do
+ * `CodigoErroTransporte`). Os aliases `*ErrorCode` e `CodigoErro*` entram também, para um código declarado e nunca ligado
  * a uma classe não passar despercebido. As classes de erro chamam `Erro*` (ADR 0015) ou, nos pacotes ainda não
  * migrados, `*Error`.
  */

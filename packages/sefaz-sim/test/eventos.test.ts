@@ -1,6 +1,6 @@
 /** NFeRecepcaoEvento4: cancelamento, cancelamento por substituição, CC-e na UF e manifestação no AN (cOrgao 91). */
 import { describe, expect, test } from 'bun:test';
-import { validateRoot } from '@sinete/schemas';
+import { validarRaiz } from '@sinete/schemas';
 import * as canc from '@sinete/schemas/nfe/evento-cancelamento/PL_010d';
 import type { Harness } from './helpers.ts';
 import {
@@ -278,6 +278,6 @@ describe('manifestação do destinatário no AN', () => {
     );
     const e = h.sim.inspect.eventos(chave)[0];
     const proc = `<procEventoNFe versao="1.00" xmlns="http://www.portalfiscal.inf.br/nfe">${e?.xml}${e?.retEvento}</procEventoNFe>`;
-    expect(validateRoot(canc.procEventoNFeElement, proc)).toEqual([]);
+    expect(validarRaiz(canc.procEventoNFeElement, proc)).toEqual([]);
   });
 });

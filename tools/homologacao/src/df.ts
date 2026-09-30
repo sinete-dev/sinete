@@ -34,8 +34,8 @@ import { contextoDeTempo, ehErroSinete, relogioDoSistema } from '@sinete/core';
 import { conferirAssinatura } from '@sinete/core/xml';
 import type { Icms, NfeClient, NfeInput } from '@sinete/nfe';
 import { buildNfe, createNfeClient, signNfe } from '@sinete/nfe';
-import type { AuditEvent, Transport, TransportRequest, TransportResponse } from '@sinete/transport';
-import { createTransport, detectRuntime, nfeEndpoint, pemIdentity } from '@sinete/transport';
+import type { EventoDeAuditoria, PedidoTransporte, RespostaTransporte, Transporte } from '@sinete/transport';
+import { criarTransporte, detectarRuntime, identidadePem, nfeEndpoint } from '@sinete/transport';
 import type { Certificado } from './certificado.ts';
 import { abrirCertificado } from './certificado.ts';
 import { LEDGER_PADRAO, ledger } from './ledger.ts';
@@ -72,7 +72,7 @@ if (!['status', 'emitir', 'consultar', 'cce', 'cancelar', 'dist'].includes(coman
   process.exit(2);
 }
 if (!opt.op) throw new Error('informe --op <referência do e-CPF do emitente>');
-const runtime = detectRuntime();
+const runtime = detectarRuntime();
 const estado = opt.estado as string;
 mkdirSync(estado, { recursive: true, mode: 0o700 });
 const led = ledger(opt.ledger);
@@ -112,29 +112,29 @@ const registrar = (host: string, servico: string, desfecho: string): void =>
 // ---------------------------------------------------------------------------------------------------------------
 
 const cert: Certificado = await abrirCertificado({ op: opt.op, opBin: opt['op-bin'] as string });
-const titular = cert.ks.identity;
+const titular = cert.ks.identidade;
 if (titular.tipo !== 'e-CPF' || titular.cpf !== emit.CPF) {
   throw new Error(`o certificado do emitente precisa ser o e-CPF do CPF do emitente (veio ${titular.tipo})`);
 }
 const CPF = emit.CPF;
 log(
-  `[${runtime}] emitente e-CPF ${mascaraDoc(CPF)}, serial ${cert.ks.certificate.serialNumber}, válido até ${cert.ks.certificate.notAfterIso}; cadeia ${cert.cadeia.status}: ${cert.cadeia.chain.map((c) => c.subject.commonName?.replace(/:\d+$/, '') ?? '?').join(' > ')}`,
+  `[${runtime}] emitente e-CPF ${mascaraDoc(CPF)}, serial ${cert.ks.certificado.serialNumber}, válido até ${cert.ks.certificado.notAfterIso}; cadeia ${cert.cadeia.situacao}: ${cert.cadeia.cadeia.map((c) => c.subject.commonName?.replace(/:\d+$/, '') ?? '?').join(' > ')}`,
 );
-const signer = await cert.ks.signer();
+const signer = await cert.ks.assinador();
 
 let tlsCert: Certificado = cert;
 let rotuloTls = 'TLS e-CPF emitente';
 if (opt['transmissor-op']) {
   tlsCert = await abrirCertificado({ op: opt['transmissor-op'], opBin: opt['op-bin'] as string });
-  const t = tlsCert.ks.identity;
+  const t = tlsCert.ks.identidade;
   if (t.tipo !== 'e-CNPJ' || !t.cnpj) throw new Error('o transmissor terceiro precisa ser e-CNPJ');
   rotuloTls = `TLS e-CNPJ transmissor ${t.cnpj}`;
   log(
-    `[${runtime}] transmissor e-CNPJ ${t.cnpj} (${t.nome ?? '?'}), serial ${tlsCert.ks.certificate.serialNumber}, válido até ${tlsCert.ks.certificate.notAfterIso}`,
+    `[${runtime}] transmissor e-CNPJ ${t.cnpj} (${t.nome ?? '?'}), serial ${tlsCert.ks.certificado.serialNumber}, válido até ${tlsCert.ks.certificado.notAfterIso}`,
   );
 }
 
-const envio: { audit?: AuditEvent | undefined; texto?: string | undefined; status?: number | undefined } = {};
+const envio: { audit?: EventoDeAuditoria | undefined; texto?: string | undefined; status?: number | undefined } = {};
 
 function limparEnvio(): void {
   envio.audit = undefined;
@@ -142,28 +142,28 @@ function limparEnvio(): void {
   envio.status = undefined;
 }
 
-function transporte(): Transport {
-  const inner = createTransport({
-    identity: pemIdentity(tlsCert.ks, { chain: tlsCert.cadeia.chain }),
-    policy: homologacaoDfPolicy(),
+function transporte(): Transporte {
+  const inner = criarTransporte({
+    identidade: identidadePem(tlsCert.ks, { cadeia: tlsCert.cadeia.cadeia }),
+    politica: homologacaoDfPolicy(),
     timeoutMs: 60_000,
-    audit: (e) => {
+    auditoria: (e) => {
       envio.audit = e;
     },
   });
   return {
-    capabilities: inner.capabilities,
-    close: () => inner.close(),
-    async send(req: TransportRequest): Promise<TransportResponse> {
-      const res = await inner.send(req);
-      envio.texto = res.text();
+    capacidades: inner.capacidades,
+    fechar: () => inner.fechar(),
+    async enviar(req: PedidoTransporte): Promise<RespostaTransporte> {
+      const res = await inner.enviar(req);
+      envio.texto = res.texto();
       envio.status = res.status;
       return res;
     },
   };
 }
 
-function cliente(t: Transport, contingencia = false): NfeClient {
+function cliente(t: Transporte, contingencia = false): NfeClient {
   return createNfeClient({
     transport: t,
     signer,
@@ -207,7 +207,7 @@ async function operar<O extends ResultadoSefaz<unknown, unknown>>(
       xMotivo: mascarar(o.xMotivo),
       outcome: o,
       ...(envio.status === undefined ? {} : { http: envio.status }),
-      ...(envio.audit ? { ms: envio.audit.durationMs } : {}),
+      ...(envio.audit ? { ms: envio.audit.duracaoMs } : {}),
     };
   } catch (e) {
     const code = ehErroSinete(e) ? e.code : 'desconhecido';
@@ -256,7 +256,7 @@ async function status(): Promise<void> {
       anexar('status.json', semOutcome(r));
     }
   } finally {
-    await t.close();
+    await t.fechar();
   }
 }
 
@@ -437,7 +437,7 @@ async function emitir(): Promise<void> {
     );
     log(`[${runtime}] tentativas de autorização na rodada: ${tentativas.length}/${MAX_AUTORIZACOES}`);
   } finally {
-    await t.close();
+    await t.fechar();
   }
 }
 
@@ -472,7 +472,7 @@ async function consultar(): Promise<void> {
       ...(v ? { situacao: v.situacao, eventos: v.eventos.length, digValConfere: v.digValConfere } : {}),
     });
   } finally {
-    await t.close();
+    await t.fechar();
   }
 }
 
@@ -522,7 +522,7 @@ async function evento(tipo: 'cce' | 'cancelar'): Promise<void> {
       });
     anexar('eventos.json', { ...semOutcome(r), tipo, chave, seq: opt.seq ?? '1', nProt: v?.nProt ?? null });
   } finally {
-    await t.close();
+    await t.fechar();
   }
 }
 
@@ -546,7 +546,7 @@ async function dist(): Promise<void> {
     }
     anexar('dist.json', { ...semOutcome(r), ...(v ? { ultNSU: v.ultNSU, maxNSU: v.maxNSU, documentos: docs } : {}) });
   } finally {
-    await t.close();
+    await t.fechar();
   }
 }
 

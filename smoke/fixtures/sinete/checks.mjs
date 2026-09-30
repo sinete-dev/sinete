@@ -170,8 +170,8 @@ export async function runChecks() {
     for (const k of Object.keys(guardaChuva)) if (!(k in pacote)) failures.push(`sinete/${nome}.${k} sobrando`);
   }
   // Um uso de ponta a ponta pelo guarda-chuva: IBS/CBS e documento auxiliar.
-  const { officialRates } = m_u_ibs_cbs_aliquotas;
-  if (officialRates().nominal('2026-10-10').CBS.value !== '0.9') failures.push('sinete/ibs-cbs/aliquotas');
+  const { aliquotasOficiais } = m_u_ibs_cbs_aliquotas;
+  if (aliquotasOficiais().nominal('2026-10-10').CBS.valor !== '0.9') failures.push('sinete/ibs-cbs/aliquotas');
   if (typeof m_u_da_mdfe.damdfe !== 'function' || m_u_da_mdfe.toPdf !== m_u_da.toPdf) failures.push('sinete/da/mdfe');
   return failures;
 }

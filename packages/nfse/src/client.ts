@@ -5,7 +5,7 @@
  * do XML da NFS-e pelo `danfse` de `@sinete/da/nfse`.
  *
  * mTLS com o certificado do próprio emitente: a Sefin autoriza pelo certificado do canal e exige que a DPS seja
- * assinada pelo emitente (E0718); o sinete não usa transmissor terceiro na NFS-e. O `Transport` recebido é quem
+ * assinada pelo emitente (E0718); o sinete não usa transmissor terceiro na NFS-e. O `Transporte` recebido é quem
  * apresenta o certificado; confira que é o mesmo e-CNPJ ou e-CPF que assina a DPS.
  *
  * Mensagens (REST com JSON; documentos em gzip e base64): `{"dpsXmlGZipB64"}` na emissão, `{"nfseXmlGZipB64",
@@ -37,10 +37,10 @@ import {
   textoDe,
   XMLDSIG_NS,
 } from '@sinete/core/xml';
-import { decodeXml } from '@sinete/schemas';
+import { decodificarXml } from '@sinete/schemas';
 import type { TCNFSe } from '@sinete/schemas/nfse/1.01-20260727';
 import { NFSeElement } from '@sinete/schemas/nfse/1.01-20260727';
-import type { EndpointRef, NfseApi, Transport, TransportResponse } from '@sinete/transport';
+import type { EndpointResolvido, NfseApi, RespostaTransporte, Transporte } from '@sinete/transport';
 import { nfseEndpoint } from '@sinete/transport';
 import { parseChaveNfse } from './codigos.ts';
 import situacoes from './data/situacoes.json' with { type: 'json' };
@@ -55,7 +55,7 @@ import { documentosDosEventos, exigirTexto, lerJson, mensagens, rejeicao, texto 
 
 export interface NfseClientOptions {
   /** Transporte com a identidade TLS do emitente (e-CNPJ ou e-CPF A1, ou A3 pelo helper). */
-  readonly transport: Transport;
+  readonly transport: Transporte;
   /** `homologacao` é a produção restrita. */
   readonly ambiente: Ambiente;
   /** Relógio de emissão: `dhEvento` e validade do cache de parâmetros. */
@@ -70,7 +70,7 @@ export interface NfseClientOptions {
   /** Validade de uma consulta de parâmetro com resposta. Padrão: 6 horas. */
   readonly ttlParametrosMs?: number;
   /** Sobrepõe a base de uma API (padrão: `nfseEndpoint` do `@sinete/transport`). */
-  readonly endpoint?: (api: NfseApi, ambiente: Ambiente) => EndpointRef;
+  readonly endpoint?: (api: NfseApi, ambiente: Ambiente) => EndpointResolvido;
   /** `verAplic` repassado ao `cancelar` e ao `solicitarAnaliseFiscal`; sem valor, cada um usa seu próprio padrão. */
   readonly verAplic?: string;
 }
@@ -225,8 +225,8 @@ function geradaAutorizada(nfse: TCNFSe, v: Omit<NfseGerada, 'nfse' | 'nNFSe' | '
 export function createNfseClient(options: NfseClientOptions): NfseClient {
   const { transport, ambiente } = options;
   const logger = options.logger ?? loggerSilencioso;
-  const endpointDe = (api: NfseApi): EndpointRef =>
-    (options.endpoint ?? ((a: NfseApi, amb: Ambiente): EndpointRef => nfseEndpoint({ ambiente: amb, api: a })))(
+  const endpointDe = (api: NfseApi): EndpointResolvido =>
+    (options.endpoint ?? ((a: NfseApi, amb: Ambiente): EndpointResolvido => nfseEndpoint({ ambiente: amb, api: a })))(
       api,
       ambiente,
     );
@@ -238,18 +238,18 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
     corpo: Record<string, string> | undefined,
     opcoes: OpcoesEnvio | undefined,
     operacao: string,
-  ): Promise<TransportResponse> {
+  ): Promise<RespostaTransporte> {
     const endpoint = endpointDe(api);
     const url = `${endpoint.url.replace(/\/+$/, '')}${caminho}`;
     const started = options.clock.agora().getTime();
-    const res = await transport.send({
+    const res = await transport.enviar({
       url,
-      method: corpo === undefined ? 'GET' : 'POST',
-      headers:
+      metodo: corpo === undefined ? 'GET' : 'POST',
+      cabecalhos:
         corpo === undefined
           ? { accept: 'application/json' }
           : { accept: 'application/json', 'content-type': 'application/json' },
-      ...(corpo === undefined ? {} : { body: JSON.stringify(corpo) }),
+      ...(corpo === undefined ? {} : { corpo: JSON.stringify(corpo) }),
       endpoint,
       ...(opcoes?.signal === undefined ? {} : { signal: opcoes.signal }),
       ...(options.timeoutMs === undefined ? {} : { timeoutMs: options.timeoutMs }),
@@ -258,8 +258,8 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
     return res;
   }
 
-  function foraDoContrato(operacao: string, res: TransportResponse): ErroRespostaInvalida {
-    const json = lerJson(res.text());
+  function foraDoContrato(operacao: string, res: RespostaTransporte): ErroRespostaInvalida {
+    const json = lerJson(res.texto());
     return new ErroRespostaInvalida(`${operacao}: HTTP ${res.status} inesperado`, {
       detalhes: {
         operacao,
@@ -271,16 +271,16 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
 
   async function nfseDe(json: Record<string, unknown>, operacao: string): Promise<{ xml: string; nfse: TCNFSe }> {
     const xml = await gunzipBase64(exigirTexto(json, 'nfseXmlGZipB64', operacao), 'nfseXmlGZipB64');
-    let decoded: ReturnType<typeof decodeXml<TCNFSe>>;
+    let decoded: ReturnType<typeof decodificarXml<TCNFSe>>;
     try {
-      decoded = decodeXml(NFSeElement, xml);
+      decoded = decodificarXml(NFSeElement, xml);
     } catch (cause) {
       throw new ErroRespostaInvalida(`${operacao}: NFS-e não é XML bem formado`, { cause });
     }
-    if (decoded.issues.some((i) => i.code === 'raiz_inesperada')) {
+    if (decoded.ocorrencias.some((i) => i.code === 'raiz_inesperada')) {
       throw new ErroRespostaInvalida(`${operacao}: o documento devolvido não é uma NFS-e`);
     }
-    return { xml, nfse: decoded.value };
+    return { xml, nfse: decoded.valor };
   }
 
   async function emitirDps(
@@ -296,7 +296,7 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
     }
     if (operacao === 'substituir' && !lida.substituta) throw new ErroDeConfiguracao('DPS substituta sem o grupo subst');
     const res = await enviar('sefin', '/nfse', { dpsXmlGZipB64: await gzipBase64(dps) }, opcoes, operacao);
-    const json = lerJson(res.text());
+    const json = lerJson(res.texto());
     if (res.status >= 400 && res.status < 500) return rejeicao(json, res.status, operacao);
     if ((res.status !== 200 && res.status !== 201) || json === undefined) throw foraDoContrato(operacao, res);
     const chaveAcesso = exigirTexto(json, 'chaveAcesso', operacao);
@@ -338,7 +338,7 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
     conferirChave(chave);
     const body = { pedidoRegistroEventoXmlGZipB64: await gzipBase64(pedido) };
     const res = await enviar('sefin', `/nfse/${chave}/eventos`, body, opcoes, 'evento');
-    const json = lerJson(res.text());
+    const json = lerJson(res.texto());
     if (res.status >= 400 && res.status < 500) return rejeicao(json, res.status, 'evento');
     if ((res.status !== 200 && res.status !== 201) || json === undefined) throw foraDoContrato('evento', res);
     const xml = await gunzipBase64(exigirTexto(json, 'eventoXmlGZipB64', 'evento'), 'eventoXmlGZipB64');
@@ -380,7 +380,7 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
       conferirChave(chave);
       const res = await enviar('sefin', `/nfse/${chave}`, undefined, opcoes, 'consultar');
       if (res.status === 404) return undefined;
-      const json = lerJson(res.text());
+      const json = lerJson(res.texto());
       if (res.status !== 200 || json === undefined) throw foraDoContrato('consultar', res);
       const { xml, nfse } = await nfseDe(json, 'consultar');
       if (nfse.infNFSe?.Id !== `NFS${chave}`)
@@ -395,7 +395,7 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
       if (!/^DPS\d{8}[0-9A-Z]{14}\d{20}$/.test(idDps)) throw new ErroDeConfiguracao(`Id de DPS inválido: ${idDps}`);
       const res = await enviar('sefin', `/dps/${idDps}`, undefined, opcoes, 'consultarDps');
       if (res.status === 404) return undefined;
-      const json = lerJson(res.text());
+      const json = lerJson(res.texto());
       if (res.status !== 200 || json === undefined) throw foraDoContrato('consultarDps', res);
       const chaveAcesso = exigirTexto(json, 'chaveAcesso', 'consultarDps');
       conferirChave(chaveAcesso);
@@ -448,7 +448,7 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
       // sequência é a página HTML do IIS). Ler o 404 como ausência só leva a `pendente` no emissor, nunca a um
       // cancelamento que não houve.
       if (res.status === 404) return [];
-      const json = lerJson(res.text());
+      const json = lerJson(res.texto());
       if (res.status !== 200 || json === undefined) throw foraDoContrato('consultarEventos', res);
       const out: EventoRegistrado[] = [];
       for (const d of documentosDosEventos(json, 'consultarEventos')) {

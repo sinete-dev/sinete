@@ -8,8 +8,8 @@ import type { RelogioManual } from '@sinete/core';
 import { contextoDeTempo, ErroDeTempoEsgotado, ErroDeValidacao, relogioManual } from '@sinete/core';
 import type { SefazSim, SefazSimOptions, SyntheticCertificate } from '@sinete/sefaz-sim';
 import { createSefazSim, redirectToSim, startSefazSimServer, syntheticCertificate } from '@sinete/sefaz-sim';
-import type { Transport } from '@sinete/transport';
-import { createTransport } from '@sinete/transport';
+import type { Transporte } from '@sinete/transport';
+import { criarTransporte } from '@sinete/transport';
 import { calcularDvCnpj } from '@sinete/validators';
 import type { NfeClient, NfeClientOptions, NfeInput } from '../../src/index.ts';
 import { buildNfe, createNfeClient, resolverEnvioSemResposta, signNfe } from '../../src/index.ts';
@@ -92,26 +92,26 @@ async function cenario(simOptions: Partial<SefazSimOptions> = {}): Promise<Cenar
   });
   const server = await startSefazSimServer(sim, { cert: c.servidor.pem, key: c.servidor.keyPem });
   const caminhos: string[] = [];
-  const transports: Transport[] = [];
+  const transports: Transporte[] = [];
   fechar.push(async () => {
-    for (const t of transports) await t.close();
+    for (const t of transports) await t.fechar();
     await server.close();
   });
 
   const cliente: Cenario['cliente'] = (o) => {
     // O transporte real, com o certificado do canal; o gravador só anota o caminho que chegou ao simulador.
-    const real = createTransport({
-      identity: o.canal.tlsIdentity,
-      additionalCa: [c.ac.pem],
+    const real = criarTransporte({
+      identidade: o.canal.tlsIdentity,
+      acsAdicionais: [c.ac.pem],
       timeoutMs: o.timeoutMs ?? 10_000,
     });
-    const gravador: Transport = {
-      capabilities: real.capabilities,
-      send: (r) => {
+    const gravador: Transporte = {
+      capacidades: real.capacidades,
+      enviar: (r) => {
         caminhos.push(new URL(r.url).pathname);
-        return real.send(r);
+        return real.enviar(r);
       },
-      close: () => real.close(),
+      fechar: () => real.fechar(),
     };
     const transport = redirectToSim(gravador, server.baseUrl);
     transports.push(transport);
