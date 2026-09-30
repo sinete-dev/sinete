@@ -10,8 +10,8 @@
  * certificado.
  */
 
-import type { Denied, Rejected, Uf } from '@sinete/core';
-import { ConfigError, timeContext, ufByCUf, ValidationError } from '@sinete/core';
+import type { Denegado, Recusado, Uf } from '@sinete/core';
+import { contextoDeTempo, ErroDeConfiguracao, ErroDeValidacao, ufPorCUf } from '@sinete/core';
 import type {
   AutorDocumento,
   AutorizacaoOutcome,
@@ -120,13 +120,13 @@ function autorDe(ctx: ContextoEmissor): AutorDocumento | undefined {
 export function perfilNfe(
   opcoes: OpcoesPerfilNfe = {},
 ): PerfilDocumento<EntradaNfe, NfeClient, ProtocoloNfe, BrutoNfe> {
-  const recusado = (id: string, r: Rejected, bruto: BrutoNfe): DesfechoNfe => ({
+  const recusado = (id: string, r: Recusado, bruto: BrutoNfe): DesfechoNfe => ({
     documento: 'nfe',
     tipo: 'recusado',
     id,
     cStat: r.cStat,
     xMotivo: r.xMotivo,
-    ...(r.hint === undefined ? {} : { hint: r.hint }),
+    ...(r.dica === undefined ? {} : { hint: r.dica }),
     bruto,
   });
 
@@ -134,15 +134,15 @@ export function perfilNfe(
    * Uso denegado: definitivo com qualquer `conteudo`, porque a denegação é da chave (MOC 7.0 Anexo I, tabela 4.4.3). O
    * `nfeProc` só vai quando o `digVal` prova que o conteúdo registrado é o destes bytes.
    */
-  const denegado = (id: string, xml: string, o: Denied<ProtocoloNfe>, conteudo: ConteudoRegistrado): DesfechoNfe => ({
+  const denegado = (id: string, xml: string, o: Denegado<ProtocoloNfe>, conteudo: ConteudoRegistrado): DesfechoNfe => ({
     documento: 'nfe',
     tipo: 'denegado',
     id,
     cStat: o.cStat,
     xMotivo: o.xMotivo,
     conteudo,
-    ...(o.value.nfeProc === undefined ? {} : { proc: o.value.nfeProc }),
-    protocolo: o.value,
+    ...(o.valor.nfeProc === undefined ? {} : { proc: o.valor.nfeProc }),
+    protocolo: o.valor,
     xml,
     bruto: o,
   });
@@ -155,16 +155,16 @@ export function perfilNfe(
     try {
       r = await cli.autorizar(xml);
       // Mesmo com indSinc 1, a SEFAZ pode responder 103 e processar o lote depois: espera o recibo antes de decidir.
-      if (r.status === 'pending' && r.ref !== undefined) {
-        nRec = r.ref;
+      if (r.tipo === 'pendente' && r.referencia !== undefined) {
+        nRec = r.referencia;
         r = await cli.aguardarRecibo(nRec, xml, opcoes.recibo);
       }
     } catch (e) {
       if (!semResposta(e)) throw e;
       return resolver(cli, xml, undefined, e, reenvia);
     }
-    switch (r.status) {
-      case 'pending':
+    switch (r.tipo) {
+      case 'pendente':
         // O recibo não saiu de pendente dentro da espera: os bytes ficam, e `retomar` consulta a chave depois.
         return {
           documento: 'nfe',
@@ -176,13 +176,13 @@ export function perfilNfe(
           ...(nRec === undefined ? {} : { nRec }),
           bruto: r,
         };
-      case 'rejected':
+      case 'recusado':
         return CODIGOS.duplicidade.has(r.cStat) ? resolver(cli, xml, r, undefined, reenvia) : recusado(id, r, r);
-      case 'denied':
+      case 'denegado':
         // Resposta ao envio destes bytes: o cliente já recusou um digVal diferente, então só falta ou confere.
-        return denegado(id, xml, r, r.value.nfeProc === undefined ? 'sem-digval' : 'confere');
+        return denegado(id, xml, r, r.valor.nfeProc === undefined ? 'sem-digval' : 'confere');
       default: {
-        const p = r.value;
+        const p = r.valor;
         // Autorização sem digVal: nada prova que é destes bytes; a consulta decide.
         if (p.nfeProc === undefined) return resolver(cli, xml, undefined, undefined, false);
         return {
@@ -202,7 +202,7 @@ export function perfilNfe(
   async function resolver(
     cli: NfeClient,
     xml: string,
-    anterior: Rejected | undefined,
+    anterior: Recusado | undefined,
     erroEnvio: unknown,
     reenvia: boolean,
   ): Promise<DesfechoNfe> {
@@ -220,17 +220,17 @@ export function perfilNfe(
     switch (res.acao) {
       case 'concluida': {
         const o = res.outcome;
-        if (o.status === 'denied') return denegado(id, xml, o, res.conteudo);
+        if (o.tipo === 'denegado') return denegado(id, xml, o, res.conteudo);
         // A autorização só conclui com o protocolo e o nfeProc destes bytes.
-        if (o.status === 'authorized' && o.value.nfeProc !== undefined) {
+        if (o.tipo === 'autorizado' && o.valor.nfeProc !== undefined) {
           return {
             documento: 'nfe',
             tipo: 'autorizado',
             id,
             cStat: o.cStat,
             xMotivo: o.xMotivo,
-            proc: o.value.nfeProc,
-            protocolo: o.value,
+            proc: o.valor.nfeProc,
+            protocolo: o.valor,
             ...(res.situacao === 'cancelada' ? { situacaoAtual: 'cancelado' } : {}),
             bruto: o,
           };
@@ -324,7 +324,7 @@ export function perfilNfe(
     },
     dosBytes(xml: string): ContingenciaDosBytes | undefined {
       const chave = chaveDe(xml);
-      const uf = ufByCUf(chave.slice(0, 2))?.sigla;
+      const uf = ufPorCUf(chave.slice(0, 2))?.sigla;
       if (uf === undefined) return undefined;
       // Chave de acesso: cUF (1-2), modelo (21-22) e tpEmis (35) (MOC 7.0, Visão Geral, 2.2.6, tabela 2-1).
       const tpEmis = chave.slice(34, 35);
@@ -345,7 +345,7 @@ export function perfilNfe(
       // dhCont não passa da emissão (B28-40): a emissão é a do relógio que a montagem vai usar (o da nota, o das opções
       // de montagem ou o do emissor), que pode estar atrás do banco.
       const daNota = 'montagem' in entrada ? entrada.montagem.time : undefined;
-      const emissao = (daNota ?? opcoes.montagem?.time ?? timeContext({ emissao: ctx.clock })).emissao.now();
+      const emissao = (daNota ?? opcoes.montagem?.time ?? contextoDeTempo({ emissao: ctx.clock })).emissao.agora();
       const dhCont = c.desde.getTime() <= emissao.getTime() ? c.desde : emissao;
       const cont = { tpEmis, dhCont, xJust: c.xJust } as const;
       return 'montagem' in entrada
@@ -358,7 +358,7 @@ export function perfilNfe(
         const r = await clienteDaSonda(escopo.uf, false, ctx).statusServico({
           mod: escopo.modelo === '65' ? '65' : '55',
         });
-        return { emOperacao: r.status === 'authorized', detalhe: r.cStat };
+        return { emOperacao: r.tipo === 'autorizado', detalhe: r.cStat };
       } catch (e) {
         return { emOperacao: false, detalhe: `sem resposta (${String(e)})` };
       }
@@ -369,7 +369,7 @@ export function perfilNfe(
       try {
         const r = await clienteDaSonda(escopo.uf, true, ctx).statusServico();
         const detalhe = `${r.cStat} ${r.xMotivo}`;
-        if (r.status === 'authorized') return { situacao: 'ativa', detalhe };
+        if (r.tipo === 'autorizado') return { situacao: 'ativa', detalhe };
         if (codigosSvc.desativando.has(r.cStat)) {
           return { situacao: 'desativando', fim: fimDaSvcPeloMotivo(r.xMotivo, ctx.clock), detalhe };
         }
@@ -413,22 +413,22 @@ export function perfilNfe(
     async assinar(entrada: EntradaNfe, ctx: ContextoEmissor): Promise<{ readonly id: string; readonly xml: string }> {
       const [nota, daNota] = 'montagem' in entrada ? [entrada.nfe, entrada.montagem] : [entrada, undefined];
       const r = await buildNfe(nota, {
-        time: timeContext({ emissao: ctx.clock }),
+        time: contextoDeTempo({ emissao: ctx.clock }),
         ...opcoes.montagem,
         ...daNota,
         ambiente: ctx.ambiente,
       });
-      if (!r.ok) throw new ValidationError('a NF-e não passou na validação', r.issues);
+      if (!r.ok) throw new ErroDeValidacao('a NF-e não passou na validação', r.issues);
       // O certificado que assina é o do emitente (MOC 7.0 Anexo I, grupo A e F): sem CNPJ nem CPF da ICP-Brasil, a
       // SEFAZ recusa com 282 (A07); com outro CNPJ-base ou outro CPF, com 213 (F03) ou 227 (F03A).
       if (ctx.titular.cnpj === undefined && ctx.titular.cpf === undefined) {
-        throw new ConfigError(
+        throw new ErroDeConfiguracao(
           'o certificado não traz CNPJ nem CPF: a SEFAZ recusa com 282 (MOC 7.0 Anexo I, regra A07)',
         );
       }
       const doCertificado = conferirEmitenteDoCertificado(nota, ctx.titular);
       if (doCertificado.length > 0) {
-        throw new ValidationError('o emitente da NF-e não é o titular do certificado', doCertificado);
+        throw new ErroDeValidacao('o emitente da NF-e não é o titular do certificado', doCertificado);
       }
       return { id: r.value.chave, xml: await signNfe(r.value, ctx.signer) };
     },
@@ -496,7 +496,7 @@ export async function createNfeEmissor(opcoes: NfeEmissorOptions): Promise<NfeEm
    */
   async function recuperar(
     chave: string,
-    falha: { readonly erro: unknown } | Rejected,
+    falha: { readonly erro: unknown } | Recusado,
   ): Promise<DesfechoCancelamentoNfe> {
     let rec: RecuperacaoEvento;
     try {
@@ -524,11 +524,11 @@ export async function createNfeEmissor(opcoes: NfeEmissorOptions): Promise<NfeEm
       if (rec.registrado) return registrado(rec.evento, true, rec.consulta);
       const c = rec.consulta;
       const achado =
-        c.status === 'authorized' && c.value.situacao === 'autorizada' ? c.value.protocolo?.nProt : undefined;
+        c.tipo === 'autorizado' && c.valor.situacao === 'autorizada' ? c.valor.protocolo?.nProt : undefined;
       if (achado === undefined) {
         // Não consta, rejeitada ou denegada: não há o que cancelar. Cancelada sem o evento legível, ou autorizada sem
         // protocolo, a consulta não decidiu.
-        if (c.status === 'rejected' || c.status === 'denied') return eventoRecusado(c, c);
+        if (c.tipo === 'recusado' || c.tipo === 'denegado') return eventoRecusado(c, c);
         return { tipo: 'pendente', motivo: 'consulta-indefinida', cStat: c.cStat, xMotivo: c.xMotivo, bruto: c };
       }
       nProt = achado;
@@ -545,10 +545,10 @@ export async function createNfeEmissor(opcoes: NfeEmissorOptions): Promise<NfeEm
       if (!semResposta(e)) throw e;
       return recuperar(p.chave, { erro: e });
     }
-    switch (o.status) {
-      case 'authorized':
-        return registrado(o.value, false, o);
-      case 'rejected':
+    switch (o.tipo) {
+      case 'autorizado':
+        return registrado(o.valor, false, o);
+      case 'recusado':
         return CODIGOS.eventoJaRegistrado.has(o.cStat) ? recuperar(p.chave, o) : eventoRecusado(o, o);
       default:
         return { tipo: 'pendente', motivo: 'consulta-indefinida', cStat: o.cStat, xMotivo: o.xMotivo, bruto: o };

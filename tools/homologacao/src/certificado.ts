@@ -14,7 +14,7 @@ import { readFileSync } from 'node:fs';
 import process from 'node:process';
 import type { A1KeyStore, CertificateInfo, ChainResult } from '@sinete/cert';
 import { buildChain, openPfx, parseCertificate, pemToDers } from '@sinete/cert';
-import { systemClock } from '@sinete/core';
+import { relogioDoSistema } from '@sinete/core';
 
 export interface OrigemCertificado {
   readonly op?: string;
@@ -77,11 +77,11 @@ export async function abrirCertificado(o: OrigemCertificado): Promise<Certificad
   } else {
     throw new Error('informe --op <referência> ou --pfx <arquivo>');
   }
-  const ks = await openPfx(pfx, { password: senha, clock: systemClock });
+  const ks = await openPfx(pfx, { password: senha, clock: relogioDoSistema });
   const extras = o.cadeia ? pemToDers(readFileSync(o.cadeia, 'utf8')).map((d) => parseCertificate(d)) : [];
   const cadeia = await buildChain(ks.certificate, {
     intermediates: [...ks.extraCertificates, ...extras],
-    clock: systemClock,
+    clock: relogioDoSistema,
   });
   return { ks, pfx, senha, cadeia, extras };
 }

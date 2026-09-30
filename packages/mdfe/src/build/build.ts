@@ -6,24 +6,24 @@
  * `Signature` por splice (ADR 0003) e nada mais toca nela.
  */
 
-import type { Ambiente, Signer, TimeContext, ValidationIssue } from '@sinete/core';
+import type { Ambiente, Assinador, ContextoDeTempo, Ocorrencia } from '@sinete/core';
 import {
-  ConfigError,
-  fixedClock,
+  ErroDeConfiguracao,
+  ErroDeValidacao,
+  ErroNaoSuportado,
+  ehUf,
   formatarVerProc,
-  isUf,
-  tpAmbOf,
-  UnsupportedError,
-  ufBySigla,
-  ValidationError,
+  relogioFixo,
+  tpAmbDoAmbiente,
+  ufPorSigla,
 } from '@sinete/core';
-import { base64Encode, firstChild, parseXml, SHA1_DIGEST_INFO_PREFIX, signXml } from '@sinete/core/xml';
+import { assinarXml, codificarBase64, lerXml, PREFIXO_DIGEST_INFO_SHA1, primeiroFilho } from '@sinete/core/xml';
 import type { ComplexType, VigenciaEntry } from '@sinete/schemas';
 import { SerializeError, selecionarPl, serialize, validate } from '@sinete/schemas';
 import type { TMDFe_infMDFe } from '@sinete/schemas/mdfe/3.00b';
 import { TMDFe_infMDFe as InfMDFe300b } from '@sinete/schemas/mdfe/3.00b';
 import type { ChaveAcesso } from '@sinete/validators';
-import { buildChaveAcesso, parseChaveAcesso, parseCnpj, parseCpf, parseIe } from '@sinete/validators';
+import { lerChaveAcesso, lerCnpj, lerCpf, lerIe, montarChaveAcesso } from '@sinete/validators';
 import emissao from '../data/emissao.json' with { type: 'json' };
 import qrcode from '../data/qrcode.json' with { type: 'json' };
 import regras from '../data/regras.json' with { type: 'json' };
@@ -57,7 +57,7 @@ const TOLERANCIA = Decimal.of('0.01');
 export interface BuildMdfeOptions {
   readonly ambiente: Ambiente;
   /** Relógio de emissão (dhEmi, schema vigente, regras com vigência). O MDF-e não usa o de fato gerador. */
-  readonly time: TimeContext;
+  readonly time: ContextoDeTempo;
   /** Fuso do emitente em minutos; padrão pela UF (`data/fusos.json`). */
   readonly offsetMinutes?: number;
   /** Versão do aplicativo emissor (`verProc`); padrão `sinete <versão do @sinete/mdfe>` (`formatarVerProc`). */
@@ -92,7 +92,7 @@ export interface BuiltMdfe {
 
 export type BuildMdfeResult =
   | { readonly ok: true; readonly value: BuiltMdfe }
-  | { readonly ok: false; readonly issues: readonly ValidationIssue[] };
+  | { readonly ok: false; readonly issues: readonly Ocorrencia[] };
 
 /** Descritor de `infMDFe` de cada módulo da família `mdfe` da tabela de vigências. */
 const INF_MDFE: Readonly<Record<string, ComplexType>> = { 'mdfe/3.00b': InfMDFe300b as ComplexType };
@@ -116,7 +116,7 @@ function randomBytes(b: Uint8Array): Uint8Array {
 }
 
 function cUFde(uf: string): string | undefined {
-  return isUf(uf) ? ufBySigla(uf)?.cUF : undefined;
+  return ehUf(uf) ? ufPorSigla(uf)?.cUF : undefined;
 }
 
 /** Regra com vigência (`data/regras.json`) em vigor no dia de Brasília da emissão. */
@@ -183,14 +183,14 @@ class Ctx {
     if (d === undefined) return undefined;
     const sufixo = regra === undefined ? '' : ` (${regra}, rejeição ${cStat})`;
     if (d.CNPJ !== undefined) {
-      const r = parseCnpj(d.CNPJ, { path: `${path}.CNPJ` });
-      if (!r.ok) this.issues.list.push({ ...r.error, message: `${r.error.message}${sufixo}` });
-      return { CNPJ: r.ok ? r.value : d.CNPJ };
+      const r = lerCnpj(d.CNPJ, { caminho: `${path}.CNPJ` });
+      if (!r.ok) this.issues.list.push({ ...r.erro, mensagem: `${r.erro.mensagem}${sufixo}` });
+      return { CNPJ: r.ok ? r.valor : d.CNPJ };
     }
     if (d.CPF !== undefined) {
-      const r = parseCpf(d.CPF, { path: `${path}.CPF` });
-      if (!r.ok) this.issues.list.push({ ...r.error, message: `${r.error.message}${sufixo}` });
-      return { CPF: r.ok ? r.value : d.CPF };
+      const r = lerCpf(d.CPF, { caminho: `${path}.CPF` });
+      if (!r.ok) this.issues.list.push({ ...r.erro, mensagem: `${r.erro.mensagem}${sufixo}` });
+      return { CPF: r.ok ? r.valor : d.CPF };
     }
     this.issues.add(path, 'campo_obrigatorio', 'informe o CNPJ ou o CPF');
     return undefined;
@@ -271,21 +271,21 @@ function documentos(
 ): void {
   const vistos = new Map<string, string>();
   for (const d of lista) {
-    const r = parseChaveAcesso(d.chave, { path: d.path });
-    if (!r.ok || r.value.mod !== tipo.mod) {
-      const motivo = r.ok ? `modelo ${r.value.mod} diferente de ${tipo.mod}` : r.error.message;
+    const r = lerChaveAcesso(d.chave, { caminho: d.path });
+    if (!r.ok || r.valor.mod !== tipo.mod) {
+      const motivo = r.ok ? `modelo ${r.valor.mod} diferente de ${tipo.mod}` : r.erro.mensagem;
       ctx.regra(d.path, 'chave_invalida', `chave de ${tipo.nome} inválida: ${motivo}`, ...tipo.regraChave);
       continue;
     }
-    if (r.value.ano * 100 + r.value.mes < aammMinimo) {
+    if (r.valor.ano * 100 + r.valor.mes < aammMinimo) {
       ctx.regra(
         d.path,
         'chave_invalida',
-        `chave de ${tipo.nome} de ${r.value.aamm.slice(2)}/${r.value.ano} é anterior a ${emissao.chaveAntiga.meses} meses da emissão`,
+        `chave de ${tipo.nome} de ${r.valor.aamm.slice(2)}/${r.valor.ano} é anterior a ${emissao.chaveAntiga.meses} meses da emissão`,
         ...tipo.regraAntiga,
       );
     }
-    const escopo = interestadual ? r.value.chave : `${d.municipio}:${r.value.chave}`;
+    const escopo = interestadual ? r.valor.chave : `${d.municipio}:${r.valor.chave}`;
     const anterior = vistos.get(escopo);
     if (anterior !== undefined) {
       ctx.regra(
@@ -375,9 +375,9 @@ function pagamento(ctx: Ctx, p: PagamentoFrete, path: string, dataEmissao: strin
   }
   let infBanc: Obj;
   if ('CNPJIPEF' in p.banco) {
-    const r = parseCnpj(p.banco.CNPJIPEF, { path: `${path}.banco.CNPJIPEF` });
+    const r = lerCnpj(p.banco.CNPJIPEF, { caminho: `${path}.banco.CNPJIPEF` });
     if (!r.ok) ctx.regra(`${path}.banco.CNPJIPEF`, 'documento_invalido', 'CNPJ da IPEF inválido', 'F57', '728');
-    infBanc = { CNPJIPEF: r.ok ? r.value : p.banco.CNPJIPEF };
+    infBanc = { CNPJIPEF: r.ok ? r.valor : p.banco.CNPJIPEF };
   } else if ('PIX' in p.banco) infBanc = { PIX: p.banco.PIX };
   else infBanc = { codBanco: p.banco.codBanco, codAgencia: p.banco.codAgencia };
   return clean({
@@ -407,7 +407,7 @@ export function pagamentosDoLeiaute(
   pagamentos: readonly PagamentoFrete[],
   dataReferencia: string,
   path = 'pagamentos',
-): { readonly infPag: readonly Record<string, unknown>[]; readonly issues: readonly ValidationIssue[] } {
+): { readonly infPag: readonly Record<string, unknown>[]; readonly issues: readonly Ocorrencia[] } {
   const ctx = new Ctx();
   const infPag = pagamentos.map((p, n) => pagamento(ctx, p, `${path}[${n}]`, dataReferencia));
   return { infPag, issues: ctx.issues.list };
@@ -441,23 +441,23 @@ export function buildMdfe(input: MdfeInput, options: BuildMdfeOptions): BuildMdf
   }
   const e = input.emitente;
   const emitUf = e.endereco.UF;
-  if (!isUf(emitUf)) {
+  if (!ehUf(emitUf)) {
     issues.add('emitente.endereco.UF', 'campo_invalido', 'UF do emitente inválida');
     return { ok: false, issues: issues.classificadas };
   }
   const cUF = cUFde(emitUf) as string;
   const offset = options.offsetMinutes ?? offsetDaUf(emitUf);
-  const agora = options.time.emissao.now();
+  const agora = options.time.emissao.agora();
   const dhEmi = formatDh(agora, offset);
   const dataEmissao = dataDe(agora, offset);
   const aamm = dhEmi.slice(2, 4) + dhEmi.slice(5, 7);
-  const tpAmb = tpAmbOf(options.ambiente);
+  const tpAmb = tpAmbDoAmbiente(options.ambiente);
 
   // Schema vigente (VigenciaError do schemas propaga: data fora de toda vigência é configuração, não dado).
-  const vigencia = selecionarPl('mdfe', options.ambiente, fixedClock(agora));
+  const vigencia = selecionarPl('mdfe', options.ambiente, relogioFixo(agora));
   const infCt = INF_MDFE[vigencia.modulo];
   if (infCt === undefined) {
-    throw new UnsupportedError(`@sinete/mdfe não conhece o módulo ${vigencia.modulo}; atualize o pacote`);
+    throw new ErroNaoSuportado(`@sinete/mdfe não conhece o módulo ${vigencia.modulo}; atualize o pacote`);
   }
 
   // Emitente (F67 a F73, F77)
@@ -496,8 +496,8 @@ export function buildMdfe(input: MdfeInput, options: BuildMdfeOptions): BuildMdf
   if (e.IE === undefined || e.IE.trim() === '') {
     ctx.regra('emitente.IE', 'campo_obrigatorio', 'IE do emitente obrigatória', 'F72', '229');
   } else {
-    const r = parseIe(e.IE, emitUf, { path: 'emitente.IE', allowIsento: false });
-    if (!r.ok) ctx.regra('emitente.IE', 'ie_invalida', r.error.message, 'F73', '209');
+    const r = lerIe(e.IE, emitUf, { caminho: 'emitente.IE', aceitarIsento: false });
+    if (!r.ok) ctx.regra('emitente.IE', 'ie_invalida', r.erro.mensagem, 'F73', '209');
     // Vai como informada (só sem máscara): a SEFAZ completa os zeros não significativos antes de conferir (F73).
     ie = digits(e.IE);
   }
@@ -534,10 +534,10 @@ export function buildMdfe(input: MdfeInput, options: BuildMdfeOptions): BuildMdf
   // Só com todos os componentes válidos: o buildChaveAcesso lança com série, número ou cMDF fora da forma, e o
   // buildMdfe devolve problema de entrada como ocorrência, nunca como exceção.
   const componentesOk =
-    serieValida && nMDFValido && issues.list.every((i) => !i.path.startsWith('emitente.C') && i.path !== 'cMDF');
+    serieValida && nMDFValido && issues.list.every((i) => !i.caminho.startsWith('emitente.C') && i.caminho !== 'cMDF');
   if (emitDoc !== undefined && componentesOk) {
     try {
-      chave = buildChaveAcesso({
+      chave = montarChaveAcesso({
         cUF,
         aamm,
         emitente: 'CNPJ' in emitDoc ? emitDoc.CNPJ : emitDoc.CPF,
@@ -548,18 +548,18 @@ export function buildMdfe(input: MdfeInput, options: BuildMdfeOptions): BuildMdf
         cNF: cMDF,
       });
     } catch (err) {
-      if (!(err instanceof ValidationError)) throw err;
+      if (!(err instanceof ErroDeValidacao)) throw err;
       issues.list.push(
-        ...err.issues.map((i) => ({ ...i, path: 'chave', code: 'chave_invalida', origem: 'montagem' as const })),
+        ...err.ocorrencias.map((i) => ({ ...i, path: 'chave', code: 'chave_invalida', origem: 'montagem' as const })),
       );
     }
     if (chave !== '') {
-      const r = parseChaveAcesso(chave, { path: 'chave' });
+      const r = lerChaveAcesso(chave, { caminho: 'chave' });
       if (!r.ok)
         issues.list.push({
-          ...r.error,
+          ...r.erro,
           code: 'chave_invalida',
-          message: `${r.error.message} (${r.error.code})`,
+          mensagem: `${r.erro.mensagem} (${r.erro.code})`,
           origem: 'montagem',
         });
     }
@@ -568,7 +568,7 @@ export function buildMdfe(input: MdfeInput, options: BuildMdfeOptions): BuildMdf
 
   // UFs, carregamento, descarregamento e percurso (F08 a F13, F90)
   const ufValida = (u: string, path: string): boolean => {
-    if (u === 'EX' || isUf(u)) return true;
+    if (u === 'EX' || ehUf(u)) return true;
     issues.add(path, 'campo_invalido', 'UF inválida');
     return false;
   };
@@ -609,7 +609,7 @@ export function buildMdfe(input: MdfeInput, options: BuildMdfeOptions): BuildMdf
     issues.add('percurso', 'campo_invalido', `no máximo ${emissao.percursoMaximo} UFs de percurso`);
   }
   for (const [n, u] of percurso.entries()) ufValida(u, `percurso[${n}]`);
-  if (okUfs && percurso.every((u) => u === 'EX' || isUf(u))) {
+  if (okUfs && percurso.every((u) => u === 'EX' || ehUf(u))) {
     const trecho = conferirPercurso(ufIni, percurso, ufFim);
     if (trecho !== undefined) {
       const sugestao =
@@ -716,8 +716,8 @@ export function buildMdfe(input: MdfeInput, options: BuildMdfeOptions): BuildMdf
     aammMinimo,
   );
   const lerChave = (ch: string): ChaveAcesso | undefined => {
-    const r = parseChaveAcesso(ch);
-    return r.ok ? r.value : undefined;
+    const r = lerChaveAcesso(ch);
+    return r.ok ? r.valor : undefined;
   };
   for (const d of nfes)
     segCodBarra(ctx, lerChave(d.x.chave), d.x.segCodBarra, `${d.path}.segCodBarra`, ['F41', '606', 'F42', '607']);
@@ -787,9 +787,9 @@ export function buildMdfe(input: MdfeInput, options: BuildMdfeOptions): BuildMdf
   const cpfsCondutor = new Set<string>();
   const condutor = tr.condutores.map((c, n) => {
     const path = `rodoviario.tracao.condutores[${n}].CPF`;
-    const r = parseCpf(c.CPF, { path });
+    const r = lerCpf(c.CPF, { caminho: path });
     if (!r.ok) ctx.regra(path, 'documento_invalido', 'CPF do condutor inválido', 'F100', '645');
-    const cpf = r.ok ? r.value : c.CPF;
+    const cpf = r.ok ? r.valor : c.CPF;
     if (cpfsCondutor.has(cpf)) ctx.regra(path, 'duplicado', 'condutor repetido', 'F99', '577');
     cpfsCondutor.add(cpf);
     return { xNome: c.xNome, CPF: cpf };
@@ -861,13 +861,13 @@ export function buildMdfe(input: MdfeInput, options: BuildMdfeOptions): BuildMdf
     valePed = clean({
       disp: vp.dispositivos.map((d, n) => {
         const path = `rodoviario.valePedagio.dispositivos[${n}]`;
-        const forn = parseCnpj(d.CNPJForn, { path: `${path}.CNPJForn` });
+        const forn = lerCnpj(d.CNPJForn, { caminho: `${path}.CNPJForn` });
         if (!forn.ok) ctx.regra(`${path}.CNPJForn`, 'documento_invalido', 'CNPJ da fornecedora inválido', 'F96', '732');
         const pg = ctx.doc(d.responsavel, `${path}.responsavel`, 'F98', '734');
         if (pg !== undefined) pagadorValePed = true;
         const v = ctx.req(d.vValePed, `${path}.vValePed`, D1302);
         return clean({
-          CNPJForn: forn.ok ? forn.value : d.CNPJForn,
+          CNPJForn: forn.ok ? forn.valor : d.CNPJForn,
           ...(pg === undefined ? {} : 'CNPJ' in pg ? { CNPJPg: pg.CNPJ } : { CPFPg: pg.CPF }),
           nCompra: d.nCompra,
           vValePed: formatDecimal(v, D1302),
@@ -1020,9 +1020,9 @@ export function buildMdfe(input: MdfeInput, options: BuildMdfeOptions): BuildMdf
         : ctx.doc(s.responsavel as DocumentoPessoa, `${path}.responsavel`);
     let infSeg: Obj | undefined;
     if (s.seguradora !== undefined) {
-      const r = parseCnpj(s.seguradora.CNPJ, { path: `${path}.seguradora.CNPJ` });
-      if (!r.ok) issues.list.push(r.error);
-      infSeg = { xSeg: s.seguradora.xSeg, CNPJ: r.ok ? r.value : s.seguradora.CNPJ };
+      const r = lerCnpj(s.seguradora.CNPJ, { caminho: `${path}.seguradora.CNPJ` });
+      if (!r.ok) issues.list.push(r.erro);
+      infSeg = { xSeg: s.seguradora.xSeg, CNPJ: r.ok ? r.valor : s.seguradora.CNPJ };
     }
     return clean({
       infResp: clean({ respSeg: s.responsavel.respSeg, ...resp }),
@@ -1077,10 +1077,10 @@ export function buildMdfe(input: MdfeInput, options: BuildMdfeOptions): BuildMdf
   const rt = input.respTec ?? options.respTec;
   let infRespTec: Obj | undefined;
   if (rt !== undefined) {
-    const r = parseCnpj(rt.CNPJ, { path: 'respTec.CNPJ' });
+    const r = lerCnpj(rt.CNPJ, { caminho: 'respTec.CNPJ' });
     if (!r.ok) ctx.regra('respTec.CNPJ', 'documento_invalido', 'CNPJ do responsável técnico inválido', 'F121', '713');
     infRespTec = clean({
-      CNPJ: r.ok ? r.value : rt.CNPJ,
+      CNPJ: r.ok ? r.valor : rt.CNPJ,
       xContato: rt.xContato,
       email: rt.email,
       fone: digits(rt.fone),
@@ -1145,17 +1145,17 @@ export function buildMdfe(input: MdfeInput, options: BuildMdfeOptions): BuildMdf
     xml = `<MDFe xmlns="${MDFE_NS}">${serialize(infCt, 'infMDFe', inf, MDFE_NS)}</MDFe>`;
   } catch (err) {
     if (!(err instanceof SerializeError)) throw err;
-    return { ok: false, issues: [{ path: err.path, code: 'schema', message: err.message, origem: 'montagem' }] };
+    return { ok: false, issues: [{ caminho: err.path, code: 'schema', mensagem: err.message, origem: 'montagem' }] };
   }
-  const infEl = firstChild(parseXml(xml).root, 'infMDFe', MDFE_NS);
+  const infEl = primeiroFilho(lerXml(xml).raiz, 'infMDFe', MDFE_NS);
   const schemaIssues = infEl === undefined ? [] : validate(infCt, infEl);
   if (schemaIssues.length > 0) {
     return {
       ok: false,
       issues: schemaIssues.map((i) => ({
-        path: i.path,
+        caminho: i.caminho,
         code: 'schema',
-        message: `${i.code}: ${i.message}`,
+        mensagem: `${i.code}: ${i.mensagem}`,
         origem: 'montagem',
       })),
     };
@@ -1186,14 +1186,14 @@ export function qrCodeMdfe(chave: string, tpAmb: '1' | '2', sign?: string): stri
 }
 
 /** `sign` do QR Code: RSA PKCS#1 v1.5 com SHA-1 sobre os 44 caracteres da chave, com o certificado que assina o MDF-e. */
-export async function assinaturaQrCode(chave: string, signer: Signer): Promise<string> {
+export async function assinaturaQrCode(chave: string, signer: Assinador): Promise<string> {
   const bytes = te.encode(chave);
-  if (signer.kind === 'data') return base64Encode(await signer.sign(bytes, 'SHA-1'));
+  if (signer.tipo === 'dados') return codificarBase64(await signer.assinar(bytes, 'SHA-1'));
   const h = new Uint8Array(await globalThis.crypto.subtle.digest('SHA-1', bytes));
-  const di = new Uint8Array(SHA1_DIGEST_INFO_PREFIX.length + h.length);
-  di.set(SHA1_DIGEST_INFO_PREFIX);
-  di.set(h, SHA1_DIGEST_INFO_PREFIX.length);
-  return base64Encode(await signer.signDigestInfo(di));
+  const di = new Uint8Array(PREFIXO_DIGEST_INFO_SHA1.length + h.length);
+  di.set(PREFIXO_DIGEST_INFO_SHA1);
+  di.set(h, PREFIXO_DIGEST_INFO_SHA1.length);
+  return codificarBase64(await signer.assinarDigestInfo(di));
 }
 
 const escapeXml = (s: string): string => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -1205,13 +1205,13 @@ const escapeXml = (s: string): string => s.replace(/&/g, '&amp;').replace(/</g, 
  */
 export function comQrCode(built: BuiltMdfe, sign?: string): string {
   if (built.tpEmis === '2' && sign === undefined) {
-    throw new ConfigError('MDF-e em contingência off-line precisa do sign no QR Code (F117, rejeição 482)');
+    throw new ErroDeConfiguracao('MDF-e em contingência off-line precisa do sign no QR Code (F117, rejeição 482)');
   }
   if (built.tpEmis === '1' && sign !== undefined) {
-    throw new ConfigError('MDF-e em emissão normal não leva sign no QR Code (F118, rejeição 488)');
+    throw new ErroDeConfiguracao('MDF-e em emissão normal não leva sign no QR Code (F118, rejeição 488)');
   }
   const fim = '</MDFe>';
-  if (!built.xml.endsWith(fim)) throw new ConfigError('MDF-e montado fora da forma esperada');
+  if (!built.xml.endsWith(fim)) throw new ErroDeConfiguracao('MDF-e montado fora da forma esperada');
   const supl = `<infMDFeSupl><qrCodMDFe>${escapeXml(qrCodeMdfe(built.chave, built.tpAmb, sign))}</qrCodMDFe></infMDFeSupl>`;
   return built.xml.slice(0, -fim.length) + supl + fim;
 }
@@ -1220,12 +1220,12 @@ export function comQrCode(built: BuiltMdfe, sign?: string): string {
  * Assina o MDF-e montado: QR Code (com `sign` em contingência) e `Signature` como último filho de `MDFe`, ambos por
  * splice, e devolve a string final. É essa string que vai para a SEFAZ e para o banco.
  */
-export async function signMdfe(built: BuiltMdfe, signer: Signer): Promise<string> {
+export async function signMdfe(built: BuiltMdfe, signer: Assinador): Promise<string> {
   const sign = built.tpEmis === '2' ? await assinaturaQrCode(built.chave, signer) : undefined;
-  return signXml(comQrCode(built, sign), { id: built.id }, signer);
+  return assinarXml(comQrCode(built, sign), { id: built.id }, signer);
 }
 
 /** Prazo para transmitir um MDF-e emitido em contingência off-line: 168 horas depois da emissão (Visão Geral, 11.1). */
 export function prazoContingencia(emitidoEm: Instante): Instante {
-  return fixedClock(emitidoEm.getTime() + emissao.contingencia.prazoTransmissaoHoras * 3_600_000).now();
+  return relogioFixo(emitidoEm.getTime() + emissao.contingencia.prazoTransmissaoHoras * 3_600_000).agora();
 }

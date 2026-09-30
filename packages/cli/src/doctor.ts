@@ -14,8 +14,8 @@ import { isIP } from 'node:net';
 import tls from 'node:tls';
 import type { A1KeyStore, ChainResult } from '@sinete/cert';
 import { buildChain, CertError, icpBrasilTlsPem, openPfx, parseCertificate, pemToDers } from '@sinete/cert';
-import type { Ambiente, Clock, Uf } from '@sinete/core';
-import { isSineteError, systemClock, tpAmbOf, ufBySigla } from '@sinete/core';
+import type { Ambiente, Relogio, Uf } from '@sinete/core';
+import { ehErroSinete, relogioDoSistema, tpAmbDoAmbiente, ufPorSigla } from '@sinete/core';
 import type { EndpointRef, Transport } from '@sinete/transport';
 import {
   classifyTransportFailure,
@@ -65,7 +65,7 @@ export interface DoctorOptions {
   /** URL HTTPS cujo `Date` serve de referência para o relógio. */
   readonly clockUrl?: string;
   readonly timeoutMs?: number;
-  readonly clock?: Clock;
+  readonly clock?: Relogio;
 }
 
 /** Máscara de CPF para a saída (o doctor costuma ir parar em issue e chat). */
@@ -180,12 +180,12 @@ function chainStatusCheck(
   }
 }
 
-async function openKeyStore(options: DoctorOptions, clock: Clock): Promise<[A1KeyStore | undefined, DoctorCheck]> {
+async function openKeyStore(options: DoctorOptions, clock: Relogio): Promise<[A1KeyStore | undefined, DoctorCheck]> {
   try {
     const ks = await openPfx(options.pfx, { password: options.password, clock, allowExpired: true });
     const c = ks.certificate;
     const id = ks.identity;
-    const now = clock.now().getTime();
+    const now = clock.agora().getTime();
     const daysLeft = Math.floor((c.notAfter - now) / DAY);
     const who =
       id.tipo === 'e-CNPJ' && id.cnpj
@@ -222,7 +222,7 @@ async function openKeyStore(options: DoctorOptions, clock: Clock): Promise<[A1Ke
     const status: CheckStatus = daysLeft < 30 ? 'aviso' : 'ok';
     return [ks, { id: 'pfx', status, message: `${base}, válido até ${c.notAfterIso} (${daysLeft} dias)`, details }];
   } catch (e) {
-    const code = isSineteError(e) ? e.code : 'desconhecido';
+    const code = ehErroSinete(e) ? e.code : 'desconhecido';
     const message = e instanceof CertError ? e.message : 'não foi possível abrir o PFX';
     return [undefined, { id: 'pfx', status: 'falha', message, details: { code } }];
   }
@@ -292,7 +292,7 @@ function handshake(
 
 function statusMessage(options: DoctorOptions): { body: string; action: string } | undefined {
   const ambiente = options.ambiente ?? 'homologacao';
-  const tpAmb = tpAmbOf(ambiente);
+  const tpAmb = tpAmbDoAmbiente(ambiente);
   if (options.documento === 'mdfe') {
     const ns = 'http://www.portalfiscal.inf.br/mdfe/wsdl/MDFeStatusServico';
     return {
@@ -301,7 +301,7 @@ function statusMessage(options: DoctorOptions): { body: string; action: string }
     };
   }
   if (options.documento === 'nfse' || !options.uf) return undefined;
-  const cUF = ufBySigla(options.uf)?.cUF;
+  const cUF = ufPorSigla(options.uf)?.cUF;
   const ns = 'http://www.portalfiscal.inf.br/nfe/wsdl/NFeStatusServico4';
   return {
     action: `${ns}/nfeStatusServicoNF`,
@@ -313,7 +313,7 @@ const pick = (xml: string, tag: string): string | undefined =>
   new RegExp(`<(?:\\w+:)?${tag}>([^<]*)</(?:\\w+:)?${tag}>`).exec(xml)?.[1];
 
 export async function runDoctor(options: DoctorOptions): Promise<DoctorReport> {
-  const clock = options.clock ?? systemClock;
+  const clock = options.clock ?? relogioDoSistema;
   const timeoutMs = options.timeoutMs ?? 30_000;
   const checks: DoctorCheck[] = [];
   const [ks, pfxCheck] = await openKeyStore(options, clock);
@@ -340,7 +340,7 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorReport> {
       const server = parseHttpDate(res.headers.get('date') ?? undefined);
       if (server === undefined)
         checks.push({ id: 'relogio', status: 'aviso', message: `${options.clockUrl} não mandou Date` });
-      else checks.push(clockCheck(clock.now().getTime() - server, new URL(options.clockUrl).host));
+      else checks.push(clockCheck(clock.agora().getTime() - server, new URL(options.clockUrl).host));
     } catch (e) {
       checks.push({
         id: 'relogio',
@@ -408,11 +408,11 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorReport> {
         });
         const server = parseHttpDate(res.headers.date);
         if (!clockDone && server !== undefined) {
-          checks.push(clockCheck(clock.now().getTime() - server, url.host));
+          checks.push(clockCheck(clock.agora().getTime() - server, url.host));
           clockDone = true;
         }
       } catch (e) {
-        const code = isSineteError(e) ? e.code : 'desconhecido';
+        const code = ehErroSinete(e) ? e.code : 'desconhecido';
         checks.push({ id: 'status', status: 'falha', message: (e as Error).message, details: { code } });
       } finally {
         await transport?.close();

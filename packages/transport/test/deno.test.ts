@@ -1,6 +1,6 @@
 /** Transporte do Deno com a API do Deno e o fetch injetados (a execução real está no laboratório TLS). */
 import { describe, expect, test } from 'bun:test';
-import { memoryLogger, TimeoutError, UnsupportedError } from '@sinete/core';
+import { ErroDeTempoEsgotado, ErroNaoSuportado, loggerEmMemoria } from '@sinete/core';
 import * as nodeEntry from '../src/index.node.ts';
 import type { DenoHttpApi, ExternalTlsHelper, TransportResponse } from '../src/index.ts';
 import {
@@ -61,7 +61,7 @@ describe('createDenoTransport', () => {
 
   test('recusa hosts que renegociam ou só têm CBC/DHE, antes do fetch', async () => {
     let calls = 0;
-    const logger = memoryLogger();
+    const logger = loggerEmMemoria();
     const t = createDenoTransport({
       identity,
       logger,
@@ -79,7 +79,7 @@ describe('createDenoTransport', () => {
     ]) {
       const e = await t.send({ url }).catch((x: unknown) => x);
       expect(e).toBeInstanceOf(TransportUnsupportedError);
-      expect(e).toBeInstanceOf(UnsupportedError);
+      expect(e).toBeInstanceOf(ErroNaoSuportado);
       expect((e as TransportUnsupportedError).code).toBe('nao_suportado');
       expect((e as TransportUnsupportedError).reasons.length).toBeGreaterThan(0);
     }
@@ -115,7 +115,7 @@ describe('createDenoTransport', () => {
     const base = 'https://nfe-homologacao.svrs.rs.gov.br';
     await expect(t.send({ url: `${base}/403` })).rejects.toMatchObject({ code: 'certificado_ausente_ou_recusado' });
     await expect(t.send({ url: `${base}/erro` })).rejects.toMatchObject({ code: 'cadeia_servidor_nao_confiavel' });
-    await expect(t.send({ url: `${base}/lento` })).rejects.toBeInstanceOf(TimeoutError);
+    await expect(t.send({ url: `${base}/lento` })).rejects.toBeInstanceOf(ErroDeTempoEsgotado);
     const ac = new AbortController();
     setTimeout(() => ac.abort(), 10);
     await expect(t.send({ url: `${base}/lento`, signal: ac.signal, timeoutMs: 5000 })).rejects.toMatchObject({
@@ -157,7 +157,7 @@ describe('createDenoTransport', () => {
   });
 
   test('sem Deno na runtime', () => {
-    expect(() => createDenoTransport({ identity })).toThrow(UnsupportedError);
+    expect(() => createDenoTransport({ identity })).toThrow(ErroNaoSuportado);
   });
 });
 

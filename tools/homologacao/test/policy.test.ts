@@ -3,7 +3,7 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { openPfx } from '@sinete/cert';
-import { fixedClock } from '@sinete/core';
+import { relogioFixo } from '@sinete/core';
 import type { HostPolicy, PolicyRequest } from '@sinete/transport';
 import {
   allEndpoints,
@@ -105,7 +105,7 @@ describe('homologacaoPolicy', () => {
     const pfx = new Uint8Array(
       readFileSync(join(import.meta.dir, '../../../packages/cert/test/fixtures/ecnpj-aes.pfx')),
     );
-    const ks = await openPfx(pfx, { password: 'sinete-teste', clock: fixedClock('2026-09-25T12:00:00Z') });
+    const ks = await openPfx(pfx, { password: 'sinete-teste', clock: relogioFixo('2026-09-25T12:00:00Z') });
     const eventos: unknown[] = [];
     const t = createTransport({
       identity: pemIdentity(ks),

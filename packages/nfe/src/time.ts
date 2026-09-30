@@ -3,12 +3,12 @@
  * tabela `data/fusos.json` pela UF, ou do chamador; nunca do fuso da máquina.
  */
 
-import type { Clock, Uf } from '@sinete/core';
-import { formatDateTimeOffset } from '@sinete/core';
+import type { Relogio, Uf } from '@sinete/core';
+import { formatarDataHoraComFuso } from '@sinete/core';
 import fusos from './data/fusos.json' with { type: 'json' };
 
 /** Instante no tempo, como os relógios do `@sinete/core` o devolvem (o tipo `Date`, sem tocar no global). */
-export type Instante = ReturnType<Clock['now']>;
+export type Instante = ReturnType<Relogio['agora']>;
 
 const UF_OFFSETS: Readonly<Record<string, number>> = fusos.ufs;
 
@@ -19,5 +19,5 @@ export function offsetDaUf(uf: Uf): number {
 
 /** `TDateTimeUTC` do instante no deslocamento dado. */
 export function formatDh(date: Instante, offsetMinutes: number): string {
-  return formatDateTimeOffset(date, offsetMinutes);
+  return formatarDataHoraComFuso(date, offsetMinutes);
 }

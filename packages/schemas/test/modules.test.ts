@@ -164,9 +164,9 @@ describe('módulos gerados', () => {
     } as unknown as canc.TEnvEvento;
     const xml = serializeRoot(canc.envEventoElement, env);
     // Sem Signature o evento está incompleto; o detEvento em si está conforme o e110111.
-    expect(validateRoot(canc.envEventoElement, xml).map((i) => i.path)).toEqual(['/envEvento/evento']);
+    expect(validateRoot(canc.envEventoElement, xml).map((i) => i.caminho)).toEqual(['/envEvento/evento']);
     const bad = xml.replace('<descEvento>Cancelamento</descEvento>', '<descEvento>Outro</descEvento>');
-    expect(validateRoot(canc.envEventoElement, bad).map((i) => `${i.code} ${i.path}`)).toContain(
+    expect(validateRoot(canc.envEventoElement, bad).map((i) => `${i.code} ${i.caminho}`)).toContain(
       'enumeracao /envEvento/evento/infEvento/detEvento/descEvento',
     );
     expect(validateRoot(cce.envEventoElement, xml).map((i) => i.code)).toContain('modelo_de_conteudo');

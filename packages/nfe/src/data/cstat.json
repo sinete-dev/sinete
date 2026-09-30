@@ -23,14 +23,14 @@
   "consumoIndevido": ["656"],
   "dicas": {
     "656": {
-      "probableCause": "Consumo indevido: consultas repetidas à Distribuição DF-e sem documento novo (ultNSU igual a maxNSU) ou acima do limite de requisições por hora.",
-      "suggestedFix": "Aguardar uma hora antes de consultar de novo e só repetir a consulta quando ultNSU for menor que maxNSU; guardar o ultNSU devolvido e continuar dele.",
-      "source": "NT 2014.002 v1.02 (Distribuição DF-e), regras de consumo indevido"
+      "causaProvavel": "Consumo indevido: consultas repetidas à Distribuição DF-e sem documento novo (ultNSU igual a maxNSU) ou acima do limite de requisições por hora.",
+      "comoCorrigir": "Aguardar uma hora antes de consultar de novo e só repetir a consulta quando ultNSU for menor que maxNSU; guardar o ultNSU devolvido e continuar dele.",
+      "fonte": "NT 2014.002 v1.02 (Distribuição DF-e), regras de consumo indevido"
     },
     "217": {
-      "probableCause": "A chave consultada não consta na base do autorizador consultado: a nota não foi recebida, ou foi autorizada em outro ambiente ou autorizador (SVC).",
-      "suggestedFix": "Se o envio ficou sem resposta, reenviar exatamente o mesmo XML assinado; se foi emitida em contingência SVC, consultar no SVC.",
-      "source": "MOC 7.0 Anexo I, serviço de consulta protocolo"
+      "causaProvavel": "A chave consultada não consta na base do autorizador consultado: a nota não foi recebida, ou foi autorizada em outro ambiente ou autorizador (SVC).",
+      "comoCorrigir": "Se o envio ficou sem resposta, reenviar exatamente o mesmo XML assinado; se foi emitida em contingência SVC, consultar no SVC.",
+      "fonte": "MOC 7.0 Anexo I, serviço de consulta protocolo"
     }
   }
 }

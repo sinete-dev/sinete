@@ -4,8 +4,8 @@
  * bytes), não chegou, E0014 e divergente, substituição e cancelamento com recuperação pelos eventos da NFS-e.
  */
 import { afterEach, beforeAll, describe, expect, test } from 'bun:test';
-import type { ManualClock } from '@sinete/core';
-import { manualClock, ValidationError } from '@sinete/core';
+import type { RelogioManual } from '@sinete/core';
+import { ErroDeValidacao, relogioManual } from '@sinete/core';
 import * as danfse from '@sinete/da/nfse';
 import type { NfseSim, SimServer } from '@sinete/sefaz-sim';
 import { createNfseSim, redirectNfseToSim, startSimServer, syntheticPfx } from '@sinete/sefaz-sim';
@@ -34,7 +34,7 @@ afterEach(async () => {
 });
 
 interface Cenario {
-  readonly clock: ManualClock;
+  readonly clock: RelogioManual;
   readonly sim: NfseSim;
   readonly server: SimServer;
   readonly banco: BancoMemoria;
@@ -47,7 +47,7 @@ interface Cenario {
 
 /** `depois` roda depois de cada resposta; lançar aqui simula a falha depois do envio. */
 async function cenario(extra: Partial<NfseEmissorOptions> = {}, depois?: (caminho: string) => void): Promise<Cenario> {
-  const clock = manualClock(EMISSAO);
+  const clock = relogioManual(EMISSAO);
   const sim = createNfseSim({ clock, signer: c.servidor.signer, municipios: MUNICIPIOS });
   const caminhos: string[] = [];
   const server = await startSimServer(
@@ -263,7 +263,7 @@ describe('createNfseEmissor contra a NFS-e simulada, HTTPS com mTLS', () => {
     expect([retomada?.tipo, retomada?.tipo === 'divergente' && retomada.cStat]).toEqual(['divergente', undefined]);
 
     const invalida = await s.emissor.emitir('c', dps({ nDPS: '8', valores: { vServ: '1.001' } })).catch((e) => e);
-    expect(invalida).toBeInstanceOf(ValidationError);
+    expect(invalida).toBeInstanceOf(ErroDeValidacao);
   });
 
   test('cancelamento sem resposta: o evento vem da consulta de eventos; sem ele, pendente', async () => {

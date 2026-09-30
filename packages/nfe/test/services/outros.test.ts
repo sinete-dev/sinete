@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-import { ConfigError, ProtocolError, UnsupportedError, ValidationError } from '@sinete/core';
-import { parseXml, signXml, verifySignature } from '@sinete/core/xml';
+import { ErroDeConfiguracao, ErroDeValidacao, ErroNaoSuportado, ErroRespostaInvalida } from '@sinete/core';
+import { assinarXml, conferirAssinatura, lerXml } from '@sinete/core/xml';
 import { nfceEndpoint, nfeEndpoint } from '@sinete/transport';
 import { documentoAssinado, gunzipBase64, sliceElement } from '../../src/services/index.ts';
 import {
@@ -43,8 +43,8 @@ describe('inutilizar', () => {
       nNFFin: 12,
       xJust: 'Quebra de sequência na emissão',
     });
-    expect(r.status).toBe('authorized');
-    if (r.status !== 'authorized') return;
+    expect(r.tipo).toBe('autorizado');
+    if (r.tipo !== 'autorizado') return;
     const id = `ID3526${CNPJ_EMIT}55001000000010000000012`;
     expect(id).toHaveLength(43);
     const msg = mensagem(t.requests[0] as never);
@@ -53,14 +53,14 @@ describe('inutilizar', () => {
         `<inutNFe xmlns="${NFE_NS}" versao="4.00"><infInut Id="${id}"><tpAmb>2</tpAmb><xServ>INUTILIZAR</xServ><cUF>35</cUF><ano>26</ano><CNPJ>${CNPJ_EMIT}</CNPJ><mod>55</mod><serie>1</serie><nNFIni>10</nNFIni><nNFFin>12</nNFFin>`,
       ),
     ).toBe(true);
-    expect((await verifySignature(msg, { id, element: 'infInut' })).ok).toBe(true);
+    expect((await conferirAssinatura(msg, { id, elemento: 'infInut' })).ok).toBe(true);
     expect(t.requests[0]?.url).toBe(nfeEndpoint({ ambiente: 'homologacao', servico: 'NfeInutilizacao', uf: 'SP' }).url);
-    expect(r.value.nProt).toBe('135260000000003');
-    expect(r.value.procInutNFe).toBe(
+    expect(r.valor.nProt).toBe('135260000000003');
+    expect(r.valor.procInutNFe).toBe(
       // O retInutNFe declara o próprio xmlns na resposta: a fatia o mantém, como veio.
-      `<ProcInutNFe xmlns="${NFE_NS}" versao="4.00">${msg}${r.value.retInutNFe}</ProcInutNFe>`,
+      `<ProcInutNFe xmlns="${NFE_NS}" versao="4.00">${msg}${r.valor.retInutNFe}</ProcInutNFe>`,
     );
-    expect(r.value.retInutNFe.startsWith(`<retInutNFe xmlns="${NFE_NS}" versao="4.00">`)).toBe(true);
+    expect(r.valor.retInutNFe.startsWith(`<retInutNFe xmlns="${NFE_NS}" versao="4.00">`)).toBe(true);
   });
 
   test('NFC-e (modelo 65): vai ao endpoint da NFC-e dado nas opções; sem ele, à tabela da NFC-e', async () => {
@@ -95,7 +95,7 @@ describe('inutilizar', () => {
     const { c } = await client(t, { autor: { CNPJ: CNPJ_EMIT } });
     await expect(
       c.inutilizar({ ano: 2026, serie: 1, nNFIni: 10, nNFFin: 12, xJust: 'Quebra de sequência na emissão' }),
-    ).rejects.toBeInstanceOf(ProtocolError);
+    ).rejects.toBeInstanceOf(ErroRespostaInvalida);
   });
 
   test('cliente em contingência SVC (MT, SVC-RS) inutiliza no autorizador normal da UF', async () => {
@@ -110,11 +110,11 @@ describe('inutilizar', () => {
     const { c } = await client(t);
     const pedido = { ano: '26', nNFIni: '1', nNFFin: '1', xJust: 'Quebra de sequência na emissão' };
     const cpf = await c.inutilizar({ ...pedido, serie: '920', autor: { CPF: CPF_EMIT } }).catch((e: unknown) => e);
-    expect(cpf).toBeInstanceOf(ValidationError);
-    expect((cpf as ValidationError).issues.map((i) => i.code)).toEqual(['inutilizacao_emitente_cpf']);
+    expect(cpf).toBeInstanceOf(ErroDeValidacao);
+    expect((cpf as ErroDeValidacao).ocorrencias.map((i) => i.code)).toEqual(['inutilizacao_emitente_cpf']);
     for (const serie of ['910', '969']) {
       const e = await c.inutilizar({ ...pedido, serie, autor: { CNPJ: CNPJ_EMIT } }).catch((x: unknown) => x);
-      expect((e as ValidationError).issues.map((i) => i.code)).toEqual(['inutilizacao_serie_cpf']);
+      expect((e as ErroDeValidacao).ocorrencias.map((i) => i.code)).toEqual(['inutilizacao_serie_cpf']);
     }
     expect(t.requests).toHaveLength(0);
   });
@@ -125,11 +125,11 @@ describe('inutilizar', () => {
     const ok = { ano: 26, serie: 1, nNFIni: 10, nNFFin: 12, xJust: 'Quebra de sequência na emissão' };
     expect((await c.inutilizar(ok)).cStat).toBe('241');
     for (const bad of [{ ano: 202 }, { serie: 1000 }, { nNFIni: 0 }, { nNFFin: '1234567890' }, { nNFIni: 20 }]) {
-      await expect(c.inutilizar({ ...ok, ...bad })).rejects.toBeInstanceOf(ConfigError);
+      await expect(c.inutilizar({ ...ok, ...bad })).rejects.toBeInstanceOf(ErroDeConfiguracao);
     }
-    await expect(c.inutilizar({ ...ok, xJust: 'curta' })).rejects.toBeInstanceOf(ValidationError);
+    await expect(c.inutilizar({ ...ok, xJust: 'curta' })).rejects.toBeInstanceOf(ErroDeValidacao);
     const { c: semAutor } = await client(fakeTransport());
-    await expect(semAutor.inutilizar(ok)).rejects.toBeInstanceOf(ConfigError);
+    await expect(semAutor.inutilizar(ok)).rejects.toBeInstanceOf(ErroDeConfiguracao);
   });
 });
 
@@ -145,10 +145,10 @@ describe('consultarCadastro', () => {
     const t = fakeTransport(ret('111', infCad));
     const { c } = await client(t, { contingencia: 'svc' });
     const r = await c.consultarCadastro({ uf: 'MT', CNPJ: CNPJ_DEST });
-    expect(r.status).toBe('authorized');
-    if (r.status !== 'authorized') return;
-    expect(r.value.UF).toBe('MT');
-    expect(r.value.infCad[0]?.xNome).toBe('EMPRESA SINTETICA LTDA');
+    expect(r.tipo).toBe('autorizado');
+    if (r.tipo !== 'autorizado') return;
+    expect(r.valor.UF).toBe('MT');
+    expect(r.valor.infCad[0]?.xNome).toBe('EMPRESA SINTETICA LTDA');
     expect(t.requests[0]?.url).toBe(
       nfeEndpoint({ ambiente: 'homologacao', servico: 'NfeConsultaCadastro', uf: 'MT' }).url,
     );
@@ -176,8 +176,8 @@ describe('consultarCadastro', () => {
     const mg = `<?xml version='1.0' encoding='UTF-8'?><S:Envelope xmlns:S="http://www.w3.org/2003/05/soap-envelope"><S:Body><consultaCadastro4Result xmlns="http://www.portalfiscal.inf.br/nfe/wsdl/CadConsultaCadastro4"><retConsCad xmlns:ns2="${NFE_NS}" versao="2.00"><infCons xmlns="${NFE_NS}"><verAplic>MG</verAplic><cStat>111</cStat><xMotivo>Consulta cadastro com uma ocorrência</xMotivo><UF>MG</UF><CNPJ>${CNPJ_DEST}</CNPJ><dhCons>2026-09-28T15:55:17-03:00</dhCons><cUF>31</cUF><infCad><IE>123456789</IE><CNPJ>${CNPJ_DEST}</CNPJ><UF>MG</UF><cSit>1</cSit><indCredNFe>1</indCredNFe><indCredCTe>4</indCredCTe><xNome>EMPRESA SINTETICA LTDA</xNome></infCad></infCons></retConsCad></consultaCadastro4Result></S:Body></S:Envelope>`;
     const { c } = await client(fakeTransport(mg));
     const r = await c.consultarCadastro({ uf: 'MG', CNPJ: CNPJ_DEST });
-    expect(r.status).toBe('authorized');
-    expect(r.status === 'authorized' && r.value.infCad[0]?.xNome).toBe('EMPRESA SINTETICA LTDA');
+    expect(r.tipo).toBe('autorizado');
+    expect(r.tipo === 'autorizado' && r.valor.infCad[0]?.xNome).toBe('EMPRESA SINTETICA LTDA');
   });
 
   test('retConsCad fora do namespace com filhos também fora continua recusado', async () => {
@@ -195,9 +195,9 @@ describe('consultarCadastro', () => {
     const t = fakeTransport(ret('112'), ret('259'));
     const { c } = await client(t);
     const r = await c.consultarCadastro({ uf: 'MT', CPF: CPF_EMIT });
-    expect(r.status === 'authorized' && r.value.infCad).toEqual([]);
+    expect(r.tipo === 'autorizado' && r.valor.infCad).toEqual([]);
     expect(mensagem(t.requests[0] as never)).toContain(`<CPF>${CPF_EMIT}</CPF>`);
-    expect((await c.consultarCadastro({ uf: 'MT', IE: '12.345.678-9' })).status).toBe('rejected');
+    expect((await c.consultarCadastro({ uf: 'MT', IE: '12.345.678-9' })).tipo).toBe('recusado');
     expect(mensagem(t.requests[1] as never)).toContain('<IE>123456789</IE>');
   });
 });
@@ -229,14 +229,14 @@ describe('distribuicaoDFe', () => {
     const t = fakeTransport(ret('138', lote));
     const { c } = await client(t, { autor: { CNPJ: CNPJ_DEST } });
     const r = await c.distribuicaoDFe({ ultNSU: 8 });
-    expect(r.status).toBe('authorized');
-    if (r.status !== 'authorized') return;
-    expect(r.value.ultNSU).toBe('000000000000012');
-    expect(r.value.maxNSU).toBe('000000000000020');
-    expect(r.value.documentos.map((d) => d.tipo)).toEqual(['resNFe', 'resEvento', 'procNFe', 'procEventoNFe', 'outro']);
-    expect(r.value.documentos.map((d) => d.xml)).toEqual(docs.map((d) => d[2]));
-    expect(r.value.documentos[0]?.resNFe?.vNF).toBe('150.00');
-    expect(r.value.documentos[1]?.resEvento?.tpEvento).toBe('110111');
+    expect(r.tipo).toBe('autorizado');
+    if (r.tipo !== 'autorizado') return;
+    expect(r.valor.ultNSU).toBe('000000000000012');
+    expect(r.valor.maxNSU).toBe('000000000000020');
+    expect(r.valor.documentos.map((d) => d.tipo)).toEqual(['resNFe', 'resEvento', 'procNFe', 'procEventoNFe', 'outro']);
+    expect(r.valor.documentos.map((d) => d.xml)).toEqual(docs.map((d) => d[2]));
+    expect(r.valor.documentos[0]?.resNFe?.vNF).toBe('150.00');
+    expect(r.valor.documentos[1]?.resEvento?.tpEvento).toBe('110111');
     const req = t.requests[0];
     expect(req?.url).toBe(nfeEndpoint({ ambiente: 'homologacao', servico: 'NFeDistribuicaoDFe' }).url);
     expect(req?.headers['content-type']).toContain(
@@ -252,7 +252,7 @@ describe('distribuicaoDFe', () => {
     const t = fakeTransport(ret('137', '', 'Nenhum documento localizado'), ret('137'));
     const { c } = await client(t);
     const r = await c.distribuicaoDFe({ NSU: '5' }, { autor: { CPF: CPF_EMIT }, cUFAutor: '51' });
-    expect(r.status === 'authorized' && r.value.documentos).toEqual([]);
+    expect(r.tipo === 'autorizado' && r.valor.documentos).toEqual([]);
     expect(mensagem(t.requests[0] as never)).toContain(
       `<cUFAutor>51</cUFAutor><CPF>${CPF_EMIT}</CPF><consNSU><NSU>000000000000005</NSU></consNSU>`,
     );
@@ -264,11 +264,11 @@ describe('distribuicaoDFe', () => {
     const t = fakeTransport(ret('656', '', 'Rejeição: Consumo Indevido'));
     const { c } = await client(t, { autor: { CNPJ: CNPJ_DEST } });
     const r = await c.distribuicaoDFe({ ultNSU: '0' });
-    expect(r.status).toBe('rejected');
-    if (r.status === 'rejected') expect(`${r.hint?.suggestedFix}`).toMatch(/hora/);
-    await expect(c.distribuicaoDFe({ ultNSU: 'x' })).rejects.toBeInstanceOf(ConfigError);
-    await expect(c.distribuicaoDFe({ ultNSU: 1 }, { cUFAutor: '99' })).rejects.toBeInstanceOf(ConfigError);
-    await expect(c.distribuicaoDFe({ chNFe: '1' })).rejects.toBeInstanceOf(ValidationError);
+    expect(r.tipo).toBe('recusado');
+    if (r.tipo === 'recusado') expect(`${r.dica?.comoCorrigir}`).toMatch(/hora/);
+    await expect(c.distribuicaoDFe({ ultNSU: 'x' })).rejects.toBeInstanceOf(ErroDeConfiguracao);
+    await expect(c.distribuicaoDFe({ ultNSU: 1 }, { cUFAutor: '99' })).rejects.toBeInstanceOf(ErroDeConfiguracao);
+    await expect(c.distribuicaoDFe({ chNFe: '1' })).rejects.toBeInstanceOf(ErroDeValidacao);
   });
 });
 
@@ -276,8 +276,8 @@ describe('gunzipBase64', () => {
   test('ida e volta com CompressionStream; base64 inválido e gzip inválido são ProtocolError', async () => {
     const texto = '<resNFe>ação ✓</resNFe>';
     expect(await gunzipBase64(await gzipBase64(texto))).toBe(texto);
-    await expect(gunzipBase64('***')).rejects.toBeInstanceOf(ProtocolError);
-    await expect(gunzipBase64(btoa('nao e gzip'))).rejects.toBeInstanceOf(ProtocolError);
+    await expect(gunzipBase64('***')).rejects.toBeInstanceOf(ErroRespostaInvalida);
+    await expect(gunzipBase64(btoa('nao e gzip'))).rejects.toBeInstanceOf(ErroRespostaInvalida);
   });
 
   test('sem DecompressionStream é UnsupportedError', async () => {
@@ -285,7 +285,7 @@ describe('gunzipBase64', () => {
     try {
       // @ts-expect-error simulando runtime sem a API
       globalThis.DecompressionStream = undefined;
-      await expect(gunzipBase64('AAAA')).rejects.toBeInstanceOf(UnsupportedError);
+      await expect(gunzipBase64('AAAA')).rejects.toBeInstanceOf(ErroNaoSuportado);
     } finally {
       globalThis.DecompressionStream = original;
     }
@@ -297,8 +297,12 @@ describe('respostas SOAP defeituosas', () => {
     const fault = `<soap:Envelope xmlns:soap="${SOAP12}"><soap:Body><soap:Fault><soap:Code><soap:Value>soap:Receiver</soap:Value></soap:Code><soap:Reason><soap:Text xml:lang="pt">Erro interno</soap:Text></soap:Reason></soap:Fault></soap:Body></soap:Envelope>`;
     const { c } = await client(fakeTransport({ status: 500, body: fault }));
     const e = await c.statusServico().catch((x: unknown) => x);
-    expect(e).toBeInstanceOf(ProtocolError);
-    expect((e as ProtocolError).details).toMatchObject({ status: 500, code: 'soap:Receiver', reason: 'Erro interno' });
+    expect(e).toBeInstanceOf(ErroRespostaInvalida);
+    expect((e as ErroRespostaInvalida).detalhes).toMatchObject({
+      status: 500,
+      code: 'soap:Receiver',
+      reason: 'Erro interno',
+    });
   });
 
   test('HTML, retorno ausente e retorno sem cStat', async () => {
@@ -309,17 +313,17 @@ describe('respostas SOAP defeituosas', () => {
         soap(`<retConsStatServ xmlns="${NFE_NS}" versao="4.00"><tpAmb>2</tpAmb></retConsStatServ>`),
       ),
     );
-    for (let i = 0; i < 3; i++) await expect(c.statusServico()).rejects.toBeInstanceOf(ProtocolError);
+    for (let i = 0; i < 3; i++) await expect(c.statusServico()).rejects.toBeInstanceOf(ErroRespostaInvalida);
   });
 });
 
 describe('proc: fatias e documento assinado', () => {
   test('sliceElement injeta os prefixos usados que vêm de ancestrais e o default quando difere', () => {
     const src = `<a:raiz xmlns:a="urn:a" xmlns:b="urn:b" xmlns="urn:d"><a:x b:attr="1"><y/><c:z xmlns:c="urn:c"/></a:x><w/></a:raiz>`;
-    const doc = parseXml(src);
-    const x = doc.root.children.find((n) => n.type === 'element' && n.local === 'x');
-    const w = doc.root.children.find((n) => n.type === 'element' && n.local === 'w');
-    if (x?.type !== 'element' || w?.type !== 'element') throw new Error('árvore');
+    const doc = lerXml(src);
+    const x = doc.raiz.filhos.find((n) => n.tipo === 'elemento' && n.local === 'x');
+    const w = doc.raiz.filhos.find((n) => n.tipo === 'elemento' && n.local === 'w');
+    if (x?.tipo !== 'elemento' || w?.tipo !== 'elemento') throw new Error('árvore');
     expect(sliceElement(doc, x)).toBe(
       '<a:x xmlns="urn:d" xmlns:a="urn:a" xmlns:b="urn:b" b:attr="1"><y/><c:z xmlns:c="urn:c"/></a:x>',
     );
@@ -327,14 +331,14 @@ describe('proc: fatias e documento assinado', () => {
     expect(sliceElement(doc, x, 'urn:d')).toBe(
       '<a:x xmlns:a="urn:a" xmlns:b="urn:b" b:attr="1"><y/><c:z xmlns:c="urn:c"/></a:x>',
     );
-    const cobertos = parseXml('<r xmlns="urn:d"><n:p xmlns:n="urn:n"><q xmlns="urn:q"/></n:p></r>');
-    const pp = cobertos.root.children[0];
-    if (pp?.type !== 'element') throw new Error('árvore');
+    const cobertos = lerXml('<r xmlns="urn:d"><n:p xmlns:n="urn:n"><q xmlns="urn:q"/></n:p></r>');
+    const pp = cobertos.raiz.filhos[0];
+    if (pp?.tipo !== 'elemento') throw new Error('árvore');
     expect(sliceElement(cobertos, pp, '')).toBe('<n:p xmlns:n="urn:n"><q xmlns="urn:q"/></n:p>');
     // Prefixo declarado num ancestral e redeclarado dentro do recorte: nada entra na raiz da fatia.
-    const redeclarado = parseXml('<r xmlns:p="urn:p"><x><p:y xmlns:p="urn:p"/></x></r>');
-    const rx = redeclarado.root.children[0];
-    if (rx?.type !== 'element') throw new Error('árvore');
+    const redeclarado = lerXml('<r xmlns:p="urn:p"><x><p:y xmlns:p="urn:p"/></x></r>');
+    const rx = redeclarado.raiz.filhos[0];
+    if (rx?.tipo !== 'elemento') throw new Error('árvore');
     expect(sliceElement(redeclarado, rx, '')).toBe('<x><p:y xmlns:p="urn:p"/></x>');
     expect(sliceElement(doc, w)).toBe('<w xmlns="urn:d"/>');
     expect(sliceElement(doc, w, 'urn:d')).toBe('<w/>');
@@ -347,14 +351,14 @@ describe('proc: fatias e documento assinado', () => {
     expect(a.id).toBe(`NFe${ch}`);
     expect(a.xml).toBe(nfe);
     expect(a.digestValue).toMatch(/^[A-Za-z0-9+/=]+$/);
-    expect(() => documentoAssinado('<NFe', 'NFe', 'infNFe')).toThrow(ConfigError);
+    expect(() => documentoAssinado('<NFe', 'NFe', 'infNFe')).toThrow(ErroDeConfiguracao);
   });
 
   test('raiz assinada com prefixo e sem o default da NF-e é recusada: o envelope mudaria o C14N', async () => {
     const ch = chave();
     const xml = `<n:NFe xmlns:n="${NFE_NS}"><n:infNFe Id="NFe${ch}" versao="4.00"><n:ide/></n:infNFe></n:NFe>`;
-    const assinado = await signXml(xml, { id: `NFe${ch}` }, await testSigner());
-    expect((await verifySignature(assinado, { id: `NFe${ch}` })).ok).toBe(true);
+    const assinado = await assinarXml(xml, { id: `NFe${ch}` }, await testSigner());
+    expect((await conferirAssinatura(assinado, { id: `NFe${ch}` })).ok).toBe(true);
     expect(() => documentoAssinado(assinado, 'NFe', 'infNFe')).toThrow(/xmlns=/);
   });
 });

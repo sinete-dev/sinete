@@ -4,7 +4,7 @@
  * e dígito verificador (MOC 7.0, Anexo II, 3.9.2).
  */
 
-import { ufBySigla } from '@sinete/core';
+import { ufPorSigla } from '@sinete/core';
 import { positivo } from '../format.ts';
 import type { NotaView } from '../input/nfe.ts';
 
@@ -30,7 +30,7 @@ export function dadosNfe(nota: NotaView): string {
   const cUF = exterior
     ? '99'
     : d?.ender?.UF
-      ? (ufBySigla(d.ender.UF)?.cUF ?? nota.chave.slice(0, 2))
+      ? (ufPorSigla(d.ender.UF)?.cUF ?? nota.chave.slice(0, 2))
       : nota.chave.slice(0, 2);
   // CNPJ alfanumérico mantém as letras: o MOC fixa 14 posições e a NT 2025.001 não trata do FS-DA; o código de barras
   // sai no híbrido C/A e o DV segue a regra ASCII - 48, como na chave.

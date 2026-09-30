@@ -4,9 +4,15 @@
  * inventado, nunca um CSC real.
  */
 import { describe, expect, test } from 'bun:test';
-import type { ValidationIssue } from '@sinete/core';
-import { fixedClock, timeContext } from '@sinete/core';
-import { base64Decode, firstChild, parseXml, SHA1_DIGEST_INFO_PREFIX, verifySignature } from '@sinete/core/xml';
+import type { Ocorrencia } from '@sinete/core';
+import { contextoDeTempo, relogioFixo } from '@sinete/core';
+import {
+  conferirAssinatura,
+  decodificarBase64,
+  lerXml,
+  PREFIXO_DIGEST_INFO_SHA1,
+  primeiroFilho,
+} from '@sinete/core/xml';
 import { validate } from '@sinete/schemas';
 import { TNFe_infNFeSupl } from '@sinete/schemas/nfe/PL_010f';
 import { assinarParametros, hashQrCodeV2, hexDoDigestValue } from '../../src/build/nfce.ts';
@@ -40,12 +46,12 @@ function ok(r: BuildNfeResult): BuiltNfe {
   return r.value;
 }
 
-function falha(r: BuildNfeResult): readonly ValidationIssue[] {
+function falha(r: BuildNfeResult): readonly Ocorrencia[] {
   if (r.ok) throw new Error('esperava ocorrências');
   return r.issues;
 }
 
-const achar = (r: BuildNfeResult, path: string): ValidationIssue | undefined => falha(r).find((i) => i.path === path);
+const achar = (r: BuildNfeResult, path: string): Ocorrencia | undefined => falha(r).find((i) => i.caminho === path);
 
 /** NFC-e mínima: sem destinatário, pagamento em dinheiro acima do total (troco), um item de R$ 15,00. */
 function nfce(extra: Partial<NfeInput> = {}): NfeInput {
@@ -56,13 +62,13 @@ function nfce(extra: Partial<NfeInput> = {}): NfeInput {
 const xProdDo = (n: BuiltNfe): string | undefined => (n.infNFe.det[0]?.prod as { xProd?: string } | undefined)?.xProd;
 const ide = (n: BuiltNfe): Record<string, unknown> => n.infNFe.ide as unknown as Record<string, unknown>;
 
-function supl(xml: string): { qrCode: string; urlChave: string; el: ReturnType<typeof firstChild> } {
-  const doc = parseXml(xml);
-  const el = firstChild(doc.root, 'infNFeSupl', NFE_NS);
+function supl(xml: string): { qrCode: string; urlChave: string; el: ReturnType<typeof primeiroFilho> } {
+  const doc = lerXml(xml);
+  const el = primeiroFilho(doc.raiz, 'infNFeSupl', NFE_NS);
   if (el === undefined) throw new Error('sem infNFeSupl');
   const t = (n: string): string => {
-    const c = firstChild(el, n, NFE_NS);
-    return c?.children.map((x) => ('value' in x ? String(x.value) : '')).join('') ?? '';
+    const c = primeiroFilho(el, n, NFE_NS);
+    return c?.filhos.map((x) => ('value' in x ? String(x.valor) : '')).join('') ?? '';
   };
   return { qrCode: t('qrCode'), urlChave: t('urlChave'), el };
 }
@@ -119,7 +125,7 @@ describe('NFC-e: montagem', () => {
     const s = supl(xml);
     expect(s.qrCode).toBe(`${n.nfce?.base}${n.chave}|3|2`);
     expect(validate(TNFe_infNFeSupl, s.el as never)).toEqual([]);
-    expect((await verifySignature(xml, { id: n.id, element: 'infNFe' })).ok).toBe(true);
+    expect((await conferirAssinatura(xml, { id: n.id, elemento: 'infNFe' })).ok).toBe(true);
   });
 
   test('versão 2 on-line: hash com o CSC, idCSC sem zeros à esquerda', async () => {
@@ -201,11 +207,11 @@ describe('NFC-e: montagem', () => {
     const ok1 = await globalThis.crypto.subtle.verify(
       'RSASSA-PKCS1-v1_5',
       await chavePublica(keys.pkcs8),
-      base64Decode(assinatura) as Uint8Array<ArrayBuffer>,
+      decodificarBase64(assinatura) as Uint8Array<ArrayBuffer>,
       new TextEncoder().encode(comCpf.nfce?.parametros ?? ''),
     );
     expect(ok1).toBe(true);
-    expect((await verifySignature(xml, { id: comCpf.id, element: 'infNFe' })).ok).toBe(true);
+    expect((await conferirAssinatura(xml, { id: comCpf.id, elemento: 'infNFe' })).ok).toBe(true);
     // Em três fases: sem a assinatura, comQrCode recusa; com ela, o texto é o mesmo que o signNfe assina.
     expect(() => comQrCode(comCpf)).toThrow(expect.objectContaining({ code: 'config_invalida' }));
     const a = await assinaturaQrCode(comCpf, keys.dataSigner);
@@ -264,7 +270,7 @@ describe('NFC-e: montagem', () => {
     // O infNFeSupl passa pelo schema antes de assinar: um endereço longo demais estoura o qrCode (até 1000).
     const longo = await buildNfe(am, opcoes({ urlQrCode: `https://exemplo.invalid/${'a'.repeat(1000)}` }));
     expect(falha(longo)[0]).toMatchObject({ code: 'schema', origem: 'montagem' });
-    expect(falha(longo)[0]?.path).toContain('infNFeSupl');
+    expect(falha(longo)[0]?.caminho).toContain('infNFeSupl');
   });
 
   test('tabela de endereços por vigência', () => {
@@ -294,7 +300,7 @@ describe('NFC-e: regras do modelo 65', () => {
     );
     const vedados = falha(r)
       .filter((i) => i.code === 'grupo_vedado')
-      .map((i) => i.path);
+      .map((i) => i.caminho);
     expect(vedados).toEqual(
       expect.arrayContaining(['dhSaiEnt', 'referenciadas', 'cobranca', 'emitente.IEST', 'itens[0].impostos.ipi']),
     );
@@ -306,7 +312,7 @@ describe('NFC-e: regras do modelo 65', () => {
       nfce({ tpNF: '0', idDest: '2', indPres: '2', indFinal: '0', finNFe: '4', tpImp: '1' }),
       opc(),
     );
-    const paths = falha(r).map((i) => i.path);
+    const paths = falha(r).map((i) => i.caminho);
     expect(paths).toEqual(expect.arrayContaining(['tpNF', 'idDest', 'indPres', 'indFinal', 'finNFe', 'tpImp']));
   });
 
@@ -328,7 +334,7 @@ describe('NFC-e: regras do modelo 65', () => {
     expect(
       falha(vedados)
         .filter((i) => i.code === 'pagamento_invalido')
-        .map((i) => i.path),
+        .map((i) => i.caminho),
     ).toEqual(['pagamento.detPag[0].tPag', 'pagamento.detPag[1].tPag', 'pagamento.detPag[2].tPag']);
     const abaixo = await buildNfe(nfce({ pagamento: { detPag: [{ tPag: '01', vPag: '10' }] } }), opc());
     expect(achar(abaixo, 'pagamento.detPag')?.code).toBe('pagamento_invalido');
@@ -387,7 +393,7 @@ describe('NFC-e: regras do modelo 65', () => {
       nfce({ destinatario: { CNPJ: nota().emitente.CNPJ as string, indIEDest: '1', IE: '110042490114', ISUF: '123' } }),
       opc(),
     );
-    expect(falha(r).map((i) => i.path)).toEqual(
+    expect(falha(r).map((i) => i.caminho)).toEqual(
       expect.arrayContaining(['destinatario.CNPJ', 'destinatario.indIEDest', 'destinatario.ISUF']),
     );
     const caro = nfce({
@@ -429,8 +435,8 @@ describe('NFC-e: regras do modelo 65', () => {
     const hash = new Uint8Array(
       await globalThis.crypto.subtle.digest('SHA-1', new TextEncoder().encode(parametros) as Uint8Array<ArrayBuffer>),
     );
-    expect([...(recebido[0] ?? [])]).toEqual([...SHA1_DIGEST_INFO_PREFIX, ...hash]);
-    expect([...base64Decode(b64)]).toEqual([...(recebido[0] ?? [])]);
+    expect([...(recebido[0] ?? [])]).toEqual([...PREFIXO_DIGEST_INFO_SHA1, ...hash]);
+    expect([...decodificarBase64(b64)]).toEqual([...(recebido[0] ?? [])]);
   });
 
   test('mais grupos e combinações recusados na NFC-e', async () => {
@@ -484,7 +490,7 @@ describe('NFC-e: regras do modelo 65', () => {
       }),
       opc(),
     );
-    const paths = falha(r).map((i) => i.path);
+    const paths = falha(r).map((i) => i.caminho);
     expect(paths).toEqual(
       expect.arrayContaining([
         'dPrevEntrega',
@@ -500,7 +506,7 @@ describe('NFC-e: regras do modelo 65', () => {
       nfce({ pagamento: { detPag: [{ tPag: '03', vPag: '15', card: { tpIntegra: '2', CNPJ: '11111111111111' } }] } }),
       opc(),
     );
-    expect(falha(cartao).some((i) => i.path.startsWith('pagamento.detPag[0].card.CNPJ'))).toBe(true);
+    expect(falha(cartao).some((i) => i.caminho.startsWith('pagamento.detPag[0].card.CNPJ'))).toBe(true);
     const foraSemMunicipio = await buildNfe(nfce({ indPres: '5' }), opc());
     expect(achar(foraSemMunicipio, 'cMunFGIBS')?.code).toBe('campo_obrigatorio');
   });
@@ -515,7 +521,7 @@ describe('NFC-e: regras do modelo 65', () => {
 
   test('relógio de emissão fixo: a mesma entrada dá o mesmo QR Code', async () => {
     const o = (): BuildNfeOptions =>
-      opcoes({ time: timeContext({ emissao: fixedClock('2026-09-26T10:00:00-03:00') }) });
+      opcoes({ time: contextoDeTempo({ emissao: relogioFixo('2026-09-26T10:00:00-03:00') }) });
     const a = ok(await buildNfe(nfce(), o()));
     const b = ok(await buildNfe(nfce(), o()));
     expect(a.nfce).toEqual(b.nfce);

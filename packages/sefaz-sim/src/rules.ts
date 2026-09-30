@@ -5,8 +5,8 @@
  * remover, monte outro `SimRules` a partir de `DEFAULT_RULES`.
  */
 
-import { isUf, ufByCUf } from '@sinete/core';
-import { parseChaveAcesso, parseCnpj, parseCpf, parseIe } from '@sinete/validators';
+import { ehUf, ufPorCUf } from '@sinete/core';
+import { lerChaveAcesso, lerCnpj, lerCpf, lerIe } from '@sinete/validators';
 import type { SimConfig, Svc } from './context.ts';
 import { parametrosDoQrCode } from './nfce.ts';
 import type { SimAutorizador } from './services.ts';
@@ -161,7 +161,7 @@ const autorizacao: SimRule<AutorizacaoContext>[] = [
       const esperado =
         `${nfe.cUF}${aamm(nfe.dhEmi)}${emit}${nfe.mod.padStart(2, '0')}${nfe.serie.padStart(3, '0')}` +
         `${nfe.nNF.padStart(9, '0')}${nfe.tpEmis}${nfe.cNF.padStart(8, '0')}${nfe.cDV}`;
-      const dvOk = parseChaveAcesso(chave, { checkEmitente: false }).ok;
+      const dvOk = lerChaveAcesso(chave, { conferirEmitente: false }).ok;
       return esperado === chave && dvOk ? undefined : reject('502');
     },
   },
@@ -297,7 +297,7 @@ const autorizacao: SimRule<AutorizacaoContext>[] = [
         return nfe.mod === '55' && serie >= 890 && serie <= 919 ? undefined : reject('554');
       }
       const uf = nfe.emitente.UF;
-      return isUf(uf) && parseIe(ie, uf).ok ? undefined : reject('209');
+      return ehUf(uf) && lerIe(ie, uf).ok ? undefined : reject('209');
     },
   },
   {
@@ -353,11 +353,11 @@ const autorizacao: SimRule<AutorizacaoContext>[] = [
 
 /** J02a a J02g e P12-10 a P12-34: validação da chave de acesso, na ordem do MOC. */
 export function chaveRejection(chave: string, now: number, offsetMinutes: number): SimRejection | undefined {
-  const r = parseChaveAcesso(chave);
+  const r = lerChaveAcesso(chave);
   if (r.ok) {
-    if (Number(r.value.aamm.slice(0, 2)) > yearOf(now, offsetMinutes) % 100) return reject('615');
+    if (Number(r.valor.aamm.slice(0, 2)) > yearOf(now, offsetMinutes) % 100) return reject('615');
     // O parser aceita a chave de qualquer DF-e (CT-e 57, MDF-e 58...); aqui só NF-e e NFC-e (J02e, P12-30).
-    return r.value.mod === '55' || r.value.mod === '65' ? undefined : reject('618');
+    return r.valor.mod === '55' || r.valor.mod === '65' ? undefined : reject('618');
   }
   const byIssue: Readonly<Record<string, string>> = {
     chave_dv_invalido: '236',
@@ -370,7 +370,7 @@ export function chaveRejection(chave: string, now: number, offsetMinutes: number
     chave_modelo_nao_suportado: '618',
     chave_numero_invalido: '619',
   };
-  return reject(byIssue[r.error.code] ?? '236');
+  return reject(byIssue[r.erro.code] ?? '236');
 }
 
 function nfeDo(ctx: EventoContext): NfeRecord | undefined {
@@ -409,8 +409,8 @@ const evento: SimRule<EventoContext>[] = [
     id: 'P10-10',
     source: `${VISAO_GERAL}, tabela 5-35 (P10-10 e P11-10)`,
     check({ evento: e }: EventoContext): SimRejection | undefined {
-      if (e.autor.CNPJ !== undefined) return parseCnpj(e.autor.CNPJ).ok ? undefined : reject('489');
-      return parseCpf(e.autor.CPF ?? '').ok ? undefined : reject('490');
+      if (e.autor.CNPJ !== undefined) return lerCnpj(e.autor.CNPJ).ok ? undefined : reject('489');
+      return lerCpf(e.autor.CPF ?? '').ok ? undefined : reject('490');
     },
   },
   {
@@ -568,7 +568,7 @@ const evento: SimRule<EventoContext>[] = [
       const e = ctx.evento;
       if (e.tpEvento !== '110112') return undefined;
       const ref = e.det.chNFeRef ?? '';
-      if (!parseChaveAcesso(ref).ok) return reject('910', { campo: 'Dígito' });
+      if (!lerChaveAcesso(ref).ok) return reject('910', { campo: 'Dígito' });
       if (ref === e.chNFe) return reject('911', { campo: 'mesma Chave de Acesso' });
       if (ref.slice(6, 20) !== e.chNFe.slice(6, 20)) return reject('911', { campo: 'CNPJ/CPF' });
       const sub = ctx.view.nfe(ref);
@@ -636,7 +636,7 @@ const inutilizacao: SimRule<InutilizacaoContext>[] = [
     source: `${VISAO_GERAL}, tabela 5-12 (I05 e I06, pelo cadastro simulado)`,
     check({ inut, view }: InutilizacaoContext): SimRejection | undefined {
       // Cadastro da UF do pedido (cUF), que pode ser qualquer uma das atendidas pelo autorizador.
-      const uf = ufByCUf(inut.cUF)?.sigla;
+      const uf = ufPorCUf(inut.cUF)?.sigla;
       const c = view.config.cadastro.find((x) => x.CNPJ === inut.CNPJ && x.UF === uf);
       if (c?.situacao === 'nao-habilitado') return reject('203');
       return c?.situacao === 'irregular' ? reject('240') : undefined;

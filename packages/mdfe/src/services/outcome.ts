@@ -4,9 +4,9 @@
  * dica do catálogo do MDF-e no `@sinete/rejeicoes` (os códigos do MDF-e colidem com os da NF-e e têm outro sentido).
  */
 
-import type { Rejected, SefazStatus } from '@sinete/core';
-import { rejected } from '@sinete/core';
-import { enrichRejectedMdfe } from '@sinete/rejeicoes/mdfe';
+import type { Recusado, StatusSefaz } from '@sinete/core';
+import { criarRecusado } from '@sinete/core';
+import { completarRecusadoMdfe } from '@sinete/rejeicoes/mdfe';
 import table from '../data/cstat.json' with { type: 'json' };
 
 export type CStatClasse =
@@ -29,6 +29,6 @@ export function cstatEm(cStat: string, classe: CStatClasse): boolean {
 }
 
 /** Desfecho `rejected` enriquecido pelo catálogo de rejeições do MDF-e. */
-export function rejeitado(status: SefazStatus): Rejected {
-  return enrichRejectedMdfe(rejected(status));
+export function rejeitado(status: StatusSefaz): Recusado {
+  return completarRecusadoMdfe(criarRecusado(status));
 }

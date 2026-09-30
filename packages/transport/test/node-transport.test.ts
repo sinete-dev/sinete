@@ -1,7 +1,7 @@
 /** Transporte `node:https` em processo (Bun): respostas HTTP, falhas de conexão, prazos, auditoria e identidades. */
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import tls from 'node:tls';
-import { memoryLogger, TimeoutError, UnsupportedError } from '@sinete/core';
+import { ErroDeTempoEsgotado, ErroNaoSuportado, loggerEmMemoria } from '@sinete/core';
 import type { AuditEvent, ExternalTlsHelper, TransportResponse } from '../src/index.node.ts';
 import {
   allowlistPolicy,
@@ -59,7 +59,7 @@ describe.skipIf(!openssl)('transporte node:https', () => {
       });
     });
     const events: AuditEvent[] = [];
-    const logger = memoryLogger();
+    const logger = loggerEmMemoria();
     const t = createNodeTransport({
       identity: identity(),
       additionalCa: [pki.caPem],
@@ -79,7 +79,7 @@ describe.skipIf(!openssl)('transporte node:https', () => {
       ['POST', 200, '/ws', 'bun'],
       ['POST', 200, '/ws', 'bun'],
     ]);
-    expect(logger.entries.every((e) => !JSON.stringify(e).includes('PRIVATE'))).toBe(true);
+    expect(logger.entradas.every((e) => !JSON.stringify(e).includes('PRIVATE'))).toBe(true);
     await t.close();
     await expect(t.send({ url })).rejects.toMatchObject({ code: 'config_invalida' });
   });
@@ -124,8 +124,8 @@ describe.skipIf(!openssl)('transporte node:https', () => {
     const url = await tlsServer(() => {});
     const t = createNodeTransport({ identity: identity(), additionalCa: [pki.caPem], timeoutMs: 200 });
     const e = await t.send({ url }).catch((x: unknown) => x);
-    expect(e).toBeInstanceOf(TimeoutError);
-    expect((e as TimeoutError).timeoutMs).toBe(200);
+    expect(e).toBeInstanceOf(ErroDeTempoEsgotado);
+    expect((e as ErroDeTempoEsgotado).timeoutMs).toBe(200);
     await expect(t.send({ url, timeoutMs: 100 })).rejects.toMatchObject({ code: 'tempo_esgotado', timeoutMs: 100 });
     await t.close();
   });
@@ -141,7 +141,7 @@ describe.skipIf(!openssl)('transporte node:https', () => {
     });
     const t = createNodeTransport({ identity: identity(), additionalCa: [pki.caPem], timeoutMs: 300 });
     const started = performance.now();
-    await expect(t.send({ url })).rejects.toBeInstanceOf(TimeoutError);
+    await expect(t.send({ url })).rejects.toBeInstanceOf(ErroDeTempoEsgotado);
     expect(performance.now() - started).toBeLessThan(2000);
     await t.close();
   });
@@ -247,7 +247,7 @@ describe.skipIf(!openssl)('transporte node:https', () => {
     try {
       createNodeTransport({ identity: identity(), trust: 'system' });
     } catch (e) {
-      expect(e).toBeInstanceOf(UnsupportedError);
+      expect(e).toBeInstanceOf(ErroNaoSuportado);
     }
   });
 

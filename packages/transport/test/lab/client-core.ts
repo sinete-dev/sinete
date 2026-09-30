@@ -1,6 +1,6 @@
 /** Execução de um envio do laboratório, igual em Bun (em processo), Node e Deno (via `client.ts`). */
 import { base64ToBytes, openPfx } from '@sinete/cert';
-import { systemClock } from '@sinete/core';
+import { relogioDoSistema } from '@sinete/core';
 import type { EndpointRef, TlsIdentity, TlsProfile } from '../../src/index.node.ts';
 import { allowlistPolicy, createTransport } from '../../src/index.node.ts';
 
@@ -28,7 +28,7 @@ export interface LabClientResult {
 export async function runLabClient(input: LabClientInput): Promise<LabClientResult> {
   let identity: TlsIdentity;
   if (input.pfxB64) {
-    const ks = await openPfx(base64ToBytes(input.pfxB64), { password: input.password ?? '', clock: systemClock });
+    const ks = await openPfx(base64ToBytes(input.pfxB64), { password: input.password ?? '', clock: relogioDoSistema });
     identity = { kind: 'pem', ...ks.tlsPem() };
   } else identity = { kind: 'pem', certChain: input.certChain ?? '', key: input.key ?? '' };
   const port = Number(new URL(input.url).port);

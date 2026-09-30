@@ -4,7 +4,7 @@
  * para a UF do emitente). Os textos estão em `data/svc.json`.
  */
 
-import { ufByCUf } from '@sinete/core';
+import { ufPorCUf } from '@sinete/core';
 import type { Runtime, Status } from './context.ts';
 import { situacaoSvc, status, svcAtual } from './context.ts';
 import table from './data/svc.json' with { type: 'json' };
@@ -23,7 +23,7 @@ export function statusDaSvc(rt: Runtime, cUF: string, now: number): Status {
   const local = formatInstant(s.ate, FUSO_SVC_MINUTOS);
   const data = `${local.slice(8, 10)}/${local.slice(5, 7)}/${local.slice(2, 4)}`;
   const xMotivo = table.codes['113']
-    .replace('[UF]', ufByCUf(cUF)?.sigla ?? cUF)
+    .replace('[UF]', ufPorCUf(cUF)?.sigla ?? cUF)
     .replace('[data]', data)
     .replace('[hora]', local.slice(11, 16));
   return { cStat: '113', xMotivo };

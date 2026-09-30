@@ -20,18 +20,18 @@ export function cancelamentoMdfe(m: MdfeView, xml: string): Cancelamento {
   const tpEvento = inf?.tpEvento ?? '';
   if (tpEvento !== '110111') {
     throw new DanfeError('evento_incompativel', `evento ${tpEvento || 'sem tipo'} não é 110111`, {
-      details: { tpEvento, esperado: ['110111'] },
+      detalhes: { tpEvento, esperado: ['110111'] },
     });
   }
   if (inf?.chMDFe !== m.chave) {
     throw new DanfeError('evento_incompativel', 'o cancelamento é de outro MDF-e', {
-      details: { chave: m.chave, chaveEvento: inf?.chMDFe ?? '' },
+      detalhes: { chave: m.chave, chaveEvento: inf?.chMDFe ?? '' },
     });
   }
   const ret = v.retEventoMDFe?.infEvento;
   if (ret === undefined || !REGISTRADO_MDFE.has(ret.cStat)) {
     throw new DanfeError('evento_incompativel', 'cancelamento sem retorno de evento registrado', {
-      details: { cStat: ret?.cStat ?? '' },
+      detalhes: { cStat: ret?.cStat ?? '' },
     });
   }
   // O retorno tem de ser deste pedido: a mesma chave, o mesmo tipo e a mesma sequência.
@@ -42,7 +42,7 @@ export function cancelamentoMdfe(m: MdfeView, xml: string): Cancelamento {
     Number(ret.nSeqEvento) !== Number(inf.nSeqEvento)
   ) {
     throw new DanfeError('evento_incompativel', 'o retorno do evento não é o deste cancelamento', {
-      details: {
+      detalhes: {
         chaveRetorno: ret.chMDFe ?? '',
         tpEventoRetorno: ret.tpEvento ?? '',
         nSeqRetorno: ret.nSeqEvento ?? '',

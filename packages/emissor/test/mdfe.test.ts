@@ -5,8 +5,8 @@
  * encerrado ou cancelado fora, divergente, cancelamento com recuperação.
  */
 import { afterEach, beforeAll, describe, expect, test } from 'bun:test';
-import type { ManualClock } from '@sinete/core';
-import { manualClock, ValidationError } from '@sinete/core';
+import type { RelogioManual } from '@sinete/core';
+import { ErroDeValidacao, relogioManual } from '@sinete/core';
 import * as da from '@sinete/da/mdfe';
 import type { SefazSim, SyntheticCertificate } from '@sinete/sefaz-sim';
 import {
@@ -33,7 +33,7 @@ let pfx: Uint8Array;
 const fechar: (() => Promise<void>)[] = [];
 
 beforeAll(async () => {
-  const clock = manualClock(EMISSAO);
+  const clock = relogioManual(EMISSAO);
   ac = await syntheticCertificate({ clock, role: 'ac', validDays: 3650 });
   const produtor = await syntheticCertificate({ clock, role: 'titular', cpf: CPF_EMIT, issuer: ac });
   servidor = await syntheticCertificate({ clock, role: 'servidor', issuer: ac });
@@ -45,7 +45,7 @@ afterEach(async () => {
 });
 
 interface Cenario {
-  readonly clock: ManualClock;
+  readonly clock: RelogioManual;
   readonly sim: SefazSim;
   readonly banco: BancoMemoria;
   readonly store: TransmissaoStore;
@@ -56,7 +56,7 @@ interface Cenario {
 }
 
 async function cenario(extra: Partial<MdfeEmissorOptions> = {}, depois?: (caminho: string) => void): Promise<Cenario> {
-  const clock = manualClock(EMISSAO);
+  const clock = relogioManual(EMISSAO);
   const sim = createSefazSim({ clock, uf: 'MT' });
   const server = await startSefazSimServer(sim, { cert: servidor.pem, key: servidor.keyPem });
   const banco = createBancoMemoria();
@@ -126,12 +126,12 @@ describe('createMdfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
     expect(d.proc).toContain(c.sim.inspect.mdfe(d.id)?.xml as string);
     expect(await c.store.ler('mdfe', 'mdfe-1')).toBeUndefined();
     const q = await c.emissor.consultar(d.id);
-    expect(q.status).toBe('authorized');
+    expect(q.tipo).toBe('autorizado');
     const abertos = await c.emissor.cliente.consultarNaoEncerrados();
-    expect(abertos.status === 'authorized' && abertos.value.map((m) => m.chMDFe)).toEqual([d.id]);
-    c.clock.advance(3_600_000);
+    expect(abertos.tipo === 'autorizado' && abertos.valor.map((m) => m.chMDFe)).toEqual([d.id]);
+    c.clock.avancar(3_600_000);
     const enc = await c.emissor.encerrar(encerramento(d));
-    expect([enc.status, enc.cStat]).toEqual(['authorized', '135']);
+    expect([enc.tipo, enc.cStat]).toEqual(['autorizado', '135']);
     const pdf = await c.emissor.pdf(d.proc);
     expect(pdf).toEqual(da.toPdf(da.damdfe(d.proc)));
   });
@@ -145,7 +145,7 @@ describe('createMdfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
     const gravado = await c.store.ler('mdfe', 'mdfe-2');
     expect(c.sim.inspect.mdfe(gravado?.id as string)?.xml).toBe(gravado?.xml as string);
     c.sim.clearFaults();
-    c.clock.advance(5 * 60_000);
+    c.clock.avancar(5 * 60_000);
     const depois = await c.novoEmissor();
     const d = autorizado(await depois.emitir('mdfe-2', cargaPropria({ nMDF: 9 })));
     expect(d.id).toBe(gravado?.id as string);
@@ -192,14 +192,14 @@ describe('createMdfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
     expect((await c.emissor.emitir('mdfe-6', cargaPropria({ nMDF: 6 }))).tipo).toBe('pendente');
     const gravado = await c.store.ler('mdfe', 'mdfe-6');
     const noSim = c.sim.inspect.mdfe(gravado?.id as string);
-    c.clock.advance(3_600_000);
+    c.clock.avancar(3_600_000);
     const enc = await c.emissor.encerrar({
       chave: noSim?.chave as string,
       nProt: noSim?.nProt as string,
       uf: 'SP',
       cMun: '3550308',
     });
-    expect(enc.status).toBe('authorized');
+    expect(enc.tipo).toBe('autorizado');
     const d = autorizado(await c.emissor.retomar('mdfe-6'));
     expect(d.situacaoAtual).toBe('encerrado');
     expect(c.guardados).toHaveLength(1);
@@ -231,7 +231,7 @@ describe('createMdfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
     expect(recepcoes(c)).toBe(1);
 
     const invalido = await c.emissor.emitir('c', cargaPropria({ nMDF: 9, percurso: [] })).catch((e: unknown) => e);
-    expect(invalido).toBeInstanceOf(ValidationError);
+    expect(invalido).toBeInstanceOf(ErroDeValidacao);
     expect(await c.store.ler('mdfe', 'c')).toBeUndefined();
   });
 
@@ -259,7 +259,7 @@ describe('createMdfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
   test('cancelamento sem resposta e duplicado: o evento vem da consulta; DAMDFE com a marca', async () => {
     const c = await cenario({ timeoutMs: 400 });
     const d = autorizado(await c.emissor.emitir('mdfe-10', cargaPropria({ nMDF: 10 })));
-    c.clock.advance(60_000);
+    c.clock.avancar(60_000);
     c.sim.injectFault({ kind: 'hang', phase: 'after' }, { servico: 'MDFeRecepcaoEvento' });
     const pedido = { chave: d.id, nProt: d.protocolo.nProt, xJust: 'CANCELAMENTO DE TESTE SINTETICO' };
     const r = await c.emissor.cancelar(pedido);

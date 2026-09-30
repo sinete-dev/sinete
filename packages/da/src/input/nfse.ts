@@ -5,9 +5,9 @@
  * de tentativa. Os dois módulos têm a mesma forma; a visão abaixo só lê campos, então vale para os dois.
  */
 
-import { fixedClock } from '@sinete/core';
-import type { XmlElement } from '@sinete/core/xml';
-import { firstChild, textOf } from '@sinete/core/xml';
+import { relogioFixo } from '@sinete/core';
+import type { ElementoXml } from '@sinete/core/xml';
+import { primeiroFilho, textoDe } from '@sinete/core/xml';
 import type { RootElement } from '@sinete/schemas';
 import { selecionarPl } from '@sinete/schemas';
 import * as v20260209 from '@sinete/schemas/nfse/1.01-20260209';
@@ -346,10 +346,10 @@ function view(n: Rec, modulo: string): NfseView {
   };
 }
 
-function texto(el: XmlElement | undefined, ...caminho: string[]): string {
+function texto(el: ElementoXml | undefined, ...caminho: string[]): string {
   let e = el;
-  for (const k of caminho) e = e ? firstChild(e, k, NS) : undefined;
-  return e ? textOf(e).trim() : '';
+  for (const k of caminho) e = e ? primeiroFilho(e, k, NS) : undefined;
+  return e ? textoDe(e).trim() : '';
 }
 
 /**
@@ -357,12 +357,12 @@ function texto(el: XmlElement | undefined, ...caminho: string[]): string {
  * documento de antes da primeira vigência registrada (leiaute 1.00) ou sem data legível é lido pelo pacote mais
  * antigo, que o decoder tolerante aceita.
  */
-function modulo(dps: XmlElement | undefined): string {
+function modulo(dps: ElementoXml | undefined): string {
   const tpAmb = texto(dps, 'tpAmb');
   const dhEmi = texto(dps, 'dhEmi');
   if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(dhEmi)) return ANTIGO;
   try {
-    return selecionarPl('nfse', tpAmb === '1' ? 'producao' : 'homologacao', fixedClock(dhEmi)).modulo;
+    return selecionarPl('nfse', tpAmb === '1' ? 'producao' : 'homologacao', relogioFixo(dhEmi)).modulo;
   } catch {
     return ANTIGO;
   }
@@ -371,8 +371,8 @@ function modulo(dps: XmlElement | undefined): string {
 /** Lê o `NFSe` autorizado (com a DPS dentro) para o modelo de visualização do DANFSe. */
 export function readNfse(xml: string): NfseView {
   const doc = parse(xml);
-  const inf = firstChild(doc.root, 'infNFSe', NS);
-  const dps = inf ? firstChild(firstChild(inf, 'DPS', NS) ?? inf, 'infDPS', NS) : undefined;
+  const inf = primeiroFilho(doc.raiz, 'infNFSe', NS);
+  const dps = inf ? primeiroFilho(primeiroFilho(inf, 'DPS', NS) ?? inf, 'infDPS', NS) : undefined;
   const m = modulo(dps);
   const mod = MODULOS[m] ?? v20260209;
   const { value } = decodeAs<Rec>(doc, [mod.NFSeElement as never], 'NFSe');
@@ -400,7 +400,7 @@ export function readEventoNfse(xml: string, tipos: readonly string[]): EventoNfs
   const tipo = Object.keys(ped).find((k) => /^e\d{6}$/.test(k)) ?? '';
   if (!tipos.includes(tipo)) {
     throw new DanfeError('evento_incompativel', `evento ${tipo || 'sem tipo'} não é ${tipos.join(' nem ')}`, {
-      details: { tipo, esperado: tipos },
+      detalhes: { tipo, esperado: tipos },
     });
   }
   return { tipo, chNFSe: s(ped, 'chNFSe') };

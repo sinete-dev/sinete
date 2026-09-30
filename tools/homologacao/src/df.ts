@@ -29,9 +29,9 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import process from 'node:process';
 import { parseArgs } from 'node:util';
-import type { SefazOutcome } from '@sinete/core';
-import { isSineteError, systemClock, timeContext } from '@sinete/core';
-import { verifySignature } from '@sinete/core/xml';
+import type { ResultadoSefaz } from '@sinete/core';
+import { contextoDeTempo, ehErroSinete, relogioDoSistema } from '@sinete/core';
+import { conferirAssinatura } from '@sinete/core/xml';
 import type { Icms, NfeClient, NfeInput } from '@sinete/nfe';
 import { buildNfe, createNfeClient, signNfe } from '@sinete/nfe';
 import type { AuditEvent, Transport, TransportRequest, TransportResponse } from '@sinete/transport';
@@ -169,7 +169,7 @@ function cliente(t: Transport, contingencia = false): NfeClient {
     signer,
     ambiente: AMBIENTE,
     uf: UF,
-    clock: systemClock,
+    clock: relogioDoSistema,
     autor: { CPF },
     ...(contingencia ? { contingencia: 'svc' as const } : {}),
   });
@@ -186,7 +186,7 @@ interface Registro {
   readonly ms?: number;
 }
 
-async function operar<O extends SefazOutcome<unknown, unknown>>(
+async function operar<O extends ResultadoSefaz<unknown, unknown>>(
   rotulo: string,
   servico: string,
   hostEsperado: string,
@@ -198,11 +198,11 @@ async function operar<O extends SefazOutcome<unknown, unknown>>(
   try {
     const o = await fn();
     const host = envio.audit?.host ?? hostEsperado;
-    registrar(host, servicoLedger, `HTTP ${envio.status ?? '?'} ${o.status} cStat=${o.cStat}`);
+    registrar(host, servicoLedger, `HTTP ${envio.status ?? '?'} ${o.tipo} cStat=${o.cStat}`);
     return {
       rotulo,
       host,
-      status: o.status,
+      status: o.tipo,
       cStat: o.cStat,
       xMotivo: mascarar(o.xMotivo),
       outcome: o,
@@ -210,7 +210,7 @@ async function operar<O extends SefazOutcome<unknown, unknown>>(
       ...(envio.audit ? { ms: envio.audit.durationMs } : {}),
     };
   } catch (e) {
-    const code = isSineteError(e) ? e.code : 'desconhecido';
+    const code = ehErroSinete(e) ? e.code : 'desconhecido';
     const host = envio.audit?.host ?? hostEsperado;
     registrar(host, servicoLedger, `ERRO ${code}${envio.audit ? '' : ' (antes do socket, certificado não usado)'}`);
     return { rotulo, host, erro: { code, message: mascarar((e as Error).message) } };
@@ -225,7 +225,7 @@ const linha = (r: Registro): string =>
 function anexar(nome: string, dado: Record<string, unknown>): void {
   const p = join(estado, nome);
   const lista: unknown[] = existsSync(p) ? JSON.parse(readFileSync(p, 'utf8')) : [];
-  lista.push({ runtime, em: systemClock.now().toISOString(), ...dado });
+  lista.push({ runtime, em: relogioDoSistema.agora().toISOString(), ...dado });
   writeFileSync(p, `${JSON.stringify(lista, null, 2)}\n`, { mode: 0o600 });
 }
 
@@ -354,11 +354,11 @@ function nota(nome: string, vPag: string): NfeInput {
 async function montar(nome: string, vPag: string) {
   const r = await buildNfe(nota(nome, vPag), {
     ambiente: AMBIENTE,
-    time: timeContext({ emissao: systemClock }),
+    time: contextoDeTempo({ emissao: relogioDoSistema }),
     verProc: 'sinete-homologacao',
   });
   if (!r.ok) {
-    for (const i of r.issues) log(`  ${i.path}: ${i.code}: ${i.message}`);
+    for (const i of r.issues) log(`  ${i.caminho}: ${i.code}: ${i.mensagem}`);
     throw new Error('o builder recusou a NF-e');
   }
   return r.value;
@@ -389,7 +389,7 @@ async function emitir(): Promise<void> {
   registrar('local', 'assinatura da NF-e (signNfe) [e-CPF emitente]', `chave ${b.chave}`);
   if (!assinada.startsWith(b.xml.slice(0, b.xml.indexOf('</infNFe>'))))
     throw new Error('assinatura alterou o conteúdo');
-  const ver = await verifySignature(assinada, { id: b.id, element: 'infNFe' });
+  const ver = await conferirAssinatura(assinada, { id: b.id, elemento: 'infNFe' });
   if (!ver.ok) throw new Error('assinatura não confere localmente');
   const xsd = xsdOficial(b.pl.pl, assinada);
   const icms = /<ICMS>([\s\S]*?)<\/ICMS>/.exec(assinada)?.[1] ?? '';
@@ -403,7 +403,7 @@ async function emitir(): Promise<void> {
     log(`[${runtime}] dry-run: não enviado`);
     return;
   }
-  tentativas.push({ cenario: nome, chave: b.chave, em: systemClock.now().toISOString(), status: 'enviando' });
+  tentativas.push({ cenario: nome, chave: b.chave, em: relogioDoSistema.agora().toISOString(), status: 'enviando' });
   writeFileSync(tentativasPath, `${JSON.stringify(tentativas, null, 2)}\n`, { mode: 0o600 });
   const t = transporte();
   try {
@@ -416,13 +416,13 @@ async function emitir(): Promise<void> {
     );
     const texto = envio.texto ?? '';
     const lote = /<retEnviNFe[\s\S]*?<cStat>(\d+)<\/cStat><xMotivo>([^<]*)</.exec(texto);
-    const prot = r.outcome?.status === 'authorized' ? r.outcome.value : undefined;
+    const prot = r.outcome?.tipo === 'autorizado' ? r.outcome.valor : undefined;
     const rec = {
       ...semOutcome(r),
       cenario: nome,
       transmissor: rotuloTls,
       chave: b.chave,
-      em: systemClock.now().toISOString(),
+      em: relogioDoSistema.agora().toISOString(),
       lote: lote ? { cStat: lote[1], xMotivo: lote[2] } : null,
       nProt: /<nProt>(\d+)<\/nProt>/.exec(texto)?.[1] ?? null,
       dhRecbto: /<dhRecbto>([^<]+)<\/dhRecbto>/.exec(texto)?.[1] ?? null,
@@ -454,13 +454,17 @@ async function consultar(): Promise<void> {
     const r = await operar('NfeConsultaProtocolo SVRS', 'NfeConsultaProtocolo', hostDe('NfeConsultaProtocolo'), () =>
       cliente(t).consultar(chave, assinadaDe(chave)),
     );
-    const v = r.outcome?.status === 'authorized' ? r.outcome.value : undefined;
+    const v = r.outcome?.tipo === 'autorizado' ? r.outcome.valor : undefined;
     log(linha(r));
     if (v) log(`  situação ${v.situacao}, eventos ${v.eventos.length}, digVal confere ${v.digValConfere ?? '?'}`);
     if (envio.texto)
-      writeFileSync(join(estado, `consulta-${arquivoDe(chave)}-${systemClock.now().getTime()}.xml`), envio.texto, {
-        mode: 0o600,
-      });
+      writeFileSync(
+        join(estado, `consulta-${arquivoDe(chave)}-${relogioDoSistema.agora().getTime()}.xml`),
+        envio.texto,
+        {
+          mode: 0o600,
+        },
+      );
     anexar('consultas.json', {
       ...semOutcome(r),
       chave,
@@ -506,7 +510,7 @@ async function evento(tipo: 'cce' | 'cancelar'): Promise<void> {
             true,
           );
     log(linha(r));
-    const v = r.outcome?.status === 'authorized' ? r.outcome.value : undefined;
+    const v = r.outcome?.tipo === 'autorizado' ? r.outcome.valor : undefined;
     if (envio.texto) {
       writeFileSync(join(estado, `evento-${tipo}-${arquivoDe(chave)}-${opt.seq ?? '1'}.xml`), envio.texto, {
         mode: 0o600,
@@ -532,7 +536,7 @@ async function dist(): Promise<void> {
       () => cliente(t).distribuicaoDFe({ ultNSU: opt.ultnsu as string }, { autor: { CPF } }),
     );
     log(linha(r));
-    const v = r.outcome?.status === 'authorized' ? r.outcome.value : undefined;
+    const v = r.outcome?.tipo === 'autorizado' ? r.outcome.valor : undefined;
     const docs = v?.documentos.map((d) => ({ NSU: d.NSU, tipo: d.tipo, schema: d.schema })) ?? [];
     if (v) {
       log(

@@ -5,7 +5,7 @@
  * têm de bater, campo a campo, com o que a Calculadora devolveu.
  */
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
-import { manualClock } from '@sinete/core';
+import { relogioManual } from '@sinete/core';
 import { decodeXml } from '@sinete/schemas';
 import { nfeProcElement } from '@sinete/schemas/nfe/PL_010f';
 import type { SefazSimServer, SyntheticCertificate } from '@sinete/sefaz-sim';
@@ -44,7 +44,7 @@ let emitente: SyntheticCertificate;
 const fechar: (() => Promise<void>)[] = [];
 
 beforeAll(async () => {
-  const clock = manualClock('2026-09-01T00:00:00-03:00');
+  const clock = relogioManual('2026-09-01T00:00:00-03:00');
   ac = await syntheticCertificate({ clock, role: 'ac', validDays: 3650 });
   [servidor, emitente] = await Promise.all([
     syntheticCertificate({ clock, role: 'servidor', issuer: ac, validDays: 3650 }),
@@ -71,7 +71,7 @@ describe('IBS/CBS pelo @sinete/ibs-cbs, autorizado na SEFAZ simulada, conferido 
       const local = LOCAIS[caso.op.place.uf as Local['UF']];
       expect(local.cMun).toBe(caso.op.place.cMun);
       // Emissão e fato gerador no dia do caso, ao meio-dia de Brasília.
-      const clock = manualClock(`${caso.date}T12:00:00-03:00`);
+      const clock = relogioManual(`${caso.date}T12:00:00-03:00`);
       const sim = createSefazSim({ clock, uf: local.UF });
       const server: SefazSimServer = await startSefazSimServer(sim, { cert: servidor.pem, key: servidor.keyPem });
       const real: Transport = createTransport({ identity: emitente.tlsIdentity, additionalCa: [ac.pem] });
@@ -90,14 +90,14 @@ describe('IBS/CBS pelo @sinete/ibs-cbs, autorizado na SEFAZ simulada, conferido 
       const itens: ItemRtc[] = caso.op.items.map((i) => ({ CST: i.cst, cClassTrib: i.cClassTrib, base: i.base }));
       // Sem `ibsCbs` nas opções: a calculadora padrão do buildNfe, com o dataset embarcado importado sob demanda.
       const r = await buildNfe(notaRtc(local, itens), opcoesRtc(clock));
-      if (!r.ok) throw new Error(r.issues.map((i) => `${i.path}: ${i.message}`).join('\n'));
+      if (!r.ok) throw new Error(r.issues.map((i) => `${i.caminho}: ${i.mensagem}`).join('\n'));
       const assinada = await signNfe(r.value, emitente.signer);
       const aut = await client.autorizar(assinada);
-      expect([aut.status, aut.cStat]).toEqual(['authorized', '100']);
-      if (aut.status !== 'authorized') return;
+      expect([aut.tipo, aut.cStat]).toEqual(['autorizado', '100']);
+      if (aut.tipo !== 'autorizado') return;
 
       // O que foi autorizado, lido de volta do nfeProc: os grupos do XML contra a saída gravada da Calculadora.
-      const proc = decodeXml(nfeProcElement, aut.value.nfeProc as string).value;
+      const proc = decodeXml(nfeProcElement, aut.valor.nfeProc as string).value;
       const inf = proc.NFe.infNFe;
       const autorizado: Record<string, string> = {};
       for (const det of inf.det) flatten(`item${det.nItem}`, det.imposto.IBSCBS, autorizado);

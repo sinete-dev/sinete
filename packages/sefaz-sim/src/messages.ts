@@ -4,9 +4,9 @@
  * (`[nRec:999999999999999]`, `[chNFe: 999...]`) preenchidos ou removidos.
  */
 
-import { ConfigError } from '@sinete/core';
-import { rejeicaoByCode } from '@sinete/rejeicoes';
-import { rejeicaoMdfeByCode } from '@sinete/rejeicoes/mdfe';
+import { ErroDeConfiguracao } from '@sinete/core';
+import { rejeicaoPorCodigo } from '@sinete/rejeicoes';
+import { rejeicaoMdfePorCodigo } from '@sinete/rejeicoes/mdfe';
 import tableMdfe from './data/mdfe-status.json' with { type: 'json' };
 import table from './data/status.json' with { type: 'json' };
 
@@ -63,14 +63,15 @@ export function motivo(cStat: string, params: MotivoParams = {}): string {
 
 /** Mensagem do catálogo com o prefixo, mesmo para os códigos que também são resultado (108 e 109 nos grupos B03 e B04). */
 export function motivoRejeicao(cStat: string, params: MotivoParams = {}): string {
-  const r = rejeicaoByCode(cStat);
-  if (r === undefined) throw new ConfigError(`cStat ${cStat} fora do catálogo de rejeições`, { details: { cStat } });
-  return `${r.effect === 'denegacao' ? 'Uso Denegado' : 'Rejeição'}: ${fill(r.message, params)}`;
+  const r = rejeicaoPorCodigo(cStat);
+  if (r === undefined)
+    throw new ErroDeConfiguracao(`cStat ${cStat} fora do catálogo de rejeições`, { detalhes: { cStat } });
+  return `${r.efeito === 'denegacao' ? 'Uso Denegado' : 'Rejeição'}: ${fill(r.mensagem, params)}`;
 }
 
 /** O código é uma denegação (o número fica consumido e há protocolo)? */
 export function isDenegacao(cStat: string): boolean {
-  return rejeicaoByCode(cStat)?.effect === 'denegacao';
+  return rejeicaoPorCodigo(cStat)?.efeito === 'denegacao';
 }
 
 /**
@@ -80,7 +81,8 @@ export function isDenegacao(cStat: string): boolean {
 export function motivoMdfe(cStat: string, params: MotivoParams = {}): string {
   const result = RESULTS_MDFE.get(cStat);
   if (result !== undefined) return result;
-  const r = rejeicaoMdfeByCode(cStat);
-  if (r === undefined) throw new ConfigError(`cStat ${cStat} fora do catálogo do MDF-e`, { details: { cStat } });
-  return `Rejeição: ${fill(r.message, params)}`;
+  const r = rejeicaoMdfePorCodigo(cStat);
+  if (r === undefined)
+    throw new ErroDeConfiguracao(`cStat ${cStat} fora do catálogo do MDF-e`, { detalhes: { cStat } });
+  return `Rejeição: ${fill(r.mensagem, params)}`;
 }

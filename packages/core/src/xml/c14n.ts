@@ -7,20 +7,20 @@
  * acrescentado no envelope depois da assinatura invalida o digest (ADR 0003).
  */
 
-import type { XmlAttribute, XmlElement } from './parser.ts';
-import { inScopeNamespaces, XML_NS } from './parser.ts';
+import type { AtributoXml, ElementoXml } from './parser.ts';
+import { namespacesEmEscopo, XML_NS } from './parser.ts';
 
 const TEXT_ESC = /[&<>\r]/;
 const ATTR_ESC = /[&<"\t\n\r]/;
 
 /** Escape de nó de texto do C14N: `&`, `<`, `>` e CR. */
-export function escapeC14nText(s: string): string {
+export function escaparTextoC14n(s: string): string {
   if (!TEXT_ESC.test(s)) return s;
   return s.replace(/[&<>\r]/g, (c) => (c === '&' ? '&amp;' : c === '<' ? '&lt;' : c === '>' ? '&gt;' : '&#xD;'));
 }
 
 /** Escape de valor de atributo do C14N: `&`, `<`, `"`, TAB, LF e CR. */
-export function escapeC14nAttribute(s: string): string {
+export function escaparAtributoC14n(s: string): string {
   if (!ATTR_ESC.test(s)) return s;
   return s.replace(/[&<"\t\n\r]/g, (c) =>
     c === '&'
@@ -42,35 +42,35 @@ function cmp(a: string, b: string): number {
   return a < b ? -1 : a > b ? 1 : 0;
 }
 
-export interface C14nOptions {
+export interface C14nOpcoes {
   /** Elementos omitidos com toda a subárvore (é o transform `enveloped-signature`). */
-  readonly exclude?: ReadonlySet<XmlElement>;
+  readonly excluir?: ReadonlySet<ElementoXml>;
 }
 
 /** C14N 1.0 inclusivo, sem comentários, do elemento `apex` e seus descendentes. */
-export function c14n(apex: XmlElement, options: C14nOptions = {}): string {
-  const exclude = options.exclude;
+export function c14n(apex: ElementoXml, options: C14nOpcoes = {}): string {
+  const exclude = options.excluir;
   const out: string[] = [];
 
   // Atributos xml:* herdados dos ancestrais entram no ápice (C14N 1.0, 2.4), a menos que o ápice os redeclare.
-  const inheritedXml: XmlAttribute[] = [];
+  const inheritedXml: AtributoXml[] = [];
   const have = new Set<string>();
-  for (const a of apex.attributes) if (a.ns === XML_NS) have.add(a.local);
-  for (let e = apex.parent; e; e = e.parent) {
-    for (const a of e.attributes) {
+  for (const a of apex.atributos) if (a.ns === XML_NS) have.add(a.local);
+  for (let e = apex.pai; e; e = e.pai) {
+    for (const a of e.atributos) {
       if (a.ns === XML_NS && !have.has(a.local)) {
         have.add(a.local);
         inheritedXml.push(a);
       }
     }
   }
-  const parentScope = apex.parent ? inScopeNamespaces(apex.parent) : new Map<string, string>();
+  const parentScope = apex.pai ? namespacesEmEscopo(apex.pai) : new Map<string, string>();
 
   const render = (
-    el: XmlElement,
+    el: ElementoXml,
     scope: Map<string, string>,
     rendered: Map<string, string>,
-    extra: readonly XmlAttribute[],
+    extra: readonly AtributoXml[],
   ): void => {
     let myScope = scope;
     if (el.namespaces.size > 0) {
@@ -89,19 +89,19 @@ export function c14n(apex: XmlElement, options: C14nOptions = {}): string {
       }
     }
     nsOut.sort((a, b) => cmp(a[0], b[0]));
-    const attrs = extra.length > 0 ? [...el.attributes, ...extra] : [...el.attributes];
+    const attrs = extra.length > 0 ? [...el.atributos, ...extra] : [...el.atributos];
     attrs.sort((x, y) => cmp(x.ns, y.ns) || cmp(x.local, y.local));
-    out.push('<', el.name);
-    for (const [p, u] of nsOut) out.push(p ? ` xmlns:${p}="` : ' xmlns="', escapeC14nAttribute(u), '"');
-    for (const a of attrs) out.push(' ', a.name, '="', escapeC14nAttribute(a.value), '"');
+    out.push('<', el.nome);
+    for (const [p, u] of nsOut) out.push(p ? ` xmlns:${p}="` : ' xmlns="', escaparAtributoC14n(u), '"');
+    for (const a of attrs) out.push(' ', a.nome, '="', escaparAtributoC14n(a.valor), '"');
     out.push('>');
-    for (const ch of el.children) {
-      if (ch.type === 'text') out.push(escapeC14nText(ch.value));
-      else if (ch.type === 'element') {
+    for (const ch of el.filhos) {
+      if (ch.tipo === 'texto') out.push(escaparTextoC14n(ch.valor));
+      else if (ch.tipo === 'elemento') {
         if (!exclude?.has(ch)) render(ch, myScope, myRendered, []);
-      } else out.push('<?', ch.target, ch.data ? ` ${ch.data}` : '', '?>');
+      } else out.push('<?', ch.alvo, ch.dados ? ` ${ch.dados}` : '', '?>');
     }
-    out.push('</', el.name, '>');
+    out.push('</', el.nome, '>');
   };
   render(apex, parentScope, new Map(), inheritedXml);
   return out.join('');

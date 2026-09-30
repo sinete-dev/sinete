@@ -7,7 +7,7 @@
  * dúvida, a nota vai e a SEFAZ decide, porque recusar localmente uma nota que a SEFAZ aceitaria é pior que a rejeição.
  */
 
-import type { ValidationIssue } from '@sinete/core';
+import type { Ocorrencia } from '@sinete/core';
 import type { Issues } from '../issues.ts';
 import type { NfeInput } from '../model.ts';
 import type { Instante } from '../time.ts';
@@ -113,16 +113,16 @@ const soDocumento = (s: string): string => s.replace(/[^0-9A-Za-z]/g, '').toUppe
 export function conferirEmitenteDoCertificado(
   nfe: NfeInput,
   titular: { readonly cnpj?: string | undefined; readonly cpf?: string | undefined },
-): readonly ValidationIssue[] {
+): readonly Ocorrencia[] {
   const e = nfe.emitente;
   if (e.CNPJ !== undefined && titular.cnpj !== undefined) {
     const base = soDocumento(e.CNPJ).slice(0, 8);
     if (base !== soDocumento(titular.cnpj).slice(0, 8)) {
       return [
         {
-          path: 'emitente.CNPJ',
+          caminho: 'emitente.CNPJ',
           code: 'emitente_difere_do_certificado',
-          message: `CNPJ-base ${base} do emitente difere do CNPJ-base do certificado (F03, rejeição 213)`,
+          mensagem: `CNPJ-base ${base} do emitente difere do CNPJ-base do certificado (F03, rejeição 213)`,
           origem: 'entrada',
         },
       ];
@@ -131,9 +131,9 @@ export function conferirEmitenteDoCertificado(
   if (e.CPF !== undefined && titular.cpf !== undefined && soDocumento(e.CPF) !== soDocumento(titular.cpf)) {
     return [
       {
-        path: 'emitente.CPF',
+        caminho: 'emitente.CPF',
         code: 'emitente_difere_do_certificado',
-        message: 'CPF do emitente difere do CPF do certificado (F03A, rejeição 227)',
+        mensagem: 'CPF do emitente difere do CPF do certificado (F03A, rejeição 227)',
         origem: 'entrada',
       },
     ];

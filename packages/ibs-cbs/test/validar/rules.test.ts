@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-import type { TimeContext } from '@sinete/core';
-import { ConfigError, fixedClock, timeContext } from '@sinete/core';
+import type { ContextoDeTempo } from '@sinete/core';
+import { contextoDeTempo, ErroDeConfiguracao, relogioFixo } from '@sinete/core';
 import { loadDataset } from '@sinete/ibs-cbs-dados';
 import { BUNDLED_DATASET } from '@sinete/ibs-cbs-dados/bundled';
 import { REJEICOES } from '@sinete/rejeicoes';
@@ -14,10 +14,10 @@ const dataset = loadDataset(BUNDLED_DATASET);
 const rates = officialRates();
 const place = { uf: 'RS', cMun: '4314902' };
 
-function time(emission: string, fact = emission): TimeContext {
-  return timeContext({
-    emissao: fixedClock(`${emission}T12:00:00-03:00`),
-    fatoGerador: fixedClock(`${fact}T12:00:00-03:00`),
+function time(emission: string, fact = emission): ContextoDeTempo {
+  return contextoDeTempo({
+    emissao: relogioFixo(`${emission}T12:00:00-03:00`),
+    fatoGerador: relogioFixo(`${fact}T12:00:00-03:00`),
   });
 }
 
@@ -54,12 +54,12 @@ describe('catálogo de regras', () => {
     const ids = RULES.map((r) => r.id);
     expect(new Set(ids).size).toBe(ids.length);
     expect(ids.length).toBeGreaterThan(90);
-    const byCode = new Map(REJEICOES.map((r) => [r.code, r]));
+    const byCode = new Map(REJEICOES.map((r) => [r.codigo, r]));
     for (const r of RULES) {
       const rej = byCode.get(r.cStat);
       expect(rej, `${r.id} cStat ${r.cStat}`).toBeDefined();
       expect(
-        rej?.rules.some((x) => x.id === r.id),
+        rej?.regras.some((x) => x.id === r.id),
         `${r.id} não está na regra do cStat ${r.cStat}`,
       ).toBe(true);
       expect(r.source).toBe(`NT 2025.002 v1.51, ${r.id}`);
@@ -95,9 +95,9 @@ describe('catálogo de regras', () => {
   test('entrada inválida é ConfigError', () => {
     expect(() =>
       validate(null as unknown as RulesDocument, { dataset, time: time('2026-10-10'), ambiente: 'producao' }),
-    ).toThrow(ConfigError);
+    ).toThrow(ErroDeConfiguracao);
     expect(() => validate(docOf([full]), { dataset, time: time('2026-10-10'), ambiente: 'x' as 'producao' })).toThrow(
-      ConfigError,
+      ErroDeConfiguracao,
     );
   });
 });

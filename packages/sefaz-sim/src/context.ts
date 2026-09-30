@@ -4,9 +4,9 @@
  * validação inicial da mensagem (grupo B) e forma da área de dados (grupo D).
  */
 
-import type { Ambiente, Clock } from '@sinete/core';
-import type { XmlDocument } from '@sinete/core/xml';
-import { attributeOf, parseXml, XmlError } from '@sinete/core/xml';
+import type { Ambiente, Relogio } from '@sinete/core';
+import type { DocumentoXml } from '@sinete/core/xml';
+import { atributoDe, ErroXml, lerXml } from '@sinete/core/xml';
 import type { RootElement, SchemaIssue } from '@sinete/schemas';
 import { validateRoot } from '@sinete/schemas';
 import type { CertIdentity } from './certs.ts';
@@ -27,11 +27,11 @@ export type Svc = 'SVC-AN' | 'SVC-RS';
  */
 export type AtivacaoSvc =
   | { readonly situacao: 'ativa' }
-  | { readonly situacao: 'desativando'; readonly ate: ReturnType<Clock['now']> }
+  | { readonly situacao: 'desativando'; readonly ate: ReturnType<Relogio['agora']> }
   | { readonly situacao: 'inativa' };
 
 export interface SimConfig {
-  readonly clock: Clock;
+  readonly clock: Relogio;
   readonly ambiente: Ambiente;
   readonly tpAmb: '1' | '2';
   /** Sigla da UF autorizadora simulada. */
@@ -177,16 +177,16 @@ export interface PreludeSpec {
 }
 
 export type Prelude =
-  | { readonly ok: true; readonly doc: XmlDocument; readonly root: RootElement<unknown> }
-  | { readonly ok: false; readonly status: Status; readonly doc: XmlDocument | undefined };
+  | { readonly ok: true; readonly doc: DocumentoXml; readonly root: RootElement<unknown> }
+  | { readonly ok: false; readonly status: Status; readonly doc: DocumentoXml | undefined };
 
-function schemaFailure(doc: XmlDocument, spec: PreludeSpec, issues: readonly SchemaIssue[]): Status {
+function schemaFailure(doc: DocumentoXml, spec: PreludeSpec, issues: readonly SchemaIssue[]): Status {
   const expected = spec.roots[0] as RootElement<unknown>;
   // D01a e D01b: raiz esperada e atributo versao, aplicados quando o schema falha.
-  if (issues.some((i) => i.code === 'raiz_inesperada') || doc.root.local !== expected.name) {
+  if (issues.some((i) => i.code === 'raiz_inesperada') || doc.raiz.local !== expected.name) {
     return status(spec.lote ? '565' : '516');
   }
-  if (attributeOf(doc.root, 'versao') === undefined) return status(spec.lote ? '568' : '517');
+  if (atributoDe(doc.raiz, 'versao') === undefined) return status(spec.lote ? '568' : '517');
   return status(spec.lote ? '225' : '215');
 }
 
@@ -203,11 +203,11 @@ export function prelude(ctx: RequestContext, spec: PreludeSpec): Prelude {
     return { ok: false, status: status('214'), doc: undefined };
   }
   // B02: XML malformado (a área de dados isolada do envelope precisa se sustentar sozinha).
-  let doc: XmlDocument;
+  let doc: DocumentoXml;
   try {
-    doc = parseXml(ctx.payload);
+    doc = lerXml(ctx.payload);
   } catch (e) {
-    if (e instanceof XmlError) return { ok: false, status: status('243'), doc: undefined };
+    if (e instanceof ErroXml) return { ok: false, status: status('243'), doc: undefined };
     throw e;
   }
   // B03 e B04: serviço paralisado (na SVC e no AN só pela paralisação explícita; na UF também pela contingência).
@@ -232,6 +232,6 @@ export function prelude(ctx: RequestContext, spec: PreludeSpec): Prelude {
   }
   if (valid === undefined) return { ok: false, status: schemaFailure(doc, spec, firstIssues ?? []), doc };
   // D02: prefixo de namespace.
-  if (hasPrefix(doc.root)) return { ok: false, status: status('404'), doc };
+  if (hasPrefix(doc.raiz)) return { ok: false, status: status('404'), doc };
   return { ok: true, doc, root: valid };
 }

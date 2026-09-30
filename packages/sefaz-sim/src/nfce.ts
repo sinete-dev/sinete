@@ -4,7 +4,7 @@
  * Técnicos do DANFE NFC-e e QR Code 6.0, itens 4.3 e 4.4; NT 2025.001 v1.03, regras ZX02-222 a ZX02-338).
  */
 
-import { base64Decode, spkiFromCertificate } from '@sinete/core/xml';
+import { decodificarBase64, extrairSpki } from '@sinete/core/xml';
 
 /** Parâmetros do QR Code no leiaute `?p=`; `undefined` para outro formato (a versão 100, com `&`). */
 export function parametrosDoQrCode(qrCode: string): readonly string[] | undefined {
@@ -24,13 +24,11 @@ export async function assinaturaDoQrCodeConfere(
   if (assinatura === undefined || params.length !== 8) return false;
   try {
     const alg = { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-1' };
-    const key = await globalThis.crypto.subtle.importKey('spki', spkiFromCertificate(certificadoDer), alg, false, [
-      'verify',
-    ]);
+    const key = await globalThis.crypto.subtle.importKey('spki', extrairSpki(certificadoDer), alg, false, ['verify']);
     return await globalThis.crypto.subtle.verify(
       alg,
       key,
-      base64Decode(assinatura) as Uint8Array<ArrayBuffer>,
+      decodificarBase64(assinatura) as Uint8Array<ArrayBuffer>,
       new TextEncoder().encode(params.slice(0, 7).join('|')),
     );
   } catch {

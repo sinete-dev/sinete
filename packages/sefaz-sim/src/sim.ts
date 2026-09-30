@@ -4,8 +4,8 @@
  * e servidor HTTPS) aplicam o efeito: responder, derrubar a conexão ou não responder.
  */
 
-import type { Ambiente, Clock, Uf, UfInfo } from '@sinete/core';
-import { ConfigError, isUf, tpAmbOf, ufBySigla } from '@sinete/core';
+import type { Ambiente, Relogio, Uf, UnidadeFederativa } from '@sinete/core';
+import { ErroDeConfiguracao, ehUf, tpAmbDoAmbiente, ufPorSigla } from '@sinete/core';
 import { nfeContingenciaDaUf } from '@sinete/transport';
 import type { CertIdentity } from './certs.ts';
 import { checkTransmissor } from './certs.ts';
@@ -37,7 +37,7 @@ import { SimState } from './state.ts';
 
 export interface SefazSimOptions {
   /** Relógio de emissão da SEFAZ simulada. Nos testes, um `manualClock` do `@sinete/core`. */
-  readonly clock: Clock;
+  readonly clock: Relogio;
   /** UF autorizadora simulada. Padrão: `SP`. */
   readonly uf?: Uf;
   /** UFs atendidas além da própria (autorizador virtual). */
@@ -175,18 +175,18 @@ interface ArmedFault {
 
 function resolveConfig(o: SefazSimOptions): SimConfig {
   const uf = o.uf ?? 'SP';
-  if (!isUf(uf)) throw new ConfigError(`UF inválida: ${String(uf)}`);
+  if (!ehUf(uf)) throw new ErroDeConfiguracao(`UF inválida: ${String(uf)}`);
   const ambiente = o.ambiente ?? 'homologacao';
   const cUFs = [uf, ...(o.ufsAtendidas ?? [])].map((u) => {
-    if (!isUf(u)) throw new ConfigError(`UF atendida inválida: ${String(u)}`);
-    return (ufBySigla(u) as UfInfo).cUF;
+    if (!ehUf(u)) throw new ErroDeConfiguracao(`UF atendida inválida: ${String(u)}`);
+    return (ufPorSigla(u) as UnidadeFederativa).cUF;
   });
   return {
     clock: o.clock,
     ambiente,
-    tpAmb: tpAmbOf(ambiente),
+    tpAmb: tpAmbDoAmbiente(ambiente),
     uf,
-    cUF: (ufBySigla(uf) as UfInfo).cUF,
+    cUF: (ufPorSigla(uf) as UnidadeFederativa).cUF,
     cUFsAtendidas: [...new Set(cUFs)],
     offsetMinutes: o.offsetMinutes ?? -180,
     cadastro: o.cadastro ?? [],
@@ -272,7 +272,7 @@ export function createSefazSim(options: SefazSimOptions): SefazSim {
     const network = fault?.kind === 'drop' || fault?.kind === 'hang' ? fault : undefined;
     if (network?.phase === 'before') return { ...plain(0, ''), effect: network.kind };
     if ((request.method ?? 'POST').toUpperCase() !== 'POST') return plain(405, 'use POST');
-    const now = config.clock.now().getTime();
+    const now = config.clock.agora().getTime();
     let transmissor: CertIdentity | undefined;
     let transmissorRecusado: string | undefined;
     if (request.clientCertificate === undefined) {
@@ -347,12 +347,12 @@ export function createSefazSim(options: SefazSimOptions): SefazSim {
     },
     setAtivacaoSvc(ativacao: AtivacaoSvc | undefined, uf?: Uf): void {
       const sigla = uf ?? config.uf;
-      if (!isUf(sigla)) throw new ConfigError(`UF inválida: ${String(sigla)}`);
-      const { cUF } = ufBySigla(sigla) as UfInfo;
+      if (!ehUf(sigla)) throw new ErroDeConfiguracao(`UF inválida: ${String(sigla)}`);
+      const { cUF } = ufPorSigla(sigla) as UnidadeFederativa;
       if (ativacao === undefined) rt.ativacaoSvc.delete(cUF);
       else rt.ativacaoSvc.set(cUF, ativacao);
     },
-    settle: (): Promise<void> => exclusivo(() => settleLotes(rt, config.clock.now().getTime())),
+    settle: (): Promise<void> => exclusivo(() => settleLotes(rt, config.clock.agora().getTime())),
     inspect: {
       nfe: (chave: string): NfeRecord | undefined => st.nfes.get(chave),
       nfes: (): readonly NfeRecord[] => [...st.nfes.values()],

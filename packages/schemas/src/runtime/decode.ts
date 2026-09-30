@@ -8,9 +8,9 @@
  * original, que é a que a assinatura cobre.
  */
 
-import type { ValidationIssue } from '@sinete/core';
-import type { XmlDocument, XmlElement } from '@sinete/core/xml';
-import { descendants, escapeC14nAttribute, inScopeNamespaces } from '@sinete/core/xml';
+import type { Ocorrencia } from '@sinete/core';
+import type { DocumentoXml, ElementoXml } from '@sinete/core/xml';
+import { descendentes, escaparAtributoC14n, namespacesEmEscopo } from '@sinete/core/xml';
 import type { ComplexType, ElementParticle, Particle, RootElement } from './desc.ts';
 import { isComplexType, isElementParticle, isWildcard, maxOccurs } from './desc.ts';
 
@@ -24,7 +24,7 @@ export type DecodeIssueCode =
   | 'namespace_divergente'
   | 'raiz_inesperada';
 
-export interface DecodeIssue extends ValidationIssue {
+export interface DecodeIssue extends Ocorrencia {
   readonly code: DecodeIssueCode;
 }
 
@@ -66,23 +66,23 @@ function infoOf(ct: ComplexType): CtInfo {
 }
 
 /** Decodifica o elemento `el` como o tipo `ct`. Nunca lança por causa do conteúdo. */
-export function decode<T>(ct: ComplexType<T>, el: XmlElement, source?: string): Decoded<T> {
+export function decode<T>(ct: ComplexType<T>, el: ElementoXml, source?: string): Decoded<T> {
   const issues: DecodeIssue[] = [];
   const value = decodeCT(ct as ComplexType, el, issues, `/${el.local}`, source) as T;
   return { value, issues };
 }
 
 /** Decodifica um documento parseado pela raiz esperada. Raiz com outro nome ou namespace vira ocorrência. */
-export function decodeRoot<T>(root: RootElement<T>, doc: XmlDocument): Decoded<T> {
+export function decodeRoot<T>(root: RootElement<T>, doc: DocumentoXml): Decoded<T> {
   const issues: DecodeIssue[] = [];
-  if (doc.root.local !== root.name || doc.root.ns !== root.ns) {
+  if (doc.raiz.local !== root.name || doc.raiz.ns !== root.ns) {
     issues.push({
-      path: `/${doc.root.local}`,
+      caminho: `/${doc.raiz.local}`,
       code: 'raiz_inesperada',
-      message: `raiz esperada {${root.ns}}${root.name}`,
+      mensagem: `raiz esperada {${root.ns}}${root.name}`,
     });
   }
-  const value = decodeCT(root.type as ComplexType, doc.root, issues, `/${doc.root.local}`, doc.source) as T;
+  const value = decodeCT(root.type as ComplexType, doc.raiz, issues, `/${doc.raiz.local}`, doc.texto) as T;
   return { value, issues };
 }
 
@@ -97,30 +97,30 @@ function pushTo(o: Record<string, unknown>, key: string, v: unknown): void {
  * as que ele usa entram na tag de abertura dele. O default só entra quando difere do namespace do pai, que é o default
  * em que o serializer vai inserir o trecho. Sem prefixo herdado e com o default do pai, o trecho sai intacto.
  */
-function wildcardFragment(source: string, c: XmlElement, parent: XmlElement): string {
-  const raw = source.slice(c.start, c.end);
-  const outer = inScopeNamespaces(parent);
+function wildcardFragment(source: string, c: ElementoXml, parent: ElementoXml): string {
+  const raw = source.slice(c.inicio, c.fim);
+  const outer = namespacesEmEscopo(parent);
   const need = new Map<string, string>();
-  const declaredInside = (e: XmlElement, prefix: string): boolean => {
-    for (let x: XmlElement | null = e; x && x !== parent; x = x.parent) if (x.namespaces.has(prefix)) return true;
+  const declaredInside = (e: ElementoXml, prefix: string): boolean => {
+    for (let x: ElementoXml | null = e; x && x !== parent; x = x.pai) if (x.namespaces.has(prefix)) return true;
     return false;
   };
-  const use = (e: XmlElement, prefix: string): void => {
+  const use = (e: ElementoXml, prefix: string): void => {
     if (prefix === 'xml' || need.has(prefix) || declaredInside(e, prefix)) return;
     const uri = outer.get(prefix) ?? '';
     if (prefix === '' && uri === parent.ns) return;
     need.set(prefix, uri);
   };
-  for (const e of descendants(c)) {
-    use(e, e.prefix);
-    for (const a of e.attributes) if (a.prefix !== '') use(e, a.prefix);
+  for (const e of descendentes(c)) {
+    use(e, e.prefixo);
+    for (const a of e.atributos) if (a.prefixo !== '') use(e, a.prefixo);
   }
   if (need.size === 0) return raw;
   const decls = [...need]
     .sort((x, y) => (x[0] < y[0] ? -1 : x[0] > y[0] ? 1 : 0))
-    .map(([p, u]) => ` ${p === '' ? 'xmlns' : `xmlns:${p}`}="${escapeC14nAttribute(u)}"`)
+    .map(([p, u]) => ` ${p === '' ? 'xmlns' : `xmlns:${p}`}="${escaparAtributoC14n(u)}"`)
     .join('');
-  const at = 1 + c.name.length;
+  const at = 1 + c.nome.length;
   return raw.slice(0, at) + decls + raw.slice(at);
 }
 
@@ -133,45 +133,49 @@ function pushAttr(o: Record<string, unknown>, name: string, value: string): void
 
 function decodeCT(
   ct: ComplexType,
-  el: XmlElement,
+  el: ElementoXml,
   issues: DecodeIssue[],
   path: string,
   source: string | undefined,
 ): Record<string, unknown> {
   const o: Record<string, unknown> = {};
   const info = infoOf(ct);
-  for (const a of el.attributes) {
-    if (a.ns === '' && info.attrs.has(a.local)) o[a.local] = a.value;
+  for (const a of el.atributos) {
+    if (a.ns === '' && info.attrs.has(a.local)) o[a.local] = a.valor;
     else if (ct.aa) {
-      pushAttr(o, a.name, a.value);
+      pushAttr(o, a.nome, a.valor);
       // Atributo com prefixo leva a declaração junto, senão o serializer emitiria um prefixo não declarado.
-      if (a.prefix !== '' && a.prefix !== 'xml') pushAttr(o, `xmlns:${a.prefix}`, a.ns);
+      if (a.prefixo !== '' && a.prefixo !== 'xml') pushAttr(o, `xmlns:${a.prefixo}`, a.ns);
     } else
-      issues.push({ path: `${path}/@${a.name}`, code: 'atributo_desconhecido', message: 'atributo fora do schema' });
+      issues.push({
+        caminho: `${path}/@${a.nome}`,
+        code: 'atributo_desconhecido',
+        mensagem: 'atributo fora do schema',
+      });
   }
   if (ct.tx) {
     let s = '';
-    for (const c of el.children) {
-      if (c.type === 'text') s += c.value;
-      else if (c.type === 'element') {
+    for (const c of el.filhos) {
+      if (c.tipo === 'texto') s += c.valor;
+      else if (c.tipo === 'elemento') {
         issues.push({
-          path: `${path}/${c.local}`,
+          caminho: `${path}/${c.local}`,
           code: 'elemento_em_tipo_simples',
-          message: 'elemento em conteúdo simples',
+          mensagem: 'elemento em conteúdo simples',
         });
       }
     }
     o.$text = s;
     return o;
   }
-  for (const c of el.children) {
-    if (c.type === 'pi') continue;
-    if (c.type === 'text') {
-      const ws = /^[ \t\n\r]*$/.test(c.value);
+  for (const c of el.filhos) {
+    if (c.tipo === 'instrucao') continue;
+    if (c.tipo === 'texto') {
+      const ws = /^[ \t\n\r]*$/.test(c.valor);
       issues.push(
         ws
-          ? { path, code: 'whitespace_descartado', message: 'whitespace entre elementos descartado' }
-          : { path, code: 'texto_inesperado', message: 'texto em elemento só de elementos' },
+          ? { caminho: path, code: 'whitespace_descartado', mensagem: 'whitespace entre elementos descartado' }
+          : { caminho: path, code: 'texto_inesperado', mensagem: 'texto em elemento só de elementos' },
       );
       continue;
     }
@@ -181,12 +185,12 @@ function decodeCT(
       if (info.wildcard && source !== undefined) {
         pushTo(o, '$any', wildcardFragment(source, c, el));
       } else {
-        issues.push({ path: cp, code: 'elemento_desconhecido', message: 'elemento fora do schema' });
+        issues.push({ caminho: cp, code: 'elemento_desconhecido', mensagem: 'elemento fora do schema' });
       }
       continue;
     }
     if (c.ns !== (ei.p.ns ?? ct.ns)) {
-      issues.push({ path: cp, code: 'namespace_divergente', message: `namespace esperado ${ei.p.ns ?? ct.ns}` });
+      issues.push({ caminho: cp, code: 'namespace_divergente', mensagem: `namespace esperado ${ei.p.ns ?? ct.ns}` });
     }
     const v = isComplexType(ei.p.t) ? decodeCT(ei.p.t, c, issues, cp, source) : decodeSimple(c, issues, cp);
     if (ei.arr) pushTo(o, c.local, v);
@@ -195,20 +199,20 @@ function decodeCT(
   return o;
 }
 
-function decodeSimple(el: XmlElement, issues: DecodeIssue[], path: string): string {
-  for (const a of el.attributes) {
-    issues.push({ path: `${path}/@${a.name}`, code: 'atributo_desconhecido', message: 'atributo fora do schema' });
+function decodeSimple(el: ElementoXml, issues: DecodeIssue[], path: string): string {
+  for (const a of el.atributos) {
+    issues.push({ caminho: `${path}/@${a.nome}`, code: 'atributo_desconhecido', mensagem: 'atributo fora do schema' });
   }
-  const first = el.children[0];
-  if (el.children.length === 1 && first?.type === 'text') return first.value;
+  const first = el.filhos[0];
+  if (el.filhos.length === 1 && first?.tipo === 'texto') return first.valor;
   let s = '';
-  for (const c of el.children) {
-    if (c.type === 'text') s += c.value;
-    else if (c.type === 'element') {
+  for (const c of el.filhos) {
+    if (c.tipo === 'texto') s += c.valor;
+    else if (c.tipo === 'elemento') {
       issues.push({
-        path: `${path}/${c.local}`,
+        caminho: `${path}/${c.local}`,
         code: 'elemento_em_tipo_simples',
-        message: 'elemento em tipo simples',
+        mensagem: 'elemento em tipo simples',
       });
     }
   }

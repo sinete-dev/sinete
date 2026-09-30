@@ -1,5 +1,5 @@
 /** Códigos estáveis das ocorrências dos validadores (API pública: renomear é major). */
-export const VALIDATION_ISSUE_CODES = [
+export const CODIGOS_OCORRENCIA = [
   'cpf_caractere_invalido',
   'cpf_tamanho_invalido',
   'cpf_digitos_repetidos',
@@ -42,4 +42,4 @@ export const VALIDATION_ISSUE_CODES = [
   'ie_base_invalida',
 ] as const;
 
-export type ValidationIssueCode = (typeof VALIDATION_ISSUE_CODES)[number];
+export type CodigoOcorrencia = (typeof CODIGOS_OCORRENCIA)[number];

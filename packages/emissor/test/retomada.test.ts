@@ -5,8 +5,8 @@
  * o usuário, está em `nfe.test.ts`.
  */
 import { beforeEach, describe, expect, test } from 'bun:test';
-import type { ManualClock } from '@sinete/core';
-import { manualClock } from '@sinete/core';
+import type { RelogioManual } from '@sinete/core';
+import { relogioManual } from '@sinete/core';
 import type { Desfecho, OpcoesRetomada, RegistroTransmissao, TipoDocumento, TransmissaoStore } from '../src/index.ts';
 import {
   POLITICA_RETOMADA_PADRAO,
@@ -22,14 +22,14 @@ const DIA = 24 * HORA;
 
 type Comportamento = 'resolve' | 'falha' | 'ocupada' | 'divergente' | 'sem-bytes' | 'descarta' | 'pendente';
 
-let clock: ManualClock;
+let clock: RelogioManual;
 let store: TransmissaoStore;
 let comportamento: Map<string, Comportamento>;
 let chamadas: string[];
 let alertas: { registro: RegistroTransmissao; ultimo: unknown; tentativas: number }[];
 
 beforeEach(() => {
-  clock = manualClock('2026-09-27T10:00:00-03:00');
+  clock = relogioManual('2026-09-27T10:00:00-03:00');
   store = createMemoriaStore({ clock });
   comportamento = new Map();
   chamadas = [];
@@ -95,12 +95,12 @@ function opcoes(extra: Partial<OpcoesRetomada> = {}): OpcoesRetomada {
 describe('retomarPendentes', () => {
   test('só as gravadas há até 3 dias, paradas há 5 minutos e sem trava', async () => {
     await gravada('velha');
-    clock.advance(4 * DIA);
+    clock.avancar(4 * DIA);
     await gravada('boa');
     await gravada('travada', 'mdfe');
-    clock.advance(10 * MIN);
+    clock.avancar(10 * MIN);
     await gravada('recente');
-    clock.advance(MIN);
+    clock.avancar(MIN);
     const t = await store.travar('mdfe', 'travada', 10 * MIN);
     expect(t).toBeDefined();
     const semBytes = await store.travar('nfe', 'sem-bytes', MIN);
@@ -117,12 +117,12 @@ describe('retomarPendentes', () => {
   test('lote pequeno, as nunca tentadas primeiro; o filtro do integrador não conta no lote', async () => {
     for (const ref of ['fora', 'a1', 'a2', 'a3']) {
       await gravada(ref);
-      clock.advance(MIN);
+      clock.avancar(MIN);
     }
     // A mais antiga já foi tentada: vai para o fim da fila.
     const a1 = await store.ler('nfe', 'a1');
     if (a1) await store.registrarTentativa(a1, { alertar: false });
-    clock.advance(20 * MIN);
+    clock.avancar(20 * MIN);
     const r = await retomarPendentes(opcoes({ politica: { lote: 2 }, deveRetomar: (reg) => reg.ref !== 'fora' }));
     expect(chamadas).toEqual(['a2', 'a3']);
     expect(r.desfechos).toEqual({ ignorada: 1, 'sem-desfecho': 2 });
@@ -131,9 +131,9 @@ describe('retomarPendentes', () => {
 
   test('muitas recusadas pelo filtro não tomam a vez das outras', async () => {
     for (let n = 0; n < 60; n++) await gravada(`fora-${n}`);
-    clock.advance(MIN);
+    clock.avancar(MIN);
     await gravada('vez');
-    clock.advance(10 * MIN);
+    clock.avancar(10 * MIN);
     comportamento.set('vez', 'resolve');
     const r = await retomarPendentes(opcoes({ deveRetomar: async (reg) => reg.ref === 'vez' }));
     expect(chamadas).toEqual(['vez']);
@@ -142,9 +142,9 @@ describe('retomarPendentes', () => {
 
   test('mais recusadas pelo filtro que a primeira seleção: a seleção dobra e acha as de trás', async () => {
     for (let n = 0; n < 1001; n++) await gravada(`fora-${n}`);
-    clock.advance(MIN);
+    clock.avancar(MIN);
     await gravada('vez');
-    clock.advance(10 * MIN);
+    clock.avancar(10 * MIN);
     comportamento.set('vez', 'resolve');
     const r = await retomarPendentes(opcoes({ deveRetomar: (reg) => reg.ref === 'vez' }));
     expect(chamadas).toEqual(['vez']);
@@ -154,7 +154,7 @@ describe('retomarPendentes', () => {
   test('conta as tentativas sem desfecho e alerta uma vez, na terceira; depois, uma por hora', async () => {
     await gravada('doc');
     const rodar = async (): Promise<void> => {
-      clock.advance(11 * MIN);
+      clock.avancar(11 * MIN);
       await retomarPendentes(opcoes());
     };
     await rodar();
@@ -171,7 +171,7 @@ describe('retomarPendentes', () => {
     await rodar();
     expect(chamadas).toHaveLength(3);
     // ...e uma tentativa por hora, sem alerta de novo.
-    clock.advance(HORA);
+    clock.avancar(HORA);
     await retomarPendentes(opcoes());
     expect(chamadas).toHaveLength(4);
     expect(alertas).toHaveLength(1);
@@ -181,7 +181,7 @@ describe('retomarPendentes', () => {
   test('divergente alerta na primeira tentativa; pendente não', async () => {
     await gravada('div');
     await gravada('pend');
-    clock.advance(10 * MIN);
+    clock.avancar(10 * MIN);
     comportamento.set('div', 'divergente');
     comportamento.set('pend', 'pendente');
     const r = await retomarPendentes(opcoes());
@@ -194,7 +194,7 @@ describe('retomarPendentes', () => {
   test('o usuário com a trava: não conta tentativa; sem bytes na hora da trava: nada', async () => {
     await gravada('a');
     await gravada('b');
-    clock.advance(10 * MIN);
+    clock.avancar(10 * MIN);
     comportamento.set('a', 'ocupada');
     comportamento.set('b', 'sem-bytes');
     const r = await retomarPendentes(opcoes());
@@ -205,7 +205,7 @@ describe('retomarPendentes', () => {
 
   test('trava perdida no meio da retomada: quem assumiu decide, sem contar tentativa', async () => {
     await gravada('a');
-    clock.advance(10 * MIN);
+    clock.avancar(10 * MIN);
     const r = await retomarPendentes(
       opcoes({
         usarEmissor: (_r, fn) =>
@@ -223,12 +223,12 @@ describe('retomarPendentes', () => {
 
   test('o prazo vale de novo depois do filtro do integrador', async () => {
     await gravada('a');
-    clock.advance(10 * MIN);
+    clock.avancar(10 * MIN);
     comportamento.set('a', 'resolve');
     const r = await retomarPendentes(
       opcoes({
         deveRetomar: () => {
-          clock.advance(8 * MIN);
+          clock.avancar(8 * MIN);
           return true;
         },
       }),
@@ -239,7 +239,7 @@ describe('retomarPendentes', () => {
 
   test('a gravação mudou entre a seleção e a retomada: não retoma com a seleção velha', async () => {
     for (const ref of ['tentada', 'regravada', 'concluida']) await gravada(ref);
-    clock.advance(10 * MIN);
+    clock.avancar(10 * MIN);
     const r = await retomarPendentes(
       opcoes({
         deveRetomar: async (reg) => {
@@ -264,7 +264,7 @@ describe('retomarPendentes', () => {
 
   test('recusa que descarta os bytes conta como resolvida', async () => {
     await gravada('doc');
-    clock.advance(10 * MIN);
+    clock.avancar(10 * MIN);
     comportamento.set('doc', 'descarta');
     const r = await retomarPendentes(opcoes());
     expect(r.desfechos).toEqual({ resolvida: 1 });
@@ -274,13 +274,13 @@ describe('retomarPendentes', () => {
   test('para de começar retomadas depois do prazo da execução', async () => {
     await gravada('a');
     await gravada('b');
-    clock.advance(10 * MIN);
+    clock.avancar(10 * MIN);
     const r = await retomarPendentes(
       opcoes({
         usarEmissor: async (_r, fn) =>
           fn({
             async retomar(): Promise<Desfecho | undefined> {
-              clock.advance(8 * MIN);
+              clock.avancar(8 * MIN);
               return pendente;
             },
           }),
@@ -302,7 +302,7 @@ describe('retomarPendentes', () => {
 
   test('aoDecidir e jaGuardado da retomada chegam ao retomar de cada gravação', async () => {
     await gravada('a');
-    clock.advance(10 * MIN);
+    clock.avancar(10 * MIN);
     const recebidas: unknown[] = [];
     const aoDecidir = (): void => {};
     const jaGuardado = (): boolean => false;

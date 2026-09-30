@@ -21,7 +21,7 @@ import { createNfeEmissor } from 'sinete/emissor/nfe';
 import { determine } from 'sinete/nfe/ibs-cbs';
 import { danfe, toPdf } from 'sinete/da/nfe';
 import { damdfe } from 'sinete/da/mdfe';
-import { isValidCnpj } from 'sinete/validators';
+import { cnpjValido } from 'sinete/validators';
 ```
 
 Para emitir com retomada, o emissor grava os bytes assinados no banco da aplicação antes de enviar. Se a resposta se perder, consulta a chave e retoma com esses bytes, evitando que uma nova montagem transforme a tentativa em outra nota. A aplicação fornece o `TransmissaoStore` e o `aoDecidir` idempotente que guarda o documento.

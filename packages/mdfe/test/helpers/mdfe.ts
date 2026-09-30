@@ -2,8 +2,8 @@
  * MDF-e sintéticos para os testes. Documentos são exemplos públicos de dígito verificador válido (CNPJ 11.222.333/0001-81,
  * CPF 111.444.777-35 e 529.982.247-25, IE MT 0013000001-9); nomes, placas e chaves de NF-e e CT-e são inventados.
  */
-import { fixedClock, timeContext } from '@sinete/core';
-import { buildChaveAcesso } from '@sinete/validators';
+import { contextoDeTempo, relogioFixo } from '@sinete/core';
+import { montarChaveAcesso } from '@sinete/validators';
 import type { BuildMdfeOptions, MdfeInput } from '../../src/index.ts';
 
 export const CNPJ_EMIT = '11222333000181';
@@ -19,7 +19,7 @@ export function opcoes(extra: Partial<BuildMdfeOptions> = {}, at: string = EMISS
   let seed = 4242;
   return {
     ambiente: 'homologacao',
-    time: timeContext({ emissao: fixedClock(at) }),
+    time: contextoDeTempo({ emissao: relogioFixo(at) }),
     random: (b: Uint8Array): Uint8Array => {
       for (let i = 0; i < b.length; i++) {
         seed = (seed * 1103515245 + 12345) % 2 ** 31;
@@ -33,7 +33,7 @@ export function opcoes(extra: Partial<BuildMdfeOptions> = {}, at: string = EMISS
 
 /** Chave sintética de NF-e (55) ou CT-e (57) de MT, emitida pelo CNPJ de teste. */
 export function chaveDoc(n: number, mod: '55' | '57' = '55', tpEmis = '1'): string {
-  return buildChaveAcesso({
+  return montarChaveAcesso({
     cUF: '51',
     aamm: '2609',
     emitente: CNPJ_EMIT,

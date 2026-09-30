@@ -4,12 +4,12 @@
  * português dos dois formatos de caminho.
  */
 import { describe, expect, test } from 'bun:test';
-import type { ValidationIssue } from '@sinete/core';
+import type { Ocorrencia } from '@sinete/core';
 import type { BuildNfeResult, IbsCbsCalculator, Item } from '../src/index.ts';
 import { buildNfe, rotuloDoCaminho } from '../src/index.ts';
 import { item, nota, opcoes } from './helpers/nota.ts';
 
-function falha(r: BuildNfeResult): readonly ValidationIssue[] {
+function falha(r: BuildNfeResult): readonly Ocorrencia[] {
   if (r.ok) throw new Error('esperava ocorrências');
   return r.issues;
 }
@@ -20,25 +20,25 @@ describe('buildNfe: origem das ocorrências', () => {
     const issues = falha(await buildNfe(nota({ emitente: { ...e, IE: '123' } }), opcoes()));
     expect(issues.length).toBeGreaterThan(0);
     expect(issues.every((i) => i.origem === 'entrada')).toBe(true);
-    expect(issues.map((i) => i.path)).toContain('emitente.IE');
+    expect(issues.map((i) => i.caminho)).toContain('emitente.IE');
   });
 
   test('cNF informado recusado pela regra da chave é entrada, no campo cNF', async () => {
     const issues = falha(await buildNfe(nota({ cNF: '00000000' }), opcoes()));
-    expect(issues).toEqual([expect.objectContaining({ path: 'cNF', code: 'chave_invalida', origem: 'entrada' })]);
+    expect(issues).toEqual([expect.objectContaining({ caminho: 'cNF', code: 'chave_invalida', origem: 'entrada' })]);
   });
 
   test('schema do XML montado é montagem', async () => {
     const issues = falha(await buildNfe(nota({ natOp: 'X'.repeat(61) }), opcoes()));
     expect(issues).toEqual([
-      expect.objectContaining({ code: 'schema', path: '/infNFe/ide/natOp', origem: 'montagem' }),
+      expect.objectContaining({ code: 'schema', caminho: '/infNFe/ide/natOp', origem: 'montagem' }),
     ]);
   });
 
   test('caractere fora do XML é conferido no documento montado', async () => {
     const issues = falha(await buildNfe(nota({ natOp: 'VENDA \u0001' }), opcoes()));
     expect(issues).toEqual([
-      expect.objectContaining({ path: 'infNFe.ide.natOp', code: 'campo_invalido', origem: 'montagem' }),
+      expect.objectContaining({ caminho: 'infNFe.ide.natOp', code: 'campo_invalido', origem: 'montagem' }),
     ]);
   });
 
@@ -47,8 +47,8 @@ describe('buildNfe: origem das ocorrências', () => {
       calcular: () => ({
         itens: [],
         issues: [
-          { path: 'itens[0].impostos.ibsCbs', code: 'ibscbs_calculo', message: 'sem origem' },
-          { path: 'itens[0].impostos.ibsCbs', code: 'ibscbs_nao_suportado', message: 'marcada', origem: 'entrada' },
+          { caminho: 'itens[0].impostos.ibsCbs', code: 'ibscbs_calculo', mensagem: 'sem origem' },
+          { caminho: 'itens[0].impostos.ibsCbs', code: 'ibscbs_nao_suportado', mensagem: 'marcada', origem: 'entrada' },
         ],
       }),
     };
@@ -58,8 +58,8 @@ describe('buildNfe: origem das ocorrências', () => {
       impostos: { ...b.impostos, ibsCbs: { classificacao: { CST: '000', cClassTrib: '000001', vBC: '10.00' } } },
     };
     const issues = falha(await buildNfe(nota({ itens: [it] }), opcoes({ ibsCbs: calculadora })));
-    expect(issues.find((i) => i.message === 'sem origem')?.origem).toBe('montagem');
-    expect(issues.find((i) => i.message === 'marcada')?.origem).toBe('entrada');
+    expect(issues.find((i) => i.mensagem === 'sem origem')?.origem).toBe('montagem');
+    expect(issues.find((i) => i.mensagem === 'marcada')?.origem).toBe('entrada');
   });
 
   test('grupo IBSCBS pronto com erro de schema é da entrada', async () => {

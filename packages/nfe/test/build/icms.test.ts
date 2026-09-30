@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import type { ValidationIssue } from '@sinete/core';
+import type { Ocorrencia } from '@sinete/core';
 import type { BuiltNfe, Icms } from '../../src/index.ts';
 import { buildNfe, MotivoDesoneracaoIcms } from '../../src/index.ts';
 import { item, nota, opcoes } from '../helpers/nota.ts';
@@ -13,7 +13,7 @@ async function comIcms(icms: Icms, crt: '1' | '3' = '3'): Promise<BuiltNfe> {
   return r.value;
 }
 
-async function issuesDe(icms: Icms): Promise<readonly ValidationIssue[]> {
+async function issuesDe(icms: Icms): Promise<readonly Ocorrencia[]> {
   const r = await buildNfe(nota({ itens: [item({}, icms)] }), opcoes());
   if (r.ok) throw new Error('esperava ocorrências');
   return r.issues;
@@ -125,7 +125,7 @@ describe('grupos do ICMS', () => {
       pRedAdRem: '10',
       motRedAdRem: '1',
     });
-    expect(issues.map((i) => i.path)).toEqual([
+    expect(issues.map((i) => i.caminho)).toEqual([
       'itens[0].impostos.icms.vICMSMono',
       'itens[0].impostos.icms.vICMSMonoReten',
     ]);
@@ -296,7 +296,7 @@ describe('grupos do ICMS', () => {
   test('90 com diferimento ou valores do ICMS próprio sem pICMS é ocorrência, não descarte', async () => {
     const issues = await issuesDe({ CST: '90', orig: '0', vICMSOp: '10', pDif: '100', vICMSDif: '10' });
     expect(issues).toEqual([
-      expect.objectContaining({ code: 'campo_obrigatorio', path: 'itens[0].impostos.icms.pICMS' }),
+      expect.objectContaining({ code: 'campo_obrigatorio', caminho: 'itens[0].impostos.icms.pICMS' }),
     ]);
   });
 
@@ -415,7 +415,7 @@ describe('regras do ICMS', () => {
   test('valor informado que diverge do calculado além da tolerância', async () => {
     const issues = await issuesDe({ CST: '00', orig: '0', pICMS: '18', vICMS: '2.72' });
     expect(issues).toEqual([
-      expect.objectContaining({ code: 'valor_divergente', path: 'itens[0].impostos.icms.vICMS' }),
+      expect.objectContaining({ code: 'valor_divergente', caminho: 'itens[0].impostos.icms.vICMS' }),
     ]);
   });
 

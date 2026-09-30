@@ -7,7 +7,7 @@
  * namespace, schema) e a assinatura, na ordem da aba RN_RECEPCAO_DPS e do nível 1 da aba RN DPS_NFS-e.
  */
 
-import { nfseErroByCode } from '@sinete/rejeicoes/nfse';
+import { nfseErroPorCodigo } from '@sinete/rejeicoes/nfse';
 import type { TCDPS, TCInfDPS, TCPedRegEvt } from '@sinete/schemas/nfse/1.01-20260727';
 import type { AliquotaSim, MunicipioSim, NfseSimConfig, ServicoMunicipalSim } from './dados.ts';
 import { convenioDe } from './dados.ts';
@@ -85,7 +85,7 @@ export interface NfseSimRegras {
 }
 
 function fonte(codigo: string): string {
-  const e = nfseErroByCode(codigo);
+  const e = nfseErroPorCodigo(codigo);
   const r = e?.regras[0];
   return r === undefined ? 'sem regra no catálogo' : `${e?.fonte}, linha ${r.linha}`;
 }
@@ -195,7 +195,7 @@ export const NFSE_REGRAS_PADRAO: NfseSimRegras = {
 
 /** Mensagem oficial do código, com os marcadores trocados. */
 export function mensagemDe(codigo: string, troca: Readonly<Record<string, string>> = {}): string {
-  let m = nfseErroByCode(codigo)?.mensagem ?? codigo;
+  let m = nfseErroPorCodigo(codigo)?.mensagem ?? codigo;
   for (const [de, para] of Object.entries(troca)) m = m.replaceAll(de, para);
   return m;
 }

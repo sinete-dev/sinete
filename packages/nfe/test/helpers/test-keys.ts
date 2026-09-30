@@ -2,7 +2,7 @@
  * Chave e certificado sintéticos gerados em tempo de teste, só com WebCrypto. Nada disso é commitado: cada execução
  * gera um par RSA-2048 novo e um certificado autoassinado mínimo (CN "sinete teste sintetico") para o KeyInfo.
  */
-import type { DataSigner } from '@sinete/core';
+import type { AssinadorDeDados } from '@sinete/core';
 
 const subtle = globalThis.crypto.subtle;
 
@@ -43,7 +43,7 @@ function name(cn: string): Uint8Array {
 export interface TestKeys {
   readonly certificateDer: Uint8Array;
   readonly pkcs8: Uint8Array;
-  readonly dataSigner: DataSigner;
+  readonly dataSigner: AssinadorDeDados;
 }
 
 /** Gera um par RSA-2048 e um certificado X.509 v3 autoassinado mínimo, válido de 2026 a 2036. */
@@ -75,10 +75,10 @@ export async function generateTestKeys(cn = 'sinete teste sintetico'): Promise<T
   const certificateDer = seq(tbs, sha256WithRsa, tlv(0x03, [0, ...sig]));
 
   const signKey = await subtle.importKey('pkcs8', pkcs8, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-1' }, false, ['sign']);
-  const dataSigner: DataSigner = {
-    kind: 'data',
-    certificateDer: async () => certificateDer,
-    sign: async (data, hash) => {
+  const dataSigner: AssinadorDeDados = {
+    tipo: 'dados',
+    certificadoDer: async () => certificateDer,
+    assinar: async (data, hash) => {
       if (hash !== 'SHA-1') throw new Error(`hash inesperado ${hash}`);
       return new Uint8Array(await subtle.sign('RSASSA-PKCS1-v1_5', signKey, data as Uint8Array<ArrayBuffer>));
     },

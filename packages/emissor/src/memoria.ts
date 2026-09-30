@@ -10,8 +10,8 @@
  * suíte de contrato e os testes simulam o outro processo e o reinício. O relógio do "banco" é o `clock` recebido.
  */
 
-import type { Clock } from '@sinete/core';
-import { systemClock } from '@sinete/core';
+import type { Relogio } from '@sinete/core';
+import { relogioDoSistema } from '@sinete/core';
 import type { DadosContingenciaMemoria } from './contingencia.ts';
 import { contingenciaEmMemoria, dadosContingenciaMemoria } from './contingencia.ts';
 import type { TipoDocumento } from './desfecho.ts';
@@ -65,7 +65,7 @@ export function createBancoMemoria(): BancoMemoria {
 
 export interface OpcoesMemoria {
   /** Relógio do "banco": prazos, gravação e tentativas. Padrão: o do sistema. */
-  readonly clock?: Clock;
+  readonly clock?: Relogio;
   /** Banco compartilhado; padrão, um novo e só deste store. */
   readonly banco?: BancoMemoria;
 }
@@ -74,13 +74,13 @@ const chave = (tipo: TipoDocumento, ref: string): string => `${tipo}\u0000${ref}
 
 /** Cria o store em memória (veja o aviso do módulo: só testes e scripts de um processo). */
 export function createMemoriaStore(opcoes: OpcoesMemoria = {}): TransmissaoStore {
-  const clock = opcoes.clock ?? systemClock;
+  const clock = opcoes.clock ?? relogioDoSistema;
   const banco = opcoes.banco ?? createBancoMemoria();
-  const agora = (): number => clock.now().getTime();
+  const agora = (): number => clock.agora().getTime();
   const proximo = (prefixo: string): string => `${prefixo}-${++banco.sequencia}`;
   /** Instante para o chamador, sem o global `Date` (relógio injetado): uma cópia do `Date` do relógio. */
   const instante = (ms: number): Instante => {
-    const d = clock.now();
+    const d = clock.agora();
     d.setTime(ms);
     return d;
   };

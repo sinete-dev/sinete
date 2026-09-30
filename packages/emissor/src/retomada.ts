@@ -20,8 +20,8 @@
  * - a retomada que perde a trava para outro processo não conta tentativa.
  */
 
-import type { Clock } from '@sinete/core';
-import { ConfigError, isSineteError, systemClock } from '@sinete/core';
+import type { Relogio } from '@sinete/core';
+import { ErroDeConfiguracao, ehErroSinete, relogioDoSistema } from '@sinete/core';
 import type { Desfecho } from './desfecho.ts';
 import type { AoDecidir, JaGuardado, OpcoesRetomar } from './emissor.ts';
 import type { RegistroTransmissao, TransmissaoStore } from './store.ts';
@@ -111,7 +111,7 @@ export interface OpcoesRetomada {
   /** Veja `JaGuardado`: passado ao `retomar` de cada gravação. */
   readonly jaGuardado?: JaGuardado;
   /** Relógio do prazo da execução. Padrão: o do sistema. */
-  readonly clock?: Clock;
+  readonly clock?: Relogio;
 }
 
 /**
@@ -123,12 +123,12 @@ const SELECAO = 1000;
 function conferirPolitica(p: PoliticaRetomada): void {
   for (const [nome, v] of Object.entries(p)) {
     if (typeof v !== 'number' || !Number.isFinite(v) || v < 0) {
-      throw new ConfigError(`política de retomada: ${nome} precisa ser um número finito e não negativo`, {
-        details: { [nome]: String(v) },
+      throw new ErroDeConfiguracao(`política de retomada: ${nome} precisa ser um número finito e não negativo`, {
+        detalhes: { [nome]: String(v) },
       });
     }
   }
-  if (p.idadeMaximaMs <= 0) throw new ConfigError('política de retomada: idadeMaximaMs precisa ser positiva');
+  if (p.idadeMaximaMs <= 0) throw new ErroDeConfiguracao('política de retomada: idadeMaximaMs precisa ser positiva');
 }
 
 /**
@@ -139,10 +139,10 @@ function conferirPolitica(p: PoliticaRetomada): void {
 export async function retomarPendentes(opcoes: OpcoesRetomada): Promise<ResumoRetomada> {
   const politica: PoliticaRetomada = { ...POLITICA_RETOMADA_PADRAO, ...opcoes.politica };
   conferirPolitica(politica);
-  if (typeof opcoes.aoAlertar !== 'function') throw new ConfigError('aoAlertar é obrigatório na retomada');
+  if (typeof opcoes.aoAlertar !== 'function') throw new ErroDeConfiguracao('aoAlertar é obrigatório na retomada');
   const { store } = opcoes;
-  const clock = opcoes.clock ?? systemClock;
-  const inicio = clock.now().getTime();
+  const clock = opcoes.clock ?? relogioDoSistema;
+  const inicio = clock.agora().getTime();
   const filtro = {
     idadeMaximaMs: politica.idadeMaximaMs,
     paradaHaMs: politica.paradaHaMs,
@@ -156,7 +156,7 @@ export async function retomarPendentes(opcoes: OpcoesRetomada): Promise<ResumoRe
   let alertas = 0;
   let adiadas = 0;
   let tentadas = 0;
-  const esgotado = (): boolean => clock.now().getTime() - inicio >= politica.prazoMs;
+  const esgotado = (): boolean => clock.agora().getTime() - inicio >= politica.prazoMs;
   for (let limite = SELECAO; ; limite *= 2) {
     const lista = await store.listarPendentes({ ...filtro, limite });
     // Uma por vez: cada retomada pode esperar a SEFAZ, e o lote é pequeno.
@@ -213,7 +213,7 @@ export async function retomarPendentes(opcoes: OpcoesRetomada): Promise<ResumoRe
       ultimo = res;
     } catch (e) {
       // Outro processo tem a trava, ou a assumiu no meio desta retomada: é ele quem conta, não esta execução.
-      if (isSineteError(e, 'transmissao_em_andamento') || isSineteError(e, 'trava_perdida')) return 'ocupada';
+      if (ehErroSinete(e, 'transmissao_em_andamento') || ehErroSinete(e, 'trava_perdida')) return 'ocupada';
       ultimo = { erro: e };
     }
     const agora = await store.ler(r.tipo, r.ref);

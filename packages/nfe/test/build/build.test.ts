@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'bun:test';
 import { createHash } from 'node:crypto';
-import type { ValidationIssue } from '@sinete/core';
-import { fixedClock, formatarVerProc, manualClock, timeContext } from '@sinete/core';
-import { verifySignature } from '@sinete/core/xml';
-import { buildChaveAcesso, parseChaveAcesso } from '@sinete/validators';
+import type { Ocorrencia } from '@sinete/core';
+import { contextoDeTempo, formatarVerProc, relogioFixo, relogioManual } from '@sinete/core';
+import { conferirAssinatura } from '@sinete/core/xml';
+import { lerChaveAcesso, montarChaveAcesso } from '@sinete/validators';
 import type { BuildNfeResult, BuiltNfe, IbsCbsCalculator, Item, NfeInput } from '../../src/index.ts';
 import { buildNfe, exigenciaRespTec, hashCsrt, signNfe, TipoPagamento, XNOME_HOMOLOGACAO } from '../../src/index.ts';
 import { VERSAO_PACOTE } from '../../src/versao-gerada.ts';
@@ -15,7 +15,7 @@ function ok(r: BuildNfeResult): BuiltNfe {
   return r.value;
 }
 
-function falha(r: BuildNfeResult): readonly ValidationIssue[] {
+function falha(r: BuildNfeResult): readonly Ocorrencia[] {
   if (r.ok) throw new Error('esperava ocorrências');
   return r.issues;
 }
@@ -42,7 +42,7 @@ describe('buildNfe: identificação e chave', () => {
     expect(n.chave.slice(25, 34)).toBe('000000123');
     expect(n.chave.slice(34, 35)).toBe('1');
     expect(n.chave.slice(35, 43)).toBe(n.cNF);
-    expect(parseChaveAcesso(n.chave, { emissao: true }).ok).toBe(true);
+    expect(lerChaveAcesso(n.chave, { emissao: true }).ok).toBe(true);
     expect(n.dhEmi).toBe('2026-09-26T10:00:00-03:00');
     expect(n.tpEmis).toBe('1');
     expect(n.xml.startsWith('<NFe xmlns="http://www.portalfiscal.inf.br/nfe"><infNFe Id="NFe')).toBe(true);
@@ -155,7 +155,7 @@ describe('buildNfe: identificação e chave', () => {
       { ...base, emitente: { ...base.emitente, CNPJ: '11222333000180' } as NfeInput['emitente'] },
       opcoes(),
     );
-    expect(falha(r)[0]?.path).toBe('emitente.CNPJ');
+    expect(falha(r)[0]?.caminho).toBe('emitente.CNPJ');
   });
 
   test('modelo fora de 55 e 65 e UF inválida', async () => {
@@ -171,7 +171,7 @@ describe('buildNfe: identificação e chave', () => {
   test('contingência SVC: tpEmis, dhCont e xJust', async () => {
     const contingencia = {
       tpEmis: '6' as const,
-      dhCont: fixedClock('2026-09-26T09:30:00-03:00').now(),
+      dhCont: relogioFixo('2026-09-26T09:30:00-03:00').agora(),
       xJust: 'SEFAZ AUTORIZADORA FORA DO AR',
     };
     const n = ok(await buildNfe(nota({ contingencia }), opcoes()));
@@ -181,7 +181,7 @@ describe('buildNfe: identificação e chave', () => {
     const curta = await buildNfe(nota({ contingencia: { ...contingencia, xJust: 'CURTA' } }), opcoes());
     expect(codes(curta)).toEqual(['contingencia_invalida']);
     const futura = await buildNfe(
-      nota({ contingencia: { ...contingencia, dhCont: fixedClock('2026-09-26T11:00:00-03:00').now() } }),
+      nota({ contingencia: { ...contingencia, dhCont: relogioFixo('2026-09-26T11:00:00-03:00').agora() } }),
       opcoes(),
     );
     expect(codes(futura)).toEqual(['contingencia_invalida']);
@@ -190,7 +190,7 @@ describe('buildNfe: identificação e chave', () => {
   test('dhSaiEnt no fuso do emitente, dPrevEntrega e verProc', async () => {
     const n = ok(
       await buildNfe(
-        nota({ dhSaiEnt: fixedClock('2026-09-26T15:00:00Z').now(), dPrevEntrega: '2026-09-30' }),
+        nota({ dhSaiEnt: relogioFixo('2026-09-26T15:00:00Z').agora(), dPrevEntrega: '2026-09-30' }),
         opcoes({ verProc: 'meu-erp 1.0' }),
       ),
     );
@@ -302,7 +302,7 @@ describe('buildNfe: destinatário', () => {
       codes(await buildNfe({ ...base, destinatario: { ...dest, indIEDest: '2', IE: IE_SP } }, opcoes())),
     ).toContain('combinacao_invalida');
     const ieRuim = await buildNfe({ ...base, destinatario: { ...dest, indIEDest: '1', IE: '110042490115' } }, opcoes());
-    expect(falha(ieRuim)[0]?.path).toBe('destinatario.IE');
+    expect(falha(ieRuim)[0]?.caminho).toBe('destinatario.IE');
   });
 
   test('locais de retirada e entrega, autXML', async () => {
@@ -329,7 +329,7 @@ describe('buildNfe: destinatário', () => {
 });
 
 describe('buildNfe: referências', () => {
-  const chaveRef = buildChaveAcesso({
+  const chaveRef = montarChaveAcesso({
     cUF: '35',
     aamm: '2608',
     emitente: CNPJ_EMIT,
@@ -377,7 +377,7 @@ describe('buildNfe: referências', () => {
       nota({ referenciadas: [{ refNFe: `${chaveRef.slice(0, 43)}${(Number(chaveRef.slice(43)) + 1) % 10}` }] }),
       opcoes(),
     );
-    expect(falha(r)[0]?.path).toBe('referenciadas[0].refNFe');
+    expect(falha(r)[0]?.caminho).toBe('referenciadas[0].refNFe');
   });
 
   test('refNFP modelo 04 é vedado para notas depois do fim do modelo (Ajuste SINIEF 10/2022)', async () => {
@@ -587,12 +587,12 @@ describe('buildNfe: tributos do item e totais', () => {
     const it: Item = { ...b, produto: { ...b.produto, vProd: '16' } };
     expect(falha(await buildNfe(nota({ itens: [it] }), opcoes()))[0]).toMatchObject({
       code: 'valor_divergente',
-      path: 'itens[0].produto.vProd',
+      caminho: 'itens[0].produto.vProd',
     });
   });
 
   test('vTotTrib, devolução de IPI, infAdProd, obsItem e DFe referenciado no item', async () => {
-    const chave = buildChaveAcesso({
+    const chave = montarChaveAcesso({
       cUF: '35',
       aamm: '2608',
       emitente: CNPJ_EMIT,
@@ -619,7 +619,7 @@ describe('buildNfe: tributos do item e totais', () => {
     });
     expect(det(n).DFeReferenciado).toEqual({ chaveAcesso: chave, nItem: '1' });
     const ruim: Item = { ...it, DFeReferenciado: { chaveAcesso: '123' } };
-    expect(falha(await buildNfe(nota({ itens: [ruim] }), opcoes()))[0]?.path).toBe(
+    expect(falha(await buildNfe(nota({ itens: [ruim] }), opcoes()))[0]?.caminho).toBe(
       'itens[0].DFeReferenciado.chaveAcesso',
     );
   });
@@ -681,13 +681,16 @@ describe('buildNfe: IBS e CBS pela calculadora', () => {
     });
     expect(pedido.nota.destino).toEqual({ UF: 'SP', cMun: '3550308' });
     // O instante da emissão (o do dhEmi) vai junto, para a calculadora saber que regras da NT já valem.
-    expect((pedido.nota.emissao as Date).getTime()).toBe(opcoes().time.emissao.now().getTime());
+    expect((pedido.nota.emissao as Date).getTime()).toBe(opcoes().time.emissao.agora().getTime());
     expect(pedido.itens).toHaveLength(1);
     expect(String(pedido.itens[0]?.vICMS)).toBe('2.7');
   });
 
   test('a partir de 2027 (fato gerador) o vItem soma IBS e CBS (NT 2025.002, VB01-10)', async () => {
-    const time = timeContext({ emissao: fixedClock(EMISSAO), fatoGerador: fixedClock('2027-01-04T10:00:00-03:00') });
+    const time = contextoDeTempo({
+      emissao: relogioFixo(EMISSAO),
+      fatoGerador: relogioFixo('2027-01-04T10:00:00-03:00'),
+    });
     const n = ok(await buildNfe(nota({ itens: [classificado()] }), opcoes({ ibsCbs: calculadoraFixa, time })));
     expect(det(n).vItem).toBe('15.16');
     expect(n.infNFe.total.vNFTot).toBe('15.16');
@@ -721,7 +724,7 @@ describe('buildNfe: IBS e CBS pela calculadora', () => {
     const reclama: IbsCbsCalculator = {
       calcular: async () => ({
         itens: [],
-        issues: [{ path: 'itens[0].impostos.ibsCbs', code: 'ibscbs_calculo', message: 'cClassTrib desconhecido' }],
+        issues: [{ caminho: 'itens[0].impostos.ibsCbs', code: 'ibscbs_calculo', mensagem: 'cClassTrib desconhecido' }],
       }),
     };
     expect(codes(await buildNfe(nota({ itens: [classificado()] }), opcoes({ ibsCbs: reclama })))).toEqual([
@@ -814,13 +817,13 @@ describe('buildNfe: pagamentoIgualTotal', () => {
         ],
       },
     });
-    expect(falha(await buildNfe(dois, o)).find((i) => i.code === 'pagamento_igual_total')?.path).toBe(
+    expect(falha(await buildNfe(dois, o)).find((i) => i.code === 'pagamento_igual_total')?.caminho).toBe(
       'pagamento.detPag',
     );
     const { pagamento: _sem, ...semPagamento } = nota();
     expect(codes(await buildNfe(semPagamento, o))).toContain('pagamento_igual_total');
     const noventa = nota({ pagamento: { detPag: [{ tPag: TipoPagamento.SEM_PAGAMENTO, vPag: '0' }] } });
-    expect(falha(await buildNfe(noventa, o)).find((i) => i.code === 'pagamento_igual_total')?.path).toBe(
+    expect(falha(await buildNfe(noventa, o)).find((i) => i.code === 'pagamento_igual_total')?.caminho).toBe(
       'pagamento.detPag[0].tPag',
     );
   });
@@ -921,8 +924,8 @@ describe('responsável técnico e CSRT', () => {
   });
 
   test('exigência por UF como dado: PR exige desde 15/09/2025 em produção', () => {
-    const antes = fixedClock('2025-09-14T12:00:00-03:00').now();
-    const depois = fixedClock('2025-09-15T12:00:00-03:00').now();
+    const antes = relogioFixo('2025-09-14T12:00:00-03:00').agora();
+    const depois = relogioFixo('2025-09-15T12:00:00-03:00').agora();
     expect(exigenciaRespTec('PR', 'producao', antes)).toEqual({ infRespTec: 'opcional', csrt: 'opcional' });
     expect(exigenciaRespTec('PR', 'producao', depois)).toEqual({ infRespTec: 'obrigatorio', csrt: 'obrigatorio' });
     expect(exigenciaRespTec('SP', 'producao', depois)).toEqual({ infRespTec: 'opcional', csrt: 'opcional' });
@@ -947,7 +950,7 @@ describe('signNfe', () => {
     const assinada = await signNfe(n, keys.dataSigner);
     expect(assinada.startsWith(n.xml.slice(0, n.xml.length - '</infNFe></NFe>'.length))).toBe(true);
     expect(assinada.indexOf('<Signature')).toBeGreaterThan(assinada.indexOf('</infNFe>'));
-    const v = await verifySignature(assinada, { id: n.id, element: 'infNFe' });
+    const v = await conferirAssinatura(assinada, { id: n.id, elemento: 'infNFe' });
     expect(v.ok).toBe(true);
   });
 });
@@ -998,7 +1001,7 @@ describe('grupos repassados e contexto da calculadora', () => {
       },
     };
     const issues = falha(await buildNfe(nota({ itens: [it] }), opcoes()));
-    expect(issues.map((i) => [i.code, i.path])).toEqual([
+    expect(issues.map((i) => [i.code, i.caminho])).toEqual([
       ['decimal_invalido', 'itens[0].impostos.ibsCbs.gIBSCBS.vBC'],
       ['decimal_invalido', 'itens[0].impostos.is.vIS'],
     ]);
@@ -1029,7 +1032,7 @@ describe('grupos repassados e contexto da calculadora', () => {
       nota({ itens: [c], gCompraGov: { tpEnteGov: '1', pRedutor: 'x', tpOperGov: '1' } }),
       opcoes({ ibsCbs: calc }),
     );
-    expect(falha(r).filter((i) => i.path === 'gCompraGov.pRedutor')).toHaveLength(1);
+    expect(falha(r).filter((i) => i.caminho === 'gCompraGov.pRedutor')).toHaveLength(1);
   });
 });
 
@@ -1037,8 +1040,8 @@ test('texto com caractere proibido em XML vira ocorrência com o caminho, não e
   const b = item();
   const it: Item = { ...b, produto: { ...b.produto, xProd: 'ABC\u0001DEF' } };
   expect(falha(await buildNfe(nota({ itens: [it], natOp: 'VENDA \uD800' }), opcoes()))).toEqual([
-    expect.objectContaining({ path: 'infNFe.ide.natOp', code: 'campo_invalido' }),
-    expect.objectContaining({ path: 'infNFe.det[0].prod.xProd', code: 'campo_invalido' }),
+    expect.objectContaining({ caminho: 'infNFe.ide.natOp', code: 'campo_invalido' }),
+    expect.objectContaining({ caminho: 'infNFe.det[0].prod.xProd', code: 'campo_invalido' }),
   ]);
 });
 
@@ -1051,12 +1054,15 @@ test('grupo IBSCBS incompleto vira ocorrência de schema no item, antes dos tota
   };
   const issues = falha(await buildNfe(nota({ itens: [it] }), opcoes()));
   expect(issues.length).toBeGreaterThan(0);
-  expect(issues.every((i) => i.code === 'schema' && i.path.startsWith('itens[0].impostos.ibsCbs'))).toBe(true);
-  expect(issues.map((i) => i.path)).toContain('itens[0].impostos.ibsCbs.gIBSCBS');
+  expect(issues.every((i) => i.code === 'schema' && i.caminho.startsWith('itens[0].impostos.ibsCbs'))).toBe(true);
+  expect(issues.map((i) => i.caminho)).toContain('itens[0].impostos.ibsCbs.gIBSCBS');
 });
 
 test('a partir de 2027 o vIS soma no item mesmo sem IBSCBS; o fato gerador é lido uma vez', async () => {
-  const time = timeContext({ emissao: fixedClock(EMISSAO), fatoGerador: fixedClock('2027-01-04T10:00:00-03:00') });
+  const time = contextoDeTempo({
+    emissao: relogioFixo(EMISSAO),
+    fatoGerador: relogioFixo('2027-01-04T10:00:00-03:00'),
+  });
   const b = item();
   const comIbs: Item = {
     ...b,
@@ -1068,20 +1074,23 @@ test('a partir de 2027 o vIS soma no item mesmo sem IBSCBS; o fato gerador é li
   expect(det(n, 1).vItem).toBe('16.50');
   expect(n.infNFe.total.vNFTot).toBe('31.66');
 
-  const relogio = manualClock('2026-12-31T23:59:59-03:00');
+  const relogio = relogioManual('2026-12-31T23:59:59-03:00');
   const avanca: IbsCbsCalculator = {
     calcular(req) {
-      relogio.set('2027-01-01T00:00:01-03:00');
+      relogio.ajustar('2027-01-01T00:00:01-03:00');
       return calculadoraFixa.calcular(req);
     },
   };
-  const t2 = timeContext({ emissao: fixedClock(EMISSAO), fatoGerador: relogio });
+  const t2 = contextoDeTempo({ emissao: relogioFixo(EMISSAO), fatoGerador: relogio });
   const m = ok(await buildNfe(nota({ itens: [comIbs] }), opcoes({ ibsCbs: avanca, time: t2 })));
   expect(det(m).vItem).toBe('15.00');
 });
 
 test('nota só com IS: vItem e vNFTot sem IBSCBSTot', async () => {
-  const time = timeContext({ emissao: fixedClock(EMISSAO), fatoGerador: fixedClock('2027-01-04T10:00:00-03:00') });
+  const time = contextoDeTempo({
+    emissao: relogioFixo(EMISSAO),
+    fatoGerador: relogioFixo('2027-01-04T10:00:00-03:00'),
+  });
   const b = item();
   const is = { CSTIS: '000', cClassTribIS: '000001', vBCIS: '15.00', pIS: '10.0000', vIS: '1.50' };
   const comIs: Item = { ...b, impostos: { ...b.impostos, is: is as unknown as NonNullable<Item['impostos']['is']> } };
@@ -1111,14 +1120,14 @@ test('escolhas exclusivas informadas juntas viram ocorrência de schema, não ex
   const issues = falha(await buildNfe(nota({ transporte: { modFrete: '9', vagao: 'V1', balsa: 'B1' } }), opcoes()));
   expect(issues).toHaveLength(1);
   expect(issues[0]).toMatchObject({ code: 'schema' });
-  expect(issues[0]?.path).toContain('transp');
+  expect(issues[0]?.caminho).toContain('transp');
 });
 
 test('NF-e normal: qTrib × vUnTrib confere com vProd (rejeição 630); fora da normal não', async () => {
   const b = item();
   const it: Item = { ...b, produto: { ...b.produto, vUnTrib: '2' } };
   expect(falha(await buildNfe(nota({ itens: [it] }), opcoes()))).toEqual([
-    expect.objectContaining({ code: 'valor_divergente', path: 'itens[0].produto.vUnTrib' }),
+    expect.objectContaining({ code: 'valor_divergente', caminho: 'itens[0].produto.vUnTrib' }),
   ]);
   expect(ok(await buildNfe(nota({ finNFe: '2', itens: [it] }), opcoes())).chave).toHaveLength(44);
   const derivado: Item = { ...b, produto: { ...b.produto, qCom: '3', vUnCom: '1', uTrib: 'G', qTrib: '7' } };
@@ -1130,8 +1139,8 @@ test('NF-e normal: qTrib × vUnTrib confere com vProd (rejeição 630); fora da 
 test('PL e dhEmi saem do mesmo instante, mesmo com o relógio virando a vigência no meio', async () => {
   const instantes = ['2026-08-31T23:59:59-03:00', '2026-09-01T00:00:00-03:00'];
   let i = 0;
-  const relogio = { now: (): Date => fixedClock(instantes[Math.min(i++, 1)] as string).now() };
-  const n = ok(await buildNfe(nota(), opcoes({ time: timeContext({ emissao: relogio }) })));
+  const relogio = { now: (): Date => relogioFixo(instantes[Math.min(i++, 1)] as string).agora() };
+  const n = ok(await buildNfe(nota(), opcoes({ time: contextoDeTempo({ emissao: relogio }) })));
   expect(n.dhEmi).toBe('2026-08-31T23:59:59-03:00');
   expect(n.pl.pl).toStartWith('PL_010e');
 });

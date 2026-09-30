@@ -21,9 +21,9 @@ import { join } from 'node:path';
 import process from 'node:process';
 import { parseArgs } from 'node:util';
 import { main as cli } from '@sinete/cli';
-import type { SefazOutcome, Uf } from '@sinete/core';
-import { isSineteError, isUf, systemClock, timeContext, UFS } from '@sinete/core';
-import { verifySignature } from '@sinete/core/xml';
+import type { ResultadoSefaz, Uf } from '@sinete/core';
+import { contextoDeTempo, ehErroSinete, ehUf, relogioDoSistema, UFS } from '@sinete/core';
+import { conferirAssinatura } from '@sinete/core/xml';
 import type { NfeClient, NfeInput } from '@sinete/nfe';
 import { buildNfe, createNfeClient, signNfe } from '@sinete/nfe';
 import type { AuditEvent, Transport, TransportRequest, TransportResponse } from '@sinete/transport';
@@ -88,7 +88,7 @@ if (opt.help || !comando || !['status', 'consultas', 'autorizacao', 'doctor'].in
   process.exit(opt.help ? 0 : 2);
 }
 const uf = (opt.uf ?? 'SP').toUpperCase();
-if (!isUf(uf)) throw new Error(`UF inválida: ${opt.uf}`);
+if (!ehUf(uf)) throw new Error(`UF inválida: ${opt.uf}`);
 const runtime = detectRuntime();
 const estado = opt.estado as string;
 mkdirSync(estado, { recursive: true });
@@ -151,7 +151,7 @@ function cliente(t: Transport, extra: { uf?: Uf; contingencia?: 'svc' } = {}): N
     signer,
     ambiente: AMBIENTE,
     uf: extra.uf ?? (uf as Uf),
-    clock: systemClock,
+    clock: relogioDoSistema,
     autor: { CNPJ },
     ...(extra.contingencia ? { contingencia: extra.contingencia } : {}),
   });
@@ -175,18 +175,18 @@ async function operar(
   rotulo: string,
   servico: string,
   hostEsperado: string,
-  fn: () => Promise<SefazOutcome<unknown, unknown>>,
-): Promise<Registro & { outcome?: SefazOutcome<unknown, unknown> }> {
+  fn: () => Promise<ResultadoSefaz<unknown, unknown>>,
+): Promise<Registro & { outcome?: ResultadoSefaz<unknown, unknown> }> {
   limparEnvio();
   try {
     const o = await fn();
     const host = envio.audit?.host ?? hostEsperado;
-    led.registrar(host, servico, `HTTP ${envio.resposta?.status ?? '?'} ${o.status} cStat=${o.cStat}`);
+    led.registrar(host, servico, `HTTP ${envio.resposta?.status ?? '?'} ${o.tipo} cStat=${o.cStat}`);
     return {
       rotulo,
       servico,
       host,
-      status: o.status,
+      status: o.tipo,
       cStat: o.cStat,
       xMotivo: o.xMotivo,
       outcome: o,
@@ -194,9 +194,9 @@ async function operar(
       ...(envio.audit ? { ms: envio.audit.durationMs } : {}),
     };
   } catch (e) {
-    const code = isSineteError(e) ? e.code : 'desconhecido';
+    const code = ehErroSinete(e) ? e.code : 'desconhecido';
     const message = (e as Error).message;
-    const details = isSineteError(e) ? (e.details as Record<string, unknown> | undefined) : undefined;
+    const details = ehErroSinete(e) ? (e.detalhes as Record<string, unknown> | undefined) : undefined;
     const host = envio.audit?.host ?? (typeof details?.host === 'string' ? details.host : hostEsperado);
     const semSocket = !envio.audit;
     led.registrar(host, servico, `ERRO ${code}${semSocket ? ' (antes do socket, certificado não usado)' : ''}`);
@@ -260,7 +260,7 @@ async function status(): Promise<void> {
   } finally {
     await t.close();
   }
-  salvar(`status-${runtime}.json`, { runtime, em: systemClock.now().toISOString(), alvos: out.map(semOutcome) });
+  salvar(`status-${runtime}.json`, { runtime, em: relogioDoSistema.agora().toISOString(), alvos: out.map(semOutcome) });
 }
 
 const semOutcome = (r: Registro & { outcome?: unknown }): Registro => {
@@ -284,7 +284,7 @@ async function consultas(): Promise<void> {
     const dist = await operar('DistribuicaoDFe AN distNSU 0', 'NFeDistribuicaoDFe', hostAn, () =>
       c.distribuicaoDFe({ ultNSU: 0 }, { autor: { CNPJ } }),
     );
-    const v = dist.outcome?.status === 'authorized' ? (dist.outcome.value as Record<string, unknown>) : undefined;
+    const v = dist.outcome?.tipo === 'autorizado' ? (dist.outcome.valor as Record<string, unknown>) : undefined;
     const d = v
       ? { ...dist, ultNSU: v.ultNSU, maxNSU: v.maxNSU, documentos: (v.documentos as unknown[]).length }
       : dist;
@@ -293,7 +293,11 @@ async function consultas(): Promise<void> {
   } finally {
     await t.close();
   }
-  salvar(`consultas-${runtime}.json`, { runtime, em: systemClock.now().toISOString(), consultas: out.map(semOutcome) });
+  salvar(`consultas-${runtime}.json`, {
+    runtime,
+    em: relogioDoSistema.agora().toISOString(),
+    consultas: out.map(semOutcome),
+  });
 }
 
 interface EmitenteArquivo {
@@ -355,11 +359,11 @@ async function autorizacao(): Promise<void> {
   };
   const built = await buildNfe(nota, {
     ambiente: AMBIENTE,
-    time: timeContext({ emissao: systemClock }),
+    time: contextoDeTempo({ emissao: relogioDoSistema }),
     verProc: 'sinete-homologacao',
   });
   if (!built.ok) {
-    for (const i of built.issues) console.log(`  ${i.path}: ${i.code}: ${i.message}`);
+    for (const i of built.issues) console.log(`  ${i.caminho}: ${i.code}: ${i.mensagem}`);
     throw new Error('o builder recusou a NF-e');
   }
   const b = built.value;
@@ -367,7 +371,7 @@ async function autorizacao(): Promise<void> {
   led.registrar('local', 'assinatura da NF-e (signNfe)', `chave ${b.chave}`);
   if (!assinada.startsWith(b.xml.slice(0, b.xml.indexOf('</infNFe>'))))
     throw new Error('assinatura alterou o conteúdo');
-  const ver = await verifySignature(assinada, { id: b.id, element: 'infNFe' });
+  const ver = await conferirAssinatura(assinada, { id: b.id, elemento: 'infNFe' });
   if (!ver.ok) throw new Error(`assinatura não confere localmente: ${JSON.stringify(ver)}`);
   const xsd = xsdOficial(b.pl.pl, assinada);
   console.log(
@@ -381,7 +385,7 @@ async function autorizacao(): Promise<void> {
   }
   // A tentativa conta antes do envio: um processo interrompido esperando a SEFAZ pode já ter entregado o lote.
   const gravarTentativas = (): void => writeFileSync(tentativasPath, `${JSON.stringify(tentativas, null, 2)}\n`);
-  tentativas.push({ chave: b.chave, em: systemClock.now().toISOString(), status: 'enviando' });
+  tentativas.push({ chave: b.chave, em: relogioDoSistema.agora().toISOString(), status: 'enviando' });
   gravarTentativas();
   const t = transporte();
   try {
@@ -393,7 +397,7 @@ async function autorizacao(): Promise<void> {
     const rec = {
       ...semOutcome(r),
       chave: b.chave,
-      em: systemClock.now().toISOString(),
+      em: relogioDoSistema.agora().toISOString(),
       lote: lote ? { cStat: lote[1], xMotivo: lote[2] } : null,
       nProt: /<nProt>(\d+)<\/nProt>/.exec(texto)?.[1] ?? null,
       dhRecbto: /<dhRecbto>([^<]+)<\/dhRecbto>/.exec(texto)?.[1] ?? null,

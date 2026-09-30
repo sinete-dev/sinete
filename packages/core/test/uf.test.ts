@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import table from '../src/data/ufs.json' with { type: 'json' };
-import { isCUf, isUf, UF_TABLE, UFS, ufByCUf, ufBySigla } from '../src/index.ts';
+import { ehCUf, ehUf, TABELA_UFS, UFS, ufPorCUf, ufPorSigla } from '../src/index.ts';
 
 // Enumerações do leiaute, copiadas de tiposBasico_v4.00.xsd do PL_010f_v1.04 (TCodUfIBGE e TUf sem EX).
 const XSD_CUF = '11 12 13 14 15 16 17 21 22 23 24 25 26 27 28 29 31 32 33 35 41 42 43 50 51 52 53'.split(' ');
@@ -23,12 +23,12 @@ describe('tabela de UFs', () => {
   });
 
   test('metadados versionados com fonte', () => {
-    expect(UF_TABLE.schemaVersion).toBe(1);
-    expect(UF_TABLE.version).toMatch(/^\d{4}\.\d{2}\.\d{2}$/);
-    expect(UF_TABLE.sources.length).toBeGreaterThan(0);
-    for (const s of UF_TABLE.sources) {
+    expect(TABELA_UFS.versaoDoFormato).toBe(1);
+    expect(TABELA_UFS.versao).toMatch(/^\d{4}\.\d{2}\.\d{2}$/);
+    expect(TABELA_UFS.fontes.length).toBeGreaterThan(0);
+    for (const s of TABELA_UFS.fontes) {
       expect(s.url).toStartWith('https://');
-      expect(s.retrievedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(s.coletadoEm).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     }
     expect(Object.keys(table).sort()).toEqual(['notes', 'schemaVersion', 'sources', 'ufs', 'version']);
   });
@@ -36,20 +36,20 @@ describe('tabela de UFs', () => {
 
 describe('consultas', () => {
   test('por sigla e por cUF', () => {
-    expect(ufBySigla('MT')).toEqual({ sigla: 'MT', cUF: '51', nome: 'Mato Grosso', regiao: 'CO' });
-    expect(ufByCUf('35')?.sigla).toBe('SP');
-    expect(ufBySigla('EX')).toBeUndefined();
-    expect(ufBySigla('sp')).toBeUndefined();
-    expect(ufByCUf('91')).toBeUndefined();
-    expect(ufByCUf('35 ')).toBeUndefined();
+    expect(ufPorSigla('MT')).toEqual({ sigla: 'MT', cUF: '51', nome: 'Mato Grosso', regiao: 'CO' });
+    expect(ufPorCUf('35')?.sigla).toBe('SP');
+    expect(ufPorSigla('EX')).toBeUndefined();
+    expect(ufPorSigla('sp')).toBeUndefined();
+    expect(ufPorCUf('91')).toBeUndefined();
+    expect(ufPorCUf('35 ')).toBeUndefined();
   });
 
   test('guardas', () => {
-    expect(isUf('DF')).toBe(true);
-    expect(isUf('EX')).toBe(false);
-    expect(isUf(35)).toBe(false);
-    expect(isCUf('53')).toBe(true);
-    expect(isCUf('34')).toBe(false);
-    expect(isCUf(53)).toBe(false);
+    expect(ehUf('DF')).toBe(true);
+    expect(ehUf('EX')).toBe(false);
+    expect(ehUf(35)).toBe(false);
+    expect(ehCUf('53')).toBe(true);
+    expect(ehCUf('34')).toBe(false);
+    expect(ehCUf(53)).toBe(false);
   });
 });

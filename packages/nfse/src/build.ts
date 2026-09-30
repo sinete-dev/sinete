@@ -7,9 +7,9 @@
  * mesma com ou sem ela; o sinete a põe antes de assinar para que a string assinada seja exatamente a enviada.
  */
 
-import type { Ambiente, Clock, Signer, TimeContext, ValidationIssue } from '@sinete/core';
-import { ConfigError, formatarVerProc, formatDateTimeOffset, tpAmbOf } from '@sinete/core';
-import { signXml, XmlError } from '@sinete/core/xml';
+import type { Ambiente, Assinador, ContextoDeTempo, Ocorrencia, Relogio } from '@sinete/core';
+import { ErroDeConfiguracao, formatarDataHoraComFuso, formatarVerProc, tpAmbDoAmbiente } from '@sinete/core';
+import { assinarXml, ErroXml } from '@sinete/core/xml';
 import type { RootElement } from '@sinete/schemas';
 import { SerializeError, serializeRoot, validateRoot } from '@sinete/schemas';
 import type {
@@ -20,7 +20,7 @@ import type {
   TCTribMunicipal,
   TCTribTotal,
 } from '@sinete/schemas/nfse/1.01-20260727';
-import { isValidCnpj, isValidCpf } from '@sinete/validators';
+import { cnpjValido, cpfValido } from '@sinete/validators';
 import type { InscricaoFederal } from './codigos.ts';
 import { cTribNacDps, idDps } from './codigos.ts';
 import { leiauteVigente, VERSAO_LEIAUTE } from './leiaute.ts';
@@ -37,7 +37,7 @@ const BRASILIA = -180;
 export interface BuildDpsOptions {
   readonly ambiente: Ambiente;
   /** Relógios de emissão (`dhEmi`, escolha do leiaute) e de fato gerador (`dCompet` padrão). */
-  readonly time: TimeContext;
+  readonly time: ContextoDeTempo;
   /** Versão do aplicativo (`verAplic`, até 20 caracteres). Padrão `sinete <versão do @sinete/nfse>` (`formatarVerProc`). */
   readonly verAplic?: string;
   /** Fuso do `dhEmi` e da competência padrão, em minutos. Padrão -180 (Brasília). */
@@ -59,21 +59,21 @@ export interface DpsMontada {
 
 export type BuildDpsResult =
   | { readonly ok: true; readonly value: DpsMontada }
-  | { readonly ok: false; readonly issues: readonly ValidationIssue[] };
+  | { readonly ok: false; readonly issues: readonly Ocorrencia[] };
 
 type Doc = { CNPJ?: string; CPF?: string; NIF?: string; cNaoNIF?: string };
 
-function conferirDocumento(doc: Doc | undefined, path: string, issues: ValidationIssue[]): void {
+function conferirDocumento(doc: Doc | undefined, path: string, issues: Ocorrencia[]): void {
   if (doc === undefined) return;
-  if (doc.CNPJ !== undefined && !isValidCnpj(doc.CNPJ)) {
-    issues.push({ path: `${path}.CNPJ`, code: 'documento_invalido', message: 'CNPJ inválido (DV)' });
+  if (doc.CNPJ !== undefined && !cnpjValido(doc.CNPJ)) {
+    issues.push({ caminho: `${path}.CNPJ`, code: 'documento_invalido', mensagem: 'CNPJ inválido (DV)' });
   }
-  if (doc.CPF !== undefined && !isValidCpf(doc.CPF)) {
-    issues.push({ path: `${path}.CPF`, code: 'documento_invalido', message: 'CPF inválido (DV)' });
+  if (doc.CPF !== undefined && !cpfValido(doc.CPF)) {
+    issues.push({ caminho: `${path}.CPF`, code: 'documento_invalido', mensagem: 'CPF inválido (DV)' });
   }
 }
 
-function inscricaoDoEmitente(input: DpsInput, issues: ValidationIssue[]): InscricaoFederal | undefined {
+function inscricaoDoEmitente(input: DpsInput, issues: Ocorrencia[]): InscricaoFederal | undefined {
   const tp = input.tpEmit ?? '1';
   const [quem, path]: [Doc | undefined, string] =
     tp === '1'
@@ -84,20 +84,20 @@ function inscricaoDoEmitente(input: DpsInput, issues: ValidationIssue[]): Inscri
   if (quem?.CNPJ !== undefined) return { CNPJ: quem.CNPJ };
   if (quem?.CPF !== undefined) return { CPF: quem.CPF };
   issues.push({
-    path,
+    caminho: path,
     code: 'emitente_sem_inscricao',
-    message: `o emitente da DPS (tpEmit ${tp}) precisa de CNPJ ou CPF: é a inscrição que forma o Id`,
+    mensagem: `o emitente da DPS (tpEmit ${tp}) precisa de CNPJ ou CPF: é a inscrição que forma o Id`,
   });
   return undefined;
 }
 
-function texto(v: string | number | bigint, pattern: RegExp, path: string, issues: ValidationIssue[]): string {
+function texto(v: string | number | bigint, pattern: RegExp, path: string, issues: Ocorrencia[]): string {
   const s = String(v).trim();
-  if (!pattern.test(s)) issues.push({ path, code: 'campo_invalido', message: `valor fora do formato: ${s}` });
+  if (!pattern.test(s)) issues.push({ caminho: path, code: 'campo_invalido', mensagem: `valor fora do formato: ${s}` });
   return s;
 }
 
-function ibsCbsDps(g: IbsCbsDps, issues: ValidationIssue[]): TCRTCInfoIBSCBS {
+function ibsCbsDps(g: IbsCbsDps, issues: Ocorrencia[]): TCRTCInfoIBSCBS {
   const c = g.classificacao;
   const dif = c.diferimento;
   const pct = (v: string | number, campo: string): string =>
@@ -135,13 +135,13 @@ function ibsCbsDps(g: IbsCbsDps, issues: ValidationIssue[]): TCRTCInfoIBSCBS {
   };
 }
 
-function servico(input: DpsInput, issues: ValidationIssue[]): TCServ {
+function servico(input: DpsInput, issues: Ocorrencia[]): TCServ {
   const s = input.servico;
   let cTribNac = s.cTribNac;
   try {
     cTribNac = cTribNacDps(s.cTribNac);
   } catch (e) {
-    issues.push({ path: 'servico.cTribNac', code: 'campo_invalido', message: (e as Error).message });
+    issues.push({ caminho: 'servico.cTribNac', code: 'campo_invalido', mensagem: (e as Error).message });
   }
   return {
     locPrest: s.local,
@@ -166,7 +166,7 @@ function servico(input: DpsInput, issues: ValidationIssue[]): TCServ {
  * porque não há valor neutro permitido para eles. Com tomador ou intermediário emitindo, o grupo é obrigatório e não é
  * conferido: o regime do emitente não está na DPS.
  */
-function totalTributos(input: DpsInput, issues: ValidationIssue[]): TCTribTotal {
+function totalTributos(input: DpsInput, issues: Ocorrencia[]): TCTribTotal {
   // As regras olham o regime do emitente. A DPS só traz o do prestador: com tomador ou intermediário emitindo
   // (tpEmit 2 e 3), o regime é desconhecido aqui, então nada é presumido nem recusado localmente.
   const regime = (input.tpEmit ?? '1') === '1' ? input.prestador.regTrib.opSimpNac : undefined;
@@ -175,9 +175,9 @@ function totalTributos(input: DpsInput, issues: ValidationIssue[]): TCTribTotal 
   if (t === undefined) {
     if (regime === '2') return { indTotTrib: '0' };
     issues.push({
-      path,
+      caminho: path,
       code: 'campo_obrigatorio',
-      message:
+      mensagem:
         regime === undefined
           ? 'informe o total de tributos do emitente (tomador ou intermediário): o regime dele não vem na DPS'
           : 'informe vTotTrib ou pTotTrib (e pTotTribSN no ME/EPP): indTotTrib só vale para o MEI (E0712, E0713)',
@@ -186,9 +186,9 @@ function totalTributos(input: DpsInput, issues: ValidationIssue[]): TCTribTotal 
   }
   const recusa = (codigo: string, campo: string): void => {
     issues.push({
-      path: `${path}.${campo}`,
+      caminho: `${path}.${campo}`,
       code: 'campo_proibido',
-      message: `${campo} não é permitido para este regime do Simples Nacional (${codigo})`,
+      mensagem: `${campo} não é permitido para este regime do Simples Nacional (${codigo})`,
     });
   };
   if (t.indTotTrib !== undefined && regime === '3') recusa('E0712', 'indTotTrib');
@@ -198,7 +198,7 @@ function totalTributos(input: DpsInput, issues: ValidationIssue[]): TCTribTotal 
   return t;
 }
 
-function valores(input: DpsInput, issues: ValidationIssue[]): TCInfoValores {
+function valores(input: DpsInput, issues: Ocorrencia[]): TCInfoValores {
   const v = input.valores;
   const money = (x: string | number | undefined, campo: string): string | undefined =>
     x === undefined ? undefined : formatValor(x, `valores.${campo}`, issues);
@@ -241,18 +241,19 @@ function valores(input: DpsInput, issues: ValidationIssue[]): TCInfoValores {
  * documento com DV errado, competência depois da emissão, schema). Lança `ConfigError` só por opção inválida.
  */
 export function buildDps(input: DpsInput, options: BuildDpsOptions): BuildDpsResult {
-  const issues: ValidationIssue[] = [];
+  const issues: Ocorrencia[] = [];
   const offset = options.offsetMinutes ?? BRASILIA;
   const verAplic = options.verAplic ?? formatarVerProc('sinete', VERSAO_PACOTE);
-  if (verAplic.length === 0 || verAplic.length > 20) throw new ConfigError('verAplic precisa ter de 1 a 20 caracteres');
+  if (verAplic.length === 0 || verAplic.length > 20)
+    throw new ErroDeConfiguracao('verAplic precisa ter de 1 a 20 caracteres');
   const { vigencia, leiaute } = leiauteVigente(options.ambiente, options.time.emissao);
-  const dhEmi = formatDateTimeOffset(options.time.emissao.now(), offset);
-  const dCompet = input.dCompet ?? formatDateTimeOffset(options.time.fatoGerador.now(), offset).slice(0, 10);
+  const dhEmi = formatarDataHoraComFuso(options.time.emissao.agora(), offset);
+  const dCompet = input.dCompet ?? formatarDataHoraComFuso(options.time.fatoGerador.agora(), offset).slice(0, 10);
   if (dCompet > dhEmi.slice(0, 10)) {
     issues.push({
-      path: 'dCompet',
+      caminho: 'dCompet',
       code: 'competencia_posterior_emissao',
-      message: 'a data de competência não pode ser posterior à data de emissão (E0015)',
+      mensagem: 'a data de competência não pode ser posterior à data de emissão (E0015)',
     });
   }
   const serie = texto(input.serie, /^(?:\d{1,4}|[0-8]\d{4})$/, 'serie', issues);
@@ -266,12 +267,12 @@ export function buildDps(input: DpsInput, options: BuildDpsOptions): BuildDpsRes
     try {
       id = idDps({ cLocEmi: input.cLocEmi, emitente, serie, nDPS });
     } catch (e) {
-      issues.push({ path: 'cLocEmi', code: 'campo_invalido', message: (e as Error).message });
+      issues.push({ caminho: 'cLocEmi', code: 'campo_invalido', mensagem: (e as Error).message });
     }
   }
   const inf: TCInfDPS = {
     Id: id,
-    tpAmb: tpAmbOf(options.ambiente),
+    tpAmb: tpAmbDoAmbiente(options.ambiente),
     dhEmi,
     verAplic,
     serie,
@@ -296,7 +297,7 @@ export function buildDps(input: DpsInput, options: BuildDpsOptions): BuildDpsRes
     corpo = serializeRoot(leiaute.DPSElement, { versao: VERSAO_LEIAUTE, infDPS: inf });
   } catch (e) {
     if (!(e instanceof SerializeError)) throw e;
-    return { ok: false, issues: [{ path: e.path, code: 'schema', message: e.message, origem: 'montagem' }] };
+    return { ok: false, issues: [{ caminho: e.path, code: 'schema', mensagem: e.message, origem: 'montagem' }] };
   }
   const xml = DECLARACAO_XML + corpo;
   const schema = validarNoSchema(leiaute.DPSElement, xml);
@@ -308,26 +309,26 @@ export function buildDps(input: DpsInput, options: BuildDpsOptions): BuildDpsRes
  * Validação estrita no schema, como ocorrências de `montagem` (ADR 0011). Texto com caractere proibido no XML (`\u0000` e afins) faz o parser
  * recusar o documento inteiro; isso também volta como ocorrência (`caractere_invalido`), nunca como exceção.
  */
-export function validarNoSchema(raiz: RootElement<unknown>, xml: string): ValidationIssue[] {
+export function validarNoSchema(raiz: RootElement<unknown>, xml: string): Ocorrencia[] {
   try {
     return validateRoot(raiz, xml).map((i) => ({
-      path: i.path,
+      caminho: i.caminho,
       code: 'schema',
-      message: `${i.code}: ${i.message}`,
+      mensagem: `${i.code}: ${i.mensagem}`,
       origem: 'montagem',
     }));
   } catch (e) {
-    if (!(e instanceof XmlError)) throw e;
-    return [{ path: '/', code: 'caractere_invalido', message: `XML inválido: ${e.message}`, origem: 'montagem' }];
+    if (!(e instanceof ErroXml)) throw e;
+    return [{ caminho: '/', code: 'caractere_invalido', mensagem: `XML inválido: ${e.message}`, origem: 'montagem' }];
   }
 }
 
 /** Assina a DPS (enveloped, `Reference` para o `infDPS`). A string devolvida é a que vai para a Sefin e para o banco. */
-export async function signDps(dps: DpsMontada, signer: Signer): Promise<string> {
-  return signXml(dps.xml, { id: dps.id }, signer);
+export async function signDps(dps: DpsMontada, signer: Assinador): Promise<string> {
+  return assinarXml(dps.xml, { id: dps.id }, signer);
 }
 
 /** Relógio de emissão no fuso de Brasília, para quem monta outros documentos (`dhEvento`). */
-export function dataHora(relogio: Clock, offsetMinutes: number = BRASILIA): string {
-  return formatDateTimeOffset(relogio.now(), offsetMinutes);
+export function dataHora(relogio: Relogio, offsetMinutes: number = BRASILIA): string {
+  return formatarDataHoraComFuso(relogio.agora(), offsetMinutes);
 }

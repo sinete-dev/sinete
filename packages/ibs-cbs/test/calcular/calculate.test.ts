@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { fixedClock, timeContext } from '@sinete/core';
+import { contextoDeTempo, relogioFixo } from '@sinete/core';
 import { loadDataset } from '@sinete/ibs-cbs-dados';
 import { BUNDLED_DATASET } from '@sinete/ibs-cbs-dados/bundled';
 import { officialRates, RateUnknownError, withOverrides } from '../../src/aliquotas/index.ts';
@@ -442,7 +442,7 @@ describe('recusas tipadas', () => {
     const e = one({ cst: '999' });
     expect(e.code).toBe('ibscbs_classificacao_invalida');
     expect(e.item).toBe(1);
-    expect(e.details).toMatchObject({ reason: 'cst_inexistente', item: 1 });
+    expect(e.detalhes).toMatchObject({ reason: 'cst_inexistente', item: 1 });
   });
 
   test('tributação regular exigida, vedada ou inválida', () => {
@@ -577,9 +577,9 @@ describe('relógio de fato gerador', () => {
   test('a data dos dados vem do relógio de fato gerador no fuso do local', () => {
     const o = op([{ n: 1, cst: '000', cClassTrib: '000001', base: '100.00' }]);
     // 01/01/2027 01:30 UTC ainda é 31/12/2026 em Brasília: vale a alíquota de 2026.
-    const time = timeContext({
-      emissao: fixedClock('2027-01-05T10:00:00Z'),
-      fatoGerador: fixedClock('2027-01-01T01:30:00Z'),
+    const time = contextoDeTempo({
+      emissao: relogioFixo('2027-01-05T10:00:00Z'),
+      fatoGerador: relogioFixo('2027-01-01T01:30:00Z'),
     });
     const roc = calculate(o, { dataset, rates, time });
     expect(roc.asOf).toBe('2026-12-31');

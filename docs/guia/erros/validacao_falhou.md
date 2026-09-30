@@ -19,15 +19,15 @@ Mostre as ocorrências de `entrada` no campo correspondente, com `rotuloDoCaminh
 Quando a validação da montagem falha durante `emitir`, o emissor ainda não gravou os bytes do documento no store, o armazenamento das transmissões, nem enviou o documento à autoridade fiscal. Nesse caso, corrigir a entrada e chamar `emitir` de novo com a mesma `ref`, a referência da transmissão, é seguro. Não decida pela `message` de uma ocorrência, pois ela muda entre versões, e não mostre ocorrência de `montagem` como erro de preenchimento.
 
 ```ts
-import { isSineteError, type ValidationError } from 'sinete/core';
+import { ehErroSinete, type ErroDeValidacao } from 'sinete/core';
 import { rotuloDoCaminho } from 'sinete/nfe';
 
 try {
   await nfe.emitir(pedido.id, nota);
 } catch (e) {
-  if (!isSineteError(e, 'validacao_falhou')) throw e;
-  for (const i of (e as ValidationError).issues) {
-    if (i.origem === 'entrada') mostrarNoCampo(i.path, `${rotuloDoCaminho(i.path)}: ${i.message}`);
+  if (!ehErroSinete(e, 'validacao_falhou')) throw e;
+  for (const i of (e as ErroDeValidacao).ocorrencias) {
+    if (i.origem === 'entrada') mostrarNoCampo(i.caminho, `${rotuloDoCaminho(i.caminho)}: ${i.mensagem}`);
     else registrarNoLog(i);
   }
 }

@@ -14,8 +14,8 @@
  * O código de serviço vai com pontos e o código municipal (`01.01.01.000`): sem os pontos, o ADN responde 400.
  */
 
-import type { Clock, Logger } from '@sinete/core';
-import { ConfigError, noopLogger, ProtocolError } from '@sinete/core';
+import type { Logger, Relogio } from '@sinete/core';
+import { ErroDeConfiguracao, ErroRespostaInvalida, loggerSilencioso } from '@sinete/core';
 import type { EndpointRef, Transport } from '@sinete/transport';
 import { codigoServicoParametrizacao } from './codigos.ts';
 import { lerJson } from './respostas.ts';
@@ -37,7 +37,8 @@ export interface CacheParametros {
 
 /** Cache em memória com limite de entradas (sai a mais antiga). */
 export function cacheEmMemoria(maxEntradas: number = 500): CacheParametros {
-  if (!Number.isInteger(maxEntradas) || maxEntradas < 1) throw new ConfigError('maxEntradas precisa ser inteiro >= 1');
+  if (!Number.isInteger(maxEntradas) || maxEntradas < 1)
+    throw new ErroDeConfiguracao('maxEntradas precisa ser inteiro >= 1');
   const m = new Map<string, EntradaCache>();
   return {
     get: (chave: string): EntradaCache | undefined => m.get(chave),
@@ -101,7 +102,7 @@ export interface ParametrosMunicipais {
 export interface ParametrosOptions {
   readonly transport: Transport;
   readonly endpoint: EndpointRef;
-  readonly clock: Clock;
+  readonly clock: Relogio;
   /** `false` desliga. Padrão: `cacheEmMemoria()`. */
   readonly cache?: CacheParametros | false;
   /** Validade de uma resposta 200. Padrão: 6 horas. */
@@ -113,11 +114,11 @@ export interface ParametrosOptions {
 }
 
 function conferirMunicipio(cMun: string): void {
-  if (!/^\d{7}$/.test(cMun)) throw new ConfigError(`código de município inválido: ${cMun}`);
+  if (!/^\d{7}$/.test(cMun)) throw new ErroDeConfiguracao(`código de município inválido: ${cMun}`);
 }
 
 function conferirData(d: string): void {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) throw new ConfigError(`competência fora do formato AAAA-MM-DD: ${d}`);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) throw new ErroDeConfiguracao(`competência fora do formato AAAA-MM-DD: ${d}`);
 }
 
 /** `01.01.01.000` a partir de `010101`, `01.01.01` ou do próprio código de 9 dígitos com pontos. */
@@ -132,7 +133,7 @@ function dia(v: unknown): string | undefined {
 
 function aliquotas(json: Record<string, unknown>, operacao: string): AliquotaServico[] {
   const mapa = json.aliquotas;
-  if (typeof mapa !== 'object' || mapa === null) throw new ProtocolError(`${operacao}: resposta sem aliquotas`);
+  if (typeof mapa !== 'object' || mapa === null) throw new ErroRespostaInvalida(`${operacao}: resposta sem aliquotas`);
   const out: AliquotaServico[] = [];
   for (const lista of Object.values(mapa)) {
     if (!Array.isArray(lista)) continue;
@@ -140,7 +141,7 @@ function aliquotas(json: Record<string, unknown>, operacao: string): AliquotaSer
       const aliq = a.Aliq ?? a.aliq;
       const inicio = dia(a.DtIni ?? a.dtIni);
       if (typeof aliq !== 'number' || inicio === undefined) {
-        throw new ProtocolError(`${operacao}: alíquota fora do formato`, { details: { operacao } });
+        throw new ErroRespostaInvalida(`${operacao}: alíquota fora do formato`, { detalhes: { operacao } });
       }
       out.push({
         incidencia: String(a.Incidencia ?? a.incidencia ?? ''),
@@ -162,7 +163,7 @@ export function createParametrosMunicipais(o: ParametrosOptions): ParametrosMuni
   const cache = o.cache === false ? undefined : (o.cache ?? cacheEmMemoria());
   const ttl = o.ttlMs ?? 6 * 3_600_000;
   const ttlNaoEncontrado = o.ttlNaoEncontradoMs ?? 30 * 60_000;
-  const logger = o.logger ?? noopLogger;
+  const logger = o.logger ?? loggerSilencioso;
   const emVoo = new Map<string, Promise<EntradaCache>>();
   const base = o.endpoint.url.replace(/\/+$/, '');
 
@@ -171,8 +172,8 @@ export function createParametrosMunicipais(o: ParametrosOptions): ParametrosMuni
     if (r.status === 404) return undefined;
     const body = lerJson(r.corpo);
     if (r.status !== 200 || body === undefined) {
-      throw new ProtocolError(`${operacao}: HTTP ${r.status}`, {
-        details: { operacao, status: r.status, mensagem: body?.mensagem },
+      throw new ErroRespostaInvalida(`${operacao}: HTTP ${r.status}`, {
+        detalhes: { operacao, status: r.status, mensagem: body?.mensagem },
       });
     }
     return ler(body);
@@ -190,7 +191,7 @@ export function createParametrosMunicipais(o: ParametrosOptions): ParametrosMuni
   ): Promise<T | undefined> {
     const url = `${base}${caminho}`;
     const guardada = await cache?.get(url);
-    if (guardada !== undefined && guardada.expiraEm > o.clock.now().getTime()) {
+    if (guardada !== undefined && guardada.expiraEm > o.clock.agora().getTime()) {
       return lerEntrada(guardada, operacao, ler);
     }
     let pendente = emVoo.get(url);
@@ -207,7 +208,7 @@ export function createParametrosMunicipais(o: ParametrosOptions): ParametrosMuni
         return {
           status: res.status,
           corpo: res.text(),
-          expiraEm: o.clock.now().getTime() + (res.status === 404 ? ttlNaoEncontrado : ttl),
+          expiraEm: o.clock.agora().getTime() + (res.status === 404 ? ttlNaoEncontrado : ttl),
         };
       })();
       emVoo.set(url, pendente);
@@ -234,7 +235,8 @@ export function createParametrosMunicipais(o: ParametrosOptions): ParametrosMuni
       conferirMunicipio(cMun);
       return consultar(`/${cMun}/convenio`, 'convenio', (body): ConvenioMunicipal => {
         const p = body.parametrosConvenio;
-        if (typeof p !== 'object' || p === null) throw new ProtocolError('convenio: resposta sem parametrosConvenio');
+        if (typeof p !== 'object' || p === null)
+          throw new ErroRespostaInvalida('convenio: resposta sem parametrosConvenio');
         const c = p as Record<string, unknown>;
         // O ADN escreve "Aproveitameto" (sem o n) na produção restrita; aceita as duas grafias.
         const creditos = c.permiteAproveitamentoDeCreditos ?? c.permiteAproveitametoDeCreditos;
@@ -281,7 +283,7 @@ export function createParametrosMunicipais(o: ParametrosOptions): ParametrosMuni
     async beneficio(cMun: string, nBM: string, competencia: string): Promise<RespostaParametrizacao | undefined> {
       conferirMunicipio(cMun);
       conferirData(competencia);
-      if (!/^\d{14}$/.test(nBM)) throw new ConfigError(`número de benefício inválido (14 dígitos): ${nBM}`);
+      if (!/^\d{14}$/.test(nBM)) throw new ErroDeConfiguracao(`número de benefício inválido (14 dígitos): ${nBM}`);
       return bruta(`/${cMun}/${nBM}/${competencia}/beneficio`, 'beneficio');
     },
     async limparCache(): Promise<void> {

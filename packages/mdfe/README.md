@@ -16,18 +16,18 @@ Status: pré-alfa, API instável até a 1.0. Nada foi enviado à SEFAZ real. Os 
 ## API completa
 
 ```ts
-import { systemClock, timeContext } from '@sinete/core';
+import { relogioDoSistema, contextoDeTempo } from '@sinete/core';
 import { buildMdfe, createMdfeClient, signMdfe } from '@sinete/mdfe';
 
-const r = buildMdfe(mdfe, { ambiente: 'homologacao', time: timeContext({ emissao: systemClock }) });
-if (!r.ok) throw new Error(r.issues.map((i) => `${i.path}: ${i.message}`).join('\n'));
+const r = buildMdfe(mdfe, { ambiente: 'homologacao', time: contextoDeTempo({ emissao: relogioDoSistema }) });
+if (!r.ok) throw new Error(r.issues.map((i) => `${i.caminho}: ${i.mensagem}`).join('\n'));
 const assinado = await signMdfe(r.value, signer); // grave esta string antes de enviar
-const client = createMdfeClient({ transport, signer, ambiente: 'homologacao', clock: systemClock });
+const client = createMdfeClient({ transport, signer, ambiente: 'homologacao', clock: relogioDoSistema });
 const desfecho = await client.autorizar(assinado);
-if (desfecho.status !== 'authorized') throw new Error(`${desfecho.cStat} ${desfecho.xMotivo}`);
-guardar(desfecho.value.mdfeProc);
+if (desfecho.tipo !== 'autorizado') throw new Error(`${desfecho.cStat} ${desfecho.xMotivo}`);
+guardar(desfecho.valor.mdfeProc);
 // Na chegada:
-await client.encerrar({ chave: r.value.chave, nProt: desfecho.value.nProt ?? '', uf: 'SP', cMun: '3550308' });
+await client.encerrar({ chave: r.value.chave, nProt: desfecho.valor.nProt ?? '', uf: 'SP', cMun: '3550308' });
 ```
 
 ## Montagem (`buildMdfe`)

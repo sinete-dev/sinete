@@ -3,7 +3,7 @@
  */
 
 /** Decodifica base64 ignorando whitespace (o `X509Certificate` e o `SignatureValue` costumam vir quebrados). */
-export function base64Decode(s: string): Uint8Array<ArrayBuffer> {
+export function decodificarBase64(s: string): Uint8Array<ArrayBuffer> {
   const bin = atob(s.replace(/[ \t\r\n]+/g, ''));
   const u = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
@@ -11,7 +11,7 @@ export function base64Decode(s: string): Uint8Array<ArrayBuffer> {
 }
 
 /** Codifica em base64 numa linha só, sem quebra (forma usada pela SEFAZ). */
-export function base64Encode(u: Uint8Array): string {
+export function codificarBase64(u: Uint8Array): string {
   let s = '';
   for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode(...u.subarray(i, i + 0x8000));
   return btoa(s);
@@ -46,7 +46,7 @@ function derRead(b: Uint8Array, off: number): DerItem {
 }
 
 /** Extrai o `SubjectPublicKeyInfo` (DER) de um certificado X.509 em DER (RFC 5280, 4.1). */
-export function spkiFromCertificate(der: Uint8Array): Uint8Array<ArrayBuffer> {
+export function extrairSpki(der: Uint8Array): Uint8Array<ArrayBuffer> {
   const cert = derRead(der, 0);
   if (cert.tag !== 0x30) throw new RangeError('certificado não começa com SEQUENCE');
   const tbs = derRead(der, cert.content);

@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'bun:test';
-import { fixedClock, formatarVerProc, timeContext } from '@sinete/core';
-import { parseXml, verifySignature } from '@sinete/core/xml';
+import { contextoDeTempo, formatarVerProc, relogioFixo } from '@sinete/core';
+import { conferirAssinatura, lerXml } from '@sinete/core/xml';
 import { validateRoot } from '@sinete/schemas';
 import { MDFeElement } from '@sinete/schemas/mdfe/3.00b';
 import { syntheticCertificate } from '@sinete/sefaz-sim';
-import { buildChaveAcesso, parseChaveAcesso } from '@sinete/validators';
+import { lerChaveAcesso, montarChaveAcesso } from '@sinete/validators';
 import type { BuildMdfeResult, MdfeInput, PagamentoFrete } from '../src/index.ts';
 import { buildMdfe, comQrCode, prazoContingencia, qrCodeMdfe, signMdfe } from '../src/index.ts';
 import { VERSAO_PACOTE } from '../src/versao-gerada.ts';
@@ -21,14 +21,14 @@ import {
 } from './helpers/mdfe.ts';
 
 function ok(r: BuildMdfeResult): Extract<BuildMdfeResult, { ok: true }>['value'] {
-  if (!r.ok) throw new Error(r.issues.map((i) => `${i.path} ${i.code}: ${i.message}`).join('\n'));
+  if (!r.ok) throw new Error(r.issues.map((i) => `${i.caminho} ${i.code}: ${i.mensagem}`).join('\n'));
   return r.value;
 }
 
 /** As rejeições do MOC que as ocorrências citam (`rejeição 663`). */
 function rejeicoes(r: BuildMdfeResult): string[] {
   if (r.ok) return [];
-  return r.issues.flatMap((i) => /rejeição (\d{3,4})\)$/.exec(i.message)?.[1] ?? []);
+  return r.issues.flatMap((i) => /rejeição (\d{3,4})\)$/.exec(i.mensagem)?.[1] ?? []);
 }
 
 function codigos(r: BuildMdfeResult): string[] {
@@ -53,8 +53,8 @@ const pagamento = (extra: Partial<PagamentoFrete> = {}): PagamentoFrete =>
 describe('buildMdfe: carga própria do produtor rural (CPF)', () => {
   test('monta a chave, o ide e os totais', () => {
     const v = ok(buildMdfe(cargaPropria(), opcoes()));
-    const c = parseChaveAcesso(v.chave);
-    expect(c.ok && c.value.mod).toBe('58');
+    const c = lerChaveAcesso(v.chave);
+    expect(c.ok && c.valor.mod).toBe('58');
     expect(v.chave.slice(0, 6)).toBe('512609');
     expect(v.chave.slice(6, 20)).toBe(`000${CPF_EMIT}`);
     expect(v.chave.slice(22, 25)).toBe('920');
@@ -73,7 +73,7 @@ describe('buildMdfe: carga própria do produtor rural (CPF)', () => {
   });
 
   test('dhIniViagem sai no fuso do emitente', () => {
-    const v = ok(buildMdfe(cargaPropria({ dhIniViagem: fixedClock('2026-09-26T15:00:00Z').now() }), opcoes()));
+    const v = ok(buildMdfe(cargaPropria({ dhIniViagem: relogioFixo('2026-09-26T15:00:00Z').agora() }), opcoes()));
     expect(v.infMDFe.ide.dhIniViagem).toBe('2026-09-26T11:00:00-04:00');
   });
 
@@ -98,7 +98,7 @@ describe('buildMdfe: carga própria do produtor rural (CPF)', () => {
     for (const [extra, path] of casos) {
       const r = buildMdfe(cargaPropria(extra), opcoes());
       expect(r.ok).toBe(false);
-      if (!r.ok) expect(r.issues.map((i) => i.path)).toContain(path);
+      if (!r.ok) expect(r.issues.map((i) => i.caminho)).toContain(path);
     }
   });
 
@@ -107,7 +107,7 @@ describe('buildMdfe: carga própria do produtor rural (CPF)', () => {
     const cavalo = cargaPropria({ rodoviario: { tracao: { ...tracao, tpRod: '03' } } });
     expect(rejeicoes(buildMdfe(cavalo, opcoes()))).toEqual(['523']);
     const chave = (aamm: string, mod: '55' | '57'): string =>
-      buildChaveAcesso({ cUF: '51', aamm, emitente: CNPJ_EMIT, mod, serie: 1, nNF: 3, tpEmis: '1', cNF: '10000003' });
+      montarChaveAcesso({ cUF: '51', aamm, emitente: CNPJ_EMIT, mod, serie: 1, nNF: 3, tpEmis: '1', cNF: '10000003' });
     // Emissão em 09/2026: 03/2026 ainda passa, 02/2026 não.
     const comNfe = (aamm: string): MdfeInput =>
       cargaPropria({ descarregamentos: [{ cMun: '3550308', xMun: 'SAO PAULO', nfe: [{ chave: chave(aamm, '55') }] }] });
@@ -172,7 +172,7 @@ describe('buildMdfe: carga própria do produtor rural (CPF)', () => {
   test('percurso por divisas (F90), com sugestão', () => {
     const r = buildMdfe(cargaPropria({ percurso: [] }), opcoes());
     expect(rejeicoes(r)).toEqual(['663']);
-    expect(!r.ok && r.issues[0]?.message).toContain('um percurso possível é MS');
+    expect(!r.ok && r.issues[0]?.mensagem).toContain('um percurso possível é MS');
     expect(rejeicoes(buildMdfe(cargaPropria({ percurso: ['GO'] }), opcoes()))).toEqual(['663']);
     ok(buildMdfe(cargaPropria({ percurso: ['GO', 'MG'] }), opcoes()));
   });
@@ -456,7 +456,7 @@ describe('buildMdfe: transportador prestando serviço (CNPJ)', () => {
 
 describe('QR Code, assinatura e contingência', () => {
   const certs = (async () => {
-    const clock = fixedClock(EMISSAO);
+    const clock = relogioFixo(EMISSAO);
     const ac = await syntheticCertificate({ clock, role: 'ac', validDays: 3650 });
     return syntheticCertificate({ clock, role: 'titular', cpf: CPF_EMIT, issuer: ac });
   })();
@@ -476,8 +476,8 @@ describe('QR Code, assinatura e contingência', () => {
     expect(xml).toContain(
       `<infMDFeSupl><qrCodMDFe>https://dfe-portal.svrs.rs.gov.br/mdfe/qrCode?chMDFe=${v.chave}&amp;tpAmb=2</qrCodMDFe></infMDFeSupl><Signature`,
     );
-    expect(validateRoot(MDFeElement, parseXml(xml))).toEqual([]);
-    expect((await verifySignature(xml, { id: v.id, element: 'infMDFe' })).ok).toBe(true);
+    expect(validateRoot(MDFeElement, lerXml(xml))).toEqual([]);
+    expect((await conferirAssinatura(xml, { id: v.id, elemento: 'infMDFe' })).ok).toBe(true);
   });
 
   test('contingência off-line: tpEmis 2 na chave, mesmo cMDF, sign no QR Code e prazo de 168 horas', async () => {
@@ -491,9 +491,9 @@ describe('QR Code, assinatura e contingência', () => {
     expect(() => comQrCode(normal, 'x')).toThrow('F118');
     const xml = await signMdfe(cont, cert.signer);
     expect(xml).toMatch(/&amp;tpAmb=2&amp;sign=[A-Za-z0-9+/=]+<\/qrCodMDFe>/);
-    expect(validateRoot(MDFeElement, parseXml(xml))).toEqual([]);
-    const limite = prazoContingencia(timeContext({ emissao: fixedClock(EMISSAO) }).emissao.now());
-    expect(limite.getTime() - fixedClock(EMISSAO).now().getTime()).toBe(168 * 3_600_000);
+    expect(validateRoot(MDFeElement, lerXml(xml))).toEqual([]);
+    const limite = prazoContingencia(contextoDeTempo({ emissao: relogioFixo(EMISSAO) }).emissao.agora());
+    expect(limite.getTime() - relogioFixo(EMISSAO).agora().getTime()).toBe(168 * 3_600_000);
   });
 
   test('tpEmis fora de 1 e 2 é recusado', () => {

@@ -18,7 +18,7 @@
  * MySQL e ao Postgres com `NOW(6)`/`now()`; a suíte inteira leva uns 20 prazos curtos.
  */
 
-import { isSineteError, SineteError } from '@sinete/core';
+import { ErroSinete, ehErroSinete } from '@sinete/core';
 import type { RegistroTransmissao, TransmissaoStore, Trava } from './store.ts';
 
 type StoreComRecusas = TransmissaoStore & Required<Pick<TransmissaoStore, 'registrarRecusa' | 'recusaRecente'>>;
@@ -36,9 +36,9 @@ type StoreComContingencia = TransmissaoStore &
   >;
 
 /** O adaptador não cumpriu um item do contrato. `details.caso` diz qual. */
-export class ContratoVioladoError extends SineteError<'contrato_violado'> {
+export class ContratoVioladoError extends ErroSinete<'contrato_violado'> {
   constructor(caso: string, message: string) {
-    super('contrato_violado', `${caso}: ${message}`, { details: { caso } });
+    super('contrato_violado', `${caso}: ${message}`, { detalhes: { caso } });
     this.name = 'ContratoVioladoError';
   }
 }
@@ -115,7 +115,7 @@ export function casosDoContrato(opcoes: OpcoesContrato): readonly CasoContrato[]
     try {
       await p;
     } catch (e) {
-      if (isSineteError(e, code)) return;
+      if (ehErroSinete(e, code)) return;
       falha(`${oque}: esperava o erro ${code}, veio ${String(e)}`);
     }
     falha(`${oque}: esperava o erro ${code}, não lançou`);

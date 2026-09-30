@@ -9,7 +9,7 @@ import { existsSync } from 'node:fs';
 import net from 'node:net';
 import path from 'node:path';
 import type { Ambiente, Logger } from '@sinete/core';
-import { ConfigError, noopLogger } from '@sinete/core';
+import { ErroDeConfiguracao, loggerSilencioso } from '@sinete/core';
 import { SignerError } from './errors.ts';
 import type { SignerChannel, SignerClientOptions, SignerConnection } from './signer.ts';
 import { connectSignerChannel, lineSplitter } from './signer.ts';
@@ -83,7 +83,7 @@ function helperArgs(o: StartSignerOptions): string[] {
   if (o.lab) args.push('--lab');
   else {
     if (!o.ambientes || o.ambientes.length === 0) {
-      throw new ConfigError('startSigner: informe ambientes (homologacao, producao) ou lab: true');
+      throw new ErroDeConfiguracao('startSigner: informe ambientes (homologacao, producao) ou lab: true');
     }
     for (const a of o.ambientes) args.push('--ambiente', a);
   }
@@ -110,7 +110,7 @@ function forwardStderr(logger: Logger): (chunk: string) => void {
  * requisições em andamento, fecha as identidades (sessões PKCS#11 inclusive) e sai.
  */
 export async function startSigner(options: StartSignerOptions): Promise<SignerConnection> {
-  const logger = options.logger ?? noopLogger;
+  const logger = options.logger ?? loggerSilencioso;
   const bin = resolveBinary(options);
   const args = helperArgs(options);
   const env = processEnv();

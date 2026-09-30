@@ -7,44 +7,44 @@
  * do CNPJ da NT Conjunta 2025.001 v1.00, item 2, com outros pesos.
  */
 
-import type { Result, ValidationIssue } from '@sinete/core';
-import { err, ok } from '@sinete/core';
+import type { Ocorrencia, Resultado } from '@sinete/core';
+import { falha, ok } from '@sinete/core';
 import { allSame, applyMask, issue, mod11Complement, stripMask, throwInvalid, weightedSum } from './digits.ts';
 
 const CPF_WEIGHTS_1: readonly number[] = [10, 9, 8, 7, 6, 5, 4, 3, 2];
 const CPF_WEIGHTS_2: readonly number[] = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2];
 
 /** Os 2 dígitos verificadores de uma base de 9 algarismos. */
-export function cpfCheckDigits(base: string): string {
+export function calcularDvCpf(base: string): string {
   if (!/^\d{9}$/.test(base)) throwInvalid('CPF', 'cpf_base_invalida', 'A base do CPF tem 9 algarismos');
   const d1 = mod11Complement(weightedSum(base, CPF_WEIGHTS_1));
   const d2 = mod11Complement(weightedSum(`${base}${d1}`, CPF_WEIGHTS_2));
   return `${d1}${d2}`;
 }
 
-export interface ParseOptions {
+export interface LerOpcoes {
   /** Caminho do campo nas ocorrências (`infNFe.dest.CPF`). Padrão: o nome do documento. */
-  readonly path?: string;
+  readonly caminho?: string;
 }
 
 /** Valida e normaliza um CPF (aceita máscara); devolve só os 11 algarismos. */
-export function parseCpf(input: string, options: ParseOptions = {}): Result<string, ValidationIssue> {
-  const path = options.path ?? 'CPF';
+export function lerCpf(input: string, options: LerOpcoes = {}): Resultado<string, Ocorrencia> {
+  const path = options.caminho ?? 'CPF';
   const value = stripMask(input.trim());
-  if (!/^\d*$/.test(value)) return err(issue(path, 'cpf_caractere_invalido', 'CPF só tem algarismos'));
-  if (value.length !== 11) return err(issue(path, 'cpf_tamanho_invalido', 'CPF tem 11 algarismos'));
-  if (allSame(value)) return err(issue(path, 'cpf_digitos_repetidos', 'CPF com todos os algarismos iguais'));
-  if (cpfCheckDigits(value.slice(0, 9)) !== value.slice(9)) {
-    return err(issue(path, 'cpf_dv_invalido', 'Dígito verificador do CPF não confere'));
+  if (!/^\d*$/.test(value)) return falha(issue(path, 'cpf_caractere_invalido', 'CPF só tem algarismos'));
+  if (value.length !== 11) return falha(issue(path, 'cpf_tamanho_invalido', 'CPF tem 11 algarismos'));
+  if (allSame(value)) return falha(issue(path, 'cpf_digitos_repetidos', 'CPF com todos os algarismos iguais'));
+  if (calcularDvCpf(value.slice(0, 9)) !== value.slice(9)) {
+    return falha(issue(path, 'cpf_dv_invalido', 'Dígito verificador do CPF não confere'));
   }
   return ok(value);
 }
 
-export function isValidCpf(input: string): boolean {
-  return parseCpf(input).ok;
+export function cpfValido(input: string): boolean {
+  return lerCpf(input).ok;
 }
 
 /** `000.000.000-00`. Não valida: formate só o que já passou por `parseCpf`. */
-export function formatCpf(value: string): string {
+export function formatarCpf(value: string): string {
   return applyMask(stripMask(value), '###.###.###-##');
 }

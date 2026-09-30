@@ -3,7 +3,7 @@
  * 20260727, a `Signature` como XML bruto e a vigência por ambiente.
  */
 import { describe, expect, test } from 'bun:test';
-import { fixedClock } from '@sinete/core';
+import { relogioFixo } from '@sinete/core';
 import { decodeXml, selecionarPl, serializeRoot, validateRoot } from '../src/index.ts';
 import * as n0209 from '../src/nfse/1.01-20260209.ts';
 import * as n0727 from '../src/nfse/1.01-20260727.ts';
@@ -51,7 +51,7 @@ describe('NFS-e Nacional 1.01', () => {
       expect(validateRoot(m.DPSElement, xml)).toEqual([]);
     }
     const literal = serializeRoot(n0209.DPSElement, { versao: '1.01', infDPS: infDps({ serie: '^1$' }) });
-    expect(validateRoot(n0209.DPSElement, literal).map((i) => i.path)).toContain('/DPS/infDPS/serie');
+    expect(validateRoot(n0209.DPSElement, literal).map((i) => i.caminho)).toContain('/DPS/infDPS/serie');
   });
 
   test('CNPJ alfanumérico só no 20260727', () => {
@@ -72,7 +72,7 @@ describe('NFS-e Nacional 1.01', () => {
   });
 
   test('vigência: 20260209 até 09/08/2026 em produção; 20260727 desde 27/07 na produção restrita e 10/08 em produção', () => {
-    const at = (iso: string) => fixedClock(iso);
+    const at = (iso: string) => relogioFixo(iso);
     expect(selecionarPl('nfse', 'producao', at('2026-08-09T23:59:00-03:00')).modulo).toBe('nfse/1.01-20260209');
     expect(selecionarPl('nfse', 'producao', at('2026-08-10T00:00:00-03:00')).modulo).toBe('nfse/1.01-20260727');
     expect(selecionarPl('nfse', 'homologacao', at('2026-07-26T12:00:00-03:00')).modulo).toBe('nfse/1.01-20260209');

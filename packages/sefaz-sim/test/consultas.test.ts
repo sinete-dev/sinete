@@ -5,7 +5,7 @@ import * as dist from '@sinete/schemas/nfe/dist-dfe/PL_NFeDistDFe_104';
 import * as canc from '@sinete/schemas/nfe/evento-cancelamento/PL_010d';
 import * as PL_010f from '@sinete/schemas/nfe/PL_010f';
 import { soap12ContentType, soap12Envelope } from '@sinete/transport';
-import { buildChaveAcesso } from '@sinete/validators';
+import { montarChaveAcesso } from '@sinete/validators';
 import { SIM_BASE_URL, simTransport } from '../src/index.ts';
 import type { Harness } from './helpers.ts';
 import {
@@ -109,7 +109,7 @@ describe('consulta protocolo', () => {
     expect(await cStat(consSitNFe(`${chave.slice(0, 43)}${(Number(chave[43]) + 1) % 10}`))).toBe('236');
     expect(await cStat(consSitNFe((await nfe({ dhEmi: '2027-01-10T10:00:00-03:00' })).chave))).toBe('615');
     // Chave válida de outro DF-e (CT-e, modelo 57): 618, e não 217.
-    const cte = buildChaveAcesso({
+    const cte = montarChaveAcesso({
       cUF: '35',
       aamm: '2609',
       emitente: EMITENTE,
@@ -266,7 +266,7 @@ describe('distribuição de DF-e (AN)', () => {
     const indevido = await h.send('NFeDistribuicaoDFe', distDFe(DESTINATARIO, distNSU(1)));
     expect(tag(indevido, 'cStat')).toBe('656');
     expect(tag(indevido, 'xMotivo')).toContain('[det:');
-    h.clock.advance(3_600_000);
+    h.clock.avancar(3_600_000);
     expect(tag(await h.send('NFeDistribuicaoDFe', distDFe(DESTINATARIO, distNSU(1))), 'cStat')).toBe('137');
     const vazia = await harness({}, h.c.destinatario);
     expect(tag(await vazia.send('NFeDistribuicaoDFe', distDFe(DESTINATARIO, consNSU(0))), 'cStat')).toBe('137');

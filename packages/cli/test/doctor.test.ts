@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { certificateToPem, openPfx } from '@sinete/cert';
-import { fixedClock, manualClock } from '@sinete/core';
+import { relogioFixo, relogioManual } from '@sinete/core';
 import type { Pki } from '../../transport/test/lab/pki.ts';
 import { createPki, findOpenssl } from '../../transport/test/lab/pki.ts';
 import { wwwServer } from '../../transport/test/lab/servers.ts';
@@ -12,7 +12,7 @@ import { formatCnpj, formatReport, maskCpf, maskCpfs, parseHttpDate, runDoctor }
 
 const fixtures = path.join(import.meta.dir, '../../cert/test/fixtures');
 const pfx = (name: string): Uint8Array => new Uint8Array(readFileSync(path.join(fixtures, name)));
-const clock = fixedClock('2026-09-25T12:00:00Z');
+const clock = relogioFixo('2026-09-25T12:00:00Z');
 const byId = (checks: readonly DoctorCheck[], id: string): DoctorCheck | undefined => checks.find((c) => c.id === id);
 
 describe('runDoctor sem rede', () => {
@@ -50,7 +50,7 @@ describe('runDoctor sem rede', () => {
     const vencido = await runDoctor({
       pfx: pfx('ecpf-legacy-acentuada.pfx'),
       password: 'Açaí#2026',
-      clock: fixedClock('2041-01-01T00:00:00Z'),
+      clock: relogioFixo('2041-01-01T00:00:00Z'),
       allowExpired: true,
     });
     expect(JSON.stringify(vencido)).not.toContain('11144477735');
@@ -60,7 +60,7 @@ describe('runDoctor sem rede', () => {
     const venc = await runDoctor({
       pfx: pfx('ecnpj-legacy.pfx'),
       password: 'sinete-teste',
-      clock: fixedClock('2027-02-01T00:00:00Z'),
+      clock: relogioFixo('2027-02-01T00:00:00Z'),
     });
     expect(venc.ok).toBe(false);
     expect(byId(venc.checks, 'pfx')).toMatchObject({ status: 'falha' });
@@ -68,21 +68,21 @@ describe('runDoctor sem rede', () => {
     const lax = await runDoctor({
       pfx: pfx('ecnpj-legacy.pfx'),
       password: 'sinete-teste',
-      clock: fixedClock('2027-02-01T00:00:00Z'),
+      clock: relogioFixo('2027-02-01T00:00:00Z'),
       allowExpired: true,
     });
     expect(byId(lax.checks, 'pfx')?.status).toBe('aviso');
     const perto = await runDoctor({
       pfx: pfx('ecnpj-legacy.pfx'),
       password: 'sinete-teste',
-      clock: fixedClock('2026-12-20T00:00:00Z'),
+      clock: relogioFixo('2026-12-20T00:00:00Z'),
     });
     expect(byId(perto.checks, 'pfx')?.status).toBe('aviso');
     for (const allowExpired of [false, true]) {
       const cedo = await runDoctor({
         pfx: pfx('ecnpj-legacy.pfx'),
         password: 'sinete-teste',
-        clock: fixedClock('2025-06-01T00:00:00Z'),
+        clock: relogioFixo('2025-06-01T00:00:00Z'),
         allowExpired,
       });
       expect(byId(cedo.checks, 'pfx')?.status).toBe(allowExpired ? 'aviso' : 'falha');
@@ -122,7 +122,7 @@ describe('runDoctor sem rede', () => {
     });
     try {
       const url = `http://127.0.0.1:${server.port}/`;
-      const real = manualClock(Date.now());
+      const real = relogioManual(Date.now());
       const ok = await runDoctor({
         pfx: pfx('ecnpj-legacy.pfx'),
         password: 'sinete-teste',
@@ -131,7 +131,7 @@ describe('runDoctor sem rede', () => {
         allowExpired: true,
       });
       expect(byId(ok.checks, 'relogio')?.status).toBe('ok');
-      real.advance(120_000);
+      real.avancar(120_000);
       const adiantado = await runDoctor({
         pfx: pfx('ecnpj-legacy.pfx'),
         password: 'sinete-teste',
@@ -144,7 +144,7 @@ describe('runDoctor sem rede', () => {
         details: { skewSeconds: expect.any(Number) },
       });
       expect(byId(adiantado.checks, 'relogio')?.message).toContain('adiantado');
-      real.advance(-1_000_000);
+      real.avancar(-1_000_000);
       const atrasado = await runDoctor({
         pfx: pfx('ecnpj-legacy.pfx'),
         password: 'sinete-teste',

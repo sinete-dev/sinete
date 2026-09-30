@@ -12,7 +12,7 @@
  * Qual modo vale para qual campo é dado (`data/arredondamento.json`), não regra espalhada no código.
  */
 
-import { ConfigError } from '@sinete/core';
+import { ErroDeConfiguracao } from '@sinete/core';
 
 export type RoundingMode = 'HALF_EVEN' | 'HALF_UP' | 'DOWN';
 
@@ -44,7 +44,8 @@ export class Decimal {
 
   /** Constrói a partir do coeficiente e da escala (`fromParts(1234n, 2)` = 12.34). */
   static fromParts(coef: bigint, scale: number): Decimal {
-    if (!Number.isInteger(scale) || scale < 0 || scale > MAX_SCALE) throw new ConfigError(`escala inválida: ${scale}`);
+    if (!Number.isInteger(scale) || scale < 0 || scale > MAX_SCALE)
+      throw new ErroDeConfiguracao(`escala inválida: ${scale}`);
     return new Decimal(coef, scale);
   }
 
@@ -54,7 +55,7 @@ export class Decimal {
    */
   static of(input: DecimalInput): Decimal {
     const d = Decimal.tryOf(input);
-    if (d === undefined) throw new ConfigError(`número decimal inválido: ${JSON.stringify(String(input))}`);
+    if (d === undefined) throw new ErroDeConfiguracao(`número decimal inválido: ${JSON.stringify(String(input))}`);
     return d;
   }
 
@@ -114,7 +115,7 @@ export class Decimal {
   /** Divisão com o resultado arredondado em `scale` casas pelo modo dado. */
   dividedBy(other: DecimalInput, scale: number, mode: RoundingMode): Decimal {
     const o = Decimal.of(other);
-    if (o.coef === 0n) throw new ConfigError('divisão por zero');
+    if (o.coef === 0n) throw new ErroDeConfiguracao('divisão por zero');
     // (a / 10^sa) / (b / 10^sb) = a * 10^(sb + scale + 1 - sa) / b, com uma casa de guarda para o arredondamento.
     const shift = o.scale + scale + 1 - this.scale;
     const num = shift >= 0 ? this.coef * pow10(shift) : this.coef;
@@ -140,7 +141,7 @@ export class Decimal {
 
   /** Arredonda para `scale` casas. Com `scale` maior que a atual, só completa com zeros. */
   round(scale: number, mode: RoundingMode): Decimal {
-    if (!Number.isInteger(scale) || scale < 0) throw new ConfigError(`casas decimais inválidas: ${scale}`);
+    if (!Number.isInteger(scale) || scale < 0) throw new ErroDeConfiguracao(`casas decimais inválidas: ${scale}`);
     if (scale >= this.scale) return new Decimal(this.coef * pow10(scale - this.scale), scale);
     return roundCoef(this.coef, this.scale, scale, mode, false);
   }

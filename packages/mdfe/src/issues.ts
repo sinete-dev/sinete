@@ -5,7 +5,7 @@
  * devolveria.
  */
 
-import type { OrigemOcorrencia, ValidationIssue } from '@sinete/core';
+import type { Ocorrencia, OrigemOcorrencia } from '@sinete/core';
 
 export const MDFE_ISSUE_CODES = [
   'campo_obrigatorio',
@@ -34,7 +34,7 @@ export const MDFE_ISSUE_CODES = [
 export type MdfeIssueCode = (typeof MDFE_ISSUE_CODES)[number];
 
 export class Issues {
-  readonly list: ValidationIssue[];
+  readonly list: Ocorrencia[];
 
   constructor() {
     this.list = [];
@@ -42,7 +42,7 @@ export class Issues {
 
   /** Ocorrência sobre a entrada, a não ser que `origem` diga outra coisa (ADR 0011). */
   add(path: string, code: MdfeIssueCode | string, message: string, origem: OrigemOcorrencia = 'entrada'): void {
-    this.list.push({ path, code, message, origem });
+    this.list.push({ caminho: path, code, mensagem: message, origem });
   }
 
   /** Ocorrência sobre o que o sinete montou a partir da entrada (XML, schema, PL, chave gerada, calculadora). */
@@ -51,13 +51,13 @@ export class Issues {
   }
 
   /** As ocorrências com a `origem` preenchida: a que veio sem (a de um validador avulso) é da entrada. */
-  get classificadas(): readonly ValidationIssue[] {
+  get classificadas(): readonly Ocorrencia[] {
     return this.list.map((i) => (i.origem === undefined ? { ...i, origem: 'entrada' } : i));
   }
 
   /** Ocorrência de uma regra do MOC: a mensagem termina com a regra e o `cStat` (`(F90, rejeição 663)`). */
   regra(path: string, code: MdfeIssueCode, message: string, regra: string, cStat: string): void {
-    this.list.push({ path, code, message: `${message} (${regra}, rejeição ${cStat})`, origem: 'entrada' });
+    this.list.push({ caminho: path, code, mensagem: `${message} (${regra}, rejeição ${cStat})`, origem: 'entrada' });
   }
 
   get empty(): boolean {

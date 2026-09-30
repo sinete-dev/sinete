@@ -7,8 +7,8 @@
  * cláusula décima primeira, § 14).
  */
 import { afterEach, beforeAll, describe, expect, test } from 'bun:test';
-import type { ManualClock } from '@sinete/core';
-import { manualClock, timeContext } from '@sinete/core';
+import type { RelogioManual } from '@sinete/core';
+import { contextoDeTempo, relogioManual } from '@sinete/core';
 import type { NfeInput } from '@sinete/nfe';
 import type { SefazSim, SyntheticCertificate } from '@sinete/sefaz-sim';
 import {
@@ -37,7 +37,7 @@ let pfx: Uint8Array;
 const fechar: (() => Promise<void>)[] = [];
 
 beforeAll(async () => {
-  const clock = manualClock(EMISSAO);
+  const clock = relogioManual(EMISSAO);
   ac = await syntheticCertificate({ clock, role: 'ac', validDays: 3650 });
   const emitente = await syntheticCertificate({ clock, role: 'titular', cnpj: CNPJ_EMIT, issuer: ac });
   servidor = await syntheticCertificate({ clock, role: 'servidor', issuer: ac });
@@ -60,7 +60,7 @@ const nfce = (nNF: number): NfeInput => {
 };
 
 interface Cenario {
-  readonly clock: ManualClock;
+  readonly clock: RelogioManual;
   readonly sim: SefazSim;
   readonly emissor: NfeEmissor;
   readonly store: TransmissaoStore;
@@ -75,7 +75,7 @@ interface Cenario {
 const CONTINGENCIA = { automatica: true, limiteFalhas: 2, janelaMs: 5 * MINUTO, sondaMs: 5 * MINUTO } as const;
 
 async function cenario(extra: Partial<NfeEmissorOptions> = {}): Promise<Cenario> {
-  const clock = manualClock(EMISSAO);
+  const clock = relogioManual(EMISSAO);
   const sim = createSefazSim({
     clock,
     uf: 'SP',
@@ -179,7 +179,7 @@ describe('contingência automática da NF-e: SVC da UF', () => {
     expect(entrou.escopo).toEqual({ documento: 'nfe', modelo: '55', uf: 'SP' });
     expect(entrou.motivo).toContain('SVC ativada para a UF (status da SVC: 107');
 
-    c.clock.advance(MINUTO);
+    c.clock.avancar(MINUTO);
     const d3 = autorizado(await c.emissor.emitir('nota-3', nota({ nNF: 3 })));
     expect(tpEmisDa(d3.id)).toBe('6');
     expect(d3.proc).toContain('<tpEmis>6</tpEmis>');
@@ -188,11 +188,11 @@ describe('contingência automática da NF-e: SVC da UF', () => {
     expect(c.caminhos.at(-1)).toBe(envioSvc);
 
     // Depois do intervalo, a sonda ainda vê 108 na UF e 107 na SVC: a nota nova continua na SVC.
-    c.clock.advance(5 * MINUTO);
+    c.clock.avancar(5 * MINUTO);
     expect(tpEmisDa(autorizado(await c.emissor.emitir('nota-4', nota({ nNF: 4 }))).id)).toBe('6');
     // A UF volta; depois do intervalo, a sonda vê 107 na UF e sai: a nota nova volta à emissão normal.
     c.sim.setContingencia(undefined);
-    c.clock.advance(5 * MINUTO);
+    c.clock.avancar(5 * MINUTO);
     const d5 = autorizado(await c.emissor.emitir('nota-5', nota({ nNF: 5 })));
     expect(tpEmisDa(d5.id)).toBe('1');
     expect(c.mudancas.map((m) => m.tipo)).toEqual(['entrou', 'saiu']);
@@ -229,11 +229,11 @@ describe('contingência automática da NF-e: SVC da UF', () => {
 
     // A SEFAZ de origem ativa a SVC; dentro do intervalo, ninguém consulta de novo, e a nota segue normal.
     c.sim.setAtivacaoSvc({ situacao: 'ativa' });
-    c.clock.advance(4 * MINUTO);
+    c.clock.avancar(4 * MINUTO);
     expect(tpEmisDa((await outro.emitir('nota-6', nota({ nNF: 6 }))).id)).toBe('1');
     expect(consultasSvc(c)).toBe(1);
     // Passado o intervalo, a falha seguinte consulta, vê 107 e entra; a nota nova vai à SVC.
-    c.clock.advance(MINUTO);
+    c.clock.avancar(MINUTO);
     await c.emissor.emitir('nota-7', nota({ nNF: 7 }));
     expect(consultasSvc(c)).toBe(2);
     expect(c.mudancas.map((m) => m.tipo)).toEqual(['svc-indisponivel', 'entrou']);
@@ -247,17 +247,17 @@ describe('contingência automática da NF-e: SVC da UF', () => {
     await c.emissor.emitir('nota-2', nota({ nNF: 2 }));
     // A SEFAZ de origem avisa que a SVC deixa de atender SP às 10:15; a UF ainda responde 108.
     c.sim.setAtivacaoSvc({ situacao: 'desativando', ate: new Date('2026-09-26T10:15:00-03:00') });
-    c.clock.advance(5 * MINUTO);
+    c.clock.avancar(5 * MINUTO);
     const d3 = autorizado(await c.emissor.emitir('nota-3', nota({ nNF: 3 })));
     expect(tpEmisDa(d3.id)).toBe('6');
     expect((await c.store.contingenciaAtiva?.('homologacao:nfe:55:SP'))?.fimDaSvc?.toISOString()).toBe(
       '2026-09-26T13:15:00.000Z',
     );
-    c.clock.advance(9 * MINUTO);
+    c.clock.avancar(9 * MINUTO);
     expect(tpEmisDa(autorizado(await c.emissor.emitir('nota-4', nota({ nNF: 4 }))).id)).toBe('6');
 
     // Às 10:15, sem esperar a sonda: a nota nova sai em emissão normal e não vai à SVC.
-    c.clock.advance(MINUTO);
+    c.clock.avancar(MINUTO);
     const antes = c.caminhos.length;
     const r5 = await c.emissor.emitir('nota-5', nota({ nNF: 5 }));
     expect(tpEmisDa(r5.id)).toBe('1');
@@ -272,14 +272,14 @@ describe('contingência automática da NF-e: SVC da UF', () => {
     await c.emissor.emitir('nota-1', nota({ nNF: 1 }));
     await c.emissor.emitir('nota-2', nota({ nNF: 2 }));
     c.sim.setAtivacaoSvc({ situacao: 'desativando', ate: new Date('2026-09-26T10:15:00-03:00') });
-    c.clock.advance(5 * MINUTO);
+    c.clock.avancar(5 * MINUTO);
     await c.emissor.emitir('nota-3', nota({ nNF: 3 }));
     // A SEFAZ de origem mantém a SVC: a sonda seguinte vê 107 e apaga a hora.
     c.sim.setAtivacaoSvc({ situacao: 'ativa' });
-    c.clock.advance(5 * MINUTO);
+    c.clock.avancar(5 * MINUTO);
     await c.emissor.emitir('nota-4', nota({ nNF: 4 }));
     expect((await c.store.contingenciaAtiva?.('homologacao:nfe:55:SP'))?.fimDaSvc).toBeUndefined();
-    c.clock.advance(6 * MINUTO);
+    c.clock.avancar(6 * MINUTO);
     expect(tpEmisDa(autorizado(await c.emissor.emitir('nota-5', nota({ nNF: 5 }))).id)).toBe('6');
     expect(c.mudancas.map((m) => m.tipo)).toEqual(['entrou']);
   });
@@ -290,13 +290,13 @@ describe('contingência automática da NF-e: SVC da UF', () => {
     await c.emissor.emitir('nota-1', nota({ nNF: 1 }));
     await c.emissor.emitir('nota-2', nota({ nNF: 2 }));
     c.sim.setAtivacaoSvc({ situacao: 'desativando', ate: new Date('2026-09-26T10:15:00-03:00') });
-    c.clock.advance(5 * MINUTO);
+    c.clock.avancar(5 * MINUTO);
     await c.emissor.emitir('nota-3', nota({ nNF: 3 }));
     // 10:14:59: a sonda venceu e começa antes da hora; as duas consultas caem, e o relógio passa das 10:15.
-    c.clock.advance(10 * MINUTO - 1000);
+    c.clock.avancar(10 * MINUTO - 1000);
     c.sim.injectFault({ kind: 'drop', phase: 'before' }, { servico: 'NfeStatusServico', times: 2 });
     c.aoPedir = (caminho) => {
-      if (caminho.endsWith('/NFeStatusServico4')) c.clock.advance(1000);
+      if (caminho.endsWith('/NFeStatusServico4')) c.clock.avancar(1000);
     };
     const r4 = await c.emissor.emitir('nota-4', nota({ nNF: 4 }));
     expect(tpEmisDa(r4.id)).toBe('1');
@@ -311,7 +311,7 @@ describe('contingência automática da NF-e: SVC da UF', () => {
     // O 113 diz 10:05 e a sonda roda às 10:05:00 do relógio do emissor, mas a SVC só aceita até 10:05:30 no simulador:
     // a hora do xMotivo (sem segundos) já chegou, e o emissor sai sem esperar.
     c.sim.setAtivacaoSvc({ situacao: 'desativando', ate: new Date('2026-09-26T10:05:30-03:00') });
-    c.clock.advance(5 * MINUTO);
+    c.clock.avancar(5 * MINUTO);
     const r3 = await c.emissor.emitir('nota-3', nota({ nNF: 3 }));
     expect(tpEmisDa(r3.id)).toBe('1');
     expect(c.mudancas.map((m) => m.tipo)).toEqual(['entrou', 'saiu']);
@@ -407,9 +407,12 @@ describe('contingência automática da NF-e: SVC da UF', () => {
     expect(c.mudancas.map((m) => m.tipo)).toEqual(['entrou']);
 
     // A nota com o relógio de emissão dela, um minuto antes da entrada em contingência: dhCont é a emissão.
-    const antes = manualClock('2026-09-26T09:59:00-03:00');
+    const antes = relogioManual('2026-09-26T09:59:00-03:00');
     const d = autorizado(
-      await c.emissor.emitir('nota-3', { nfe: nota({ nNF: 3 }), montagem: { time: timeContext({ emissao: antes }) } }),
+      await c.emissor.emitir('nota-3', {
+        nfe: nota({ nNF: 3 }),
+        montagem: { time: contextoDeTempo({ emissao: antes }) },
+      }),
     );
     expect(tpEmisDa(d.id)).toBe('6');
     expect(d.proc).toContain('<dhCont>2026-09-26T09:59:00-03:00</dhCont>');
@@ -435,7 +438,7 @@ describe('contingência automática da NF-e: SVC da UF', () => {
   });
 
   test('store sem os métodos da contingência: o estado fica na memória do processo', async () => {
-    const clock = manualClock(EMISSAO);
+    const clock = relogioManual(EMISSAO);
     const {
       registrarFalhaDoAutorizador: _a,
       contingenciaAtiva: _b,
@@ -493,7 +496,7 @@ describe('contingência automática da NF-e: SVC da UF', () => {
 });
 
 describe('hora do 113 no xMotivo', () => {
-  const agora = manualClock('2026-09-26T10:00:00-03:00');
+  const agora = relogioManual('2026-09-26T10:00:00-03:00');
   const fim = (xMotivo: string, clock = agora): string | undefined => fimDaSvcPeloMotivo(xMotivo, clock)?.toISOString();
 
   test('com data (item 04.7) e só com a hora (K05.3), no horário de Brasília', () => {
@@ -505,12 +508,12 @@ describe('hora do 113 no xMotivo', () => {
   });
 
   test('sem data, perto da meia-noite: a ocorrência mais próxima', () => {
-    expect(fim('SVC-AN será desabilitada para a UF informada às 00:05', manualClock('2026-09-26T23:55:00-03:00'))).toBe(
-      '2026-09-27T03:05:00.000Z',
-    );
-    expect(fim('SVC-AN será desabilitada para a UF informada às 23:58', manualClock('2026-09-27T00:02:00-03:00'))).toBe(
-      '2026-09-27T02:58:00.000Z',
-    );
+    expect(
+      fim('SVC-AN será desabilitada para a UF informada às 00:05', relogioManual('2026-09-26T23:55:00-03:00')),
+    ).toBe('2026-09-27T03:05:00.000Z');
+    expect(
+      fim('SVC-AN será desabilitada para a UF informada às 23:58', relogioManual('2026-09-27T00:02:00-03:00')),
+    ).toBe('2026-09-27T02:58:00.000Z');
   });
 
   test('sem hora legível, ou com data impossível: undefined', () => {
@@ -553,7 +556,7 @@ describe('contingência automática da NFC-e: off-line', () => {
 
     // A UF volta; depois do intervalo, a sonda vê 107 e a retomada transmite os mesmos bytes.
     c.sim.clearFaults();
-    c.clock.advance(5 * MINUTO);
+    c.clock.avancar(5 * MINUTO);
     const r2 = autorizado(await c.emissor.retomar('cupom-2'));
     expect(r2.id).toBe(off.id);
     expect(r2.proc).toContain(off.xml.replace(/^<\?xml[^>]*\?>/, ''));

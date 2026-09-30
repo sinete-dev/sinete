@@ -25,7 +25,7 @@ export function dacce(xmlEvento: string, options: DacceOptions = {}): Doc {
   const nota = options.nfe ? readNota(options.nfe) : undefined;
   if (nota && nota.chave !== ev.chNFe) {
     throw new DanfeError('evento_incompativel', 'a carta de correção é de outra NF-e', {
-      details: { chave: nota.chave, chaveEvento: ev.chNFe },
+      detalhes: { chave: nota.chave, chaveEvento: ev.chNFe },
     });
   }
   return dacceLayout(ev, nota, options);

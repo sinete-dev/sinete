@@ -5,8 +5,8 @@
  * critério da UF (E16a-30 e E16a-35, E14-10 e E14-20, facultativas). As regras só da NFC-e estão em `nfce.ts`.
  */
 
-import { ufBySigla } from '@sinete/core';
-import { parseCnpj } from '@sinete/validators';
+import { ufPorSigla } from '@sinete/core';
+import { lerCnpj } from '@sinete/validators';
 import suframa from '../data/suframa.json' with { type: 'json' };
 import type { Issues } from '../issues.ts';
 import type { NfeInput } from '../model.ts';
@@ -85,7 +85,7 @@ export function conferirDestinatario(input: NfeInput, ide: IdeDestinatario, issu
   // E10-20: o município do destinatário é da UF dele (as duas primeiras posições do código são o código da UF).
   if (end !== undefined && !exterior) {
     const e = end as { UF: string; cMun: string };
-    const cUF = ufBySigla(e.UF)?.cUF;
+    const cUF = ufPorSigla(e.UF)?.cUF;
     if (cUF !== undefined && digitos(e.cMun).slice(0, 2) !== cUF) {
       issues.add(
         'destinatario.endereco.cMun',
@@ -111,8 +111,8 @@ export function conferirDestinatario(input: NfeInput, ide: IdeDestinatario, issu
       // CNPJ alfanumérico: as letras contam; só a máscara sai (a mesma normalização do parseCnpj).
       const cnpj = (v: string | undefined): string | undefined => {
         if (v === undefined) return undefined;
-        const r = parseCnpj(v);
-        return r.ok ? r.value : undefined;
+        const r = lerCnpj(v);
+        return r.ok ? r.valor : undefined;
       };
       const cnpjDest = 'CNPJ' in d ? cnpj(d.CNPJ) : undefined;
       const mesmoCnpj = cnpjDest !== undefined && cnpjDest === cnpj(input.emitente.CNPJ);

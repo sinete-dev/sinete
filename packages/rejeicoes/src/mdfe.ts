@@ -7,61 +7,61 @@
  * MDF-e 3.00b (Anexo I e Visão Geral) e das NT 2025.001 e 2026.001, com o sha256 de cada PDF conferido.
  */
 
-import type { Rejected, RejectionHint, SefazOutcome } from '@sinete/core';
+import type { DicaRejeicao, Recusado, ResultadoSefaz } from '@sinete/core';
 import table from './data/rejeicoes-mdfe.json' with { type: 'json' };
-import type { RejeicaoCategory, RejeicaoRule, RejeicoesTableInfo } from './index.ts';
+import type { CategoriaRejeicao, DescricaoTabelaRejeicoes, RegraRejeicao } from './index.ts';
 
 export interface RejeicaoMdfe {
   /** `cStat`, 3 ou 4 dígitos (NT 2025.001, item 5). */
-  readonly code: string;
+  readonly codigo: string;
   /** O MDF-e não tem denegação: todo código é rejeição. */
-  readonly effect: 'rejeicao';
+  readonly efeito: 'rejeicao';
   /** Mensagem oficial sem o prefixo "Rejeição:", com os marcadores do documento (`[nProt:999999999999999]`). */
-  readonly message: string;
+  readonly mensagem: string;
   /** Todas as mensagens quando o código aparece em regras com texto diferente (684 no MOC e na NT 2026.001). */
-  readonly messages?: readonly string[];
+  readonly mensagens?: readonly string[];
   readonly modelos: readonly '58'[];
   /** Documento e regra de origem (`MOC MDF-e 3.00b Anexo I, regra F85`). */
-  readonly source: string;
-  readonly rules: readonly RejeicaoRule[];
-  readonly category: RejeicaoCategory;
+  readonly fonte: string;
+  readonly regras: readonly RegraRejeicao[];
+  readonly categoria: CategoriaRejeicao;
   readonly causaProvavel?: string;
   readonly comoCorrigir?: string;
   readonly referencia?: string;
 }
 
 /** Metadados do catálogo do MDF-e: versão (data de coleta) e documentos de origem com sha256. */
-export const REJEICOES_MDFE_TABLE: RejeicoesTableInfo = {
-  schemaVersion: table.schemaVersion,
-  version: table.version,
-  sources: table.sources,
+export const TABELA_REJEICOES_MDFE: DescricaoTabelaRejeicoes = {
+  versaoDoFormato: table.versaoDoFormato,
+  versao: table.versao,
+  fontes: table.fontes,
 };
 
 /** Todas as entradas do MDF-e, em ordem numérica de código. */
 export const REJEICOES_MDFE: readonly RejeicaoMdfe[] = table.rejeicoes as readonly RejeicaoMdfe[];
 
-const byCode: ReadonlyMap<string, RejeicaoMdfe> = new Map(REJEICOES_MDFE.map((r) => [r.code, r]));
+const byCode: ReadonlyMap<string, RejeicaoMdfe> = new Map(REJEICOES_MDFE.map((r) => [r.codigo, r]));
 
 /** Entrada do catálogo do MDF-e para o `cStat`, ou `undefined` se o código não está catalogado. */
-export function rejeicaoMdfeByCode(cStat: string): RejeicaoMdfe | undefined {
+export function rejeicaoMdfePorCodigo(cStat: string): RejeicaoMdfe | undefined {
   return byCode.get(cStat.trim());
 }
 
 /** `RejectionHint` do core para o código do MDF-e, quando há curadoria de causa e correção. */
-export function rejectionHintMdfe(cStat: string): RejectionHint | undefined {
-  const r = rejeicaoMdfeByCode(cStat);
+export function dicaRejeicaoMdfe(cStat: string): DicaRejeicao | undefined {
+  const r = rejeicaoMdfePorCodigo(cStat);
   if (!r?.causaProvavel || !r.comoCorrigir) return undefined;
-  return { probableCause: r.causaProvavel, suggestedFix: r.comoCorrigir, source: r.referencia ?? r.source };
+  return { causaProvavel: r.causaProvavel, comoCorrigir: r.comoCorrigir, fonte: r.referencia ?? r.fonte };
 }
 
 /** Preenche o `hint` de um desfecho `rejected` do MDF-e. Não sobrescreve um `hint` já presente. */
-export function enrichRejectedMdfe(outcome: Rejected): Rejected {
-  if (outcome.hint !== undefined) return outcome;
-  const hint = rejectionHintMdfe(outcome.cStat);
-  return hint === undefined ? outcome : { ...outcome, hint };
+export function completarRecusadoMdfe(outcome: Recusado): Recusado {
+  if (outcome.dica !== undefined) return outcome;
+  const hint = dicaRejeicaoMdfe(outcome.cStat);
+  return hint === undefined ? outcome : { ...outcome, dica: hint };
 }
 
 /** Como `enrichRejectedMdfe`, aceitando qualquer desfecho; só o `rejected` muda. */
-export function enrichOutcomeMdfe<T, D = T>(outcome: SefazOutcome<T, D>): SefazOutcome<T, D> {
-  return outcome.status === 'rejected' ? enrichRejectedMdfe(outcome) : outcome;
+export function completarResultadoMdfe<T, D = T>(outcome: ResultadoSefaz<T, D>): ResultadoSefaz<T, D> {
+  return outcome.tipo === 'recusado' ? completarRecusadoMdfe(outcome) : outcome;
 }

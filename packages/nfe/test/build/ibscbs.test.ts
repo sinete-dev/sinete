@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { fixedClock } from '@sinete/core';
+import { relogioFixo } from '@sinete/core';
 import type { TTribNFe } from '@sinete/schemas/nfe/PL_010f';
 import { ibsCbsDoItem, somaCampo, totalIbsCbs } from '../../src/build/ibscbs.ts';
 import { camposForaDoPl, escolherPl } from '../../src/build/pl.ts';
@@ -103,11 +103,11 @@ describe('IBSCBSTot', () => {
 
 describe('PL por vigência', () => {
   test('data fora das vigências conhecidas propaga o erro do schemas', () => {
-    expect(() => escolherPl('producao', fixedClock('2020-01-01T00:00:00Z'))).toThrow();
+    expect(() => escolherPl('producao', relogioFixo('2020-01-01T00:00:00Z'))).toThrow();
   });
 
   test('campos que o PL não conhece são apontados, inclusive em listas', () => {
-    const { infNFe } = escolherPl('homologacao', fixedClock('2026-09-26T12:00:00Z'));
+    const { infNFe } = escolherPl('homologacao', relogioFixo('2026-09-26T12:00:00Z'));
     const issues = new Issues();
     camposForaDoPl(
       infNFe,
@@ -116,7 +116,7 @@ describe('PL por vigência', () => {
       'PL_010f',
       issues,
     );
-    expect(issues.list.map((i) => i.path)).toEqual([
+    expect(issues.list.map((i) => i.caminho)).toEqual([
       'infNFe.ide.campoNovo',
       'infNFe.det[0].prod.outro',
       'infNFe.inexistente',

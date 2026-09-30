@@ -11,7 +11,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { $ } from 'bun';
-import { signXml, verifySignature } from '../../../../src/xml/index.ts';
+import { assinarXml, conferirAssinatura } from '../../../../src/xml/index.ts';
 import { generateTestKeys, toPem } from '../../helpers/test-keys.ts';
 import { EDGE_CASES } from './casos.ts';
 
@@ -23,10 +23,10 @@ try {
   const pem = path.join(work, 'cert.pem');
   await Bun.write(pem, toPem('CERTIFICATE', keys.certificateDer));
   for (const c of EDGE_CASES) {
-    const signed = await signXml(`<?xml version="1.0" encoding="UTF-8"?>${c.xml}`, { id: c.id }, keys.dataSigner);
+    const signed = await assinarXml(`<?xml version="1.0" encoding="UTF-8"?>${c.xml}`, { id: c.id }, keys.dataSigner);
     const file = path.join(here, `${c.name}.xml`);
     await Bun.write(file, signed);
-    const own = await verifySignature(signed, { id: c.id, element: c.element });
+    const own = await conferirAssinatura(signed, { id: c.id, elemento: c.element });
     const x = await $`xmlsec1 --verify --id-attr:Id ${c.element} --trusted-pem ${pem} ${file}`.nothrow().quiet();
     const ok = own.ok && x.exitCode === 0;
     if (!ok) failed++;

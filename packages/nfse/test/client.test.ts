@@ -3,8 +3,15 @@
  * e as grafias de resposta observadas. O caminho feliz fica no ponta a ponta contra o simulador.
  */
 import { beforeAll, describe, expect, test } from 'bun:test';
-import type { ManualClock } from '@sinete/core';
-import { ConfigError, manualClock, memoryLogger, ProtocolError, timeContext, ValidationError } from '@sinete/core';
+import type { RelogioManual } from '@sinete/core';
+import {
+  contextoDeTempo,
+  ErroDeConfiguracao,
+  ErroDeValidacao,
+  ErroRespostaInvalida,
+  loggerEmMemoria,
+  relogioManual,
+} from '@sinete/core';
 import type { SyntheticCertificate } from '@sinete/sefaz-sim';
 import { syntheticCertificate } from '@sinete/sefaz-sim';
 import type { EndpointRef, Transport, TransportRequest, TransportResponse } from '@sinete/transport';
@@ -54,15 +61,15 @@ function falso(respostas: Resposta[]): Transport & { readonly pedidos: Transport
 }
 
 let cert: SyntheticCertificate;
-let clock: ManualClock;
+let clock: RelogioManual;
 let assinada: string;
 let idDps: string;
 const CHAVE = `${SAO_PAULO}22${PRESTADOR}${'1'.padStart(13, '0')}2609${'1'.padStart(9, '0')}7`;
 
 beforeAll(async () => {
-  clock = manualClock(EMISSAO);
+  clock = relogioManual(EMISSAO);
   cert = await syntheticCertificate({ clock, role: 'titular', cnpj: PRESTADOR });
-  const r = buildDps(dps(), { ambiente: 'homologacao', time: timeContext({ emissao: clock }) });
+  const r = buildDps(dps(), { ambiente: 'homologacao', time: contextoDeTempo({ emissao: clock }) });
   if (!r.ok) throw new Error('montagem');
   idDps = r.value.id;
   assinada = await signDps(r.value, cert.signer);
@@ -91,13 +98,13 @@ describe('emissão fora do contrato', () => {
       { status: 201, body: json({ chaveAcesso: CHAVE, nfseXmlGZipB64: await gzipBase64('<NFSe') }) },
       { status: 200, body: 'não é json' },
     ]);
-    const c = cliente(t, { logger: memoryLogger() });
+    const c = cliente(t, { logger: loggerEmMemoria() });
     await expect(c.autorizar(assinada)).rejects.toThrow('HTTP 500');
     await expect(c.autorizar(assinada)).rejects.toThrow('chaveAcesso');
     await expect(c.autorizar(assinada)).rejects.toThrow('não corresponde');
     await expect(c.autorizar(assinada)).rejects.toThrow('não é uma NFS-e');
     await expect(c.autorizar(assinada)).rejects.toThrow('bem formado');
-    await expect(c.autorizar(assinada)).rejects.toBeInstanceOf(ProtocolError);
+    await expect(c.autorizar(assinada)).rejects.toBeInstanceOf(ErroRespostaInvalida);
     expect(t.pedidos[0]?.headers).toMatchObject({ 'content-type': 'application/json' });
     expect(t.pedidos[0]?.url).toBe('https://sefin.producaorestrita.nfse.gov.br/API/SefinNacional/nfse');
   });
@@ -115,7 +122,7 @@ describe('emissão fora do contrato', () => {
       },
     ]);
     const r = await cliente(t).autorizar(assinada);
-    expect(r.status === 'authorized' && r.value.alertas.map((a) => a.codigo)).toEqual(['E0312']);
+    expect(r.tipo === 'autorizado' && r.valor.alertas.map((a) => a.codigo)).toEqual(['E0312']);
     expect(r.xMotivo).toBe('NFS-e Avulsa');
   });
 
@@ -125,7 +132,7 @@ describe('emissão fora do contrato', () => {
     await expect(c.autorizar('<DPS/>')).rejects.toThrow('declaração');
     await expect(c.autorizar('<?xml version="1.0"?><DPS')).rejects.toThrow('bem formado');
     await expect(c.autorizar('<?xml version="1.0"?><NFSe/>')).rejects.toThrow('não é uma DPS');
-    await expect(cliente(t, { ambiente: 'producao' }).autorizar(assinada)).rejects.toBeInstanceOf(ConfigError);
+    await expect(cliente(t, { ambiente: 'producao' }).autorizar(assinada)).rejects.toBeInstanceOf(ErroDeConfiguracao);
     expect(t.pedidos).toHaveLength(0);
   });
 });
@@ -145,9 +152,9 @@ describe('consultas e eventos fora do contrato', () => {
     await expect(c.consultar(CHAVE)).rejects.toThrow('HTTP 503');
     await expect(c.consultar(CHAVE)).rejects.toThrow('outra chave');
     await expect(c.consultarDps(idDps)).rejects.toThrow('HTTP 500');
-    await expect(c.consultarDps(idDps)).rejects.toThrow(ConfigError);
+    await expect(c.consultarDps(idDps)).rejects.toThrow(ErroDeConfiguracao);
     await expect(c.consultarDps('DPS1')).rejects.toThrow('Id de DPS');
-    await expect(c.consultar('1')).rejects.toThrow(ConfigError);
+    await expect(c.consultar('1')).rejects.toThrow(ErroDeConfiguracao);
   });
 
   test('resolver envio sem resposta: DPS processada sem NFS-e é ProtocolError', async () => {
@@ -183,7 +190,7 @@ describe('consultas e eventos fora do contrato', () => {
     ]);
     const c = cliente(t, { signer: cert.signer });
     const semFiltro = c.consultarEventos(CHAVE, undefined as unknown as { tpEvento: string; nSeqEvento: number });
-    await expect(semFiltro).rejects.toBeInstanceOf(ConfigError);
+    await expect(semFiltro).rejects.toBeInstanceOf(ErroDeConfiguracao);
     await expect(semFiltro).rejects.toThrow('405 sem o tipo e 404 sem a sequência');
     const soTipo = { tpEvento: '101101' } as unknown as { tpEvento: string; nSeqEvento: number };
     await expect(c.consultarEventos(CHAVE, soTipo)).rejects.toThrow('tpEvento e nSeqEvento');
@@ -201,7 +208,7 @@ describe('consultas e eventos fora do contrato', () => {
     expect(await c.consultarEventos(CHAVE, filtro)).toEqual([]);
     await expect(c.consultarEventos(CHAVE, filtro)).rejects.toThrow('resposta sem eventos');
     await expect(c.consultarEventos(CHAVE, filtro)).rejects.toThrow('evento sem arquivoXml');
-    await expect(c.consultarEventos(CHAVE, filtro)).rejects.toBeInstanceOf(ProtocolError);
+    await expect(c.consultarEventos(CHAVE, filtro)).rejects.toBeInstanceOf(ErroRespostaInvalida);
     await expect(c.consultarEventos(CHAVE, filtro)).rejects.toThrow('de outra NFS-e');
     const pedido = {
       chave: CHAVE,
@@ -215,8 +222,8 @@ describe('consultas e eventos fora do contrato', () => {
     await expect(c.cancelar(pedido)).rejects.toThrow('HTTP 500');
     const lista = await c.consultarEventos(CHAVE, filtro);
     expect(lista[0]).toMatchObject({ chaveAcesso: CHAVE, tpEvento: '', nSeqEvento: '1', dhProc: '' });
-    await expect(c.cancelar({ ...pedido, xMotivo: 'curto' })).rejects.toBeInstanceOf(ValidationError);
-    await expect(c.solicitarAnaliseFiscal({ ...pedido, xMotivo: 'curto' })).rejects.toBeInstanceOf(ValidationError);
+    await expect(c.cancelar({ ...pedido, xMotivo: 'curto' })).rejects.toBeInstanceOf(ErroDeValidacao);
+    await expect(c.solicitarAnaliseFiscal({ ...pedido, xMotivo: 'curto' })).rejects.toBeInstanceOf(ErroDeValidacao);
     await expect(cliente(t).cancelar(pedido)).rejects.toThrow('options.signer');
   });
 
@@ -321,7 +328,7 @@ describe('parametrização', () => {
     await expect(p.retencoes(SAO_PAULO, 'x')).rejects.toThrow('competência');
     await expect(p.historicoAliquotas('x', '010101')).rejects.toThrow('município');
     expect(t.pedidos).toHaveLength(0);
-    expect(() => cacheEmMemoria(0)).toThrow(ConfigError);
+    expect(() => cacheEmMemoria(0)).toThrow(ErroDeConfiguracao);
   });
 
   test('respostas fora do formato, sem cache, 404 e erro HTTP com mensagem', async () => {
@@ -371,7 +378,7 @@ describe('parametrização', () => {
     await Promise.all([p.convenio(SAO_PAULO), p.convenio(SAO_PAULO)]);
     expect(t.pedidos).toHaveLength(1);
     expect(await p.convenio('3509502')).toBeUndefined();
-    clock.advance(2_000);
+    clock.avancar(2_000);
     expect(await p.convenio('3509502')).toBeUndefined();
     expect(t.pedidos).toHaveLength(3);
     await expect(p.convenio('3304557')).rejects.toThrow('HTTP 500');

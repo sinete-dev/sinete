@@ -7,8 +7,8 @@
  * da data de início. Datas de homologação da SEFAZ são "até" e podem variar por UF; a tabela registra a data da NT.
  */
 
-import type { Ambiente, Clock } from '@sinete/core';
-import { formatDateTimeOffset } from '@sinete/core';
+import type { Ambiente, Relogio } from '@sinete/core';
+import { formatarDataHoraComFuso } from '@sinete/core';
 import table from './data/vigencia.json' with { type: 'json' };
 import { VigenciaError } from './errors.ts';
 
@@ -60,13 +60,13 @@ const BRASILIA_MIN = -180;
  * não passa da data. Na emissão, passe o relógio de emissão; para documento recebido, um `fixedClock` com a data dele.
  * Lança `VigenciaError` (`pl_sem_vigencia`) quando nenhuma entrada cobre a data.
  */
-export function selecionarPl(familia: FamiliaSchema, ambiente: Ambiente, relogio: Clock): VigenciaEntry {
+export function selecionarPl(familia: FamiliaSchema, ambiente: Ambiente, relogio: Relogio): VigenciaEntry {
   const entries = Object.hasOwn(VIGENCIAS, familia) ? VIGENCIAS[familia] : undefined;
   if (!entries) throw new VigenciaError(`família desconhecida: ${String(familia)}`);
   if (ambiente !== 'producao' && ambiente !== 'homologacao') {
     throw new VigenciaError(`ambiente desconhecido: ${String(ambiente)}`);
   }
-  const dia = formatDateTimeOffset(relogio.now(), BRASILIA_MIN).slice(0, 10);
+  const dia = formatarDataHoraComFuso(relogio.agora(), BRASILIA_MIN).slice(0, 10);
   let best: VigenciaEntry | undefined;
   let bestStart = '';
   for (const e of entries) {
@@ -84,7 +84,7 @@ export function selecionarPl(familia: FamiliaSchema, ambiente: Ambiente, relogio
       .sort()[0];
     throw new VigenciaError(
       `nenhum PL de ${familia} vigente em ${ambiente} no dia ${dia}${first ? ` (o primeiro da tabela começa em ${first})` : ''}`,
-      { details: { familia, ambiente, dia } },
+      { detalhes: { familia, ambiente, dia } },
     );
   }
   return best;

@@ -7,7 +7,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import path from 'node:path';
-import { isSineteError } from '@sinete/core';
+import { ehErroSinete } from '@sinete/core';
 import type { Doc } from '@sinete/da';
 import { toHtml, toPdf } from '@sinete/da';
 import { dacce } from '@sinete/da/cce';
@@ -184,7 +184,7 @@ function run(kind: Kind, render: () => Doc, digits: string, qr: string | undefin
     }
     rows.push(row);
   } catch (e) {
-    rows.push({ kind, ok: false, code: isSineteError(e) ? e.code : 'excecao_nao_tipada' });
+    rows.push({ kind, ok: false, code: ehErroSinete(e) ? e.code : 'excecao_nao_tipada' });
   }
 }
 

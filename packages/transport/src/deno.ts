@@ -8,7 +8,7 @@
  */
 
 import { icpBrasilTlsPem } from '@sinete/cert';
-import { ConfigError, TimeoutError, UnsupportedError } from '@sinete/core';
+import { ErroDeConfiguracao, ErroDeTempoEsgotado, ErroNaoSuportado } from '@sinete/core';
 import { classifyTransportFailure, http403Error } from './classify.ts';
 import { assertSupported, audited, makeResponse, prepareRequest, sendViaHelper } from './common.ts';
 import { TransportError, TransportUnsupportedError } from './errors.ts';
@@ -49,7 +49,7 @@ export function createDenoTransport(options: DenoTransportOptions): Transport {
   const deno = options.deno ?? (globalThis as { Deno?: DenoHttpApi }).Deno;
   const doFetch = options.fetch ?? globalThis.fetch;
   if (!deno || typeof deno.createHttpClient !== 'function') {
-    throw new UnsupportedError('Deno.createHttpClient não existe nesta runtime');
+    throw new ErroNaoSuportado('Deno.createHttpClient não existe nesta runtime');
   }
   const id = options.identity;
   const client =
@@ -65,7 +65,7 @@ export function createDenoTransport(options: DenoTransportOptions): Transport {
   let closed = false;
 
   async function send(request: TransportRequest): Promise<TransportResponse> {
-    if (closed) throw new ConfigError('transporte já fechado');
+    if (closed) throw new ErroDeConfiguracao('transporte já fechado');
     const prepared = await prepareRequest(request, options);
     if (id.kind === 'pem') assertSupported(prepared, DENO_CAPABILITIES);
     if (id.kind === 'pem' && !prepared.profile && options.unknownHosts === 'refuse') {
@@ -112,9 +112,13 @@ export function createDenoTransport(options: DenoTransportOptions): Transport {
           throw new TransportError('cancelado', `${prepared.host}: envio cancelado`, { cause: e });
         }
         if (timeout.signal.aborted) {
-          throw new TimeoutError(`${prepared.host}: sem resposta em ${prepared.timeoutMs} ms`, prepared.timeoutMs, {
-            cause: e,
-          });
+          throw new ErroDeTempoEsgotado(
+            `${prepared.host}: sem resposta em ${prepared.timeoutMs} ms`,
+            prepared.timeoutMs,
+            {
+              cause: e,
+            },
+          );
         }
         throw classifyTransportFailure(e, { host: prepared.host });
       } finally {

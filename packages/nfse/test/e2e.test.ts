@@ -4,8 +4,8 @@
  * `redirectNfseToSim` troca só a origem. Nenhum pedido sai da máquina.
  */
 import { afterEach, beforeAll, describe, expect, test } from 'bun:test';
-import { isRejected, TimeoutError, timeContext, unwrapAuthorized } from '@sinete/core';
-import { verifySignature } from '@sinete/core/xml';
+import { contextoDeTempo, ErroDeTempoEsgotado, exigirAutorizado, recusado } from '@sinete/core';
+import { conferirAssinatura } from '@sinete/core/xml';
 import { validateRoot } from '@sinete/schemas';
 import { eventoElement, NFSeElement } from '@sinete/schemas/nfse/1.01-20260727';
 import type { NfseRejeicao } from '../src/index.ts';
@@ -35,8 +35,8 @@ describe('emissão', () => {
     const s = await novo();
     const assinada = await s.assinar(dps());
     const r = await s.client.autorizar(assinada);
-    expect(r.status).toBe('authorized');
-    const v = unwrapAuthorized(r);
+    expect(r.tipo).toBe('autorizado');
+    const v = exigirAutorizado(r);
     expect(r.cStat).toBe('100');
     expect(r.xMotivo).toBe('NFS-e Gerada');
     const ch = parseChaveNfse(v.chaveAcesso);
@@ -52,8 +52,8 @@ describe('emissão', () => {
     expect(v.xml).toContain(assinada.replace('<?xml version="1.0" encoding="UTF-8"?>', ''));
     expect(validateRoot(NFSeElement, v.xml)).toEqual([]);
     const assinaturas = await Promise.all([
-      verifySignature(v.xml, { id: `NFS${v.chaveAcesso}`, element: 'infNFSe' }),
-      verifySignature(v.xml, { id: v.idDps, element: 'infDPS' }),
+      conferirAssinatura(v.xml, { id: `NFS${v.chaveAcesso}`, elemento: 'infNFSe' }),
+      conferirAssinatura(v.xml, { id: v.idDps, elemento: 'infDPS' }),
     ]);
     expect(assinaturas.map((a) => a.ok)).toEqual([true, true]);
     expect(v.nfse.infNFSe.valores).toMatchObject({
@@ -86,7 +86,7 @@ describe('emissão', () => {
         }),
       ),
     );
-    const v = unwrapAuthorized(r);
+    const v = exigirAutorizado(r);
     expect(v.xml).toContain('<IBSCBS><finNFSe>0</finNFSe><cIndOp>100301</cIndOp>');
     expect(v.nfse.infNFSe.IBSCBS?.totCIBS).toMatchObject({ gCBS: { vCBS: '13.50' }, gIBS: { vIBSTot: '1.50' } });
   });
@@ -94,13 +94,13 @@ describe('emissão', () => {
   test('rejeição de regra municipal (E0312) com o catálogo do Anexo I', async () => {
     const s = await novo();
     const r = await s.client.autorizar(await s.assinar(dps({ servico: { ...dps().servico, cTribNac: '17.01.01' } })));
-    expect(isRejected(r)).toBe(true);
+    expect(recusado(r)).toBe(true);
     const rej = r as NfseRejeicao;
     expect(rej.cStat).toBe('E0312');
     expect(rej.httpStatus).toBe(400);
     expect(rej.erros[0]?.catalogo?.nivel).toBe('3');
-    expect(rej.hint?.source).toContain('Anexo I');
-    expect(() => unwrapAuthorized(r)).toThrow('E0312');
+    expect(rej.dica?.fonte).toContain('Anexo I');
+    expect(() => exigirAutorizado(r)).toThrow('E0312');
   });
 
   test('DPS sem declaração UTF-8 é recusada antes do envio; a mesma DPS assinada por outro CNPJ volta E0718', async () => {
@@ -120,10 +120,7 @@ describe('emissão', () => {
     const res = await resolverEnvioSemResposta(s.client, assinada);
     expect(res.acao).toBe('concluida');
     if (res.acao === 'concluida')
-      expect([res.outcome.status, res.outcome.value.idDps]).toEqual([
-        'authorized',
-        res.nfse.nfse.infNFSe.DPS.infDPS.Id,
-      ]);
+      expect([res.outcome.tipo, res.outcome.valor.idDps]).toEqual(['autorizado', res.nfse.nfse.infNFSe.DPS.infDPS.Id]);
     const dup = await s.client.autorizar(assinada);
     expect(dup.cStat).toBe('E0014');
     // Pedido que não chegou: reenviar os mesmos bytes.
@@ -135,14 +132,14 @@ describe('emissão', () => {
       clock: s.clock,
       timeoutMs: 300,
     });
-    await expect(cliente.autorizar(outra)).rejects.toBeInstanceOf(TimeoutError);
+    await expect(cliente.autorizar(outra)).rejects.toBeInstanceOf(ErroDeTempoEsgotado);
     expect(await resolverEnvioSemResposta(s.client, outra)).toEqual({ acao: 'reenviar', dpsAssinada: outra });
-    expect((await s.client.autorizar(outra)).status).toBe('authorized');
+    expect((await s.client.autorizar(outra)).tipo).toBe('autorizado');
   });
 
   test('DPS de produção num cliente de homologação é erro de configuração', async () => {
     const s = await novo();
-    const r = buildDps(dps(), { ambiente: 'producao', time: timeContext({ emissao: s.clock }) });
+    const r = buildDps(dps(), { ambiente: 'producao', time: contextoDeTempo({ emissao: s.clock }) });
     if (!r.ok) throw new Error('montagem');
     const assinada = await signDps(r.value, c.prestador.signer);
     await expect(s.client.autorizar(assinada)).rejects.toThrow('tpAmb 1');
@@ -152,15 +149,15 @@ describe('emissão', () => {
 describe('eventos e substituição', () => {
   test('cancelamento (e101101), consulta de eventos e cancelamento repetido (E0840)', async () => {
     const s = await novo();
-    const v = unwrapAuthorized(await s.client.autorizar(await s.assinar(dps())));
-    s.clock.advance(3_600_000);
+    const v = exigirAutorizado(await s.client.autorizar(await s.assinar(dps())));
+    s.clock.avancar(3_600_000);
     const r = await s.client.cancelar({
       chave: v.chaveAcesso,
       autor: { CNPJ: PRESTADOR },
       cMotivo: '1',
       xMotivo: 'Erro na emissão da nota de teste',
     });
-    const ev = unwrapAuthorized(r);
+    const ev = exigirAutorizado(r);
     expect(ev).toMatchObject({ chaveAcesso: v.chaveAcesso, tpEvento: '101101', nSeqEvento: '1' });
     expect(validateRoot(eventoElement, ev.xml)).toEqual([]);
     const lista = await s.client.consultarEventos(v.chaveAcesso, { tpEvento: '101101', nSeqEvento: 1 });
@@ -180,8 +177,8 @@ describe('eventos e substituição', () => {
 
   test('prazo de cancelamento do município (E0822)', async () => {
     const s = await novo();
-    const v = unwrapAuthorized(await s.client.autorizar(await s.assinar(dps())));
-    s.clock.advance(31 * 86_400_000);
+    const v = exigirAutorizado(await s.client.autorizar(await s.assinar(dps())));
+    s.clock.avancar(31 * 86_400_000);
     const r = await s.client.cancelar({
       chave: v.chaveAcesso,
       autor: { CNPJ: PRESTADOR },
@@ -195,14 +192,14 @@ describe('eventos e substituição', () => {
       cMotivo: '2',
       xMotivo: 'Servico nao prestado ao tomador',
     });
-    expect(unwrapAuthorized(analise).tpEvento).toBe('101103');
+    expect(exigirAutorizado(analise).tpEvento).toBe('101103');
   });
 
   test('substituição: a Sefin gera a nova NFS-e e registra o e105102 na substituída', async () => {
     const s = await novo();
-    const v = unwrapAuthorized(await s.client.autorizar(await s.assinar(dps())));
+    const v = exigirAutorizado(await s.client.autorizar(await s.assinar(dps())));
     await expect(s.client.substituir(await s.assinar(dps({ nDPS: '2' })))).rejects.toThrow('subst');
-    const nova = unwrapAuthorized(
+    const nova = exigirAutorizado(
       await s.client.substituir(
         await s.assinar(
           dps({
@@ -259,7 +256,7 @@ describe('parâmetros municipais', () => {
     expect(convenios).toEqual([`GET /parametrizacao/${SAO_PAULO}/convenio`, 'GET /parametrizacao/9999999/convenio']);
     expect(s.caminhos).toContain(`GET /parametrizacao/${SAO_PAULO}/01.01.01.000/2026-09-25/aliquota`);
     // Vencido o prazo, consulta de novo.
-    s.clock.advance(7 * 3_600_000);
+    s.clock.avancar(7 * 3_600_000);
     await s.client.parametros.convenio(SAO_PAULO);
     expect(s.caminhos.filter((p) => p.endsWith(`${SAO_PAULO}/convenio`))).toHaveLength(2);
   });

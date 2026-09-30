@@ -37,8 +37,8 @@ export function statusServico(ctx: RequestContext): string {
   // O próprio serviço de status informa a paralisação como resultado (tabela 4.4.1), não como rejeição.
   if (!pre.ok)
     return ret(pre.status.cStat === '108' || pre.status.cStat === '109' ? status(pre.status.cStat) : pre.status);
-  if (text(pre.doc.root, 'tpAmb') !== ctx.rt.config.tpAmb) return ret(status('252'));
-  const cUF = text(pre.doc.root, 'cUF') ?? '';
+  if (text(pre.doc.raiz, 'tpAmb') !== ctx.rt.config.tpAmb) return ret(status('252'));
+  const cUF = text(pre.doc.raiz, 'cUF') ?? '';
   if (!ctx.rt.config.cUFsAtendidas.includes(cUF)) return ret(status('410'));
   // Na SVC, o status diz se a SEFAZ de origem a ativou para a UF (NT 2013.007 v1.03, regras K05.1 a K05.3).
   return ret(ctx.autorizador === 'svc' ? statusDaSvc(ctx.rt, cUF, ctx.now) : status('107'));
@@ -47,7 +47,7 @@ export function statusServico(ctx: RequestContext): string {
 /** NFeConsultaProtocolo4 (nfeConsultaNF). */
 export function consultaProtocolo(ctx: RequestContext): string {
   const pre = prelude(ctx, { roots: [consSitNFeElement], lote: false });
-  const lida = pre.doc === undefined ? undefined : text(pre.doc.root, 'chNFe');
+  const lida = pre.doc === undefined ? undefined : text(pre.doc.raiz, 'chNFe');
   const chNFe = lida !== undefined && /^[0-9]{6}[0-9A-Z]{12}[0-9]{26}$/.test(lida) ? lida : '0'.repeat(44);
   const ret = (s: Status, extra: Pick<TRetConsSitNFe, 'protNFe'> = {}, eventos: readonly string[] = []): string => {
     const value: TRetConsSitNFe = {
@@ -69,7 +69,7 @@ export function consultaProtocolo(ctx: RequestContext): string {
   };
   if (!pre.ok) return ret(pre.status);
   // J01, J02 e J02a a J02g.
-  if (text(pre.doc.root, 'tpAmb') !== ctx.rt.config.tpAmb) return ret(status('252'));
+  if (text(pre.doc.raiz, 'tpAmb') !== ctx.rt.config.tpAmb) return ret(status('252'));
   const invalida = chaveRejection(chNFe, ctx.now, ctx.rt.config.offsetMinutes);
   if (invalida !== undefined) return ret(status(invalida.cStat));
   if (!ctx.rt.config.cUFsAtendidas.includes(chNFe.slice(0, 2))) return ret(status('226'));

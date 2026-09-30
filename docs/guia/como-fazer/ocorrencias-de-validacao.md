@@ -19,7 +19,7 @@ Antes de assinar, o sinete confere a entrada e o documento montado e reúne os p
 A classificação é pela fase, não pelo código: o mesmo `schema` é `entrada` num grupo pronto que veio na entrada e `montagem` no grupo que a calculadora produziu. Para selecionar o que a pessoa pode corrigir, filtre por `entrada` e exclua os campos que o seu próprio sistema preenche, como a numeração e o responsável técnico. Essa exclusão depende da sua integração:
 
 ```ts
-import { isSineteError, ValidationError } from 'sinete/core';
+import { ehErroSinete, ErroDeValidacao } from 'sinete/core';
 import { createNfeEmissor } from 'sinete/emissor/nfe';
 import { rotuloDoCaminho } from 'sinete/nfe';
 
@@ -29,11 +29,11 @@ const nfe = await createNfeEmissor({ pfx, senha, ambiente: 'homologacao', store,
 try {
   await nfe.emitir(pedido.id, nota);
 } catch (e) {
-  if (!(e instanceof ValidationError) && !isSineteError(e, 'validacao_falhou')) throw e;
-  const issues = (e as ValidationError).issues;
-  const daPessoa = issues.filter((i) => i.origem === 'entrada' && !CAMPOS_DO_SISTEMA.some((r) => r.test(i.path)));
+  if (!(e instanceof ErroDeValidacao) && !ehErroSinete(e, 'validacao_falhou')) throw e;
+  const issues = (e as ErroDeValidacao).ocorrencias;
+  const daPessoa = issues.filter((i) => i.origem === 'entrada' && !CAMPOS_DO_SISTEMA.some((r) => r.test(i.caminho)));
   const doSistema = issues.filter((i) => !daPessoa.includes(i));
-  for (const i of daPessoa) mostrarNoCampo(i.path, `${rotuloDoCaminho(i.path)}: ${i.message}`);
+  for (const i of daPessoa) mostrarNoCampo(i.caminho, `${rotuloDoCaminho(i.caminho)}: ${i.mensagem}`);
   if (doSistema.length > 0) logDeErros.registrar({ pedido: pedido.id, issues: doSistema });
 }
 ```

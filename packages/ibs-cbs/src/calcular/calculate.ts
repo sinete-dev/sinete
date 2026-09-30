@@ -15,7 +15,7 @@
  * A data dos dados e das alíquotas é a data civil do relógio de fato gerador do `TimeContext`, no fuso do local da
  * operação (Brasília por padrão).
  */
-import type { TimeContext } from '@sinete/core';
+import type { ContextoDeTempo } from '@sinete/core';
 import type {
   ClassTribRecord,
   CstRecord,
@@ -61,7 +61,7 @@ export interface CalculateOptions {
   readonly dataset: IbsCbsDataset;
   readonly rates: RateProvider;
   /** Relógios da operação: o de fato gerador decide dados e alíquotas. */
-  readonly time: TimeContext;
+  readonly time: ContextoDeTempo;
   /** Deslocamento do fuso do local da operação em minutos (padrão: Brasília, `-180`). */
   readonly utcOffsetMinutes?: number;
 }
@@ -230,7 +230,7 @@ function applyRate(
         t,
         ctx.date,
         `cClassTrib ${c.code} (${kind}): sem alíquota de ${t} no dataset em ${ctx.date}; informe-a em informedRates para simular`,
-        { details: { tributo: t, date: ctx.date, cClassTrib: c.code, item } },
+        { detalhes: { tributo: t, date: ctx.date, cClassTrib: c.code, item } },
       );
     }
     const applied: AppliedRate = { tributo: t, value: fixed, status: 'official', origin: 'dataset-fixed' };
@@ -860,7 +860,7 @@ function checkOperation(op: ClassifiedOperation): void {
 
 /** Calcula IBS e CBS da operação. Lança `ClassificationError`, `UnsupportedRegimeError` ou `RateUnknownError`. */
 export function calculate(op: ClassifiedOperation, options: CalculateOptions): Roc {
-  const date = civilDate(options.time.fatoGerador.now(), options.utcOffsetMinutes ?? BRASILIA_OFFSET_MINUTES);
+  const date = civilDate(options.time.fatoGerador.agora(), options.utcOffsetMinutes ?? BRASILIA_OFFSET_MINUTES);
   return calculateAt(op, { dataset: options.dataset, rates: options.rates, date });
 }
 

@@ -5,9 +5,17 @@
  * `Signature` por splice (ADR 0003) e nada mais toca nela.
  */
 
-import type { Ambiente, Signer, TimeContext, Uf, ValidationIssue } from '@sinete/core';
-import { ConfigError, fixedClock, formatarVerProc, isUf, tpAmbOf, ufBySigla, ValidationError } from '@sinete/core';
-import { base64Encode, firstChild, parseXml, signXml } from '@sinete/core/xml';
+import type { Ambiente, Assinador, ContextoDeTempo, Ocorrencia, Uf } from '@sinete/core';
+import {
+  ErroDeConfiguracao,
+  ErroDeValidacao,
+  ehUf,
+  formatarVerProc,
+  relogioFixo,
+  tpAmbDoAmbiente,
+  ufPorSigla,
+} from '@sinete/core';
+import { assinarXml, codificarBase64, lerXml, primeiroFilho } from '@sinete/core/xml';
 import type { ComplexType, VigenciaEntry } from '@sinete/schemas';
 import { SerializeError, serialize, validate } from '@sinete/schemas';
 import type {
@@ -21,7 +29,7 @@ import type {
   TTribNFe,
 } from '@sinete/schemas/nfe/PL_010f';
 import { TIS as TISCt, TNFe_infNFeSupl, TTribNFe as TTribNFeCt } from '@sinete/schemas/nfe/PL_010f';
-import { buildChaveAcesso, parseChaveAcesso, parseCnpj, parseCpf, parseIe } from '@sinete/validators';
+import { lerChaveAcesso, lerCnpj, lerCpf, lerIe, montarChaveAcesso } from '@sinete/validators';
 import arredondamento from '../data/arredondamento.json' with { type: 'json' };
 import produtorRural from '../data/produtor-rural.json' with { type: 'json' };
 import reforma from '../data/reforma.json' with { type: 'json' };
@@ -87,7 +95,7 @@ export type ExigenciaRespTec = 'obrigatorio' | 'opcional';
 export interface BuildNfeOptions {
   readonly ambiente: Ambiente;
   /** Relógio de emissão (dhEmi, PL vigente, CSRT) e de fato gerador (IBS/CBS). */
-  readonly time: TimeContext;
+  readonly time: ContextoDeTempo;
   /**
    * Calculadora de IBS/CBS dos itens com `ibsCbs.classificacao`. Padrão: `ibsCbsCalculator()`, o motor do sinete com o
    * dataset embarcado (importado na primeira nota que precisar dele) e as alíquotas oficiais. Informe outra para trocar
@@ -154,7 +162,7 @@ export interface BuiltNfe {
 
 export type BuildNfeResult =
   | { readonly ok: true; readonly value: BuiltNfe }
-  | { readonly ok: false; readonly issues: readonly ValidationIssue[] };
+  | { readonly ok: false; readonly issues: readonly Ocorrencia[] };
 
 const MODES: Record<Familia, RoundingMode> = Object.fromEntries(
   Object.entries(arredondamento.familias).map(([k, v]) => [k, v.modo as RoundingMode]),
@@ -192,29 +200,29 @@ export function exigenciaRespTec(
 /** `hashCSRT`: Base64(SHA-1(CSRT + chave de acesso)) (NT 2018.005, campo ZD09). */
 export async function hashCsrt(csrt: string, chave: string): Promise<string> {
   const d = await globalThis.crypto.subtle.digest('SHA-1', new TextEncoder().encode(csrt + chave));
-  return base64Encode(new Uint8Array(d));
+  return codificarBase64(new Uint8Array(d));
 }
 
 /** Normaliza CNPJ ou CPF, apontando a ocorrência do validador. */
 function documento(doc: DocumentoPessoa, path: string, issues: Issues): { CNPJ: string } | { CPF: string } {
   if (doc.CNPJ !== undefined) {
-    const r = parseCnpj(doc.CNPJ, { path: `${path}.CNPJ` });
-    if (!r.ok) issues.list.push(r.error);
-    return { CNPJ: r.ok ? r.value : doc.CNPJ };
+    const r = lerCnpj(doc.CNPJ, { caminho: `${path}.CNPJ` });
+    if (!r.ok) issues.list.push(r.erro);
+    return { CNPJ: r.ok ? r.valor : doc.CNPJ };
   }
-  const r = parseCpf(doc.CPF ?? '', { path: `${path}.CPF` });
-  if (!r.ok) issues.list.push(r.error);
-  return { CPF: r.ok ? r.value : (doc.CPF ?? '') };
+  const r = lerCpf(doc.CPF ?? '', { caminho: `${path}.CPF` });
+  if (!r.ok) issues.list.push(r.erro);
+  return { CPF: r.ok ? r.valor : (doc.CPF ?? '') };
 }
 
 function ie(value: string | undefined, uf: Uf, path: string, issues: Issues, allowIsento: boolean): string | undefined {
   if (value === undefined) return undefined;
-  const r = parseIe(value, uf, { path, allowIsento });
+  const r = lerIe(value, uf, { caminho: path, aceitarIsento: allowIsento });
   if (!r.ok) {
-    issues.list.push(r.error);
+    issues.list.push(r.erro);
     return value;
   }
-  return r.value.value;
+  return r.valor.valor;
 }
 
 function endereco(e: Endereco): Record<string, string | undefined> {
@@ -242,10 +250,10 @@ function gerarChave(
   random: (b: Uint8Array) => Uint8Array,
   issues: Issues,
 ): { chave: string; cNF: string } | undefined {
-  const tentar = (cNF: string): { chave: string; ok: boolean; issue?: ValidationIssue } => {
-    const chave = buildChaveAcesso({ ...parts, cNF });
-    const r = parseChaveAcesso(chave, { emissao: true, path: 'chave' });
-    return r.ok ? { chave, ok: true } : { chave, ok: false, issue: r.error };
+  const tentar = (cNF: string): { chave: string; ok: boolean; issue?: Ocorrencia } => {
+    const chave = montarChaveAcesso({ ...parts, cNF });
+    const r = lerChaveAcesso(chave, { emissao: true, caminho: 'chave' });
+    return r.ok ? { chave, ok: true } : { chave, ok: false, issue: r.erro };
   };
   if (cNFInformado !== undefined) {
     if (!/^\d{8}$/.test(cNFInformado)) {
@@ -259,9 +267,9 @@ function gerarChave(
       const doCnf = r.issue.code === 'chave_cnf_invalido';
       issues.list.push({
         ...r.issue,
-        path: doCnf ? 'cNF' : r.issue.path,
+        caminho: doCnf ? 'cNF' : r.issue.caminho,
         code: 'chave_invalida',
-        message: `${r.issue.message} (${r.issue.code})`,
+        mensagem: `${r.issue.mensagem} (${r.issue.code})`,
         origem: doCnf ? 'entrada' : 'montagem',
       });
     }
@@ -279,7 +287,7 @@ function gerarChave(
       issues.list.push({
         ...r.issue,
         code: 'chave_invalida',
-        message: `${r.issue.message} (${r.issue.code})`,
+        mensagem: `${r.issue.mensagem} (${r.issue.code})`,
         origem: 'montagem',
       });
       return undefined;
@@ -291,9 +299,9 @@ function gerarChave(
 
 function referencia(ref: Referenciada, path: string, issues: Issues): TNFe_infNFe_ide_NFref {
   const chave = (c: string, p: string): string => {
-    const r = parseChaveAcesso(c, { path: p });
-    if (!r.ok) issues.list.push(r.error);
-    return r.ok ? r.value.chave : c;
+    const r = lerChaveAcesso(c, { caminho: p });
+    if (!r.ok) issues.list.push(r.erro);
+    return r.ok ? r.valor.chave : c;
   };
   if ('refNFe' in ref) return { refNFe: chave(ref.refNFe, `${path}.refNFe`) };
   if ('refNFeSig' in ref) {
@@ -312,7 +320,7 @@ function referencia(ref: Referenciada, path: string, issues: Issues): TNFe_infNF
   // Nota de produtor em papel (modelo 04) extinta: só referência a nota emitida antes do fim na UF dela.
   if (nfp.mod === '04') {
     const porUf = produtorRural.refNFP.ufs as Readonly<Record<string, { readonly vedadaDesde: string }>>;
-    const cUfSigla = Object.keys(porUf).find((k) => ufBySigla(k)?.cUF === nfp.cUF);
+    const cUfSigla = Object.keys(porUf).find((k) => ufPorSigla(k)?.cUF === nfp.cUF);
     const vedadaDesde = cUfSigla ? (porUf[cUfSigla]?.vedadaDesde ?? '') : produtorRural.refNFP.modelo04.vedadaDesde;
     if (nfp.AAMM >= vedadaDesde) {
       issues.add(
@@ -576,10 +584,10 @@ function montarItem(ctx: Ctx, item: Item, n: number, normal: boolean): ItemMonta
   if (item.infAdProd !== undefined) det.infAdProd = item.infAdProd;
   if (item.obsItem !== undefined) det.obsItem = item.obsItem;
   if (item.DFeReferenciado !== undefined) {
-    const r = parseChaveAcesso(item.DFeReferenciado.chaveAcesso, { path: `${path}.DFeReferenciado.chaveAcesso` });
-    if (!r.ok) ctx.issues.list.push(r.error);
+    const r = lerChaveAcesso(item.DFeReferenciado.chaveAcesso, { caminho: `${path}.DFeReferenciado.chaveAcesso` });
+    if (!r.ok) ctx.issues.list.push(r.erro);
     det.DFeReferenciado = clean({
-      chaveAcesso: r.ok ? r.value.chave : item.DFeReferenciado.chaveAcesso,
+      chaveAcesso: r.ok ? r.valor.chave : item.DFeReferenciado.chaveAcesso,
       nItem: item.DFeReferenciado.nItem === undefined ? undefined : String(item.DFeReferenciado.nItem),
     });
   }
@@ -632,22 +640,22 @@ export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promi
   const ctx = new Ctx(issues, { ...MODES, ...options.arredondamento }, finNFeIn !== '2' && finNFeIn !== '3');
   const pRedutorGov = input.gCompraGov && ctx.req(input.gCompraGov.pRedutor, 'gCompraGov.pRedutor', D0302A04);
   const emitUf = input.emitente.endereco.UF;
-  if (!isUf(emitUf)) {
+  if (!ehUf(emitUf)) {
     issues.add('emitente.endereco.UF', 'campo_invalido', 'UF do emitente inválida');
     return { ok: false, issues: issues.classificadas };
   }
-  const cUF = ufBySigla(emitUf)?.cUF ?? '';
+  const cUF = ufPorSigla(emitUf)?.cUF ?? '';
   const offset = options.offsetMinutes ?? offsetDaUf(emitUf);
-  const agora = options.time.emissao.now();
+  const agora = options.time.emissao.agora();
   // Um instante de fato gerador por montagem: o mesmo vai para a calculadora e para a regra de composição do vItem.
-  const fatoGerador = options.time.fatoGerador.now();
+  const fatoGerador = options.time.fatoGerador.agora();
   const dhEmi = formatDh(agora, offset);
   const aamm = dhEmi.slice(2, 4) + dhEmi.slice(5, 7);
-  const tpAmb = tpAmbOf(options.ambiente);
+  const tpAmb = tpAmbDoAmbiente(options.ambiente);
 
   // PL vigente (VigenciaError do schemas propaga: data fora de toda vigência é erro de configuração, não de dado).
   // O PL sai do mesmo instante do dhEmi: reler o relógio numa virada de vigência escolheria outro PL.
-  const pl = escolherPl(options.ambiente, fixedClock(agora));
+  const pl = escolherPl(options.ambiente, relogioFixo(agora));
 
   // Emitente (grupo C)
   const e: Emitente = input.emitente;
@@ -1285,10 +1293,10 @@ export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promi
       issues.add('respTec', 'resp_tec_obrigatorio', `a UF ${emitUf} exige o responsável técnico (rejeição 972)`);
     }
   } else {
-    const cnpjRt = parseCnpj(rt.CNPJ, { path: 'respTec.CNPJ' });
-    if (!cnpjRt.ok) issues.list.push(cnpjRt.error);
+    const cnpjRt = lerCnpj(rt.CNPJ, { caminho: 'respTec.CNPJ' });
+    if (!cnpjRt.ok) issues.list.push(cnpjRt.erro);
     infRespTec = {
-      CNPJ: cnpjRt.ok ? cnpjRt.value : rt.CNPJ,
+      CNPJ: cnpjRt.ok ? cnpjRt.valor : rt.CNPJ,
       xContato: rt.xContato,
       email: rt.email,
       fone: digits(rt.fone),
@@ -1340,18 +1348,18 @@ export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promi
     xml = `<NFe xmlns="${NFE_NS}">${serialize(pl.infNFe, 'infNFe', inf, NFE_NS)}</NFe>`;
   } catch (e) {
     if (!(e instanceof SerializeError)) throw e;
-    return { ok: false, issues: [{ path: e.path, code: 'schema', message: e.message, origem: 'montagem' }] };
+    return { ok: false, issues: [{ caminho: e.path, code: 'schema', mensagem: e.message, origem: 'montagem' }] };
   }
-  const doc = parseXml(xml);
-  const infEl = firstChild(doc.root, 'infNFe', NFE_NS);
+  const doc = lerXml(xml);
+  const infEl = primeiroFilho(doc.raiz, 'infNFe', NFE_NS);
   const schemaIssues = infEl === undefined ? [] : validate(pl.infNFe, infEl);
   if (schemaIssues.length > 0) {
     return {
       ok: false,
       issues: schemaIssues.map((i) => ({
-        path: i.path,
+        caminho: i.caminho,
         code: 'schema',
-        message: `${i.code}: ${i.message}`,
+        mensagem: `${i.code}: ${i.mensagem}`,
         origem: 'montagem',
       })),
     };
@@ -1418,13 +1426,18 @@ export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promi
 }
 
 /** Base64 de uma assinatura RSA de 2048 bits (256 bytes): a forma da assinatura do QR Code off-line na montagem. */
-const ASSINATURA_2048 = base64Encode(new Uint8Array(256));
+const ASSINATURA_2048 = codificarBase64(new Uint8Array(256));
 
 /** Ocorrências do `infNFeSupl` do XML contra o schema (`TNFe_infNFeSupl`), como de montagem. */
-function conferirSupl(xml: string): ValidationIssue[] {
-  const el = firstChild(parseXml(xml).root, 'infNFeSupl', NFE_NS);
+function conferirSupl(xml: string): Ocorrencia[] {
+  const el = primeiroFilho(lerXml(xml).raiz, 'infNFeSupl', NFE_NS);
   const erros = el === undefined ? [] : validate(TNFe_infNFeSupl as ComplexType, el);
-  return erros.map((i) => ({ path: i.path, code: 'schema', message: `${i.code}: ${i.message}`, origem: 'montagem' }));
+  return erros.map((i) => ({
+    caminho: i.caminho,
+    code: 'schema',
+    mensagem: `${i.code}: ${i.mensagem}`,
+    origem: 'montagem',
+  }));
 }
 
 const escapeXml = (s: string): string => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -1434,7 +1447,7 @@ const escapeXml = (s: string): string => s.replace(/&/g, '&amp;').replace(/</g, 
  * certificado que assina a nota; Manual do DANFE NFC-e 6.0, 4.4.2). `undefined` quando o QR Code não leva assinatura
  * (NF-e, emissão normal, versão 2).
  */
-export async function assinaturaQrCode(built: BuiltNfe, signer: Signer): Promise<string | undefined> {
+export async function assinaturaQrCode(built: BuiltNfe, signer: Assinador): Promise<string | undefined> {
   return built.nfce?.assinar === true ? assinarParametros(built.nfce.parametros, signer) : undefined;
 }
 
@@ -1450,7 +1463,7 @@ export function comQrCode(built: BuiltNfe, assinatura?: string): string {
   // Com a assinatura verdadeira, o qrCode pode passar do tamanho que a montagem conferiu (chave maior que 2048 bits).
   if (assinatura !== undefined) {
     const issues = conferirSupl(xml);
-    if (issues.length > 0) throw new ValidationError('o QR Code da NFC-e não passou no schema', issues);
+    if (issues.length > 0) throw new ErroDeValidacao('o QR Code da NFC-e não passou no schema', issues);
   }
   return xml;
 }
@@ -1458,19 +1471,19 @@ export function comQrCode(built: BuiltNfe, assinatura?: string): string {
 function inserirSupl(built: BuiltNfe, assinatura: string | undefined): string {
   const s = built.nfce;
   if (s === undefined) {
-    if (assinatura !== undefined) throw new ConfigError('a NF-e (modelo 55) não tem QR Code');
+    if (assinatura !== undefined) throw new ErroDeConfiguracao('a NF-e (modelo 55) não tem QR Code');
     return built.xml;
   }
   if (s.assinar && assinatura === undefined) {
-    throw new ConfigError(
+    throw new ErroDeConfiguracao(
       'NFC-e em contingência off-line com QR Code versão 3 precisa da assinatura (ZX02-334, rejeição 474)',
     );
   }
   if (!s.assinar && assinatura !== undefined) {
-    throw new ConfigError('este QR Code não leva assinatura (ZX02-330, rejeição 445)');
+    throw new ErroDeConfiguracao('este QR Code não leva assinatura (ZX02-330, rejeição 445)');
   }
   const fim = '</NFe>';
-  if (!built.xml.endsWith(fim)) throw new ConfigError('NFC-e montada fora da forma esperada');
+  if (!built.xml.endsWith(fim)) throw new ErroDeConfiguracao('NFC-e montada fora da forma esperada');
   const qrCode = `${s.base}${s.parametros}${assinatura === undefined ? '' : `|${assinatura}`}`;
   const supl = `<infNFeSupl><qrCode>${escapeXml(qrCode)}</qrCode><urlChave>${escapeXml(s.urlChave)}</urlChave></infNFeSupl>`;
   return built.xml.slice(0, -fim.length) + supl + fim;
@@ -1481,6 +1494,6 @@ function inserirSupl(built: BuiltNfe, assinatura: string | undefined): string {
  * contingência off-line pede); depois, a `Signature` como último filho de `NFe`, tudo por splice, e devolve a string
  * final. É essa string que vai para a SEFAZ e para o banco; nada depois deve reparseá-la para reescrever.
  */
-export async function signNfe(built: BuiltNfe, signer: Signer): Promise<string> {
-  return signXml(comQrCode(built, await assinaturaQrCode(built, signer)), { id: built.id }, signer);
+export async function signNfe(built: BuiltNfe, signer: Assinador): Promise<string> {
+  return assinarXml(comQrCode(built, await assinaturaQrCode(built, signer)), { id: built.id }, signer);
 }

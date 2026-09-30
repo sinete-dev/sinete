@@ -6,7 +6,7 @@
  * Não consulta revogação (OCSP/LCR): isso fica com o `sinete doctor`, sob demanda (ADR 0004, decisão 3).
  */
 
-import type { Clock } from '@sinete/core';
+import type { Relogio } from '@sinete/core';
 import { icpBrasilCertificates } from './bundle.ts';
 import { equalBytes } from './der.ts';
 import type { CertificateInfo } from './x509.ts';
@@ -68,7 +68,7 @@ export interface BuildChainOptions {
   /** Âncoras de confiança. Padrão: as raízes do bundle ICP-Brasil. */
   readonly anchors?: readonly (CertificateInfo | Uint8Array)[];
   /** Com relógio, o resultado lista os elos vencidos ou ainda não válidos. */
-  readonly clock?: Clock;
+  readonly clock?: Relogio;
   readonly maxDepth?: number;
 }
 
@@ -127,7 +127,7 @@ export async function buildChain(
   const pool = [...(options.intermediates ?? []).map(asInfo), ...anchors];
   const maxDepth = options.maxDepth ?? 8;
   const isAnchor = (c: CertificateInfo): boolean => anchors.some((a) => equalBytes(a.der, c.der));
-  const now = options.clock?.now().getTime();
+  const now = options.clock?.agora().getTime();
   const outOfValidity = (c: CertificateInfo): boolean => now !== undefined && (now < c.notBefore || now > c.notAfter);
   /** Elos vencidos acima do titular: a validade do titular não depende do caminho escolhido. */
   const expiredAbove = (f: Found): number => f.chain.slice(1).filter(outOfValidity).length;

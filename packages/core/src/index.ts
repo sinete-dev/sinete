@@ -6,62 +6,69 @@
  */
 
 export type { Ambiente, TpAmb } from './ambiente.ts';
-export { AMBIENTES, ambienteOfTpAmb, isAmbiente, tpAmbOf } from './ambiente.ts';
+export { AMBIENTES, ambienteDoTpAmb, ehAmbiente, tpAmbDoAmbiente } from './ambiente.ts';
 export type { GrupoDeCaminho, TabelaDeRotulos } from './caminho.ts';
 export { criarRotuloDoCaminho, normalizarCaminho } from './caminho.ts';
-export type { Clock, Instant, ManualClock, TimeContext } from './clock.ts';
-export { fixedClock, formatDateTimeOffset, manualClock, systemClock, timeContext } from './clock.ts';
+export type { ContextoDeTempo, InstanteInformado, Relogio, RelogioManual } from './clock.ts';
+export { contextoDeTempo, formatarDataHoraComFuso, relogioDoSistema, relogioFixo, relogioManual } from './clock.ts';
 export type {
-  CoreErrorCode,
-  ErrorDetails,
+  CodigoErroCore,
+  CodigoErroSefaz,
+  DetalhesDoErro,
+  ErroSerializado,
+  ErroSineteOpcoes,
+  Ocorrencia,
   OrigemOcorrencia,
-  SefazErrorCode,
-  SerializedError,
-  SineteErrorOptions,
-  ValidationIssue,
 } from './errors.ts';
 export {
-  ConfigError,
-  isSineteError,
-  ProtocolError,
+  ErroDeConfiguracao,
+  ErroDeTempoEsgotado,
+  ErroDeValidacao,
+  ErroNaoSuportado,
+  ErroRespostaInvalida,
+  ErroSefaz,
+  ErroServicoNaoOferecido,
+  ErroSinete,
+  ehErroSinete,
   paginaDoErro,
-  SefazError,
-  ServicoNaoOferecidoError,
-  SineteError,
-  TimeoutError,
-  UnsupportedError,
-  ValidationError,
 } from './errors.ts';
-export type { LogEntry, LogFields, Logger, LogLevel, MemoryLogger } from './logger.ts';
-export { memoryLogger, noopLogger } from './logger.ts';
+export type { CamposDeLog, EntradaDeLog, Logger, LoggerEmMemoria, NivelDeLog } from './logger.ts';
+export { loggerEmMemoria, loggerSilencioso } from './logger.ts';
 export type {
-  Authorized,
-  Denied,
-  OutcomeHandlers,
-  Pending,
-  Rejected,
-  RejectionHint,
-  Result,
-  SefazOutcome,
-  SefazOutcomeStatus,
-  SefazStatus,
+  Autorizado,
+  Denegado,
+  DicaRejeicao,
+  Pendente,
+  Recusado,
+  Resultado,
+  ResultadoSefaz,
+  StatusSefaz,
+  TipoResultadoSefaz,
+  TratadoresDeResultado,
 } from './result.ts';
 export {
-  authorized,
-  denied,
-  err,
-  isAuthorized,
-  isCStat,
-  isDenied,
-  isPending,
-  isRejected,
-  matchOutcome,
+  autorizado,
+  criarAutorizado,
+  criarDenegado,
+  criarPendente,
+  criarRecusado,
+  denegado,
+  ehCStat,
+  exigirAutorizado,
+  falha,
   ok,
-  pending,
-  rejected,
-  unwrapAuthorized,
+  pendente,
+  recusado,
+  tratarResultado,
 } from './result.ts';
-export type { DataSigner, DigestSigner, SignatureHash, SignContext, Signer, SignerKind } from './signer.ts';
-export type { CUf, DataSource, Regiao, Uf, UfInfo, UfTableInfo } from './uf.ts';
-export { isCUf, isUf, UF_TABLE, UFS, ufByCUf, ufBySigla } from './uf.ts';
+export type {
+  Assinador,
+  AssinadorDeDados,
+  AssinadorDeDigest,
+  ContextoDaAssinatura,
+  HashDaAssinatura,
+  TipoAssinador,
+} from './signer.ts';
+export type { CUf, DescricaoTabelaUfs, FonteDeDados, Regiao, Uf, UnidadeFederativa } from './uf.ts';
+export { ehCUf, ehUf, TABELA_UFS, UFS, ufPorCUf, ufPorSigla } from './uf.ts';
 export { formatarVerProc } from './verproc.ts';

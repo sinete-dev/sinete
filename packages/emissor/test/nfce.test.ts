@@ -6,8 +6,8 @@
  * v1.03). Nada é certificado ou CSC real: AC, e-CNPJ, servidor e CSC são inventados na hora.
  */
 import { afterEach, beforeAll, describe, expect, test } from 'bun:test';
-import type { ManualClock } from '@sinete/core';
-import { manualClock } from '@sinete/core';
+import type { RelogioManual } from '@sinete/core';
+import { relogioManual } from '@sinete/core';
 import type { QrOp } from '@sinete/da';
 import { qrMatrix } from '@sinete/da';
 import * as da from '@sinete/da/nfce';
@@ -39,7 +39,7 @@ let pfx: Uint8Array;
 const fechar: (() => Promise<void>)[] = [];
 
 beforeAll(async () => {
-  const clock = manualClock(EMISSAO);
+  const clock = relogioManual(EMISSAO);
   ac = await syntheticCertificate({ clock, role: 'ac', validDays: 3650 });
   const emitente = await syntheticCertificate({ clock, role: 'titular', cnpj: CNPJ_EMIT, issuer: ac });
   servidor = await syntheticCertificate({ clock, role: 'servidor', issuer: ac });
@@ -65,7 +65,7 @@ const nfce = (nNF: number, extra: Partial<NfeInput> = {}): NfeInput => {
 };
 
 interface Cenario {
-  readonly clock: ManualClock;
+  readonly clock: RelogioManual;
   readonly sim: SefazSim;
   readonly emissor: NfeEmissor;
   readonly store: ReturnType<typeof createMemoriaStore>;
@@ -73,7 +73,7 @@ interface Cenario {
 }
 
 async function cenario(extra: Partial<NfeEmissorOptions> = {}): Promise<Cenario> {
-  const clock = manualClock(EMISSAO);
+  const clock = relogioManual(EMISSAO);
   const sim = createSefazSim({
     clock,
     uf: 'SP',
@@ -178,7 +178,7 @@ describe('NFC-e pelo createNfeEmissor', () => {
 
     // A rede volta: a retomada, num emissor novo, transmite os mesmos bytes.
     c.sim.clearFaults();
-    c.clock.advance(30 * 60_000);
+    c.clock.avancar(30 * 60_000);
     const depois = await c.novoEmissor();
     const r = autorizado(await depois.retomar('cupom-3'));
     expect(r.id).toBe(gravado.id);

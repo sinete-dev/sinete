@@ -10,7 +10,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { manualClock } from '@sinete/core';
+import { relogioManual } from '@sinete/core';
 import type { SyntheticCertificate } from '@sinete/sefaz-sim';
 import {
   createNfseSim,
@@ -78,7 +78,7 @@ describe.skipIf(!pronto)('A3 em token PKCS#11 pelo sinete-signer, emissor contra
       redirect(createTransport(o));
 
   beforeAll(async () => {
-    const clock = manualClock(EMISSAO);
+    const clock = relogioManual(EMISSAO);
     ac = await syntheticCertificate({ clock, role: 'ac', validDays: 3650 });
     servidor = await syntheticCertificate({ clock, role: 'servidor', issuer: ac });
     dir = mkdtempSync(path.join(tmpdir(), 'sinete-a3-'));
@@ -110,7 +110,7 @@ describe.skipIf(!pronto)('A3 em token PKCS#11 pelo sinete-signer, emissor contra
   });
 
   test('NF-e: emite, corrige e cancela com o XML assinado no token', async () => {
-    const clock = manualClock(EMISSAO);
+    const clock = relogioManual(EMISSAO);
     const sim = createSefazSim({
       clock,
       uf: 'SP',
@@ -135,9 +135,9 @@ describe.skipIf(!pronto)('A3 em token PKCS#11 pelo sinete-signer, emissor contra
       // O XML guardado leva o certificado do token no KeyInfo.
       const leaf = Buffer.from(eCnpj.chain[0] as Uint8Array).toString('base64');
       expect(d.proc).toContain(`<X509Certificate>${leaf}</X509Certificate>`);
-      clock.advance(60_000);
+      clock.avancar(60_000);
       const cce = await emissor.cartaCorrecao({ chave: d.id, xCorrecao: 'CORRECAO PELO TOKEN A3', nSeqEvento: 1 });
-      expect([cce.status, cce.cStat]).toEqual(['authorized', '135']);
+      expect([cce.tipo, cce.cStat]).toEqual(['autorizado', '135']);
       const canc = await emissor.cancelar({
         chave: d.id,
         nProt: d.protocolo.nProt,
@@ -154,7 +154,7 @@ describe.skipIf(!pronto)('A3 em token PKCS#11 pelo sinete-signer, emissor contra
   });
 
   test('MDF-e: emitente pessoa física, Id com o CPF, assinado no token do e-CPF', async () => {
-    const clock = manualClock(EMISSAO_MDFE);
+    const clock = relogioManual(EMISSAO_MDFE);
     const sim = createSefazSim({ clock, uf: 'MT' });
     const server = await startSefazSimServer(sim, { cert: servidor.pem, key: servidor.keyPem });
     const emissor = await createMdfeEmissor({
@@ -176,7 +176,7 @@ describe.skipIf(!pronto)('A3 em token PKCS#11 pelo sinete-signer, emissor contra
   });
 
   test('NFS-e Nacional: a DPS e o cancelamento assinados no token, JSON pelo helper', async () => {
-    const clock = manualClock(EMISSAO_NFSE);
+    const clock = relogioManual(EMISSAO_NFSE);
     const sim = createNfseSim({ clock, signer: servidor.signer, municipios: MUNICIPIOS });
     const server = await startSimServer({ handle: (r) => sim.handle(r) }, { cert: servidor.pem, key: servidor.keyPem });
     const emissor = await createNfseEmissor({

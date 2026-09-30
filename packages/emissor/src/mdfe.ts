@@ -9,8 +9,8 @@
  * transporte não enxerga.
  */
 
-import type { Rejected } from '@sinete/core';
-import { timeContext, ValidationError } from '@sinete/core';
+import type { Recusado } from '@sinete/core';
+import { contextoDeTempo, ErroDeValidacao } from '@sinete/core';
 import type {
   AutorDocumento,
   AutorizacaoOutcome,
@@ -88,13 +88,13 @@ function autorDe(ctx: ContextoEmissor): AutorDocumento | undefined {
 export function perfilMdfe(
   opcoes: OpcoesPerfilMdfe = {},
 ): PerfilDocumento<EntradaMdfe, MdfeClient, ProtocoloMdfe, BrutoMdfe> {
-  const recusado = (id: string, r: Rejected, bruto: BrutoMdfe): DesfechoMdfe => ({
+  const recusado = (id: string, r: Recusado, bruto: BrutoMdfe): DesfechoMdfe => ({
     documento: 'mdfe',
     tipo: 'recusado',
     id,
     cStat: r.cStat,
     xMotivo: r.xMotivo,
-    ...(r.hint === undefined ? {} : { hint: r.hint }),
+    ...(r.dica === undefined ? {} : { hint: r.dica }),
     bruto,
   });
 
@@ -108,11 +108,11 @@ export function perfilMdfe(
       if (!semResposta(e)) throw e;
       return resolver(cli, xml, undefined, e, reenvia);
     }
-    switch (r.status) {
-      case 'rejected':
+    switch (r.tipo) {
+      case 'recusado':
         return CODIGOS.duplicidade.has(r.cStat) ? resolver(cli, xml, r, undefined, reenvia) : recusado(id, r, r);
-      case 'authorized': {
-        const p = r.value;
+      case 'autorizado': {
+        const p = r.valor;
         // Protocolo sem digVal: nada prova que é destes bytes; a consulta decide.
         if (p.mdfeProc === undefined) return resolver(cli, xml, undefined, undefined, false);
         return {
@@ -143,7 +143,7 @@ export function perfilMdfe(
   async function resolver(
     cli: MdfeClient,
     xml: string,
-    anterior: Rejected | undefined,
+    anterior: Recusado | undefined,
     erroEnvio: unknown,
     reenvia: boolean,
   ): Promise<DesfechoMdfe> {
@@ -160,15 +160,15 @@ export function perfilMdfe(
     switch (res.acao) {
       case 'concluida': {
         const o = res.outcome;
-        if (o.status === 'authorized' && o.value.mdfeProc !== undefined) {
+        if (o.tipo === 'autorizado' && o.valor.mdfeProc !== undefined) {
           return {
             documento: 'mdfe',
             tipo: 'autorizado',
             id,
             cStat: o.cStat,
             xMotivo: o.xMotivo,
-            proc: o.value.mdfeProc,
-            protocolo: o.value,
+            proc: o.valor.mdfeProc,
+            protocolo: o.valor,
             ...(res.situacao === 'autorizado' ? {} : { situacaoAtual: res.situacao }),
             bruto: o,
           };
@@ -252,12 +252,12 @@ export function perfilMdfe(
     async assinar(entrada: EntradaMdfe, ctx: ContextoEmissor): Promise<{ readonly id: string; readonly xml: string }> {
       const [mdfe, doManifesto] = 'montagem' in entrada ? [entrada.mdfe, entrada.montagem] : [entrada, undefined];
       const r = buildMdfe(mdfe, {
-        time: timeContext({ emissao: ctx.clock }),
+        time: contextoDeTempo({ emissao: ctx.clock }),
         ...opcoes.montagem,
         ...doManifesto,
         ambiente: ctx.ambiente,
       });
-      if (!r.ok) throw new ValidationError('o MDF-e não passou na validação', r.issues);
+      if (!r.ok) throw new ErroDeValidacao('o MDF-e não passou na validação', r.issues);
       return { id: r.value.chave, xml: await signMdfe(r.value, ctx.signer) };
     },
     enviar: (cli: MdfeClient, xml: string, modo: 'primeiro' | 'retomada'): Promise<DesfechoMdfe> =>
@@ -319,7 +319,7 @@ export async function createMdfeEmissor(opcoes: MdfeEmissorOptions): Promise<Mdf
 
   async function recuperar(
     chave: string,
-    falha: { readonly erro: unknown } | Rejected,
+    falha: { readonly erro: unknown } | Recusado,
   ): Promise<DesfechoCancelamentoMdfe> {
     let rec: RecuperacaoEvento;
     try {
@@ -346,11 +346,11 @@ export async function createMdfeEmissor(opcoes: MdfeEmissorOptions): Promise<Mdf
       if (rec.registrado) return registrado(rec.evento, true, rec.consulta);
       const c = rec.consulta;
       const achado =
-        c.status === 'authorized' && c.value.situacao === 'autorizado' ? c.value.protocolo?.nProt : undefined;
+        c.tipo === 'autorizado' && c.valor.situacao === 'autorizado' ? c.valor.protocolo?.nProt : undefined;
       if (achado === undefined) {
         // Não consta ou rejeitado: não há o que cancelar. Encerrado não se cancela (o cancelamento recusa, pelo cStat da
         // SEFAZ); cancelado sem o evento legível, ou sem protocolo, a consulta não decidiu.
-        if (c.status === 'rejected') return eventoRecusado(c, c);
+        if (c.tipo === 'recusado') return eventoRecusado(c, c);
         return { tipo: 'pendente', motivo: 'consulta-indefinida', cStat: c.cStat, xMotivo: c.xMotivo, bruto: c };
       }
       nProt = achado;
@@ -362,10 +362,10 @@ export async function createMdfeEmissor(opcoes: MdfeEmissorOptions): Promise<Mdf
       if (!semResposta(e)) throw e;
       return recuperar(p.chave, { erro: e });
     }
-    switch (o.status) {
-      case 'authorized':
-        return registrado(o.value, false, o);
-      case 'rejected':
+    switch (o.tipo) {
+      case 'autorizado':
+        return registrado(o.valor, false, o);
+      case 'recusado':
         return CODIGOS.eventoJaRegistrado.has(o.cStat) ? recuperar(p.chave, o) : eventoRecusado(o, o);
       default:
         return { tipo: 'pendente', motivo: 'consulta-indefinida', cStat: o.cStat, xMotivo: o.xMotivo, bruto: o };

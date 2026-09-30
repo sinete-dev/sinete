@@ -8,8 +8,8 @@
 
 import type { IcpIdentity } from '@sinete/cert';
 import { buildChain, icpBrasilCertificates, openPfx, parseCertificate } from '@sinete/cert';
-import type { Clock, Signer } from '@sinete/core';
-import { systemClock } from '@sinete/core';
+import type { Assinador, Relogio } from '@sinete/core';
+import { relogioDoSistema } from '@sinete/core';
 import type { TlsIdentity } from '@sinete/transport';
 import { pemIdentity } from '@sinete/transport';
 
@@ -21,7 +21,7 @@ export interface CertificadoA1 {
 
 /** Certificado já aberto: o signer dos documentos, o titular e a identidade do mTLS. */
 export interface CertificadoAberto {
-  readonly signer: Signer;
+  readonly signer: Assinador;
   /** Titular do certificado (CNPJ ou CPF, nome): é o autor dos eventos. */
   readonly titular: IcpIdentity;
   /** Identidade do mTLS. `pemIdentity(keyStore, { chain })` leva a cadeia completada. */
@@ -30,7 +30,7 @@ export interface CertificadoAberto {
 
 export interface OpcoesAbrirCertificado {
   /** Relógio da validade do certificado e da cadeia. Padrão: o do sistema. */
-  readonly clock?: Clock;
+  readonly clock?: Relogio;
   /**
    * Completa a cadeia do mTLS com as ACs da ICP-Brasil que o pacote conhece (as intermediárias do `@sinete/cert`, além
    * das que vieram no PFX), para o PFX que só traz o titular. Padrão: `false`, a cadeia que veio no PFX.
@@ -43,7 +43,7 @@ export async function abrirCertificado(
   cert: CertificadoA1,
   opcoes: OpcoesAbrirCertificado = {},
 ): Promise<CertificadoAberto> {
-  const clock = opcoes.clock ?? systemClock;
+  const clock = opcoes.clock ?? relogioDoSistema;
   const ks = await openPfx(cert.pfx, { password: cert.senha, clock });
   const cadeia = opcoes.completarCadeia
     ? (

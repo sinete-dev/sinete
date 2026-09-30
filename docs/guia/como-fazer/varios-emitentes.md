@@ -44,7 +44,7 @@ Quando já há bytes gravados, `jaGuardado` verifica, com a trava obtida e antes
 A entrada preparada pode incluir opções de montagem específicas do documento: `{ nfe, montagem }` na NF-e e `{ mdfe, montagem }` no Manifesto Eletrônico de Documentos Fiscais (MDF-e). As opções fornecidas têm prioridade sobre as correspondentes do emissor. Na NF-e, isso permite usar a data e a hora de emissão gravadas no rascunho e a calculadora do emitente para o Imposto sobre Bens e Serviços (IBS) e a Contribuição sobre Bens e Serviços (CBS).
 
 ```ts
-import { fixedClock, timeContext } from 'sinete/core';
+import { relogioFixo, contextoDeTempo } from 'sinete/core';
 
 const desfecho = await pool.usar(await certificadoDoEmitente(pedido.emitenteId), (nfe) =>
   nfe.emitir(
@@ -52,7 +52,7 @@ const desfecho = await pool.usar(await certificadoDoEmitente(pedido.emitenteId),
     async () => {
       const rascunho = await db.rascunhos.travado(pedido.id); // lança se já não é rascunho
       return {
-        entrada: { nfe: notaDe(rascunho), montagem: { time: timeContext({ emissao: fixedClock(rascunho.emissao) }) } },
+        entrada: { nfe: notaDe(rascunho), montagem: { time: contextoDeTempo({ emissao: relogioFixo(rascunho.emissao) }) } },
         meta: { emitenteId: pedido.emitenteId },
       };
     },

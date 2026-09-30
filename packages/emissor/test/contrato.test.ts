@@ -5,21 +5,21 @@
  * reprovar.
  */
 import { describe, expect, test } from 'bun:test';
-import { manualClock } from '@sinete/core';
+import { relogioManual } from '@sinete/core';
 import type { AmbienteContrato } from '../src/contrato.ts';
 import { ContratoVioladoError, casosDoContrato } from '../src/contrato.ts';
 import { createBancoMemoria, createMemoriaStore } from '../src/memoria.ts';
 import type { TransmissaoStore } from '../src/store.ts';
 
 describe('contrato do TransmissaoStore no adaptador em memória, relógio manual', () => {
-  const clock = manualClock('2026-09-27T10:00:00-03:00');
+  const clock = relogioManual('2026-09-27T10:00:00-03:00');
   const casos = casosDoContrato({
     criar: (): AmbienteContrato => {
       const banco = createBancoMemoria();
       return { a: createMemoriaStore({ clock, banco }), b: createMemoriaStore({ clock, banco }) };
     },
     esperar: async (ms) => {
-      clock.advance(ms);
+      clock.avancar(ms);
     },
   });
   test('a suíte tem os casos de um integrador em produção', () => {
@@ -52,7 +52,7 @@ describe('contrato do TransmissaoStore no adaptador em memória, relógio do sis
 /** Adaptador em memória com um defeito injetado. */
 function quebrado(defeito: (s: TransmissaoStore) => Partial<TransmissaoStore>): () => AmbienteContrato {
   return () => {
-    const clock = manualClock('2026-09-27T10:00:00-03:00');
+    const clock = relogioManual('2026-09-27T10:00:00-03:00');
     const banco = createBancoMemoria();
     const embrulha = (s: TransmissaoStore): TransmissaoStore => ({ ...s, ...defeito(s) });
     return { a: embrulha(createMemoriaStore({ clock, banco })), b: embrulha(createMemoriaStore({ clock, banco })) };
@@ -113,7 +113,7 @@ describe('a suíte reprova adaptadores errados', () => {
 
   test('bytes que não sobrevivem a outro processo', async () => {
     const r = await reprovados(() => {
-      const clock = manualClock('2026-09-27T10:00:00-03:00');
+      const clock = relogioManual('2026-09-27T10:00:00-03:00');
       return { a: createMemoriaStore({ clock }), b: createMemoriaStore({ clock }) };
     });
     expect(r).toContain('bytes, id e meta gravados sobrevivem ao processo e a outra leitura');

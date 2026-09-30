@@ -7,8 +7,8 @@
  * lá e só o dá como registrado quando o retorno dele diz 135, 134 ou 136 para a mesma chave e o mesmo tipo.
  */
 
-import type { XmlDocument, XmlElement } from '@sinete/core/xml';
-import { firstChild, parseXml, textOf } from '@sinete/core/xml';
+import type { DocumentoXml, ElementoXml } from '@sinete/core/xml';
+import { lerXml, primeiroFilho, textoDe } from '@sinete/core/xml';
 import type { ConsultaOutcome, EventoRegistrado, MdfeClient } from './client.ts';
 import { cstatEm } from './outcome.ts';
 import { MDFE_NS, sliceElement } from './proc.ts';
@@ -19,24 +19,24 @@ export type RecuperacaoEvento =
   | { readonly registrado: false; readonly consulta: ConsultaOutcome };
 
 /** Texto do filho `local` no namespace do MDF-e, se houver. */
-function campo(el: XmlElement, local: string): string | undefined {
-  const c = firstChild(el, local, MDFE_NS);
-  return c === undefined ? undefined : textOf(c).trim();
+function campo(el: ElementoXml, local: string): string | undefined {
+  const c = primeiroFilho(el, local, MDFE_NS);
+  return c === undefined ? undefined : textoDe(c).trim();
 }
 
 /** Lê um `procEventoMDFe` da consulta; `undefined` para o que não é um evento com retorno legível. */
 function lerProcEvento(xml: string): EventoRegistrado | undefined {
-  let doc: XmlDocument;
+  let doc: DocumentoXml;
   try {
-    doc = parseXml(xml);
+    doc = lerXml(xml);
   } catch {
     return undefined;
   }
-  const evento = firstChild(doc.root, 'eventoMDFe', MDFE_NS);
-  const pedido = evento === undefined ? undefined : firstChild(evento, 'infEvento', MDFE_NS);
-  const retEl = firstChild(doc.root, 'retEventoMDFe', MDFE_NS);
-  const ret = retEl === undefined ? undefined : firstChild(retEl, 'infEvento', MDFE_NS);
-  if (doc.root.local !== 'procEventoMDFe' || pedido === undefined || retEl === undefined || ret === undefined) {
+  const evento = primeiroFilho(doc.raiz, 'eventoMDFe', MDFE_NS);
+  const pedido = evento === undefined ? undefined : primeiroFilho(evento, 'infEvento', MDFE_NS);
+  const retEl = primeiroFilho(doc.raiz, 'retEventoMDFe', MDFE_NS);
+  const ret = retEl === undefined ? undefined : primeiroFilho(retEl, 'infEvento', MDFE_NS);
+  if (doc.raiz.local !== 'procEventoMDFe' || pedido === undefined || retEl === undefined || ret === undefined) {
     return undefined;
   }
   const cStat = campo(ret, 'cStat');
@@ -79,11 +79,11 @@ export async function recuperarEventoRegistrado(
   tpEvento: string,
 ): Promise<RecuperacaoEvento> {
   const consulta = await client.consultar(chave);
-  if (consulta.status !== 'authorized') return { registrado: false, consulta };
+  if (consulta.tipo !== 'autorizado') return { registrado: false, consulta };
   let achado: EventoRegistrado | undefined;
-  for (const xml of consulta.value.eventos) {
+  for (const xml of consulta.valor.eventos) {
     const e = lerProcEvento(xml);
-    if (e === undefined || e.chMDFe !== consulta.value.chMDFe || e.tpEvento !== tpEvento) continue;
+    if (e === undefined || e.chMDFe !== consulta.valor.chMDFe || e.tpEvento !== tpEvento) continue;
     if (achado === undefined || Number(e.nSeqEvento) > Number(achado.nSeqEvento)) achado = e;
   }
   return achado === undefined ? { registrado: false, consulta } : { registrado: true, evento: achado, consulta };

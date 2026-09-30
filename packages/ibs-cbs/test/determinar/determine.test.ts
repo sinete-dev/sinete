@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { fixedClock, timeContext } from '@sinete/core';
+import { contextoDeTempo, relogioFixo } from '@sinete/core';
 import type { TaxContent } from '@sinete/ibs-cbs-dados';
 import { loadDataset } from '@sinete/ibs-cbs-dados';
 import { BUNDLED_DATASET } from '@sinete/ibs-cbs-dados/bundled';
@@ -25,8 +25,8 @@ import {
 const dataset = loadDataset(BUNDLED_DATASET);
 const DATE = '2026-10-10';
 const content: TaxContent = dataset.at(DATE);
-const clock = fixedClock('2026-10-10T15:00:00-03:00');
-const time = timeContext({ emissao: clock });
+const clock = relogioFixo('2026-10-10T15:00:00-03:00');
+const time = contextoDeTempo({ emissao: clock });
 
 /** NCM do Anexo I (arroz) e NBS de serviço de construção. */
 const RICE = '10063021';
@@ -148,7 +148,7 @@ describe('constrain: restrições oficiais com o motivo de cada exclusão', () =
   });
 
   test('constrain lê a data do relógio de fato gerador', () => {
-    const early = timeContext({ emissao: clock, fatoGerador: fixedClock('2026-01-01T03:00:00Z') });
+    const early = contextoDeTempo({ emissao: clock, fatoGerador: relogioFixo('2026-01-01T03:00:00Z') });
     expect(factDate(early)).toBe('2026-01-01');
     expect(factDate(time)).toBe(DATE);
     expect(constrain(op(), { dataset, time })).toEqual(constrainAt(op(), content));

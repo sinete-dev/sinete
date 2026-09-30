@@ -69,52 +69,52 @@ export type CUf =
 
 export type Regiao = 'N' | 'NE' | 'SE' | 'S' | 'CO';
 
-export interface UfInfo {
+export interface UnidadeFederativa {
   readonly sigla: Uf;
   readonly cUF: CUf;
   readonly nome: string;
   readonly regiao: Regiao;
 }
 
-export interface DataSource {
-  readonly title: string;
+export interface FonteDeDados {
+  readonly titulo: string;
   readonly url: string;
-  readonly retrievedAt: string;
+  readonly coletadoEm: string;
 }
 
 /** Metadados da tabela: versão (data da revisão), formato e fontes. */
-export interface UfTableInfo {
-  readonly schemaVersion: number;
-  readonly version: string;
-  readonly sources: readonly DataSource[];
+export interface DescricaoTabelaUfs {
+  readonly versaoDoFormato: number;
+  readonly versao: string;
+  readonly fontes: readonly FonteDeDados[];
 }
 
-export const UF_TABLE: UfTableInfo = {
-  schemaVersion: table.schemaVersion,
-  version: table.version,
-  sources: table.sources,
+export const TABELA_UFS: DescricaoTabelaUfs = {
+  versaoDoFormato: table.versaoDoFormato,
+  versao: table.versao,
+  fontes: table.fontes,
 };
 
 /** As 27 UFs, na ordem do código IBGE. */
-export const UFS: readonly UfInfo[] = table.ufs as readonly UfInfo[];
+export const UFS: readonly UnidadeFederativa[] = table.ufs as readonly UnidadeFederativa[];
 
-const bySigla: ReadonlyMap<string, UfInfo> = new Map(UFS.map((u) => [u.sigla, u]));
-const byCUf: ReadonlyMap<string, UfInfo> = new Map(UFS.map((u) => [u.cUF, u]));
+const bySigla: ReadonlyMap<string, UnidadeFederativa> = new Map(UFS.map((u) => [u.sigla, u]));
+const byCUf: ReadonlyMap<string, UnidadeFederativa> = new Map(UFS.map((u) => [u.cUF, u]));
 
-export function isUf(value: unknown): value is Uf {
+export function ehUf(value: unknown): value is Uf {
   return typeof value === 'string' && bySigla.has(value);
 }
 
-export function isCUf(value: unknown): value is CUf {
+export function ehCUf(value: unknown): value is CUf {
   return typeof value === 'string' && byCUf.has(value);
 }
 
 /** Informações da UF pela sigla, ou `undefined` se a sigla não existe. */
-export function ufBySigla(sigla: string): UfInfo | undefined {
+export function ufPorSigla(sigla: string): UnidadeFederativa | undefined {
   return bySigla.get(sigla);
 }
 
 /** Informações da UF pelo código IBGE (`'35'`), ou `undefined` se o código não existe. */
-export function ufByCUf(cUF: string): UfInfo | undefined {
+export function ufPorCUf(cUF: string): UnidadeFederativa | undefined {
   return byCUf.get(cUF);
 }

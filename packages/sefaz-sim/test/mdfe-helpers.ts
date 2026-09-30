@@ -4,14 +4,14 @@
  */
 
 import { expect } from 'bun:test';
-import { base64Encode, childElements, parseXml, signXml } from '@sinete/core/xml';
+import { assinarXml, codificarBase64, elementosFilhos, lerXml } from '@sinete/core/xml';
 import type { RootElement } from '@sinete/schemas';
 import { validateRoot } from '@sinete/schemas';
 import * as m300 from '@sinete/schemas/mdfe/3.00b';
 import * as ev from '@sinete/schemas/mdfe/eventos/3.00b';
 import * as serv from '@sinete/schemas/mdfe/servicos/3.00b';
 import { soap12ContentType, soap12Envelope, soapBody } from '@sinete/transport';
-import { buildChaveAcesso } from '@sinete/validators';
+import { montarChaveAcesso } from '@sinete/validators';
 import type { MdfeServicoSim, SyntheticCertificate } from '../src/index.ts';
 import { MDFE_NS, MDFE_SERVICES, SIM_BASE_URL, simTransport, soapAction, wsdlNamespace } from '../src/index.ts';
 import type { Harness } from './helpers.ts';
@@ -27,7 +27,7 @@ export const RET_MDFE: Readonly<Record<MdfeServicoSim, RootElement<unknown>>> = 
 
 export async function gzipBase64(text: string): Promise<string> {
   const stream = new Blob([new TextEncoder().encode(text)]).stream().pipeThrough(new CompressionStream('gzip'));
-  return base64Encode(new Uint8Array(await new Response(stream).arrayBuffer()));
+  return codificarBase64(new Uint8Array(await new Response(stream).arrayBuffer()));
 }
 
 /** Envelope do pedido do MDF-e; a recepção vai compactada. */
@@ -54,11 +54,11 @@ export async function sendMdfe(
       : await envelopeMdfe(servico, payload),
   });
   const body = soapBody(res.text());
-  const holder = parseXml(body).root;
+  const holder = lerXml(body).raiz;
   expect(holder.local).toBe(`${MDFE_SERVICES[servico].operation}Result`);
-  const el = childElements(holder)[0];
+  const el = elementosFilhos(holder)[0];
   if (!el) throw new Error(`resposta inesperada: ${body}`);
-  const ret = body.slice(el.start, el.end);
+  const ret = body.slice(el.inicio, el.fim);
   expect(validateRoot(RET_MDFE[servico], ret)).toEqual([]);
   return ret;
 }
@@ -109,7 +109,7 @@ export async function mdfe(signer: SyntheticCertificate, p: MdfeParams = {}): Pr
   const tpAmb = p.tpAmb ?? '2';
   const dhEmi = p.dhEmi ?? '2026-09-26T09:00:00-04:00';
   const doc = 'CPF' in emit ? emit.CPF : emit.CNPJ;
-  let chave = buildChaveAcesso({
+  let chave = montarChaveAcesso({
     cUF: '51',
     aamm: `${dhEmi.slice(2, 4)}${dhEmi.slice(5, 7)}`,
     emitente: doc,
@@ -126,7 +126,7 @@ export async function mdfe(signer: SyntheticCertificate, p: MdfeParams = {}): Pr
     .map((u) => `<infPercurso><UFPer>${u}</UFPer></infPercurso>`)
     .join('');
   const docTag = 'CPF' in emit ? `<CPF>${emit.CPF}</CPF>` : `<CNPJ>${emit.CNPJ}</CNPJ>`;
-  const chNFe = buildChaveAcesso({
+  const chNFe = montarChaveAcesso({
     cUF: '51',
     aamm: p.aammNFe ?? '2609',
     emitente: EMITENTE,
@@ -158,7 +158,7 @@ export async function mdfe(signer: SyntheticCertificate, p: MdfeParams = {}): Pr
   let qr = p.qr === undefined ? `https://dfe-portal.svrs.rs.gov.br/mdfe/qrCode?chMDFe=${chave}&tpAmb=${tpAmb}` : p.qr;
   if (qr !== false && tpEmis === '2' && p.qr === undefined) qr = `${qr}&sign=QUJD`;
   const supl = qr === false ? '' : `<infMDFeSupl><qrCodMDFe>${qr.replace(/&/g, '&amp;')}</qrCodMDFe></infMDFeSupl>`;
-  const xml = await signXml(`<MDFe xmlns="${MDFE_NS}">${inf}${supl}</MDFe>`, { id: `MDFe${chave}` }, signer.signer);
+  const xml = await assinarXml(`<MDFe xmlns="${MDFE_NS}">${inf}${supl}</MDFe>`, { id: `MDFe${chave}` }, signer.signer);
   return { chave, xml };
 }
 
@@ -192,7 +192,7 @@ export async function eventoMdfe(signer: SyntheticCertificate, p: EventoMdfePara
     `<eventoMDFe xmlns="${MDFE_NS}" versao="3.00"><infEvento Id="${id}"><cOrgao>51</cOrgao><tpAmb>2</tpAmb>${autor}` +
     `<chMDFe>${p.chave}</chMDFe><dhEvento>${p.dhEvento ?? '2026-09-26T10:02:00-03:00'}</dhEvento><tpEvento>${p.tpEvento}</tpEvento>` +
     `<nSeqEvento>${nSeq}</nSeqEvento><detEvento versaoEvento="3.00">${p.det}</detEvento></infEvento></eventoMDFe>`;
-  return signXml(xml, { id }, signer.signer);
+  return assinarXml(xml, { id }, signer.signer);
 }
 
 export const detMdfe = {

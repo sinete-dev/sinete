@@ -2,12 +2,12 @@
  * Classificação das ocorrências do `buildMdfe` (ADR 0011) e rótulo em português dos caminhos do MDF-e.
  */
 import { describe, expect, test } from 'bun:test';
-import type { ValidationIssue } from '@sinete/core';
+import type { Ocorrencia } from '@sinete/core';
 import type { BuildMdfeResult } from '../src/index.ts';
 import { buildMdfe, rotuloDoCaminho } from '../src/index.ts';
 import { cargaPropria, opcoes } from './helpers/mdfe.ts';
 
-function falha(r: BuildMdfeResult): readonly ValidationIssue[] {
+function falha(r: BuildMdfeResult): readonly Ocorrencia[] {
   if (r.ok) throw new Error('esperava ocorrências');
   return r.issues;
 }
@@ -21,7 +21,7 @@ describe('buildMdfe: origem das ocorrências', () => {
 
   test('tpEmis das opções é montagem', () => {
     const issues = falha(buildMdfe(cargaPropria(), opcoes({ tpEmis: '3' as '1' })));
-    expect(issues).toEqual([expect.objectContaining({ path: 'tpEmis', origem: 'montagem' })]);
+    expect(issues).toEqual([expect.objectContaining({ caminho: 'tpEmis', origem: 'montagem' })]);
   });
 
   test('caractere fora do XML é conferido no documento montado', () => {
@@ -33,7 +33,7 @@ describe('buildMdfe: origem das ocorrências', () => {
       ),
     );
     expect(issues).toEqual([expect.objectContaining({ code: 'campo_invalido', origem: 'montagem' })]);
-    expect(issues[0]?.path.startsWith('infMDFe.')).toBe(true);
+    expect(issues[0]?.caminho.startsWith('infMDFe.')).toBe(true);
   });
 });
 

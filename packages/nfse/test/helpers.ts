@@ -3,18 +3,18 @@
  * inventadas; os certificados são gerados na hora e nada vai para o repo.
  */
 
-import type { ManualClock } from '@sinete/core';
-import { manualClock, timeContext } from '@sinete/core';
+import type { RelogioManual } from '@sinete/core';
+import { contextoDeTempo, relogioManual } from '@sinete/core';
 import type { MunicipioSim, NfseSim, NfseSimFullOptions, SimServer, SyntheticCertificate } from '@sinete/sefaz-sim';
 import { createNfseSim, redirectNfseToSim, startSimServer, syntheticCertificate } from '@sinete/sefaz-sim';
 import type { Transport } from '@sinete/transport';
 import { createTransport } from '@sinete/transport';
-import { cnpjCheckDigits, cpfCheckDigits } from '@sinete/validators';
+import { calcularDvCnpj, calcularDvCpf } from '@sinete/validators';
 import type { DpsInput, NfseClient, NfseClientOptions } from '../src/index.ts';
 import { buildDps, createNfseClient, signDps } from '../src/index.ts';
 
-export const cnpj = (base12: string): string => base12 + cnpjCheckDigits(base12);
-export const cpf = (base9: string): string => base9 + cpfCheckDigits(base9);
+export const cnpj = (base12: string): string => base12 + calcularDvCnpj(base12);
+export const cpf = (base9: string): string => base9 + calcularDvCpf(base9);
 
 export const PRESTADOR: string = cnpj('112223330001');
 export const TOMADOR: string = cnpj('445556660001');
@@ -72,7 +72,7 @@ export interface Certs {
 }
 
 export async function gerarCerts(): Promise<Certs> {
-  const clock = manualClock(EMISSAO);
+  const clock = relogioManual(EMISSAO);
   const ac = await syntheticCertificate({ clock, role: 'ac', validDays: 3650 });
   const [servidor, prestador, outro] = await Promise.all([
     syntheticCertificate({ clock, role: 'servidor', issuer: ac }),
@@ -83,7 +83,7 @@ export async function gerarCerts(): Promise<Certs> {
 }
 
 export interface Cenario {
-  readonly clock: ManualClock;
+  readonly clock: RelogioManual;
   readonly sim: NfseSim;
   readonly server: SimServer;
   readonly transport: Transport;
@@ -102,7 +102,7 @@ export async function cenario(
     readonly canal?: SyntheticCertificate;
   } = {},
 ): Promise<Cenario> {
-  const clock = manualClock(EMISSAO);
+  const clock = relogioManual(EMISSAO);
   const sim = createNfseSim({ clock, signer: c.servidor.signer, municipios: MUNICIPIOS, ...o.sim });
   const caminhos: string[] = [];
   const server = await startSimServer(
@@ -133,8 +133,8 @@ export async function cenario(
     client,
     caminhos,
     async assinar(input: DpsInput, assinante: SyntheticCertificate = c.prestador): Promise<string> {
-      const r = buildDps(input, { ambiente: 'homologacao', time: timeContext({ emissao: clock }) });
-      if (!r.ok) throw new Error(r.issues.map((i) => `${i.path}: ${i.message}`).join('\n'));
+      const r = buildDps(input, { ambiente: 'homologacao', time: contextoDeTempo({ emissao: clock }) });
+      if (!r.ok) throw new Error(r.issues.map((i) => `${i.caminho}: ${i.mensagem}`).join('\n'));
       return signDps(r.value, assinante.signer);
     },
     async close(): Promise<void> {

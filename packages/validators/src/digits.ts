@@ -6,8 +6,8 @@
  * vale para o DV da chave de acesso (item 5 da mesma NT), e para documentos só numéricos ela não muda nada.
  */
 
-import type { ValidationIssue } from '@sinete/core';
-import { ValidationError } from '@sinete/core';
+import type { Ocorrencia } from '@sinete/core';
+import { ErroDeValidacao } from '@sinete/core';
 
 /** Valor de um caractere no cálculo do DV: código ASCII menos 48 (NT Conjunta 2025.001, item 2). */
 export function charValue(c: string): number {
@@ -45,8 +45,8 @@ export function allSame(value: string): boolean {
 }
 
 /** Monta uma ocorrência de validação com o caminho do campo. */
-export function issue(path: string, code: string, message: string): ValidationIssue {
-  return { path, code, message };
+export function issue(path: string, code: string, message: string): Ocorrencia {
+  return { caminho: path, code, mensagem: message };
 }
 
 /** Aplica uma máscara com `#` como posição de caractere; sobra de caracteres vai no fim, sem máscara. */
@@ -66,5 +66,5 @@ export function applyMask(value: string, mask: string): string {
  * cálculo de dígito quando a base não tem o formato esperado: erro do chamador, não dado a validar.
  */
 export function throwInvalid(path: string, code: string, message: string): never {
-  throw new ValidationError(message, [issue(path, code, message)]);
+  throw new ErroDeValidacao(message, [issue(path, code, message)]);
 }

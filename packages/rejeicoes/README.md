@@ -5,15 +5,15 @@ Catálogo versionado das rejeições e denegações da SEFAZ para NF-e e NFC-e: 
 Status: pré-alfa, API instável até a 1.0.
 
 ```ts
-import { rejected } from '@sinete/core';
-import { enrichRejected, rejeicaoByCode } from '@sinete/rejeicoes';
+import { criarRecusado } from '@sinete/core';
+import { completarRecusado, rejeicaoPorCodigo } from '@sinete/rejeicoes';
 
-rejeicaoByCode('1037');
+rejeicaoPorCodigo('1037');
 // { code: '1037', message: 'Alíquota da CBS inválida [nItem: 999]', category: 'reforma',
 //   rules: [{ doc: 'nt2025002', id: 'UB56-10' }, ...], causaProvavel: '...', comoCorrigir: '...' }
 
-const r = enrichRejected(rejected({ cStat: '204', xMotivo: 'Rejeição: Duplicidade de NF-e' }));
-r.hint; // { probableCause, suggestedFix, source: 'MOC 7.0 Anexo I, RV 2B08-20' }
+const r = completarRecusado(criarRecusado({ cStat: '204', xMotivo: 'Rejeição: Duplicidade de NF-e' }));
+r.dica; // { probableCause, suggestedFix, source: 'MOC 7.0 Anexo I, RV 2B08-20' }
 ```
 
 ## API
@@ -53,15 +53,15 @@ Fora do catálogo por ora: os `cStat` de sucesso e processamento (tabela 4.4.1 d
 A NFS-e Nacional não usa `cStat` numérico: a Sefin e o ADN respondem com uma lista de erros com código `E` e 4 dígitos (`E0312`) e descrição. O subpath `@sinete/rejeicoes/nfse` cataloga esses códigos, e no desfecho `rejected` do core o código vai no `cStat` (o `isCStat` aceita as duas formas).
 
 ```ts
-import { rejected } from '@sinete/core';
-import { enrichNfseRejected, nfseErroByCode } from '@sinete/rejeicoes/nfse';
+import { criarRecusado } from '@sinete/core';
+import { completarRecusadoNfse, nfseErroPorCodigo } from '@sinete/rejeicoes/nfse';
 
-nfseErroByCode('E0312');
+nfseErroPorCodigo('E0312');
 // { code: 'E0312', mensagem: 'O código de tributação nacional informado não está administrado...', nivel: '3',
 //   categoria: 'parametrizacao-municipal', regras: [{ doc: 'anexo-i', aba: 'RN DPS_NFS-e', linha: '317',
 //   caminho: 'NFSe/infNFSe/DPS/infDPS/serv/cServ/cTribNac', nivel: '3', regra: '...' }], causaProvavel: '...' }
 
-enrichNfseRejected(rejected({ cStat: 'E1229', xMotivo: 'Xml não está utilizando codificação UTF-8.' })).hint;
+completarRecusadoNfse(criarRecusado({ cStat: 'E1229', xMotivo: 'Xml não está utilizando codificação UTF-8.' })).dica;
 ```
 
 - `nfseErroByCode(code)` (aceita espaço e minúscula), `NFSE_ERROS` (em ordem de código), `NFSE_ERROS_TABLE` (versão e planilhas de origem com URL e sha256), `NFSE_ERRO_CATEGORIAS`.

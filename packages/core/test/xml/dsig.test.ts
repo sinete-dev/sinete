@@ -1,20 +1,20 @@
 import { beforeAll, describe, expect, test } from 'bun:test';
-import type { DataSigner } from '../../src/index.ts';
-import { isSineteError } from '../../src/index.ts';
+import type { AssinadorDeDados } from '../../src/index.ts';
+import { ehErroSinete } from '../../src/index.ts';
 import {
-  assembleSignature,
-  base64Encode,
-  findSignatures,
-  parseXml,
-  prepareSignature,
-  SHA1_DIGEST_INFO_PREFIX,
-  signedInfoDigestInfo,
-  signPrepared,
-  signXml,
-  spkiFromCertificate,
-  verifySignature,
-  XMLDSIG_ALGORITHMS,
-  XmlSignatureError,
+  ALGORITMOS_XMLDSIG,
+  assinarPreparada,
+  assinarXml,
+  codificarBase64,
+  conferirAssinatura,
+  digestInfoDoSignedInfo,
+  ErroAssinaturaXml,
+  encontrarAssinaturas,
+  extrairSpki,
+  lerXml,
+  montarAssinatura,
+  PREFIXO_DIGEST_INFO_SHA1,
+  prepararAssinatura,
 } from '../../src/xml/index.ts';
 import type { TestKeys } from './helpers/test-keys.ts';
 import { generateTestKeys, toPem } from './helpers/test-keys.ts';
@@ -30,14 +30,14 @@ let signed: string;
 beforeAll(async () => {
   keys = await generateTestKeys();
   other = await generateTestKeys('outra chave sintetica');
-  signed = await signXml(DOC, { id: ID }, keys.dataSigner);
+  signed = await assinarXml(DOC, { id: ID }, keys.dataSigner);
 });
 
 function withoutSignature(xml: string): string {
-  const doc = parseXml(xml);
-  const sig = findSignatures(doc)[0];
+  const doc = lerXml(xml);
+  const sig = encontrarAssinaturas(doc)[0];
   if (!sig) throw new Error('sem assinatura');
-  return xml.slice(0, sig.start) + xml.slice(sig.end);
+  return xml.slice(0, sig.inicio) + xml.slice(sig.fim);
 }
 
 describe('assinatura em três fases', () => {
@@ -52,23 +52,23 @@ describe('assinatura em três fases', () => {
     const supl =
       '<infNFeSupl><qrCode><![CDATA[https://exemplo.invalid/qr?p=1]]></qrCode><urlChave>x</urlChave></infNFeSupl>';
     const nfce = DOC.replace('</infNFe></NFe>', `</infNFe>${supl}\n</NFe>`);
-    const s = await signXml(nfce, { id: ID }, keys.dataSigner);
+    const s = await assinarXml(nfce, { id: ID }, keys.dataSigner);
     expect(withoutSignature(s)).toBe(nfce);
     expect(s.endsWith('</infNFeSupl>\n<Signature', s.indexOf('<Signature') + '<Signature'.length)).toBe(true);
     expect(s.endsWith('</Signature></NFe>')).toBe(true);
-    expect((await verifySignature(s, { id: ID, element: 'infNFe' })).ok).toBe(true);
-    const tpl = await prepareSignature(nfce, { id: ID, certificateDer: keys.certificateDer });
-    expect(tpl.insertedAt).toBe(nfce.lastIndexOf('</NFe>'));
+    expect((await conferirAssinatura(s, { id: ID, elemento: 'infNFe' })).ok).toBe(true);
+    const tpl = await prepararAssinatura(nfce, { id: ID, certificadoDer: keys.certificateDer });
+    expect(tpl.inseridaEm).toBe(nfce.lastIndexOf('</NFe>'));
   });
 
   test('verifica com o verificador próprio e devolve o elemento e o certificado', async () => {
-    const r = await verifySignature(signed, { id: ID, element: 'infNFe' });
-    if (!r.ok) throw new Error(r.detail);
-    expect(r.element.local).toBe('infNFe');
-    expect(r.certificateDer).toEqual(keys.certificateDer);
-    expect(r.signatureAlgorithm).toBe('rsa-sha1');
-    expect(r.digestAlgorithm).toBe('sha1');
-    expect(spkiFromCertificate(r.certificateDer).length).toBeGreaterThan(200);
+    const r = await conferirAssinatura(signed, { id: ID, elemento: 'infNFe' });
+    if (!r.ok) throw new Error(r.detalhe);
+    expect(r.elemento.local).toBe('infNFe');
+    expect(r.certificadoDer).toEqual(keys.certificateDer);
+    expect(r.algoritmoDeAssinatura).toBe('rsa-sha1');
+    expect(r.algoritmoDeDigest).toBe('sha1');
+    expect(extrairSpki(r.certificadoDer).length).toBeGreaterThan(200);
   });
 
   test('o certificado sintético sai em PEM para os oráculos locais', () => {
@@ -78,116 +78,116 @@ describe('assinatura em três fases', () => {
   });
 
   test('determinística: mesma chave e mesmo documento produzem os mesmos bytes', async () => {
-    expect(await signXml(DOC, { id: ID }, keys.dataSigner)).toBe(signed);
+    expect(await assinarXml(DOC, { id: ID }, keys.dataSigner)).toBe(signed);
   });
 
   test('modo digest (DigestInfo SHA-1 + RSA cru) gera saída idêntica ao modo data', async () => {
-    expect(await signXml(DOC, { id: ID }, keys.digestSigner)).toBe(signed);
+    expect(await assinarXml(DOC, { id: ID }, keys.digestSigner)).toBe(signed);
   });
 
   test('o DigestInfo tem 35 bytes com o prefixo SHA-1', async () => {
-    const p = await prepareSignature(DOC, { id: ID, certificateDer: keys.certificateDer });
-    const di = await signedInfoDigestInfo(p);
+    const p = await prepararAssinatura(DOC, { id: ID, certificadoDer: keys.certificateDer });
+    const di = await digestInfoDoSignedInfo(p);
     expect(di.length).toBe(35);
-    expect(di.subarray(0, 15)).toEqual(SHA1_DIGEST_INFO_PREFIX);
+    expect(di.subarray(0, 15)).toEqual(PREFIXO_DIGEST_INFO_SHA1);
   });
 
   test('prepare, sign e assemble separados dão o mesmo resultado de signXml', async () => {
-    const p = await prepareSignature(DOC, { id: ID, certificateDer: keys.certificateDer });
-    expect(p.template.includes(p.placeholder)).toBe(true);
-    expect(p.insertedAt).toBe(DOC.indexOf('</infNFe>') + 9);
-    const sv = await signPrepared(p, keys.dataSigner);
-    expect(assembleSignature(p, sv)).toBe(signed);
+    const p = await prepararAssinatura(DOC, { id: ID, certificadoDer: keys.certificateDer });
+    expect(p.modelo.includes(p.marcador)).toBe(true);
+    expect(p.inseridaEm).toBe(DOC.indexOf('</infNFe>') + 9);
+    const sv = await assinarPreparada(p, keys.dataSigner);
+    expect(montarAssinatura(p, sv)).toBe(signed);
     const digestValue = /<DigestValue>([^<]+)</.exec(signed)?.[1];
     expect(p.digestValue).toBe(digestValue ?? '');
   });
 
   test('o SignedInfo é canonicalizado no contexto final (namespace herdado do envelope)', async () => {
     const proc = `<nfeProc xmlns="${NFE}" versao="4.00">${DOC.replace(/^<\?xml[^>]*\?>/, '')}</nfeProc>`;
-    const s = await signXml(proc, { id: ID }, keys.dataSigner);
-    expect((await verifySignature(s, { id: ID })).ok).toBe(true);
+    const s = await assinarXml(proc, { id: ID }, keys.dataSigner);
+    expect((await conferirAssinatura(s, { id: ID })).ok).toBe(true);
   });
 
   test('NFe assinada embrulhada por splice num nfeProc continua válida', async () => {
     const body = signed.replace(/^<\?xml[^>]*\?>/, '');
     const proc = `<nfeProc xmlns="${NFE}" versao="4.00">${body}<protNFe versao="4.00"><infProt><tpAmb>2</tpAmb></infProt></protNFe></nfeProc>`;
-    expect((await verifySignature(proc, { id: ID, element: 'infNFe' })).ok).toBe(true);
+    expect((await conferirAssinatura(proc, { id: ID, elemento: 'infNFe' })).ok).toBe(true);
   });
 
   test('xmlns:xsi acrescentado no envelope depois da assinatura quebra o digest e o SignedInfo (C14N inclusivo)', async () => {
     const body = signed.replace(/^<\?xml[^>]*\?>/, '');
     const proc = `<nfeProc xmlns="${NFE}" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">${body}</nfeProc>`;
     // O SignedInfo também é um document subset e herda o xmlns:xsi do envelope, então nem ele confere mais.
-    expect(await verifySignature(proc, { id: ID })).toMatchObject({
+    expect(await conferirAssinatura(proc, { id: ID })).toMatchObject({
       ok: false,
-      failure: 'digest-diverge',
-      signedInfoValid: false,
+      motivo: 'digest-diverge',
+      signedInfoValido: false,
     });
   });
 });
 
 describe('verificação recusa com motivo', () => {
   test('conteúdo alterado depois de assinado', async () => {
-    const r = await verifySignature(signed.replace('VENDA DE TESTE', 'VENDA DE TESTX'), { id: ID });
-    expect(r).toMatchObject({ ok: false, failure: 'digest-diverge', signedInfoValid: true });
+    const r = await conferirAssinatura(signed.replace('VENDA DE TESTE', 'VENDA DE TESTX'), { id: ID });
+    expect(r).toMatchObject({ ok: false, motivo: 'digest-diverge', signedInfoValido: true });
   });
 
   test('assinatura forjada: digest refeito sem a chave', async () => {
     const tampered = DOC.replace('VENDA DE TESTE', 'OUTRA VENDA');
-    const p = await prepareSignature(tampered, { id: ID, certificateDer: keys.certificateDer });
-    const forged = assembleSignature(p, await signPrepared(p, other.dataSigner));
-    expect(await verifySignature(forged, { id: ID })).toMatchObject({ ok: false, failure: 'assinatura-invalida' });
+    const p = await prepararAssinatura(tampered, { id: ID, certificadoDer: keys.certificateDer });
+    const forged = montarAssinatura(p, await assinarPreparada(p, other.dataSigner));
+    expect(await conferirAssinatura(forged, { id: ID })).toMatchObject({ ok: false, motivo: 'assinatura-invalida' });
   });
 
   test('SignatureValue e digest adulterados: SignedInfo também não confere', async () => {
-    const r = await verifySignature(
+    const r = await conferirAssinatura(
       signed.replace('VENDA DE TESTE', 'X').replace(/<DigestValue>[^<]+</, '<DigestValue>AAAA<'),
       { id: ID },
     );
-    expect(r).toMatchObject({ ok: false, failure: 'digest-diverge', signedInfoValid: false });
+    expect(r).toMatchObject({ ok: false, motivo: 'digest-diverge', signedInfoValido: false });
   });
 
   test('sem assinatura', async () => {
-    expect(await verifySignature(DOC, { id: ID })).toMatchObject({ ok: false, failure: 'sem-assinatura' });
+    expect(await conferirAssinatura(DOC, { id: ID })).toMatchObject({ ok: false, motivo: 'sem-assinatura' });
   });
 
   test('XML malformado', async () => {
-    const r = await verifySignature(signed.replace('VENDA DE TESTE', 'M&M'), { id: ID });
-    expect(r).toMatchObject({ ok: false, failure: 'parse' });
+    const r = await conferirAssinatura(signed.replace('VENDA DE TESTE', 'M&M'), { id: ID });
+    expect(r).toMatchObject({ ok: false, motivo: 'leitura' });
   });
 
   test('assinatura de outro Id (o chamador esperava outro elemento)', async () => {
-    expect(await verifySignature(signed, { id: 'NFe999' })).toMatchObject({
+    expect(await conferirAssinatura(signed, { id: 'NFe999' })).toMatchObject({
       ok: false,
-      failure: 'referencia-inesperada',
+      motivo: 'referencia-inesperada',
     });
   });
 
   test('nome do elemento diferente do esperado', async () => {
-    expect(await verifySignature(signed, { id: ID, element: 'infEvento' })).toMatchObject({
+    expect(await conferirAssinatura(signed, { id: ID, elemento: 'infEvento' })).toMatchObject({
       ok: false,
-      failure: 'referencia-nao-encontrada',
+      motivo: 'referencia-nao-encontrada',
     });
   });
 
   test('Reference aponta para Id que não existe', async () => {
-    const r = await verifySignature(signed.replace(`Id="${ID}"`, 'Id="outro"'), { id: ID });
-    expect(r).toMatchObject({ ok: false, failure: 'referencia-nao-encontrada' });
+    const r = await conferirAssinatura(signed.replace(`Id="${ID}"`, 'Id="outro"'), { id: ID });
+    expect(r).toMatchObject({ ok: false, motivo: 'referencia-nao-encontrada' });
   });
 
   test('signature wrapping: segundo elemento com o mesmo Id', async () => {
     const wrapped = signed.replace('</NFe>', `<infNFe Id="${ID}" versao="4.00"><ide/></infNFe></NFe>`);
-    expect(await verifySignature(wrapped, { id: ID })).toMatchObject({ ok: false, failure: 'id-duplicado' });
+    expect(await conferirAssinatura(wrapped, { id: ID })).toMatchObject({ ok: false, motivo: 'id-duplicado' });
   });
 
   test('duas assinaturas para o mesmo Id', async () => {
     const sig = signed.slice(signed.indexOf('<Signature'), signed.indexOf('</Signature>') + 12);
     const twice = signed.replace('</NFe>', `${sig}</NFe>`);
-    expect(await verifySignature(twice, { id: ID })).toMatchObject({ ok: false, failure: 'id-duplicado' });
+    expect(await conferirAssinatura(twice, { id: ID })).toMatchObject({ ok: false, motivo: 'id-duplicado' });
   });
 
   test('algoritmos fora do perfil', async () => {
-    const A = XMLDSIG_ALGORITHMS;
+    const A = ALGORITMOS_XMLDSIG;
     const variants: [string, string][] = [
       [A.c14n, 'http://www.w3.org/2001/10/xml-exc-c14n#'],
       [A.rsaSha1, 'http://www.w3.org/2000/09/xmldsig#dsa-sha1'],
@@ -195,49 +195,49 @@ describe('verificação recusa com motivo', () => {
       [A.envelopedSignature, 'http://www.w3.org/TR/1999/REC-xpath-19991116'],
     ];
     for (const [from, to] of variants) {
-      const r = await verifySignature(signed.replace(`"${from}"`, `"${to}"`), { id: ID });
-      expect(r).toMatchObject({ ok: false, failure: 'algoritmo-nao-suportado' });
+      const r = await conferirAssinatura(signed.replace(`"${from}"`, `"${to}"`), { id: ID });
+      expect(r).toMatchObject({ ok: false, motivo: 'algoritmo-nao-suportado' });
     }
     const two = signed.replace('</SignedInfo>', '<Reference URI="#x"/></SignedInfo>');
-    expect(await verifySignature(two, { id: ID })).toMatchObject({ ok: false, failure: 'algoritmo-nao-suportado' });
+    expect(await conferirAssinatura(two, { id: ID })).toMatchObject({ ok: false, motivo: 'algoritmo-nao-suportado' });
   });
 
   test('documento aninhado demais volta como falha, sem estourar a pilha', async () => {
     const deep = '<r>'.repeat(12000) + '</r>'.repeat(12000);
-    expect(await verifySignature(deep, { id: ID })).toMatchObject({ ok: false, failure: 'parse' });
+    expect(await conferirAssinatura(deep, { id: ID })).toMatchObject({ ok: false, motivo: 'leitura' });
   });
 
   test('estrutura incompleta', async () => {
     const noSv = signed.replace(/<SignatureValue>[^<]+<\/SignatureValue>/, '');
-    expect(await verifySignature(noSv, { id: ID })).toMatchObject({ ok: false, failure: 'estrutura' });
+    expect(await conferirAssinatura(noSv, { id: ID })).toMatchObject({ ok: false, motivo: 'estrutura' });
     const badB64 = signed.replace(/<DigestValue>[^<]+</, '<DigestValue>***<');
-    expect(await verifySignature(badB64, { id: ID })).toMatchObject({ ok: false, failure: 'estrutura' });
+    expect(await conferirAssinatura(badB64, { id: ID })).toMatchObject({ ok: false, motivo: 'estrutura' });
     const noSi = signed.replace(/<SignedInfo>.*<\/SignedInfo>/, '');
     expect(
-      await verifySignature(
+      await conferirAssinatura(
         noSi.replace('<SignatureValue>', `<SignedInfo><Reference URI="#${ID}"/></SignedInfo><SignatureValue>`),
         { id: ID },
       ),
-    ).toMatchObject({ ok: false, failure: 'algoritmo-nao-suportado' });
+    ).toMatchObject({ ok: false, motivo: 'algoritmo-nao-suportado' });
   });
 
   test('certificado ausente ou ilegível', async () => {
     const noCert = signed.replace(/<KeyInfo>.*<\/KeyInfo>/, '');
-    expect(await verifySignature(noCert, { id: ID })).toMatchObject({ ok: false, failure: 'certificado' });
+    expect(await conferirAssinatura(noCert, { id: ID })).toMatchObject({ ok: false, motivo: 'certificado' });
     const badCert = signed.replace(/<X509Certificate>[^<]+</, '<X509Certificate>AAAA<');
-    expect(await verifySignature(badCert, { id: ID })).toMatchObject({ ok: false, failure: 'certificado' });
+    expect(await conferirAssinatura(badCert, { id: ID })).toMatchObject({ ok: false, motivo: 'certificado' });
   });
 
   test('aceita documento já parseado', async () => {
-    expect((await verifySignature(parseXml(signed), { id: ID })).ok).toBe(true);
+    expect((await conferirAssinatura(lerXml(signed), { id: ID })).ok).toBe(true);
   });
 
   test('aceita SHA-256 na verificação', async () => {
-    const A = XMLDSIG_ALGORITHMS;
+    const A = ALGORITMOS_XMLDSIG;
     const doc = DOC;
-    const p = await prepareSignature(doc, { id: ID, certificateDer: keys.certificateDer });
+    const p = await prepararAssinatura(doc, { id: ID, certificadoDer: keys.certificateDer });
     // Monta à mão um SignedInfo RSA-SHA256 + digest SHA-256 a partir do template.
-    const digest256 = base64Encode(
+    const digest256 = codificarBase64(
       new Uint8Array(
         await crypto.subtle.digest(
           'SHA-256',
@@ -247,7 +247,7 @@ describe('verificação recusa com motivo', () => {
         ),
       ),
     );
-    const template = p.template
+    const template = p.modelo
       .replace(A.rsaSha1, A.rsaSha256)
       .replace(A.sha1, A.sha256)
       .replace(p.digestValue, digest256);
@@ -263,9 +263,9 @@ describe('verificação recusa com motivo', () => {
       ['sign'],
     );
     const sv = new Uint8Array(await crypto.subtle.sign('RSASSA-PKCS1-v1_5', key, new TextEncoder().encode(siC14n)));
-    const out = template.replace(p.placeholder, base64Encode(sv));
-    const r = await verifySignature(out, { id: ID });
-    expect(r).toMatchObject({ ok: true, signatureAlgorithm: 'rsa-sha256', digestAlgorithm: 'sha256' });
+    const out = template.replace(p.marcador, codificarBase64(sv));
+    const r = await conferirAssinatura(out, { id: ID });
+    expect(r).toMatchObject({ ok: true, algoritmoDeAssinatura: 'rsa-sha256', algoritmoDeDigest: 'sha256' });
   });
 });
 
@@ -273,11 +273,11 @@ describe('erros de preparo', () => {
   const certificateDer = new Uint8Array([1]);
   const reasons = async (xml: string, id: string): Promise<string> => {
     try {
-      await prepareSignature(xml, { id, certificateDer });
+      await prepararAssinatura(xml, { id, certificadoDer: certificateDer });
     } catch (e) {
-      if (e instanceof XmlSignatureError) {
-        expect(isSineteError(e, 'xmldsig_falhou')).toBe(true);
-        return e.reason;
+      if (e instanceof ErroAssinaturaXml) {
+        expect(ehErroSinete(e, 'xmldsig_falhou')).toBe(true);
+        return e.motivo;
       }
       throw e;
     }
@@ -292,14 +292,14 @@ describe('erros de preparo', () => {
   });
 
   test('assemble exige exatamente um placeholder e assinatura não vazia', async () => {
-    const p = await prepareSignature(DOC, { id: ID, certificateDer });
-    expect(() => assembleSignature(p, new Uint8Array())).toThrow(XmlSignatureError);
-    expect(() => assembleSignature({ ...p, template: DOC }, new Uint8Array([1]))).toThrow(XmlSignatureError);
-    const empty: DataSigner = {
-      kind: 'data',
-      certificateDer: async () => certificateDer,
-      sign: async () => new Uint8Array(),
+    const p = await prepararAssinatura(DOC, { id: ID, certificadoDer: certificateDer });
+    expect(() => montarAssinatura(p, new Uint8Array())).toThrow(ErroAssinaturaXml);
+    expect(() => montarAssinatura({ ...p, modelo: DOC }, new Uint8Array([1]))).toThrow(ErroAssinaturaXml);
+    const empty: AssinadorDeDados = {
+      tipo: 'dados',
+      certificadoDer: async () => certificateDer,
+      assinar: async () => new Uint8Array(),
     };
-    await expect(signPrepared(p, empty)).rejects.toThrow(XmlSignatureError);
+    await expect(assinarPreparada(p, empty)).rejects.toThrow(ErroAssinaturaXml);
   });
 });

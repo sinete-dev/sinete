@@ -50,14 +50,14 @@ A tabela (`RATES_TABLE`) é gerada pelo `tools/ibs-cbs-dados/extract.ts` a parti
 Cálculo puro e determinístico do IBS e da CBS a partir de uma operação já classificada (CST e cClassTrib por item). Não conhece CFOP, cliente nem descrição de produto: quem decide a classificação é o `@sinete/ibs-cbs/determinar` ou o usuário. As regras vêm do `@sinete/ibs-cbs-dados`, as alíquotas do `@sinete/ibs-cbs/aliquotas`.
 
 ```ts
-import { fixedClock, timeContext } from '@sinete/core';
+import { relogioFixo, contextoDeTempo } from '@sinete/core';
 import { bundledDataset } from '@sinete/ibs-cbs-dados/bundled';
 import { calculate } from '@sinete/ibs-cbs/calcular';
 import { officialRates } from '@sinete/ibs-cbs/aliquotas';
 
 const roc = calculate(
   { modelo: 55, place: { uf: 'SP', cMun: '3550308' }, items: [{ n: 1, cst: '000', cClassTrib: '000001', base: '1000.00' }] },
-  { dataset: bundledDataset(), rates: officialRates(), time: timeContext({ emissao: fixedClock('2026-10-10T12:00:00-03:00') }) },
+  { dataset: bundledDataset(), rates: officialRates(), time: contextoDeTempo({ emissao: relogioFixo('2026-10-10T12:00:00-03:00') }) },
 );
 roc.items[0].IBSCBS.gIBSCBS?.gCBS; // { pCBS: '0.90', vCBS: '9.00' }
 roc.total.IBSCBSTot.vBCIBSCBS; // '1000.00'
@@ -93,14 +93,14 @@ roc.total.IBSCBSTot.vBCIBSCBS; // '1000.00'
 Regras de validação da NT 2025.002-RTC v1.51 (grupos UB e W da NF-e e da NFC-e) que dá para conferir sem o banco da SEFAZ, como funções puras. Cada regra tem o id da NT, o cStat de rejeição (cruzado com o `@sinete/rejeicoes`), os modelos, a implantação por ambiente e a fonte. Serve para conferir um XML lido de fora ou a saída do `@sinete/ibs-cbs/calcular`, e é o segundo oráculo do motor no que a Calculadora da RFB não calcula.
 
 ```ts
-import { fixedClock, timeContext } from '@sinete/core';
+import { relogioFixo, contextoDeTempo } from '@sinete/core';
 import { bundledDataset } from '@sinete/ibs-cbs-dados/bundled';
 import { documentFromRoc, validate } from '@sinete/ibs-cbs/validar';
 
 const doc = documentFromRoc(roc, { modelo: 55, crt: 3, finNFe: 1 });
 const report = validate(doc, {
   dataset: bundledDataset(),
-  time: timeContext({ emissao: fixedClock('2026-10-10T12:00:00-03:00') }),
+  time: contextoDeTempo({ emissao: relogioFixo('2026-10-10T12:00:00-03:00') }),
   ambiente: 'producao',
 });
 report.violations; // [{ rule: 'UB35-10', cStat: '1041', item: 1, message: '...', source: 'NT 2025.002 v1.51, UB35-10' }]
@@ -127,11 +127,11 @@ O relógio de emissão decide quais regras já estão implantadas no ambiente (c
 Determinação do CST e do cClassTrib do IBS e da CBS a partir de fatos de negócio (natureza da operação, NCM ou NBS, atores das partes, tipo de nota). Separa o que é regra fechada do que é interpretação: o dado oficial e a lei eliminam candidatos com o motivo; o que sobra vai para resolvedores plugáveis (cadastro do item, pergunta ao usuário, IA, fila de revisão), e cada decisão sai com proveniência.
 
 ```ts
-import { fixedClock, timeContext } from '@sinete/core';
+import { relogioFixo, contextoDeTempo } from '@sinete/core';
 import { bundledDataset } from '@sinete/ibs-cbs-dados/bundled';
 import { determine, questionId, toClassified } from '@sinete/ibs-cbs/determinar';
 
-const opts = { dataset: bundledDataset(), time: timeContext({ emissao: fixedClock('2026-10-10T12:00:00-03:00') }) };
+const opts = { dataset: bundledDataset(), time: contextoDeTempo({ emissao: relogioFixo('2026-10-10T12:00:00-03:00') }) };
 const facts = { modelo: 55, kind: 'venda', items: [{ n: 1, ncm: '10063021', description: 'arroz' }] } as const;
 
 const first = await determine(facts, opts);

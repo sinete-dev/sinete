@@ -2,11 +2,11 @@
  * Dublês dos serviços: transporte falso que grava as requisições e devolve envelopes SOAP 1.2 sintéticos, chaves de
  * acesso com DV válido sobre CNPJ/CPF sintéticos e NF-e mínima assinada com chave WebCrypto gerada no teste.
  */
-import type { Signer } from '@sinete/core';
-import { fixedClock, memoryLogger } from '@sinete/core';
-import { signXml } from '@sinete/core/xml';
+import type { Assinador } from '@sinete/core';
+import { loggerEmMemoria, relogioFixo } from '@sinete/core';
+import { assinarXml } from '@sinete/core/xml';
 import type { Transport, TransportRequest, TransportResponse } from '@sinete/transport';
-import { buildChaveAcesso } from '@sinete/validators';
+import { montarChaveAcesso } from '@sinete/validators';
 import type { NfeClient, NfeClientOptions } from '../../src/services/index.ts';
 import { createNfeClient } from '../../src/services/index.ts';
 import { generateTestKeys } from '../helpers/test-keys.ts';
@@ -30,7 +30,7 @@ export function chave(
     tpEmis?: string;
   } = {},
 ): string {
-  return buildChaveAcesso({
+  return montarChaveAcesso({
     cUF: over.cUF ?? '35',
     aamm: '2609',
     emitente: over.emitente ?? CNPJ_EMIT,
@@ -42,8 +42,8 @@ export function chave(
   });
 }
 
-let signerPromise: Promise<Signer> | undefined;
-export function testSigner(): Promise<Signer> {
+let signerPromise: Promise<Assinador> | undefined;
+export function testSigner(): Promise<Assinador> {
   signerPromise ??= generateTestKeys().then((k) => k.dataSigner);
   return signerPromise;
 }
@@ -51,7 +51,7 @@ export function testSigner(): Promise<Signer> {
 /** NF-e mínima (só o que o cliente lê: raiz, Id e assinatura), assinada. */
 export async function nfeAssinada(ch: string = chave()): Promise<string> {
   const xml = `<NFe xmlns="${NFE_NS}"><infNFe Id="NFe${ch}" versao="4.00"><ide><cUF>${ch.slice(0, 2)}</cUF><cNF>${ch.slice(35, 43)}</cNF><natOp>VENDA &amp; TESTE</natOp></ide></infNFe></NFe>`;
-  return signXml(xml, { id: `NFe${ch}` }, await testSigner());
+  return assinarXml(xml, { id: `NFe${ch}` }, await testSigner());
 }
 
 export function digestOf(signed: string): string {
@@ -185,16 +185,16 @@ export const CLOCK_ISO = '2026-09-10T12:00:00Z';
 export function client(
   transport: Transport,
   over: Partial<NfeClientOptions> = {},
-): Promise<{ c: NfeClient; logger: ReturnType<typeof memoryLogger>; sleeps: number[] }> {
+): Promise<{ c: NfeClient; logger: ReturnType<typeof loggerEmMemoria>; sleeps: number[] }> {
   return testSigner().then((signer) => {
-    const logger = memoryLogger();
+    const logger = loggerEmMemoria();
     const sleeps: number[] = [];
     const c = createNfeClient({
       transport,
       signer,
       ambiente: 'homologacao',
       uf: 'SP',
-      clock: fixedClock(CLOCK_ISO),
+      clock: relogioFixo(CLOCK_ISO),
       logger,
       sleep: async (ms) => {
         sleeps.push(ms);

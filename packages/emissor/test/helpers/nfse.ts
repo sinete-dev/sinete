@@ -3,14 +3,14 @@
  * inventadas; os certificados são gerados na hora e nada vai para o repo.
  */
 
-import { manualClock } from '@sinete/core';
+import { relogioManual } from '@sinete/core';
 import type { DpsInput } from '@sinete/nfse';
 import type { MunicipioSim, SyntheticCertificate } from '@sinete/sefaz-sim';
 import { syntheticCertificate } from '@sinete/sefaz-sim';
-import { cnpjCheckDigits, cpfCheckDigits } from '@sinete/validators';
+import { calcularDvCnpj, calcularDvCpf } from '@sinete/validators';
 
-export const cnpj = (base12: string): string => base12 + cnpjCheckDigits(base12);
-export const cpf = (base9: string): string => base9 + cpfCheckDigits(base9);
+export const cnpj = (base12: string): string => base12 + calcularDvCnpj(base12);
+export const cpf = (base9: string): string => base9 + calcularDvCpf(base9);
 
 export const PRESTADOR: string = cnpj('112223330001');
 export const TOMADOR: string = cnpj('445556660001');
@@ -68,7 +68,7 @@ export interface Certs {
 }
 
 export async function gerarCerts(): Promise<Certs> {
-  const clock = manualClock(EMISSAO);
+  const clock = relogioManual(EMISSAO);
   const ac = await syntheticCertificate({ clock, role: 'ac', validDays: 3650 });
   const [servidor, prestador, outro] = await Promise.all([
     syntheticCertificate({ clock, role: 'servidor', issuer: ac }),

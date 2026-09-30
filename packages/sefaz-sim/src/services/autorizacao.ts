@@ -7,8 +7,8 @@
  * primeiro pedido depois do instante (ou em `settle()`), sempre na ordem de recebimento.
  */
 
-import type { XmlDocument, XmlElement } from '@sinete/core/xml';
-import { attributeOf, parseXml } from '@sinete/core/xml';
+import type { DocumentoXml, ElementoXml } from '@sinete/core/xml';
+import { atributoDe, lerXml } from '@sinete/core/xml';
 import type { RootElement } from '@sinete/schemas';
 import { serializeRoot, VIGENCIAS } from '@sinete/schemas';
 import * as PL_010e from '@sinete/schemas/nfe/PL_010e';
@@ -90,8 +90,8 @@ export function viewOf(rt: Runtime, nRec?: string, svc?: Svc): SimView {
   };
 }
 
-function factsOf(nfe: XmlElement): { facts: NfeFacts; inf: XmlElement } {
-  const inf = at(nfe, 'infNFe') as XmlElement;
+function factsOf(nfe: ElementoXml): { facts: NfeFacts; inf: ElementoXml } {
+  const inf = at(nfe, 'infNFe') as ElementoXml;
   const ide = at(inf, 'ide');
   const emit = at(inf, 'emit');
   const ie = text(emit, 'IE');
@@ -104,7 +104,7 @@ function factsOf(nfe: XmlElement): { facts: NfeFacts; inf: XmlElement } {
   const supl = at(nfe, 'infNFeSupl');
   const qrCode = text(supl, 'qrCode')?.trim();
   const facts: NfeFacts = {
-    id: attributeOf(inf, 'Id') ?? '',
+    id: atributoDe(inf, 'Id') ?? '',
     cUF: req(ide, 'cUF'),
     cNF: req(ide, 'cNF'),
     mod: req(ide, 'mod'),
@@ -151,8 +151,8 @@ interface Processed {
 async function processNfe(
   rt: Runtime,
   quem: { readonly autorizador: SimAutorizador; readonly svc: Svc | undefined },
-  doc: XmlDocument,
-  nfeEl: XmlElement,
+  doc: DocumentoXml,
+  nfeEl: ElementoXml,
   now: number,
   nRec: string,
 ): Promise<Processed> {
@@ -208,7 +208,7 @@ async function processNfe(
     emitente: facts.emitente,
     destinatario: destDoc.CNPJ === undefined && destDoc.CPF === undefined ? undefined : destDoc,
     terceiros: [...new Set(terceiros)],
-    xml: standalone(doc.source, nfeEl),
+    xml: standalone(doc.texto, nfeEl),
     digVal: sig.digestValue,
     nRec,
     nProt,
@@ -226,11 +226,11 @@ async function processNfe(
 }
 
 async function processLote(rt: Runtime, lote: LoteRecord): Promise<void> {
-  const doc = parseXml(lote.payload);
+  const doc = lerXml(lote.payload);
   // O 635 só olha lotes recebidos antes deste (viewOf com o nRec), então as NF-e do lote não contam para si. O
   // resultado é publicado de uma vez no fim; o simulador atende um pedido por vez, então ninguém vê o lote pela metade.
   const protNFe: TProtNFe[] = [];
-  for (const nfeEl of all(doc.root, 'NFe')) {
+  for (const nfeEl of all(doc.raiz, 'NFe')) {
     protNFe.push((await processNfe(rt, lote, doc, nfeEl, lote.availableAt, lote.nRec)).prot);
   }
   lote.protNFe = protNFe;
@@ -250,8 +250,8 @@ export async function autorizacao(ctx: RequestContext): Promise<string> {
   const pre = prelude(ctx, { roots: pls.map((p) => p.enviNFeElement), lote: true });
   if (!pre.ok) return retEnviNFe(ctx, pre.status);
   const doc = pre.doc;
-  const nfes = all(doc.root, 'NFe');
-  const indSinc = text(doc.root, 'indSinc');
+  const nfes = all(doc.raiz, 'NFe');
+  const indSinc = text(doc.raiz, 'indSinc');
   // GAP03a-1 e GAP03a-2 (Anexo I, DA), B06-20 (lote com NF-e e NFC-e).
   if (indSinc === '1' && nfes.length > 1) return retEnviNFe(ctx, status('764'));
   if (indSinc === '1' && ctx.rt.config.respostaSincrona === 'recusa') return retEnviNFe(ctx, status('776'));
@@ -280,7 +280,7 @@ export async function autorizacao(ctx: RequestContext): Promise<string> {
     pending: nfes.map((n) => {
       const emit = documento(at(n, 'infNFe/emit'));
       return {
-        chave: (attributeOf(at(n, 'infNFe') as XmlElement, 'Id') ?? '').replace(/^NFe/, ''),
+        chave: (atributoDe(at(n, 'infNFe') as ElementoXml, 'Id') ?? '').replace(/^NFe/, ''),
         emitenteKey: docKey(emit) ?? '',
         mod: req(n, 'infNFe/ide/mod'),
         serie: req(n, 'infNFe/ide/serie'),
@@ -294,7 +294,7 @@ export async function autorizacao(ctx: RequestContext): Promise<string> {
   // O lote síncrono também fica registrado, processado: o recibo que o 204 devolve continua consultável.
   ctx.rt.state.lotes.set(nRec, lote);
   if (sincrono) {
-    const { prot } = await processNfe(ctx.rt, lote, doc, nfes[0] as XmlElement, ctx.now, nRec);
+    const { prot } = await processNfe(ctx.rt, lote, doc, nfes[0] as ElementoXml, ctx.now, nRec);
     lote.protNFe = [prot];
     lote.processedAt = dh(ctx, ctx.now);
     return retEnviNFe(ctx, status('104'), { protNFe: protNFeNaResposta(ctx.rt, 'autorizacao', prot) });
@@ -307,7 +307,7 @@ export async function autorizacao(ctx: RequestContext): Promise<string> {
 export async function retAutorizacao(ctx: RequestContext): Promise<string> {
   const pls = plsAceitos(ctx.rt, ctx.now);
   const pre = prelude(ctx, { roots: pls.map((p) => p.consReciNFeElement), lote: false });
-  const nRecLido = pre.doc === undefined ? undefined : text(pre.doc.root, 'nRec');
+  const nRecLido = pre.doc === undefined ? undefined : text(pre.doc.raiz, 'nRec');
   const nRec = nRecLido !== undefined && /^[0-9]{15}$/.test(nRecLido) ? nRecLido : '0'.repeat(15);
   const ret = (s: Status, extra: Pick<TRetConsReciNFe, 'protNFe'> = {}): string => {
     const value: TRetConsReciNFe = {
@@ -325,7 +325,7 @@ export async function retAutorizacao(ctx: RequestContext): Promise<string> {
   };
   if (!pre.ok) return ret(pre.status);
   // B24-10 (252) e 248 (UF do recibo diverge da UF autorizadora).
-  if (text(pre.doc.root, 'tpAmb') !== ctx.rt.config.tpAmb) return ret(status('252'));
+  if (text(pre.doc.raiz, 'tpAmb') !== ctx.rt.config.tpAmb) return ret(status('252'));
   if (nRec.slice(0, 2) !== ctx.rt.config.cUF) return ret(status('248'));
   const lote = ctx.rt.state.lotes.get(nRec);
   const mesmoAutorizador = lote !== undefined && (lote.autorizador === 'svc') === (ctx.autorizador === 'svc');

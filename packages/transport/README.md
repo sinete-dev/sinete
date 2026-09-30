@@ -5,11 +5,11 @@ Transporte mTLS dos DF-e: `Transport` com identidade TLS plugável, endpoints e 
 Status: pré-alfa, API instável até a 1.0.
 
 ```ts
-import { systemClock } from '@sinete/core';
+import { relogioDoSistema } from '@sinete/core';
 import { openPfx } from '@sinete/cert';
 import { allowlistPolicy, ambienteHosts, createTransport, nfeEndpoint, pemIdentity, soap12ContentType, soap12Envelope } from '@sinete/transport';
 
-const ks = await openPfx(pfx, { password, clock: systemClock });
+const ks = await openPfx(pfx, { password, clock: relogioDoSistema });
 const transport = createTransport({
   identity: pemIdentity(ks),
   // só homologação: hosts dos dados + tpAmb 2 no corpo, conferidos antes de abrir socket

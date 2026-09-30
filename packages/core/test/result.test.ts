@@ -1,112 +1,115 @@
 import { describe, expect, test } from 'bun:test';
-import type { SefazOutcome } from '../src/index.ts';
+import type { ResultadoSefaz } from '../src/index.ts';
 import {
-  authorized,
-  denied,
-  err,
-  isAuthorized,
-  isCStat,
-  isDenied,
-  isPending,
-  isRejected,
-  isSineteError,
-  matchOutcome,
+  autorizado,
+  criarAutorizado,
+  criarDenegado,
+  criarPendente,
+  criarRecusado,
+  denegado,
+  ErroSefaz,
+  ehCStat,
+  ehErroSinete,
+  exigirAutorizado,
+  falha,
   ok,
-  pending,
-  rejected,
-  SefazError,
-  unwrapAuthorized,
+  pendente,
+  recusado,
+  tratarResultado,
 } from '../src/index.ts';
 
 type Prot = { nProt: string };
-const AUT = authorized<Prot>({ cStat: '100', xMotivo: 'Autorizado o uso da NF-e' }, { nProt: '135260000000001' });
-const REJ = rejected(
+const AUT = criarAutorizado<Prot>({ cStat: '100', xMotivo: 'Autorizado o uso da NF-e' }, { nProt: '135260000000001' });
+const REJ = criarRecusado(
   { cStat: '539', xMotivo: 'Rejeição: Duplicidade de NF-e' },
-  { probableCause: 'nota já enviada', suggestedFix: 'consulte pela chave', source: 'MOC 7.0' },
+  { causaProvavel: 'nota já enviada', comoCorrigir: 'consulte pela chave', fonte: 'MOC 7.0' },
 );
-const DEN = denied<Prot>({ cStat: '302', xMotivo: 'Uso Denegado' }, { nProt: '135260000000002' });
-const PEN = pending({ cStat: '105', xMotivo: 'Lote em processamento' }, { ref: '351000000000001', retryAfterMs: 1000 });
-const ALL: SefazOutcome<Prot>[] = [AUT, REJ, DEN, PEN];
+const DEN = criarDenegado<Prot>({ cStat: '302', xMotivo: 'Uso Denegado' }, { nProt: '135260000000002' });
+const PEN = criarPendente(
+  { cStat: '105', xMotivo: 'Lote em processamento' },
+  { referencia: '351000000000001', aguardarMs: 1000 },
+);
+const ALL: ResultadoSefaz<Prot>[] = [AUT, REJ, DEN, PEN];
 
 describe('construtores', () => {
   test('montam o discriminante e copiam cStat e xMotivo', () => {
     expect(AUT).toEqual({
-      status: 'authorized',
+      tipo: 'autorizado',
       cStat: '100',
       xMotivo: 'Autorizado o uso da NF-e',
-      value: { nProt: '135260000000001' },
+      valor: { nProt: '135260000000001' },
     });
-    expect(REJ.status).toBe('rejected');
-    expect(REJ.hint?.source).toBe('MOC 7.0');
-    expect(DEN).toMatchObject({ status: 'denied', cStat: '302' });
+    expect(REJ.tipo).toBe('recusado');
+    expect(REJ.dica?.fonte).toBe('MOC 7.0');
+    expect(DEN).toMatchObject({ tipo: 'denegado', cStat: '302' });
     expect(PEN).toEqual({
-      status: 'pending',
+      tipo: 'pendente',
       cStat: '105',
       xMotivo: 'Lote em processamento',
-      ref: '351000000000001',
-      retryAfterMs: 1000,
+      referencia: '351000000000001',
+      aguardarMs: 1000,
     });
   });
 
   test('campos opcionais ausentes não viram undefined explícito', () => {
-    const r = rejected({ cStat: '215', xMotivo: 'Falha no schema XML' });
+    const r = criarRecusado({ cStat: '215', xMotivo: 'Falha no schema XML' });
     expect('hint' in r).toBe(false);
-    const p = pending({ cStat: '105', xMotivo: 'Lote em processamento' });
+    const p = criarPendente({ cStat: '105', xMotivo: 'Lote em processamento' });
     expect(Object.keys(p).sort()).toEqual(['cStat', 'status', 'xMotivo']);
   });
 
   test('não copiam campos extras do status de entrada', () => {
     const raw = { cStat: '100', xMotivo: 'ok', tpAmb: '2' };
-    expect(Object.keys(authorized(raw, 1)).sort()).toEqual(['cStat', 'status', 'value', 'xMotivo']);
+    expect(Object.keys(criarAutorizado(raw, 1)).sort()).toEqual(['cStat', 'status', 'value', 'xMotivo']);
   });
 
   test('cStat fora do formato lexical vira ProtocolError', () => {
     for (const cStat of ['1', '10000', 'abc', '', ' 100']) {
       let caught: unknown;
       try {
-        rejected({ cStat, xMotivo: 'x' });
+        criarRecusado({ cStat, xMotivo: 'x' });
       } catch (e) {
         caught = e;
       }
-      expect(isSineteError(caught, 'resposta_invalida')).toBe(true);
+      expect(ehErroSinete(caught, 'resposta_invalida')).toBe(true);
     }
-    expect(() => authorized({ cStat: '10', xMotivo: '' }, null)).toThrow('cStat inválido');
-    expect(() => denied({ cStat: 'x', xMotivo: '' }, null)).toThrow();
-    expect(() => pending({ cStat: 'x', xMotivo: '' })).toThrow();
+    expect(() => criarAutorizado({ cStat: '10', xMotivo: '' }, null)).toThrow('cStat inválido');
+    expect(() => criarDenegado({ cStat: 'x', xMotivo: '' }, null)).toThrow();
+    expect(() => criarPendente({ cStat: 'x', xMotivo: '' })).toThrow();
   });
 
   test('isCStat', () => {
-    expect(isCStat('100')).toBe(true);
-    expect(isCStat(100)).toBe(false);
-    expect(isCStat('1001')).toBe(true);
-    expect(isCStat('10')).toBe(false);
-    expect(isCStat('10001')).toBe(false);
-    expect(isCStat('E0312')).toBe(true);
-    expect(isCStat('E312')).toBe(false);
-    expect(isCStat('A0312')).toBe(false);
+    expect(ehCStat('100')).toBe(true);
+    expect(ehCStat(100)).toBe(false);
+    expect(ehCStat('1001')).toBe(true);
+    expect(ehCStat('10')).toBe(false);
+    expect(ehCStat('10001')).toBe(false);
+    expect(ehCStat('E0312')).toBe(true);
+    expect(ehCStat('E312')).toBe(false);
+    expect(ehCStat('A0312')).toBe(false);
   });
 
   test('rejeição com cStat de 4 dígitos (faixa da reforma tributária) vira desfecho, não erro', () => {
-    const r = rejected({ cStat: '1001', xMotivo: 'Rejeição de teste' });
-    expect(r.status).toBe('rejected');
+    const r = criarRecusado({ cStat: '1001', xMotivo: 'Rejeição de teste' });
+    expect(r.tipo).toBe('recusado');
   });
 });
 
 describe('guardas e match', () => {
   test('cada guarda aceita só o próprio desfecho', () => {
-    expect(ALL.map(isAuthorized)).toEqual([true, false, false, false]);
-    expect(ALL.map(isRejected)).toEqual([false, true, false, false]);
-    expect(ALL.map(isDenied)).toEqual([false, false, true, false]);
-    expect(ALL.map(isPending)).toEqual([false, false, false, true]);
+    expect(ALL.map(autorizado)).toEqual([true, false, false, false]);
+    expect(ALL.map(recusado)).toEqual([false, true, false, false]);
+    expect(ALL.map(denegado)).toEqual([false, false, true, false]);
+    expect(ALL.map(pendente)).toEqual([false, false, false, true]);
   });
 
   test('matchOutcome chama o tratador certo', () => {
     const labels = ALL.map((o) =>
-      matchOutcome(o, {
-        authorized: (a) => `ok ${a.value.nProt}`,
-        rejected: (r) => `rej ${r.cStat}`,
-        denied: (d) => `den ${d.value.nProt}`,
-        pending: (p) => `pen ${p.ref}`,
+      tratarResultado(o, {
+        autorizado: (a) => `ok ${a.valor.nProt}`,
+        recusado: (r) => `rej ${r.cStat}`,
+        denegado: (d) => `den ${d.valor.nProt}`,
+        pendente: (p) => `pen ${p.referencia}`,
       }),
     );
     expect(labels).toEqual(['ok 135260000000001', 'rej 539', 'den 135260000000002', 'pen 351000000000001']);
@@ -115,20 +118,20 @@ describe('guardas e match', () => {
 
 describe('unwrapAuthorized', () => {
   test('devolve o valor autorizado', () => {
-    expect(unwrapAuthorized(AUT)).toEqual({ nProt: '135260000000001' });
+    expect(exigirAutorizado(AUT)).toEqual({ nProt: '135260000000001' });
   });
 
   test('lança SefazError com o código de cada desfecho', () => {
     const codes = [REJ, DEN, PEN].map((o) => {
       try {
-        unwrapAuthorized(o);
+        exigirAutorizado(o);
         return 'não lançou';
       } catch (e) {
-        expect(e).toBeInstanceOf(SefazError);
-        const s = e as SefazError;
+        expect(e).toBeInstanceOf(ErroSefaz);
+        const s = e as ErroSefaz;
         expect(s.cStat).toBe(o.cStat);
         expect(s.xMotivo).toBe(o.xMotivo);
-        expect(s.details).toEqual({ status: o.status });
+        expect(s.detalhes).toEqual({ status: o.tipo });
         return s.code;
       }
     });
@@ -138,8 +141,8 @@ describe('unwrapAuthorized', () => {
 
 describe('Result genérico', () => {
   test('ok e err', () => {
-    expect(ok(1)).toEqual({ ok: true, value: 1 });
+    expect(ok(1)).toEqual({ ok: true, valor: 1 });
     const e = new Error('x');
-    expect(err(e)).toEqual({ ok: false, error: e });
+    expect(falha(e)).toEqual({ ok: false, erro: e });
   });
 });

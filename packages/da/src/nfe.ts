@@ -67,7 +67,7 @@ export function danfe(xml: string, options: DanfeOptions = {}): Doc {
   const formato = options.formato ?? (nota.mod === '65' ? 'nfce' : (POR_TPIMP[nota.tpImp] ?? 'retrato'));
   if ((formato === 'nfce') !== (nota.mod === '65')) {
     throw new DanfeError('formato_incompativel', `formato ${formato} não se aplica ao modelo ${nota.mod}`, {
-      details: { formato, mod: nota.mod },
+      detalhes: { formato, mod: nota.mod },
     });
   }
   // Sem protocolo de autorização, denegada, cancelada pelo cStat ou em contingência: decide a marca e o campo do

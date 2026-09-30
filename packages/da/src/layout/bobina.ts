@@ -43,7 +43,7 @@ export function bobina(
   const largura = Math.max(56, options.largura ?? 80);
   if (!nota.qrCode) {
     throw new DanfeError('campo_ausente', 'NFC-e e DANFE Simplificado Tipo 2 exigem infNFeSupl/qrCode', {
-      details: { chave: nota.chave },
+      detalhes: { chave: nota.chave },
     });
   }
   const b = new DocBuilder(options);

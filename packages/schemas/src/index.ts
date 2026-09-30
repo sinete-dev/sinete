@@ -8,8 +8,8 @@
  * tabela de vigências.
  */
 
-import type { XmlDocument } from '@sinete/core/xml';
-import { parseXml } from '@sinete/core/xml';
+import type { DocumentoXml } from '@sinete/core/xml';
+import { lerXml } from '@sinete/core/xml';
 import type { Decoded } from './runtime/decode.ts';
 import { decodeRoot } from './runtime/decode.ts';
 import type { RootElement } from './runtime/desc.ts';
@@ -48,6 +48,6 @@ export type { FamiliaSchema, VigenciaEntry } from './vigencia.ts';
 export { selecionarPl, VIGENCIAS, VIGENCIAS_ATUALIZADAS_EM } from './vigencia.ts';
 
 /** Parse estrito (`@sinete/core/xml`) seguido do decode tolerante pela raiz. Lança `XmlError` só se o XML for malformado. */
-export function decodeXml<T>(root: RootElement<T>, xml: string | XmlDocument): Decoded<T> {
-  return decodeRoot(root, typeof xml === 'string' ? parseXml(xml) : xml);
+export function decodeXml<T>(root: RootElement<T>, xml: string | DocumentoXml): Decoded<T> {
+  return decodeRoot(root, typeof xml === 'string' ? lerXml(xml) : xml);
 }

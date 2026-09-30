@@ -8,7 +8,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { $ } from 'bun';
-import { base64Decode, parseXml, verifySignature } from '../../src/xml/index.ts';
+import { conferirAssinatura, decodificarBase64, lerXml } from '../../src/xml/index.ts';
 import { EDGE_CASES } from './fixtures/edge/casos.ts';
 import { toPem } from './helpers/test-keys.ts';
 
@@ -19,7 +19,7 @@ const load = (name: string): Promise<string> => Bun.file(path.join(dir, `${name}
 async function writeCertPem(xml: string, file: string): Promise<void> {
   const b64 = /<X509Certificate>([^<]+)</.exec(xml)?.[1];
   if (!b64) throw new Error('sem X509Certificate');
-  await Bun.write(file, toPem('CERTIFICATE', base64Decode(b64)));
+  await Bun.write(file, toPem('CERTIFICATE', decodificarBase64(b64)));
 }
 
 describe('casos de borda sintéticos', () => {
@@ -30,15 +30,15 @@ describe('casos de borda sintéticos', () => {
   for (const c of EDGE_CASES) {
     test(`${c.name}: verifica e recusa adulteração`, async () => {
       const xml = await load(c.name);
-      const r = await verifySignature(xml, { id: c.id, element: c.element });
+      const r = await conferirAssinatura(xml, { id: c.id, elemento: c.element });
       expect(r.ok).toBe(true);
       // Um elemento a mais logo depois da tag de abertura do elemento assinado.
-      const doc = parseXml(xml);
+      const doc = lerXml(xml);
       const target = doc.ids.get(c.id)?.[0];
       if (!target) throw new Error('alvo ausente');
-      const tampered = `${xml.slice(0, target.openEnd)}<z/>${xml.slice(target.openEnd)}`;
-      const t = await verifySignature(tampered, { id: c.id, element: c.element });
-      expect(t).toMatchObject({ ok: false, failure: 'digest-diverge', signedInfoValid: true });
+      const tampered = `${xml.slice(0, target.fimDaAbertura)}<z/>${xml.slice(target.fimDaAbertura)}`;
+      const t = await conferirAssinatura(tampered, { id: c.id, elemento: c.element });
+      expect(t).toMatchObject({ ok: false, motivo: 'digest-diverge', signedInfoValido: true });
     });
   }
 });

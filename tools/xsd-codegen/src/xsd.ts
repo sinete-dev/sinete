@@ -6,8 +6,8 @@
  */
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
-import type { XmlElement } from '@sinete/core/xml';
-import { attributeOf, childElements, inScopeNamespaces, parseXml, textOf } from '@sinete/core/xml';
+import type { ElementoXml } from '@sinete/core/xml';
+import { atributoDe, elementosFilhos, lerXml, namespacesEmEscopo, textoDe } from '@sinete/core/xml';
 import type { AttrIR, ComplexIR, Facets, ParticleIR, RootIR, SchemaIR, SimpleIR, TypeRef } from './ir.ts';
 
 const XS = 'http://www.w3.org/2001/XMLSchema';
@@ -17,7 +17,7 @@ interface SchemaDoc {
   readonly tns: string;
   /** Include sem targetNamespace (XSD 1.0 Part 1, 4.2.1): herda o namespace de quem inclui. */
   readonly chameleon: boolean;
-  readonly root: XmlElement;
+  readonly root: ElementoXml;
   readonly qualified: boolean;
 }
 
@@ -75,16 +75,16 @@ export interface BuildOptions {
   readonly patternPatches?: Readonly<Record<string, { readonly de: string; readonly para: string }>>;
 }
 
-const xsKids = (el: XmlElement, local?: string): XmlElement[] =>
-  childElements(el).filter((c) => c.ns === XS && (local === undefined || c.local === local));
+const xsKids = (el: ElementoXml, local?: string): ElementoXml[] =>
+  elementosFilhos(el).filter((c) => c.ns === XS && (local === undefined || c.local === local));
 
-const attr = (el: XmlElement, n: string): string | undefined => attributeOf(el, n);
+const attr = (el: ElementoXml, n: string): string | undefined => atributoDe(el, n);
 
-function docOf(el: XmlElement): string | undefined {
+function docOf(el: ElementoXml): string | undefined {
   const ann = xsKids(el, 'annotation')[0];
   if (!ann) return undefined;
   const d = xsKids(ann, 'documentation')
-    .map((x) => textOf(x))
+    .map((x) => textoDe(x))
     .join('\n')
     .trim();
   return d || undefined;
@@ -101,7 +101,7 @@ function loadSchemas(
     const file = replace[base] ?? (existsSync(wanted) ? wanted : (missing[base] ?? wanted));
     if (seen.has(file)) return;
     // Alguns XSD oficiais (NFS-e) começam com BOM; o parser do @sinete/core/xml não o aceita antes da declaração.
-    const root = parseXml(readFileSync(file, 'utf8').replace(/^\uFEFF/, '')).root;
+    const root = lerXml(readFileSync(file, 'utf8').replace(/^\uFEFF/, '')).raiz;
     const declared = attr(root, 'targetNamespace');
     const chameleon = declared === undefined && includerTns !== undefined;
     const doc: SchemaDoc = {
@@ -127,14 +127,14 @@ function loadSchemas(
 
 export function buildIR(opts: BuildOptions): SchemaIR {
   const docs = loadSchemas(opts.entries, opts.missingImports ?? {}, opts.replaceImports ?? {});
-  const topDoc = new Map<XmlElement, SchemaDoc>();
+  const topDoc = new Map<ElementoXml, SchemaDoc>();
   const globals = {
-    simple: new Map<string, XmlElement>(),
-    complex: new Map<string, XmlElement>(),
-    element: new Map<string, XmlElement>(),
+    simple: new Map<string, ElementoXml>(),
+    complex: new Map<string, ElementoXml>(),
+    element: new Map<string, ElementoXml>(),
   };
   for (const d of docs) {
-    for (const c of childElements(d.root)) {
+    for (const c of elementosFilhos(d.root)) {
       topDoc.set(c, d);
       const name = attr(c, 'name');
       if (!name || c.ns !== XS) continue;
@@ -151,24 +151,24 @@ export function buildIR(opts: BuildOptions): SchemaIR {
       if (bucket && !bucket.has(key)) bucket.set(key, c);
     }
   }
-  const ownerDoc = (el: XmlElement): SchemaDoc => {
-    for (let e: XmlElement | null = el; e; e = e.parent) {
+  const ownerDoc = (el: ElementoXml): SchemaDoc => {
+    for (let e: ElementoXml | null = el; e; e = e.pai) {
       const d = topDoc.get(e);
       if (d) return d;
     }
     throw new Error('elemento de schema órfão');
   };
-  const qn = (el: XmlElement, value: string): string => {
+  const qn = (el: ElementoXml, value: string): string => {
     const i = value.indexOf(':');
     const prefix = i === -1 ? '' : value.slice(0, i);
     const local = i === -1 ? value : value.slice(i + 1);
-    let ns = inScopeNamespaces(el).get(prefix);
+    let ns = namespacesEmEscopo(el).get(prefix);
     if (ns === undefined && prefix !== '') throw new Error(`prefixo não resolvido em ${value}`);
     const d = ownerDoc(el);
     if ((ns === undefined || ns === '') && d.chameleon) ns = d.tns;
     return `{${ns ?? ''}}${local}`;
   };
-  const byLocalName = (m: Map<string, XmlElement>, name: string): [string, XmlElement] | undefined =>
+  const byLocalName = (m: Map<string, ElementoXml>, name: string): [string, ElementoXml] | undefined =>
     [...m].find(([k]) => k.endsWith(`}${name}`));
 
   const unsupported = new Set<string>();
@@ -190,7 +190,7 @@ export function buildIR(opts: BuildOptions): SchemaIR {
     return s;
   };
 
-  const simpleFromEl = (el: XmlElement, name?: string): SimpleIR => {
+  const simpleFromEl = (el: ElementoXml, name?: string): SimpleIR => {
     const r = xsKids(el, 'restriction')[0];
     const doc = docOf(el);
     const base0 = (): SimpleIR => {
@@ -262,7 +262,7 @@ export function buildIR(opts: BuildOptions): SchemaIR {
 
   const complexDone = new Set<string>();
 
-  const typeRefOfElement = (el: XmlElement, id: string): TypeRef => {
+  const typeRefOfElement = (el: ElementoXml, id: string): TypeRef => {
     const t = attr(el, 'type');
     if (t) {
       const q = qn(el, t);
@@ -285,7 +285,7 @@ export function buildIR(opts: BuildOptions): SchemaIR {
     return builtin('anyType');
   };
 
-  const occurs = (el: XmlElement): { min: number; max: number } => {
+  const occurs = (el: ElementoXml): { min: number; max: number } => {
     const mx = attr(el, 'maxOccurs') ?? '1';
     return {
       min: Number(attr(el, 'minOccurs') ?? '1'),
@@ -293,7 +293,7 @@ export function buildIR(opts: BuildOptions): SchemaIR {
     };
   };
 
-  const overrideFor = (id: string): XmlElement | undefined => {
+  const overrideFor = (id: string): ElementoXml | undefined => {
     const o = opts.overrides?.[id];
     if (!o) return undefined;
     const d = docs.find((x) => x.file === o.entry);
@@ -302,7 +302,7 @@ export function buildIR(opts: BuildOptions): SchemaIR {
     return g;
   };
 
-  const particle = (el: XmlElement, ownerId: string): ParticleIR | null => {
+  const particle = (el: ElementoXml, ownerId: string): ParticleIR | null => {
     const { min, max } = occurs(el);
     switch (el.local) {
       case 'element': {
@@ -325,8 +325,8 @@ export function buildIR(opts: BuildOptions): SchemaIR {
         const over = overrideFor(id);
         const t = typeRefOfElement(over ?? el, id);
         const unique = xsKids(el, 'unique').map((u) => {
-          const sel = attr(xsKids(u, 'selector')[0] as XmlElement, 'xpath');
-          const field = attr(xsKids(u, 'field')[0] as XmlElement, 'xpath') ?? '';
+          const sel = attr(xsKids(u, 'selector')[0] as ElementoXml, 'xpath');
+          const field = attr(xsKids(u, 'field')[0] as ElementoXml, 'xpath') ?? '';
           if (sel !== './*' || !field.startsWith('@')) unsupported.add(`xs:unique ${sel} ${field} em ${id}`);
           return field.slice(1);
         });
@@ -382,7 +382,7 @@ export function buildIR(opts: BuildOptions): SchemaIR {
     }
   };
 
-  const attrFromEl = (a: XmlElement, ownerId: string): AttrIR => {
+  const attrFromEl = (a: ElementoXml, ownerId: string): AttrIR => {
     const t = attr(a, 'type');
     const st = xsKids(a, 'simpleType')[0];
     const type = t ? simpleByQName(qn(a, t)) : st ? simpleFromEl(st) : builtin('anySimpleType');
@@ -396,12 +396,12 @@ export function buildIR(opts: BuildOptions): SchemaIR {
     return out;
   };
 
-  function complexFromEl(el: XmlElement, id: string, anonymous: boolean): void {
+  function complexFromEl(el: ElementoXml, id: string, anonymous: boolean): void {
     if (complexDone.has(id)) return;
     complexDone.add(id);
     const d = ownerDoc(el);
     const c: ComplexIR = { kind: 'complex', id, anonymous, ns: d.tns, attrs: [] };
-    const doc = docOf(el) ?? (anonymous && el.parent ? docOf(el.parent) : undefined);
+    const doc = docOf(el) ?? (anonymous && el.pai ? docOf(el.pai) : undefined);
     if (doc) c.doc = doc;
     ir.complex[id] = c;
     if (attr(el, 'mixed') === 'true') unsupported.add(`conteúdo misto em ${id}`);

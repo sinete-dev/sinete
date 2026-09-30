@@ -3,7 +3,7 @@
  * token ou chave remota. Esta versão traz o A1 (`openPfx`); A3 e chave remota entram pelo helper do ADR 0005.
  */
 
-import type { Clock, DataSigner, Signer } from '@sinete/core';
+import type { Assinador, AssinadorDeDados, Relogio } from '@sinete/core';
 import type { Tlv } from './der.ts';
 import { children, integerHex, readTlv, TAG } from './der.ts';
 import { CertError } from './errors.ts';
@@ -30,7 +30,7 @@ export interface KeyStore {
   /** Validade no instante em que o KeyStore foi aberto. */
   readonly validity: Validity;
   /** Quem assina com esta chave (contrato `Signer` do `@sinete/core`). */
-  signer(): Promise<Signer>;
+  signer(): Promise<Assinador>;
 }
 
 /** Material para TLS em processo: cadeia do cliente e chave, em PEM, só em memória. */
@@ -41,7 +41,7 @@ export interface TlsPemMaterial {
 
 export interface A1KeyStore extends KeyStore {
   readonly kind: 'a1';
-  signer(): Promise<DataSigner>;
+  signer(): Promise<AssinadorDeDados>;
   /**
    * PEM para o transporte em processo (ADR 0003: nunca passar o PFX ao TLS, porque o OpenSSL 3 recusa o legado).
    * A cadeia sai com o titular primeiro e as intermediárias do PFX depois (sem raízes); passe `chain` (por exemplo o
@@ -53,7 +53,7 @@ export interface A1KeyStore extends KeyStore {
 export interface OpenPfxOptions {
   readonly password: string;
   /** Relógio para a trava de validade (princípio 6). */
-  readonly clock: Clock;
+  readonly clock: Relogio;
   /**
    * Abre mesmo fora da validade (vencido ou ainda não válido). Serve para diagnóstico e reprocessamento; a SEFAZ
    * recusa assinatura e TLS com certificado vencido.
@@ -78,8 +78,8 @@ function rsaModulusOfPkcs8(der: Uint8Array): string | undefined {
 }
 
 /** Validade de um certificado num instante. */
-export function validityAt(cert: CertificateInfo, clock: Clock): Validity {
-  const now = clock.now().getTime();
+export function validityAt(cert: CertificateInfo, clock: Relogio): Validity {
+  const now = clock.agora().getTime();
   if (now < cert.notBefore) return 'ainda_nao_valido';
   if (now > cert.notAfter) return 'expirado';
   return 'valido';
@@ -117,7 +117,7 @@ export async function openPfx(pfx: Uint8Array, options: OpenPfxOptions): Promise
       rsaKeys === 0
         ? 'a chave do PFX não é RSA (só RSA PKCS#1 v1.5 é suportado)'
         : 'nenhum certificado do PFX corresponde à chave privada',
-      { details: { certificates: certs.map((c) => c.subject.text) } },
+      { detalhes: { certificates: certs.map((c) => c.subject.text) } },
     );
   }
   const leaf = best.cert;
@@ -126,9 +126,9 @@ export async function openPfx(pfx: Uint8Array, options: OpenPfxOptions): Promise
   if (validity !== 'valido' && options.allowExpired !== true) {
     const details = { subject: leaf.subject.text, notBefore: leaf.notBeforeIso, notAfter: leaf.notAfterIso };
     throw validity === 'expirado'
-      ? new CertError('certificado_expirado', `certificado vencido em ${leaf.notAfterIso}`, { details })
+      ? new CertError('certificado_expirado', `certificado vencido em ${leaf.notAfterIso}`, { detalhes: details })
       : new CertError('certificado_ainda_nao_valido', `certificado só vale a partir de ${leaf.notBeforeIso}`, {
-          details,
+          detalhes: details,
         });
   }
   // Outras folhas da mesma chave (renovações antigas) não entram como intermediárias.
@@ -137,7 +137,7 @@ export async function openPfx(pfx: Uint8Array, options: OpenPfxOptions): Promise
     (c) => !sameDer(c, leaf) && !(c.publicKey.algorithm === 'RSA' && c.publicKey.modulusHex === leafModulus),
   );
   const identity = icpIdentity(leaf);
-  let signer: Promise<DataSigner> | undefined;
+  let signer: Promise<AssinadorDeDados> | undefined;
 
   return {
     kind: 'a1',
@@ -145,7 +145,7 @@ export async function openPfx(pfx: Uint8Array, options: OpenPfxOptions): Promise
     extraCertificates: extra,
     identity,
     validity,
-    signer(): Promise<DataSigner> {
+    signer(): Promise<AssinadorDeDados> {
       signer ??= createA1Signer(pkcs8, leaf.der);
       return signer;
     },

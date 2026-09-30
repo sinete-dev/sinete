@@ -12,7 +12,7 @@
  */
 import { copyFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { c14n, descendants, parseXml, XmlError } from '../../../../packages/core/src/xml/index.ts';
+import { c14n, descendentes, ErroXml, lerXml } from '../../../../packages/core/src/xml/index.ts';
 import type { RootElement } from '../../../../packages/schemas/src/index.ts';
 import { validateRoot } from '../../../../packages/schemas/src/index.ts';
 import * as mdfe300b from '../../../../packages/schemas/src/mdfe/3.00b.ts';
@@ -113,14 +113,14 @@ function eventoGroup(label: string, m: typeof cancelamento, tp: string, eventoFi
       const a = xmllint(envelope, src);
       let detXml: string | undefined;
       try {
-        for (const e of descendants(parseXml(src).root)) {
+        for (const e of descendentes(lerXml(src).raiz)) {
           if (e.local === 'detEvento') {
             detXml = c14n(e);
             break;
           }
         }
       } catch (e) {
-        if (!(e instanceof XmlError)) throw e;
+        if (!(e instanceof ErroXml)) throw e;
       }
       const b = detXml === undefined ? { valid: true, kinds: [] } : xmllint(det, detXml);
       return { valid: a.valid && b.valid, kinds: [...a.kinds, ...b.kinds] };
@@ -168,15 +168,15 @@ const groups: Group[] = [
       const a = xmllint(path.join(dir, 'procMDFe_v3.00.xsd'), src);
       let modal: { name: string; xml: string } | undefined;
       try {
-        for (const e of descendants(parseXml(src).root)) {
+        for (const e of descendentes(lerXml(src).raiz)) {
           if (e.local === 'infModal') {
-            const k = e.children.find((c) => c.type === 'element');
-            if (k?.type === 'element') modal = { name: k.local, xml: c14n(k) };
+            const k = e.filhos.find((c) => c.tipo === 'elemento');
+            if (k?.tipo === 'elemento') modal = { name: k.local, xml: c14n(k) };
             break;
           }
         }
       } catch (e) {
-        if (!(e instanceof XmlError)) throw e;
+        if (!(e instanceof ErroXml)) throw e;
       }
       const file = modal && MODAL_XSD[modal.name];
       const b = modal && file ? xmllint(path.join(dir, file), modal.xml) : { valid: true, kinds: [] };
@@ -205,7 +205,7 @@ for (const g of groups) {
     try {
       ours = validateRoot(g.root, src);
     } catch (e) {
-      if (!(e instanceof XmlError)) throw e;
+      if (!(e instanceof ErroXml)) throw e;
       s.xmlMalformado++;
       if (x.valid) inc(s.divergencias, 'xmllint aceita XML que o parser estrito recusa');
       else s.concordaInvalido++;
@@ -216,7 +216,7 @@ for (const g of groups) {
     else if (!oursValid && !x.valid) s.concordaInvalido++;
     else if (x.valid) {
       s.soNosRecusamos++;
-      for (const o of ours) inc(s.divergencias, `so nos: ${o.code} ${o.path.replace(/\[\d+\]/g, '')}`);
+      for (const o of ours) inc(s.divergencias, `so nos: ${o.code} ${o.caminho.replace(/\[\d+\]/g, '')}`);
     } else {
       s.soXmllintRecusa++;
       for (const k of x.kinds) inc(s.divergencias, `so xmllint: ${k}`);
@@ -234,8 +234,8 @@ const rand = (n: number): number => {
 type Mutation = (src: string) => string | undefined;
 const leaves = (src: string): { start: number; end: number; openEnd: number; contentEnd: number }[] => {
   const out: { start: number; end: number; openEnd: number; contentEnd: number }[] = [];
-  for (const e of descendants(parseXml(src).root)) {
-    if (e.children.length > 0 && e.children.every((c) => c.type === 'text')) out.push(e);
+  for (const e of descendentes(lerXml(src).raiz)) {
+    if (e.filhos.length > 0 && e.filhos.every((c) => c.tipo === 'texto')) out.push(e);
   }
   return out;
 };
@@ -266,23 +266,23 @@ const MUTATIONS: Record<string, Mutation> = {
     return e && `${src.slice(0, e.openEnd)} ${src.slice(e.openEnd, e.contentEnd)} ${src.slice(e.contentEnd)}`;
   },
   'troca folhas vizinhas': (src) => {
-    const doc = parseXml(src);
+    const doc = lerXml(src);
     const pairs: [XmlEl, XmlEl][] = [];
-    for (const e of descendants(doc.root)) {
-      const kids = e.children.filter((c): c is XmlEl => c.type === 'element');
+    for (const e of descendentes(doc.raiz)) {
+      const kids = e.filhos.filter((c): c is XmlEl => c.tipo === 'elemento');
       for (let i = 0; i + 1 < kids.length; i++) {
         const a = kids[i] as XmlEl;
         const b = kids[i + 1] as XmlEl;
-        if (a.end === b.start && a.local !== b.local) pairs.push([a, b]);
+        if (a.fim === b.inicio && a.local !== b.local) pairs.push([a, b]);
       }
     }
     const pair = pairs[rand(pairs.length)];
     if (!pair) return undefined;
     const [a, b] = pair;
-    return src.slice(0, a.start) + src.slice(b.start, b.end) + src.slice(a.start, a.end) + src.slice(b.end);
+    return src.slice(0, a.inicio) + src.slice(b.inicio, b.fim) + src.slice(a.inicio, a.fim) + src.slice(b.fim);
   },
 };
-type XmlEl = ReturnType<typeof parseXml>['root'];
+type XmlEl = ReturnType<typeof lerXml>['raiz'];
 const mutacoes: Record<string, Record<string, number>> = {};
 for (const g of [groups[0], groups[4], groups[6]] as Group[]) {
   const s: Record<string, number> = { mutados: 0, concorda: 0, discorda: 0 };
@@ -308,7 +308,7 @@ for (const g of [groups[0], groups[4], groups[6]] as Group[]) {
         s.discorda = (s.discorda ?? 0) + 1;
         const detalhe = x.valid
           ? validateRoot(g.root, m)
-              .map((o) => `${o.code} ${o.path.replace(/\[\d+\]/g, '')}`)
+              .map((o) => `${o.code} ${o.caminho.replace(/\[\d+\]/g, '')}`)
               .join(', ')
           : (x.kinds[0] ?? '?');
         inc(div, `${nome}: ${x.valid ? 'só nós recusamos' : 'só xmllint recusa'} (${detalhe})`);

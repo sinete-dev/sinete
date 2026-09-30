@@ -6,7 +6,7 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import net from 'node:net';
 import tls from 'node:tls';
-import { manualClock, TimeoutError } from '@sinete/core';
+import { ErroDeTempoEsgotado, relogioManual } from '@sinete/core';
 import type { Transport } from '@sinete/transport';
 // No Bun o pacote resolve a condição node, e o createTransport de lá é o node:https; o tsc vê a entrada padrão.
 import { createTransport, soap12ContentType } from '@sinete/transport';
@@ -38,7 +38,7 @@ import {
 type Servico = keyof typeof NFE_SERVICES;
 
 let c: Certs;
-const clock = manualClock(INICIO);
+const clock = relogioManual(INICIO);
 const sim = createSefazSim({ clock });
 let server: SefazSimServer;
 const transports: Transport[] = [];
@@ -84,7 +84,7 @@ describe('HTTPS com mTLS', () => {
     sim.injectFault({ kind: 'hang', phase: 'after' }, { servico: 'NFeAutorizacao' });
     const semResposta = transportOf(c.emitente, 300);
     expect(await send(semResposta, 'NFeAutorizacao', enviNFe([nota.xml])).catch((e: unknown) => e)).toBeInstanceOf(
-      TimeoutError,
+      ErroDeTempoEsgotado,
     );
     const registro = sim.inspect.nfe(nota.chave);
     expect(registro?.situacao).toBe('autorizada');
@@ -105,7 +105,7 @@ describe('HTTPS com mTLS', () => {
     expect(nProt).toBe(registro?.nProt as string);
 
     // 4. CC-e duas vezes (sequência 1 e 2) e cancelamento.
-    clock.advance(60_000);
+    clock.avancar(60_000);
     for (const nSeq of [1, 2]) {
       const cce = await evento({
         chave: nota.chave,
@@ -150,7 +150,9 @@ describe('HTTPS com mTLS', () => {
   test('atraso maior que o prazo do cliente: timeout, e a conexão fechada não deixa resposta pendente', async () => {
     const t = transportOf(c.terceiro, 200);
     sim.injectFault({ kind: 'delay', ms: 60_000 }, { servico: 'NfeStatusServico' });
-    expect(await send(t, 'NfeStatusServico', consStatServ()).catch((e: unknown) => e)).toBeInstanceOf(TimeoutError);
+    expect(await send(t, 'NfeStatusServico', consStatServ()).catch((e: unknown) => e)).toBeInstanceOf(
+      ErroDeTempoEsgotado,
+    );
     await t.close();
     expect(tag(await send(transportOf(c.terceiro), 'NfeStatusServico', consStatServ()), 'cStat')).toBe('107');
   });
@@ -161,7 +163,7 @@ describe('HTTPS com mTLS', () => {
     sim.injectFault({ kind: 'drop', phase: 'after' }, { servico: 'NFeAutorizacao' });
     const erro = await send(t, 'NFeAutorizacao', enviNFe([nota.xml])).catch((e: unknown) => e);
     expect(erro).toBeInstanceOf(Error);
-    expect(erro).not.toBeInstanceOf(TimeoutError);
+    expect(erro).not.toBeInstanceOf(ErroDeTempoEsgotado);
     expect(tags(await send(t, 'NFeAutorizacao', enviNFe([nota.xml])), 'cStat')[1]).toBe('204');
   });
 

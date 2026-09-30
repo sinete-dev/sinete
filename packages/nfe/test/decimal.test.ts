@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { ConfigError } from '@sinete/core';
+import { ErroDeConfiguracao } from '@sinete/core';
 import { Decimal, dec, sum } from '../src/index.ts';
 
 /** PRNG determinístico (mulberry32): as propriedades rodam sempre com os mesmos casos, sem dependência externa. */
@@ -133,8 +133,8 @@ describe('Decimal: casos', () => {
     expect(Decimal.tryOf(`0.${'1'.repeat(70)}`)).toBeUndefined();
     expect(Decimal.tryOf(Number.NaN)).toBeUndefined();
     expect(Decimal.tryOf({} as unknown as string)).toBeUndefined();
-    expect(() => dec('abc')).toThrow(ConfigError);
-    expect(() => Decimal.fromParts(1n, -1)).toThrow(ConfigError);
+    expect(() => dec('abc')).toThrow(ErroDeConfiguracao);
+    expect(() => Decimal.fromParts(1n, -1)).toThrow(ErroDeConfiguracao);
   });
 
   test('empates: HALF_UP afasta do zero, HALF_EVEN vai ao par', () => {
@@ -153,7 +153,7 @@ describe('Decimal: casos', () => {
     expect(dec('0.1250001').dividedBy('1', 2, 'HALF_EVEN').toString()).toBe('0.13');
     expect(dec('1000').dividedBy('0.001', 0, 'HALF_UP').toString()).toBe('1000000');
     expect(dec('12.345678').dividedBy('2', 1, 'HALF_UP').toString()).toBe('6.2');
-    expect(() => dec('1').dividedBy('0', 2, 'HALF_UP')).toThrow(ConfigError);
+    expect(() => dec('1').dividedBy('0', 2, 'HALF_UP')).toThrow(ErroDeConfiguracao);
   });
 
   test('percentual, comparação e utilidades', () => {
@@ -165,7 +165,7 @@ describe('Decimal: casos', () => {
     expect(dec('3').negate().isNegative()).toBe(true);
     expect(dec('1.2300').significantScale()).toBe(2);
     expect(dec('1.5').round(3, 'HALF_UP').toFixed(3)).toBe('1.500');
-    expect(() => dec('1').round(-1, 'HALF_UP')).toThrow(ConfigError);
+    expect(() => dec('1').round(-1, 'HALF_UP')).toThrow(ErroDeConfiguracao);
     expect(sum([dec('1.1'), dec('2.2')]).toString()).toBe('3.3');
     expect(sum([]).isZero()).toBe(true);
   });

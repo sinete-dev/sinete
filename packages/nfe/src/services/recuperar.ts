@@ -9,8 +9,8 @@
  * mesmo tipo.
  */
 
-import type { XmlDocument, XmlElement } from '@sinete/core/xml';
-import { firstChild, parseXml, textOf } from '@sinete/core/xml';
+import type { DocumentoXml, ElementoXml } from '@sinete/core/xml';
+import { lerXml, primeiroFilho, textoDe } from '@sinete/core/xml';
 import type { ConsultaOutcome, EventoRegistrado, NfeClient } from './client.ts';
 import { cstatEm } from './outcome.ts';
 import { NFE_NS, sliceElement } from './proc.ts';
@@ -21,24 +21,24 @@ export type RecuperacaoEvento =
   | { readonly registrado: false; readonly consulta: ConsultaOutcome };
 
 /** Texto do filho `local` no namespace da NF-e, se houver. */
-function campo(el: XmlElement, local: string): string | undefined {
-  const c = firstChild(el, local, NFE_NS);
-  return c === undefined ? undefined : textOf(c).trim();
+function campo(el: ElementoXml, local: string): string | undefined {
+  const c = primeiroFilho(el, local, NFE_NS);
+  return c === undefined ? undefined : textoDe(c).trim();
 }
 
 /** Lê um `procEventoNFe` da consulta; `undefined` para o que não é um evento com retorno legível. */
 function lerProcEvento(xml: string): EventoRegistrado | undefined {
-  let doc: XmlDocument;
+  let doc: DocumentoXml;
   try {
-    doc = parseXml(xml);
+    doc = lerXml(xml);
   } catch {
     return undefined;
   }
-  const evento = firstChild(doc.root, 'evento', NFE_NS);
-  const pedido = evento === undefined ? undefined : firstChild(evento, 'infEvento', NFE_NS);
-  const retEl = firstChild(doc.root, 'retEvento', NFE_NS);
-  const ret = retEl === undefined ? undefined : firstChild(retEl, 'infEvento', NFE_NS);
-  if (doc.root.local !== 'procEventoNFe' || pedido === undefined || retEl === undefined || ret === undefined) {
+  const evento = primeiroFilho(doc.raiz, 'evento', NFE_NS);
+  const pedido = evento === undefined ? undefined : primeiroFilho(evento, 'infEvento', NFE_NS);
+  const retEl = primeiroFilho(doc.raiz, 'retEvento', NFE_NS);
+  const ret = retEl === undefined ? undefined : primeiroFilho(retEl, 'infEvento', NFE_NS);
+  if (doc.raiz.local !== 'procEventoNFe' || pedido === undefined || retEl === undefined || ret === undefined) {
     return undefined;
   }
   const cStat = campo(ret, 'cStat');
@@ -80,11 +80,11 @@ export async function recuperarEventoRegistrado(
   tpEvento: string,
 ): Promise<RecuperacaoEvento> {
   const consulta = await client.consultar(chave);
-  if (consulta.status !== 'authorized' && consulta.status !== 'denied') return { registrado: false, consulta };
+  if (consulta.tipo !== 'autorizado' && consulta.tipo !== 'denegado') return { registrado: false, consulta };
   let achado: EventoRegistrado | undefined;
-  for (const xml of consulta.value.eventos) {
+  for (const xml of consulta.valor.eventos) {
     const e = lerProcEvento(xml);
-    if (e === undefined || e.chNFe !== consulta.value.chNFe || e.tpEvento !== tpEvento) continue;
+    if (e === undefined || e.chNFe !== consulta.valor.chNFe || e.tpEvento !== tpEvento) continue;
     if (achado === undefined || Number(e.nSeqEvento) > Number(achado.nSeqEvento)) achado = e;
   }
   return achado === undefined ? { registrado: false, consulta } : { registrado: true, evento: achado, consulta };

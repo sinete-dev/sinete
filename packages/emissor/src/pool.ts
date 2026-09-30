@@ -11,8 +11,8 @@
  * só na criação) passa `chave`.
  */
 
-import type { Clock } from '@sinete/core';
-import { ConfigError, systemClock } from '@sinete/core';
+import type { Relogio } from '@sinete/core';
+import { ErroDeConfiguracao, relogioDoSistema } from '@sinete/core';
 import type { CertificadoA1 } from './certificado.ts';
 
 export interface OpcoesPool<E, C = CertificadoA1> {
@@ -33,7 +33,7 @@ export interface OpcoesPool<E, C = CertificadoA1> {
   readonly ttlMs?: number;
   /** Certificados no pool ao mesmo tempo; o mais antigo sai primeiro. Padrão: 32. */
   readonly maximo?: number;
-  readonly clock?: Clock;
+  readonly clock?: Relogio;
 }
 
 export interface PoolDeEmissores<E, C = CertificadoA1> {
@@ -56,7 +56,7 @@ const encoder = new TextEncoder();
 /** SHA-256 do PFX, de um separador e da senha, em hexadecimal. */
 async function chaveA1(cert: CertificadoA1): Promise<string> {
   if (!(cert?.pfx instanceof Uint8Array) || typeof cert.senha !== 'string') {
-    throw new ConfigError('o pool precisa da opção chave para certificado que não seja pfx e senha');
+    throw new ErroDeConfiguracao('o pool precisa da opção chave para certificado que não seja pfx e senha');
   }
   const senha = encoder.encode(cert.senha);
   const dados = new Uint8Array(cert.pfx.length + 1 + senha.length);
@@ -76,9 +76,9 @@ export function createPoolDeEmissores<E extends { fechar(): Promise<void> }, C =
   const chaveDe = opcoes.chave ?? ((cert: C): Promise<string> => chaveA1(cert as unknown as CertificadoA1));
   const ttlMs = opcoes.ttlMs ?? 10 * 60 * 1000;
   const maximo = opcoes.maximo ?? 32;
-  if (!Number.isFinite(ttlMs) || ttlMs <= 0) throw new ConfigError(`ttlMs do pool inválido: ${ttlMs}`);
-  if (!Number.isInteger(maximo) || maximo < 1) throw new ConfigError(`maximo do pool inválido: ${maximo}`);
-  const clock = opcoes.clock ?? systemClock;
+  if (!Number.isFinite(ttlMs) || ttlMs <= 0) throw new ErroDeConfiguracao(`ttlMs do pool inválido: ${ttlMs}`);
+  if (!Number.isInteger(maximo) || maximo < 1) throw new ErroDeConfiguracao(`maximo do pool inválido: ${maximo}`);
+  const clock = opcoes.clock ?? relogioDoSistema;
   const entradas = new Map<string, Entrada<E>>();
   /** Todas as entradas ainda abertas, inclusive as aposentadas com empréstimo em curso: o `fechar` fecha todas. */
   const abertas = new Set<Entrada<E>>();
@@ -102,7 +102,7 @@ export function createPoolDeEmissores<E extends { fechar(): Promise<void> }, C =
   }
 
   function pegar(chave: string, cert: C): Entrada<E> {
-    const agora = clock.now().getTime();
+    const agora = clock.agora().getTime();
     // Aposenta as vencidas de qualquer certificado, não só deste: o `Map` está na ordem de criação, então as vencidas
     // estão no começo. Uma em uso só fecha quando o empréstimo terminar.
     for (const [k, e] of entradas) {
@@ -136,10 +136,10 @@ export function createPoolDeEmissores<E extends { fechar(): Promise<void> }, C =
 
   return {
     async usar<T>(cert: C, fn: (emissor: E) => Promise<T>): Promise<T> {
-      if (fechado) throw new ConfigError('o pool de emissores já foi fechado');
+      if (fechado) throw new ErroDeConfiguracao('o pool de emissores já foi fechado');
       const chave = await chaveDe(cert);
       // O `fechar` pode ter rodado enquanto o hash era calculado.
-      if (fechado) throw new ConfigError('o pool de emissores já foi fechado');
+      if (fechado) throw new ErroDeConfiguracao('o pool de emissores já foi fechado');
       const entrada = pegar(chave, cert);
       entrada.usuarios++;
       try {

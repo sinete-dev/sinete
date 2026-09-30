@@ -6,9 +6,9 @@
  * registra sozinha quando recebe uma DPS com o grupo `subst` (ver `NfseClient.substituir`).
  */
 
-import type { Ambiente, Clock, Signer, ValidationIssue } from '@sinete/core';
-import { ConfigError, formatarVerProc, tpAmbOf } from '@sinete/core';
-import { signXml } from '@sinete/core/xml';
+import type { Ambiente, Assinador, Ocorrencia, Relogio } from '@sinete/core';
+import { ErroDeConfiguracao, formatarVerProc, tpAmbDoAmbiente } from '@sinete/core';
+import { assinarXml } from '@sinete/core/xml';
 import { SerializeError, serializeRoot } from '@sinete/schemas';
 import type { TCInfPedReg, TSCodJustAnaliseFiscalCanc, TSCodJustCanc } from '@sinete/schemas/nfse/1.01-20260727';
 import { DECLARACAO_XML, dataHora, validarNoSchema } from './build.ts';
@@ -20,7 +20,7 @@ import { VERSAO_PACOTE } from './versao-gerada.ts';
 export interface PedidoEventoOptions {
   readonly ambiente: Ambiente;
   /** Relógio de emissão: `dhEvento` e escolha do leiaute. */
-  readonly clock: Clock;
+  readonly clock: Relogio;
   /** Versão do aplicativo (`verAplic`, até 20 caracteres). Padrão `sinete <versão do @sinete/nfse>` (`formatarVerProc`). */
   readonly verAplic?: string;
   /** Fuso do `dhEvento` em minutos. Padrão -180. */
@@ -54,7 +54,7 @@ export interface PedidoEventoMontado {
 
 export type PedidoEventoResult =
   | { readonly ok: true; readonly value: PedidoEventoMontado }
-  | { readonly ok: false; readonly issues: readonly ValidationIssue[] };
+  | { readonly ok: false; readonly issues: readonly Ocorrencia[] };
 
 type Detalhe = Pick<TCInfPedReg, 'e101101'> | Pick<TCInfPedReg, 'e101103'>;
 
@@ -68,15 +68,16 @@ function montar(
   try {
     parseChaveNfse(chave);
   } catch (e) {
-    return { ok: false, issues: [{ path: 'chave', code: 'chave_invalida', message: (e as Error).message }] };
+    return { ok: false, issues: [{ caminho: 'chave', code: 'chave_invalida', mensagem: (e as Error).message }] };
   }
   const verAplic = options.verAplic ?? formatarVerProc('sinete', VERSAO_PACOTE);
-  if (verAplic.length === 0 || verAplic.length > 20) throw new ConfigError('verAplic precisa ter de 1 a 20 caracteres');
+  if (verAplic.length === 0 || verAplic.length > 20)
+    throw new ErroDeConfiguracao('verAplic precisa ter de 1 a 20 caracteres');
   const { vigencia, leiaute } = leiauteVigente(options.ambiente, options.clock);
   const id = idPedidoEvento(chave, tpEvento);
   const inf = {
     Id: id,
-    tpAmb: tpAmbOf(options.ambiente),
+    tpAmb: tpAmbDoAmbiente(options.ambiente),
     verAplic,
     dhEvento: dataHora(options.clock, options.offsetMinutes),
     chNFSe: chave,
@@ -88,7 +89,7 @@ function montar(
     corpo = serializeRoot(leiaute.pedRegEventoElement, { versao: VERSAO_LEIAUTE, infPedReg: inf });
   } catch (e) {
     if (!(e instanceof SerializeError)) throw e;
-    return { ok: false, issues: [{ path: e.path, code: 'schema', message: e.message }] };
+    return { ok: false, issues: [{ caminho: e.path, code: 'schema', mensagem: e.message }] };
   }
   const xml = DECLARACAO_XML + corpo;
   const schema = validarNoSchema(leiaute.pedRegEventoElement, xml);
@@ -125,6 +126,6 @@ export function buildPedidoAnaliseFiscal(p: AnaliseFiscalPedido, options: Pedido
 }
 
 /** Assina o pedido (Reference para o `infPedReg`). A string devolvida é a que vai para a Sefin. */
-export async function signPedidoEvento(pedido: PedidoEventoMontado, signer: Signer): Promise<string> {
-  return signXml(pedido.xml, { id: pedido.id }, signer);
+export async function signPedidoEvento(pedido: PedidoEventoMontado, signer: Assinador): Promise<string> {
+  return assinarXml(pedido.xml, { id: pedido.id }, signer);
 }

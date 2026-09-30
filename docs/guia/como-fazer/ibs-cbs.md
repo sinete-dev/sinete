@@ -44,13 +44,13 @@ As ocorrências do IBS/CBS voltam como as outras da montagem: `ValidationError` 
 Se o cadastro do item não tem a classificação, `determine` (em `sinete/nfe/ibs-cbs`) elimina candidatos com base nos dados oficiais e nas regras legais implementadas. Quando essas regras não determinam a classificação, consulta resolvedores, funções que podem usar o cadastro do item, uma pergunta ao usuário ou uma fila de revisão. Por padrão, tenta a classificação do cadastro, escolhe se restou um único candidato ou retorna uma pergunta com as opções restantes. Cada decisão registra sua proveniência: quem decidiu, quando e com qual versão dos dados.
 
 ```ts
-import { fixedClock, timeContext } from 'sinete/core';
+import { relogioFixo, contextoDeTempo } from 'sinete/core';
 import { carregarDatasetEmbarcado } from 'sinete/nfe';
 import { determine, questionId } from 'sinete/nfe/ibs-cbs';
 
 const opts = {
   dataset: await carregarDatasetEmbarcado(),
-  time: timeContext({ emissao: fixedClock('2026-10-10T12:00:00-03:00') }),
+  time: contextoDeTempo({ emissao: relogioFixo('2026-10-10T12:00:00-03:00') }),
 };
 const fatos = { modelo: 55, kind: 'venda', items: [{ n: 1, ncm: '10063021', description: 'arroz' }] } as const;
 

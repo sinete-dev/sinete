@@ -5,8 +5,8 @@
  * da Sefin; o que se testa com eles é o caminho do documento, não a apuração.
  */
 
-import type { Signer } from '@sinete/core';
-import { base64Decode, base64Encode, signXml } from '@sinete/core/xml';
+import type { Assinador } from '@sinete/core';
+import { assinarXml, codificarBase64, decodificarBase64 } from '@sinete/core/xml';
 import { serialize } from '@sinete/schemas';
 import type {
   TCDPS,
@@ -94,7 +94,7 @@ export interface GeracaoNfse {
   readonly documento: { readonly CNPJ?: string; readonly CPF?: string };
   readonly emitente: ContribuinteNfseSim | undefined;
   readonly aliquotasIbsCbs: AliquotasIbsCbsSim;
-  readonly signer: Signer;
+  readonly signer: Assinador;
 }
 
 function emitenteDe(g: GeracaoNfse): TCEmitente {
@@ -194,7 +194,7 @@ export async function gerarNfse(g: GeracaoNfse): Promise<string> {
   const i = corpo.lastIndexOf(dpsSerializada);
   const infXml = corpo.slice(0, i) + g.dpsXml + corpo.slice(i + dpsSerializada.length);
   const xml = `<NFSe xmlns="${NFSE_NS}" versao="1.01">${infXml}</NFSe>`;
-  return signXml(xml, { id: `NFS${g.chave}` }, g.signer);
+  return assinarXml(xml, { id: `NFS${g.chave}` }, g.signer);
 }
 
 export interface GeracaoEvento {
@@ -205,7 +205,7 @@ export interface GeracaoEvento {
   /** Pedido recebido, sem a declaração XML, e a leitura dele. */
   readonly pedidoXml: string;
   readonly pedido: TCPedRegEvt;
-  readonly signer: Signer;
+  readonly signer: Assinador;
 }
 
 /** Evento (Anexo II) com o pedido embutido e a assinatura da Sefin simulada. */
@@ -228,7 +228,7 @@ export async function gerarEvento(g: GeracaoEvento): Promise<string> {
   const pedidoSerializado = serialize(TCPedRegEvtDesc, 'pedRegEvento', marcador, NFSE_NS);
   const i = corpo.lastIndexOf(pedidoSerializado);
   const inf = corpo.slice(0, i) + g.pedidoXml + corpo.slice(i + pedidoSerializado.length);
-  return signXml(`<evento xmlns="${NFSE_NS}" versao="1.01">${inf}</evento>`, { id: g.id }, g.signer);
+  return assinarXml(`<evento xmlns="${NFSE_NS}" versao="1.01">${inf}</evento>`, { id: g.id }, g.signer);
 }
 
 /** Tira a declaração XML do começo do documento recebido. */
@@ -247,7 +247,7 @@ async function pipe(
 }
 
 export async function gzipB64(texto: string): Promise<string> {
-  return base64Encode(await pipe(new TextEncoder().encode(texto), new g.CompressionStream('gzip')));
+  return codificarBase64(await pipe(new TextEncoder().encode(texto), new g.CompressionStream('gzip')));
 }
 
 /** Bytes de dentro de um gzip em base64; `undefined` quando o base64 ou o gzip não valem (E1225, E1226). */
@@ -258,7 +258,7 @@ export async function gunzipB64(
 > {
   let bytes: Uint8Array<ArrayBuffer>;
   try {
-    bytes = base64Decode(b64);
+    bytes = decodificarBase64(b64);
   } catch {
     return { ok: false, etapa: 'base64' };
   }

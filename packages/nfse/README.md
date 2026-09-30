@@ -16,15 +16,15 @@ Status: pré-alfa, API instável até a 1.0. Na produção restrita da Sefin rea
 ## API completa
 
 ```ts
-import { systemClock, timeContext } from '@sinete/core';
+import { relogioDoSistema, contextoDeTempo } from '@sinete/core';
 import { buildDps, createNfseClient, signDps } from '@sinete/nfse';
 
-const r = buildDps(dps, { ambiente: 'homologacao', time: timeContext({ emissao: systemClock }) });
-if (!r.ok) throw new Error(r.issues.map((i) => `${i.path}: ${i.message}`).join('\n'));
+const r = buildDps(dps, { ambiente: 'homologacao', time: contextoDeTempo({ emissao: relogioDoSistema }) });
+if (!r.ok) throw new Error(r.issues.map((i) => `${i.caminho}: ${i.mensagem}`).join('\n'));
 const assinada = await signDps(r.value, signer); // grave esta string antes de enviar
-const client = createNfseClient({ transport, ambiente: 'homologacao', clock: systemClock, signer });
+const client = createNfseClient({ transport, ambiente: 'homologacao', clock: relogioDoSistema, signer });
 const desfecho = await client.autorizar(assinada);
-if (desfecho.status === 'authorized') guardar(desfecho.value.chaveAcesso, desfecho.value.xml);
+if (desfecho.tipo === 'autorizado') guardar(desfecho.valor.chaveAcesso, desfecho.valor.xml);
 else console.log(desfecho.erros); // [{ codigo: 'E0312', descricao, complemento? }], com o catálogo do Anexo I
 ```
 

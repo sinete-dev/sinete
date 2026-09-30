@@ -6,7 +6,7 @@
  * transporte do Deno. Node e Bun resolvem a entrada `node`, que acrescenta o transporte sobre `node:https`.
  */
 
-import { UnsupportedError } from '@sinete/core';
+import { ErroNaoSuportado } from '@sinete/core';
 import { detectRuntime } from './common.ts';
 import type { DenoTransportOptions } from './deno.ts';
 import { createDenoTransport } from './deno.ts';
@@ -80,7 +80,7 @@ export type CreateTransportOptions = DenoTransportOptions;
  */
 export function createTransport(options: CreateTransportOptions): Transport {
   if (detectRuntime() === 'deno') return createDenoTransport(options);
-  throw new UnsupportedError(
+  throw new ErroNaoSuportado(
     `sem transporte mTLS para a runtime "${detectRuntime()}" nesta entrada; em Node e Bun o pacote resolve a condição "node"`,
   );
 }

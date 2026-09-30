@@ -13,7 +13,7 @@
  * - Id do pedido de registro de evento (59): `PRE` + chave (50) + código do evento (6).
  */
 
-import { ConfigError } from '@sinete/core';
+import { ErroDeConfiguracao } from '@sinete/core';
 
 const CTRIBNAC = /^(\d{2})\.?(\d{2})\.?(\d{2})$/;
 
@@ -21,7 +21,9 @@ const CTRIBNAC = /^(\d{2})\.?(\d{2})\.?(\d{2})$/;
 export function cTribNacDps(codigo: string): string {
   const m = CTRIBNAC.exec(codigo.trim());
   if (m === null) {
-    throw new ConfigError(`código de tributação nacional inválido: ${JSON.stringify(codigo)} (use 010101 ou 01.01.01)`);
+    throw new ErroDeConfiguracao(
+      `código de tributação nacional inválido: ${JSON.stringify(codigo)} (use 010101 ou 01.01.01)`,
+    );
   }
   return `${m[1]}${m[2]}${m[3]}`;
 }
@@ -32,7 +34,7 @@ export function cTribNacDps(codigo: string): string {
  */
 export function codigoServicoParametrizacao(cTribNac: string, cTribMun: string = '000'): string {
   const n = cTribNacDps(cTribNac);
-  if (!/^\d{3}$/.test(cTribMun)) throw new ConfigError(`código de tributação municipal inválido: ${cTribMun}`);
+  if (!/^\d{3}$/.test(cTribMun)) throw new ErroDeConfiguracao(`código de tributação municipal inválido: ${cTribMun}`);
   return `${n.slice(0, 2)}.${n.slice(2, 4)}.${n.slice(4, 6)}.${cTribMun}`;
 }
 
@@ -44,10 +46,10 @@ export type InscricaoFederal =
 /** Tipo de inscrição (1 CPF, 2 CNPJ) e inscrição com 14 posições, como entram no Id da DPS e na chave. */
 export function inscricaoId(doc: InscricaoFederal): { readonly tpInsc: '1' | '2'; readonly inscricao: string } {
   if (doc.CNPJ !== undefined) {
-    if (!/^[0-9A-Z]{12}\d{2}$/.test(doc.CNPJ)) throw new ConfigError(`CNPJ fora do formato: ${doc.CNPJ}`);
+    if (!/^[0-9A-Z]{12}\d{2}$/.test(doc.CNPJ)) throw new ErroDeConfiguracao(`CNPJ fora do formato: ${doc.CNPJ}`);
     return { tpInsc: '2', inscricao: doc.CNPJ };
   }
-  if (!/^\d{11}$/.test(doc.CPF)) throw new ConfigError(`CPF fora do formato: ${doc.CPF}`);
+  if (!/^\d{11}$/.test(doc.CPF)) throw new ErroDeConfiguracao(`CPF fora do formato: ${doc.CPF}`);
   return { tpInsc: '1', inscricao: `000${doc.CPF}` };
 }
 
@@ -61,9 +63,9 @@ export interface IdDpsPartes {
 
 /** Id da DPS (`DPS` + 42 posições). */
 export function idDps(p: IdDpsPartes): string {
-  if (!/^\d{7}$/.test(p.cLocEmi)) throw new ConfigError(`cLocEmi inválido: ${p.cLocEmi}`);
-  if (!/^\d{1,5}$/.test(p.serie)) throw new ConfigError(`série inválida: ${p.serie}`);
-  if (!/^\d{1,15}$/.test(p.nDPS)) throw new ConfigError(`nDPS inválido: ${p.nDPS}`);
+  if (!/^\d{7}$/.test(p.cLocEmi)) throw new ErroDeConfiguracao(`cLocEmi inválido: ${p.cLocEmi}`);
+  if (!/^\d{1,5}$/.test(p.serie)) throw new ErroDeConfiguracao(`série inválida: ${p.serie}`);
+  if (!/^\d{1,15}$/.test(p.nDPS)) throw new ErroDeConfiguracao(`nDPS inválido: ${p.nDPS}`);
   const { tpInsc, inscricao } = inscricaoId(p.emitente);
   return `DPS${p.cLocEmi}${tpInsc}${inscricao}${p.serie.padStart(5, '0')}${p.nDPS.padStart(15, '0')}`;
 }
@@ -90,11 +92,11 @@ const CHAVE = /^(\d{7})(\d)([12])([0-9A-Z]{14})(\d{13})(\d{4})(\d{9})(\d)$/;
 /** Lê a chave de 50 posições. Lança `ConfigError` se a estrutura não bate; o DV não é conferido (ver o topo). */
 export function parseChaveNfse(chave: string): ChaveNfse {
   const m = CHAVE.exec(chave);
-  if (m === null) throw new ConfigError(`chave de NFS-e inválida: ${JSON.stringify(chave)}`);
+  if (m === null) throw new ErroDeConfiguracao(`chave de NFS-e inválida: ${JSON.stringify(chave)}`);
   const tpInsc = m[3] as '1' | '2';
   const insc = m[4] as string;
   if (tpInsc === '1' && !insc.startsWith('000'))
-    throw new ConfigError(`chave de NFS-e com CPF mal preenchido: ${chave}`);
+    throw new ErroDeConfiguracao(`chave de NFS-e com CPF mal preenchido: ${chave}`);
   return {
     chave,
     cMun: m[1] as string,
@@ -118,6 +120,6 @@ export const TIPOS_EVENTO = {
 /** Id do pedido de registro de evento: `PRE` + chave + código do evento. */
 export function idPedidoEvento(chave: string, tpEvento: string): string {
   parseChaveNfse(chave);
-  if (!/^\d{6}$/.test(tpEvento)) throw new ConfigError(`código de evento inválido: ${tpEvento}`);
+  if (!/^\d{6}$/.test(tpEvento)) throw new ErroDeConfiguracao(`código de evento inválido: ${tpEvento}`);
   return `PRE${chave}${tpEvento}`;
 }

@@ -6,8 +6,8 @@
  * `camposForaDoPl` aponta cada campo que sumiria em silêncio.
  */
 
-import type { Ambiente, Clock } from '@sinete/core';
-import { UnsupportedError } from '@sinete/core';
+import type { Ambiente, Relogio } from '@sinete/core';
+import { ErroNaoSuportado } from '@sinete/core';
 import type { ComplexType, Particle, VigenciaEntry } from '@sinete/schemas';
 import { isComplexType, isElementParticle, isWildcard, selecionarPl } from '@sinete/schemas';
 import { TNFe_infNFe as Inf010e } from '@sinete/schemas/nfe/PL_010e';
@@ -26,12 +26,12 @@ export interface PlEscolhido {
 }
 
 /** PL da NF-e vigente para o ambiente no relógio de emissão (ADR 0002, decisão 6). */
-export function escolherPl(ambiente: Ambiente, emissao: Clock): PlEscolhido {
+export function escolherPl(ambiente: Ambiente, emissao: Relogio): PlEscolhido {
   const vigencia = selecionarPl('nfe', ambiente, emissao);
   const infNFe = INF_NFE[vigencia.modulo];
   if (infNFe === undefined) {
     // A tabela de vigências ganhou um PL que este pacote ainda não conhece: falha explícita, nunca tentativa.
-    throw new UnsupportedError(`@sinete/nfe não conhece o módulo ${vigencia.modulo}; atualize o pacote`);
+    throw new ErroNaoSuportado(`@sinete/nfe não conhece o módulo ${vigencia.modulo}; atualize o pacote`);
   }
   return { vigencia, infNFe };
 }

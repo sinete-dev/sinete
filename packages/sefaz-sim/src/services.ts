@@ -8,7 +8,7 @@
  * distribuição de DF-e). O caminho é `/<autorizador>/ws/<serviço WSDL>`.
  */
 
-import { ConfigError } from '@sinete/core';
+import { ErroDeConfiguracao } from '@sinete/core';
 import type { MdfeServico, NfeServico } from '@sinete/transport';
 
 export const NFE_NS = 'http://www.portalfiscal.inf.br/nfe';
@@ -142,7 +142,7 @@ const ALL_SERVICES: Readonly<Record<SimServico, ServiceDef>> = { ...NFE_SERVICES
 /** Definição de um serviço da NF-e ou do MDF-e. */
 export function serviceDef(servico: SimServico): ServiceDef {
   const def = ALL_SERVICES[servico];
-  if (def === undefined) throw new ConfigError(`serviço desconhecido: ${String(servico)}`);
+  if (def === undefined) throw new ErroDeConfiguracao(`serviço desconhecido: ${String(servico)}`);
   return def;
 }
 

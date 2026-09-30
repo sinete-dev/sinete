@@ -5,9 +5,9 @@
  */
 
 import { beforeAll, describe, expect, test } from 'bun:test';
-import type { ManualClock } from '@sinete/core';
-import { ConfigError, manualClock } from '@sinete/core';
-import { base64Decode, base64Encode, parseXml, signXml } from '@sinete/core/xml';
+import type { RelogioManual } from '@sinete/core';
+import { ErroDeConfiguracao, relogioManual } from '@sinete/core';
+import { assinarXml, codificarBase64, decodificarBase64, lerXml } from '@sinete/core/xml';
 import { validateRoot } from '@sinete/schemas';
 import * as nfse from '@sinete/schemas/nfse/1.01-20260727';
 import type { Transport, TransportRequest, TransportResponse } from '@sinete/transport';
@@ -145,18 +145,18 @@ const streams = globalThis as unknown as Record<'CompressionStream' | 'Decompres
 
 async function gzip(bytes: Uint8Array): Promise<string> {
   const out = new Blob([bytes as Uint8Array<ArrayBuffer>]).stream().pipeThrough(new streams.CompressionStream('gzip'));
-  return base64Encode(new Uint8Array(await new Response(out).arrayBuffer()));
+  return codificarBase64(new Uint8Array(await new Response(out).arrayBuffer()));
 }
 
 async function gunzip(b64: string): Promise<string> {
-  const out = new Blob([base64Decode(b64)]).stream().pipeThrough(new streams.DecompressionStream('gzip'));
+  const out = new Blob([decodificarBase64(b64)]).stream().pipeThrough(new streams.DecompressionStream('gzip'));
   return new TextDecoder().decode(await new Response(out).arrayBuffer());
 }
 
 const gz = (xml: string): Promise<string> => gzip(new TextEncoder().encode(xml));
 
 async function assinar(d: { readonly id: string; readonly xml: string }, cert: SyntheticCertificate): Promise<string> {
-  return DECL + (await signXml(d.xml, { id: d.id }, cert.signer));
+  return DECL + (await assinarXml(d.xml, { id: d.id }, cert.signer));
 }
 
 let c: Certs;
@@ -171,7 +171,7 @@ type Pedido = Omit<Partial<SimRequest>, 'clientCertificate'> & {
 };
 
 interface Ctx {
-  readonly clock: ManualClock;
+  readonly clock: RelogioManual;
   readonly sim: NfseSim;
   /** Pedido cru, com o certificado do emitente no canal por padrão. */
   req(r: Pedido): Promise<SimResult>;
@@ -180,7 +180,7 @@ interface Ctx {
 }
 
 function ctx(o: Partial<NfseSimFullOptions> = {}): Ctx {
-  const clock = manualClock(INICIO);
+  const clock = relogioManual(INICIO);
   const sim = createNfseSim({ clock, signer: c.servidor.signer, municipios: MUNICIPIOS, ...o });
   const req = (r: Pedido): Promise<SimResult> => {
     const { clientCertificate, ...resto } = { clientCertificate: c.emitente.der, ...r };
@@ -218,7 +218,7 @@ async function nfseDe(r: SimResult): Promise<{ readonly chave: string; readonly 
   expect(r.status).toBe(201);
   const b = corpo(r);
   const xml = await gunzip(b.nfseXmlGZipB64 as string);
-  expect(validateRoot(nfse.NFSeElement, parseXml(xml))).toEqual([]);
+  expect(validateRoot(nfse.NFSeElement, lerXml(xml))).toEqual([]);
   return { chave: b.chaveAcesso as string, xml };
 }
 
@@ -266,7 +266,7 @@ describe('emissão', () => {
     expect(codigo(await post('não é json'))).toBe('E1225');
     expect(codigo(await post(JSON.stringify({ outro: 1 })))).toBe('E1225');
     expect(codigo(await post(JSON.stringify({ dpsXmlGZipB64: '%%%' })))).toBe('E1225');
-    expect(codigo(await post(JSON.stringify({ dpsXmlGZipB64: base64Encode(new Uint8Array([1, 2, 3])) })))).toBe(
+    expect(codigo(await post(JSON.stringify({ dpsXmlGZipB64: codificarBase64(new Uint8Array([1, 2, 3])) })))).toBe(
       'E1226',
     );
     const latin1 = await gzip(new Uint8Array([...new TextEncoder().encode(`${DECL}<DPS>`), 0xe7, 0xe3]));
@@ -359,7 +359,7 @@ describe('emissão', () => {
     const [ev] = s.sim.inspect.eventos(a.chave);
     expect(ev).toMatchObject({ tpEvento: '105102', nSeqEvento: 1 });
     expect(ev?.xml).toContain(`<chSubstituta>${b.chave}</chSubstituta>`);
-    expect(validateRoot(nfse.eventoElement, parseXml(ev?.xml ?? ''))).toEqual([]);
+    expect(validateRoot(nfse.eventoElement, lerXml(ev?.xml ?? ''))).toEqual([]);
     const r = await s.emitir(await assinar(dps({ nDPS: '3', subst: a.chave }), c.emitente));
     expect(codigo(r)).toBe('E0046');
     expect(codigo(await s.evento(a.chave, await assinar(pedido(a.chave), c.emitente)))).toBe('E0840');
@@ -377,7 +377,7 @@ describe('eventos', () => {
     const r = await s.evento(chave, await assinar(pedido(chave), c.emitente));
     expect(r.status).toBe(201);
     const ev = await gunzip(corpo(r).eventoXmlGZipB64 as string);
-    expect(validateRoot(nfse.eventoElement, parseXml(ev))).toEqual([]);
+    expect(validateRoot(nfse.eventoElement, lerXml(ev))).toEqual([]);
     expect(s.sim.inspect.nfse(chave)?.situacao).toBe('cancelada');
     const dup = await s.evento(chave, await assinar(pedido(chave), c.emitente));
     expect(codigo(dup)).toBe('E0840');
@@ -436,7 +436,7 @@ describe('eventos', () => {
   test('prazo de cancelamento do município (E0822)', async () => {
     const s = ctx();
     const chave = await emitida(s);
-    s.clock.advance(31 * 86_400_000);
+    s.clock.avancar(31 * 86_400_000);
     expect(codigo(await s.evento(chave, await assinar(pedido(chave), c.emitente)))).toBe('E0822');
   });
 });
@@ -481,7 +481,7 @@ describe('consultas e parametrização', () => {
     expect(lista[0]?.dataHoraRecebimento).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}$/);
     const arquivo = lista[0]?.arquivoXml as string;
     expect(arquivo).toStartWith('SDRzSUFBQUFB');
-    const interno = new TextDecoder().decode(base64Decode(arquivo));
+    const interno = new TextDecoder().decode(decodificarBase64(arquivo));
     expect(interno).toStartWith('H4sI');
     expect(await gunzip(interno)).toBe(s.sim.inspect.eventos(chave)[0]?.xml as string);
     const semEvento = await get(`/sefin/nfse/${chave}/eventos/101101/2`);
@@ -541,20 +541,20 @@ describe('consultas e parametrização', () => {
   });
 
   test('configuração inválida é ConfigError', () => {
-    const base = { clock: manualClock(INICIO), signer: c.servidor.signer };
-    expect(() => createNfseSim({ ...base, municipios: [{ cMun: '355', nome: 'x' }] })).toThrow(ConfigError);
+    const base = { clock: relogioManual(INICIO), signer: c.servidor.signer };
+    expect(() => createNfseSim({ ...base, municipios: [{ cMun: '355', nome: 'x' }] })).toThrow(ErroDeConfiguracao);
     expect(() =>
       createNfseSim({
         ...base,
         municipios: [{ cMun: SAO_PAULO, nome: 'x', servicos: [{ codigo: '1', aliquotas: [] }] }],
       }),
-    ).toThrow(ConfigError);
+    ).toThrow(ErroDeConfiguracao);
   });
 
   test('município com UF inválida no cadastro simulado é ConfigError na geração', async () => {
     const s = ctx({ municipios: [{ cMun: '9900000', nome: 'x', servicos: [] }] });
     const d = dps({ cLocEmi: '9900000', tribISSQN: '2' });
-    await expect(s.emitir(await assinar(d, c.emitente))).rejects.toThrow(ConfigError);
+    await expect(s.emitir(await assinar(d, c.emitente))).rejects.toThrow(ErroDeConfiguracao);
   });
 });
 
@@ -606,7 +606,7 @@ describe('redirectNfseToSim', () => {
   }
 
   test('troca a base da API pelo simulador e barra o que não é da NFS-e', async () => {
-    expect(() => redirectNfseToSim(falso(), 'http://localhost:1')).toThrow(ConfigError);
+    expect(() => redirectNfseToSim(falso(), 'http://localhost:1')).toThrow(ErroDeConfiguracao);
     const t = falso();
     const r = redirectNfseToSim(t, 'https://127.0.0.1:8443/');
     const ep = nfseEndpoint({ ambiente: 'homologacao', api: 'parametrizacao' });
@@ -615,7 +615,7 @@ describe('redirectNfseToSim', () => {
       url: `https://127.0.0.1:8443/parametrizacao/${SAO_PAULO}/convenio`,
       endpoint: { host: '127.0.0.1', tls: undefined },
     });
-    await expect(r.send({ url: 'https://exemplo.invalid/x' })).rejects.toThrow(ConfigError);
+    await expect(r.send({ url: 'https://exemplo.invalid/x' })).rejects.toThrow(ErroDeConfiguracao);
     await expect(r.send({ url: 'https://exemplo.invalid/x', endpoint: ep })).rejects.toThrow('fora da base');
     await r.close();
   });

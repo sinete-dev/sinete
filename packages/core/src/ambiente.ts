@@ -3,7 +3,7 @@
  * nomeado, para que um `2` perdido não mande nota de teste para produção nem o contrário.
  */
 
-import { ValidationError } from './errors.ts';
+import { ErroDeValidacao } from './errors.ts';
 
 export type Ambiente = 'producao' | 'homologacao';
 
@@ -12,18 +12,18 @@ export type TpAmb = '1' | '2';
 
 export const AMBIENTES: readonly Ambiente[] = ['producao', 'homologacao'];
 
-export function isAmbiente(value: unknown): value is Ambiente {
+export function ehAmbiente(value: unknown): value is Ambiente {
   return value === 'producao' || value === 'homologacao';
 }
 
-export function tpAmbOf(ambiente: Ambiente): TpAmb {
+export function tpAmbDoAmbiente(ambiente: Ambiente): TpAmb {
   return ambiente === 'producao' ? '1' : '2';
 }
 
-export function ambienteOfTpAmb(tpAmb: string): Ambiente {
+export function ambienteDoTpAmb(tpAmb: string): Ambiente {
   if (tpAmb === '1') return 'producao';
   if (tpAmb === '2') return 'homologacao';
-  throw new ValidationError(`tpAmb inválido: ${JSON.stringify(tpAmb)}`, [
-    { path: 'tpAmb', code: 'tpamb_invalido', message: 'tpAmb deve ser 1 (produção) ou 2 (homologação)' },
+  throw new ErroDeValidacao(`tpAmb inválido: ${JSON.stringify(tpAmb)}`, [
+    { caminho: 'tpAmb', code: 'tpamb_invalido', mensagem: 'tpAmb deve ser 1 (produção) ou 2 (homologação)' },
   ]);
 }

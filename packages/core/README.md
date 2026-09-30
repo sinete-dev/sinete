@@ -5,11 +5,11 @@ A base de todos os pacotes do sinete: erros tipados, desfechos discriminados da 
 Status: pré-alfa, API instável até a 1.0.
 
 ```ts
-import { fixedClock, formatDateTimeOffset, matchOutcome, ufBySigla } from '@sinete/core';
+import { relogioFixo, formatarDataHoraComFuso, tratarResultado, ufPorSigla } from '@sinete/core';
 
-const clock = fixedClock('2026-09-25T09:00:00-03:00');
-formatDateTimeOffset(clock.now(), -180); // '2026-09-25T09:00:00-03:00'
-ufBySigla('MT'); // { sigla: 'MT', cUF: '51', nome: 'Mato Grosso', regiao: 'CO' }
+const clock = relogioFixo('2026-09-25T09:00:00-03:00');
+formatarDataHoraComFuso(clock.agora(), -180); // '2026-09-25T09:00:00-03:00'
+ufPorSigla('MT'); // { sigla: 'MT', cUF: '51', nome: 'Mato Grosso', regiao: 'CO' }
 ```
 
 ## Convenções
@@ -79,15 +79,15 @@ Morava no pacote `@sinete/xml` até a reorganização dos pacotes (ADR 0008): é
 Parser XML estrito com offsets, C14N 1.0 inclusivo e XMLDSig no perfil dos DF-e (assinar e verificar), sem DOM e sem dependências de runtime. A criptografia é a WebCrypto de `globalThis.crypto`, então o mesmo código roda em Node (`^20.19.0 || >=22.12.0`), Bun, Deno e no browser.
 
 ```ts
-import { signXml, verifySignature } from '@sinete/core/xml';
+import { assinarXml, conferirAssinatura } from '@sinete/core/xml';
 
 // signer: qualquer Signer do @sinete/core (A1 via WebCrypto, A3 via PKCS#11, HSM)
-const assinado = await signXml(xml, { id: 'NFe3526...' }, signer);
+const assinado = await assinarXml(xml, { id: 'NFe3526...' }, signer);
 // `assinado` é `xml` com exatamente uma inserção: é essa string que vai para a SEFAZ e para o banco.
 
-const r = await verifySignature(assinado, { id: 'NFe3526...', element: 'infNFe' });
-if (r.ok) usar(r.element); // leia os dados do elemento assinado, não de outro lugar do documento
-else console.log(r.failure); // 'digest-diverge', 'assinatura-invalida', 'id-duplicado', ...
+const r = await conferirAssinatura(assinado, { id: 'NFe3526...', elemento: 'infNFe' });
+if (r.ok) usar(r.elemento); // leia os dados do elemento assinado, não de outro lugar do documento
+else console.log(r.motivo); // 'digest-diverge', 'assinatura-invalida', 'id-duplicado', ...
 ```
 
 ### Decisões (ADR 0003)
