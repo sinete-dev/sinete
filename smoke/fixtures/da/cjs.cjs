@@ -14,7 +14,7 @@ try {
 } catch (e) {
   err = e;
 }
-if (!(err instanceof da.DanfeError) || !(err instanceof core.SineteError)) failures.push('DanfeError via require');
+if (!(err instanceof da.DanfeError) || !(err instanceof core.ErroSinete)) failures.push('DanfeError via require');
 if (nfe.DanfeError !== da.DanfeError || mdfe.DanfeError !== da.DanfeError || nfse.DanfeError !== da.DanfeError) {
   failures.push('uma classe só entre subpaths');
 }

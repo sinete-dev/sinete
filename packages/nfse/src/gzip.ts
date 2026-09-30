@@ -28,7 +28,7 @@ export async function gzipBase64(text: string): Promise<string> {
   return codificarBase64(await pipe(new TextEncoder().encode(text), new Cs('gzip')));
 }
 
-/** Gzip em base64 para o texto UTF-8 de dentro. Lança `ProtocolError` se não for base64 de um gzip. */
+/** Gzip em base64 para o texto UTF-8 de dentro. Lança `ErroRespostaInvalida` se não for base64 de um gzip. */
 export async function gunzipBase64(b64: string, campo: string = 'documento'): Promise<string> {
   const Ds = ctor('DecompressionStream');
   let bytes: Uint8Array<ArrayBuffer>;

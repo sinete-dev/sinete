@@ -1,4 +1,4 @@
-/** Erros do `@sinete/ibs-cbs/calcular`. Todos carregam o item (`nItem`) em `details.item` quando o erro é de um item. */
+/** Erros do `@sinete/ibs-cbs/calcular`. Todos carregam o item (`nItem`) em `detalhes.item` quando o erro é de um item. */
 import type { ErroSineteOpcoes } from '@sinete/core';
 import { ErroSinete } from '@sinete/core';
 

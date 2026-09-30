@@ -130,7 +130,7 @@ describe.skipIf(!bins || !openssl)('sinete-signer de verdade no laboratório TLS
     const e = await t.send({ url: `${srv.url}/`, method: 'GET' }).catch((x: unknown) => x);
     await srv.finished(500);
     expect(e).toBeInstanceOf(TransportError);
-    expect(e).toMatchObject({ code: 'certificado_nao_apresentado', details: { alert: 'handshake_failure' } });
+    expect(e).toMatchObject({ code: 'certificado_nao_apresentado', detalhes: { alert: 'handshake_failure' } });
     await t.close();
     await id.close();
   });

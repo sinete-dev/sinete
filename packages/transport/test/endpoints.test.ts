@@ -95,7 +95,7 @@ describe('resolução de NF-e', () => {
         expect(() => nfeEndpoint({ ambiente, uf, servico: 'NfeInutilizacao', contingencia: 'svc' })).toThrow(
           expect.objectContaining({
             code: 'servico_nao_oferecido',
-            details: expect.objectContaining({
+            detalhes: expect.objectContaining({
               servico: 'NfeInutilizacao',
               source: endpointsData.nfe.svcSemServicos.source,
             }),
@@ -121,7 +121,7 @@ describe('resolução de NF-e', () => {
     expect(() => nfeEndpoint({ ambiente: 'producao', servico: 'NfeConsultaCadastro', autorizador: 'SVAN' })).toThrow(
       expect.objectContaining({
         code: 'servico_nao_oferecido',
-        details: expect.objectContaining({ autorizador: 'SVAN', servico: 'NfeConsultaCadastro' }),
+        detalhes: expect.objectContaining({ autorizador: 'SVAN', servico: 'NfeConsultaCadastro' }),
       }),
     );
     expect(() => nfeAutorizadorDaUf('EX' as never, 'producao')).toThrow(
@@ -241,12 +241,12 @@ describe('resolução de NFC-e', () => {
     );
   });
 
-  test('serviço fora da tabela é ServicoNaoOferecidoError; UF ausente ou inválida é ConfigError', () => {
+  test('serviço fora da tabela é ErroServicoNaoOferecido; UF ausente ou inválida é ErroDeConfiguracao', () => {
     expect(() => nfceEndpoint({ ambiente: 'producao', uf: 'SP', servico: 'NFeDistribuicaoDFe' })).toThrow(
       'SP não oferece NFeDistribuicaoDFe da NFC-e em producao',
     );
     expect(() => nfceEndpoint({ ambiente: 'producao', uf: 'SP', servico: 'NFeDistribuicaoDFe' })).toThrow(
-      expect.objectContaining({ code: 'servico_nao_oferecido', details: expect.objectContaining({ uf: 'SP' }) }),
+      expect.objectContaining({ code: 'servico_nao_oferecido', detalhes: expect.objectContaining({ uf: 'SP' }) }),
     );
     expect(() => nfceEndpoint({ ambiente: 'producao', servico: 'NfeStatusServico' })).toThrow('informe a UF');
     expect(() => nfceAutorizadorDaUf('XX' as never, 'producao')).toThrow('UF inválida');

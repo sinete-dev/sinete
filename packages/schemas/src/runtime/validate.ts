@@ -541,7 +541,7 @@ export function validate(ct: ComplexType, el: ElementoXml): SchemaIssue[] {
   return ctx.out;
 }
 
-/** Valida um documento (string ou já parseado) pela raiz esperada. Lança `XmlError` se o XML for malformado. */
+/** Valida um documento (string ou já parseado) pela raiz esperada. Lança `ErroXml` se o XML for malformado. */
 export function validateRoot<T>(root: RootElement<T>, xml: string | DocumentoXml): SchemaIssue[] {
   const doc = typeof xml === 'string' ? lerXml(xml) : xml;
   if (doc.raiz.local !== root.name || doc.raiz.ns !== root.ns) {
@@ -552,7 +552,7 @@ export function validateRoot<T>(root: RootElement<T>, xml: string | DocumentoXml
   return validate(root.type as ComplexType, doc.raiz);
 }
 
-/** Como `validateRoot`, mas lança `ValidationError` (`validacao_falhou`) com todas as ocorrências. */
+/** Como `validateRoot`, mas lança `ErroDeValidacao` (`validacao_falhou`) com todas as ocorrências. */
 export function assertValid<T>(root: RootElement<T>, xml: string | DocumentoXml): void {
   const issues = validateRoot(root, xml);
   if (issues.length > 0) {

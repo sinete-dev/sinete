@@ -8,7 +8,7 @@ const mdfe = require('@sinete/emissor/mdfe');
 const nfse = require('@sinete/emissor/nfse');
 const core = require('@sinete/core');
 const failures = [];
-if (!(new emissor.TravaPerdidaError('x') instanceof core.SineteError)) failures.push('TravaPerdidaError via require');
+if (!(new emissor.TravaPerdidaError('x') instanceof core.ErroSinete)) failures.push('TravaPerdidaError via require');
 if (typeof memoria.createMemoriaStore !== 'function' || typeof contrato.casosDoContrato !== 'function') {
   failures.push('memoria e contrato via require');
 }

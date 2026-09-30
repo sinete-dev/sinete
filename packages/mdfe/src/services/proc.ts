@@ -93,7 +93,7 @@ export interface DocumentoAssinado {
 
 /**
  * Confere que `xml` é um documento `raiz` assinado (no namespace do MDF-e, com `Signature` referenciando o filho
- * `elemento`) e devolve a string sem a declaração XML. Lança `ConfigError` para qualquer outra coisa: o serviço nunca
+ * `elemento`) e devolve a string sem a declaração XML. Lança `ErroDeConfiguracao` para qualquer outra coisa: o serviço nunca
  * "conserta" o documento de quem chama.
  */
 export function documentoAssinado(xml: string, raiz: string, elemento: string): DocumentoAssinado {
@@ -132,7 +132,7 @@ function descendantText(el: ElementoXml, local: string): string | undefined {
  * pronto para `consultar`, `resolverEnvioSemResposta` e a retomada, que recusam raiz sem `xmlns` próprio. O `MDFe` dentro
  * do proc herda os namespaces do envelope; eles são declarados na raiz da fatia. O C14N inclusivo do `infMDFe` já os
  * enxergava em escopo, então o digest e a assinatura são os mesmos dentro e fora do proc. Nada mais muda nos bytes.
- * Lança `ConfigError` quando não há MDF-e assinado (proc de outro documento, MDFe sem assinatura, XML malformado).
+ * Lança `ErroDeConfiguracao` quando não há MDF-e assinado (proc de outro documento, MDFe sem assinatura, XML malformado).
  */
 export function mdfeAssinadoDoProc(xml: string): string {
   const text = xml.replace(XML_DECL, '');

@@ -1,5 +1,6 @@
 /** Execução de um envio do laboratório, igual em Bun (em processo), Node e Deno (via `client.ts`). */
 import { base64ToBytes, openPfx } from '@sinete/cert';
+import type { ErroSinete } from '@sinete/core';
 import { relogioDoSistema } from '@sinete/core';
 import type { EndpointRef, TlsIdentity, TlsProfile } from '../../src/index.node.ts';
 import { allowlistPolicy, createTransport } from '../../src/index.node.ts';
@@ -22,7 +23,7 @@ export interface LabClientResult {
   status?: number;
   body?: string;
   tls?: unknown;
-  error?: { name: string | undefined; code: string | undefined; details: unknown; message: string | undefined };
+  error?: { name: string | undefined; code: string | undefined; detalhes: unknown; message: string | undefined };
 }
 
 export async function runLabClient(input: LabClientInput): Promise<LabClientResult> {
@@ -45,10 +46,11 @@ export async function runLabClient(input: LabClientInput): Promise<LabClientResu
     const res = await transport.send({ url: input.url, ...(endpoint ? { endpoint } : {}) });
     return { runtime: transport.capabilities.runtime, status: res.status, body: res.text(), tls: res.tls };
   } catch (e) {
-    const err = e as { name?: string; code?: string; details?: unknown; message?: string };
+    // O tipo do erro, e não uma forma solta: um membro renomeado no core quebra a compilação aqui.
+    const err = e as Partial<Pick<ErroSinete, 'name' | 'code' | 'detalhes' | 'message'>>;
     return {
       runtime: transport.capabilities.runtime,
-      error: { name: err.name, code: err.code, details: err.details, message: err.message },
+      error: { name: err.name, code: err.code, detalhes: err.detalhes, message: err.message },
     };
   } finally {
     await transport.close();

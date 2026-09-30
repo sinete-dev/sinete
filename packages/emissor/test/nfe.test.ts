@@ -735,7 +735,7 @@ describe('createNfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
     expect(chamadas).toBe(1);
   });
 
-  test('emitente de outro CNPJ-base que o certificado: ValidationError antes de gravar (F03, rejeição 213)', async () => {
+  test('emitente de outro CNPJ-base que o certificado: ErroDeValidacao antes de gravar (F03, rejeição 213)', async () => {
     const c = await cenario();
     const outro = n(46, { emitente: { ...n(46).emitente, CNPJ: CNPJ_DEST } as NfeInput['emitente'] });
     const e = await c.emissor.emitir('nota-46', outro).catch((x: unknown) => x);

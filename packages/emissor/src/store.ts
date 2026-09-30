@@ -14,7 +14,7 @@
  * processo: dois processos com relógios diferentes decidiriam de forma diferente se uma trava venceu. Por isso a
  * interface recebe durações (`prazoMs`, `idadeMaximaMs`), nunca instantes calculados no processo, e o adaptador as
  * compara com o `NOW()` do banco (`lockUntil <= NOW(6)` no MySQL, `now()` no Postgres). O adaptador em memória
- * (`@sinete/emissor/memoria`) usa o `Clock` que recebe, porque ali processo e banco são a mesma coisa.
+ * (`@sinete/emissor/memoria`) usa o `Relogio` que recebe, porque ali processo e banco são a mesma coisa.
  *
  * Quem implementa em SQL roda a suíte de `@sinete/emissor/contrato` contra o próprio banco. Um adaptador errado
  * produz nota duplicada.

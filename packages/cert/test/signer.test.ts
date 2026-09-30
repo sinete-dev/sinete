@@ -60,7 +60,7 @@ describe('signer A1 (WebCrypto)', () => {
   });
 });
 
-describe('DigestInfo e adaptador de DigestSigner', () => {
+describe('DigestInfo e adaptador de AssinadorDeDigest', () => {
   test('prefixos da RFC 8017', async () => {
     const d1 = await digestInfoOf(data, 'SHA-1');
     expect(d1).toHaveLength(35);

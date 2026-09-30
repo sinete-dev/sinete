@@ -116,7 +116,7 @@ export interface SignerIdentity {
   readonly cnpj: string | undefined;
   readonly cpf: string | undefined;
   /**
-   * `DataSigner` do `@sinete/core` que assina XML dos DF-e com a chave do token, pelo `dfe.sign` (só `pkcs11`). Serve
+   * `AssinadorDeDados` do `@sinete/core` que assina XML dos DF-e com a chave do token, pelo `dfe.sign` (só `pkcs11`). Serve
    * de `CertificadoAberto.signer` no `@sinete/emissor`. No `remote` é `undefined`: quem tem a chave assina.
    */
   readonly documentSigner: AssinadorDeDados | undefined;
@@ -757,7 +757,7 @@ export function cryptoKeyTlsSigner(key: CryptoKey, chain: readonly Uint8Array[])
 }
 
 /**
- * `TlsSigner` no modo `digest` sobre um `DigestSigner` do `@sinete/core` (PSC em RAW, OpenBao Transit com
+ * `TlsSigner` no modo `digest` sobre um `AssinadorDeDigest` do `@sinete/core` (PSC em RAW, OpenBao Transit com
  * `prehashed`, HSM): monta o DigestInfo SHA-256 e pede só o RSA.
  */
 export function digestTlsSigner(signer: AssinadorDeDigest, chain?: readonly Uint8Array[]): TlsSigner {

@@ -110,7 +110,7 @@ describe('ibsCbsCalculator', () => {
     const { vBC: _, ...sem } = semVbc;
     const semBase = await ibsCbsCalculator({ dataset, rates }).calcular({ nota: nota(), itens: [sem] });
     expect(semBase.issues).toEqual([
-      expect.objectContaining({ path: 'itens[1].impostos.ibsCbs.classificacao.vBC', code: 'ibscbs_base_ausente' }),
+      expect.objectContaining({ caminho: 'itens[1].impostos.ibsCbs.classificacao.vBC', code: 'ibscbs_base_ausente' }),
     ]);
     const vistos: number[] = [];
     const comFuncao = await ibsCbsCalculator({
@@ -224,7 +224,7 @@ describe('ibsCbsCalculator', () => {
     const calc = ibsCbsCalculator({ dataset, rates });
     const inexistente = await calc.calcular({ nota: nota(), itens: [item({ nItem: 3, cClassTrib: '000999' })] });
     expect(inexistente.issues).toEqual([
-      expect.objectContaining({ path: 'itens[2].impostos.ibsCbs', code: 'ibscbs_classificacao_invalida' }),
+      expect.objectContaining({ caminho: 'itens[2].impostos.ibsCbs', code: 'ibscbs_classificacao_invalida' }),
     ]);
     // Monofasia (CST 620): o motor recusa em vez de zerar.
     const mono = await calc.calcular({ nota: nota(), itens: [item({ CST: '620', cClassTrib: '620001' })] });

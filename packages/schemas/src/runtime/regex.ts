@@ -10,7 +10,7 @@
 
 import { ErroNaoSuportado } from '@sinete/core';
 
-/** Construção de regex do XSD que o tradutor não implementa: `nao_suportado`, com o `pattern` em `details`. */
+/** Construção de regex do XSD que o tradutor não implementa: `nao_suportado`, com o `pattern` em `detalhes`. */
 export class XsdRegexError extends ErroNaoSuportado {
   constructor(message: string, pattern?: string) {
     super(`regex do XSD: ${message}`, pattern === undefined ? undefined : { detalhes: { pattern } });

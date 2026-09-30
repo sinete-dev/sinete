@@ -55,7 +55,7 @@ export interface IbsCbsItemRequest {
 
 /** Dados da nota que decidem a regra aplicável (local da operação, vigência, compra governamental). */
 export interface IbsCbsNotaRequest {
-  /** Instante do fato gerador (relógio `fatoGerador` do `TimeContext`): decide a vigência das alíquotas. */
+  /** Instante do fato gerador (relógio `fatoGerador` do `ContextoDeTempo`): decide a vigência das alíquotas. */
   readonly fatoGerador: Instante;
   /** Instante da emissão (o do `dhEmi`): decide quais regras de validação da NT já estão implantadas no ambiente. */
   readonly emissao: Instante;
@@ -78,7 +78,7 @@ export interface IbsCbsNotaRequest {
 export interface IbsCbsResponse {
   readonly itens: readonly { readonly nItem: number; readonly IBSCBS: TTribNFe }[];
   /**
-   * Problemas de classificação ou de dado (`path` relativo ao item, como `itens[2].impostos.ibsCbs`). A ocorrência sem
+   * Problemas de classificação ou de dado (`caminho` relativo ao item, como `itens[2].impostos.ibsCbs`). A ocorrência sem
    * `origem` entra como `montagem` (ADR 0011); marque `entrada` a que aponta um valor da nota.
    */
   readonly issues?: readonly Ocorrencia[];

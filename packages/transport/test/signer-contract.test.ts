@@ -349,7 +349,7 @@ describe('cliente contra as conversas das fixtures', () => {
     expect(await send('https://guard.invalid/')).toBeInstanceOf(PolicyError);
     expect(await send('https://alert.invalid/')).toMatchObject({
       code: 'certificado_nao_apresentado',
-      details: { alert: 'handshake_failure', stage: 'handshake' },
+      detalhes: { alert: 'handshake_failure', stage: 'handshake' },
     });
     expect(await send('https://sign.invalid/')).toMatchObject({ name: 'SignerError', code: 'assinatura_tls_recusada' });
     expect(await send('https://timeout.invalid/')).toBeInstanceOf(ErroDeTempoEsgotado);
@@ -551,7 +551,7 @@ test('openRemote com id já aberto não mexe na chave da identidade aberta', asy
   await c.openRemote({ id: 'a', signer, allowedHosts: ['localhost'] });
   await expect(c.openRemote({ id: 'a', signer, allowedHosts: ['localhost'] })).rejects.toMatchObject({
     code: 'signer_protocolo',
-    details: { code: 'identity_exists' },
+    detalhes: { code: 'identity_exists' },
   });
   expect(sent.filter((f) => f.method === 'identity.open')).toHaveLength(1);
 });

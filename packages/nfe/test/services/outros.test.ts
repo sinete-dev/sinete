@@ -90,7 +90,7 @@ describe('inutilizar', () => {
     expect(t.requests[0]?.url).toBe(nfce.url);
   });
 
-  test('homologação de outra faixa é ProtocolError', async () => {
+  test('homologação de outra faixa é ErroRespostaInvalida', async () => {
     const t = fakeTransport(soap(retInut('102', undefined, { fin: '13' }), 'NFeInutilizacao4'));
     const { c } = await client(t, { autor: { CNPJ: CNPJ_EMIT } });
     await expect(
@@ -105,7 +105,7 @@ describe('inutilizar', () => {
     expect(t.requests[0]?.url).toBe(nfeEndpoint({ ambiente: 'homologacao', servico: 'NfeInutilizacao', uf: 'MT' }).url);
   });
 
-  test('emitente CPF e série 910 a 969 são ValidationError sem enviar (NT 2018.001, itens 6.1 e 6.2)', async () => {
+  test('emitente CPF e série 910 a 969 são ErroDeValidacao sem enviar (NT 2018.001, itens 6.1 e 6.2)', async () => {
     const t = fakeTransport();
     const { c } = await client(t);
     const pedido = { ano: '26', nNFIni: '1', nNFFin: '1', xJust: 'Quebra de sequência na emissão' };
@@ -273,14 +273,14 @@ describe('distribuicaoDFe', () => {
 });
 
 describe('gunzipBase64', () => {
-  test('ida e volta com CompressionStream; base64 inválido e gzip inválido são ProtocolError', async () => {
+  test('ida e volta com CompressionStream; base64 inválido e gzip inválido são ErroRespostaInvalida', async () => {
     const texto = '<resNFe>ação ✓</resNFe>';
     expect(await gunzipBase64(await gzipBase64(texto))).toBe(texto);
     await expect(gunzipBase64('***')).rejects.toBeInstanceOf(ErroRespostaInvalida);
     await expect(gunzipBase64(btoa('nao e gzip'))).rejects.toBeInstanceOf(ErroRespostaInvalida);
   });
 
-  test('sem DecompressionStream é UnsupportedError', async () => {
+  test('sem DecompressionStream é ErroNaoSuportado', async () => {
     const original = globalThis.DecompressionStream;
     try {
       // @ts-expect-error simulando runtime sem a API
@@ -293,7 +293,7 @@ describe('gunzipBase64', () => {
 });
 
 describe('respostas SOAP defeituosas', () => {
-  test('fault SOAP 1.2 vira ProtocolError com código e motivo', async () => {
+  test('fault SOAP 1.2 vira ErroRespostaInvalida com código e motivo', async () => {
     const fault = `<soap:Envelope xmlns:soap="${SOAP12}"><soap:Body><soap:Fault><soap:Code><soap:Value>soap:Receiver</soap:Value></soap:Code><soap:Reason><soap:Text xml:lang="pt">Erro interno</soap:Text></soap:Reason></soap:Fault></soap:Body></soap:Envelope>`;
     const { c } = await client(fakeTransport({ status: 500, body: fault }));
     const e = await c.statusServico().catch((x: unknown) => x);

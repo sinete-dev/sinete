@@ -1,11 +1,11 @@
 /**
  * Quem assina, nos dois modos do contrato do `@sinete/core` (ADR 0003, decisão 2).
  *
- * - `createA1Signer`: A1 em memória, modo `data`, via WebCrypto (RSASSA-PKCS1-v1_5 com SHA-1 ou SHA-256). A chave é
+ * - `createA1Signer`: A1 em memória, modo `dados`, via WebCrypto (RSASSA-PKCS1-v1_5 com SHA-1 ou SHA-256). A chave é
  *   importada como não exportável; depois de importada, só a `CryptoKey` fica no signer.
- * - `digestSignerAsDataSigner`: adaptador que faz um `DigestSigner` (A3 via PKCS#11, A3 em nuvem, HSM, OpenBao) servir
- *   onde se espera um `DataSigner`: calcula o hash com WebCrypto, monta o DigestInfo e pede só o RSA ao signer.
- * - `signBytes`: assina com qualquer `Signer`, escolhendo o caminho pelo `kind`.
+ * - `digestSignerAsDataSigner`: adaptador que faz um `AssinadorDeDigest` (A3 via PKCS#11, A3 em nuvem, HSM, OpenBao) servir
+ *   onde se espera um `AssinadorDeDados`: calcula o hash com WebCrypto, monta o DigestInfo e pede só o RSA ao signer.
+ * - `signBytes`: assina com qualquer `Assinador`, escolhendo o caminho pelo `tipo`.
  */
 
 import type { Assinador, AssinadorDeDados, AssinadorDeDigest, HashDaAssinatura } from '@sinete/core';
@@ -36,13 +36,13 @@ export function encodeDigestInfo(hash: HashDaAssinatura, digest: Uint8Array): Ui
   return concatBytes(prefix, digest);
 }
 
-/** Calcula o hash de `data` e devolve o DigestInfo DER, que é o que um `DigestSigner` assina. */
+/** Calcula o hash dos bytes e devolve o DigestInfo DER, que é o que um `AssinadorDeDigest` assina. */
 export async function digestInfoOf(data: Uint8Array, hash: HashDaAssinatura): Promise<Uint8Array> {
   const digest = new Uint8Array(await crypto.subtle.digest(hash, ab(data)));
   return encodeDigestInfo(hash, digest);
 }
 
-/** Adaptador: um `DigestSigner` com a interface de `DataSigner`. A assinatura sai idêntica à do modo `data`. */
+/** Adaptador: um `AssinadorDeDigest` com a interface de `AssinadorDeDados`. A assinatura sai idêntica à do modo `dados`. */
 export function digestSignerAsDataSigner(signer: AssinadorDeDigest): AssinadorDeDados {
   return {
     tipo: 'dados',
@@ -52,7 +52,7 @@ export function digestSignerAsDataSigner(signer: AssinadorDeDigest): AssinadorDe
   };
 }
 
-/** Assina `data` com qualquer `Signer` (RSASSA-PKCS1-v1_5). */
+/** Assina os bytes com qualquer `Assinador` (RSASSA-PKCS1-v1_5). */
 export async function signBytes(signer: Assinador, data: Uint8Array, hash: HashDaAssinatura): Promise<Uint8Array> {
   if (signer.tipo === 'dados') return signer.assinar(data, hash);
   return signer.assinarDigestInfo(await digestInfoOf(data, hash));
@@ -75,7 +75,7 @@ export async function verifyBytes(
 }
 
 /**
- * Signer A1 em memória, modo `data`. Recebe a chave em PKCS#8 DER (como sai do `openPfx`) e o certificado da folha.
+ * Assinador A1 em memória, modo `dados`. Recebe a chave em PKCS#8 DER (como sai do `openPfx`) e o certificado da folha.
  * A importação acontece uma vez por hash; a `CryptoKey` não é exportável.
  */
 export async function createA1Signer(pkcs8: Uint8Array, certificateDer: Uint8Array): Promise<AssinadorDeDados> {

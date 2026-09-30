@@ -314,7 +314,7 @@ describe('grupos do ICMS', () => {
     for (const [icms, campo] of casos) {
       const issues = await issuesDe(icms);
       expect(issues).toContainEqual(
-        expect.objectContaining({ code: 'campo_obrigatorio', path: `itens[0].impostos.icms.${campo}` }),
+        expect.objectContaining({ code: 'campo_obrigatorio', caminho: `itens[0].impostos.icms.${campo}` }),
       );
     }
   });
@@ -399,7 +399,7 @@ describe('regras do ICMS', () => {
   test('modBCST 4 exige pMVAST (rejeição 932)', async () => {
     const issues = await issuesDe({ CST: '30', orig: '0', st: { modBCST: '4', pICMSST: '18' } });
     expect(issues).toContainEqual(
-      expect.objectContaining({ code: 'campo_obrigatorio', path: 'itens[0].impostos.icms.st.pMVAST' }),
+      expect.objectContaining({ code: 'campo_obrigatorio', caminho: 'itens[0].impostos.icms.st.pMVAST' }),
     );
   });
 

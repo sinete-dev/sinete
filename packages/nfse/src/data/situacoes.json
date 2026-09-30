@@ -10,7 +10,7 @@
   "evento": {
     "cStat": "100",
     "xMotivo": "Evento registrado",
-    "nota": "A resposta de sucesso do POST /nfse/{chave}/eventos traz só o XML do evento, sem código de situação. O desfecho `authorized` do core exige um cStat; o sinete usa 100 e este texto, que não vêm da Sefin."
+    "nota": "A resposta de sucesso do POST /nfse/{chave}/eventos traz só o XML do evento, sem código de situação. O desfecho `autorizado` do core exige um cStat; o sinete usa 100 e este texto, que não vêm da Sefin."
   },
   "duplicidade": {
     "codigos": ["E0014"],

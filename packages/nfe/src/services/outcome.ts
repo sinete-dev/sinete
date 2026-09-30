@@ -39,7 +39,7 @@ export function cstatEm(cStat: string, classe: CStatClasse): boolean {
 }
 
 /**
- * Desfecho `rejected` enriquecido pelo `@sinete/rejeicoes`; sem curadoria lá, usa a dica própria do `@sinete/nfe`
+ * Desfecho `recusado` enriquecido pelo `@sinete/rejeicoes`; sem curadoria lá, usa a dica própria do `@sinete/nfe`
  * (`dicas` em `data/cstat.json`) quando houver.
  */
 export function rejeitado(status: StatusSefaz): Recusado {

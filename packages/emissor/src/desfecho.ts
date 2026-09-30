@@ -1,7 +1,7 @@
 /**
  * Desfecho normalizado do emissor, comum aos documentos (ADR 0010, decisão 4).
  *
- * O `SefazOutcome` do core descreve uma chamada à SEFAZ. O emissor descreve outra coisa: o que aconteceu com os bytes
+ * O `ResultadoSefaz` do core descreve uma chamada à SEFAZ. O emissor descreve outra coisa: o que aconteceu com os bytes
  * assinados e gravados de um documento. Dois estados só existem aqui: `pendente` (os bytes podem ter chegado e ninguém
  * sabe ainda; o motivo diz por quê) e `divergente` (a SEFAZ tem outro documento no número desses bytes). A situação
  * posterior de um documento autorizado (cancelado ou encerrado fora deste fluxo) também só existe aqui.

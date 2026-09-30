@@ -35,7 +35,7 @@ type StoreComContingencia = TransmissaoStore &
     >
   >;
 
-/** O adaptador não cumpriu um item do contrato. `details.caso` diz qual. */
+/** O adaptador não cumpriu um item do contrato. `detalhes.caso` diz qual. */
 export class ContratoVioladoError extends ErroSinete<'contrato_violado'> {
   constructor(caso: string, message: string) {
     super('contrato_violado', `${caso}: ${message}`, { detalhes: { caso } });

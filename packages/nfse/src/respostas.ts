@@ -1,5 +1,5 @@
 /**
- * Leitura das respostas JSON da Sefin Nacional e do ADN, e o desfecho da NFS-e sobre o `SefazOutcome` do core.
+ * Leitura das respostas JSON da Sefin Nacional e do ADN, e o desfecho da NFS-e sobre o `ResultadoSefaz` do core.
  *
  * A rejeição chega como HTTP 4xx com uma lista de erros. No spike S2 (ADR 0004, NFS-e operação 5) a Sefin de produção
  * restrita respondeu `{"erros":[{"Codigo":"E1229","Descricao":"..."}]}`, com as chaves em PascalCase; o Swagger e
@@ -86,7 +86,7 @@ export function mensagens(json: Json, tipo: 'erros' | 'alertas'): NfseMensagem[]
 const CODIGO = /^E\d{4}$/;
 
 /**
- * Rejeição a partir de uma resposta 4xx com erros. Lança `ProtocolError` quando o corpo não traz nenhum erro com
+ * Rejeição a partir de uma resposta 4xx com erros. Lança `ErroRespostaInvalida` quando o corpo não traz nenhum erro com
  * código no formato do Anexo I (`E` e 4 dígitos): aí não há desfecho, há resposta fora do contrato.
  */
 export function rejeicao(json: Json | undefined, httpStatus: number, operacao: string): NfseRejeicao {
@@ -108,7 +108,7 @@ export function rejeicao(json: Json | undefined, httpStatus: number, operacao: s
   };
 }
 
-/** Texto de um campo obrigatório da resposta, ou `ProtocolError`. */
+/** Texto de um campo obrigatório da resposta, ou `ErroRespostaInvalida`. */
 export function exigirTexto(json: Json, nome: string, operacao: string): string {
   const v = comoTexto(campo(json, nome));
   if (v === undefined || v === '')
@@ -131,7 +131,7 @@ export interface DocumentoEvento {
  * Documentos da consulta de eventos, na ordem da resposta. Na Sefin real (produção restrita, 28/09/2026) a resposta é
  * `{"eventos":[{"chaveAcesso","tipoEvento","numeroPedidoRegistroEvento","dataHoraRecebimento","arquivoXml"}]}`. O
  * item sem `arquivoXml` cai na leitura dos campos `...XmlGZipB64`, e a resposta sem `eventos` também; item sem
- * documento nenhum, ou resposta sem evento nenhum, é `ProtocolError`, para não sumir com um evento em silêncio.
+ * documento nenhum, ou resposta sem evento nenhum, é `ErroRespostaInvalida`, para não sumir com um evento em silêncio.
  */
 export function documentosDosEventos(json: Json, operacao: string): DocumentoEvento[] {
   const lista = campo(json, 'eventos');

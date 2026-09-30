@@ -161,7 +161,7 @@ describe('visão por data de fato gerador', () => {
     expect(narrowed).toContain('410014');
   });
 
-  test('data inválida é ConfigError', () => {
+  test('data inválida é ErroDeConfiguracao', () => {
     expect(() => ds.at('2026-02-30')).toThrow(ErroDeConfiguracao);
   });
 });

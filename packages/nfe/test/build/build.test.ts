@@ -1139,7 +1139,7 @@ test('NF-e normal: qTrib × vUnTrib confere com vProd (rejeição 630); fora da 
 test('PL e dhEmi saem do mesmo instante, mesmo com o relógio virando a vigência no meio', async () => {
   const instantes = ['2026-08-31T23:59:59-03:00', '2026-09-01T00:00:00-03:00'];
   let i = 0;
-  const relogio = { now: (): Date => relogioFixo(instantes[Math.min(i++, 1)] as string).agora() };
+  const relogio = { agora: (): Date => relogioFixo(instantes[Math.min(i++, 1)] as string).agora() };
   const n = ok(await buildNfe(nota(), opcoes({ time: contextoDeTempo({ emissao: relogio }) })));
   expect(n.dhEmi).toBe('2026-08-31T23:59:59-03:00');
   expect(n.pl.pl).toStartWith('PL_010e');

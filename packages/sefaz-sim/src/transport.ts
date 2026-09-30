@@ -1,7 +1,7 @@
 /**
  * `Transport` do `@sinete/transport` atendido em processo pelo simulador, para os testes de unidade de outros pacotes:
  * mesma interface, sem socket. As falhas injetadas viram os mesmos erros tipados do transporte real (queda de conexão
- * é `conexao_recusada`; sem resposta é `TimeoutError` no prazo da requisição).
+ * é `conexao_recusada`; sem resposta é `ErroDeTempoEsgotado` no prazo da requisição).
  */
 
 import { ErroDeConfiguracao, ErroDeTempoEsgotado } from '@sinete/core';
@@ -154,7 +154,7 @@ export function simAutorizadorOf(endpoint: EndpointRef): SimAutorizador {
  * cliente de documento resolveu pelos dados de endpoints: a URL de cada pedido vira `baseUrl` + o caminho do serviço
  * no autorizador simulado, e o `endpoint` segue com a URL e o host novos, sem o perfil TLS do host real. Assim o
  * cliente (o `@sinete/nfe`, por exemplo) roda sem saber do simulador. Pedido sem `endpoint`, ou de serviço que o
- * simulador não atende, é `ConfigError`: nada escapa para a SEFAZ real.
+ * simulador não atende, é `ErroDeConfiguracao`: nada escapa para a SEFAZ real.
  */
 export function redirectToSim(transport: Transport, baseUrl: string): Transport {
   const base = new URL(baseUrl);

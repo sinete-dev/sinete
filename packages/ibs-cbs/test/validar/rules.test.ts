@@ -92,7 +92,7 @@ describe('catálogo de regras', () => {
     expect(r.factDate).toBe('2026-09-01');
   });
 
-  test('entrada inválida é ConfigError', () => {
+  test('entrada inválida é ErroDeConfiguracao', () => {
     expect(() =>
       validate(null as unknown as RulesDocument, { dataset, time: time('2026-10-10'), ambiente: 'producao' }),
     ).toThrow(ErroDeConfiguracao);

@@ -5,7 +5,7 @@
  * compra governamental), calcula com o dataset do `@sinete/ibs-cbs-dados` e as alíquotas do `@sinete/ibs-cbs/aliquotas`, confere o
  * resultado pelas regras da NT 2025.002 do `@sinete/ibs-cbs/validar` e devolve o grupo `IBSCBS` de cada item na forma
  * lexical do leiaute. Erro de classificação, regime não suportado, alíquota desconhecida e violação de regra voltam
- * como ocorrências (`ValidationIssue`) no caminho do item: a nota não é montada, e nunca sai valor zerado no lugar.
+ * como ocorrências (`Ocorrencia`) no caminho do item: a nota não é montada, e nunca sai valor zerado no lugar.
  *
  * O dataset embarcado (~2 MB de JSON) só é importado na primeira nota com item classificado, por `import()` dinâmico:
  * quem usa o pacote para ler XML, eventos ou Distribuição DF-e não o carrega, e um bundler com code splitting o põe num

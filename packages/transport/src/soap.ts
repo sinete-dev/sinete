@@ -33,7 +33,7 @@ const BODY_OPEN = /<(?:([\w.-]+):)?Body(?:\s[^>]*)?>/;
 
 /**
  * Conteúdo do `Body` da resposta, como fatia da string recebida (sem parse nem reserialização).
- * Lança `ProtocolError` se não houver `Body`.
+ * Lança `ErroRespostaInvalida` se não houver `Body`.
  */
 export function soapBody(envelope: string): string {
   const open = BODY_OPEN.exec(envelope);

@@ -12,7 +12,7 @@
  *   (a Calculadora soma os valores internos e arredonda depois);
  * - o diferimento abate `vDif` uma vez do tributo calculado (UB35-10: v = vBC x pAliqEfet - vDif - vDevTrib).
  *
- * A data dos dados e das alíquotas é a data civil do relógio de fato gerador do `TimeContext`, no fuso do local da
+ * A data dos dados e das alíquotas é a data civil do relógio de fato gerador do `ContextoDeTempo`, no fuso do local da
  * operação (Brasília por padrão).
  */
 import type { ContextoDeTempo } from '@sinete/core';

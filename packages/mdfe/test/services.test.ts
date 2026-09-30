@@ -129,7 +129,7 @@ describe('status e autorização', () => {
     const producao = await s.emitir(cargaPropria(), { ambiente: 'producao' });
     const erro = await s.client.autorizar(producao.xml).catch((e: unknown) => e);
     expect(erro).toBeInstanceOf(PolicyError);
-    expect(erro).toMatchObject({ code: 'politica_recusou', details: { tpAmb: '1', esperado: '2' } });
+    expect(erro).toMatchObject({ code: 'politica_recusou', detalhes: { tpAmb: '1', esperado: '2' } });
     expect(s.sim.inspect.mdfes()).toHaveLength(0);
 
     // Um cliente de produção também recusa o MDF-e de homologação.
@@ -137,11 +137,11 @@ describe('status e autorização', () => {
     const clienteProducao = createMdfeClient({ ...s.client.options, ambiente: 'producao' });
     await expect(clienteProducao.autorizar(homologacao.xml)).rejects.toMatchObject({
       code: 'politica_recusou',
-      details: { tpAmb: '2', esperado: '1' },
+      detalhes: { tpAmb: '2', esperado: '1' },
     });
     // Sem tpAmb no ide, também recusa: o schema exige o campo.
     const semTpAmb = homologacao.xml.replace('<tpAmb>2</tpAmb>', '');
-    await expect(s.client.autorizar(semTpAmb)).rejects.toMatchObject({ details: { tpAmb: '', esperado: '2' } });
+    await expect(s.client.autorizar(semTpAmb)).rejects.toMatchObject({ detalhes: { tpAmb: '', esperado: '2' } });
     expect(s.sim.inspect.mdfes()).toHaveLength(0);
   });
 

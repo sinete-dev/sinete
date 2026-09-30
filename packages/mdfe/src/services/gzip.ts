@@ -19,7 +19,7 @@ export async function gzipBase64(text: string): Promise<string> {
 
 /**
  * Base64 de um GZip para o texto UTF-8 de dentro. `limiteBytes` para a leitura assim que o conteúdo descompactado
- * passa do limite (`ProtocolError`), para GZip de origem não confiável.
+ * passa do limite (`ErroRespostaInvalida`), para GZip de origem não confiável.
  */
 export async function gunzipBase64(b64: string, limiteBytes?: number): Promise<string> {
   const Ds = (globalThis as Streams).DecompressionStream;

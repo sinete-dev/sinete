@@ -1,5 +1,5 @@
 /**
- * Erros do `@sinete/schemas`, todos `SineteError` com `code` estável (princípio 7).
+ * Erros do `@sinete/schemas`, todos `ErroSinete` com `code` estável (princípio 7).
  */
 
 import type { ErroSineteOpcoes } from '@sinete/core';

@@ -101,7 +101,7 @@ describe('falhas injetadas', () => {
     expect((await h.raw({ path, body, headers })).effect).toBe('respond');
   });
 
-  test('transporte em processo: drop vira conexao_recusada, hang e atraso longo viram TimeoutError, atraso curto responde', async () => {
+  test('transporte em processo: drop vira conexao_recusada, hang e atraso longo viram ErroDeTempoEsgotado, atraso curto responde', async () => {
     const h = await harness();
     const t = simTransport(h.sim, { clientCertificate: h.c.terceiro.der, timeoutMs: 20 });
     const req = {
@@ -144,7 +144,7 @@ describe('falhas injetadas', () => {
     const noMeio = await t.send({ ...req, signal: meio.signal, timeoutMs: 1000 }).catch((e: unknown) => e);
     expect((noMeio as TransportError).code).toBe('cancelado');
     await t.close();
-    expect(await t.send(req).catch((e: unknown) => (e as Error).name)).toBe('ConfigError');
+    expect(await t.send(req).catch((e: unknown) => (e as Error).name)).toBe('ErroDeConfiguracao');
   });
 
   test('403 vira erro tipado ou resposta, e a política de hosts roda antes', async () => {
@@ -245,7 +245,7 @@ describe('redirectToSim', () => {
     expect(simAutorizadorOf(nfceEndpoint({ ...q, uf: 'SP' }))).toBe('uf');
   });
 
-  test('sem endpoint, documento ou serviço que o simulador não atende, ou base sem https: ConfigError', async () => {
+  test('sem endpoint, documento ou serviço que o simulador não atende, ou base sem https: ErroDeConfiguracao', async () => {
     const nunca = {
       capabilities: simTransport((await harness()).sim).capabilities,
       send: (): never => {

@@ -111,7 +111,7 @@ export class Decimal {
     return int === 0n ? 0 : int.toString().length;
   }
 
-  /** Texto com exatamente `scale` casas; só completa com zeros (valor com mais casas é `ConfigError`). */
+  /** Texto com exatamente `scale` casas; só completa com zeros (valor com mais casas é `ErroDeConfiguracao`). */
   toFixed(scale: number): string {
     if (this.significantScale() > scale) throw new ErroDeConfiguracao(`${this.toString()} tem mais de ${scale} casas`);
     const coef = scale >= this.scale ? this.coef * pow10(scale - this.scale) : this.coef / pow10(this.scale - scale);

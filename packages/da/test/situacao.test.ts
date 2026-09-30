@@ -3,6 +3,7 @@
 import { describe, expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
+import type { Rejeicao } from '../../rejeicoes/src/index.ts';
 import { MARCAS, SITUACAO_MDFE, SITUACAO_NFE } from '../src/data/leiaute.ts';
 import { REGISTRADO_MDFE } from '../src/input/cancelamento-mdfe.ts';
 import { damdfe } from '../src/mdfe.ts';
@@ -361,10 +362,10 @@ describe('tabelas de situação conferem com os pacotes do documento', () => {
     expect(Object.keys(SITUACAO_NFE.denegada).sort()).toEqual([...(cstat.denegada as string[])].sort());
     expect([...SITUACAO_NFE.cancelada].sort()).toEqual([...(cstat.cancelada as string[])].sort());
     const rej = json('rejeicoes/src/data/rejeicoes.json');
-    const lista = rej.rejeicoes as { code: string; effect: string; message: string }[];
-    const denegacoes = lista.filter((r) => r.effect === 'denegacao');
+    const lista = rej.rejeicoes as readonly Rejeicao[];
+    const denegacoes = lista.filter((r) => r.efeito === 'denegacao');
     expect(denegacoes.length).toBeGreaterThan(0);
-    for (const r of denegacoes) expect(SITUACAO_NFE.denegada[r.code]).toBe(`Uso Denegado: ${r.message}`);
+    for (const r of denegacoes) expect(SITUACAO_NFE.denegada[r.codigo]).toBe(`Uso Denegado: ${r.mensagem}`);
   });
   test('MDF-e: autorizado, cancelado e encerrado iguais aos do @sinete/mdfe', () => {
     const cstat = json('mdfe/src/data/cstat.json');

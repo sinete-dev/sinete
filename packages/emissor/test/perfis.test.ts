@@ -198,10 +198,10 @@ describe('perfil da NFS-e', () => {
       nfse.xml,
       modo,
     );
-  const e0014 = { status: 'rejected', cStat: 'E0014', xMotivo: 'DPS já gerou NFS-e', erros: [], httpStatus: 400 };
+  const e0014 = { tipo: 'recusado', cStat: 'E0014', xMotivo: 'DPS já gerou NFS-e', erros: [], httpStatus: 400 };
 
   test('recusa comum; duplicidade no reenvio; reenvio sem resposta', async () => {
-    const recusa = { status: 'rejected', cStat: 'E0312', xMotivo: 'x', erros: [], httpStatus: 400 };
+    const recusa = { tipo: 'recusado', cStat: 'E0312', xMotivo: 'x', erros: [], httpStatus: 400 };
     expect(tipo(await enviar({ autorizar: [recusa] }))).toBe('recusado');
     const cli = { consultarDps: [undefined, undefined] };
     const dup = await enviar({ autorizar: [e0014, e0014], ...cli });

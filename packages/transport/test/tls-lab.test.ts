@@ -119,7 +119,7 @@ describe.skipIf(!openssl)('laboratório TLS', () => {
         expect(presentedInRenegotiation(log)).toBe(true);
       } else {
         expect(r.error).toMatchObject({ name: 'TransportUnsupportedError', code: 'nao_suportado' });
-        expect(r.error?.details).toMatchObject({ host: '127.0.0.1' });
+        expect(r.error?.detalhes).toMatchObject({ host: '127.0.0.1' });
         // recusa antes de abrir socket
         expect(log).not.toContain('ClientHello');
       }
@@ -135,7 +135,7 @@ describe.skipIf(!openssl)('laboratório TLS', () => {
         expect(r.body).toContain('Subject: CN=Cliente de laboratorio');
       } else {
         expect(r.error?.code).toBe('certificado_nao_apresentado');
-        expect(r.error?.details).toMatchObject({ alert: 'handshake_failure' });
+        expect(r.error?.detalhes).toMatchObject({ alert: 'handshake_failure' });
       }
     });
 
@@ -157,7 +157,7 @@ describe.skipIf(!openssl)('laboratório TLS', () => {
       if (runtime === 'node') {
         expect(r.status).toBe(200);
         expect(r.body).toContain('Cipher is DHE-RSA-AES128-GCM-SHA256');
-      } else expect(r.error?.details).toMatchObject({ alert: 'handshake_failure' });
+      } else expect(r.error?.detalhes).toMatchObject({ alert: 'handshake_failure' });
       // com o perfil de GO produção nos dados, Bun e Deno recusam antes de abrir socket
       const srv2 = await wwwServer(pki, [...handshakeArgs(), '-cipher', 'DHE-RSA-AES128-GCM-SHA256']);
       const r2 = await run(runtime, { ...base, url: `${srv2.url}/`, profile: DHE_PROFILE });
@@ -205,7 +205,7 @@ describe.skipIf(!openssl)('laboratório TLS', () => {
       const r = await run(runtime, { ...base, url: `${srv.url}/` });
       await srv.finished(1000);
       expect(r.error?.code).toBe('certificado_recusado');
-      expect(r.error?.details).toMatchObject({ alert: 'unknown_ca' });
+      expect(r.error?.detalhes).toMatchObject({ alert: 'unknown_ca' });
     });
 
     test('cadeia do servidor fora da confiança', async () => {

@@ -1201,7 +1201,7 @@ const escapeXml = (s: string): string => s.replace(/&/g, '&amp;').replace(/</g, 
 /**
  * O MDF-e montado com o `infMDFeSupl` (QR Code) inserido por splice antes do fechamento de `MDFe`, pronto para a
  * assinatura. Em contingência off-line, informe o `sign` (`assinaturaQrCode`). Para assinar em três fases (A3, HSM),
- * passe este texto ao `prepareSignature` do `@sinete/core/xml` com o `id` do MDF-e.
+ * passe este texto ao `prepararAssinatura` do `@sinete/core/xml` com o `id` do MDF-e.
  */
 export function comQrCode(built: BuiltMdfe, sign?: string): string {
   if (built.tpEmis === '2' && sign === undefined) {

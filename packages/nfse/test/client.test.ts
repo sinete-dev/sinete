@@ -157,7 +157,7 @@ describe('consultas e eventos fora do contrato', () => {
     await expect(c.consultar('1')).rejects.toThrow(ErroDeConfiguracao);
   });
 
-  test('resolver envio sem resposta: DPS processada sem NFS-e é ProtocolError', async () => {
+  test('resolver envio sem resposta: DPS processada sem NFS-e é ErroRespostaInvalida', async () => {
     const t = falso([{ status: 200, body: json({ chaveAcesso: CHAVE }) }, { status: 404 }]);
     await expect(resolverEnvioSemResposta(cliente(t), assinada)).rejects.toThrow('não foi encontrada');
     await expect(resolverEnvioSemResposta(cliente(t, { ambiente: 'producao' }), assinada)).rejects.toThrow('tpAmb 2');

@@ -46,7 +46,7 @@ export class PolicyError extends TransportError {
 
 /**
  * A runtime não consegue falar com o host pedido (ADR 0004, decisão 4): hoje, o Deno (rustls) diante de um host que
- * pede o certificado numa renegociação ou que só oferece CBC ou DHE. `details` traz `host`, `reasons` e
+ * pede o certificado numa renegociação ou que só oferece CBC ou DHE. `detalhes` traz `host`, `reasons` e
  * `alternative`. O código é o `nao_suportado` do core.
  */
 export class TransportUnsupportedError extends ErroNaoSuportado {

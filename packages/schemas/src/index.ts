@@ -47,7 +47,7 @@ export {
 export type { FamiliaSchema, VigenciaEntry } from './vigencia.ts';
 export { selecionarPl, VIGENCIAS, VIGENCIAS_ATUALIZADAS_EM } from './vigencia.ts';
 
-/** Parse estrito (`@sinete/core/xml`) seguido do decode tolerante pela raiz. Lança `XmlError` só se o XML for malformado. */
+/** Parse estrito (`@sinete/core/xml`) seguido do decode tolerante pela raiz. Lança `ErroXml` só se o XML for malformado. */
 export function decodeXml<T>(root: RootElement<T>, xml: string | DocumentoXml): Decoded<T> {
   return decodeRoot(root, typeof xml === 'string' ? lerXml(xml) : xml);
 }
