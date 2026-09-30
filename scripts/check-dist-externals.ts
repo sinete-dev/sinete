@@ -1,17 +1,17 @@
 #!/usr/bin/env bun
 /**
  * Garante que nenhum pacote embute outro pacote do workspace no próprio `dist`. Um irmão embutido duplica classes
- * (duas `SineteError`) e quebra o `instanceof` entre pacotes. Causa conhecida: `paths` no tsconfig apontando para o
+ * (duas `ErroSinete`) e quebra o `instanceof` entre pacotes. Causa conhecida: `paths` no tsconfig apontando para o
  * fonte do irmão, que o Bun.build respeita antes do `external`.
  *
  * Regra: para cada dependência `@sinete/*` declarada, o `dist` precisa importá-la pelo nome, e nenhum arquivo do
- * `dist` pode conter o marcador de classe de outro pacote (hoje, `class SineteError` só pode existir no core).
+ * `dist` pode conter o marcador de classe de outro pacote (hoje, `class ErroSinete` só pode existir no core).
  */
 import path from 'node:path';
 import { Glob } from 'bun';
 import { workspacePackages } from './lib/workspace.ts';
 
-const markers: Record<string, string> = { '@sinete/core': 'class SineteError' };
+const markers: Record<string, string> = { '@sinete/core': 'class ErroSinete' };
 const problems: string[] = [];
 
 for (const { dir, manifest } of await workspacePackages()) {

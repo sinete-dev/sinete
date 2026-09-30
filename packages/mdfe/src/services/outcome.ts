@@ -28,7 +28,7 @@ export function cstatEm(cStat: string, classe: CStatClasse): boolean {
   return CLASSES[classe].includes(cStat);
 }
 
-/** Desfecho `rejected` enriquecido pelo catálogo de rejeições do MDF-e. */
+/** Desfecho `recusado` enriquecido pelo catálogo de rejeições do MDF-e. */
 export function rejeitado(status: StatusSefaz): Recusado {
   return completarRecusadoMdfe(criarRecusado(status));
 }

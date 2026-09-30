@@ -53,7 +53,7 @@ const status = (body: string, http = 200): Promise<unknown> =>
     .catch((e: unknown) => e);
 
 describe('gzip da área de dados', () => {
-  test('ida e volta, Base64 inválido e bytes que não são GZip viram ProtocolError', async () => {
+  test('ida e volta, Base64 inválido e bytes que não são GZip viram ErroRespostaInvalida', async () => {
     expect(await gunzipBase64(await gzipBase64('<MDFe>ação</MDFe>'))).toBe('<MDFe>ação</MDFe>');
     expect(await gunzipBase64('!!!').catch((e: unknown) => e)).toBeInstanceOf(ErroRespostaInvalida);
     const texto = codificarBase64(new TextEncoder().encode('nao e gzip'));
@@ -89,7 +89,7 @@ describe('respostas SOAP defeituosas', () => {
     expect(((await status(aninhado)) as ErroRespostaInvalida).message).toContain('sem cStat');
   });
 
-  test('retEventoMDFe sem infEvento vira ProtocolError, não TypeError', async () => {
+  test('retEventoMDFe sem infEvento vira ErroRespostaInvalida, não TypeError', async () => {
     const chave = montarChaveAcesso({
       cUF: '51',
       aamm: '2609',

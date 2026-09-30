@@ -1,5 +1,5 @@
 /**
- * Datas como milissegundos desde a época, sem o global `Date` (princípio 6: o simulador só lê o tempo do `Clock`
+ * Datas como milissegundos desde a época, sem o global `Date` (princípio 6: o simulador só lê o tempo do `Relogio`
  * injetado). A conversão entre dia civil e dia da época é o algoritmo `days_from_civil`/`civil_from_days` de Howard
  * Hinnant ("chrono-Compatible Low-Level Date Algorithms", domínio público), válido no calendário gregoriano proléptico.
  */

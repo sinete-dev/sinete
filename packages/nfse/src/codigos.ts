@@ -17,7 +17,7 @@ import { ErroDeConfiguracao } from '@sinete/core';
 
 const CTRIBNAC = /^(\d{2})\.?(\d{2})\.?(\d{2})$/;
 
-/** `cTribNac` na forma da DPS (6 dígitos), a partir de `010101` ou `01.01.01`. Lança `ConfigError` fora disso. */
+/** `cTribNac` na forma da DPS (6 dígitos), a partir de `010101` ou `01.01.01`. Lança `ErroDeConfiguracao` fora disso. */
 export function cTribNacDps(codigo: string): string {
   const m = CTRIBNAC.exec(codigo.trim());
   if (m === null) {
@@ -89,7 +89,7 @@ export interface ChaveNfse {
 
 const CHAVE = /^(\d{7})(\d)([12])([0-9A-Z]{14})(\d{13})(\d{4})(\d{9})(\d)$/;
 
-/** Lê a chave de 50 posições. Lança `ConfigError` se a estrutura não bate; o DV não é conferido (ver o topo). */
+/** Lê a chave de 50 posições. Lança `ErroDeConfiguracao` se a estrutura não bate; o DV não é conferido (ver o topo). */
 export function parseChaveNfse(chave: string): ChaveNfse {
   const m = CHAVE.exec(chave);
   if (m === null) throw new ErroDeConfiguracao(`chave de NFS-e inválida: ${JSON.stringify(chave)}`);

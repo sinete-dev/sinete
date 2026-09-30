@@ -74,7 +74,7 @@ export interface PerfilDocumento<Entrada, Cliente, P = unknown, B = unknown> {
   /** Contingência automática do documento (ADR 0013); sem ela, `OpcoesEmissor.contingencia.automatica` é recusada. */
   readonly contingencia?: ContingenciaDoPerfil<Entrada, ContextoEmissor>;
   criarCliente(ctx: ContextoEmissor): Cliente;
-  /** Monta, valida e assina, sem rede. Entrada inválida lança `ValidationError`. */
+  /** Monta, valida e assina, sem rede. Entrada inválida lança `ErroDeValidacao`. */
   assinar(entrada: Entrada, ctx: ContextoEmissor): Promise<DocumentoAssinado>;
   enviar(cliente: Cliente, xml: string, modo: ModoEnvio): Promise<Desfecho<P, B>>;
 }
@@ -218,9 +218,9 @@ export interface Emissor<Entrada, Cliente, P = unknown, B = unknown> {
    * Transmite o documento `ref` (o id dele no sistema do integrador). Com bytes já gravados para `ref`, retoma com eles
    * e ignora `entrada`: o documento nunca é montado de novo. Sem bytes, monta, valida, assina, grava e envia. `entrada`
    * pode ser a própria entrada ou `preparar` (veja `PrepararEntrada`), chamada só quando for montar.
-   * `TransmissaoEmAndamentoError` se outro processo tem a trava; `ValidationError` se a entrada não passa, antes de
+   * `TransmissaoEmAndamentoError` se outro processo tem a trava; `ErroDeValidacao` se a entrada não passa, antes de
    * gravar; `TravaPerdidaError` se a trava venceu antes de guardar o desfecho (os bytes ficam para quem assumiu);
-   * `ConfigError` sem `aoDecidir` no emissor nem na chamada.
+   * `ErroDeConfiguracao` sem `aoDecidir` no emissor nem na chamada.
    */
   emitir(
     ref: string,

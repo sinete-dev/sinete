@@ -181,7 +181,7 @@ describe('cartaCorrecao (110110)', () => {
     expect((await conferirAssinatura(ev, { id: `ID110110${ch}03` })).ok).toBe(true);
   });
 
-  test('nSeqEvento fora de 1 a 20 é ConfigError', async () => {
+  test('nSeqEvento fora de 1 a 20 é ErroDeConfiguracao', async () => {
     const { c } = await client(fakeTransport());
     for (const n of [0, 21, 1.5]) {
       await expect(
@@ -225,7 +225,7 @@ describe('manifestar (AN, cOrgao 91)', () => {
     expect(campo(eventoEnviado(mensagem(t.requests[0] as never)), 'xJust')).toBe('Mercadoria não entregue no prazo');
   });
 
-  test('sem autor é ConfigError; tipo desconhecido é ConfigError', async () => {
+  test('sem autor é ErroDeConfiguracao; tipo desconhecido é ErroDeConfiguracao', async () => {
     const { c } = await client(fakeTransport());
     await expect(c.manifestar({ chave: chave(), tipo: 'ciencia' })).rejects.toBeInstanceOf(ErroDeConfiguracao);
     await expect(
@@ -235,7 +235,7 @@ describe('manifestar (AN, cOrgao 91)', () => {
 });
 
 describe('retEvento de outro evento', () => {
-  test('chave, tipo ou sequência diferentes do enviado é ProtocolError, nunca sucesso', async () => {
+  test('chave, tipo ou sequência diferentes do enviado é ErroRespostaInvalida, nunca sucesso', async () => {
     const ch = chave();
     const outra = chave({ nNF: 77 });
     const pedido = { chave: ch, nProt: '141260000000001', xJust: 'Cancelamento por erro de digitação' };
@@ -301,7 +301,7 @@ describe('cancelarPorSubstituicao (110112)', () => {
     expect(t.requests[0]?.url).toBe(nfceEndpoint({ ambiente: 'homologacao', servico: 'RecepcaoEvento', uf: 'SP' }).url);
   });
 
-  test('detEvento fora do e110112 (cOrgaoAutor que não é UF) é ValidationError sem enviar', async () => {
+  test('detEvento fora do e110112 (cOrgaoAutor que não é UF) é ErroDeValidacao sem enviar', async () => {
     const t = fakeTransport();
     const { c } = await client(t);
     await expect(
@@ -317,7 +317,7 @@ describe('cancelarPorSubstituicao (110112)', () => {
     expect(t.requests).toHaveLength(0);
   });
 
-  test('NF-e modelo 55 é ValidationError; chave de referência inválida também', async () => {
+  test('NF-e modelo 55 é ErroDeValidacao; chave de referência inválida também', async () => {
     const { c } = await client(fakeTransport());
     const base = { nProt: '135260000000001', xJust: 'Justificativa longa', cOrgaoAutor: '35', verAplic: 'x' };
     await expect(

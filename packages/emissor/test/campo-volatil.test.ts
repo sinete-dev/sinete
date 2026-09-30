@@ -10,8 +10,8 @@ import mdfe from '../../rejeicoes/src/data/rejeicoes-mdfe.json' with { type: 'js
 import tabela from '../src/data/cstat.json' with { type: 'json' };
 
 const rx = new RegExp(tabela.campoVolatilPadrao.regex, tabela.campoVolatilPadrao.flags);
-const casam = (lista: readonly { readonly code: string; readonly message?: string; readonly mensagem?: string }[]) =>
-  lista.filter((e) => rx.test(e.message ?? e.mensagem ?? '')).map((e) => e.code);
+const casam = (lista: readonly { readonly codigo: string; readonly mensagem: string }[]) =>
+  lista.filter((e) => rx.test(e.mensagem)).map((e) => e.codigo);
 
 test('campoVolatil em sincronia com o catálogo', () => {
   expect(tabela.nfe.campoVolatil).toEqual(casam(nfe.rejeicoes));

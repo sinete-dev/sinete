@@ -4,7 +4,7 @@
  * cancelamento por substituição, CC-e, manifestação do destinatário no AN), inutilização, consulta cadastro e
  * Distribuição DF-e. Contingência SVC por dado: o autorizador SVC-AN ou SVC-RS de cada UF vem do `@sinete/transport`.
  *
- * Todo desfecho que chega a uma resposta da SEFAZ é um `SefazOutcome` do core (autorizado, rejeitado, denegado,
+ * Todo desfecho que chega a uma resposta da SEFAZ é um `ResultadoSefaz` do core (autorizado, rejeitado, denegado,
  * pendente), com a dica do `@sinete/rejeicoes` na rejeição. Os documentos processados (`nfeProc`, `procEventoNFe`,
  * `ProcInutNFe`) são montados por splice: o XML assinado entra byte a byte, o protocolo entra como fatia da resposta.
  *
@@ -85,7 +85,7 @@ export interface NfeClientOptions {
    * UF dos serviços que não partem de um documento: status do serviço, inutilização, recibo consultado sem a NF-e,
    * `cUFAutor` padrão da distribuição e fuso da manifestação. Autorização, consulta, recibo com a NF-e e eventos da
    * própria nota vão ao autorizador da chave (cUF e tpEmis), seja qual for esta UF; sem ela, os serviços que precisam
-   * dela lançam `ConfigError`.
+   * dela lançam `ErroDeConfiguracao`.
    */
   readonly uf?: Uf;
   /** Relógio de emissão: `dhEvento`, número do lote. */
@@ -174,7 +174,7 @@ export interface ProtocoloNfe {
   readonly nfeProc?: string;
 }
 
-/** Desfecho da autorização: autorizada, denegada (número consumido), rejeitada ou pendente (recibo em `ref`). */
+/** Desfecho da autorização: autorizada, denegada (número consumido), rejeitada ou pendente (recibo em `referencia`). */
 export type AutorizacaoOutcome = ResultadoSefaz<ProtocoloNfe, ProtocoloNfe>;
 
 /** Situação da NF-e na consulta protocolo. */
@@ -468,7 +468,7 @@ function lerProtocolo(doc: DocumentoXml, el: ElementoXml): ProtocoloLido {
 
 /**
  * Protocolo de uma NF-e que este cliente enviou: o `digVal` tem de ser o DigestValue da nota assinada, senão o
- * protocolo é de outro conteúdo e nenhum `nfeProc` é montado (`ProtocolError`). Sem `digVal` não há como provar que o
+ * protocolo é de outro conteúdo e nenhum `nfeProc` é montado (`ErroRespostaInvalida`). Sem `digVal` não há como provar que o
  * protocolo é deste conteúdo: o desfecho volta sem `nfeProc` (confirme com `consultar`).
  */
 function desfechoDoProtocolo({ p, embutido }: ProtocoloLido, a: DocumentoAssinado | undefined): AutorizacaoOutcome {
@@ -544,7 +544,7 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
   const tpAmb = tpAmbDoAmbiente(options.ambiente);
   const ufInfo = options.uf === undefined ? undefined : ufPorSigla(options.uf);
   if (options.uf !== undefined && !ufInfo) throw new ErroDeConfiguracao(`UF inválida: ${String(options.uf)}`);
-  /** UF dos serviços sem documento; sem `options.uf`, `ConfigError` nomeando o serviço. */
+  /** UF dos serviços sem documento; sem `options.uf`, `ErroDeConfiguracao` nomeando o serviço. */
   const ufPadrao = (servico: string): { readonly uf: Uf; readonly cUF: CUf } => {
     if (options.uf === undefined || ufInfo === undefined) {
       throw new ErroDeConfiguracao(`${servico} precisa da UF: informe NfeClientOptions.uf`);

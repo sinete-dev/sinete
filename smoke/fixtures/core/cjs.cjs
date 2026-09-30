@@ -9,16 +9,16 @@ try {
 } catch (e) {
   err = e;
 }
-if (!(err instanceof core.ErroDeConfiguracao) || err.code !== 'config_invalida') failures.push('ConfigError via require');
+if (!(err instanceof core.ErroDeConfiguracao) || err.code !== 'config_invalida') failures.push('ErroDeConfiguracao via require');
 let xerr;
 try {
   xml.lerXml('<a><b></a>');
 } catch (e) {
   xerr = e;
 }
-if (!(xerr instanceof xml.ErroXml) || !(xerr instanceof core.ErroSinete)) failures.push('XmlError via require');
+if (!(xerr instanceof xml.ErroXml) || !(xerr instanceof core.ErroSinete)) failures.push('ErroXml via require');
 Promise.all([import('@sinete/core'), import('@sinete/core/xml')]).then(([esm, esmXml]) => {
   if (esm.ErroSinete !== core.ErroSinete) failures.push('mesma classe em require e import');
-  if (esmXml.ErroXml !== xml.ErroXml) failures.push('mesma XmlError em require e import');
+  if (esmXml.ErroXml !== xml.ErroXml) failures.push('mesma ErroXml em require e import');
   console.log(JSON.stringify({ ok: failures.length === 0, rt: `node ${process.version}`, mode: 'require', failures }));
 });

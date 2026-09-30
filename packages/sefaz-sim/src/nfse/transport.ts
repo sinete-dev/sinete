@@ -1,7 +1,7 @@
 /**
  * Redireciona ao simulador da NFS-e os pedidos que um cliente (o `@sinete/nfse`) resolveu pelos dados de endpoints do
  * `@sinete/transport`: a base de cada API (`nfseEndpoint`) vira `baseUrl` + o prefixo da API no simulador, e o resto
- * do caminho segue igual. Pedido sem `endpoint`, de outro documento ou fora da base da API é `ConfigError`: nada
+ * do caminho segue igual. Pedido sem `endpoint`, de outro documento ou fora da base da API é `ErroDeConfiguracao`: nada
  * escapa para a Sefin ou o ADN reais.
  */
 

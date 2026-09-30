@@ -3,7 +3,7 @@
  * status, autorização síncrona (área de dados em GZip e Base64), consulta da situação, consulta dos não encerrados e
  * eventos (cancelamento, encerramento, inclusão de condutor, inclusão de DF-e, pagamento da operação).
  *
- * Todo desfecho que chega a uma resposta da SEFAZ é um `SefazOutcome` do core, com a dica do catálogo de rejeições do
+ * Todo desfecho que chega a uma resposta da SEFAZ é um `ResultadoSefaz` do core, com a dica do catálogo de rejeições do
  * MDF-e na rejeição. Os documentos processados (`mdfeProc`, `procEventoMDFe`) são montados por splice: o XML assinado
  * entra byte a byte, o protocolo entra como fatia da resposta.
  *

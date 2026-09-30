@@ -232,8 +232,8 @@ const rand = (n: number): number => {
   return seed % n;
 };
 type Mutation = (src: string) => string | undefined;
-const leaves = (src: string): { start: number; end: number; openEnd: number; contentEnd: number }[] => {
-  const out: { start: number; end: number; openEnd: number; contentEnd: number }[] = [];
+const leaves = (src: string): { inicio: number; fim: number; fimDaAbertura: number; fimDoConteudo: number }[] => {
+  const out: { inicio: number; fim: number; fimDaAbertura: number; fimDoConteudo: number }[] = [];
   for (const e of descendentes(lerXml(src).raiz)) {
     if (e.filhos.length > 0 && e.filhos.every((c) => c.tipo === 'texto')) out.push(e);
   }
@@ -243,27 +243,30 @@ const MUTATIONS: Record<string, Mutation> = {
   'remove folha': (src) => {
     const l = leaves(src);
     const e = l[rand(l.length)];
-    return e && src.slice(0, e.start) + src.slice(e.end);
+    return e && src.slice(0, e.inicio) + src.slice(e.fim);
   },
   'duplica folha': (src) => {
     const l = leaves(src);
     const e = l[rand(l.length)];
-    return e && src.slice(0, e.end) + src.slice(e.start, e.end) + src.slice(e.end);
+    return e && src.slice(0, e.fim) + src.slice(e.inicio, e.fim) + src.slice(e.fim);
   },
   'texto com sufixo': (src) => {
     const l = leaves(src);
     const e = l[rand(l.length)];
-    return e && `${src.slice(0, e.contentEnd)}9X${src.slice(e.contentEnd)}`;
+    return e && `${src.slice(0, e.fimDoConteudo)}9X${src.slice(e.fimDoConteudo)}`;
   },
   'texto vazio': (src) => {
     const l = leaves(src);
     const e = l[rand(l.length)];
-    return e && src.slice(0, e.openEnd) + src.slice(e.contentEnd);
+    return e && src.slice(0, e.fimDaAbertura) + src.slice(e.fimDoConteudo);
   },
   'texto com espaço nas pontas': (src) => {
     const l = leaves(src);
     const e = l[rand(l.length)];
-    return e && `${src.slice(0, e.openEnd)} ${src.slice(e.openEnd, e.contentEnd)} ${src.slice(e.contentEnd)}`;
+    return (
+      e &&
+      `${src.slice(0, e.fimDaAbertura)} ${src.slice(e.fimDaAbertura, e.fimDoConteudo)} ${src.slice(e.fimDoConteudo)}`
+    );
   },
   'troca folhas vizinhas': (src) => {
     const doc = lerXml(src);

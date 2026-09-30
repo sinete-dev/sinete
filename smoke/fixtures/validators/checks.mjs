@@ -32,6 +32,6 @@ export function runChecks() {
   const bad = lerIe('120000386', 'MA', { caminho: 'dest.IE' });
   expect('ie ocorrência', !bad.ok && bad.erro.code === 'ie_dv_invalido');
   const e = new ErroDeValidacao('x', bad.ok ? [] : [bad.erro]);
-  expect('compõe ValidationError', ehErroSinete(e, 'validacao_falhou') && e.ocorrencias[0].caminho === 'dest.IE');
+  expect('compõe ErroDeValidacao', ehErroSinete(e, 'validacao_falhou') && e.ocorrencias[0].caminho === 'dest.IE');
   return failures;
 }

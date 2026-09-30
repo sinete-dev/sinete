@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * Confronta o `parseIe` do @sinete/validators com outra implementação sobre pares `UF<TAB>IE` lidos do stdin e imprime
+ * Confronta o `lerIe` do @sinete/validators com outra implementação sobre pares `UF<TAB>IE` lidos do stdin e imprime
  * só estatísticas agregadas por UF. Nunca imprime, grava ou devolve os valores: a lista costuma vir de base real.
  *
  * Uso:

@@ -216,7 +216,7 @@ describe('createEmissor: ciclo dos bytes', () => {
     );
     await expect(e.emitir('r', { n: 1 })).rejects.toMatchObject({
       code: 'trava_perdida',
-      details: { desfecho: 'pendente' },
+      detalhes: { desfecho: 'pendente' },
     });
     expect((await outro.ler('nfe', 'r'))?.xml).toBe('<doc n="1" a="1"/>');
   });

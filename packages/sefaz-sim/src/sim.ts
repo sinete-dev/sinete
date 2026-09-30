@@ -36,7 +36,7 @@ import type {
 import { SimState } from './state.ts';
 
 export interface SefazSimOptions {
-  /** Relógio de emissão da SEFAZ simulada. Nos testes, um `manualClock` do `@sinete/core`. */
+  /** Relógio de emissão da SEFAZ simulada. Nos testes, um `relogioManual` do `@sinete/core`. */
   readonly clock: Relogio;
   /** UF autorizadora simulada. Padrão: `SP`. */
   readonly uf?: Uf;

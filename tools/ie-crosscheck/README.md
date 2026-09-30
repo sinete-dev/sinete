@@ -1,6 +1,6 @@
 # tools/ie-crosscheck
 
-Confronta o `parseIe` do `@sinete/validators` com outra implementação de IE sobre uma lista local de pares `UF<TAB>IE` e imprime **só estatísticas agregadas por UF**: quantas o sinete aceita, quantas a referência aceita, concordância, quantas o sinete aceita só depois de ajustar zeros à esquerda (nota *2 do Anexo I do MOC) e os códigos de ocorrência das recusas. Nunca imprime nem grava os valores, porque a lista costuma vir de base real.
+Confronta o `lerIe` do `@sinete/validators` com outra implementação de IE sobre uma lista local de pares `UF<TAB>IE` e imprime **só estatísticas agregadas por UF**: quantas o sinete aceita, quantas a referência aceita, concordância, quantas o sinete aceita só depois de ajustar zeros à esquerda (nota *2 do Anexo I do MOC) e os códigos de ocorrência das recusas. Nunca imprime nem grava os valores, porque a lista costuma vir de base real.
 
 Workspace privado, nunca publicado.
 

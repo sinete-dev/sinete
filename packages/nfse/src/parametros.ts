@@ -167,7 +167,7 @@ export function createParametrosMunicipais(o: ParametrosOptions): ParametrosMuni
   const emVoo = new Map<string, Promise<EntradaCache>>();
   const base = o.endpoint.url.replace(/\/+$/, '');
 
-  /** Lê a entrada (404 é `undefined`); JSON inválido ou HTTP fora de 200 e 404 é `ProtocolError`. */
+  /** Lê a entrada (404 é `undefined`); JSON inválido ou HTTP fora de 200 e 404 é `ErroRespostaInvalida`. */
   function lerEntrada<T>(r: EntradaCache, operacao: string, ler: (body: Record<string, unknown>) => T): T | undefined {
     if (r.status === 404) return undefined;
     const body = lerJson(r.corpo);
@@ -181,7 +181,7 @@ export function createParametrosMunicipais(o: ParametrosOptions): ParametrosMuni
 
   /**
    * GET com cache pela URL e consultas simultâneas juntadas numa só. A resposta só entra no cache depois de lida com
-   * sucesso por `ler`: resposta fora do formato (HTML de erro, JSON sem o grupo esperado) vira `ProtocolError` e não
+   * sucesso por `ler`: resposta fora do formato (HTML de erro, JSON sem o grupo esperado) vira `ErroRespostaInvalida` e não
    * envenena as consultas seguintes durante o TTL.
    */
   async function consultar<T>(

@@ -237,8 +237,8 @@ function valores(input: DpsInput, issues: Ocorrencia[]): TCInfoValores {
 }
 
 /**
- * Monta e valida a DPS. Nunca lança por dado de entrada: tudo o que impede a DPS vira `ValidationIssue` (formato,
- * documento com DV errado, competência depois da emissão, schema). Lança `ConfigError` só por opção inválida.
+ * Monta e valida a DPS. Nunca lança por dado de entrada: tudo o que impede a DPS vira `Ocorrencia` (formato,
+ * documento com DV errado, competência depois da emissão, schema). Lança `ErroDeConfiguracao` só por opção inválida.
  */
 export function buildDps(input: DpsInput, options: BuildDpsOptions): BuildDpsResult {
   const issues: Ocorrencia[] = [];

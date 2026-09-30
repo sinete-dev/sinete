@@ -33,7 +33,7 @@ npm install sinete
     Grava os bytes assinados no banco da aplicação antes do envio. Se a conexão cair, consulta a chave e, se precisar reenviar, usa os mesmos bytes para evitar outra nota para a mesma operação.
   </Card>
   <Card title="Valide antes da SEFAZ">
-    Aplica regras das rejeições reais antes de transmitir. Devolve todas as ocorrências locais juntas em um `ValidationError`.
+    Aplica regras das rejeições reais antes de transmitir. Devolve todas as ocorrências locais juntas em um `ErroDeValidacao`.
   </Card>
   <Card title="Certificados A1 e A3">
     Usa A1 sem binário nativo, JDK ou openssl externo. Integra A3 em token PKCS#11 ou em nuvem pelo `sinete-signer`.

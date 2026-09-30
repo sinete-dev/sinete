@@ -1,6 +1,6 @@
 /**
  * Datas civis e vigência. O dataset trabalha com a data civil do fato gerador (`AAAA-MM-DD`); o instante vem do
- * `Clock` de fato gerador do `@sinete/core` e vira data no fuso do local da operação, informado pelo chamador.
+ * `Relogio` de fato gerador do `@sinete/core` e vira data no fuso do local da operação, informado pelo chamador.
  */
 import type { Relogio } from '@sinete/core';
 import { ErroDeConfiguracao, formatarDataHoraComFuso } from '@sinete/core';
@@ -19,7 +19,7 @@ export function isIsoDate(value: unknown): value is IsoDate {
   return d <= (days[mo - 1] ?? 0);
 }
 
-/** Valida e devolve a data, ou lança `ConfigError`. */
+/** Valida e devolve a data, ou lança `ErroDeConfiguracao`. */
 export function requireIsoDate(value: unknown, what = 'data'): IsoDate {
   if (!isIsoDate(value)) {
     throw new ErroDeConfiguracao(`${what} inválida: ${JSON.stringify(value)}; use AAAA-MM-DD`, { detalhes: { value } });

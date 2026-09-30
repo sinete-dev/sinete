@@ -59,14 +59,14 @@ async function keys() {
   const d = big(b64url(jwk.d));
   const k = b64url(jwk.n).length;
   const data = {
-    kind: 'data',
-    certificateDer: async () => cert,
-    sign: async (bytes) => new Uint8Array(await s.sign('RSASSA-PKCS1-v1_5', pair.privateKey, bytes)),
+    tipo: 'dados',
+    certificadoDer: async () => cert,
+    assinar: async (bytes) => new Uint8Array(await s.sign('RSASSA-PKCS1-v1_5', pair.privateKey, bytes)),
   };
   const digest = {
-    kind: 'digest',
-    certificateDer: async () => cert,
-    signDigestInfo: async (di) => {
+    tipo: 'digest',
+    certificadoDer: async () => cert,
+    assinarDigestInfo: async (di) => {
       const em = new Uint8Array(k);
       em[1] = 1;
       em.fill(0xff, 2, k - di.length - 1);
@@ -93,11 +93,11 @@ export async function runChecks() {
 
   const doc = lerXml(DOC);
   const inf = primeiroFilho(doc.raiz, 'infNFe', NFE);
-  expect('parseXml offsets', inf && DOC.slice(inf.inicio, inf.fimDaAbertura) === '<infNFe Id="NFe1" versao="4.00">');
+  expect('lerXml offsets', inf && DOC.slice(inf.inicio, inf.fimDaAbertura) === '<infNFe Id="NFe1" versao="4.00">');
   expect('ids', doc.ids.get('NFe1')?.[0] === inf);
   expect('helpers', elementosFilhos(doc.raiz).length === 1 && [...descendentes(doc.raiz)].length === 3);
-  expect('textOf', textoDe(primeiroFilho(inf, 'xNome')) === 'A&B Ç' && atributoDe(inf, 'versao') === '4.00');
-  expect('inScopeNamespaces', namespacesEmEscopo(inf).get('') === NFE);
+  expect('textoDe', textoDe(primeiroFilho(inf, 'xNome')) === 'A&B Ç' && atributoDe(inf, 'versao') === '4.00');
+  expect('namespacesEmEscopo', namespacesEmEscopo(inf).get('') === NFE);
   expect('c14n', c14n(inf) === `<infNFe xmlns="${NFE}" Id="NFe1" versao="4.00"><xNome>A&amp;B Ç</xNome></infNFe>`);
   expect('escapes', escaparTextoC14n('<') === '&lt;' && escaparAtributoC14n('"') === '&quot;');
   expect('constantes', XML_NS.includes('XML/1998') && XMLNS_NS.includes('xmlns') && XMLDSIG_NS.endsWith('#'));
@@ -109,16 +109,16 @@ export async function runChecks() {
   } catch (e) {
     err = e;
   }
-  expect('XmlError', err instanceof ErroXml && ehErroSinete(err, 'xml_malformado') && err.posicao === 4);
+  expect('ErroXml', err instanceof ErroXml && ehErroSinete(err, 'xml_malformado') && err.posicao === 4);
 
   const k = await keys();
-  expect('spkiFromCertificate', codificarBase64(extrairSpki(k.cert)) === codificarBase64(k.spki));
+  expect('extrairSpki', codificarBase64(extrairSpki(k.cert)) === codificarBase64(k.spki));
   const signed = await assinarXml(DOC, { id: 'NFe1' }, k.data);
   expect('assinatura é inserção', signed.replace(/<Signature .*<\/Signature>/, '') === DOC);
   expect('algoritmo', signed.includes(ALGORITMOS_XMLDSIG.rsaSha1));
   const r = await conferirAssinatura(signed, { id: 'NFe1', elemento: 'infNFe' });
-  expect('verifySignature ok', r.ok === true && r.elemento.local === 'infNFe');
-  expect('findSignatures', encontrarAssinaturas(lerXml(signed)).length === 1);
+  expect('conferirAssinatura ok', r.ok === true && r.elemento.local === 'infNFe');
+  expect('encontrarAssinaturas', encontrarAssinaturas(lerXml(signed)).length === 1);
   const bad = await conferirAssinatura(signed.replace('A&amp;B', 'A&amp;C'), { id: 'NFe1' });
   expect('digest-diverge', bad.ok === false && bad.motivo === 'digest-diverge' && bad.signedInfoValido === true);
   const wrong = await conferirAssinatura(signed, { id: 'NFe2' });
@@ -136,6 +136,6 @@ export async function runChecks() {
   } catch (e) {
     serr = e;
   }
-  expect('XmlSignatureError', serr instanceof ErroAssinaturaXml && serr.motivo === 'id-ausente');
+  expect('ErroAssinaturaXml', serr instanceof ErroAssinaturaXml && serr.motivo === 'id-ausente');
   return failures;
 }

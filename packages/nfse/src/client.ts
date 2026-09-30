@@ -213,7 +213,7 @@ function conferirChave(chave: string): void {
   parseChaveNfse(chave);
 }
 
-/** Desfecho `authorized` da NFS-e gerada, com o `cStat` do documento e o texto da tabela de situações. */
+/** Desfecho `autorizado` da NFS-e gerada, com o `cStat` do documento e o texto da tabela de situações. */
 function geradaAutorizada(nfse: TCNFSe, v: Omit<NfseGerada, 'nfse' | 'nNFSe' | 'dhProc'>): Autorizado<NfseGerada> {
   const inf = nfse.infNFSe;
   const cStat = inf.cStat;

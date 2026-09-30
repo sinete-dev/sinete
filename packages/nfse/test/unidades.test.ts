@@ -262,7 +262,7 @@ describe('buildDps', () => {
     expect(tomador({ pTotTribSN: '6.00' }).ok).toBe(true);
   });
 
-  test('schema e serialização viram ocorrência; verAplic inválido é ConfigError', () => {
+  test('schema e serialização viram ocorrência; verAplic inválido é ErroDeConfiguracao', () => {
     const schema = buildDps(dps({ servico: { ...dps().servico, xDescServ: '' } }), { ambiente: 'homologacao', time });
     expect(!schema.ok && schema.issues[0]?.code).toBe('schema');
     const serial = buildDps(
@@ -338,7 +338,7 @@ describe('pedido de evento', () => {
 });
 
 describe('gzip e respostas', () => {
-  test('gzip em base64 de ida e volta; base64 e gzip inválidos são ProtocolError', async () => {
+  test('gzip em base64 de ida e volta; base64 e gzip inválidos são ErroRespostaInvalida', async () => {
     expect(await gunzipBase64(await gzipBase64('<a>ção</a>'))).toBe('<a>ção</a>');
     await expect(gunzipBase64('***')).rejects.toBeInstanceOf(ErroRespostaInvalida);
     await expect(gunzipBase64(codificarBase64(new TextEncoder().encode('nao e gzip')), 'nfse')).rejects.toThrow('nfse');
@@ -350,7 +350,7 @@ describe('gzip e respostas', () => {
     );
   });
 
-  test('sem CompressionStream na runtime é UnsupportedError', async () => {
+  test('sem CompressionStream na runtime é ErroNaoSuportado', async () => {
     const g = globalThis as unknown as Record<string, unknown>;
     const original = g.CompressionStream;
     g.CompressionStream = undefined;

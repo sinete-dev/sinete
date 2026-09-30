@@ -57,7 +57,7 @@ const BRASILIA_MIN = -180;
 
 /**
  * O módulo vigente para a família no instante do relógio e no ambiente dados: a entrada de início mais recente que
- * não passa da data. Na emissão, passe o relógio de emissão; para documento recebido, um `fixedClock` com a data dele.
+ * não passa da data. Na emissão, passe o relógio de emissão; para documento recebido, um `relogioFixo` com a data dele.
  * Lança `VigenciaError` (`pl_sem_vigencia`) quando nenhuma entrada cobre a data.
  */
 export function selecionarPl(familia: FamiliaSchema, ambiente: Ambiente, relogio: Relogio): VigenciaEntry {

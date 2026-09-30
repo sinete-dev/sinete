@@ -76,7 +76,7 @@ describe('mapa de falhas observadas (ADR 0004, seção 4)', () => {
     expect(c(err).code).toBe(code);
   });
 
-  test('chave que não casa vira ConfigError', () => {
+  test('chave que não casa vira ErroDeConfiguracao', () => {
     expect(c(e('ERR_OSSL_X509_KEY_VALUES_MISMATCH', 'key values mismatch')).code).toBe('config_invalida');
   });
 

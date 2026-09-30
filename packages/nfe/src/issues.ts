@@ -1,5 +1,5 @@
 /**
- * Coletor de ocorrências de validação (`ValidationIssue` do core). O builder junta todas as ocorrências antes de
+ * Coletor de ocorrências de validação (`Ocorrencia` do core). O builder junta todas as ocorrências antes de
  * decidir, em vez de parar na primeira. Os códigos são API pública (snake_case, português, sem acento) e estão listados
  * em `NFE_ISSUE_CODES`.
  */

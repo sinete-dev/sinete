@@ -254,7 +254,7 @@ export interface Contingencia<Entrada, C> {
 }
 
 /**
- * Confere as opções e devolve a contingência ligada, ou `undefined` desligada. `ConfigError` com `automatica: true`
+ * Confere as opções e devolve a contingência ligada, ou `undefined` desligada. `ErroDeConfiguracao` com `automatica: true`
  * num documento sem contingência automática, com limites fora da faixa, com o store implementando só parte dos métodos.
  */
 export function criarContingencia<Entrada, C>(deps: {

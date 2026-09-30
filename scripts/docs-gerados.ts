@@ -388,7 +388,7 @@ for (const [pacote, cs] of [...porPacote].sort(([a], [b]) => a.localeCompare(b))
 }
 saida.set(
   path.join(GUIA, 'erros', 'index.md'),
-  `# Códigos de erro\n\nGerado do fonte por \`scripts/docs-gerados.ts\`; não edite à mão. Todo erro lançado pelo sinete é um \`SineteError\` com \`code\` estável e \`docs\`, o caminho da página do código nesta pasta (\`erros/<code>.md\`). Decida pelo \`code\` (ou por \`isSineteError(e, code)\`), nunca pela mensagem. Rejeição da SEFAZ não é erro lançado: é desfecho (\`status: 'rejected'\` no cliente, \`tipo: 'recusado'\` no emissor), e o catálogo de rejeições é o \`@sinete/rejeicoes\`.\n${linhasErros.join('\n')}\n`,
+  `# Códigos de erro\n\nGerado do fonte por \`scripts/docs-gerados.ts\`; não edite à mão. Todo erro lançado pelo sinete é um \`ErroSinete\` com \`code\` estável e \`pagina\`, o caminho da página do código nesta pasta (\`erros/<code>.md\`). Decida pelo \`code\` (ou por \`ehErroSinete(e, code)\`), nunca pela mensagem. Rejeição da SEFAZ não é erro lançado: é desfecho (\`tipo: 'recusado'\`, no cliente e no emissor), e o catálogo de rejeições é o \`@sinete/rejeicoes\`.\n${linhasErros.join('\n')}\n`,
 );
 
 // ---------------------------------------------------------------------------------------------------------------

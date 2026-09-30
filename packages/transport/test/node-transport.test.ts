@@ -104,7 +104,7 @@ describe.skipIf(!openssl)('transporte node:https', () => {
     const t = createNodeTransport({ identity: identity(), additionalCa: [pki.caPem], audit: (e) => events.push(e) });
     await expect(t.send({ url })).rejects.toMatchObject({
       code: 'certificado_ausente_ou_recusado',
-      details: { host: '127.0.0.1', status: 403 },
+      detalhes: { host: '127.0.0.1', status: 403 },
     });
     expect(events[0]).toMatchObject({ status: undefined, errorCode: 'certificado_ausente_ou_recusado' });
     const lax = createNodeTransport({ identity: identity(), additionalCa: [pki.caPem], rejectOn403: false });
@@ -120,7 +120,7 @@ describe.skipIf(!openssl)('transporte node:https', () => {
     await t.close();
   });
 
-  test('servidor mudo: TimeoutError com o prazo', async () => {
+  test('servidor mudo: ErroDeTempoEsgotado com o prazo', async () => {
     const url = await tlsServer(() => {});
     const t = createNodeTransport({ identity: identity(), additionalCa: [pki.caPem], timeoutMs: 200 });
     const e = await t.send({ url }).catch((x: unknown) => x);
@@ -176,7 +176,7 @@ describe.skipIf(!openssl)('transporte node:https', () => {
     await t.close();
   });
 
-  test('chave que não casa com o certificado vira ConfigError', async () => {
+  test('chave que não casa com o certificado vira ErroDeConfiguracao', async () => {
     const other = createPki();
     try {
       const url = bunServer(() => new Response('x'));

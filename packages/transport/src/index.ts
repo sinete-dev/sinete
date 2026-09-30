@@ -75,7 +75,7 @@ export type {
 export type CreateTransportOptions = DenoTransportOptions;
 
 /**
- * Cria o transporte da runtime atual. Nesta entrada só há o do Deno; em outra runtime, lança `UnsupportedError` em vez
+ * Cria o transporte da runtime atual. Nesta entrada só há o do Deno; em outra runtime, lança `ErroNaoSuportado` em vez
  * de cair num `fetch` genérico que ignoraria a identidade TLS.
  */
 export function createTransport(options: CreateTransportOptions): Transport {

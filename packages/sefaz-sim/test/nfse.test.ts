@@ -540,7 +540,7 @@ describe('consultas e parametrização', () => {
     });
   });
 
-  test('configuração inválida é ConfigError', () => {
+  test('configuração inválida é ErroDeConfiguracao', () => {
     const base = { clock: relogioManual(INICIO), signer: c.servidor.signer };
     expect(() => createNfseSim({ ...base, municipios: [{ cMun: '355', nome: 'x' }] })).toThrow(ErroDeConfiguracao);
     expect(() =>
@@ -551,7 +551,7 @@ describe('consultas e parametrização', () => {
     ).toThrow(ErroDeConfiguracao);
   });
 
-  test('município com UF inválida no cadastro simulado é ConfigError na geração', async () => {
+  test('município com UF inválida no cadastro simulado é ErroDeConfiguracao na geração', async () => {
     const s = ctx({ municipios: [{ cMun: '9900000', nome: 'x', servicos: [] }] });
     const d = dps({ cLocEmi: '9900000', tribISSQN: '2' });
     await expect(s.emitir(await assinar(d, c.emitente))).rejects.toThrow(ErroDeConfiguracao);

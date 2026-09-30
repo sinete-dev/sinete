@@ -74,7 +74,7 @@ describe('statusServico', () => {
     expect(r.cStat).toBe('108');
   });
 
-  test('UF inválida é ConfigError', async () => {
+  test('UF inválida é ErroDeConfiguracao', async () => {
     await expect(client(fakeTransport(), { uf: 'XX' as never })).rejects.toBeInstanceOf(ErroDeConfiguracao);
   });
 });
@@ -116,7 +116,7 @@ describe('autorizar síncrono', () => {
     expect(mensagem(t.requests[0] as never)).toContain(`<indSinc>1</indSinc>${nfe}</enviNFe>`);
   });
 
-  test('302 denegada devolve Denied com nfeProc', async () => {
+  test('302 denegada devolve denegado com nfeProc', async () => {
     const ch = chave();
     const nfe = await nfeAssinada(ch);
     const t = fakeTransport(
@@ -154,7 +154,7 @@ describe('autorizar síncrono', () => {
     if (r2.tipo === 'recusado') expect(r2.dica?.comoCorrigir).toBeDefined();
   });
 
-  test('digVal diferente do DigestValue enviado é ProtocolError', async () => {
+  test('digVal diferente do DigestValue enviado é ErroRespostaInvalida', async () => {
     const ch = chave();
     const nfe = await nfeAssinada(ch);
     const t = fakeTransport(soap(retEnviNFe({ cStat: '104', inner: protNFe({ chNFe: ch, digVal: 'AAAA' }) })));
@@ -162,7 +162,7 @@ describe('autorizar síncrono', () => {
     await expect(c.autorizar(nfe)).rejects.toBeInstanceOf(ErroRespostaInvalida);
   });
 
-  test('protocolo de outra chave é ProtocolError', async () => {
+  test('protocolo de outra chave é ErroRespostaInvalida', async () => {
     const nfe = await nfeAssinada(chave());
     const outra = chave({ nNF: 999 });
     const t = fakeTransport(
@@ -182,7 +182,7 @@ describe('autorizar síncrono', () => {
     expect(r.tipo === 'autorizado' && r.valor.nfeProc).toBeUndefined();
   });
 
-  test('denegação sem digVal: denied com o protNFe, sem nfeProc', async () => {
+  test('denegação sem digVal: denegado com o protNFe, sem nfeProc', async () => {
     const ch = chave();
     const nfe = await nfeAssinada(ch);
     const t = fakeTransport(
@@ -197,7 +197,7 @@ describe('autorizar síncrono', () => {
     expect(r.valor.protNFe).toContain('<cStat>302</cStat>');
   });
 
-  test('entrada sem assinatura, sem Id ou fora do namespace é ConfigError', async () => {
+  test('entrada sem assinatura, sem Id ou fora do namespace é ErroDeConfiguracao', async () => {
     const { c } = await client(fakeTransport());
     await expect(c.autorizar(`<NFe xmlns="${NFE_NS}"><infNFe Id="NFe1"/></NFe>`)).rejects.toBeInstanceOf(
       ErroDeConfiguracao,
@@ -207,7 +207,7 @@ describe('autorizar síncrono', () => {
     await expect(c.autorizar(`<nfeProc xmlns="${NFE_NS}"/>`)).rejects.toBeInstanceOf(ErroDeConfiguracao);
   });
 
-  test('idLote padrão vem do relógio; idLote inválido é ConfigError', async () => {
+  test('idLote padrão vem do relógio; idLote inválido é ErroDeConfiguracao', async () => {
     const ch = chave();
     const nfe = await nfeAssinada(ch);
     const t = fakeTransport(soap(retEnviNFe({ cStat: '104', inner: protNFe({ chNFe: ch }) })));
@@ -220,7 +220,7 @@ describe('autorizar síncrono', () => {
 });
 
 describe('autorizar assíncrono e recibo', () => {
-  test('103 devolve pending com o recibo e retryAfterMs do tMed', async () => {
+  test('103 devolve pendente com o recibo e aguardarMs do tMed', async () => {
     const nfe = await nfeAssinada();
     const t = fakeTransport(
       soap(
@@ -237,7 +237,7 @@ describe('autorizar assíncrono e recibo', () => {
     expect(mensagem(t.requests[0] as never)).toContain('<indSinc>0</indSinc>');
   });
 
-  test('103 sem infRec é ProtocolError', async () => {
+  test('103 sem infRec é ErroRespostaInvalida', async () => {
     const t = fakeTransport(soap(retEnviNFe({ cStat: '103' })));
     const { c } = await client(t);
     await expect(c.autorizar(await nfeAssinada(), { sincrono: false })).rejects.toBeInstanceOf(ErroRespostaInvalida);
@@ -275,7 +275,7 @@ describe('autorizar assíncrono e recibo', () => {
     );
   });
 
-  test('consultarRecibo: 104 sem o protNFe da chave é ProtocolError; recibo inválido é ConfigError', async () => {
+  test('consultarRecibo: 104 sem o protNFe da chave é ErroRespostaInvalida; recibo inválido é ErroDeConfiguracao', async () => {
     const nfe = await nfeAssinada();
     const t = fakeTransport(
       soap(
@@ -321,7 +321,7 @@ describe('autorizar assíncrono e recibo', () => {
     expect(sleeps).toEqual([2000, 3000, 4500, 6750, 10125, 15188, 22782, 30000, 30000, 30000]);
   });
 
-  test('aguardarRecibo: política inválida é ConfigError; sinal abortado interrompe a espera padrão', async () => {
+  test('aguardarRecibo: política inválida é ErroDeConfiguracao; sinal abortado interrompe a espera padrão', async () => {
     const { c } = await client(fakeTransport());
     await expect(c.aguardarRecibo('351000000000001', undefined, { maxTentativas: 0 })).rejects.toBeInstanceOf(
       ErroDeConfiguracao,
@@ -359,7 +359,7 @@ describe('autorizar assíncrono e recibo', () => {
     expect(vistos).toEqual([ac.signal]);
   });
 
-  test('retorno de outro recibo é ProtocolError', async () => {
+  test('retorno de outro recibo é ErroRespostaInvalida', async () => {
     const t = fakeTransport(soap(retConsReciNFe({ cStat: '105', nRec: '351000000000009' })));
     const { c } = await client(t);
     await expect(c.consultarRecibo('351000000000001')).rejects.toBeInstanceOf(ErroRespostaInvalida);
@@ -401,7 +401,7 @@ describe('autorizar assíncrono e recibo', () => {
 describe('consultar', () => {
   const evento = `<procEventoNFe versao="1.00"><evento versao="1.00"><infEvento Id="ID110111x"/></evento><retEvento versao="1.00"><infEvento><cStat>135</cStat></infEvento></retEvento></procEventoNFe>`;
 
-  test('protocolo de outra chave na resposta da consulta é ProtocolError, mesmo com o digVal certo', async () => {
+  test('protocolo de outra chave na resposta da consulta é ErroRespostaInvalida, mesmo com o digVal certo', async () => {
     const ch = chave();
     const outra = chave({ nNF: 99 });
     const nfe = await nfeAssinada(ch);
@@ -470,7 +470,7 @@ describe('consultar', () => {
     }
   });
 
-  test('217 é rejeição com dica própria; chave inválida é ValidationError; NF-e de outra chave é ConfigError', async () => {
+  test('217 é rejeição com dica própria; chave inválida é ErroDeValidacao; NF-e de outra chave é ErroDeConfiguracao', async () => {
     const ch = chave();
     const t = fakeTransport(
       soap(retConsSitNFe({ cStat: '217', xMotivo: 'Rejeição: NF-e não consta na base de dados da SEFAZ', chNFe: ch })),
@@ -518,7 +518,7 @@ describe('resolverEnvioSemResposta', () => {
     }
   });
 
-  test('denegada com o mesmo conteúdo: concluída como Denied', async () => {
+  test('denegada com o mesmo conteúdo: concluída como denegado', async () => {
     const ch = chave();
     const nfe = await nfeAssinada(ch);
     const t = fakeTransport(
@@ -537,7 +537,7 @@ describe('resolverEnvioSemResposta', () => {
     expect(r.acao === 'concluida' && r.outcome.tipo === 'denegado' && r.outcome.valor.nfeProc).toContain(nfe);
   });
 
-  test('denegada sem digVal ou com outro digVal: concluída como Denied, sem nfeProc, com o conteúdo dito', async () => {
+  test('denegada sem digVal ou com outro digVal: concluída como denegado, sem nfeProc, com o conteúdo dito', async () => {
     // A denegação é da chave (MOC 7.0 Anexo I, tabela 4.4.3): o número está denegado com qualquer conteúdo.
     const ch = chave();
     const nfe = await nfeAssinada(ch);
@@ -559,7 +559,7 @@ describe('resolverEnvioSemResposta', () => {
     for (const conteudo of ['sem-digval', 'difere'] as const) {
       const r = await resolverEnvioSemResposta(c, nfe);
       expect(r).toMatchObject({ acao: 'concluida', situacao: 'denegada', conteudo });
-      if (r.acao !== 'concluida' || r.outcome.tipo !== 'denegado') throw new Error('esperado Denied');
+      if (r.acao !== 'concluida' || r.outcome.tipo !== 'denegado') throw new Error('esperado denegado');
       expect(r.outcome.cStat).toBe('302');
       expect(r.outcome.valor.nfeProc).toBeUndefined();
       expect(r.outcome.valor.protNFe).toContain('<cStat>302</cStat>');
@@ -750,7 +750,7 @@ describe('autorizador pelo documento e pela chave', () => {
     await expect(c.distribuicaoDFe({ ultNSU: 0 })).rejects.toBeInstanceOf(ErroDeConfiguracao);
   });
 
-  test('Id da NF-e que não é chave de acesso é ConfigError antes do envio', async () => {
+  test('Id da NF-e que não é chave de acesso é ErroDeConfiguracao antes do envio', async () => {
     const t = fakeTransport();
     const { c } = await client(t);
     const ruim = (await nfeAssinada()).replace(/Id="NFe(\d{43})\d"/, (_m, base: string) => `Id="NFe${base}X"`);
@@ -820,7 +820,7 @@ describe('NFC-e (modelo 65)', () => {
     ]);
   });
 
-  test('recibo de NFC-e sem a nota assinada: mod 65 nas opções escolhe o serviço; mod contra a nota é ConfigError', async () => {
+  test('recibo de NFC-e sem a nota assinada: mod 65 nas opções escolhe o serviço; mod contra a nota é ErroDeConfiguracao', async () => {
     const pend = soap(retConsReciNFe({ cStat: '105' }));
     const t = fakeTransport(pend, pend);
     const base = nfeEndpoint({ ambiente: 'homologacao', servico: 'NFeRetAutorizacao', uf: 'SP' });
@@ -927,7 +927,7 @@ describe('nfeAssinadaDoProc', () => {
     );
   });
 
-  test('sem NF-e assinada: ConfigError', () => {
+  test('sem NF-e assinada: ErroDeConfiguracao', () => {
     const semAssinatura = `<nfeProc xmlns="${NFE_NS}" versao="4.00"><NFe xmlns="${NFE_NS}"><infNFe Id="NFe${chave()}"/></NFe></nfeProc>`;
     expect(() => nfeAssinadaDoProc(semAssinatura)).toThrow(ErroDeConfiguracao);
     expect(() => nfeAssinadaDoProc('<mdfeProc xmlns="http://www.portalfiscal.inf.br/mdfe"/>')).toThrow(

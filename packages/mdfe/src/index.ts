@@ -5,7 +5,7 @@
  *   chave de acesso, os derivados em decimal exato e as regras do MOC conferidas antes de serializar.
  * - `signMdfe`: QR Code (com `sign` em contingência off-line) e assinatura por splice; a string devolvida é a final.
  * - `createMdfeClient`: status, autorização síncrona, consulta, não encerrados e eventos (cancelamento, encerramento,
- *   inclusão de condutor e de DF-e, pagamento da operação), com os desfechos como `SefazOutcome` do core.
+ *   inclusão de condutor e de DF-e, pagamento da operação), com os desfechos como `ResultadoSefaz` do core.
  * - O emissor (bytes gravados antes do envio, trava, retomada, cancelamento com recuperação) está em
  *   `@sinete/emissor/mdfe` (ADR 0010).
  * - Percurso por divisas (`conferirPercurso`, `sugerirPercurso`) e o resolvedor de envio sem resposta.

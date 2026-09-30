@@ -68,7 +68,7 @@ function supl(xml: string): { qrCode: string; urlChave: string; el: ReturnType<t
   if (el === undefined) throw new Error('sem infNFeSupl');
   const t = (n: string): string => {
     const c = primeiroFilho(el, n, NFE_NS);
-    return c?.filhos.map((x) => ('value' in x ? String(x.valor) : '')).join('') ?? '';
+    return c?.filhos.map((x) => (x.tipo === 'texto' ? x.valor : '')).join('') ?? '';
   };
   return { qrCode: t('qrCode'), urlChave: t('urlChave'), el };
 }
@@ -423,9 +423,9 @@ describe('NFC-e: regras do modelo 65', () => {
   test('assinatura do QR Code com signer de DigestInfo (A3, HSM): prefixo SHA-1 e o hash dos parâmetros', async () => {
     const recebido: Uint8Array[] = [];
     const signer = {
-      kind: 'digest' as const,
-      certificateDer: async (): Promise<Uint8Array> => new Uint8Array(),
-      signDigestInfo: async (di: Uint8Array): Promise<Uint8Array> => {
+      tipo: 'digest' as const,
+      certificadoDer: async (): Promise<Uint8Array> => new Uint8Array(),
+      assinarDigestInfo: async (di: Uint8Array): Promise<Uint8Array> => {
         recebido.push(di);
         return di;
       },

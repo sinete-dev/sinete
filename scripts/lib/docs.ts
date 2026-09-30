@@ -63,10 +63,11 @@ const literais = (s: string): string[] => [...s.matchAll(/'([a-z0-9_]+)'/g)].map
 
 /**
  * Códigos de erro tipados, levantados do fonte de `packages/*\/src`: o argumento de tipo de cada classe que estende um
- * erro (`extends SineteError<'x'>`, ou um alias `type XErrorCode = 'a' | 'b'` do mesmo arquivo) e o literal passado a
+ * erro (`extends ErroSinete<'x'>`, ou um alias `type XErrorCode = 'a' | 'b'` do mesmo arquivo) e o literal passado a
  * `super('x', ...)` dentro da classe, que é o mais específico (o `PolicyError` lança `politica_recusou` do
- * `TransportErrorCode`). Os aliases `*ErrorCode` entram também, para um código declarado e nunca ligado a uma classe
- * não passar despercebido.
+ * `TransportErrorCode`). Os aliases `*ErrorCode` e `CodigoErro*` entram também, para um código declarado e nunca ligado
+ * a uma classe não passar despercebido. As classes de erro chamam `Erro*` (ADR 0015) ou, nos pacotes ainda não
+ * migrados, `*Error`.
  */
 export async function codigosDeErro(): Promise<CodigoDeErro[]> {
   const porCodigo = new Map<string, CodigoDeErro>();
@@ -78,12 +79,12 @@ export async function codigosDeErro(): Promise<CodigoDeErro[]> {
   for await (const f of new Glob('packages/*/src/**/*.ts').scan({ cwd: root })) {
     // Sem os comentários de bloco: o TSDoc dentro de uma união (`/** alertas 40 e 42; 116 */ | 'x'`) tem `;`.
     const texto = (await Bun.file(path.join(root, f)).text()).replace(/\/\*[\s\S]*?\*\//g, '');
-    if (!/extends \w*Error\b/.test(texto)) continue;
+    if (!/extends (?:Erro\w*|\w*Error)\b/.test(texto)) continue;
     const pacote = manifests.get(f.split('/').slice(0, 2).join('/')) ?? f;
     const aliases = new Map<string, string[]>();
     for (const m of texto.matchAll(/export type (\w+)\s*=([^;]*);/g)) aliases.set(m[1] ?? '', literais(m[2] ?? ''));
     for (const [alias, codes] of aliases) {
-      if (!alias.endsWith('ErrorCode')) continue;
+      if (!alias.endsWith('ErrorCode') && !alias.startsWith('CodigoErro')) continue;
       for (const code of codes) soltos.set(code, { pacote, arquivo: f, alias });
     }
     const classes = [...texto.matchAll(/export class (\w+) extends (\w+)(?:<([^>{]*)>)?\s*\{/g)];

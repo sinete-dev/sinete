@@ -69,7 +69,7 @@ describe('tabela oficial', () => {
     }
   });
 
-  test('data inválida é ConfigError', () => {
+  test('data inválida é ErroDeConfiguracao', () => {
     expect(() => official.nominal('2026-1-1')).toThrow(ErroDeConfiguracao);
     expect(() => official.reference(20260101 as unknown as string)).toThrow(ErroDeConfiguracao);
   });
@@ -194,7 +194,7 @@ describe('alíquotas informadas pelo usuário', () => {
     expect(p.reference('2029-02-01').CBS.value).toBe('9');
   });
 
-  test('sobreposição inválida é ConfigError', () => {
+  test('sobreposição inválida é ErroDeConfiguracao', () => {
     const bad = (o: object) => () => withOverrides(official, [o as never]);
     expect(bad({ tributo: 'IS', value: '1', reason: 'x' })).toThrow(ErroDeConfiguracao);
     expect(bad({ tributo: 'CBS', value: '1,5', reason: 'x' })).toThrow(/alíquota inválida/);

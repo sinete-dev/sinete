@@ -1455,7 +1455,7 @@ export async function assinaturaQrCode(built: BuiltNfe, signer: Assinador): Prom
  * A NFC-e montada com o `infNFeSupl` (QR Code e `urlChave`) inserido por splice antes do fechamento de `NFe`, pronta
  * para a assinatura. Na versão 3 em contingência off-line, informe a `assinatura` (`assinaturaQrCode`); nos demais
  * casos ela não existe (ZX02-330, rejeição 445; ZX02-334, rejeição 474). Para assinar em três fases (A3, HSM), passe
- * este texto ao `prepareSignature` do `@sinete/core/xml` com o `id` da nota. Na NF-e (modelo 55), devolve o XML como
+ * este texto ao `prepararAssinatura` do `@sinete/core/xml` com o `id` da nota. Na NF-e (modelo 55), devolve o XML como
  * veio: ela não tem `infNFeSupl` (ZX01-10, rejeição 393).
  */
 export function comQrCode(built: BuiltNfe, assinatura?: string): string {

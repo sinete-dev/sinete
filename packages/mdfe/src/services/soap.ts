@@ -62,7 +62,7 @@ export interface ChamadaSoap {
   readonly logger: Logger;
 }
 
-/** Envia e devolve o elemento de retorno. Fault SOAP, retorno ausente ou XML malformado viram `ProtocolError`. */
+/** Envia e devolve o elemento de retorno. Fault SOAP, retorno ausente ou XML malformado viram `ErroRespostaInvalida`. */
 export async function chamar(c: ChamadaSoap): Promise<RespostaSoap> {
   const s = servicoInfo(c.servico);
   const started = { servico: c.servico, autorizador: c.endpoint.autorizador, host: c.endpoint.host };

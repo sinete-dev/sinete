@@ -13,7 +13,7 @@ export function runChecks() {
   expect('3 dígitos', rejeicaoPorCodigo('233')?.mensagem === 'IE do destinatário não cadastrada');
   expect('4 dígitos', rejeicaoPorCodigo('1037')?.categoria === 'reforma');
   const r = completarRecusado(criarRecusado({ cStat: '204', xMotivo: 'Rejeição: Duplicidade de NF-e' }));
-  expect('hint', r.dica?.fonte === 'MOC 7.0 Anexo I, RV 2B08-20');
+  expect('dica', r.dica?.fonte === 'MOC 7.0 Anexo I, RV 2B08-20');
   const o = completarResultado(criarRecusado({ cStat: '9998', xMotivo: 'x' }));
   expect('sem hint fora do catálogo', o.tipo === 'recusado' && o.dica === undefined);
   expect('mdfe: entrada própria', REJEICOES_MDFE.length >= 200 && rejeicaoMdfePorCodigo('663')?.mensagem === 'Percurso informado inválido');

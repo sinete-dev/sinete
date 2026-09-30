@@ -108,7 +108,7 @@ function sanName(host: string): Uint8Array {
 export type SyntheticRole = 'ac' | 'titular' | 'servidor';
 
 export interface SyntheticCertificateOptions {
-  /** Relógio da emissão: a validade começa um dia antes de `clock.now()`. */
+  /** Relógio da emissão: a validade começa um dia antes de `clock.agora()`. */
   readonly clock: Relogio;
   readonly role: SyntheticRole;
   /** CN do titular. Padrão: `SINETE SIM:<documento>` ou `sinete-sim AC`. */
@@ -117,7 +117,7 @@ export interface SyntheticCertificateOptions {
   readonly cnpj?: string;
   /** CPF do e-CPF, sem máscara. */
   readonly cpf?: string;
-  /** Dias de validade a partir de `clock.now()`. Padrão: 365. Negativo gera um certificado já vencido. */
+  /** Dias de validade a partir de `clock.agora()`. Padrão: 365. Negativo gera um certificado já vencido. */
   readonly validDays?: number;
   /** AC que assina. Sem ela, o certificado é autoassinado. */
   readonly issuer?: SyntheticCertificate;
@@ -127,13 +127,13 @@ export interface SyntheticCertificateOptions {
   readonly omitDocumentExtension?: boolean;
 }
 
-/** Certificado com a chave, pronto para o TLS (PEM), para assinar XML (`DataSigner`) e para assinar outros. */
+/** Certificado com a chave, pronto para o TLS (PEM), para assinar XML (`AssinadorDeDados`) e para assinar outros. */
 export interface SyntheticCertificate {
   readonly der: Uint8Array;
   readonly pem: string;
   /** Chave privada PKCS#8 em PEM. */
   readonly keyPem: string;
-  /** `DataSigner` do `@sinete/core` (RSASSA-PKCS1-v1_5), para o `signXml` do `@sinete/core/xml`. */
+  /** `AssinadorDeDados` do `@sinete/core` (RSASSA-PKCS1-v1_5), para o `assinarXml` do `@sinete/core/xml`. */
   readonly signer: AssinadorDeDados;
   /** Identidade `pem` do `@sinete/transport` (certificado seguido da AC, quando houver). */
   readonly tlsIdentity: { readonly kind: 'pem'; readonly certChain: string; readonly key: string };

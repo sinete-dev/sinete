@@ -96,7 +96,7 @@ function classifyCode(text: string): { code: TransportErrorCode; alert?: string 
   return { code: 'falha_rede' };
 }
 
-/** Converte a falha de uma runtime num erro tipado do sinete. `SineteError` passa direto. */
+/** Converte a falha de uma runtime num erro tipado do sinete. `ErroSinete` passa direto. */
 export function classifyTransportFailure(err: unknown, context: { readonly host: string }): ErroSinete {
   if (ehErroSinete(err)) return err;
   const text = collectText(err);
@@ -149,7 +149,7 @@ export interface HelperFailureData {
 
 /**
  * Converte a falha de transporte relatada pelo helper (código `transport` com `data` estruturado) no mesmo erro tipado
- * que o transporte em processo produziria. O prazo estourado fica de fora: quem chama lança `TimeoutError`.
+ * que o transporte em processo produziria. O prazo estourado fica de fora: quem chama lança `ErroDeTempoEsgotado`.
  */
 export function classifyHelperFailure(data: HelperFailureData, message: string, host: string): TransportError {
   let code: TransportErrorCode;

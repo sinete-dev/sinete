@@ -29,7 +29,7 @@ export interface KeyStore {
   readonly identity: IcpIdentity;
   /** Validade no instante em que o KeyStore foi aberto. */
   readonly validity: Validity;
-  /** Quem assina com esta chave (contrato `Signer` do `@sinete/core`). */
+  /** Quem assina com esta chave (contrato `Assinador` do `@sinete/core`). */
   signer(): Promise<Assinador>;
 }
 
