@@ -1,5 +1,11 @@
 # @sinete/transport
 
+## 0.1.1
+
+### Patch Changes
+
+- 14defbd: O transporte de Node e Bun fixa `rejectUnauthorized: true` no `https.Agent`. Antes, `NODE_TLS_REJECT_UNAUTHORIZED=0` no processo desligava também a conferência do certificado da SEFAZ feita pelo sinete, que passava a aceitar qualquer servidor.
+
 ## 0.1.0
 
 ### Minor Changes

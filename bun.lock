@@ -181,7 +181,7 @@
     },
     "packages/sinete": {
       "name": "sinete",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "bin": {
         "sinete": "./dist/cli.js",
       },
@@ -204,7 +204,7 @@
     },
     "packages/transport": {
       "name": "@sinete/transport",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@sinete/cert": "workspace:^",
         "@sinete/core": "workspace:^",
