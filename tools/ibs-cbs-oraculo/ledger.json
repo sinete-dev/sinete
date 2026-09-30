@@ -10,7 +10,7 @@
       "kind": "oracle-gap",
       "match": {
         "outcome": "diff",
-        "withInput": "presumedCredit",
+        "withInput": "creditoPresumido",
         "path": "gCredPresOper|\\.vCredPres(CondSus)?$|^item\\d+\\.gIBSCBS\\.vIBS$|^total\\.gIBS\\.vIBS$"
       },
       "reason": "A entrada do POST /regime-geral não tem cCredPres e a Calculadora não monta gCredPresOper (getCreditoPresumidoOperacao devolve null). O motor calcula vCredPres = vBCCredPres x pCredPres e, com indDeduzCredPres, abate do vIBS do item (UB54a-10); o oráculo não tem como conferir. Segundo oráculo: RV UB120 a UB130 no @sinete/ibs-cbs/validar.",
@@ -22,7 +22,7 @@
       "kind": "oracle-gap",
       "match": {
         "outcome": "diff",
-        "withInput": "creditReversal",
+        "withInput": "estornoDeCredito",
         "path": "gEstornoCred"
       },
       "reason": "A Calculadora não monta gEstornoCred (getEstornoCredito devolve null) nem o total correspondente. O motor repassa os valores informados e soma em IBSCBSTot/gEstornoCred (W59f-10 e W59g-10).",
