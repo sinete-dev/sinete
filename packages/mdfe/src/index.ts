@@ -81,6 +81,7 @@ export type {
   MdfeClientOptions,
   MdfeNaoEncerrado,
   MdfeServicoCliente,
+  OpcoesEnvio,
   PagamentoOperacaoPedido,
   ProtocoloMdfe,
   RecuperacaoEvento,

@@ -42,7 +42,7 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 
 ### Interfaces
 
-- `AutorizarOpcoes`: Membros: `sincrono`, `signal`.
+- `AutorizarOpcoes` (estende `OpcoesEnvio`): Membros: `sincrono`.
 - `BuildNfeOptions`: Membros: `ambiente`, `time`, `ibsCbs`, `offsetMinutes`, `verProc`, `arredondamento`, `respTec`, `exigencias`, `random`, `pagamentoIgualTotal`, `qrCode`, `urlQrCode`, `urlChave`.
 - `BuiltNfe`: Membros: `chave`, `id`, `cNF`, `cDV`, `mod`, `tpEmis`, `dhEmi`, `nfce`, `pl`, `infNFe`, `xml`.
 - `Cadastro`: Membros: `UF`, `dhCons`, `infCad`.
@@ -52,14 +52,14 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `ClassificacaoIbsCbs`: Classificação do item para IBS/CBS (NT 2025.002): o que o `IbsCbsCalculator` recebe. `CST` e `cClassTrib` vêm do cadastro do item (tabela de classificação tributária); o cálculo, as alíquotas e as reduções são da calculadora. Membros: `CST`, `cClassTrib`, `vBC`, `indDoacao`, `cCredPres`, `gTribRegular`.
 - `Cobranca`: Cobrança (grupo Y). `fat.vLiq` padrão `vOrig - vDesc`. Membros: `fatura`, `duplicatas`.
 - `ConsultaNfe`: Situação da NF-e na consulta protocolo. Membros: `chNFe`, `situacao`, `protocolo`, `eventos`, `digValConfere`.
-- `ConsultaReciboOpcoes`: Opções da consulta de um recibo. Membros: `signal`, `mod`.
+- `ConsultaReciboOpcoes` (estende `OpcoesEnvio`): Opções da consulta de um recibo. Membros: `mod`.
 - `Contingencia`: Forma de emissão (B22) fora do normal. Membros: `tpEmis`, `dhCont`, `xJust`.
 - `DecimalFormat`: Membros: `name`, `min`, `max`, `minBelowOne`, `nonZero`, `intDigits`.
 - `Desoneracao` (estende `MotivoDesoneracaoIcms>`): Desoneração do ICMS: valor e motivo andam juntos (RV N27a/N28). Membros: `vICMSDeson`, `motDesICMS`, `indDeduzDeson`.
 - `DesoneracaoSt`: Desoneração do ICMS-ST (N33a/N33b): 3 uso na agropecuária; 9 outros; 12 fomento agropecuário. Membros: `vICMSSTDeson`, `motDesICMSST`.
 - `DetalhePagamento`: Membros: `indPag`, `tPag`, `xPag`, `vPag`, `dPag`, `CNPJPag`, `UFPag`, `card`.
 - `Distribuicao`: Membros: `ultNSU`, `maxNSU`, `dhResp`, `documentos`.
-- `DistribuicaoOpcoes`: Membros: `cUFAutor`, `autor`.
+- `DistribuicaoOpcoes` (estende `OpcoesEnvio`): Membros: `cUFAutor`, `autor`.
 - `DocumentoAssinado`: Documento assinado já conferido: a string como veio (sem a declaração XML) e o que se lê dela. Membros: `xml`, `id`, `digestValue`, `doc`.
 - `DocumentoDistribuido`: Documento devolvido pela Distribuição DF-e, já descompactado. Membros: `NSU`, `schema`, `tipo`, `xml`, `resNFe`, `resEvento`.
 - `Endereco`: Endereço no Brasil (`TEnderEmi`, `TEndereco`, `TLocal`). Membros: `xLgr`, `nro`, `xCpl`, `xBairro`, `cMun`, `xMun`, `UF`, `CEP`, `fone`.
@@ -109,12 +109,14 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `NfeClient`: Membros: `options`, `statusServico()`, `autorizar()`, `consultarRecibo()`, `aguardarRecibo()`, `consultar()`, `cancelar()`, `cancelarPorSubstituicao()`, `cartaCorrecao()`, `manifestar()`, `inutilizar()`, `consultarCadastro()`, `distribuicaoDFe()`.
 - `NfeClientOptions`: Membros: `transport`, `signer`, `ambiente`, `uf`, `clock`, `logger`, `timeoutMs`, `offsetMinutes`, `contingencia`, `autor`, `sleep`, `nfceEndpoint`, `idLote`.
 - `NfeInput`: Entrada completa de uma NF-e. Membros: `modelo`, `serie`, `nNF`, `natOp`, `tpNF`, `finNFe`, `tpNFDebito`, `tpNFCredito`, `idDest`, `indFinal`, `indPres`, `indIntermed`, `cMunFG`, `cMunFGIBS`, `tpImp`, `dhSaiEnt`, `dPrevEntrega`, `cNF`, `contingencia`, `referenciadas`, `gCompraGov`, `gPagAntecipado`, `emitente`, `destinatario`, `retirada`, `entrega`, `autXML`, `itens`, `transporte`, `cobranca`, `pagamento`, `infIntermed`, `informacoesAdicionais`, `exporta`, `compra`, `cana`, `respTec`, `agropecuario`.
+- `OpcoesEnvio`: Opções de toda chamada que vai à rede. Membros: `signal`.
 - `Pagamento`: Pagamento (grupo YA). Ausente, o builder informa `tPag` 90 (sem pagamento) com valor zero. Membros: `detPag`, `vTroco`.
 - `PoliticaRecibo` (estende `ConsultaReciboOpcoes`): Política de consulta do recibo (autorização assíncrona). Membros: `maxTentativas`, `esperaMinimaMs`, `multiplicador`, `esperaMaximaMs`.
 - `Produto`: Produto ou serviço do item (grupo I). Membros: `cProd`, `cEAN`, `cBarra`, `xProd`, `NCM`, `NVE`, `CEST`, `indEscala`, `CNPJFab`, `cBenef`, `gCred`, `tpCredPresIBSZFM`, `EXTIPI`, `CFOP`, `uCom`, `qCom`, `vUnCom`, `vProd`, `cEANTrib`, `cBarraTrib`, `uTrib`, `qTrib`, `vUnTrib`, `vFrete`, `vSeg`, `vDesc`, `vOutro`, `indTot`, `indBemMovelUsado`, `DI`, `detExport`, `xPed`, `nItemPed`, `nFCI`, `rastro`, `infProdNFF`, `infProdEmb`, `especifico`.
 - `ProtocoloNfe`: Protocolo de uma NF-e (autorização ou denegação). Membros: `chNFe`, `cStat`, `xMotivo`, `nProt`, `dhRecbto`, `digVal`, `verAplic`, `protNFe`, `nfeProc`.
 - `ResponsavelTecnico`: Responsável técnico (grupo ZD, NT 2018.005). O `hashCSRT` é calculado pelo builder a partir do CSRT (nunca vai para o XML): Base64(SHA-1(CSRT + chave de acesso)). Membros: `CNPJ`, `xContato`, `email`, `fone`, `csrt`.
 - `StatusServico`: Status do serviço (cStat 107). Membros: `cUF`, `verAplic`, `dhRecbto`, `tMed`, `dhRetorno`, `xObs`.
+- `StatusServicoOpcoes` (estende `OpcoesEnvio`): Opções do status do serviço. Membros: `mod`.
 - `Transportador`: Membros: `CNPJ`, `CPF`, `xNome`, `IE`, `xEnder`, `xMun`, `UF`.
 - `Transporte`: Transporte (grupo X). Membros: `modFrete`, `transportador`, `retTransp`, `veicTransp`, `reboque`, `vagao`, `balsa`, `volumes`.
 - `Volume`: Membros: `qVol`, `esp`, `marca`, `nVol`, `pesoL`, `pesoB`, `lacres`.
