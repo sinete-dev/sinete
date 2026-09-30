@@ -174,6 +174,38 @@ describe('chave de acesso', () => {
     expect(formatChaveAcesso(MOC)).toBe('5206 0433 0099 1100 2506 5501 2000 0007 8002 6730 1615');
   });
 
+  test('emitente ambíguo (000 + CPF que também é CNPJ válido): a série decide', () => {
+    // CPF sintético achado por busca, para não fixar no repositório um número que pode ser de alguém.
+    const dv = (s: string, pesos: number[]): number => {
+      const r = [...s].reduce((t, c, i) => t + Number(c) * (pesos[i] ?? 0), 0) % 11;
+      return r < 2 ? 0 : 11 - r;
+    };
+    let cpf = '';
+    for (let b = 1; !cpf; b++) {
+      const base = String(b * 7919).padStart(9, '0');
+      const d1 = dv(base, [10, 9, 8, 7, 6, 5, 4, 3, 2]);
+      const c = `${base}${d1}${dv(`${base}${d1}`, [11, 10, 9, 8, 7, 6, 5, 4, 3, 2])}`;
+      if (isValidCpf(c) && isValidCnpj(`000${c}`)) cpf = c;
+    }
+    const chave = (serie: number): string =>
+      buildChaveAcesso({
+        cUF: '41',
+        aamm: '2609',
+        emitente: `000${cpf}`,
+        mod: '55',
+        serie,
+        nNF: 81,
+        tpEmis: 1,
+        cNF: 26306376,
+      });
+    const pf = parseChaveAcesso(chave(920));
+    expect(pf.ok && pf.value.cpf).toBe(cpf);
+    expect(pf.ok && pf.value.cnpj).toBeUndefined();
+    const pj = parseChaveAcesso(chave(1));
+    expect(pj.ok && pj.value.cnpj).toBe(`000${cpf}`);
+    expect(pj.ok && pj.value.cpf).toBeUndefined();
+  });
+
   test('CNPJ alfanumérico só a partir da vigência', () => {
     const ch = buildChaveAcesso({
       cUF: '43',

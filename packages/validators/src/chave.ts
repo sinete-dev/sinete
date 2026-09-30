@@ -45,9 +45,16 @@ export interface ChaveAcesso {
   readonly mes: number;
   /** As 14 posições do emitente como vieram. */
   readonly emitente: string;
-  /** Presente quando as 14 posições formam um CNPJ válido. */
+  /**
+   * Presente quando as 14 posições formam um CNPJ válido. Nos modelos com regra de série (NF-e e NFC-e), só quando a
+   * série não é a de emitente pessoa física (910 a 969).
+   */
   readonly cnpj?: string;
-  /** Presente quando as posições são `000` seguido de um CPF válido (emitente pessoa física). */
+  /**
+   * Presente quando as posições são `000` seguido de um CPF válido (emitente pessoa física). Nos modelos com regra de
+   * série, só nas séries de pessoa física: as 14 posições de um CPF podem formar também um CNPJ válido (cerca de 1,4%
+   * dos CPFs), e é a série que desfaz a dúvida (RV BA02-30).
+   */
   readonly cpf?: string;
   readonly mod: string;
   /** Documento do modelo (`NF-e`, `NFC-e`, `CT-e`...). */
@@ -225,8 +232,9 @@ export function parseChaveAcesso(input: string, options: ChaveParseOptions = {})
     ano,
     mes,
     emitente,
-    ...(cnpj.ok ? { cnpj: cnpj.value } : {}),
-    ...(cpf?.ok ? { cpf: cpf.value } : {}),
+    // Com regra de série, só a leitura que a série permite: CPF de 920 a 969, CNPJ nas demais faixas de CNPJ.
+    ...(cnpj.ok && !(serieRule && inRange(nSerie, rules.serieNfe.cpf)) ? { cnpj: cnpj.value } : {}),
+    ...(cpf?.ok && !(serieRule && inRange(nSerie, rules.serieNfe.cnpj)) ? { cpf: cpf.value } : {}),
     mod,
     documento,
     serie,
