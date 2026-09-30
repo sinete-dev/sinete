@@ -7,7 +7,7 @@ import type { AssinadorDeDados } from '@sinete/core';
 import { ErroDeConfiguracao, ErroRespostaInvalida, relogioFixo } from '@sinete/core';
 import { codificarBase64, lerXml, primeiroFilho } from '@sinete/core/xml';
 import { syntheticCertificate } from '@sinete/sefaz-sim';
-import type { Transport, TransportResponse } from '@sinete/transport';
+import type { RespostaTransporte, Transporte } from '@sinete/transport';
 import { montarChaveAcesso } from '@sinete/validators';
 import { createMdfeClient, documentoAssinado, gunzipBase64, gzipBase64, MDFE_NS, sliceElement } from '../src/index.ts';
 import { EMISSAO } from './helpers/mdfe.ts';
@@ -21,26 +21,26 @@ beforeAll(async () => {
   signer = (await syntheticCertificate({ clock, role: 'titular', cnpj: '11222333000181', issuer: ac })).signer;
 }, 30_000);
 
-function respondendo(body: string, status = 200): Transport {
+function respondendo(body: string, status = 200): Transporte {
   return {
-    capabilities: {
-      runtime: 'custom',
-      renegotiation: true,
+    capacidades: {
+      runtime: 'personalizada',
+      renegociacao: true,
       tls12Cbc: true,
       tls12Dhe: true,
-      sigalgsControl: false,
-      clientCertificateCheck: false,
+      controleDeSigalgs: false,
+      conferenciaDoCertificadoLocal: false,
     },
-    async send(): Promise<TransportResponse> {
+    async enviar(): Promise<RespostaTransporte> {
       return {
         status,
-        headers: {},
-        body: new TextEncoder().encode(body),
-        tls: { protocol: 'TLSv1.2', cipher: undefined, resumed: false, clientCertificateLoaded: undefined },
-        text: () => body,
+        cabecalhos: {},
+        corpo: new TextEncoder().encode(body),
+        tls: { protocolo: 'TLSv1.2', cifra: undefined, retomada: false, certificadoLocalCarregado: undefined },
+        texto: () => body,
       };
     },
-    async close() {},
+    async fechar() {},
   };
 }
 

@@ -13,7 +13,7 @@ import {
   PREFIXO_DIGEST_INFO_SHA1,
   primeiroFilho,
 } from '@sinete/core/xml';
-import { validate } from '@sinete/schemas';
+import { validar } from '@sinete/schemas';
 import { TNFe_infNFeSupl } from '@sinete/schemas/nfe/PL_010f';
 import { assinarParametros, hashQrCodeV2, hexDoDigestValue } from '../../src/build/nfce.ts';
 import type { BuildNfeOptions, BuildNfeResult, BuiltNfe, NfeInput } from '../../src/index.ts';
@@ -124,7 +124,7 @@ describe('NFC-e: montagem', () => {
     expect(xml.indexOf('<infNFeSupl>')).toBeLessThan(xml.indexOf('<Signature'));
     const s = supl(xml);
     expect(s.qrCode).toBe(`${n.nfce?.base}${n.chave}|3|2`);
-    expect(validate(TNFe_infNFeSupl, s.el as never)).toEqual([]);
+    expect(validar(TNFe_infNFeSupl, s.el as never)).toEqual([]);
     expect((await conferirAssinatura(xml, { id: n.id, elemento: 'infNFe' })).ok).toBe(true);
   });
 
@@ -135,7 +135,7 @@ describe('NFC-e: montagem', () => {
     const keys = await generateTestKeys();
     const s = supl(await signNfe(n, keys.dataSigner));
     expect(s.qrCode).not.toContain(CSC_TESTE);
-    expect(validate(TNFe_infNFeSupl, s.el as never)).toEqual([]);
+    expect(validar(TNFe_infNFeSupl, s.el as never)).toEqual([]);
   });
 
   test('versão 2: exemplos do manual (4.3.6.1 e 4.3.6.2)', async () => {
@@ -172,7 +172,7 @@ describe('NFC-e: montagem', () => {
     expect(partes.slice(1, 5)).toEqual(['2', '2', '26', '15.00']);
     expect(partes[5]).toBe(hexDoDigestValue(digest));
     expect(partes[6]).toBe('2');
-    expect(validate(TNFe_infNFeSupl, supl(xml).el as never)).toEqual([]);
+    expect(validar(TNFe_infNFeSupl, supl(xml).el as never)).toEqual([]);
   });
 
   test('versão 3 off-line: parâmetros do destinatário e assinatura RSA-SHA1 com o certificado da nota', async () => {
@@ -202,7 +202,7 @@ describe('NFC-e: montagem', () => {
 
     const xml = await signNfe(comCpf, keys.dataSigner);
     const s = supl(xml);
-    expect(validate(TNFe_infNFeSupl, s.el as never)).toEqual([]);
+    expect(validar(TNFe_infNFeSupl, s.el as never)).toEqual([]);
     const assinatura = s.qrCode.split('|').at(-1) ?? '';
     const ok1 = await globalThis.crypto.subtle.verify(
       'RSASSA-PKCS1-v1_5',

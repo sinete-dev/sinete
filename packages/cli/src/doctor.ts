@@ -12,23 +12,23 @@
 
 import { isIP } from 'node:net';
 import tls from 'node:tls';
-import type { A1KeyStore, ChainResult } from '@sinete/cert';
-import { buildChain, CertError, icpBrasilTlsPem, openPfx, parseCertificate, pemToDers } from '@sinete/cert';
+import type { CertificadoA1, ResultadoCadeia } from '@sinete/cert';
+import { abrirPfx, dersDoPem, ErroCertificado, lerCertificado, montarCadeia, pemTlsIcpBrasil } from '@sinete/cert';
 import type { Ambiente, Relogio, Uf } from '@sinete/core';
 import { ehErroSinete, relogioDoSistema, tpAmbDoAmbiente, ufPorSigla } from '@sinete/core';
-import type { EndpointRef, Transport } from '@sinete/transport';
+import type { EndpointResolvido, Transporte } from '@sinete/transport';
 import {
-  classifyTransportFailure,
-  createTransport,
-  detectRuntime,
+  classificarFalhaDeTransporte,
+  contentTypeSoap12,
+  criarTransporte,
+  detectarRuntime,
+  envelopeSoap12,
+  identidadePem,
+  lerBodySoap,
   mdfeEndpoint,
   nfeEndpoint,
   nfseEndpoint,
-  pemIdentity,
-  soap12ContentType,
-  soap12Envelope,
-  soapBody,
-  tlsProfileForHost,
+  perfilTlsDoHost,
 } from '@sinete/transport';
 
 export type CheckStatus = 'ok' | 'aviso' | 'falha' | 'pulado';
@@ -55,7 +55,7 @@ export interface DoctorOptions {
   readonly extraCaPem?: string;
   readonly allowExpired?: boolean;
   /** Endpoint alvo. Sem ele, só PFX, cadeia e relógio local. */
-  readonly endpoint?: EndpointRef | { readonly url: string };
+  readonly endpoint?: EndpointResolvido | { readonly url: string };
   /** Documento e UF para montar a consulta de status. */
   readonly documento?: 'nfe' | 'mdfe' | 'nfse';
   readonly uf?: Uf;
@@ -121,12 +121,12 @@ function clockCheck(skewMs: number, source: string): DoctorCheck {
  * Com `allowLeafExpiry` (o `--allow-expired`), a validade do titular já foi tratada na verificação `pfx` e não conta
  * de novo aqui; emissor vencido continua sendo falha.
  */
-export function chainMessage(r: ChainResult, allowLeafExpiry: boolean): DoctorCheck {
-  const name = (c: ChainResult['chain'][number]): string => maskCpfs(c.subject.commonName ?? c.subject.text);
-  const names = r.chain.map(name);
-  const leaf = r.chain[0];
-  const expiredLinks = allowLeafExpiry ? r.expired.filter((c) => c !== leaf) : r.expired;
-  const details = { chain: names, status: r.status, expired: r.expired.map(name) };
+export function chainMessage(r: ResultadoCadeia, allowLeafExpiry: boolean): DoctorCheck {
+  const name = (c: ResultadoCadeia['cadeia'][number]): string => maskCpfs(c.subject.commonName ?? c.subject.texto);
+  const names = r.cadeia.map(name);
+  const leaf = r.cadeia[0];
+  const expiredLinks = allowLeafExpiry ? r.vencidos.filter((c) => c !== leaf) : r.vencidos;
+  const details = { chain: names, status: r.situacao, expired: r.vencidos.map(name) };
   const base = chainStatusCheck(r, names, details);
   if (expiredLinks.length === 0) return base;
   // Emissor vencido é falha qualquer que seja o status do caminho (mesmo incompleto ou com raiz desconhecida).
@@ -135,23 +135,23 @@ export function chainMessage(r: ChainResult, allowLeafExpiry: boolean): DoctorCh
 }
 
 function chainStatusCheck(
-  r: ChainResult,
+  r: ResultadoCadeia,
   names: readonly string[],
   details: NonNullable<DoctorCheck['details']>,
 ): DoctorCheck {
-  switch (r.status) {
+  switch (r.situacao) {
     case 'confiavel':
       return {
         id: 'cadeia',
         status: 'ok',
-        message: `até ${r.anchor?.subject.commonName} (${names.length} elos)`,
+        message: `até ${r.ancora?.subject.commonName} (${names.length} elos)`,
         details,
       };
     case 'incompleta':
       return {
         id: 'cadeia',
         status: 'aviso',
-        message: `falta o emissor "${maskCpfs(r.missingIssuer ?? '')}" (o PFX só traz a folha?); passe as intermediárias da AC com --cadeia para conferir, e saiba que ainda não se sabe se todo servidor aceita só a folha (ADR 0004)`,
+        message: `falta o emissor "${maskCpfs(r.emissorAusente ?? '')}" (o PFX só traz a folha?); passe as intermediárias da AC com --cadeia para conferir, e saiba que ainda não se sabe se todo servidor aceita só a folha (ADR 0004)`,
         details,
       };
     case 'raiz_desconhecida':
@@ -172,7 +172,7 @@ function chainStatusCheck(
       return {
         id: 'cadeia',
         status: 'falha',
-        message: `um elo tem extensão crítica que o sinete não processa (${r.chain.at(-1)?.unsupportedCriticalExtensions.join(', ')})`,
+        message: `um elo tem extensão crítica que o sinete não processa (${r.cadeia.at(-1)?.extensoesCriticasNaoSuportadas.join(', ')})`,
         details,
       };
     case 'assinatura_invalida':
@@ -180,11 +180,11 @@ function chainStatusCheck(
   }
 }
 
-async function openKeyStore(options: DoctorOptions, clock: Relogio): Promise<[A1KeyStore | undefined, DoctorCheck]> {
+async function openKeyStore(options: DoctorOptions, clock: Relogio): Promise<[CertificadoA1 | undefined, DoctorCheck]> {
   try {
-    const ks = await openPfx(options.pfx, { password: options.password, clock, allowExpired: true });
-    const c = ks.certificate;
-    const id = ks.identity;
+    const ks = await abrirPfx(options.pfx, { senha: options.password, relogio: clock, aceitarVencido: true });
+    const c = ks.certificado;
+    const id = ks.identidade;
     const now = clock.agora().getTime();
     const daysLeft = Math.floor((c.notAfter - now) / DAY);
     const who =
@@ -201,14 +201,14 @@ async function openKeyStore(options: DoctorOptions, clock: Relogio): Promise<[A1
       notBefore: c.notBeforeIso,
       notAfter: c.notAfterIso,
       daysLeft,
-      certificadosNoPfx: 1 + ks.extraCertificates.length,
+      certificadosNoPfx: 1 + ks.certificadosExtras.length,
     };
-    const base = `${maskCpfs(id.nome ?? c.subject.text)} (${who}), emitido por ${c.issuer.commonName}`;
-    if (ks.validity === 'expirado') {
+    const base = `${maskCpfs(id.nome ?? c.subject.texto)} (${who}), emitido por ${c.issuer.commonName}`;
+    if (ks.validade === 'expirado') {
       const status: CheckStatus = options.allowExpired ? 'aviso' : 'falha';
       return [ks, { id: 'pfx', status, message: `${base}: VENCIDO em ${c.notAfterIso}`, details }];
     }
-    if (ks.validity === 'ainda_nao_valido') {
+    if (ks.validade === 'ainda_nao_valido') {
       return [
         ks,
         {
@@ -223,12 +223,12 @@ async function openKeyStore(options: DoctorOptions, clock: Relogio): Promise<[A1
     return [ks, { id: 'pfx', status, message: `${base}, válido até ${c.notAfterIso} (${daysLeft} dias)`, details }];
   } catch (e) {
     const code = ehErroSinete(e) ? e.code : 'desconhecido';
-    const message = e instanceof CertError ? e.message : 'não foi possível abrir o PFX';
+    const message = e instanceof ErroCertificado ? e.message : 'não foi possível abrir o PFX';
     return [undefined, { id: 'pfx', status: 'falha', message, details: { code } }];
   }
 }
 
-export function resolveEndpoint(options: DoctorOptions): EndpointRef | { readonly url: string } | undefined {
+export function resolveEndpoint(options: DoctorOptions): EndpointResolvido | { readonly url: string } | undefined {
   if (options.endpoint) return options.endpoint;
   const ambiente = options.ambiente ?? 'homologacao';
   if (options.documento === 'mdfe') return mdfeEndpoint({ ambiente, servico: 'MDFeStatusServico' });
@@ -239,7 +239,7 @@ export function resolveEndpoint(options: DoctorOptions): EndpointRef | { readonl
 
 function handshake(
   url: URL,
-  identity: { readonly certChain: string; readonly key: string },
+  identity: { readonly cadeia: string; readonly chave: string },
   extraCa: readonly string[],
   timeoutMs: number,
 ): Promise<{
@@ -251,8 +251,8 @@ function handshake(
   serverNotAfter: string;
   localLoaded: boolean;
 }> {
-  const { certChain, key } = identity;
-  const leaf = pemToDers(certChain)[0];
+  const { cadeia, chave } = identity;
+  const leaf = dersDoPem(cadeia)[0];
   // URL.hostname traz IPv6 entre colchetes; o socket quer o endereço puro, e IP (v4 ou v6) não vai no SNI.
   const host = url.hostname.replace(/^\[(.*)\]$/, '$1');
   return new Promise((resolve, reject) => {
@@ -260,9 +260,9 @@ function handshake(
       host,
       port: url.port === '' ? 443 : Number(url.port),
       servername: isIP(host) === 0 ? host : undefined,
-      cert: certChain,
-      key,
-      ca: [...tls.rootCertificates, ...icpBrasilTlsPem(), ...extraCa],
+      cert: cadeia,
+      key: chave,
+      ca: [...tls.rootCertificates, ...pemTlsIcpBrasil(), ...extraCa],
       minVersion: 'TLSv1.2',
       rejectUnauthorized: true,
       ALPNProtocols: ['http/1.1'],
@@ -324,13 +324,13 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorReport> {
     return { ok: false, checks };
   }
 
-  const extraChain = options.extraChainPem ? pemToDers(options.extraChainPem).map((d) => parseCertificate(d)) : [];
-  const chainResult = await buildChain(ks.certificate, {
-    intermediates: [...ks.extraCertificates, ...extraChain],
-    clock,
+  const extraChain = options.extraChainPem ? dersDoPem(options.extraChainPem).map((d) => lerCertificado(d)) : [];
+  const chainResult = await montarCadeia(ks.certificado, {
+    intermediarias: [...ks.certificadosExtras, ...extraChain],
+    relogio: clock,
   });
   // O TLS manda a cadeia que o doctor conseguiu montar (inclusive a de --cadeia), sem a raiz.
-  const identity = pemIdentity(ks, { chain: chainResult.chain });
+  const identity = identidadePem(ks, { cadeia: chainResult.cadeia });
   checks.push(chainMessage(chainResult, options.allowExpired === true));
 
   let clockDone = false;
@@ -358,10 +358,10 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorReport> {
     checks.push(skipped('status', 'sem endpoint'));
   } else {
     const url = new URL(endpoint.url);
-    const profile = 'tls' in endpoint ? endpoint.tls : tlsProfileForHost(url.hostname);
+    const profile = 'tls' in endpoint ? endpoint.tls : perfilTlsDoHost(url.hostname);
     try {
       const h = await handshake(url, identity, extraCa, timeoutMs);
-      const reneg = profile?.clientCert === 'renegotiation';
+      const reneg = profile?.certificadoDoCliente === 'renegociacao';
       const note = reneg
         ? '; este host só pede o certificado numa renegociação depois da requisição, então o handshake não prova a aceitação (use --status)'
         : '';
@@ -373,12 +373,12 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorReport> {
           host: url.hostname,
           protocol: h.protocol,
           cipher: h.cipher,
-          clientCertRequest: profile?.clientCert,
-          runtime: detectRuntime(),
+          clientCertRequest: profile?.certificadoDoCliente,
+          runtime: detectarRuntime(),
         },
       });
     } catch (e) {
-      const err = classifyTransportFailure(e, { host: url.hostname });
+      const err = classificarFalhaDeTransporte(e, { host: url.hostname });
       checks.push({ id: 'tls', status: 'falha', message: err.message, details: { code: err.code } });
     }
 
@@ -387,17 +387,17 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorReport> {
       checks.push(skipped('status', 'só handshake (use --status para consultar o status do serviço)'));
     else if (!msg) checks.push(skipped('status', 'status só para NF-e (com --uf) e MDF-e'));
     else {
-      let transport: Transport | undefined;
+      let transport: Transporte | undefined;
       try {
-        transport = createTransport({ identity, additionalCa: extraCa, timeoutMs });
-        const res = await transport.send({
+        transport = criarTransporte({ identidade: identity, acsAdicionais: extraCa, timeoutMs });
+        const res = await transport.enviar({
           url: endpoint.url,
           ...('tls' in endpoint ? { endpoint } : {}),
-          headers: { 'content-type': soap12ContentType(msg.action) },
-          body: soap12Envelope(msg.body),
+          cabecalhos: { 'content-type': contentTypeSoap12(msg.action) },
+          corpo: envelopeSoap12(msg.body),
         });
-        const text = res.text();
-        const body = res.status === 200 ? soapBody(text) : text;
+        const text = res.texto();
+        const body = res.status === 200 ? lerBodySoap(text) : text;
         const cStat = pick(body, 'cStat');
         const xMotivo = pick(body, 'xMotivo');
         checks.push({
@@ -406,7 +406,7 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorReport> {
           message: cStat ? `cStat ${cStat}: ${xMotivo ?? ''}` : `HTTP ${res.status} sem cStat`,
           details: { httpStatus: res.status, cStat, xMotivo },
         });
-        const server = parseHttpDate(res.headers.date);
+        const server = parseHttpDate(res.cabecalhos.date);
         if (!clockDone && server !== undefined) {
           checks.push(clockCheck(clock.agora().getTime() - server, url.host));
           clockDone = true;
@@ -415,7 +415,7 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorReport> {
         const code = ehErroSinete(e) ? e.code : 'desconhecido';
         checks.push({ id: 'status', status: 'falha', message: (e as Error).message, details: { code } });
       } finally {
-        await transport?.close();
+        await transport?.fechar();
       }
     }
   }
@@ -423,9 +423,9 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorReport> {
   if (!clockDone) {
     checks.push({
       id: 'relogio',
-      status: ks.validity === 'ainda_nao_valido' ? 'aviso' : 'pulado',
+      status: ks.validade === 'ainda_nao_valido' ? 'aviso' : 'pulado',
       message:
-        ks.validity === 'ainda_nao_valido'
+        ks.validade === 'ainda_nao_valido'
           ? 'o certificado ainda não vale pelo relógio local: relógio atrasado?'
           : 'sem referência externa (use --status ou --relogio-url)',
     });

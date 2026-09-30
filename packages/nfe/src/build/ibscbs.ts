@@ -5,7 +5,7 @@
 
 import { lerXml, primeiroFilho } from '@sinete/core/xml';
 import type { ComplexType } from '@sinete/schemas';
-import { serialize, validate } from '@sinete/schemas';
+import { serializar, validar } from '@sinete/schemas';
 import type { TIBSCBSMonoTot, TTribNFe } from '@sinete/schemas/nfe/PL_010f';
 import { Decimal } from '../decimal.ts';
 import type { Issues } from '../issues.ts';
@@ -19,10 +19,10 @@ const NFE_NS = 'http://www.portalfiscal.inf.br/nfe';
 export function grupoInvalido(ct: ComplexType, nome: string, value: unknown, path: string, issues: Issues): boolean {
   if (value === undefined) return false;
   try {
-    const doc = lerXml(`<w xmlns="${NFE_NS}">${serialize(ct, nome, value as never, NFE_NS)}</w>`);
+    const doc = lerXml(`<w xmlns="${NFE_NS}">${serializar(ct, nome, value as never, NFE_NS)}</w>`);
     const el = primeiroFilho(doc.raiz, nome, NFE_NS);
     const erros =
-      el === undefined ? [{ caminho: '', code: 'modelo_de_conteudo', mensagem: 'grupo vazio' }] : validate(ct, el);
+      el === undefined ? [{ caminho: '', code: 'modelo_de_conteudo', mensagem: 'grupo vazio' }] : validar(ct, el);
     for (const e of erros)
       issues.add(
         `${path}${e.caminho.replace(/^\/[^/]+/, '').replace(/\//g, '.')}`,

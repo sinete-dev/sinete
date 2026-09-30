@@ -23,7 +23,7 @@ describe('rotas e envelope', () => {
     const h = await harness();
     const t = redirectToSim(simTransport(h.sim, { clientCertificate: h.c.ecpf.der }), SIM_BASE_URL);
     const ep = mdfeEndpoint({ ambiente: 'homologacao', servico: 'MDFeDistribuicaoDFe' });
-    await expect(t.send({ url: ep.url, endpoint: ep, body: '' })).rejects.toBeInstanceOf(ErroDeConfiguracao);
+    await expect(t.enviar({ url: ep.url, endpoint: ep, corpo: '' })).rejects.toBeInstanceOf(ErroDeConfiguracao);
   });
 
   test('área de dados que não é GZip (244) e XML com espaço entre as tags (599)', async () => {

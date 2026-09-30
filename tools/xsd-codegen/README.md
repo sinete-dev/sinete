@@ -8,7 +8,7 @@ Gerador de código dos XSD oficiais (XSD, IR JSON, módulo TS) que alimenta o `@
 - Os XSD ficam em `xsd/<doc>/<pacote>/`, byte a byte como no zip oficial, com `SOURCE.md` (título, publicação, página, URL de download, sha256 do zip e de cada arquivo). O gerador confere os sha256 antes de gerar.
 - Quais módulos existem, de quais arquivos, com quais raízes, ligações de `xs:any` e trocas de tipo é dado revisado em `src/modules.ts`.
 - Construção fora do subconjunto suportado aborta a geração (`unsupported`), e pattern que o tradutor de regex não cobre também: nada some em silêncio. A exceção é dado revisado: elemento declarado sem tipo (que o XSD faz `xs:anyType`) listado em `untypedAsText` vira texto (hoje só o `tpAmb` do `TRetMDFe`).
-- Correção de XSD oficial é dado revisado e visível: `patches` troca o pattern de um tipo simples (com o pattern oficial, o usado e o motivo), vai para `schema.patches` e para o cabeçalho do módulo gerado, e um patch que não casa aborta a geração. `replaceImports` troca um `xs:import` por outra cópia oficial (o xmldsig de 09/02/2026 da NFS-e tem DOCTYPE, que o parser recusa), e `opaqueElements` gera um elemento como `$any` (a `ds:Signature` da NFS-e, cujo XSD do W3C usa construções fora do subconjunto).
+- Correção de XSD oficial é dado revisado e visível: `patches` troca o pattern de um tipo simples (com o pattern oficial, o usado e o motivo), vai para `schema.ajustes` e para o cabeçalho do módulo gerado, e um patch que não casa aborta a geração. `replaceImports` troca um `xs:import` por outra cópia oficial (o xmldsig de 09/02/2026 da NFS-e tem DOCTYPE, que o parser recusa), e `opaqueElements` gera um elemento como `$any` (a `ds:Signature` da NFS-e, cujo XSD do W3C usa construções fora do subconjunto).
 - Em nome global repetido entre pacotes (os eventos juntam o envelope do PL_010d com o `e110111` de outro pacote), vale o primeiro carregado, que é o pacote do envelope, o mais novo.
 
 ## Uso
@@ -30,7 +30,7 @@ bun tools/xsd-codegen/src/diff.ts nfe/PL_010e nfe/PL_010f   # diff semântico en
 
 O corpus tem dado pessoal e fiscal: fica em `~/.local/state/sinete/corpus/` (ou `SINETE_CORPUS`), nunca entra no repo e os scripts não rodam no CI. Eles imprimem só agregados (contagens, códigos e caminhos de schema), nunca conteúdo, nome de arquivo ou chave, e gravam o resultado em `~/.local/state/sinete/results/`.
 
-- `bun src/corpus-check/roundtrip.ts`: parse, decode, serialize canônico do elemento assinado e comparação com o original (bytes, C14N e SHA-1 contra o `DigestValue`), mais o validador.
+- `bun src/corpus-check/roundtrip.ts`: parse, decodificação, serialização canônica do elemento assinado e comparação com o original (bytes, C14N e SHA-1 contra o `DigestValue`), mais o validador.
 - `bun src/corpus-check/oracle.ts`: veredito do validador contra `xmllint --schema` por documento, e depois contra mutações de documentos válidos (remover, duplicar e trocar elementos, alterar texto), com PRNG de semente fixa. Eventos e MDF-e são conferidos em duas etapas, como a SEFAZ faz (envelope e depois `detEvento` ou modal pelo schema próprio).
 
 ### Divergência conhecida do libxml2

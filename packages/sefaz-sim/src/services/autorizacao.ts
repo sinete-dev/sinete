@@ -9,8 +9,8 @@
 
 import type { DocumentoXml, ElementoXml } from '@sinete/core/xml';
 import { atributoDe, lerXml } from '@sinete/core/xml';
-import type { RootElement } from '@sinete/schemas';
-import { serializeRoot, VIGENCIAS } from '@sinete/schemas';
+import type { ElementoRaiz } from '@sinete/schemas';
+import { serializarRaiz, VIGENCIAS } from '@sinete/schemas';
 import * as PL_010e from '@sinete/schemas/nfe/PL_010e';
 import type { TProtNFe, TRetConsReciNFe, TRetEnviNFe } from '@sinete/schemas/nfe/PL_010f';
 import * as PL_010f from '@sinete/schemas/nfe/PL_010f';
@@ -30,7 +30,7 @@ import { parseDateTime, yearOf } from '../time.ts';
 import { all, at, documento, req, text } from '../xmlutil.ts';
 import { distribuirAutorizacao } from './distribuicao.ts';
 
-type Tpl = { readonly enviNFeElement: RootElement<unknown>; readonly consReciNFeElement: RootElement<unknown> };
+type Tpl = { readonly enviNFeElement: ElementoRaiz<unknown>; readonly consReciNFeElement: ElementoRaiz<unknown> };
 const MODULOS: Readonly<Record<string, Tpl>> = { 'nfe/PL_010e': PL_010e, 'nfe/PL_010f': PL_010f };
 
 /**
@@ -65,7 +65,7 @@ function retEnviNFe(
     dhRecbto: dh(ctx, ctx.now),
     ...extra,
   } as TRetEnviNFe;
-  return serializeRoot(PL_010f.retEnviNFeElement, value);
+  return serializarRaiz(PL_010f.retEnviNFeElement, value);
 }
 
 /**
@@ -321,7 +321,7 @@ export async function retAutorizacao(ctx: RequestContext): Promise<string> {
       dhRecbto: dh(ctx, ctx.now),
       ...extra,
     };
-    return serializeRoot(PL_010f.retConsReciNFeElement, value);
+    return serializarRaiz(PL_010f.retConsReciNFeElement, value);
   };
   if (!pre.ok) return ret(pre.status);
   // B24-10 (252) e 248 (UF do recibo diverge da UF autorizadora).

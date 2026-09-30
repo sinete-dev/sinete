@@ -12,8 +12,8 @@ import type {
   IbsCbsCalculatorOptions,
 } from '@sinete/nfe';
 import { carregarDatasetEmbarcado, Decimal, MotivoDesoneracaoIcms, ibsCbsCalculator } from '@sinete/nfe';
-import type { IbsCbsDataset } from '@sinete/nfe/ibs-cbs';
-import { officialRates } from '@sinete/nfe/ibs-cbs';
+import type { DatasetIbsCbs } from '@sinete/nfe/ibs-cbs';
+import { aliquotasOficiais } from '@sinete/nfe/ibs-cbs';
 
 const icms: Icms = {
   CST: '20',
@@ -40,10 +40,10 @@ if (!r.ok) {
   void issues;
 }
 const d: Decimal = Decimal.of('1.5').times(2);
-const opcoes: IbsCbsCalculatorOptions = { rates: officialRates(), regras: false };
+const opcoes: IbsCbsCalculatorOptions = { rates: aliquotasOficiais(), regras: false };
 const padrao: IbsCbsCalculator = ibsCbsCalculator();
 const comOpcoes: IbsCbsCalculator = ibsCbsCalculator(opcoes);
-const ds: Promise<IbsCbsDataset> = carregarDatasetEmbarcado();
+const ds: Promise<DatasetIbsCbs> = carregarDatasetEmbarcado();
 const grupo: GrupoIbsCbs | undefined = undefined;
 // @ts-expect-error regras é `false` ou um objeto
 ibsCbsCalculator({ regras: true });

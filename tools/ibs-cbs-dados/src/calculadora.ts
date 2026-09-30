@@ -10,66 +10,66 @@
  */
 import { Database } from 'bun:sqlite';
 import type {
-  ActorClassTribRecord,
-  ActorGroupRecord,
-  ActorRecord,
-  AnnexRecord,
-  ApplicabilityRecord,
-  CbsTransferRecord,
-  ClassTribRecord,
-  CstRecord,
-  DfeTypeRecord,
-  Family,
-  GovPurchaseReducerRecord,
-  Indicator,
-  NfseNbsRecord,
-  Nomenclature,
-  RateKind,
-  TreatmentRecord,
+  Familia,
+  Indicador,
+  Nomenclatura,
+  RegistroAnexo,
+  RegistroAplicabilidade,
+  RegistroAtor,
+  RegistroAtorClassTrib,
+  RegistroClassTrib,
+  RegistroCst,
+  RegistroGrupoDeAtores,
+  RegistroNfseNbs,
+  RegistroRedutorCompraGov,
+  RegistroTipoDfe,
+  RegistroTransferenciaCbs,
+  RegistroTratamento,
+  TipoDeAliquota,
   Tributo,
-  Validity,
+  Vigencia,
 } from '../../../packages/ibs-cbs-dados/src/types.ts';
 import { decimalText, isoDate, sortBy } from './lib.ts';
 
 /** Registro de CST antes do merge com o IT (`redutorBC` ainda desconhecido). */
-export type CalcCst = Omit<CstRecord, 'sources'> & { readonly _id: number };
+export type CalcCst = Omit<RegistroCst, 'fontes'> & { readonly _id: number };
 /** Registro de cClassTrib antes do merge com o IT. */
-export type CalcClassTrib = Omit<ClassTribRecord, 'sources' | 'name' | 'legal' | 'groups'> & {
+export type CalcClassTrib = Omit<RegistroClassTrib, 'fontes' | 'nome' | 'legal' | 'grupos'> & {
   readonly _id: number;
-  readonly groups: Omit<ClassTribRecord['groups'], 'gTribRegular' | 'gpBioDiferenca'>;
-  readonly basis: ClassTribRecord['legal']['basis'];
+  readonly grupos: Omit<RegistroClassTrib['grupos'], 'gTribRegular' | 'gpBioDiferenca'>;
+  readonly fundamento: RegistroClassTrib['legal']['fundamento'];
 };
 
 export interface CalcTables {
   readonly versao: { readonly versaoDb: string; readonly data: string; readonly descricao: string };
   readonly cst: readonly CalcCst[];
   readonly classTrib: readonly CalcClassTrib[];
-  readonly treatments: readonly TreatmentRecord[];
-  readonly ncmApplicability: readonly ApplicabilityRecord[];
-  readonly nbsApplicability: readonly ApplicabilityRecord[];
-  readonly annexes: readonly AnnexRecord[];
-  readonly nfseNbs: readonly NfseNbsRecord[];
-  readonly actorGroups: readonly ActorGroupRecord[];
-  readonly actors: readonly ActorRecord[];
-  readonly actorClassTrib: readonly ActorClassTribRecord[];
-  readonly dfeTypes: readonly DfeTypeRecord[];
-  readonly govPurchaseReducer: readonly GovPurchaseReducerRecord[];
-  readonly cbsTransfer: readonly CbsTransferRecord[];
+  readonly tratamentos: readonly RegistroTratamento[];
+  readonly aplicabilidadeNcm: readonly RegistroAplicabilidade[];
+  readonly aplicabilidadeNbs: readonly RegistroAplicabilidade[];
+  readonly anexos: readonly RegistroAnexo[];
+  readonly nfseNbs: readonly RegistroNfseNbs[];
+  readonly gruposDeAtores: readonly RegistroGrupoDeAtores[];
+  readonly atores: readonly RegistroAtor[];
+  readonly atorClassTrib: readonly RegistroAtorClassTrib[];
+  readonly tiposDfe: readonly RegistroTipoDfe[];
+  readonly redutorCompraGov: readonly RegistroRedutorCompraGov[];
+  readonly transferenciaCbs: readonly RegistroTransferenciaCbs[];
   /** Alíquotas de referência por tributo (vão para o `@sinete/ibs-cbs/aliquotas`). */
-  readonly referenceRates: readonly { tributo: Tributo; rate: string; validity: Validity }[];
+  readonly aliquotasDeReferencia: readonly { tributo: Tributo; aliquota: string; vigencia: Vigencia }[];
 }
 
 type Row = Record<string, unknown>;
 
-function vig(from: unknown, to: unknown): Validity {
+function vig(from: unknown, to: unknown): Vigencia {
   const f = isoDate(from as string | null);
   if (!f) throw new Error('vigência sem início');
-  return { from: f, to: isoDate(to as string | null) };
+  return { inicio: f, fim: isoDate(to as string | null) };
 }
 
 const bool = (x: unknown): boolean => x === 1 || x === '1' || x === true;
 /** Indicador de grupo com semântica "exige / não permite". */
-const reqForb = (x: unknown): Indicator => (bool(x) ? 'required' : 'forbidden');
+const reqForb = (x: unknown): Indicador => (bool(x) ? 'obrigatorio' : 'vedado');
 const str = (x: unknown): string => (x === null || x === undefined ? '' : String(x));
 const optStr = (x: unknown): string | null => (x === null || x === undefined || x === '' ? null : String(x));
 const dec = (x: unknown): string => {
@@ -79,12 +79,12 @@ const dec = (x: unknown): string => {
 };
 
 /** Desempate de chaves repetidas por sufixo ordinal (`#2`), na ordem já estável da lista. */
-function ordinalKeys<T extends { key: string }>(xs: T[]): T[] {
+function ordinalKeys<T extends { chave: string }>(xs: T[]): T[] {
   const seen = new Map<string, number>();
   return xs.map((x) => {
-    const n = (seen.get(x.key) ?? 0) + 1;
-    seen.set(x.key, n);
-    return n === 1 ? x : { ...x, key: `${x.key}#${n}` };
+    const n = (seen.get(x.chave) ?? 0) + 1;
+    seen.set(x.chave, n);
+    return n === 1 ? x : { ...x, chave: `${x.chave}#${n}` };
   });
 }
 
@@ -119,16 +119,16 @@ function extract(db: Database): CalcTables {
   const cst: CalcCst[] = sortBy(
     q('select * from SITUACAO_TRIBUTARIA').map((r): CalcCst => {
       const tributos = [...new Set(cstTrib.filter((x) => x.s === r.SITR_ID).map((x) => trib(x.t)))].sort();
-      const family: Family = tributos.includes('IS') ? 'IS' : 'CBS_IBS';
+      const family: Familia = tributos.includes('IS') ? 'IS' : 'CBS_IBS';
       const validity = vig(r.SITR_INICIO_VIGENCIA, r.SITR_FIM_VIGENCIA);
       return {
         _id: Number(r.SITR_ID),
-        key: `${family}:${str(r.SITR_CD)}:${validity.from}`,
-        family,
-        code: str(r.SITR_CD),
-        description: str(r.SITR_DESCRICAO),
+        chave: `${family}:${str(r.SITR_CD)}:${validity.inicio}`,
+        familia: family,
+        codigo: str(r.SITR_CD),
+        descricao: str(r.SITR_DESCRICAO),
         tributos,
-        groups: {
+        grupos: {
           gIBSCBS: reqForb(r.SITR_IND_GIBSCBS),
           gIBSCBSMono: reqForb(r.SITR_IND_GIBSCBSMONO),
           gRed: reqForb(r.SITR_IND_GRED),
@@ -138,21 +138,21 @@ function extract(db: Database): CalcTables {
           gAjusteCompet: reqForb(r.SITR_IND_GAJUSTECOMPET),
           redutorBC: null,
         },
-        validity,
+        vigencia: validity,
       };
     }),
-    (x) => x.key,
+    (x) => x.chave,
   );
   const cstById = new Map(cst.map((c) => [c._id, c]));
 
   // ---------------- tratamentos ----------------
-  const treatments: TreatmentRecord[] = sortBy(
+  const tratamentos: RegistroTratamento[] = sortBy(
     q('select * from TRATAMENTO_TRIBUTARIO').map(
-      (r): TreatmentRecord => ({
-        key: String(r.TRTR_ID).padStart(3, '0'),
+      (r): RegistroTratamento => ({
+        chave: String(r.TRTR_ID).padStart(3, '0'),
         id: Number(r.TRTR_ID),
-        description: str(r.TRTR_DESCRICAO),
-        expr: {
+        descricao: str(r.TRTR_DESCRICAO),
+        expressao: {
           aliquota: optStr(r.TRTR_EXPRESSAO_ALIQUOTA),
           aliquotaEfetiva: optStr(r.TRTR_EXPRESSAO_ALIQUOTA_EFETIVA),
           baseCalculo: str(r.TRTR_EXPRESSAO_BASE_CALCULO),
@@ -161,7 +161,7 @@ function extract(db: Database): CalcTables {
           percentualDiferimento: optStr(r.TRTR_EXPRESSAO_PERCENTUAL_DIFERIMENTO),
           valorDiferimento: optStr(r.TRTR_EXPRESSAO_VALOR_DIFERIMENTO),
         },
-        flags: {
+        indicadores: {
           incompativelComSuspensao: bool(r.TRTR_IN_INCOMPATIVEL_COM_SUSPENSAO),
           exigeGrupoTribRegular: bool(r.TRTR_IN_EXIGE_GRUPO_DESONERACAO),
           possuiPercentualReducao: bool(r.TRTR_IN_POSSUI_PERCENTUAL_REDUCAO),
@@ -169,10 +169,10 @@ function extract(db: Database): CalcTables {
           possuiRedutor: bool(r.TRTR_IN_POSSUI_REDUTOR),
           possuiMonofasia: bool(r.TRTR_IN_POSSUI_MONOFASIA),
         },
-        validity: vig(r.TRTR_INICIO_VIGENCIA, r.TRTR_FIM_VIGENCIA),
+        vigencia: vig(r.TRTR_INICIO_VIGENCIA, r.TRTR_FIM_VIGENCIA),
       }),
     ),
-    (x) => x.key,
+    (x) => x.chave,
   );
 
   // ---------------- cClassTrib ----------------
@@ -191,8 +191,8 @@ function extract(db: Database): CalcTables {
   const aadv = q(
     'select AADV_CLTR_ID c, AADV_TBTO_ID t, AADV_VALOR v, AADV_INICIO_VIGENCIA f, AADV_FIM_VIGENCIA e from ALIQUOTA_AD_VALOREM where AADV_CLTR_ID is not null',
   );
-  const byValidity = <T extends { validity: Validity }>(xs: T[], k: (x: T) => string): T[] =>
-    sortBy(xs, (x) => `${k(x)}@${x.validity.from}`);
+  const byValidity = <T extends { vigencia: Vigencia }>(xs: T[], k: (x: T) => string): T[] =>
+    sortBy(xs, (x) => `${k(x)}@${x.vigencia.inicio}`);
 
   const classTrib: CalcClassTrib[] = sortBy(
     q('select * from CLASSIFICACAO_TRIBUTARIA').map((r): CalcClassTrib => {
@@ -202,60 +202,67 @@ function extract(db: Database): CalcTables {
       const id = r.CLTR_ID;
       return {
         _id: Number(id),
-        key: `${c.family}:${str(r.CLTR_CD)}:${validity.from}`,
-        family: c.family,
-        code: str(r.CLTR_CD),
-        cst: c.code,
-        description: str(r.CLTR_DESCRICAO),
-        rateKind: str(r.CLTR_TIPO_ALIQUOTA) as RateKind,
-        nomenclature: optStr(r.CLTR_NOMENCLATURA) as Nomenclature | null,
-        annex: optStr(r.CLTR_ANEXO),
+        chave: `${c.familia}:${str(r.CLTR_CD)}:${validity.inicio}`,
+        familia: c.familia,
+        codigo: str(r.CLTR_CD),
+        cst: c.codigo,
+        descricao: str(r.CLTR_DESCRICAO),
+        tipoDeAliquota: str(r.CLTR_TIPO_ALIQUOTA) as TipoDeAliquota,
+        nomenclatura: optStr(r.CLTR_NOMENCLATURA) as Nomenclatura | null,
+        anexo: optStr(r.CLTR_ANEXO),
         tpRBSN: Number(r.CLTR_TPRBSN ?? 0),
-        credit: {
-          buyerCbs: bool(r.CLTR_IN_APROPRIACAO_CREDITOS_ADQUIRENTES_CBS),
-          buyerIbs: bool(r.CLTR_IN_APROPRIACAO_CREDITOS_ADQUIRENTES_IBS),
-          presumedSupplier: bool(r.CLTR_IN_CREDITO_PRESUMIDO_FORNECEDOR),
-          presumedBuyer: bool(r.CLTR_IN_CREDITO_PRESUMIDO_ADQUIRENTE),
-          priorOperation: optStr(r.CLTR_CREDITO_OPERACAO_ANTECEDENTE) as 'Manutenção' | 'Anulação' | null,
+        credito: {
+          adquirenteCbs: bool(r.CLTR_IN_APROPRIACAO_CREDITOS_ADQUIRENTES_CBS),
+          adquirenteIbs: bool(r.CLTR_IN_APROPRIACAO_CREDITOS_ADQUIRENTES_IBS),
+          presumidoFornecedor: bool(r.CLTR_IN_CREDITO_PRESUMIDO_FORNECEDOR),
+          presumidoAdquirente: bool(r.CLTR_IN_CREDITO_PRESUMIDO_ADQUIRENTE),
+          operacaoAnterior: optStr(r.CLTR_CREDITO_OPERACAO_ANTECEDENTE) as 'Manutenção' | 'Anulação' | null,
         },
-        groups: {
-          gCredPresOper: bool(r.CLTR_IND_GCREDPRESOPER) ? 'allowed' : 'forbidden',
+        grupos: {
+          gCredPresOper: bool(r.CLTR_IND_GCREDPRESOPER) ? 'permitido' : 'vedado',
           gMonoPadrao: reqForb(r.CLTR_IND_GMONOPADRAO),
           gMonoReten: reqForb(r.CLTR_IND_GMONORETEN),
           gMonoRet: reqForb(r.CLTR_IND_GMONORET),
           gMonoDif: reqForb(r.CLTR_IND_GMONODIF),
           gEstornoCred: reqForb(r.CLTR_IND_GESTORNOCRED),
         },
-        treatments: byValidity(
-          trcl.filter((x) => x.c === id).map((x) => ({ treatment: Number(x.t), validity: vig(x.f, x.e) })),
-          (x) => String(x.treatment).padStart(3, '0'),
+        tratamentos: byValidity(
+          trcl.filter((x) => x.c === id).map((x) => ({ tratamento: Number(x.t), vigencia: vig(x.f, x.e) })),
+          (x) => String(x.tratamento).padStart(3, '0'),
         ),
-        reductions: byValidity(
-          pere.filter((x) => x.c === id).map((x) => ({ tributo: trib(x.t), pRed: dec(x.v), validity: vig(x.f, x.e) })),
+        reducoes: byValidity(
+          pere.filter((x) => x.c === id).map((x) => ({ tributo: trib(x.t), pRed: dec(x.v), vigencia: vig(x.f, x.e) })),
           (x) => x.tributo,
         ),
-        fixedRates: byValidity(
-          aadv.filter((x) => x.c === id).map((x) => ({ tributo: trib(x.t), rate: dec(x.v), validity: vig(x.f, x.e) })),
+        aliquotasFixas: byValidity(
+          aadv
+            .filter((x) => x.c === id)
+            .map((x) => ({ tributo: trib(x.t), aliquota: dec(x.v), vigencia: vig(x.f, x.e) })),
           (x) => x.tributo,
         ),
         dfe: byValidity(
           tdcl
             .filter((x) => x.c === id)
-            .map((x) => ({ sigla: str(x.s), modelo: Number(x.m), validity: vig(x.f, x.e) })),
+            .map((x) => ({ sigla: str(x.s), modelo: Number(x.m), vigencia: vig(x.f, x.e) })),
           (x) => String(x.modelo).padStart(3, '0'),
         ),
-        basis: byValidity(
+        fundamento: byValidity(
           fund
             .filter((x) => x.c === id)
-            .map((x) => ({ short: str(x.short), text: str(x.texto), reference: str(x.ref), validity: vig(x.f, x.e) })),
-          (x) => x.short,
+            .map((x) => ({
+              resumo: str(x.short),
+              texto: str(x.texto),
+              referencia: str(x.ref),
+              vigencia: vig(x.f, x.e),
+            })),
+          (x) => x.resumo,
         ),
         memoriaTemplate: str(r.CLTR_MEMORIA_CALCULO),
-        validity,
-        updatedAt: isoDate(optStr(r.CLTR_DATA_ATUALIZACAO)),
+        vigencia: validity,
+        atualizadoEm: isoDate(optStr(r.CLTR_DATA_ATUALIZACAO)),
       };
     }),
-    (x) => x.key,
+    (x) => x.chave,
   );
   const classTribById = new Map(classTrib.map((c) => [c._id, c]));
   const ct = (id: unknown): CalcClassTrib => {
@@ -269,144 +276,144 @@ function extract(db: Database): CalcTables {
   const annexKey = (r: Row): string =>
     `${str(r.ANXO_NUMERO)}${r.ANXO_NUMERO_ITEM ? `/${str(r.ANXO_NUMERO_ITEM)}` : ''}`;
   const annexById = new Map(annexRows.map((r) => [r.ANXO_ID, annexKey(r)]));
-  const annexes: AnnexRecord[] = sortBy(
-    annexRows.map((r): AnnexRecord => {
+  const anexos: RegistroAnexo[] = sortBy(
+    annexRows.map((r): RegistroAnexo => {
       const validity = vig(r.ANXO_INICIO_VIGENCIA, r.ANXO_FIM_VIGENCIA);
       return {
-        key: `${annexKey(r)}@${validity.from}`,
-        annex: str(r.ANXO_NUMERO),
+        chave: `${annexKey(r)}@${validity.inicio}`,
+        anexo: str(r.ANXO_NUMERO),
         item: optStr(r.ANXO_NUMERO_ITEM),
-        description: optStr(r.ANXO_DESCRICAO),
-        text: optStr(r.ANXO_TEXTO_ITEM),
-        validity,
+        descricao: optStr(r.ANXO_DESCRICAO),
+        texto: optStr(r.ANXO_TEXTO_ITEM),
+        vigencia: validity,
       };
     }),
-    (x) => x.key,
+    (x) => x.chave,
   );
 
-  const applicability = (table: 'NCM' | 'NBS'): ApplicabilityRecord[] => {
+  const applicability = (table: 'NCM' | 'NBS'): RegistroAplicabilidade[] => {
     const p = table === 'NCM' ? 'NCMA' : 'NBSA';
     const e = table === 'NCM' ? 'ENCM' : 'ENBS';
     const exc = q(
       `select ${e}_${p}_ID a, ${e}_${table}_CD cd, ${e}_INICIO_VIGENCIA f, ${e}_FIM_VIGENCIA e from EXCECAO_${table}_APLICAVEL`,
     );
     return sortBy(
-      q(`select * from ${table}_APLICAVEL`).map((r): ApplicabilityRecord => {
+      q(`select * from ${table}_APLICAVEL`).map((r): RegistroAplicabilidade => {
         const c = ct(r[`${p}_CLTR_ID`]);
         const validity = vig(r[`${p}_INICIO_VIGENCIA`], r[`${p}_FIM_VIGENCIA`]);
         const prefix = str(r[`${p}_${table}_CD`]);
         return {
-          key: `${c.key}:${prefix}:${validity.from}`,
-          classTribKey: c.key,
-          family: c.family,
-          cClassTrib: c.code,
-          prefix,
-          annexItem: annexById.get(r[`${p}_ANXO_ID`]) ?? null,
-          validity,
-          exceptions: sortBy(
-            exc.filter((x) => x.a === r[`${p}_ID`]).map((x) => ({ prefix: str(x.cd), validity: vig(x.f, x.e) })),
-            (x) => `${x.prefix}@${x.validity.from}`,
+          chave: `${c.chave}:${prefix}:${validity.inicio}`,
+          chaveClassTrib: c.chave,
+          familia: c.familia,
+          cClassTrib: c.codigo,
+          prefixo: prefix,
+          itemDoAnexo: annexById.get(r[`${p}_ANXO_ID`]) ?? null,
+          vigencia: validity,
+          excecoes: sortBy(
+            exc.filter((x) => x.a === r[`${p}_ID`]).map((x) => ({ prefixo: str(x.cd), vigencia: vig(x.f, x.e) })),
+            (x) => `${x.prefixo}@${x.vigencia.inicio}`,
           ),
         };
       }),
-      (x) => `${x.key} ${JSON.stringify([x.annexItem, x.validity.to, x.exceptions])}`,
+      (x) => `${x.chave} ${JSON.stringify([x.itemDoAnexo, x.vigencia.fim, x.excecoes])}`,
     );
   };
   // O mesmo prefixo pode aparecer mais de uma vez para o mesmo código (vínculo genérico duplicado por exceção, ver
   // NcmAplicavelService). A ordem é pelo conteúdo, nunca pelo id interno, e o desempate vira um sufixo ordinal.
-  const ncmApplicability = ordinalKeys(applicability('NCM'));
-  const nbsApplicability = ordinalKeys(applicability('NBS'));
+  const aplicabilidadeNcm = ordinalKeys(applicability('NCM'));
+  const aplicabilidadeNbs = ordinalKeys(applicability('NBS'));
 
   const ioic = new Map(
     q('select IOIC_ID id, IOIC_CD cd from INDICADOR_OPERACAO_IBS_CBS').map((r) => [r.id, str(r.cd)]),
   );
   // A tabela oficial tem linhas repetidas por inteiro; ficam todas, com sufixo ordinal na chave.
-  const nfseNbs: NfseNbsRecord[] = ordinalKeys(
+  const nfseNbs: RegistroNfseNbs[] = ordinalKeys(
     sortBy(
-      q('select * from CLASSIF_NBS_INDOP_LC').map((r): NfseNbsRecord => {
+      q('select * from CLASSIF_NBS_INDOP_LC').map((r): RegistroNfseNbs => {
         const c = ct(r.CNIL_CLTR_ID);
         const validity = vig(r.CNIL_INICIO_VIGENCIA, r.CNIL_FIM_VIGENCIA);
         const cIndOp = ioic.get(r.CNIL_IOIC_ID);
         if (!cIndOp) throw new Error(`cIndOp ${String(r.CNIL_IOIC_ID)} inexistente`);
         return {
-          key: `${str(r.CNIL_NBS_CD)}:${c.key}:${str(r.CNIL_LSLC_CD)}:${cIndOp}:${bool(r.CNIL_IN_PS_ONEROSA) ? 1 : 0}:${bool(r.CNIL_IN_ADQ_EXTERIOR) ? 1 : 0}:${validity.from}`,
+          chave: `${str(r.CNIL_NBS_CD)}:${c.chave}:${str(r.CNIL_LSLC_CD)}:${cIndOp}:${bool(r.CNIL_IN_PS_ONEROSA) ? 1 : 0}:${bool(r.CNIL_IN_ADQ_EXTERIOR) ? 1 : 0}:${validity.inicio}`,
           nbs: str(r.CNIL_NBS_CD),
-          classTribKey: c.key,
-          cClassTrib: c.code,
+          chaveClassTrib: c.chave,
+          cClassTrib: c.codigo,
           itemLc116: str(r.CNIL_LSLC_CD),
           cIndOp,
           onerosa: bool(r.CNIL_IN_PS_ONEROSA),
           adquirenteExterior: bool(r.CNIL_IN_ADQ_EXTERIOR),
-          validity,
+          vigencia: validity,
         };
       }),
-      (x) => `${x.key} ${x.validity.to ?? ''}`,
+      (x) => `${x.chave} ${x.vigencia.fim ?? ''}`,
     ),
   );
 
   // ---------------- atores ----------------
-  const actorGroups: ActorGroupRecord[] = sortBy(
+  const gruposDeAtores: RegistroGrupoDeAtores[] = sortBy(
     q('select * from GRUPO_ATOR').map((r) => ({
-      key: String(r.GRAT_ID).padStart(3, '0'),
+      chave: String(r.GRAT_ID).padStart(3, '0'),
       id: Number(r.GRAT_ID),
-      description: str(r.GRAT_DESCRICAO),
-      order: Number(r.GRAT_ORDEM),
-      validity: vig(r.GRAT_INICIO_VIGENCIA, r.GRAT_FIM_VIGENCIA),
+      descricao: str(r.GRAT_DESCRICAO),
+      ordem: Number(r.GRAT_ORDEM),
+      vigencia: vig(r.GRAT_INICIO_VIGENCIA, r.GRAT_FIM_VIGENCIA),
     })),
-    (x) => x.key,
+    (x) => x.chave,
   );
-  const actors: ActorRecord[] = sortBy(
+  const atores: RegistroAtor[] = sortBy(
     q('select * from ATOR').map((r) => ({
-      key: String(r.ATOR_ID).padStart(3, '0'),
+      chave: String(r.ATOR_ID).padStart(3, '0'),
       id: Number(r.ATOR_ID),
-      group: Number(r.ATOR_GRAT_ID),
-      description: str(r.ATOR_DESCRICAO),
-      order: Number(r.ATOR_ORDEM),
-      validity: vig(r.ATOR_INICIO_VIGENCIA, r.ATOR_FIM_VIGENCIA),
+      grupo: Number(r.ATOR_GRAT_ID),
+      descricao: str(r.ATOR_DESCRICAO),
+      ordem: Number(r.ATOR_ORDEM),
+      vigencia: vig(r.ATOR_INICIO_VIGENCIA, r.ATOR_FIM_VIGENCIA),
     })),
-    (x) => x.key,
+    (x) => x.chave,
   );
-  const actorClassTrib: ActorClassTribRecord[] = sortBy(
-    q('select * from ATOR_CLASSIFICACAO').map((r): ActorClassTribRecord => {
+  const atorClassTrib: RegistroAtorClassTrib[] = sortBy(
+    q('select * from ATOR_CLASSIFICACAO').map((r): RegistroAtorClassTrib => {
       const c = ct(r.ATCL_CLTR_ID);
       const validity = vig(r.ATCL_INICIO_VIGENCIA, r.ATCL_FIM_VIGENCIA);
       return {
-        key: `${String(r.ATCL_ATOR_ID).padStart(3, '0')}:${str(r.ATCL_IN_PAPEL)}:${c.key}:${validity.from}`,
-        actor: Number(r.ATCL_ATOR_ID),
-        role: str(r.ATCL_IN_PAPEL) as 'Fornecedor' | 'Adquirente',
-        classTribKey: c.key,
-        cClassTrib: c.code,
-        validity,
+        chave: `${String(r.ATCL_ATOR_ID).padStart(3, '0')}:${str(r.ATCL_IN_PAPEL)}:${c.chave}:${validity.inicio}`,
+        ator: Number(r.ATCL_ATOR_ID),
+        papel: str(r.ATCL_IN_PAPEL) as 'Fornecedor' | 'Adquirente',
+        chaveClassTrib: c.chave,
+        cClassTrib: c.codigo,
+        vigencia: validity,
       };
     }),
-    (x) => x.key,
+    (x) => x.chave,
   );
 
-  const dfeTypes: DfeTypeRecord[] = sortBy(
+  const tiposDfe: RegistroTipoDfe[] = sortBy(
     q('select * from TIPO_DFE').map((r) => ({
-      key: String(r.TPDF_TIPO).padStart(3, '0'),
+      chave: String(r.TPDF_TIPO).padStart(3, '0'),
       sigla: str(r.TPDF_SIGLA),
       modelo: Number(r.TPDF_TIPO),
-      description: str(r.TPDF_DESCRICAO).trim(),
-      validity: vig(r.TPDF_INICIO_VIGENCIA, r.TPDF_FIM_VIGENCIA),
+      descricao: str(r.TPDF_DESCRICAO).trim(),
+      vigencia: vig(r.TPDF_INICIO_VIGENCIA, r.TPDF_FIM_VIGENCIA),
     })),
-    (x) => x.key,
+    (x) => x.chave,
   );
 
   // ---------------- compras governamentais e alíquotas de referência ----------------
-  const govPurchaseReducer: GovPurchaseReducerRecord[] = sortBy(
+  const redutorCompraGov: RegistroRedutorCompraGov[] = sortBy(
     q('select RCGO_VALOR v, RCGO_INICIO_VIGENCIA f, RCGO_FIM_VIGENCIA e from REDUTOR_COMPRA_GOVERNAMENTAL').map((r) => {
       const validity = vig(r.f, r.e);
-      return { key: validity.from, pRedutor: dec(r.v), validity };
+      return { chave: validity.inicio, pRedutor: dec(r.v), vigencia: validity };
     }),
-    (x) => x.key,
+    (x) => x.chave,
   );
-  const cbsTransfer: CbsTransferRecord[] = sortBy(
+  const transferenciaCbs: RegistroTransferenciaCbs[] = sortBy(
     q('select TCEG_VALOR v, TCEG_INICIO_VIGENCIA f, TCEG_FIM_VIGENCIA e from TRANSFERENCIA_CBS_ENTE_GOV').map((r) => {
       const validity = vig(r.f, r.e);
-      return { key: validity.from, percent: dec(r.v), validity };
+      return { chave: validity.inicio, percentual: dec(r.v), vigencia: validity };
     }),
-    (x) => x.key,
+    (x) => x.chave,
   );
   const padrao = Number(q('select count(*) n from ALIQUOTA_PADRAO')[0]?.n ?? 0);
   if (padrao > 0) {
@@ -414,28 +421,28 @@ function extract(db: Database): CalcTables {
     // levá-la para o `@sinete/ibs-cbs/aliquotas`; falhar aqui é melhor do que ignorar dado oficial em silêncio.
     throw new Error(`ALIQUOTA_PADRAO tem ${padrao} linha(s): o extrator ainda não leva alíquota por ente`);
   }
-  const referenceRates = sortBy(
+  const aliquotasDeReferencia = sortBy(
     q('select ALRE_TBTO_ID t, ALRE_VALOR v, ALRE_INICIO_VIGENCIA f, ALRE_FIM_VIGENCIA e from ALIQUOTA_REFERENCIA').map(
-      (r) => ({ tributo: trib(r.t), rate: dec(r.v), validity: vig(r.f, r.e) }),
+      (r) => ({ tributo: trib(r.t), aliquota: dec(r.v), vigencia: vig(r.f, r.e) }),
     ),
-    (x) => `${x.tributo}@${x.validity.from}`,
+    (x) => `${x.tributo}@${x.vigencia.inicio}`,
   );
 
   return {
     versao,
     cst,
     classTrib,
-    treatments,
-    ncmApplicability,
-    nbsApplicability,
-    annexes,
+    tratamentos,
+    aplicabilidadeNcm,
+    aplicabilidadeNbs,
+    anexos,
     nfseNbs,
-    actorGroups,
-    actors,
-    actorClassTrib,
-    dfeTypes,
-    govPurchaseReducer,
-    cbsTransfer,
-    referenceRates,
+    gruposDeAtores,
+    atores,
+    atorClassTrib,
+    tiposDfe,
+    redutorCompraGov,
+    transferenciaCbs,
+    aliquotasDeReferencia,
   };
 }

@@ -1,5 +1,5 @@
-import type { SignerConnection, StartSignerOptions } from '@sinete/transport/signer';
+import type { ConexaoSigner, IniciarSignerOpcoes } from '@sinete/transport/signer';
 
-export declare function signerPackage(options?: { readonly pkcs11?: boolean }): { pkg: string; file: string };
-export declare function signerBinary(options?: { readonly pkcs11?: boolean }): string;
-export declare function startSigner(options: StartSignerOptions): Promise<SignerConnection>;
+export declare function pacoteDoSigner(opcoes?: { readonly pkcs11?: boolean }): { pacote: string; arquivo: string };
+export declare function binarioDoSigner(opcoes?: { readonly pkcs11?: boolean }): string;
+export declare function iniciarSigner(opcoes: IniciarSignerOpcoes): Promise<ConexaoSigner>;

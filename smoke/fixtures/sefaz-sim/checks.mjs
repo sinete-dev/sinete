@@ -1,7 +1,7 @@
 // Verificações do @sinete/sefaz-sim em Node, Bun, Deno e Chromium, sem rede: o simulador atende em processo pelo
-// Transport do próprio pacote.
+// Transporte do próprio pacote.
 import { relogioManual, ehErroSinete } from '@sinete/core';
-import { nfeEndpoint, nfseEndpoint, soap12ContentType, soap12Envelope, soapBody } from '@sinete/transport';
+import { nfeEndpoint, nfseEndpoint, contentTypeSoap12, envelopeSoap12, lerBodySoap } from '@sinete/transport';
 import { createNfseSim, createSefazSim, dvChave, MDFE_SERVICES, NFE_SERVICES, redirectNfseToSim, redirectToSim, SIM_BASE_URL, simTransport, soapAction, syntheticCertificate } from '@sinete/sefaz-sim';
 
 export async function runChecks(mode) {
@@ -17,29 +17,29 @@ export async function runChecks(mode) {
   expect('caminho do MDF-e', sim.path('MDFeRecepcaoSinc') === '/uf/ws/MDFeRecepcaoSinc' && MDFE_SERVICES.MDFeRecepcaoSinc.compactado === true);
   const def = NFE_SERVICES.NfeStatusServico;
   const ns = 'http://www.portalfiscal.inf.br/nfe';
-  const body = soap12Envelope(
+  const body = envelopeSoap12(
     `<nfeDadosMsg xmlns="http://www.portalfiscal.inf.br/nfe/wsdl/NFeStatusServico4"><consStatServ versao="4.00" xmlns="${ns}"><tpAmb>2</tpAmb><cUF>35</cUF><xServ>STATUS</xServ></consStatServ></nfeDadosMsg>`,
   );
   const t = simTransport(sim, { clientCertificate: titular.der });
-  const res = await t.send({
+  const res = await t.enviar({
     url: sim.url(SIM_BASE_URL, 'NfeStatusServico'),
-    headers: { 'content-type': soap12ContentType(soapAction(def)) },
-    body,
+    cabecalhos: { 'content-type': contentTypeSoap12(soapAction(def)) },
+    corpo: body,
   });
-  const ret = soapBody(res.text());
+  const ret = lerBodySoap(res.texto());
   expect('status 107', res.status === 200 && ret.includes('<cStat>107</cStat>'));
   expect('dhRecbto no relógio injetado', ret.includes('<dhRecbto>2026-09-26T10:00:00-03:00</dhRecbto>'));
   const sp = nfeEndpoint({ ambiente: 'homologacao', uf: 'SP', servico: 'NfeStatusServico' });
-  const redirecionado = await redirectToSim(t, SIM_BASE_URL).send({
+  const redirecionado = await redirectToSim(t, SIM_BASE_URL).enviar({
     url: sp.url,
     endpoint: sp,
-    headers: { 'content-type': soap12ContentType(soapAction(def)) },
-    body,
+    cabecalhos: { 'content-type': contentTypeSoap12(soapAction(def)) },
+    corpo: body,
   });
-  expect('redirectToSim atende o endpoint real', soapBody(redirecionado.text()).includes('<cStat>107</cStat>'));
+  expect('redirectToSim atende o endpoint real', lerBodySoap(redirecionado.texto()).includes('<cStat>107</cStat>'));
   let err;
   try {
-    await simTransport(sim).send({ url: sim.url(SIM_BASE_URL, 'NfeStatusServico'), body });
+    await simTransport(sim).enviar({ url: sim.url(SIM_BASE_URL, 'NfeStatusServico'), corpo: body });
   } catch (e) {
     err = e;
   }
@@ -51,12 +51,12 @@ export async function runChecks(mode) {
   // NFS-e simulada no mesmo transporte em processo: parametrização do ADN pela base real, redirecionada.
   const nfse = createNfseSim({ clock, signer: titular.signer, municipios: [{ cMun: '3550308', nome: 'São Paulo' }] });
   const ep = nfseEndpoint({ ambiente: 'homologacao', api: 'parametrizacao' });
-  const conv = await redirectNfseToSim(simTransport(nfse, { clientCertificate: titular.der }), SIM_BASE_URL).send({
+  const conv = await redirectNfseToSim(simTransport(nfse, { clientCertificate: titular.der }), SIM_BASE_URL).enviar({
     url: `${ep.url}/3550308/convenio`,
     endpoint: ep,
   });
-  expect('NFS-e: convênio simulado', conv.status === 200 && JSON.parse(conv.text()).parametrosConvenio.aderenteEmissorNacional === 1);
+  expect('NFS-e: convênio simulado', conv.status === 200 && JSON.parse(conv.texto()).parametrosConvenio.aderenteEmissorNacional === 1);
   expect('NFS-e: DV da chave', dvChave('0'.repeat(49)) === '0');
-  await t.close();
+  await t.fechar();
   return failures;
 }

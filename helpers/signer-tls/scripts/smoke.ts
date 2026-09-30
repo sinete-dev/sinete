@@ -25,28 +25,28 @@ export interface SmokeResult {
 }
 
 const CONSUMER = `import { readdirSync } from 'node:fs';
-import { signerBinary, signerPackage, startSigner } from '@sinete/signer';
+import { binarioDoSigner, iniciarSigner, pacoteDoSigner } from '@sinete/signer';
 
 const failures = [];
-const { pkg } = signerPackage();
+const { pacote: pkg } = pacoteDoSigner();
 const plataformas = readdirSync('node_modules/@sinete').filter((n) => n.startsWith('signer-'));
 if (plataformas.length !== 1 || '@sinete/' + plataformas[0] !== pkg) {
   failures.push('pacotes de plataforma instalados: ' + plataformas.join(', ') + '; esperado só ' + pkg);
 }
-const s = await startSigner({ lab: true });
+const s = await iniciarSigner({ lab: true });
 if (!s.hello.backends.includes('remote') || s.hello.backends.includes('pkcs11')) {
   failures.push('estático: backends ' + s.hello.backends.join(','));
 }
-await s.close();
+await s.fechar();
 let p11 = false;
 try {
-  signerBinary({ pkcs11: true });
+  binarioDoSigner({ pkcs11: true });
   p11 = true;
 } catch {}
 if (p11) {
-  const q = await startSigner({ lab: true, pkcs11: true });
+  const q = await iniciarSigner({ lab: true, pkcs11: true });
   if (!q.hello.backends.includes('pkcs11')) failures.push('-p11: backends ' + q.hello.backends.join(','));
-  await q.close();
+  await q.fechar();
 }
 if (process.env.SIGNER_SMOKE_REQUIRE_P11 === '1' && !p11) failures.push(pkg + ' sem o sabor -p11');
 console.log(JSON.stringify({ ok: failures.length === 0, failures, pkg, p11, helper: s.hello.helper }));

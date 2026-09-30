@@ -2,29 +2,29 @@
 // subpaths gerados são importados e exercitados. Só dado sintético. Devolve a lista de falhas (vazia = ok).
 import { relogioFixo, ehErroSinete, ErroDeValidacao } from '@sinete/core';
 import {
-  assertValid,
-  checkSimple,
-  compareDecimal,
-  compileXsdRegex,
-  decode,
-  decodeRoot,
-  decodeXml,
-  isComplexType,
-  isElementParticle,
-  isWildcard,
+  exigirValido,
+  conferirTipoSimples,
+  compararDecimal,
+  compilarRegexXsd,
+  decodificar,
+  decodificarRaiz,
+  decodificarXml,
+  ehComplexType,
+  ehElementParticle,
+  ehWildcard,
   maxOccurs,
   minOccurs,
   selecionarPl,
-  SerializeError,
-  serialize,
-  serializeRoot,
-  validate,
-  validateRoot,
+  ErroSerializacao,
+  serializar,
+  serializarRaiz,
+  validar,
+  validarRaiz,
   VIGENCIAS,
   VIGENCIAS_ATUALIZADAS_EM,
-  VigenciaError,
-  XsdRegexError,
-  xsdRegexToJs,
+  ErroVigencia,
+  ErroRegexXsd,
+  regexXsdParaJs,
 } from '@sinete/schemas';
 import * as mdfe from '@sinete/schemas/mdfe/3.00b';
 import * as cadastro from '@sinete/schemas/nfe/consulta-cadastro/PL_010d';
@@ -74,50 +74,50 @@ export function runChecks() {
   };
   for (const [subpath, [m, roots]] of Object.entries(modules)) {
     expect(`${subpath}: schema`, m.schema.subpath === subpath && m.schema.fontes.every((f) => /^[0-9a-f]{64}$/.test(f.sha256)));
-    for (const r of roots) expect(`${subpath}: ${r}`, isComplexType(m[r]?.type) && typeof m[r].name === 'string');
+    for (const r of roots) expect(`${subpath}: ${r}`, ehComplexType(m[r]?.tipo) && typeof m[r].nome === 'string');
     // Um documento vazio na raiz de cada módulo: o validador aponta o que falta sem lançar.
     const root = m[roots[0]];
-    const empty = `<${root.name} xmlns="${root.ns}"/>`;
-    expect(`${subpath}: validate vazio`, validateRoot(root, empty).length > 0);
-    expect(`${subpath}: decode vazio`, decodeXml(root, empty).issues.length === 0);
+    const empty = `<${root.nome} xmlns="${root.ns}"/>`;
+    expect(`${subpath}: validar vazio`, validarRaiz(root, empty).length > 0);
+    expect(`${subpath}: decodificar vazio`, decodificarXml(root, empty).ocorrencias.length === 0);
   }
 
   // NFS-e: a correção documentada do TSSerieDPS (âncoras ^ e $ literais no XSD de 09/02/2026) vem no módulo.
-  expect('patch do TSSerieDPS', nfse0209.schema.patches?.[0]?.tipo === 'TSSerieDPS' && nfse0727.schema.patches === undefined);
+  expect('patch do TSSerieDPS', nfse0209.schema.ajustes?.[0]?.tipo === 'TSSerieDPS' && nfse0727.schema.ajustes === undefined);
 
-  // NF-e sintética: sem Signature, só o modelo de conteúdo do NFe falha; decode e serialize voltam ao mesmo texto.
-  const nfeIssues = validateRoot(nfe010f.NFeElement, NFE_XML);
+  // NF-e sintética: sem Signature, só o modelo de conteúdo do NFe falha; decodificar e serializar voltam ao mesmo texto.
+  const nfeIssues = validarRaiz(nfe010f.NFeElement, NFE_XML);
   expect('NF-e sem Signature', nfeIssues.length === 1 && nfeIssues[0].caminho === '/NFe' && nfeIssues[0].code === 'modelo_de_conteudo');
-  const d = decodeXml(nfe010f.NFeElement, NFE_XML);
-  expect('decode NF-e', d.issues.length === 0 && d.value.infNFe.emit.enderEmit.UF === 'SP');
-  expect('serialize NF-e', serializeRoot(nfe010f.NFeElement, d.value) === NFE_XML);
+  const d = decodificarXml(nfe010f.NFeElement, NFE_XML);
+  expect('decodificar NF-e', d.ocorrencias.length === 0 && d.valor.infNFe.emit.enderEmit.UF === 'SP');
+  expect('serializar NF-e', serializarRaiz(nfe010f.NFeElement, d.valor) === NFE_XML);
   const inf = lerXml(NFE_XML).raiz.filhos[0];
-  expect('decode elemento', decode(nfe010f.TNFe_infNFe, inf).value.ide.mod === '55');
-  expect('serialize elemento', serialize(nfe010f.TNFe_infNFe, 'infNFe', d.value.infNFe, NFE).startsWith('<infNFe Id='));
-  expect('validate elemento', validate(nfe010f.TNFe_infNFe, inf).length === 0);
-  expect('decodeRoot', decodeRoot(nfe010e.NFeElement, lerXml(NFE_XML)).issues.length === 0);
+  expect('decodificar elemento', decodificar(nfe010f.TNFe_infNFe, inf).valor.ide.mod === '55');
+  expect('serializar elemento', serializar(nfe010f.TNFe_infNFe, 'infNFe', d.valor.infNFe, NFE).startsWith('<infNFe Id='));
+  expect('validar elemento', validar(nfe010f.TNFe_infNFe, inf).length === 0);
+  expect('decodificarRaiz', decodificarRaiz(nfe010e.NFeElement, lerXml(NFE_XML)).ocorrencias.length === 0);
   let verr;
   try {
-    assertValid(nfe010f.NFeElement, NFE_XML);
+    exigirValido(nfe010f.NFeElement, NFE_XML);
   } catch (e) {
     verr = e;
   }
-  expect('assertValid', verr instanceof ErroDeValidacao && verr.ocorrencias.length === 1);
+  expect('exigirValido', verr instanceof ErroDeValidacao && verr.ocorrencias.length === 1);
 
-  const st = serializeRoot(status.consStatServElement, { versao: '4.00', tpAmb: '2', cUF: '35', xServ: 'STATUS' });
-  expect('status do serviço', validateRoot(status.consStatServElement, st).length === 0);
-  const cons = serializeRoot(cadastro.ConsCadElement, { versao: '2.00', infCons: { xServ: 'CONS-CAD', UF: 'SP', CNPJ: '00000000000000' } });
-  expect('consulta cadastro', validateRoot(cadastro.ConsCadElement, cons).length === 0);
-  const rodo = { name: 'rodo', ns: 'http://www.portalfiscal.inf.br/mdfe', type: mdfe.rodo };
-  expect('MDF-e rodo', validateRoot(rodo, '<rodo xmlns="http://www.portalfiscal.inf.br/mdfe"><veicTracao><placa>ZZZZZZZZZ</placa></veicTracao></rodo>').some((i) => i.code === 'padrao'));
+  const st = serializarRaiz(status.consStatServElement, { versao: '4.00', tpAmb: '2', cUF: '35', xServ: 'STATUS' });
+  expect('status do serviço', validarRaiz(status.consStatServElement, st).length === 0);
+  const cons = serializarRaiz(cadastro.ConsCadElement, { versao: '2.00', infCons: { xServ: 'CONS-CAD', UF: 'SP', CNPJ: '00000000000000' } });
+  expect('consulta cadastro', validarRaiz(cadastro.ConsCadElement, cons).length === 0);
+  const rodo = { nome: 'rodo', ns: 'http://www.portalfiscal.inf.br/mdfe', tipo: mdfe.rodo };
+  expect('MDF-e rodo', validarRaiz(rodo, '<rodo xmlns="http://www.portalfiscal.inf.br/mdfe"><veicTracao><placa>ZZZZZZZZZ</placa></veicTracao></rodo>').some((i) => i.code === 'padrao'));
 
   let serr;
   try {
-    serialize(nfe010f.TNFe_infNFe, 'infNFe', { ...d.value.infNFe, ide: { ...d.value.infNFe.ide, cUF: 35 } });
+    serializar(nfe010f.TNFe_infNFe, 'infNFe', { ...d.valor.infNFe, ide: { ...d.valor.infNFe.ide, cUF: 35 } });
   } catch (e) {
     serr = e;
   }
-  expect('SerializeError', serr instanceof SerializeError && serr.path === '/infNFe/ide/cUF');
+  expect('ErroSerializacao', serr instanceof ErroSerializacao && serr.caminho === '/infNFe/ide/cUF');
 
   expect('selecionarPl', selecionarPl('nfe', 'producao', relogioFixo('2026-09-25T12:00:00-03:00')).modulo === 'nfe/PL_010e');
   expect('VIGENCIAS', Object.keys(VIGENCIAS).length === 17 && VIGENCIAS.nfse?.length === 2 && /^\d{4}-/.test(VIGENCIAS_ATUALIZADAS_EM));
@@ -127,20 +127,20 @@ export function runChecks() {
   } catch (e) {
     vErr = e;
   }
-  expect('VigenciaError', vErr instanceof VigenciaError && ehErroSinete(vErr, 'pl_sem_vigencia'));
+  expect('ErroVigencia', vErr instanceof ErroVigencia && ehErroSinete(vErr, 'pl_sem_vigencia'));
 
-  expect('regex', compileXsdRegex('\\d{2}').test('12') && xsdRegexToJs('a') === '^(?:a)$');
+  expect('regex', compilarRegexXsd('\\d{2}').test('12') && regexXsdParaJs('a') === '^(?:a)$');
   let rErr;
   try {
-    xsdRegexToJs('\\i');
+    regexXsdParaJs('\\i');
   } catch (e) {
     rErr = e;
   }
-  expect('XsdRegexError', rErr instanceof XsdRegexError);
+  expect('ErroRegexXsd', rErr instanceof ErroRegexXsd);
   const out = [];
-  checkSimple({ b: 'decimal', fd: 2 }, '1.234', '/x', out);
-  expect('checkSimple', out.length === 1 && out[0].code === 'digitos_fracionarios');
-  expect('compareDecimal', compareDecimal('0.10', '.1') === 0);
-  expect('particulas', isWildcard({ w: 1 }) && isElementParticle({ e: 'a', t: { b: 'string' } }) && minOccurs({ w: 1 }) === 1 && maxOccurs({ w: 1, x: -1 }) === Infinity);
+  conferirTipoSimples({ b: 'decimal', fd: 2 }, '1.234', '/x', out);
+  expect('conferirTipoSimples', out.length === 1 && out[0].code === 'digitos_fracionarios');
+  expect('compararDecimal', compararDecimal('0.10', '.1') === 0);
+  expect('particulas', ehWildcard({ w: 1 }) && ehElementParticle({ e: 'a', t: { b: 'string' } }) && minOccurs({ w: 1 }) === 1 && maxOccurs({ w: 1, x: -1 }) === Infinity);
   return failures;
 }

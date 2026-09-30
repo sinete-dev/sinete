@@ -4,7 +4,7 @@
  *
  * - `@sinete/signer-<os>-<cpu>`: `bin/sinete-signer` (estático) e `bin/sinete-signer-p11` (cgo), com `os` e `cpu` no
  *   package.json para o gerenciador instalar só o da plataforma, sem script de instalação;
- * - `@sinete/signer`: o lançador (`signerBinary`, `startSigner`), com os pacotes de plataforma em
+ * - `@sinete/signer`: o lançador (`binarioDoSigner`, `iniciarSigner`), com os pacotes de plataforma em
  *   `optionalDependencies` na versão exata.
  *
  * Confere cada binário contra o SHA256SUMS do build. A publicação é do job de release do helper (pendente, ADR 0014);

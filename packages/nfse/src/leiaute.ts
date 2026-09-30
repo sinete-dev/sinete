@@ -6,7 +6,7 @@
 
 import type { Ambiente, Relogio } from '@sinete/core';
 import { ErroDeConfiguracao } from '@sinete/core';
-import type { RootElement, SchemaModuleInfo, VigenciaEntry } from '@sinete/schemas';
+import type { DescricaoModuloSchema, ElementoRaiz, EntradaDeVigencia } from '@sinete/schemas';
 import { selecionarPl } from '@sinete/schemas';
 import * as v20260209 from '@sinete/schemas/nfse/1.01-20260209';
 import type { TCDPS, TCEvento, TCNFSe, TCPedRegEvt } from '@sinete/schemas/nfse/1.01-20260727';
@@ -19,11 +19,11 @@ export const VERSAO_LEIAUTE = '1.01';
 export const NFSE_NS = 'http://www.sped.fazenda.gov.br/nfse';
 
 export interface LeiauteNfse {
-  readonly schema: SchemaModuleInfo;
-  readonly DPSElement: RootElement<TCDPS>;
-  readonly NFSeElement: RootElement<TCNFSe>;
-  readonly pedRegEventoElement: RootElement<TCPedRegEvt>;
-  readonly eventoElement: RootElement<TCEvento>;
+  readonly schema: DescricaoModuloSchema;
+  readonly DPSElement: ElementoRaiz<TCDPS>;
+  readonly NFSeElement: ElementoRaiz<TCNFSe>;
+  readonly pedRegEventoElement: ElementoRaiz<TCPedRegEvt>;
+  readonly eventoElement: ElementoRaiz<TCEvento>;
 }
 
 const MODULOS: Readonly<Record<string, LeiauteNfse>> = {
@@ -35,7 +35,7 @@ const MODULOS: Readonly<Record<string, LeiauteNfse>> = {
 export function leiauteVigente(
   ambiente: Ambiente,
   relogio: Relogio,
-): { readonly vigencia: VigenciaEntry; readonly leiaute: LeiauteNfse } {
+): { readonly vigencia: EntradaDeVigencia; readonly leiaute: LeiauteNfse } {
   const vigencia = selecionarPl('nfse', ambiente, relogio);
   const leiaute = MODULOS[vigencia.modulo];
   if (leiaute === undefined) throw new ErroDeConfiguracao(`módulo de schema da NFS-e sem código: ${vigencia.modulo}`);

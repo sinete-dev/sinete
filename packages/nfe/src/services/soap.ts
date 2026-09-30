@@ -1,14 +1,14 @@
 /**
  * Chamada SOAP 1.2 a um web service da NF-e 4.00: monta o corpo com o namespace do WSDL (dado em `data/servicos.json`),
- * envia pelo `Transport` injetado e devolve o elemento de retorno como fatia da resposta, com a árvore para leitura.
+ * envia pelo `Transporte` injetado e devolve o elemento de retorno como fatia da resposta, com a árvore para leitura.
  */
 
 import type { Logger } from '@sinete/core';
 import { ErroRespostaInvalida } from '@sinete/core';
 import type { DocumentoXml, ElementoXml } from '@sinete/core/xml';
 import { descendentes, elementosFilhos, lerXml } from '@sinete/core/xml';
-import type { EndpointRef, NfeServico, Transport } from '@sinete/transport';
-import { soap12ContentType, soap12Envelope, soapFault } from '@sinete/transport';
+import type { EndpointResolvido, NfeServico, Transporte } from '@sinete/transport';
+import { contentTypeSoap12, envelopeSoap12, lerSoapFault } from '@sinete/transport';
 import servicos from '../data/servicos.json' with { type: 'json' };
 import { NFE_NS } from './proc.ts';
 
@@ -50,8 +50,8 @@ export interface RespostaSoap {
 }
 
 export interface ChamadaSoap {
-  readonly transport: Transport;
-  readonly endpoint: EndpointRef;
+  readonly transport: Transporte;
+  readonly endpoint: EndpointResolvido;
   readonly servico: NfeServico;
   readonly mensagem: string;
   /** Nome local do elemento de retorno (`retEnviNFe`, `retConsSitNFe`...). */
@@ -65,17 +65,17 @@ export interface ChamadaSoap {
 export async function chamar(c: ChamadaSoap): Promise<RespostaSoap> {
   const s = servicoInfo(c.servico);
   const started = { servico: c.servico, autorizador: c.endpoint.autorizador, host: c.endpoint.host };
-  const res = await c.transport.send({
+  const res = await c.transport.enviar({
     url: c.endpoint.url,
     endpoint: c.endpoint,
-    method: 'POST',
-    headers: { 'content-type': soap12ContentType(`${s.namespace}/${s.operacao}`) },
-    body: soap12Envelope(soapBodyFor(c.servico, c.mensagem, c.endpoint.autorizador)),
+    metodo: 'POST',
+    cabecalhos: { 'content-type': contentTypeSoap12(`${s.namespace}/${s.operacao}`) },
+    corpo: envelopeSoap12(soapBodyFor(c.servico, c.mensagem, c.endpoint.autorizador)),
     ...(c.timeoutMs === undefined ? {} : { timeoutMs: c.timeoutMs }),
     ...(c.signal === undefined ? {} : { signal: c.signal }),
   });
-  const text = res.text();
-  const fault = soapFault(text);
+  const text = res.texto();
+  const fault = lerSoapFault(text);
   if (fault) {
     c.logger.warn('nfe.soap.fault', { ...started, status: res.status, code: fault.code });
     throw new ErroRespostaInvalida(`SOAP fault de ${c.endpoint.host}: ${fault.reason ?? fault.code ?? 'sem motivo'}`, {

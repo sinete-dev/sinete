@@ -10,7 +10,7 @@
 
 import type { ElementoXml } from '@sinete/core/xml';
 import { atributoDe, elementosFilhos, textoDe } from '@sinete/core/xml';
-import { serialize, serializeRoot } from '@sinete/schemas';
+import { serializar, serializarRaiz } from '@sinete/schemas';
 import type { TRetEvento } from '@sinete/schemas/mdfe/eventos/3.00b';
 import { eventoMDFeElement, TRetEvento as RetEvento, retEventoMDFeElement } from '@sinete/schemas/mdfe/eventos/3.00b';
 import { cnpjValido, cpfValido, lerChaveAcesso } from '@sinete/validators';
@@ -180,7 +180,7 @@ export async function recepcaoEventoMdfe(ctx: RequestContext): Promise<string> {
   const tpEvento = lido('tpEvento');
   const nSeqEvento = lido('nSeqEvento');
   const cOrgao = lido('cOrgao');
-  const ret = (value: TRetEvento): string => serializeRoot(retEventoMDFeElement, value);
+  const ret = (value: TRetEvento): string => serializarRaiz(retEventoMDFeElement, value);
   const base = {
     tpAmb: ctx.rt.config.tpAmb,
     verAplic: verAplicMdfe(),
@@ -291,7 +291,7 @@ export async function recepcaoEventoMdfe(ctx: RequestContext): Promise<string> {
     det: detalhe,
     chNFe: tp === '110115' ? all(detEv, 'infDoc').map((d) => req(d, 'chNFe')) : [],
     xml: pre.payload,
-    retEvento: serialize(RetEvento, 'retEventoMDFe', valor, pre.doc.raiz.ns),
+    retEvento: serializar(RetEvento, 'retEventoMDFe', valor, pre.doc.raiz.ns),
   });
   if (tp === '110111') m.situacao = 'cancelado';
   if (tp === '110112') m.situacao = 'encerrado';

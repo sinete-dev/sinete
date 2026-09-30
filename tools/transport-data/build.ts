@@ -69,7 +69,10 @@ const decode = (s: string): string =>
 
 type Services = Record<string, { versao: string; url: string }>;
 
-function parseNfePortal(html: string): { ufMap: Record<string, string[]>; authorizers: Record<string, Services> } {
+function parseNfePortal(html: string): {
+  mapaDeUfs: Record<string, string[]>;
+  autorizadores: Record<string, Services>;
+} {
   const authorizers: Record<string, Services> = {};
   for (const m of html.matchAll(/<caption>([^<]*?)\s*<\/caption>(.*?)<\/table>/gs)) {
     const code = /\(([A-Z-]+)\)/.exec(m[1] ?? '')?.[1];
@@ -94,7 +97,7 @@ function parseNfePortal(html: string): { ufMap: Record<string, string[]>; author
     'SVC-RS': grab(/SVC-RS - Sefaz Virtual de Conting\S+ Rio Grande do Sul: ([A-Z, ]+?) Autorizadores/),
   };
   for (const [k, v] of Object.entries(ufMap)) if (v.length === 0) throw new Error(`mapa ${k} vazio: a página mudou?`);
-  return { ufMap, authorizers };
+  return { mapaDeUfs: ufMap, autorizadores: authorizers };
 }
 
 /**
@@ -104,13 +107,13 @@ function parseNfePortal(html: string): { ufMap: Record<string, string[]>; author
  */
 const SVC_SEM_SERVICOS = {
   servicos: ['NfeInutilizacao'],
-  source:
+  fonte:
     'NT 2013.007 v1.03 (SVC), item 04.5: "O Serviço de Inutilização (Web Service: NFeInutilizacao) não será oferecido pela SVC"',
 } as const;
 
-function semServicosForaDaSvc<T extends { authorizers: Record<string, Services> }>(p: T): T {
+function semServicosForaDaSvc<T extends { autorizadores: Record<string, Services> }>(p: T): T {
   for (const svc of ['SVC-AN', 'SVC-RS']) {
-    const services = p.authorizers[svc];
+    const services = p.autorizadores[svc];
     if (services) for (const s of SVC_SEM_SERVICOS.servicos) delete services[s];
   }
   return p;
@@ -280,41 +283,41 @@ async function endpoints(): Promise<void> {
     const authorizers: Record<string, Services> = { ...nfceSvrs[env], MG: nfceMg[env].services };
     const proprios = Object.keys(authorizers).filter((a) => a !== 'SVRS');
     return {
-      ufMap: { SVRS: UFS.filter((uf) => !proprios.includes(uf)) },
-      authorizers,
+      mapaDeUfs: { SVRS: UFS.filter((uf) => !proprios.includes(uf)) },
+      autorizadores: authorizers,
       consultas: { MG: nfceMg[env].consultas },
     };
   };
   const doc = {
     $comment: 'Gerado por tools/transport-data/build.ts endpoints; não edite à mão.',
-    schemaVersion: 1,
-    version: (nfceRetrievedAt > retrievedAt ? nfceRetrievedAt : retrievedAt).replace(/-/g, '.'),
+    versaoDoFormato: 2,
+    versao: (nfceRetrievedAt > retrievedAt ? nfceRetrievedAt : retrievedAt).replace(/-/g, '.'),
     nfe: {
       versao: '4.00',
       svcSemServicos: SVC_SEM_SERVICOS,
-      producao: { source: SOURCES.nfeProducao, retrievedAt, ...prod },
-      homologacao: { source: SOURCES.nfeHomologacao, retrievedAt, ...hom },
+      producao: { fonte: SOURCES.nfeProducao, coletadoEm: retrievedAt, ...prod },
+      homologacao: { fonte: SOURCES.nfeHomologacao, coletadoEm: retrievedAt, ...hom },
     },
-    mdfe: { versao: '3.00', autorizador: 'SVRS', source: SOURCES.mdfe, retrievedAt, ...mdfe },
+    mdfe: { versao: '3.00', autorizador: 'SVRS', fonte: SOURCES.mdfe, coletadoEm: retrievedAt, ...mdfe },
     nfce: {
       versao: '4.00',
-      source: SOURCES.nfce,
-      sources: { MG: SOURCES.nfceMg },
-      retrievedAt: nfceRetrievedAt,
+      fonte: SOURCES.nfce,
+      fontes: { MG: SOURCES.nfceMg },
+      coletadoEm: nfceRetrievedAt,
       // A relação da SVRS lista os autorizadores próprios (AM, GO, MS, MT, PR, RS, SP) e a SVRS, sem MG, que publica a
       // própria tabela. Não há lista oficial de UFs por autorizador da NFC-e: a UF sem autorizador próprio nas duas
       // tabelas autoriza na SVRS.
-      ufMapRule: 'UF sem autorizador próprio na relação da SVRS nem na da SEF/MG autoriza a NFC-e na SVRS',
+      regraDoMapaDeUfs: 'UF sem autorizador próprio na relação da SVRS nem na da SEF/MG autoriza a NFC-e na SVRS',
       // URLs do QR Code e da consulta por chave só onde a tabela oficial de web services as publica (MG).
-      consultasSource: SOURCES.nfceMg,
+      fonteDasConsultas: SOURCES.nfceMg,
       producao: nfceEnv('producao'),
       homologacao: nfceEnv('homologacao'),
     },
     nfse: {
       // Página HTML sem tabela estável: bases conferidas à mão na coleta e confirmadas pela sondagem (ADR 0004).
-      source: SOURCES.nfse,
-      sourceUpdatedAt: '2026-08-20',
-      retrievedAt,
+      fonte: SOURCES.nfse,
+      fonteAtualizadaEm: '2026-08-20',
+      coletadoEm: retrievedAt,
       producaoRestrita: {
         sefin: 'https://sefin.producaorestrita.nfse.gov.br/API/SefinNacional',
         adn: 'https://adn.producaorestrita.nfse.gov.br',
@@ -333,7 +336,7 @@ async function endpoints(): Promise<void> {
   };
   await Bun.write(path.join(dataDir, 'endpoints.json'), `${JSON.stringify(doc, null, 2)}\n`);
   console.log(
-    `endpoints.json: NF-e ${Object.keys(prod.authorizers).length} autorizadores, NFC-e ${Object.keys(doc.nfce.producao.authorizers).length}, MDF-e e NFS-e`,
+    `endpoints.json: NF-e ${Object.keys(prod.autorizadores).length} autorizadores, NFC-e ${Object.keys(doc.nfce.producao.autorizadores).length}, MDF-e e NFS-e`,
   );
 }
 
@@ -358,32 +361,32 @@ async function perfis(): Promise<void> {
     const dhe = /^DHE-/.test(r.cifra);
     return {
       host: r.host,
-      uses: r.uso.split(/\s+/),
-      tlsVersions: versions,
-      maxTls: versions.at(-1),
-      cipher: r.cifra,
-      keyExchange: dhe ? 'dhe' : 'ecdhe',
+      usos: r.uso.split(/\s+/),
+      versoesTls: versions,
+      tlsMaximo: versions.at(-1),
+      cifra: r.cifra,
+      trocaDeChaves: dhe ? 'dhe' : 'ecdhe',
       ecdheAead: aead && !dhe,
-      clientCert: r.pedeCert.startsWith('renegociação') ? 'renegotiation' : 'handshake',
-      clientCertEvidence: r.pedeCert.includes('verificado')
+      certificadoDoCliente: r.pedeCert.startsWith('renegociação') ? 'renegociacao' : 'handshake',
+      evidenciaDoCertificadoDoCliente: r.pedeCert.includes('verificado')
         ? 'verificado'
         : r.pedeCert.includes('provável')
           ? 'provavel'
           : 'sondagem',
-      serverRoot: r.raiz.startsWith('ICP-Brasil') ? 'icp-brasil' : 'publica',
-      serverRootName: r.raiz,
+      raizDoServidor: r.raiz.startsWith('ICP-Brasil') ? 'icp-brasil' : 'publica',
+      nomeDaRaizDoServidor: r.raiz,
       ocspStapling: r.ocspStapling === 'sim',
-      sessionResumption: r.retomada === 'sim',
+      retomadaDeSessao: r.retomada === 'sim',
     };
   });
   const doc = {
     $comment:
-      'Gerado por tools/transport-data/build.ts perfis a partir da sondagem TLS; não edite à mão. clientCert=renegotiation: o servidor (IIS) só pede o certificado numa renegociação iniciada depois da requisição HTTP. ecdheAead=false: o host só oferece CBC ou DHE. As duas coisas o rustls (Deno) não faz.',
-    schemaVersion: 1,
-    version: probedAt.replace(/-/g, '.'),
-    source:
+      'Gerado por tools/transport-data/build.ts perfis a partir da sondagem TLS; não edite à mão. certificadoDoCliente=renegociacao: o servidor (IIS) só pede o certificado numa renegociação iniciada depois da requisição HTTP. ecdheAead=false: o host só oferece CBC ou DHE. As duas coisas o rustls (Deno) não faz.',
+    versaoDoFormato: 2,
+    versao: probedAt.replace(/-/g, '.'),
+    fonte:
       'Sondagem TLS leve de cada host (openssl s_client), ADR 0004 seção 2; renegociação com certificado real confirmada em BA, MT, SP, SVAN e AN de homologação (seção 6)',
-    probedAt,
+    sondadoEm: probedAt,
     hosts,
   };
   await Bun.write(path.join(dataDir, 'tls-profiles.json'), `${JSON.stringify(doc, null, 2)}\n`);

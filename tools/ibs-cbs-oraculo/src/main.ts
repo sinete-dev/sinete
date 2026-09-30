@@ -5,9 +5,9 @@
 import os from 'node:os';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
-import { officialRates } from '@sinete/ibs-cbs/aliquotas';
-import { loadDataset } from '@sinete/ibs-cbs-dados';
-import { BUNDLED_DATASET } from '@sinete/ibs-cbs-dados/bundled';
+import { aliquotasOficiais } from '@sinete/ibs-cbs/aliquotas';
+import { carregarDataset } from '@sinete/ibs-cbs-dados';
+import { DATASET_EMBARCADO } from '@sinete/ibs-cbs-dados/bundled';
 import { unpackCalculadora } from '../../ibs-cbs-dados/src/artifact.ts';
 import { defaultCacheDir, ensureFile } from '../../ibs-cbs-dados/src/fetch.ts';
 import type { CaseResult } from './check.ts';
@@ -62,8 +62,8 @@ if (!api) {
 
 let exitCode = 0;
 try {
-  const dataset = loadDataset(BUNDLED_DATASET);
-  const rates = officialRates();
+  const dataset = carregarDataset(DATASET_EMBARCADO);
+  const rates = aliquotasOficiais();
   const nom = loadNomenclatures(db);
   const gen = generator(dataset, nom, seed);
   const hits = new Map<string, number>(ledger.entries.map((e) => [e.id, 0]));
@@ -103,7 +103,7 @@ try {
   const dataMismatches = checkData(dataset, data);
   const report = {
     calculadora: { versaoDb: pin.versao.versaoDb, zipSha256: pin.zipSha256 },
-    contentVersion: dataset.contentVersion,
+    contentVersion: dataset.versaoDoConteudo,
     seed,
     elapsedMs: Math.round(performance.now() - t0),
     tally,

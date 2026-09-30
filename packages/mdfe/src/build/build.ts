@@ -18,8 +18,8 @@ import {
   ufPorSigla,
 } from '@sinete/core';
 import { assinarXml, codificarBase64, lerXml, PREFIXO_DIGEST_INFO_SHA1, primeiroFilho } from '@sinete/core/xml';
-import type { ComplexType, VigenciaEntry } from '@sinete/schemas';
-import { SerializeError, selecionarPl, serialize, validate } from '@sinete/schemas';
+import type { ComplexType, EntradaDeVigencia } from '@sinete/schemas';
+import { ErroSerializacao, selecionarPl, serializar, validar } from '@sinete/schemas';
 import type { TMDFe_infMDFe } from '@sinete/schemas/mdfe/3.00b';
 import { TMDFe_infMDFe as InfMDFe300b } from '@sinete/schemas/mdfe/3.00b';
 import type { ChaveAcesso } from '@sinete/validators';
@@ -84,7 +84,7 @@ export interface BuiltMdfe {
   readonly tpAmb: '1' | '2';
   readonly dhEmi: string;
   /** Schema usado (escolhido pela vigência). */
-  readonly schema: VigenciaEntry;
+  readonly schema: EntradaDeVigencia;
   readonly infMDFe: TMDFe_infMDFe;
   /** `<MDFe xmlns="...">` com o `infMDFe` canônico, sem `infMDFeSupl` e sem assinatura, validado contra o schema. */
   readonly xml: string;
@@ -453,7 +453,7 @@ export function buildMdfe(input: MdfeInput, options: BuildMdfeOptions): BuildMdf
   const aamm = dhEmi.slice(2, 4) + dhEmi.slice(5, 7);
   const tpAmb = tpAmbDoAmbiente(options.ambiente);
 
-  // Schema vigente (VigenciaError do schemas propaga: data fora de toda vigência é configuração, não dado).
+  // Schema vigente (ErroVigencia do schemas propaga: data fora de toda vigência é configuração, não dado).
   const vigencia = selecionarPl('mdfe', options.ambiente, relogioFixo(agora));
   const infCt = INF_MDFE[vigencia.modulo];
   if (infCt === undefined) {
@@ -1142,13 +1142,13 @@ export function buildMdfe(input: MdfeInput, options: BuildMdfeOptions): BuildMdf
   // Serialização canônica e validação estrita contra o schema vigente, antes de qualquer assinatura.
   let xml: string;
   try {
-    xml = `<MDFe xmlns="${MDFE_NS}">${serialize(infCt, 'infMDFe', inf, MDFE_NS)}</MDFe>`;
+    xml = `<MDFe xmlns="${MDFE_NS}">${serializar(infCt, 'infMDFe', inf, MDFE_NS)}</MDFe>`;
   } catch (err) {
-    if (!(err instanceof SerializeError)) throw err;
-    return { ok: false, issues: [{ caminho: err.path, code: 'schema', mensagem: err.message, origem: 'montagem' }] };
+    if (!(err instanceof ErroSerializacao)) throw err;
+    return { ok: false, issues: [{ caminho: err.caminho, code: 'schema', mensagem: err.message, origem: 'montagem' }] };
   }
   const infEl = primeiroFilho(lerXml(xml).raiz, 'infMDFe', MDFE_NS);
-  const schemaIssues = infEl === undefined ? [] : validate(infCt, infEl);
+  const schemaIssues = infEl === undefined ? [] : validar(infCt, infEl);
   if (schemaIssues.length > 0) {
     return {
       ok: false,

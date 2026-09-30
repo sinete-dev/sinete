@@ -5,7 +5,7 @@ package policy
 // DataVersion identifica os dados compilados: endpoints, perfis TLS e bundle ICP-Brasil.
 const DataVersion = "endpoints 2026.09.26; perfis 2026.09.25; icp 2026.09.25"
 
-// hostsByAmbiente é a lista fechada de hosts por ambiente, a mesma de ambienteHosts() do @sinete/transport.
+// hostsByAmbiente é a lista fechada de hosts por ambiente, a mesma de hostsDoAmbiente() do @sinete/transport.
 var hostsByAmbiente = map[string][]string{
 	"homologacao": {
 		"adn.producaorestrita.nfse.gov.br",

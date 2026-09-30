@@ -22,7 +22,7 @@ import {
   syntheticCertificate,
   syntheticPfx,
 } from '@sinete/sefaz-sim';
-import { createTransport, TransportError } from '@sinete/transport';
+import { criarTransporte, ErroTransporte } from '@sinete/transport';
 import type { Desfecho } from '../src/index.ts';
 import { createBancoMemoria, createMemoriaStore } from '../src/memoria.ts';
 import type { DesfechoNfe, NfeEmissor, NfeEmissorOptions } from '../src/nfe.ts';
@@ -94,8 +94,8 @@ async function cenario(extra: Partial<NfeEmissorOptions> = {}): Promise<Cenario>
       aoDecidir: () => undefined,
       transporte: (o) => {
         // A política padrão é a allowlist dos hosts reais; o simulador em 127.0.0.1 fica fora dela.
-        const { policy: _policy, ...semPolitica } = o;
-        return redirectToSim(createTransport({ ...semPolitica, additionalCa: [ac.pem] }), server.baseUrl);
+        const { politica: _policy, ...semPolitica } = o;
+        return redirectToSim(criarTransporte({ ...semPolitica, acsAdicionais: [ac.pem] }), server.baseUrl);
       },
       ...extra,
       ...mais,
@@ -162,7 +162,7 @@ describe('NFC-e pelo createNfeEmissor', () => {
     const d = await c.emissor.emitir('cupom-3', offline);
     if (d.tipo !== 'pendente') throw new Error(`esperava pendente, veio ${d.tipo}`);
     expect(d.motivo).toBe('sem-resposta');
-    expect(d.causa).toBeInstanceOf(TransportError);
+    expect(d.causa).toBeInstanceOf(ErroTransporte);
 
     // Os bytes gravados já são a nota: QR Code com o dia, o valor e a assinatura (versão 3 off-line).
     const gravado = await c.store.ler('nfe', 'cupom-3');

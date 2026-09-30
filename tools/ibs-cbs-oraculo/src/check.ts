@@ -1,11 +1,11 @@
 /**
- * Um caso contra os dois lados: o motor local (`calculateAt`) e a Calculadora (`POST /calculadora/regime-geral`).
+ * Um caso contra os dois lados: o motor local (`calcularEm`) e a Calculadora (`POST /calculadora/regime-geral`).
  */
 
-import type { RateProvider } from '@sinete/ibs-cbs/aliquotas';
+import type { ProvedorDeAliquotas } from '@sinete/ibs-cbs/aliquotas';
 import type { Roc } from '@sinete/ibs-cbs/calcular';
-import { calculateAt } from '@sinete/ibs-cbs/calcular';
-import type { IbsCbsDataset } from '@sinete/ibs-cbs-dados';
+import { calcularEm } from '@sinete/ibs-cbs/calcular';
+import type { DatasetIbsCbs } from '@sinete/ibs-cbs-dados';
 import type { Flat } from './compare.ts';
 import { diff, flattenOracle, flattenRoc, toApi } from './compare.ts';
 import type { OracleCase } from './generate.ts';
@@ -22,12 +22,12 @@ export interface CaseResult {
   readonly oracleFlat?: Flat;
 }
 
-export function runEngine(c: OracleCase, dataset: IbsCbsDataset, rates: RateProvider): Side<Roc> {
+export function runEngine(c: OracleCase, dataset: DatasetIbsCbs, rates: ProvedorDeAliquotas): Side<Roc> {
   try {
-    return { ok: true, value: calculateAt(c.op, { dataset, rates, date: c.date }) };
+    return { ok: true, value: calcularEm(c.op, { dataset, aliquotas: rates, data: c.date }) };
   } catch (e) {
-    const err = e as { code?: string; reason?: string; regime?: string; message?: string };
-    const detail = [err.code, err.reason ?? err.regime].filter(Boolean).join(':');
+    const err = e as { code?: string; motivo?: string; regime?: string; message?: string };
+    const detail = [err.code, err.motivo ?? err.regime].filter(Boolean).join(':');
     const typed = typeof err.code === 'string' && err.code.startsWith('ibscbs_');
     return { ok: false, error: `${detail} ${err.message ?? String(e)}`, typed };
   }

@@ -9,7 +9,7 @@ import { ErroDeValidacao, relogioManual } from '@sinete/core';
 import * as danfse from '@sinete/da/nfse';
 import type { NfseSim, SimServer } from '@sinete/sefaz-sim';
 import { createNfseSim, redirectNfseToSim, startSimServer, syntheticPfx } from '@sinete/sefaz-sim';
-import { createTransport, TransportError } from '@sinete/transport';
+import { criarTransporte, ErroTransporte } from '@sinete/transport';
 import type { Desfecho, TransmissaoStore } from '../src/index.ts';
 import type { BancoMemoria } from '../src/memoria.ts';
 import { createBancoMemoria, createMemoriaStore } from '../src/memoria.ts';
@@ -72,16 +72,16 @@ async function cenario(extra: Partial<NfseEmissorOptions> = {}, depois?: (caminh
       aoDecidir: (r, desfecho) => {
         guardados.push({ ref: r.ref, desfecho });
       },
-      transporte: ({ policy: _policy, ...o }) => {
-        const real = redirectNfseToSim(createTransport({ ...o, additionalCa: [c.ac.pem] }), server.baseUrl);
+      transporte: ({ politica: _policy, ...o }) => {
+        const real = redirectNfseToSim(criarTransporte({ ...o, acsAdicionais: [c.ac.pem] }), server.baseUrl);
         return {
-          capabilities: real.capabilities,
-          send: async (r) => {
-            const resposta = await real.send(r);
-            depois?.(`${r.method} ${new URL(r.url).pathname}`);
+          capacidades: real.capacidades,
+          enviar: async (r) => {
+            const resposta = await real.enviar(r);
+            depois?.(`${r.metodo} ${new URL(r.url).pathname}`);
             return resposta;
           },
-          close: () => real.close(),
+          fechar: () => real.fechar(),
         };
       },
       ...extra,
@@ -244,7 +244,7 @@ describe('createNfseEmissor contra a NFS-e simulada, HTTPS com mTLS', () => {
     const t = await cenario({}, (caminho) => {
       if (cancelou || !caminho.startsWith('POST ') || !caminho.endsWith('/nfse')) return;
       cancelou = true;
-      throw new TransportError('cancelado', 'envio cancelado');
+      throw new ErroTransporte('cancelado', 'envio cancelado');
     });
     gerada(await t.emissor.emitir('nfse-5', dps({ nDPS: '5' })));
     expect([cancelou, emissoes(t)]).toEqual([true, 1]);

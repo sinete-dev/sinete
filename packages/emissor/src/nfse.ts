@@ -271,7 +271,7 @@ export interface NfseEmissor extends Emissor<DpsInput, NfseClient, NfseGerada, B
 
 /**
  * Abre o PFX e devolve o emissor da NFS-e. Nada vai à rede até a primeira operação que precisa dela; o certificado
- * fora da validade é recusado aqui (`CertError`).
+ * fora da validade é recusado aqui (`ErroCertificado`).
  */
 export async function createNfseEmissor(opcoes: NfseEmissorOptions): Promise<NfseEmissor> {
   const base = await createEmissor(perfilNfse(opcoes), opcoes);

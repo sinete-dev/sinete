@@ -1,5 +1,5 @@
 /**
- * Guarda dura da validação em homologação: a `HostPolicy` do `@sinete/transport` com uma allowlist fechada, escrita à
+ * Guarda dura da validação em homologação: a `PoliticaDeHosts` do `@sinete/transport` com uma allowlist fechada, escrita à
  * mão, dos hosts de NF-e e MDF-e de homologação, mais `tpAmb` 2 em todo corpo que o declare. Roda antes de qualquer
  * socket, em todo envio do transporte. Nada de produção, nada de NFC-e, nada de NFS-e.
  *
@@ -7,8 +7,8 @@
  * herda. O teste confere que cada host daqui existe nos dados de homologação e que nenhum de produção passa.
  */
 
-import type { HostPolicy, PolicyRequest } from '@sinete/transport';
-import { allEndpoints, allowlistPolicy, allPolicies, PolicyError } from '@sinete/transport';
+import type { PedidoParaPolitica, PoliticaDeHosts } from '@sinete/transport';
+import { ErroPolitica, politicaDeHostsPermitidos, todasAsPoliticas, todosOsEndpoints } from '@sinete/transport';
 
 /** Hosts aceitos, com o papel de cada um. Conferidos contra `endpoints.json` de 25/09/2026. */
 export const HOSTS_HOMOLOGACAO: ReadonlyMap<string, string> = new Map([
@@ -33,8 +33,8 @@ export const HOSTS_HOMOLOGACAO: ReadonlyMap<string, string> = new Map([
 ]);
 
 /** Só os hosts acima, só a porta 443 e todo `tpAmb` do corpo igual a 2. */
-export function homologacaoPolicy(): HostPolicy {
-  return allowlistPolicy({ hosts: HOSTS_HOMOLOGACAO.keys(), tpAmb: '2' });
+export function homologacaoPolicy(): PoliticaDeHosts {
+  return politicaDeHostsPermitidos({ hosts: HOSTS_HOMOLOGACAO.keys(), tpAmb: '2' });
 }
 
 /**
@@ -67,33 +67,33 @@ const TPEVENTO = /<(?:[\w.-]+:)?tpEvento(?:\s[^>]*?)?(?:\/>|>([^<]*)<)/g;
  * Recusa, antes do socket, URL que não seja de um serviço permitido nos hosts da rodada (pelas URLs dos dados de
  * homologação do transporte) e evento fora de `EVENTOS_DF`.
  */
-function servicosDfPolicy(): HostPolicy {
+function servicosDfPolicy(): PoliticaDeHosts {
   const urls = new Set(
-    allEndpoints('homologacao')
+    todosOsEndpoints('homologacao')
       .filter((e) => e.documento === 'nfe' && HOSTS_HOMOLOGACAO_DF.has(e.host) && SERVICOS_DF.has(e.servico))
       .map((e) => new URL(e.url).href.toLowerCase()),
   );
   return {
-    check(req: PolicyRequest): void {
+    conferir(req: PedidoParaPolitica): void {
       const u = new URL(req.url.href);
       u.search = '';
       u.hash = '';
-      if (!urls.has(u.href.toLowerCase())) throw new PolicyError(`serviço fora da rodada: ${u.pathname}`, {});
+      if (!urls.has(u.href.toLowerCase())) throw new ErroPolitica(`serviço fora da rodada: ${u.pathname}`, {});
       const body =
-        req.body === undefined ? '' : typeof req.body === 'string' ? req.body : new TextDecoder().decode(req.body);
+        req.corpo === undefined ? '' : typeof req.corpo === 'string' ? req.corpo : new TextDecoder().decode(req.corpo);
       const semComentario = body.replace(/<!--[\s\S]*?-->/g, '').replace(/<!\[CDATA\[[\s\S]*?\]\]>/g, '');
       for (const m of semComentario.matchAll(TPEVENTO)) {
         const t = (m[1] ?? '').trim();
-        if (!EVENTOS_DF.has(t)) throw new PolicyError(`evento fora da rodada: ${t || 'vazio'}`, {});
+        if (!EVENTOS_DF.has(t)) throw new ErroPolitica(`evento fora da rodada: ${t || 'vazio'}`, {});
       }
     },
   };
 }
 
 /** Hosts do DF, porta 443, `tpAmb` 2 obrigatório em todo POST, só os serviços e eventos da rodada. */
-export function homologacaoDfPolicy(): HostPolicy {
-  return allPolicies(
-    allowlistPolicy({ hosts: HOSTS_HOMOLOGACAO_DF.keys(), tpAmb: '2', requireTpAmbInBody: true }),
+export function homologacaoDfPolicy(): PoliticaDeHosts {
+  return todasAsPoliticas(
+    politicaDeHostsPermitidos({ hosts: HOSTS_HOMOLOGACAO_DF.keys(), tpAmb: '2', exigirTpAmbNoCorpo: true }),
     servicosDfPolicy(),
   );
 }

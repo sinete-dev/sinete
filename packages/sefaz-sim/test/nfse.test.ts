@@ -8,9 +8,9 @@ import { beforeAll, describe, expect, test } from 'bun:test';
 import type { RelogioManual } from '@sinete/core';
 import { ErroDeConfiguracao, relogioManual } from '@sinete/core';
 import { assinarXml, codificarBase64, decodificarBase64, lerXml } from '@sinete/core/xml';
-import { validateRoot } from '@sinete/schemas';
+import { validarRaiz } from '@sinete/schemas';
 import * as nfse from '@sinete/schemas/nfse/1.01-20260727';
-import type { Transport, TransportRequest, TransportResponse } from '@sinete/transport';
+import type { PedidoTransporte, RespostaTransporte, Transporte } from '@sinete/transport';
 import { nfseEndpoint } from '@sinete/transport';
 import type {
   MunicipioSim,
@@ -218,7 +218,7 @@ async function nfseDe(r: SimResult): Promise<{ readonly chave: string; readonly 
   expect(r.status).toBe(201);
   const b = corpo(r);
   const xml = await gunzip(b.nfseXmlGZipB64 as string);
-  expect(validateRoot(nfse.NFSeElement, lerXml(xml))).toEqual([]);
+  expect(validarRaiz(nfse.NFSeElement, lerXml(xml))).toEqual([]);
   return { chave: b.chaveAcesso as string, xml };
 }
 
@@ -359,7 +359,7 @@ describe('emissão', () => {
     const [ev] = s.sim.inspect.eventos(a.chave);
     expect(ev).toMatchObject({ tpEvento: '105102', nSeqEvento: 1 });
     expect(ev?.xml).toContain(`<chSubstituta>${b.chave}</chSubstituta>`);
-    expect(validateRoot(nfse.eventoElement, lerXml(ev?.xml ?? ''))).toEqual([]);
+    expect(validarRaiz(nfse.eventoElement, lerXml(ev?.xml ?? ''))).toEqual([]);
     const r = await s.emitir(await assinar(dps({ nDPS: '3', subst: a.chave }), c.emitente));
     expect(codigo(r)).toBe('E0046');
     expect(codigo(await s.evento(a.chave, await assinar(pedido(a.chave), c.emitente)))).toBe('E0840');
@@ -377,7 +377,7 @@ describe('eventos', () => {
     const r = await s.evento(chave, await assinar(pedido(chave), c.emitente));
     expect(r.status).toBe(201);
     const ev = await gunzip(corpo(r).eventoXmlGZipB64 as string);
-    expect(validateRoot(nfse.eventoElement, lerXml(ev))).toEqual([]);
+    expect(validarRaiz(nfse.eventoElement, lerXml(ev))).toEqual([]);
     expect(s.sim.inspect.nfse(chave)?.situacao).toBe('cancelada');
     const dup = await s.evento(chave, await assinar(pedido(chave), c.emitente));
     expect(codigo(dup)).toBe('E0840');
@@ -579,29 +579,29 @@ describe('falhas injetadas', () => {
 });
 
 describe('redirectNfseToSim', () => {
-  function falso(): Transport & { readonly pedidos: TransportRequest[] } {
-    const pedidos: TransportRequest[] = [];
+  function falso(): Transporte & { readonly pedidos: PedidoTransporte[] } {
+    const pedidos: PedidoTransporte[] = [];
     return {
       pedidos,
-      capabilities: {
-        runtime: 'custom',
-        renegotiation: true,
+      capacidades: {
+        runtime: 'personalizada',
+        renegociacao: true,
         tls12Cbc: true,
         tls12Dhe: true,
-        sigalgsControl: false,
-        clientCertificateCheck: false,
+        controleDeSigalgs: false,
+        conferenciaDoCertificadoLocal: false,
       },
-      async send(req: TransportRequest): Promise<TransportResponse> {
+      async enviar(req: PedidoTransporte): Promise<RespostaTransporte> {
         pedidos.push(req);
         return {
           status: 200,
-          headers: {},
-          body: new Uint8Array(),
-          tls: { protocol: undefined, cipher: undefined, resumed: undefined, clientCertificateLoaded: undefined },
-          text: (): string => '',
+          cabecalhos: {},
+          corpo: new Uint8Array(),
+          tls: { protocolo: undefined, cifra: undefined, retomada: undefined, certificadoLocalCarregado: undefined },
+          texto: (): string => '',
         };
       },
-      close: async (): Promise<void> => undefined,
+      fechar: async (): Promise<void> => undefined,
     };
   }
 
@@ -610,13 +610,13 @@ describe('redirectNfseToSim', () => {
     const t = falso();
     const r = redirectNfseToSim(t, 'https://127.0.0.1:8443/');
     const ep = nfseEndpoint({ ambiente: 'homologacao', api: 'parametrizacao' });
-    await r.send({ url: `${ep.url}/${SAO_PAULO}/convenio`, endpoint: ep });
+    await r.enviar({ url: `${ep.url}/${SAO_PAULO}/convenio`, endpoint: ep });
     expect(t.pedidos[0]).toMatchObject({
       url: `https://127.0.0.1:8443/parametrizacao/${SAO_PAULO}/convenio`,
       endpoint: { host: '127.0.0.1', tls: undefined },
     });
-    await expect(r.send({ url: 'https://exemplo.invalid/x' })).rejects.toThrow(ErroDeConfiguracao);
-    await expect(r.send({ url: 'https://exemplo.invalid/x', endpoint: ep })).rejects.toThrow('fora da base');
-    await r.close();
+    await expect(r.enviar({ url: 'https://exemplo.invalid/x' })).rejects.toThrow(ErroDeConfiguracao);
+    await expect(r.enviar({ url: 'https://exemplo.invalid/x', endpoint: ep })).rejects.toThrow('fora da base');
+    await r.fechar();
   });
 });

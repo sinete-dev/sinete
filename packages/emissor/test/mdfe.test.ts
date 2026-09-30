@@ -16,7 +16,7 @@ import {
   syntheticCertificate,
   syntheticPfx,
 } from '@sinete/sefaz-sim';
-import { createTransport, TransportError } from '@sinete/transport';
+import { criarTransporte, ErroTransporte } from '@sinete/transport';
 import type { Desfecho, TransmissaoStore } from '../src/index.ts';
 import { TransmissaoEmAndamentoError } from '../src/index.ts';
 import type { DesfechoMdfe, MdfeEmissor, MdfeEmissorOptions } from '../src/mdfe.ts';
@@ -73,19 +73,19 @@ async function cenario(extra: Partial<MdfeEmissorOptions> = {}, depois?: (caminh
       aoDecidir: (r, desfecho) => {
         guardados.push({ ref: r.ref, desfecho });
       },
-      transporte: ({ policy: _policy, ...o }) => {
-        const real = createTransport({ ...o, additionalCa: [ac.pem] });
+      transporte: ({ politica: _policy, ...o }) => {
+        const real = criarTransporte({ ...o, acsAdicionais: [ac.pem] });
         return redirectToSim(
           {
-            capabilities: real.capabilities,
-            send: async (r) => {
+            capacidades: real.capacidades,
+            enviar: async (r) => {
               const caminho = new URL(r.url).pathname;
               caminhos.push(caminho);
-              const resposta = await real.send(r);
+              const resposta = await real.enviar(r);
               depois?.(caminho);
               return resposta;
             },
-            close: () => real.close(),
+            fechar: () => real.fechar(),
           },
           server.baseUrl,
         );
@@ -173,7 +173,7 @@ describe('createMdfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
     const c = await cenario({}, (caminho) => {
       if (!caminho.endsWith('/MDFeRecepcaoSinc') || cancelou) return;
       cancelou = true;
-      throw new TransportError('cancelado', 'envio cancelado');
+      throw new ErroTransporte('cancelado', 'envio cancelado');
     });
     autorizado(await c.emissor.emitir('mdfe-4', cargaPropria({ nMDF: 4 })));
     expect(recepcoes(c)).toBe(1);

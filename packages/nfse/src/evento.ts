@@ -9,7 +9,7 @@
 import type { Ambiente, Assinador, Ocorrencia, Relogio } from '@sinete/core';
 import { ErroDeConfiguracao, formatarVerProc, tpAmbDoAmbiente } from '@sinete/core';
 import { assinarXml } from '@sinete/core/xml';
-import { SerializeError, serializeRoot } from '@sinete/schemas';
+import { ErroSerializacao, serializarRaiz } from '@sinete/schemas';
 import type { TCInfPedReg, TSCodJustAnaliseFiscalCanc, TSCodJustCanc } from '@sinete/schemas/nfse/1.01-20260727';
 import { DECLARACAO_XML, dataHora, validarNoSchema } from './build.ts';
 import type { InscricaoFederal } from './codigos.ts';
@@ -86,10 +86,10 @@ function montar(
   } as TCInfPedReg;
   let corpo: string;
   try {
-    corpo = serializeRoot(leiaute.pedRegEventoElement, { versao: VERSAO_LEIAUTE, infPedReg: inf });
+    corpo = serializarRaiz(leiaute.pedRegEventoElement, { versao: VERSAO_LEIAUTE, infPedReg: inf });
   } catch (e) {
-    if (!(e instanceof SerializeError)) throw e;
-    return { ok: false, issues: [{ caminho: e.path, code: 'schema', mensagem: e.message }] };
+    if (!(e instanceof ErroSerializacao)) throw e;
+    return { ok: false, issues: [{ caminho: e.caminho, code: 'schema', mensagem: e.message }] };
   }
   const xml = DECLARACAO_XML + corpo;
   const schema = validarNoSchema(leiaute.pedRegEventoElement, xml);

@@ -214,7 +214,7 @@ describe('normalização e ocorrências', () => {
     expect(code('1', 'XX' as Uf)).toBe('ie_uf_invalida');
   });
 
-  test('formatos antigos só com allowLegacy', () => {
+  test('formatos antigos só com aceitarLegado', () => {
     const r = lerIe('101625213', 'RO');
     expect(r.ok && r.valor.tipo === 'numero' && r.valor.legado).toBe(true);
     expect(ieValida('101625213', 'RO', { aceitarLegado: false })).toBe(false);

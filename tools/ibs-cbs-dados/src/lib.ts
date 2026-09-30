@@ -5,7 +5,7 @@ export function sha256(data: string | Uint8Array): string {
   return createHash('sha256').update(data).digest('hex');
 }
 
-export { canonicalJson as canonicalPretty, canonicalTable } from '../../../packages/ibs-cbs-dados/src/canonical.ts';
+export { jsonCanonico as canonicalPretty, tabelaCanonica } from '../../../packages/ibs-cbs-dados/src/canonical.ts';
 
 /**
  * REAL do SQLite para decimal em texto. `Number#toString` dá a menor representação que volta ao mesmo double, o que é

@@ -18,7 +18,7 @@ import path from 'node:path';
 import { contextoDeTempo, relogioFixo } from '@sinete/core';
 import type { ElementoXml } from '@sinete/core/xml';
 import { atributoDe, c14n, elementosFilhos, lerXml, primeiroFilho, textoDe } from '@sinete/core/xml';
-import { decode } from '@sinete/schemas';
+import { decodificar } from '@sinete/schemas';
 import type { TMDFe_infMDFe } from '@sinete/schemas/mdfe/3.00b';
 import { TMDFe_infMDFe as InfMDFe } from '@sinete/schemas/mdfe/3.00b';
 import type { MdfeInput, UfMdfe } from '../../src/index.ts';
@@ -309,7 +309,7 @@ for (const nome of readdirSync(dir).sort()) {
     if (t.toLowerCase().startsWith(`${QR_BASE.toLowerCase()}?`)) r.qrCode.enderecoIgualAoDado++;
     if (t.includes('&sign=')) r.qrCode.comSign++;
   }
-  const inf = decode(InfMDFe, infEl, docXml.texto).value;
+  const inf = decodificar(InfMDFe, infEl, docXml.texto).valor;
   inc(r.formas.qCarga, forma(inf.tot.qCarga));
   inc(r.formas.vCarga, forma(inf.tot.vCarga).replace(/^9+/, 'N'));
   const perc = (inf.ide.infPercurso ?? []).map((p) => p.UFPer as UfMdfe);

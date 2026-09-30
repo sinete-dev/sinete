@@ -480,7 +480,7 @@ export interface NfeEmissor extends Emissor<EntradaNfe, NfeClient, ProtocoloNfe,
 
 /**
  * Abre o PFX e devolve o emissor de NF-e. Nada vai à rede até a primeira operação que precisa dela; o certificado fora
- * da validade é recusado aqui (`CertError`).
+ * da validade é recusado aqui (`ErroCertificado`).
  */
 export async function createNfeEmissor(opcoes: NfeEmissorOptions): Promise<NfeEmissor> {
   const base = await createEmissor(perfilNfe(opcoes), opcoes);

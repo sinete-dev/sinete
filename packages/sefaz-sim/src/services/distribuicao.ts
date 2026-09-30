@@ -9,7 +9,7 @@
  */
 
 import { codificarBase64 } from '@sinete/core/xml';
-import { serializeRoot } from '@sinete/schemas';
+import { serializarRaiz } from '@sinete/schemas';
 import type {
   retDistDFeInt,
   retDistDFeInt_loteDistDFeInt_docZip,
@@ -111,7 +111,7 @@ export async function distribuicao(ctx: RequestContext): Promise<string> {
       maxNSU: nsu(fila.length),
       ...(docs.length === 0 ? {} : { loteDistDFeInt: { docZip: await Promise.all(docs.map(docZip)) } }),
     };
-    return serializeRoot(retDistDFeIntElement, value);
+    return serializarRaiz(retDistDFeIntElement, value);
   };
   if (!pre.ok) return ret(pre.status, 0);
   // H01 a H05 (MOC 7.0 Visão Geral, tabela 5-29): ambiente, documento válido e raiz do certificado de transmissão.

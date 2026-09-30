@@ -13,20 +13,20 @@ export function toApi(c: OracleCase): unknown {
     id: c.id,
     versao: '0.0.1',
     dhFatoGerador: `${c.date}T12:00:00-03:00`,
-    municipio: Number(op.place.cMun),
-    uf: op.place.uf,
+    municipio: Number(op.local.cMun),
+    uf: op.local.uf,
     tpDoc: op.modelo,
-    ...(op.governmentPurchase
+    ...(op.compraGovernamental
       ? {
           gCompraGov: {
-            tpEnteGov: op.governmentPurchase.tpEnteGov,
-            ...(op.governmentPurchase.tpOperGov ? { tpOperGov: op.governmentPurchase.tpOperGov } : {}),
+            tpEnteGov: op.compraGovernamental.tpEnteGov,
+            ...(op.compraGovernamental.tpOperGov ? { tpOperGov: op.compraGovernamental.tpOperGov } : {}),
           },
         }
       : {}),
-    itens: op.items.map((it) => {
+    itens: op.itens.map((it) => {
       const meta = c.meta.find((m) => m.n === it.n);
-      const r = it.informedRates;
+      const r = it.aliquotasInformadas;
       return {
         numero: it.n,
         cst: it.cst,
@@ -101,9 +101,9 @@ export function flattenOracle(body: OracleRoc): Flat {
 export function flattenRoc(roc: Roc): Flat {
   const out: Flat = {};
   if (roc.oper) flatten('oper.gCompraGov', roc.oper.gCompraGov, out);
-  for (const it of roc.items) {
+  for (const it of roc.itens) {
     flatten(`item${it.nItem}`, it.IBSCBS, out);
-    out[`item${it.nItem}.simulated`] = String(it.simulated);
+    out[`item${it.nItem}.simulated`] = String(it.simulado);
   }
   flatten('total', roc.total.IBSCBSTot, out);
   return out;

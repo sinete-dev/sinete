@@ -9,8 +9,8 @@
 
 import type { DocumentoXml, ElementoXml } from '@sinete/core/xml';
 import { atributoDe, elementosFilhos, textoDe } from '@sinete/core/xml';
-import type { RootElement } from '@sinete/schemas';
-import { serializeRoot, validateRoot } from '@sinete/schemas';
+import type { ElementoRaiz } from '@sinete/schemas';
+import { serializarRaiz, validarRaiz } from '@sinete/schemas';
 import type { TRetEnvEvento, TRetEvento } from '@sinete/schemas/nfe/evento-cancelamento/PL_010d';
 import * as canc from '@sinete/schemas/nfe/evento-cancelamento/PL_010d';
 import * as cancSubst from '@sinete/schemas/nfe/evento-cancelamento-substituicao/PL_010d';
@@ -44,7 +44,7 @@ const X_EVENTO: Readonly<Record<string, string>> = {
   '210240': 'Operacao nao Realizada registrada',
 };
 
-const SCHEMAS: Readonly<Record<string, RootElement<unknown>>> = {
+const SCHEMAS: Readonly<Record<string, ElementoRaiz<unknown>>> = {
   '110110': cce.envEventoElement,
   '110111': canc.envEventoElement,
   '110112': cancSubst.envEventoElement,
@@ -59,7 +59,7 @@ const SCHEMAS: Readonly<Record<string, RootElement<unknown>>> = {
  * (que é `xs:any` no leiaute genérico `envEvento_v1.00.xsd`).
  */
 function envelopeOk(doc: DocumentoXml): boolean {
-  return validateRoot(canc.envEventoElement, doc).every((i) => /\/detEvento(?:\/|\[|$)/.test(i.caminho));
+  return validarRaiz(canc.envEventoElement, doc).every((i) => /\/detEvento(?:\/|\[|$)/.test(i.caminho));
 }
 
 function factsOf(evento: ElementoXml): EventoFacts {
@@ -98,7 +98,7 @@ export async function recepcaoEvento(ctx: RequestContext): Promise<string> {
       xMotivo: s.xMotivo,
       ...(retEvento === undefined ? {} : { retEvento }),
     };
-    return serializeRoot(canc.retEnvEventoElement, value);
+    return serializarRaiz(canc.retEnvEventoElement, value);
   };
   if (pre.ok) return ret(status('128'), await processarLote(ctx, pre.doc, cOrgao));
   // Falha só no detEvento: o lote passa e cada evento responde pelo próprio schema (D06).
@@ -144,7 +144,7 @@ async function processarEvento(
   if (e.verEvento !== '1.00') return rejeitado('492');
   const eventoXml = standalone(doc.texto, el);
   const single = `<envEvento versao="1.00" xmlns="${NFE_NS}"><idLote>0</idLote>${eventoXml}</envEvento>`;
-  if (validateRoot(schema, single).length > 0) return rejeitado('493');
+  if (validarRaiz(schema, single).length > 0) return rejeitado('493');
   // Grupos E e F no lote como recebido (o C14N depende dos namespaces em escopo); o titular é o autor do evento.
   const sig = await checkAssinatura({
     doc,

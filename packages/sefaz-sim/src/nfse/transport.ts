@@ -6,15 +6,15 @@
  */
 
 import { ErroDeConfiguracao } from '@sinete/core';
-import type { EndpointRef, NfseApi, Transport, TransportRequest, TransportResponse } from '@sinete/transport';
+import type { EndpointResolvido, NfseApi, PedidoTransporte, RespostaTransporte, Transporte } from '@sinete/transport';
 import { NFSE_SIM_PREFIXOS } from './sim.ts';
 
-export function redirectNfseToSim(transport: Transport, baseUrl: string): Transport {
+export function redirectNfseToSim(transport: Transporte, baseUrl: string): Transporte {
   const base = new URL(baseUrl);
   if (base.protocol !== 'https:') throw new ErroDeConfiguracao(`baseUrl do simulador precisa ser https: ${baseUrl}`);
   return {
-    capabilities: transport.capabilities,
-    send(request: TransportRequest): Promise<TransportResponse> {
+    capacidades: transport.capacidades,
+    enviar(request: PedidoTransporte): Promise<RespostaTransporte> {
       const ep = request.endpoint;
       if (ep === undefined || ep.documento !== 'nfse' || !Object.hasOwn(NFSE_SIM_PREFIXOS, ep.servico)) {
         return Promise.reject(new ErroDeConfiguracao(`o simulador da NFS-e não atende este pedido: ${request.url}`));
@@ -24,14 +24,14 @@ export function redirectNfseToSim(transport: Transport, baseUrl: string): Transp
         return Promise.reject(new ErroDeConfiguracao(`URL fora da base da API ${ep.servico}: ${request.url}`));
       }
       const url = `${base.origin}${NFSE_SIM_PREFIXOS[ep.servico as NfseApi]}${request.url.slice(raiz.length)}`;
-      const endpoint: EndpointRef = {
+      const endpoint: EndpointResolvido = {
         ...ep,
         url: `${base.origin}${NFSE_SIM_PREFIXOS[ep.servico as NfseApi]}`,
         host: base.hostname,
         tls: undefined,
       };
-      return transport.send({ ...request, url, endpoint });
+      return transport.enviar({ ...request, url, endpoint });
     },
-    close: (): Promise<void> => transport.close(),
+    fechar: (): Promise<void> => transport.fechar(),
   };
 }

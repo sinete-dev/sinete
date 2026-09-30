@@ -1,12 +1,18 @@
 /**
- * `Transport` do `@sinete/transport` atendido em processo pelo simulador, para os testes de unidade de outros pacotes:
+ * `Transporte` do `@sinete/transport` atendido em processo pelo simulador, para os testes de unidade de outros pacotes:
  * mesma interface, sem socket. As falhas injetadas viram os mesmos erros tipados do transporte real (queda de conexão
  * é `conexao_recusada`; sem resposta é `ErroDeTempoEsgotado` no prazo da requisição).
  */
 
 import { ErroDeConfiguracao, ErroDeTempoEsgotado } from '@sinete/core';
-import type { EndpointRef, HostPolicy, Transport, TransportRequest, TransportResponse } from '@sinete/transport';
-import { http403Error, TransportError } from '@sinete/transport';
+import type {
+  EndpointResolvido,
+  PedidoTransporte,
+  PoliticaDeHosts,
+  RespostaTransporte,
+  Transporte,
+} from '@sinete/transport';
+import { ErroTransporte, erroHttp403 } from '@sinete/transport';
 import type { SimHandler } from './handler.ts';
 import type { SimAutorizador, SimServico } from './services.ts';
 import { isMdfeServico, NFE_SERVICES, servicePath } from './services.ts';
@@ -19,7 +25,7 @@ export interface SimTransportOptions {
   /** Certificado do canal (DER) que o simulador vê como apresentado no TLS. */
   readonly clientCertificate?: Uint8Array;
   /** Política de hosts, aplicada antes do envio como no transporte real. */
-  readonly policy?: HostPolicy;
+  readonly policy?: PoliticaDeHosts;
   /** Prazo por requisição em ms (tempo real). Padrão: 60 000. */
   readonly timeoutMs?: number;
   /** HTTP 403 vira `certificado_ausente_ou_recusado`, como no transporte real. Padrão: `true`. */
@@ -29,8 +35,8 @@ export interface SimTransportOptions {
 // Função, e não `signal?.aborted` direto: o tsc estreita a propriedade e não enxerga o cancelamento durante um await.
 const abortado = (signal: AbortSignal | undefined): boolean => signal?.aborted === true;
 
-const cancelado = (signal: AbortSignal): TransportError =>
-  new TransportError('cancelado', 'envio cancelado', { cause: signal.reason });
+const cancelado = (signal: AbortSignal): ErroTransporte =>
+  new ErroTransporte('cancelado', 'envio cancelado', { cause: signal.reason });
 
 /**
  * Prazo e cancelamento do pedido inteiro, do atendimento no simulador ao fim da espera, como no transporte real: o
@@ -79,28 +85,28 @@ function guard(timeoutMs: number, host: string, signal: AbortSignal | undefined)
 }
 
 /** Cria o transporte em processo. As URLs são `SIM_BASE_URL` + `sim.path(...)`. */
-export function simTransport(sim: SimHandler, options: SimTransportOptions = {}): Transport {
+export function simTransport(sim: SimHandler, options: SimTransportOptions = {}): Transporte {
   let closed = false;
   return {
-    capabilities: {
-      runtime: 'custom',
-      renegotiation: true,
+    capacidades: {
+      runtime: 'personalizada',
+      renegociacao: true,
       tls12Cbc: true,
       tls12Dhe: true,
-      sigalgsControl: false,
-      clientCertificateCheck: false,
+      controleDeSigalgs: false,
+      conferenciaDoCertificadoLocal: false,
     },
-    async send(request: TransportRequest): Promise<TransportResponse> {
+    async enviar(request: PedidoTransporte): Promise<RespostaTransporte> {
       if (closed) throw new ErroDeConfiguracao('transporte já fechado');
       if (abortado(request.signal)) throw cancelado(request.signal as AbortSignal);
       const url = new URL(request.url);
-      const method = request.method ?? (request.body === undefined ? 'GET' : 'POST');
-      await options.policy?.check({ url, method, body: request.body, endpoint: request.endpoint });
+      const method = request.metodo ?? (request.corpo === undefined ? 'GET' : 'POST');
+      await options.policy?.conferir({ url, metodo: method, corpo: request.corpo, endpoint: request.endpoint });
       // Cancelado enquanto a política decidia: o pedido não chega ao simulador.
       if (abortado(request.signal)) throw cancelado(request.signal as AbortSignal);
       const timeoutMs = request.timeoutMs ?? options.timeoutMs ?? 60_000;
       const headers: Record<string, string> = {};
-      for (const [k, v] of Object.entries(request.headers ?? {})) headers[k.toLowerCase()] = v;
+      for (const [k, v] of Object.entries(request.cabecalhos ?? {})) headers[k.toLowerCase()] = v;
       const g = guard(timeoutMs, url.hostname, request.signal);
       let result: SimResult;
       try {
@@ -109,7 +115,7 @@ export function simTransport(sim: SimHandler, options: SimTransportOptions = {})
             method,
             path: `${url.pathname}${url.search}`,
             headers,
-            ...(request.body === undefined ? {} : { body: request.body }),
+            ...(request.corpo === undefined ? {} : { body: request.corpo }),
             ...(options.clientCertificate === undefined ? {} : { clientCertificate: options.clientCertificate }),
           }),
         );
@@ -119,21 +125,21 @@ export function simTransport(sim: SimHandler, options: SimTransportOptions = {})
         g.dispose();
       }
       if (result.effect === 'drop') {
-        throw new TransportError('conexao_recusada', `${url.hostname}: conexão encerrada sem resposta`, {
+        throw new ErroTransporte('conexao_recusada', `${url.hostname}: conexão encerrada sem resposta`, {
           detalhes: { host: url.hostname },
         });
       }
-      if (result.status === 403 && options.rejectOn403 !== false) throw http403Error(url.hostname);
+      if (result.status === 403 && options.rejectOn403 !== false) throw erroHttp403(url.hostname);
       const body = new TextEncoder().encode(result.body);
       return {
         status: result.status,
-        headers: result.headers,
-        body,
-        tls: { protocol: undefined, cipher: undefined, resumed: undefined, clientCertificateLoaded: undefined },
-        text: (): string => result.body,
+        cabecalhos: result.headers,
+        corpo: body,
+        tls: { protocolo: undefined, cifra: undefined, retomada: undefined, certificadoLocalCarregado: undefined },
+        texto: (): string => result.body,
       };
     },
-    async close(): Promise<void> {
+    async fechar(): Promise<void> {
       closed = true;
     },
   };
@@ -143,26 +149,26 @@ export function simTransport(sim: SimHandler, options: SimTransportOptions = {})
  * Autorizador simulado de um endpoint dos dados do `@sinete/transport`: o Ambiente Nacional (`AN`), a contingência
  * (`SVC-AN`, `SVC-RS`) ou, em qualquer outro caso, o autorizador da UF (UF própria, SVAN, SVRS, inclusive os da NFC-e).
  */
-export function simAutorizadorOf(endpoint: EndpointRef): SimAutorizador {
+export function simAutorizadorOf(endpoint: EndpointResolvido): SimAutorizador {
   if (endpoint.autorizador === 'AN') return 'an';
   if (endpoint.autorizador === 'SVC-AN' || endpoint.autorizador === 'SVC-RS') return 'svc';
   return 'uf';
 }
 
 /**
- * Envolve um `Transport` (o real, por HTTPS com mTLS, ou o `simTransport`) para mandar ao simulador os pedidos que um
+ * Envolve um `Transporte` (o real, por HTTPS com mTLS, ou o `simTransport`) para mandar ao simulador os pedidos que um
  * cliente de documento resolveu pelos dados de endpoints: a URL de cada pedido vira `baseUrl` + o caminho do serviço
  * no autorizador simulado, e o `endpoint` segue com a URL e o host novos, sem o perfil TLS do host real. Assim o
  * cliente (o `@sinete/nfe`, por exemplo) roda sem saber do simulador. Pedido sem `endpoint`, ou de serviço que o
  * simulador não atende, é `ErroDeConfiguracao`: nada escapa para a SEFAZ real.
  */
-export function redirectToSim(transport: Transport, baseUrl: string): Transport {
+export function redirectToSim(transport: Transporte, baseUrl: string): Transporte {
   const base = new URL(baseUrl);
   if (base.protocol !== 'https:') throw new ErroDeConfiguracao(`baseUrl do simulador precisa ser https: ${baseUrl}`);
   const origin = base.origin;
   return {
-    capabilities: transport.capabilities,
-    send(request: TransportRequest): Promise<TransportResponse> {
+    capacidades: transport.capacidades,
+    enviar(request: PedidoTransporte): Promise<RespostaTransporte> {
       const ep = request.endpoint;
       if (ep === undefined) {
         return Promise.reject(
@@ -179,9 +185,9 @@ export function redirectToSim(transport: Transport, baseUrl: string): Transport 
         );
       }
       const url = `${origin}${servicePath(ep.servico as SimServico, simAutorizadorOf(ep))}`;
-      const endpoint: EndpointRef = { ...ep, url, host: base.hostname, tls: undefined };
-      return transport.send({ ...request, url, endpoint });
+      const endpoint: EndpointResolvido = { ...ep, url, host: base.hostname, tls: undefined };
+      return transport.enviar({ ...request, url, endpoint });
     },
-    close: (): Promise<void> => transport.close(),
+    fechar: (): Promise<void> => transport.fechar(),
   };
 }

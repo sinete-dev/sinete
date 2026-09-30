@@ -16,8 +16,8 @@ import {
   ufPorSigla,
 } from '@sinete/core';
 import { assinarXml, codificarBase64, lerXml, primeiroFilho } from '@sinete/core/xml';
-import type { ComplexType, VigenciaEntry } from '@sinete/schemas';
-import { SerializeError, serialize, validate } from '@sinete/schemas';
+import type { ComplexType, EntradaDeVigencia } from '@sinete/schemas';
+import { ErroSerializacao, serializar, validar } from '@sinete/schemas';
 import type {
   TNFe_infNFe,
   TNFe_infNFe_det,
@@ -153,7 +153,7 @@ export interface BuiltNfe {
    */
   readonly nfce?: NfceSupl;
   /** Pacote de liberação usado (escolhido pela vigência). */
-  readonly pl: VigenciaEntry;
+  readonly pl: EntradaDeVigencia;
   /** O objeto tipado, na forma do PL_010f (o mais novo que o pacote conhece). */
   readonly infNFe: TNFe_infNFe;
   /** `<NFe xmlns="...">` com o `infNFe` canônico, sem assinatura, já validado contra o schema. */
@@ -653,7 +653,7 @@ export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promi
   const aamm = dhEmi.slice(2, 4) + dhEmi.slice(5, 7);
   const tpAmb = tpAmbDoAmbiente(options.ambiente);
 
-  // PL vigente (VigenciaError do schemas propaga: data fora de toda vigência é erro de configuração, não de dado).
+  // PL vigente (ErroVigencia do schemas propaga: data fora de toda vigência é erro de configuração, não de dado).
   // O PL sai do mesmo instante do dhEmi: reler o relógio numa virada de vigência escolheria outro PL.
   const pl = escolherPl(options.ambiente, relogioFixo(agora));
 
@@ -1341,18 +1341,18 @@ export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promi
   if (!issues.empty) return { ok: false, issues: issues.classificadas };
 
   // Serialização canônica e validação estrita contra o schema do PL vigente, antes de qualquer assinatura.
-  // O serializer recusa com SerializeError o que não cabe no modelo (escolhas exclusivas informadas juntas, por
+  // O serializer recusa com ErroSerializacao o que não cabe no modelo (escolhas exclusivas informadas juntas, por
   // exemplo vagao e balsa): vira ocorrência com o caminho do XML, nunca exceção.
   let xml: string;
   try {
-    xml = `<NFe xmlns="${NFE_NS}">${serialize(pl.infNFe, 'infNFe', inf, NFE_NS)}</NFe>`;
+    xml = `<NFe xmlns="${NFE_NS}">${serializar(pl.infNFe, 'infNFe', inf, NFE_NS)}</NFe>`;
   } catch (e) {
-    if (!(e instanceof SerializeError)) throw e;
-    return { ok: false, issues: [{ caminho: e.path, code: 'schema', mensagem: e.message, origem: 'montagem' }] };
+    if (!(e instanceof ErroSerializacao)) throw e;
+    return { ok: false, issues: [{ caminho: e.caminho, code: 'schema', mensagem: e.message, origem: 'montagem' }] };
   }
   const doc = lerXml(xml);
   const infEl = primeiroFilho(doc.raiz, 'infNFe', NFE_NS);
-  const schemaIssues = infEl === undefined ? [] : validate(pl.infNFe, infEl);
+  const schemaIssues = infEl === undefined ? [] : validar(pl.infNFe, infEl);
   if (schemaIssues.length > 0) {
     return {
       ok: false,
@@ -1431,7 +1431,7 @@ const ASSINATURA_2048 = codificarBase64(new Uint8Array(256));
 /** Ocorrências do `infNFeSupl` do XML contra o schema (`TNFe_infNFeSupl`), como de montagem. */
 function conferirSupl(xml: string): Ocorrencia[] {
   const el = primeiroFilho(lerXml(xml).raiz, 'infNFeSupl', NFE_NS);
-  const erros = el === undefined ? [] : validate(TNFe_infNFeSupl as ComplexType, el);
+  const erros = el === undefined ? [] : validar(TNFe_infNFeSupl as ComplexType, el);
   return erros.map((i) => ({
     caminho: i.caminho,
     code: 'schema',

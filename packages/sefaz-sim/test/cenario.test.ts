@@ -7,9 +7,9 @@ import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import net from 'node:net';
 import tls from 'node:tls';
 import { ErroDeTempoEsgotado, relogioManual } from '@sinete/core';
-import type { Transport } from '@sinete/transport';
-// No Bun o pacote resolve a condição node, e o createTransport de lá é o node:https; o tsc vê a entrada padrão.
-import { createTransport, soap12ContentType } from '@sinete/transport';
+import type { Transporte } from '@sinete/transport';
+// No Bun o pacote resolve a condição node, e o criarTransporte de lá é o node:https; o tsc vê a entrada padrão.
+import { contentTypeSoap12, criarTransporte } from '@sinete/transport';
 import type { SefazSimServer, SyntheticCertificate } from '../src/index.node.ts';
 import { createSefazSim, NFE_SERVICES, soapAction, startSefazSimServer } from '../src/index.node.ts';
 import type { Certs } from './helpers.ts';
@@ -41,27 +41,27 @@ let c: Certs;
 const clock = relogioManual(INICIO);
 const sim = createSefazSim({ clock });
 let server: SefazSimServer;
-const transports: Transport[] = [];
+const transports: Transporte[] = [];
 
-function transportOf(cert: SyntheticCertificate, timeoutMs = 5000): Transport {
-  const t = createTransport({ identity: cert.tlsIdentity, additionalCa: [c.ac.pem], timeoutMs });
+function transportOf(cert: SyntheticCertificate, timeoutMs = 5000): Transporte {
+  const t = criarTransporte({ identidade: cert.tlsIdentity, acsAdicionais: [c.ac.pem], timeoutMs });
   transports.push(t);
   return t;
 }
 
 async function send(
-  t: Transport,
+  t: Transporte,
   servico: Servico,
   payload: string,
   autorizador?: 'uf' | 'svc' | 'an',
 ): Promise<string> {
-  const res = await t.send({
+  const res = await t.enviar({
     url: server.url(servico, autorizador),
-    headers: { 'content-type': soap12ContentType(soapAction(NFE_SERVICES[servico])) },
-    body: envelope(servico, payload),
+    cabecalhos: { 'content-type': contentTypeSoap12(soapAction(NFE_SERVICES[servico])) },
+    corpo: envelope(servico, payload),
   });
   expect(res.status).toBe(200);
-  return unwrap(servico, new TextDecoder().decode(res.body));
+  return unwrap(servico, new TextDecoder().decode(res.corpo));
 }
 
 beforeAll(async () => {
@@ -70,7 +70,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  for (const t of transports) await t.close();
+  for (const t of transports) await t.fechar();
   await server.close();
 });
 
@@ -153,7 +153,7 @@ describe('HTTPS com mTLS', () => {
     expect(await send(t, 'NfeStatusServico', consStatServ()).catch((e: unknown) => e)).toBeInstanceOf(
       ErroDeTempoEsgotado,
     );
-    await t.close();
+    await t.fechar();
     expect(tag(await send(transportOf(c.terceiro), 'NfeStatusServico', consStatServ()), 'cStat')).toBe('107');
   });
 
@@ -197,7 +197,7 @@ describe('HTTPS com mTLS', () => {
         socket.on('secureConnect', () => socket.write(payload));
       });
     const path = sim.path('NfeStatusServico');
-    const ct = soap12ContentType(soapAction(NFE_SERVICES.NfeStatusServico));
+    const ct = contentTypeSoap12(soapAction(NFE_SERVICES.NfeStatusServico));
     const body = envelope('NfeStatusServico', consStatServ());
     const semCert = await raw(`POST ${path} HTTP/1.1\r\nhost: x\r\ncontent-length: 0\r\nconnection: close\r\n\r\n`);
     expect(semCert).toStartWith('HTTP/1.1 403 Forbidden');
@@ -256,12 +256,12 @@ describe('HTTPS com mTLS', () => {
   test('servidor em IPv6: URL com colchetes e o SAN do certificado cobre ::1', async () => {
     const s = await startSefazSimServer(sim, { cert: c.servidor.pem, key: c.servidor.keyPem, hostname: '::1' });
     expect(s.baseUrl).toBe(`https://[::1]:${s.port}`);
-    const res = await transportOf(c.terceiro).send({
+    const res = await transportOf(c.terceiro).enviar({
       url: s.url('NfeStatusServico'),
-      headers: { 'content-type': soap12ContentType(soapAction(NFE_SERVICES.NfeStatusServico)) },
-      body: envelope('NfeStatusServico', consStatServ()),
+      cabecalhos: { 'content-type': contentTypeSoap12(soapAction(NFE_SERVICES.NfeStatusServico)) },
+      corpo: envelope('NfeStatusServico', consStatServ()),
     });
-    expect(tag(unwrap('NfeStatusServico', res.text()), 'cStat')).toBe('107');
+    expect(tag(unwrap('NfeStatusServico', res.texto()), 'cStat')).toBe('107');
     await s.close();
   });
 
@@ -272,14 +272,14 @@ describe('HTTPS com mTLS', () => {
       requestCert: false,
     });
     const t = transportOf(c.terceiro);
-    const res = await t.send({
+    const res = await t.enviar({
       url: s.url('NfeStatusServico'),
-      headers: { 'content-type': soap12ContentType(soapAction(NFE_SERVICES.NfeStatusServico)) },
-      body: envelope('NfeStatusServico', consStatServ()),
+      cabecalhos: { 'content-type': contentTypeSoap12(soapAction(NFE_SERVICES.NfeStatusServico)) },
+      corpo: envelope('NfeStatusServico', consStatServ()),
     });
-    expect(tag(unwrap('NfeStatusServico', res.text()), 'cStat')).toBe('107');
+    expect(tag(unwrap('NfeStatusServico', res.texto()), 'cStat')).toBe('107');
     expect(s.baseUrl).toBe(`https://127.0.0.1:${s.port}`);
-    await t.close();
+    await t.fechar();
     await s.close();
   });
 });

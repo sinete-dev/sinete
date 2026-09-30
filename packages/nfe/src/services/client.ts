@@ -28,8 +28,8 @@ import {
 } from '@sinete/core';
 import type { DocumentoXml, ElementoXml } from '@sinete/core/xml';
 import { assinarXml, elementosFilhos, lerXml, primeiroFilho, textoDe } from '@sinete/core/xml';
-import type { ComplexType, SchemaIssue } from '@sinete/schemas';
-import { decode, decodeXml, serialize, serializeRoot, validate } from '@sinete/schemas';
+import type { ComplexType, OcorrenciaSchema } from '@sinete/schemas';
+import { decodificar, decodificarXml, serializar, serializarRaiz, validar } from '@sinete/schemas';
 import type { TRetConsCad_infCons_infCad } from '@sinete/schemas/nfe/consulta-cadastro/PL_010d';
 import { ConsCadElement, TRetConsCad } from '@sinete/schemas/nfe/consulta-cadastro/PL_010d';
 import { consSitNFeElement, TProtNFe, TRetConsSitNFe } from '@sinete/schemas/nfe/consulta-protocolo/PL_010d';
@@ -52,7 +52,7 @@ import { TEvento_infEvento as TEventoNaoRealizada } from '@sinete/schemas/nfe/ev
 import { TInutNFe_infInut, TRetInutNFe } from '@sinete/schemas/nfe/inutilizacao/PL_010d';
 import { TRetConsReciNFe, TRetEnviNFe } from '@sinete/schemas/nfe/PL_010f';
 import { consStatServElement, TRetConsStatServ } from '@sinete/schemas/nfe/status-servico/PL_009q';
-import type { EndpointRef, NfeServico, Transport } from '@sinete/transport';
+import type { EndpointResolvido, NfeServico, Transporte } from '@sinete/transport';
 import { nfceEndpoint, nfeContingenciaDaUf, nfeEndpoint } from '@sinete/transport';
 import type { ChaveAcesso } from '@sinete/validators';
 import { lerChaveAcesso, lerCnpj, lerCpf } from '@sinete/validators';
@@ -77,7 +77,7 @@ export type AutorDocumento =
 export type Sleep = (ms: number, signal?: AbortSignal) => Promise<void>;
 
 export interface NfeClientOptions {
-  readonly transport: Transport;
+  readonly transport: Transporte;
   /** Assina NF-e, eventos e inutilização (A1 WebCrypto, A3 via PKCS#11, HSM). */
   readonly signer: Assinador;
   readonly ambiente: Ambiente;
@@ -109,7 +109,7 @@ export interface NfeClientOptions {
    * (`nfceEndpoint`), que em várias UFs (SP, MG, PR, RS, SVRS) é outro host que o da NF-e. A NFC-e não tem SVC: com
    * `contingencia: 'svc'`, o documento modelo 65 continua indo ao autorizador normal da NFC-e.
    */
-  readonly nfceEndpoint?: (servico: NfeServico, uf: Uf) => EndpointRef;
+  readonly nfceEndpoint?: (servico: NfeServico, uf: Uf) => EndpointResolvido;
   /** Gerador de `idLote` (até 15 dígitos); padrão: os milissegundos do relógio. */
   readonly idLote?: () => string;
 }
@@ -382,7 +382,7 @@ function chaveValida(chave: string, path: string): ChaveAcesso {
   return r.valor;
 }
 
-function schemaIssues(what: string, issues: readonly SchemaIssue[]): void {
+function schemaIssues(what: string, issues: readonly OcorrenciaSchema[]): void {
   if (issues.length > 0) throw new ErroDeValidacao(`${what} não confere com o schema`, issues);
 }
 
@@ -450,7 +450,7 @@ interface ProtocoloLido {
 
 /** Monta o protocolo a partir do `protNFe` da resposta. */
 function lerProtocolo(doc: DocumentoXml, el: ElementoXml): ProtocoloLido {
-  const { value } = decode(TProtNFe, el, doc.texto);
+  const { valor: value } = decodificar(TProtNFe, el, doc.texto);
   const inf = value.infProt;
   if (!inf) throw new ErroRespostaInvalida('protNFe sem infProt');
   const p = {
@@ -531,7 +531,7 @@ interface EventoPedido {
   readonly cOrgao: string;
   readonly autor: { CNPJ: string } | { CPF: string };
   readonly detEvento: Readonly<Record<string, unknown>>;
-  readonly endpoint: EndpointRef;
+  readonly endpoint: EndpointResolvido;
   /** Fuso do `dhEvento`. */
   readonly offsetMinutes: number;
   readonly signal: AbortSignal | undefined;
@@ -561,7 +561,7 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
   };
 
   /** Endpoint da NFC-e: a opção `nfceEndpoint` ou a tabela da NFC-e do transporte, sempre no autorizador normal. */
-  const endpointNfce = (servico: NfeServico, uf: Uf): EndpointRef =>
+  const endpointNfce = (servico: NfeServico, uf: Uf): EndpointResolvido =>
     options.nfceEndpoint
       ? options.nfceEndpoint(servico, uf)
       : nfceEndpoint({ ambiente: options.ambiente, servico, uf });
@@ -570,7 +570,7 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
    * Endpoint de um serviço sem documento, pela UF das opções: NF-e com SVC quando `contingencia` pede; NFC-e no
    * autorizador normal.
    */
-  const endpoint = (servico: NfeServico, mod = '55'): EndpointRef => {
+  const endpoint = (servico: NfeServico, mod = '55'): EndpointResolvido => {
     const { uf } = ufPadrao(servico);
     if (mod === '65') return endpointNfce(servico, uf);
     return nfeEndpoint({
@@ -586,7 +586,7 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
    * autorizou a nota. `naUf` força o autorizador da UF (a CC-e não existe no SVC). A NFC-e vai sempre ao autorizador
    * normal da NFC-e.
    */
-  const endpointDaChave = (servico: NfeServico, c: ChaveAcesso, naUf = false): EndpointRef => {
+  const endpointDaChave = (servico: NfeServico, c: ChaveAcesso, naUf = false): EndpointResolvido => {
     if (c.mod === '65') return endpointNfce(servico, c.uf);
     const svc = naUf || c.tpEmis === undefined ? undefined : SVC_DO_TPEMIS[c.tpEmis];
     return nfeEndpoint({
@@ -597,7 +597,7 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
   };
 
   const call = (
-    ep: EndpointRef,
+    ep: EndpointResolvido,
     servico: NfeServico,
     mensagem: string,
     retorno: string,
@@ -636,7 +636,7 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
     const ep =
       c === undefined ? endpoint('NFeRetAutorizacao', opcoes.mod ?? '55') : endpointDaChave('NFeRetAutorizacao', c);
     const r = await call(ep, 'NFeRetAutorizacao', msg, 'retConsReciNFe', opcoes.signal);
-    const v = decode(TRetConsReciNFe, r.ret, r.doc.texto).value;
+    const v = decodificar(TRetConsReciNFe, r.ret, r.doc.texto).valor;
     if (v.nRec !== undefined && v.nRec !== nRec) {
       throw new ErroRespostaInvalida('retorno de outro recibo', { detalhes: { nRec: v.nRec } });
     }
@@ -656,10 +656,10 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
     const c = chaveValida(chave, 'chNFe');
     const a = nfeAssinada === undefined ? undefined : documentoAssinado(nfeAssinada, 'NFe', 'infNFe');
     if (a && a.id !== `NFe${c.chave}`) throw new ErroDeConfiguracao('a NF-e assinada não é a da chave consultada');
-    const msg = serializeRoot(consSitNFeElement, { versao: '4.00', tpAmb, xServ: 'CONSULTAR', chNFe: c.chave });
+    const msg = serializarRaiz(consSitNFeElement, { versao: '4.00', tpAmb, xServ: 'CONSULTAR', chNFe: c.chave });
     const ep = endpointDaChave('NfeConsultaProtocolo', c);
     const r = await call(ep, 'NfeConsultaProtocolo', msg, 'retConsSitNFe', opcoes?.signal);
-    const v = decode(TRetConsSitNFe, r.ret, r.doc.texto).value;
+    const v = decodificar(TRetConsSitNFe, r.ret, r.doc.texto).valor;
     const status = { cStat: v.cStat, xMotivo: v.xMotivo };
     logger.info('nfe.consulta', { chNFe: c.chave, cStat: v.cStat });
     const situacao = cstatEm(v.cStat, 'autorizada')
@@ -717,14 +717,14 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
       verEvento: EVENTO_VERSAO,
       detEvento: p.detEvento,
     };
-    const infXml = serialize(p.ct, 'infEvento', inf, NFE_NS);
+    const infXml = serializar(p.ct, 'infEvento', inf, NFE_NS);
     const evento = `<evento xmlns="${NFE_NS}" versao="${EVENTO_VERSAO}">${infXml}</evento>`;
     const infEl = primeiroFilho(lerXml(evento).raiz, 'infEvento', NFE_NS) as ElementoXml;
-    schemaIssues('evento', validate(p.ct, infEl));
+    schemaIssues('evento', validar(p.ct, infEl));
     const assinado = await assinarXml(evento, { id }, options.signer);
     const msg = envelope('envEvento', EVENTO_VERSAO, [`<idLote>${idLote()}</idLote>`, assinado]);
     const r = await call(p.endpoint, 'RecepcaoEvento', msg, 'retEnvEvento', p.signal);
-    const v = decode(TRetEnvEvento, r.ret, r.doc.texto).value;
+    const v = decodificar(TRetEnvEvento, r.ret, r.doc.texto).valor;
     logger.info('nfe.evento', { chNFe: p.chave, tpEvento: p.tpEvento, cStat: v.cStat });
     if (!cstatEm(v.cStat, 'loteEventoProcessado')) return rejeitado({ cStat: v.cStat, xMotivo: v.xMotivo });
     const retEl = elementosFilhos(r.ret).find((e) => e.local === 'retEvento' && e.ns === NFE_NS);
@@ -761,7 +761,7 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
 
     async statusServico(opcoes?: StatusServicoOpcoes): Promise<ResultadoSefaz<StatusServico, never>> {
       const { cUF } = ufPadrao('NfeStatusServico');
-      const msg = serializeRoot(consStatServElement, { versao: '4.00', tpAmb, cUF, xServ: 'STATUS' });
+      const msg = serializarRaiz(consStatServElement, { versao: '4.00', tpAmb, cUF, xServ: 'STATUS' });
       const r = await call(
         endpoint('NfeStatusServico', opcoes?.mod),
         'NfeStatusServico',
@@ -769,7 +769,7 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
         'retConsStatServ',
         opcoes?.signal,
       );
-      const v = decode(TRetConsStatServ, r.ret, r.doc.texto).value;
+      const v = decodificar(TRetConsStatServ, r.ret, r.doc.texto).valor;
       const status = { cStat: v.cStat, xMotivo: v.xMotivo };
       logger.info('nfe.status', { cStat: v.cStat });
       if (!cstatEm(v.cStat, 'servicoEmOperacao')) return rejeitado(status);
@@ -793,7 +793,7 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
       // O autorizador é o do documento: a UF do cUF e, assinada em SVC (tpEmis 6 ou 7), o SVC da chave.
       const ep = endpointDaChave('NFeAutorizacao', chaveDoDocumento(a));
       const r = await call(ep, 'NFeAutorizacao', msg, 'retEnviNFe', opcoes.signal);
-      const v = decode(TRetEnviNFe, r.ret, r.doc.texto).value;
+      const v = decodificar(TRetEnviNFe, r.ret, r.doc.texto).valor;
       const status = { cStat: v.cStat, xMotivo: v.xMotivo };
       logger.info('nfe.autorizacao', { chNFe: a.id.slice(3), cStat: v.cStat, sincrono });
       if (cstatEm(v.cStat, 'loteRecebido')) {
@@ -995,10 +995,10 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
         nNFFin: fin,
         xJust: p.xJust,
       };
-      const infXml = serialize(TInutNFe_infInut, 'infInut', inf, NFE_NS);
+      const infXml = serializar(TInutNFe_infInut, 'infInut', inf, NFE_NS);
       const inut = envelope('inutNFe', '4.00', [infXml]);
       const infEl = primeiroFilho(lerXml(inut).raiz, 'infInut', NFE_NS) as ElementoXml;
-      schemaIssues('pedido de inutilização', validate(TInutNFe_infInut, infEl));
+      schemaIssues('pedido de inutilização', validar(TInutNFe_infInut, infEl));
       const assinado = await assinarXml(inut, { id }, options.signer);
       // A inutilização não existe no SVC (o SVC-RS nem publica o serviço): vai sempre ao autorizador normal da UF.
       const ep =
@@ -1006,7 +1006,7 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
           ? endpointNfce('NfeInutilizacao', uf)
           : nfeEndpoint({ ambiente: options.ambiente, servico: 'NfeInutilizacao', uf });
       const r = await call(ep, 'NfeInutilizacao', assinado, 'retInutNFe', opcoes?.signal);
-      const v = decode(TRetInutNFe, r.ret, r.doc.texto).value;
+      const v = decodificar(TRetInutNFe, r.ret, r.doc.texto).valor;
       const status = { cStat: v.infInut.cStat, xMotivo: v.infInut.xMotivo };
       logger.info('nfe.inutilizacao', { id, cStat: status.cStat });
       if (!cstatEm(status.cStat, 'inutilizacaoHomologada')) return rejeitado(status);
@@ -1042,10 +1042,10 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
           : 'CPF' in p
             ? documentoAutor({ CPF: p.CPF }, 'CPF')
             : { IE: p.IE.replace(/[^0-9A-Za-z]/g, '').toUpperCase() };
-      const msg = serializeRoot(ConsCadElement, { versao: '2.00', infCons: { xServ: 'CONS-CAD', UF: p.uf, ...doc } });
+      const msg = serializarRaiz(ConsCadElement, { versao: '2.00', infCons: { xServ: 'CONS-CAD', UF: p.uf, ...doc } });
       const ep = nfeEndpoint({ ambiente: options.ambiente, servico: 'NfeConsultaCadastro', uf: p.uf });
       const r = await call(ep, 'NfeConsultaCadastro', msg, 'retConsCad', opcoes?.signal);
-      const v = decode(TRetConsCad, r.ret, r.doc.texto).value;
+      const v = decodificar(TRetConsCad, r.ret, r.doc.texto).valor;
       const i = v.infCons;
       const status = { cStat: i.cStat, xMotivo: i.xMotivo };
       logger.info('nfe.cadastro', { uf: p.uf, cStat: i.cStat });
@@ -1071,7 +1071,7 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
             : { consChNFe: { chNFe: chaveValida(consulta.chNFe, 'chNFe').chave } };
       const cUFAutor = opcoes.cUFAutor ?? ufPadrao('NFeDistribuicaoDFe').cUF;
       if (ufPorCUf(cUFAutor) === undefined) throw new ErroDeConfiguracao(`cUFAutor inválido: ${cUFAutor}`);
-      const msg = serializeRoot(distDFeIntElement, {
+      const msg = serializarRaiz(distDFeIntElement, {
         versao: '1.01',
         tpAmb,
         cUFAutor: cUFAutor as CUf,
@@ -1080,7 +1080,7 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
       } as distDFeInt);
       const ep = nfeEndpoint({ ambiente: options.ambiente, servico: 'NFeDistribuicaoDFe' });
       const r = await call(ep, 'NFeDistribuicaoDFe', msg, 'retDistDFeInt', opcoes.signal);
-      const v = decode(retDistDFeInt, r.ret, r.doc.texto).value;
+      const v = decodificar(retDistDFeInt, r.ret, r.doc.texto).valor;
       const status = { cStat: v.cStat, xMotivo: v.xMotivo };
       logger.info('nfe.distribuicao', { cStat: v.cStat, ultNSU: v.ultNSU, maxNSU: v.maxNSU });
       const base = { ultNSU: v.ultNSU, maxNSU: v.maxNSU, dhResp: v.dhResp };
@@ -1101,8 +1101,9 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
 function documentoDistribuido(NSU: string, schema: string, xml: string): DocumentoDistribuido {
   const nome = schema.replace(/_v?\d.*$/, '');
   const base = { NSU, schema, xml };
-  if (nome === 'resNFe') return { ...base, tipo: 'resNFe', resNFe: decodeXml(resNFeElement, xml).value };
-  if (nome === 'resEvento') return { ...base, tipo: 'resEvento', resEvento: decodeXml(resEventoElement, xml).value };
+  if (nome === 'resNFe') return { ...base, tipo: 'resNFe', resNFe: decodificarXml(resNFeElement, xml).valor };
+  if (nome === 'resEvento')
+    return { ...base, tipo: 'resEvento', resEvento: decodificarXml(resEventoElement, xml).valor };
   if (nome === 'procNFe') return { ...base, tipo: 'procNFe' };
   if (nome === 'procEventoNFe') return { ...base, tipo: 'procEventoNFe' };
   return { ...base, tipo: 'outro' };

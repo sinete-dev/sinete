@@ -1,10 +1,10 @@
 /** NFeConsultaProtocolo4, CadConsultaCadastro4, NFeInutilizacao4 e NFeDistribuicaoDFe. */
 import { describe, expect, test } from 'bun:test';
-import { validateRoot } from '@sinete/schemas';
+import { validarRaiz } from '@sinete/schemas';
 import * as dist from '@sinete/schemas/nfe/dist-dfe/PL_NFeDistDFe_104';
 import * as canc from '@sinete/schemas/nfe/evento-cancelamento/PL_010d';
 import * as PL_010f from '@sinete/schemas/nfe/PL_010f';
-import { soap12ContentType, soap12Envelope } from '@sinete/transport';
+import { contentTypeSoap12, envelopeSoap12 } from '@sinete/transport';
 import { montarChaveAcesso } from '@sinete/validators';
 import { SIM_BASE_URL, simTransport } from '../src/index.ts';
 import type { Harness } from './helpers.ts';
@@ -221,7 +221,7 @@ describe('distribuição de DF-e (AN)', () => {
     ]);
     const [res] = await docZips(dist1);
     expect(res?.schema).toBe('resNFe_v1.01.xsd');
-    expect(validateRoot(dist.resNFeElement, res?.xml ?? '')).toEqual([]);
+    expect(validarRaiz(dist.resNFeElement, res?.xml ?? '')).toEqual([]);
     // Antes da manifestação, o cancelamento chega como resumo de evento.
     const cce = await evento({ chave, tpEvento: '110110', det: det.cce() });
     await h.send('RecepcaoEvento', envEvento([cce]), { canal: h.c.emitente });
@@ -241,9 +241,9 @@ describe('distribuição de DF-e (AN)', () => {
       ['000000000000003', 'procNFe_v4.00.xsd'],
       ['000000000000004', 'procEventoNFe_v1.00.xsd'],
     ]);
-    expect(validateRoot(dist.resEventoElement, docs[0]?.xml ?? '')).toEqual([]);
-    expect(validateRoot(PL_010f.nfeProcElement, docs[1]?.xml ?? '')).toEqual([]);
-    expect(validateRoot(canc.procEventoNFeElement, docs[2]?.xml ?? '')).toEqual([]);
+    expect(validarRaiz(dist.resEventoElement, docs[0]?.xml ?? '')).toEqual([]);
+    expect(validarRaiz(PL_010f.nfeProcElement, docs[1]?.xml ?? '')).toEqual([]);
+    expect(validarRaiz(canc.procEventoNFeElement, docs[2]?.xml ?? '')).toEqual([]);
     // O XML da NF-e distribuída é a string recebida.
     expect(docs[1]?.xml).toContain(h.sim.inspect.nfe(chave)?.xml as string);
     // Emitente recebe a manifestação do destinatário; terceiros recebem NF-e e eventos completos.
@@ -329,12 +329,12 @@ describe('consulta cadastro no MT', () => {
   const cadastro = [{ UF: 'MT' as const, IE: '131313130130', CNPJ: EMITENTE, xNome: 'EMITENTE SINTETICO MT' }];
   const enviar = async (h: Harness, body: string) => {
     const t = simTransport(h.sim, { clientCertificate: h.c.terceiro.der });
-    const res = await t.send({
+    const res = await t.enviar({
       url: h.sim.url(SIM_BASE_URL, 'NfeConsultaCadastro'),
-      headers: { 'content-type': soap12ContentType(`${W}/consultaCadastro`) },
-      body: soap12Envelope(body),
+      cabecalhos: { 'content-type': contentTypeSoap12(`${W}/consultaCadastro`) },
+      corpo: envelopeSoap12(body),
     });
-    return { status: res.status, texto: res.text() };
+    return { status: res.status, texto: res.texto() };
   };
 
   test('o MT exige consultaCadastro por fora do nfeDadosMsg e responde com consultaCadastroResult', async () => {

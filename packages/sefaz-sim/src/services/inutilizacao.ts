@@ -7,7 +7,7 @@ import type { Uf } from '@sinete/core';
 import { ehUf, ufPorSigla } from '@sinete/core';
 import type { ElementoXml } from '@sinete/core/xml';
 import { atributoDe } from '@sinete/core/xml';
-import { serializeRoot } from '@sinete/schemas';
+import { serializarRaiz } from '@sinete/schemas';
 import type { TRetConsCad, TRetConsCad_infCons_infCad } from '@sinete/schemas/nfe/consulta-cadastro/PL_010d';
 import { ConsCadElement, retConsCadElement } from '@sinete/schemas/nfe/consulta-cadastro/PL_010d';
 import type { TRetInutNFe } from '@sinete/schemas/nfe/inutilizacao/PL_010d';
@@ -41,7 +41,7 @@ export async function inutilizacao(ctx: RequestContext): Promise<string> {
         dhRecbto: dh(ctx, ctx.now),
       },
     };
-    return serializeRoot(retInutNFeElement, value);
+    return serializarRaiz(retInutNFeElement, value);
   };
   if (!pre.ok) return ret(pre.status);
   const infEl = inf as ElementoXml;
@@ -138,7 +138,7 @@ export function consultaCadastro(ctx: RequestContext): string {
         ...(cads.length === 0 ? {} : { infCad: cads.map(infCad) }),
       },
     } as TRetConsCad;
-    return serializeRoot(retConsCadElement, value);
+    return serializarRaiz(retConsCadElement, value);
   };
   if (!pre.ok) return ret(pre.status);
   // 265: o autorizador responde pelo cadastro das UF que atende (a SVRS atende várias).

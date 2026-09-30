@@ -7,8 +7,8 @@ import { expect } from 'bun:test';
 import type { Assinador, RelogioManual } from '@sinete/core';
 import { relogioManual } from '@sinete/core';
 import { assinarXml, codificarBase64, decodificarBase64, elementosFilhos, lerXml } from '@sinete/core/xml';
-import type { ElementParticle, GroupParticle, RootElement, SimpleType } from '@sinete/schemas';
-import { validateRoot } from '@sinete/schemas';
+import type { ElementoRaiz, ElementParticle, GroupParticle, SimpleType } from '@sinete/schemas';
+import { validarRaiz } from '@sinete/schemas';
 import * as cad from '@sinete/schemas/nfe/consulta-cadastro/PL_010d';
 import * as consulta from '@sinete/schemas/nfe/consulta-protocolo/PL_010d';
 import * as dist from '@sinete/schemas/nfe/dist-dfe/PL_NFeDistDFe_104';
@@ -17,7 +17,7 @@ import * as cce from '@sinete/schemas/nfe/evento-cce/PL_010d';
 import * as inut from '@sinete/schemas/nfe/inutilizacao/PL_010d';
 import * as PL_010f from '@sinete/schemas/nfe/PL_010f';
 import * as status from '@sinete/schemas/nfe/status-servico/PL_009q';
-import { soap12ContentType, soap12Envelope, soapBody } from '@sinete/transport';
+import { contentTypeSoap12, envelopeSoap12, lerBodySoap } from '@sinete/transport';
 import { calcularDvCnpj, montarChaveAcesso } from '@sinete/validators';
 import type {
   SefazSim,
@@ -39,7 +39,7 @@ import {
 } from '../src/index.ts';
 
 /** Raiz de cada retorno: toda resposta do simulador é conferida contra o schema oficial. */
-export const RET_ROOTS: Readonly<Record<keyof typeof NFE_SERVICES, RootElement<unknown>>> = {
+export const RET_ROOTS: Readonly<Record<keyof typeof NFE_SERVICES, ElementoRaiz<unknown>>> = {
   NfeStatusServico: status.retConsStatServElement,
   NFeAutorizacao: PL_010f.retEnviNFeElement,
   NFeRetAutorizacao: PL_010f.retConsReciNFeElement,
@@ -130,13 +130,13 @@ export async function harness(
     async send(servico, payload, o = {}): Promise<string> {
       const canal = o.canal === undefined ? padrao : o.canal;
       const transport = simTransport(sim, canal === null ? {} : { clientCertificate: canal.der });
-      const res = await transport.send({
+      const res = await transport.enviar({
         url: sim.url(SIM_BASE_URL, servico, o.autorizador),
-        headers: { 'content-type': soap12ContentType(soapAction(NFE_SERVICES[servico])) },
-        body: envelope(servico, payload),
+        cabecalhos: { 'content-type': contentTypeSoap12(soapAction(NFE_SERVICES[servico])) },
+        corpo: envelope(servico, payload),
       });
-      const ret = unwrap(servico, res.text());
-      expect(validateRoot(RET_ROOTS[servico], ret)).toEqual([]);
+      const ret = unwrap(servico, res.texto());
+      expect(validarRaiz(RET_ROOTS[servico], ret)).toEqual([]);
       return ret;
     },
     raw: (request): Promise<SimResult> => sim.handle({ clientCertificate: padrao.der, ...request }),
@@ -148,14 +148,14 @@ export function envelope(servico: keyof typeof NFE_SERVICES, payload: string): s
   const def = NFE_SERVICES[servico];
   const ns = wsdlNamespace(def);
   const dados = `<nfeDadosMsg xmlns="${ns}">${payload}</nfeDadosMsg>`;
-  return soap12Envelope(
+  return envelopeSoap12(
     def.style === 'operacao' ? `<${def.operation} xmlns="${ns}">${dados}</${def.operation}>` : dados,
   );
 }
 
 /** Retorno (`retEnviNFe`...) de dentro do envelope de resposta, como fatia da string. */
 export function unwrap(servico: keyof typeof NFE_SERVICES, envelopeText: string): string {
-  const body = soapBody(envelopeText);
+  const body = lerBodySoap(envelopeText);
   const doc = lerXml(body);
   const holder = NFE_SERVICES[servico].style === 'operacao' ? elementosFilhos(doc.raiz)[0] : doc.raiz;
   const el = holder && elementosFilhos(holder)[0];

@@ -10,8 +10,8 @@ import { contextoDeTempo, ErroDeTempoEsgotado, relogioManual } from '@sinete/cor
 import { conferirAssinatura } from '@sinete/core/xml';
 import type { SefazSim, SyntheticCertificate } from '@sinete/sefaz-sim';
 import { createSefazSim, redirectToSim, startSefazSimServer, syntheticCertificate } from '@sinete/sefaz-sim';
-import type { Transport } from '@sinete/transport';
-import { createTransport } from '@sinete/transport';
+import type { Transporte } from '@sinete/transport';
+import { criarTransporte } from '@sinete/transport';
 import type { BuildMdfeOptions, MdfeClient, MdfeInput } from '../../src/index.ts';
 import { buildMdfe, createMdfeClient, resolverEnvioSemResposta, signMdfe } from '../../src/index.ts';
 import { CNPJ_EMIT, CPF_EMIT, cargaPropria, EMISSAO, opcoes, prestador } from '../helpers/mdfe.ts';
@@ -59,20 +59,20 @@ async function cenario(): Promise<Cenario> {
   const sim = createSefazSim({ clock, uf: 'MT' });
   const server = await startSefazSimServer(sim, { cert: c.servidor.pem, key: c.servidor.keyPem });
   const caminhos: string[] = [];
-  const transports: Transport[] = [];
+  const transports: Transporte[] = [];
   fechar.push(async () => {
-    for (const t of transports) await t.close();
+    for (const t of transports) await t.fechar();
     await server.close();
   });
   const cliente = (canal: SyntheticCertificate, timeoutMs = 10_000): MdfeClient => {
-    const real = createTransport({ identity: canal.tlsIdentity, additionalCa: [c.ac.pem], timeoutMs });
-    const gravador: Transport = {
-      capabilities: real.capabilities,
-      send: (r) => {
+    const real = criarTransporte({ identidade: canal.tlsIdentity, acsAdicionais: [c.ac.pem], timeoutMs });
+    const gravador: Transporte = {
+      capacidades: real.capacidades,
+      enviar: (r) => {
         caminhos.push(new URL(r.url).pathname);
-        return real.send(r);
+        return real.enviar(r);
       },
-      close: () => real.close(),
+      fechar: () => real.fechar(),
     };
     const transport = redirectToSim(gravador, server.baseUrl);
     transports.push(transport);

@@ -7,8 +7,8 @@
 import type { Ambiente, Relogio } from '@sinete/core';
 import type { DocumentoXml } from '@sinete/core/xml';
 import { atributoDe, ErroXml, lerXml } from '@sinete/core/xml';
-import type { RootElement, SchemaIssue } from '@sinete/schemas';
-import { validateRoot } from '@sinete/schemas';
+import type { ElementoRaiz, OcorrenciaSchema } from '@sinete/schemas';
+import { validarRaiz } from '@sinete/schemas';
 import type { CertIdentity } from './certs.ts';
 import { isDenegacao, motivo, motivoRejeicao } from './messages.ts';
 import type { SimRules } from './rules.ts';
@@ -171,19 +171,19 @@ export function status(cStat: string, params?: Readonly<Record<string, string>>)
 
 export interface PreludeSpec {
   /** Raízes aceitas; a primeira é a esperada para as regras D01a e D01b. */
-  readonly roots: readonly RootElement<unknown>[];
+  readonly roots: readonly ElementoRaiz<unknown>[];
   /** Serviço de autorização: 225, 565 e 568 no lugar de 215, 516 e 517. */
   readonly lote: boolean;
 }
 
 export type Prelude =
-  | { readonly ok: true; readonly doc: DocumentoXml; readonly root: RootElement<unknown> }
+  | { readonly ok: true; readonly doc: DocumentoXml; readonly root: ElementoRaiz<unknown> }
   | { readonly ok: false; readonly status: Status; readonly doc: DocumentoXml | undefined };
 
-function schemaFailure(doc: DocumentoXml, spec: PreludeSpec, issues: readonly SchemaIssue[]): Status {
-  const expected = spec.roots[0] as RootElement<unknown>;
+function schemaFailure(doc: DocumentoXml, spec: PreludeSpec, issues: readonly OcorrenciaSchema[]): Status {
+  const expected = spec.roots[0] as ElementoRaiz<unknown>;
   // D01a e D01b: raiz esperada e atributo versao, aplicados quando o schema falha.
-  if (issues.some((i) => i.code === 'raiz_inesperada') || doc.raiz.local !== expected.name) {
+  if (issues.some((i) => i.code === 'raiz_inesperada') || doc.raiz.local !== expected.nome) {
     return status(spec.lote ? '565' : '516');
   }
   if (atributoDe(doc.raiz, 'versao') === undefined) return status(spec.lote ? '568' : '517');
@@ -220,10 +220,10 @@ export function prelude(ctx: RequestContext, spec: PreludeSpec): Prelude {
   // D01e: caracteres de edição entre as tags.
   if (/>\s+</.test(ctx.payload)) return { ok: false, status: status('588'), doc };
   // D01: schema, em qualquer das raízes aceitas (PL vigentes).
-  let firstIssues: readonly SchemaIssue[] | undefined;
-  let valid: RootElement<unknown> | undefined;
+  let firstIssues: readonly OcorrenciaSchema[] | undefined;
+  let valid: ElementoRaiz<unknown> | undefined;
   for (const root of spec.roots) {
-    const issues = validateRoot(root, doc);
+    const issues = validarRaiz(root, doc);
     if (issues.length === 0) {
       valid = root;
       break;

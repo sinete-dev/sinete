@@ -2,7 +2,7 @@
  * NFeStatusServico4 (MOC 7.0 Visão Geral, item 5.5) e NFeConsultaProtocolo4 (item 5.4, tabela 5-16).
  */
 
-import { serializeRoot } from '@sinete/schemas';
+import { serializarRaiz } from '@sinete/schemas';
 import type { TRetConsSitNFe } from '@sinete/schemas/nfe/consulta-protocolo/PL_010d';
 import { consSitNFeElement, retConsSitNFeElement } from '@sinete/schemas/nfe/consulta-protocolo/PL_010d';
 import type { TRetConsStatServ } from '@sinete/schemas/nfe/status-servico/PL_009q';
@@ -32,7 +32,7 @@ export function statusServico(ctx: RequestContext): string {
       dhRecbto: dh(ctx, ctx.now),
       tMed: '1',
     };
-    return serializeRoot(retConsStatServElement, value);
+    return serializarRaiz(retConsStatServElement, value);
   };
   // O próprio serviço de status informa a paralisação como resultado (tabela 4.4.1), não como rejeição.
   if (!pre.ok)
@@ -61,7 +61,7 @@ export function consultaProtocolo(ctx: RequestContext): string {
       chNFe,
       ...extra,
     };
-    const xml = serializeRoot(retConsSitNFeElement, value);
+    const xml = serializarRaiz(retConsSitNFeElement, value);
     // procEventoNFe é o último filho de retConsSitNFe: entra como texto, sem reserializar o evento assinado.
     // Concatenação por posição, sem String.replace: `$&` e `$$` num xCorrecao virariam padrões de substituição.
     const fim = xml.lastIndexOf('</retConsSitNFe>');

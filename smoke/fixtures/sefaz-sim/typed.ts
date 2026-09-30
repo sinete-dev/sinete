@@ -20,5 +20,5 @@ export async function usar(clock: Relogio): Promise<number> {
   // @ts-expect-error serviço fora do portal
   sim.path('NfeInexistente');
   const t = simTransport(sim, { clientCertificate: ac.der });
-  return t.capabilities.renegotiation ? 1 : 0;
+  return t.capacidades.renegociacao ? 1 : 0;
 }

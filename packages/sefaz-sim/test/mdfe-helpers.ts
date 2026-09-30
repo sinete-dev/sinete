@@ -5,19 +5,19 @@
 
 import { expect } from 'bun:test';
 import { assinarXml, codificarBase64, elementosFilhos, lerXml } from '@sinete/core/xml';
-import type { RootElement } from '@sinete/schemas';
-import { validateRoot } from '@sinete/schemas';
+import type { ElementoRaiz } from '@sinete/schemas';
+import { validarRaiz } from '@sinete/schemas';
 import * as m300 from '@sinete/schemas/mdfe/3.00b';
 import * as ev from '@sinete/schemas/mdfe/eventos/3.00b';
 import * as serv from '@sinete/schemas/mdfe/servicos/3.00b';
-import { soap12ContentType, soap12Envelope, soapBody } from '@sinete/transport';
+import { contentTypeSoap12, envelopeSoap12, lerBodySoap } from '@sinete/transport';
 import { montarChaveAcesso } from '@sinete/validators';
 import type { MdfeServicoSim, SyntheticCertificate } from '../src/index.ts';
 import { MDFE_NS, MDFE_SERVICES, SIM_BASE_URL, simTransport, soapAction, wsdlNamespace } from '../src/index.ts';
 import type { Harness } from './helpers.ts';
 import { CPF, EMITENTE } from './helpers.ts';
 
-export const RET_MDFE: Readonly<Record<MdfeServicoSim, RootElement<unknown>>> = {
+export const RET_MDFE: Readonly<Record<MdfeServicoSim, ElementoRaiz<unknown>>> = {
   MDFeRecepcaoSinc: m300.retMDFeElement,
   MDFeConsulta: serv.retConsSitMDFeElement,
   MDFeConsNaoEnc: serv.retConsMDFeNaoEncElement,
@@ -34,7 +34,7 @@ export async function gzipBase64(text: string): Promise<string> {
 export async function envelopeMdfe(servico: MdfeServicoSim, payload: string): Promise<string> {
   const def = MDFE_SERVICES[servico];
   const dados = def.compactado === true ? await gzipBase64(payload) : payload;
-  return soap12Envelope(`<mdfeDadosMsg xmlns="${wsdlNamespace(def)}">${dados}</mdfeDadosMsg>`);
+  return envelopeSoap12(`<mdfeDadosMsg xmlns="${wsdlNamespace(def)}">${dados}</mdfeDadosMsg>`);
 }
 
 /** Envia pelo transporte em processo e devolve o retorno conferido contra o schema oficial. */
@@ -46,20 +46,20 @@ export async function sendMdfe(
   bruto = false,
 ): Promise<string> {
   const transport = simTransport(h.sim, { clientCertificate: canal.der });
-  const res = await transport.send({
+  const res = await transport.enviar({
     url: h.sim.url(SIM_BASE_URL, servico),
-    headers: { 'content-type': soap12ContentType(soapAction(MDFE_SERVICES[servico])) },
-    body: bruto
-      ? soap12Envelope(`<mdfeDadosMsg xmlns="${wsdlNamespace(MDFE_SERVICES[servico])}">${payload}</mdfeDadosMsg>`)
+    cabecalhos: { 'content-type': contentTypeSoap12(soapAction(MDFE_SERVICES[servico])) },
+    corpo: bruto
+      ? envelopeSoap12(`<mdfeDadosMsg xmlns="${wsdlNamespace(MDFE_SERVICES[servico])}">${payload}</mdfeDadosMsg>`)
       : await envelopeMdfe(servico, payload),
   });
-  const body = soapBody(res.text());
+  const body = lerBodySoap(res.texto());
   const holder = lerXml(body).raiz;
   expect(holder.local).toBe(`${MDFE_SERVICES[servico].operation}Result`);
   const el = elementosFilhos(holder)[0];
   if (!el) throw new Error(`resposta inesperada: ${body}`);
   const ret = body.slice(el.inicio, el.fim);
-  expect(validateRoot(RET_MDFE[servico], ret)).toEqual([]);
+  expect(validarRaiz(RET_MDFE[servico], ret)).toEqual([]);
   return ret;
 }
 

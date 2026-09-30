@@ -307,7 +307,7 @@ export interface MdfeEmissor extends Emissor<EntradaMdfe, MdfeClient, ProtocoloM
 
 /**
  * Abre o PFX e devolve o emissor de MDF-e. Nada vai à rede até a primeira operação que precisa dela; o certificado
- * fora da validade é recusado aqui (`CertError`).
+ * fora da validade é recusado aqui (`ErroCertificado`).
  */
 export async function createMdfeEmissor(opcoes: MdfeEmissorOptions): Promise<MdfeEmissor> {
   const base = await createEmissor(perfilMdfe(opcoes), opcoes);

@@ -32,7 +32,7 @@ export interface ModuleSpec {
   readonly replaceImports?: Readonly<Record<string, { readonly por: string; readonly motivo: string }>>;
   /**
    * Correções de pattern de um XSD oficial que nenhum validador conforme aceita, aplicadas na IR (o arquivo em `xsd/`
-   * continua byte a byte o oficial). Cada uma tem o motivo e a fonte da correção, e sai no `schema.patches` do módulo.
+   * continua byte a byte o oficial). Cada uma tem o motivo e a fonte da correção, e sai no `schema.ajustes` do módulo.
    */
   readonly patches?: readonly PatternPatch[];
   readonly description: string;
@@ -323,7 +323,7 @@ export const MODULES: readonly ModuleSpec[] = [
       },
     ],
     description:
-      'NFS-e Nacional, leiaute 1.01 (esquemas XSD de 09/02/2026, Documentação Atual de produção): DPS, NFSe, pedRegEvento e evento. O TSSerieDPS oficial tem as âncoras ^ e $ literais; a geração usa o pattern corrigido (schema.patches).',
+      'NFS-e Nacional, leiaute 1.01 (esquemas XSD de 09/02/2026, Documentação Atual de produção): DPS, NFSe, pedRegEvento e evento. O TSSerieDPS oficial tem as âncoras ^ e $ literais; a geração usa o pattern corrigido (schema.ajustes).',
   },
   {
     subpath: 'nfse/1.01-20260727',

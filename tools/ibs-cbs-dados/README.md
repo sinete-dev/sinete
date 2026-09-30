@@ -22,7 +22,7 @@ Requer `unzip`, `tar`, `gunzip`, `shasum` e `sqlite3`. O cache fica em `$SINETE_
 
 1. Extrai as tabelas do SQLite embarcado e, por um segundo caminho, de um SQLite reconstruído das migrações Flyway do código-fonte do mesmo zip. Os dois precisam dar os mesmos JSON (`--skip-flyway` pula, só para desenvolvimento).
 2. Junta as planilhas do IT e confronta com a Calculadora: divergência fora de `conflicts.json` falha, e entrada de `conflicts.json` que deixou de divergir também. Em conflito o dataset segue a Calculadora; cada entrada diz por que isso não muda cálculo nem XML.
-3. Grava JSON canônico (chaves ordenadas, decimais como string), formatado pelo Biome do repo, com `manifest.json` (fontes, hashes, `datasetSha256` sobre o JSON canônico). A formatação não muda os hashes.
-4. `rates.json` é a curadoria das alíquotas com fonte legal (as de teste de 2026, o IBS de 2027 e 2028 da LC 214/2025, o resto `unknown`).
+3. Grava JSON canônico (chaves ordenadas, decimais como string), formatado pelo Biome do repo, com `manifest.json` (fontes, hashes, `sha256DoDataset` sobre o JSON canônico). A formatação não muda os hashes.
+4. `rates.json` é a curadoria das alíquotas com fonte legal (as de teste de 2026, o IBS de 2027 e 2028 da LC 214/2025, o resto `desconhecida`).
 
-`diff.ts` lê cada lado de um diretório ou de `git:<ref>` e usa o `diffDatasets` do pacote: registros incluídos, removidos e alterados por tabela, com o tipo da mudança.
+`diff.ts` lê cada lado de um diretório ou de `git:<ref>` e usa o `compararDatasets` do pacote: registros incluídos, removidos e alterados por tabela, com o tipo da mudança.

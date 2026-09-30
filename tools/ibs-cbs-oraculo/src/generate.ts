@@ -8,8 +8,8 @@
  * que precisa de códigos completos existentes; o dataset publicado não carrega a tabela NCM inteira).
  */
 import { Database } from 'bun:sqlite';
-import type { ClassifiedItem, ClassifiedOperation, TpEnteGov } from '@sinete/ibs-cbs/calcular';
-import type { ClassTribRecord, IbsCbsDataset, TaxContent } from '@sinete/ibs-cbs-dados';
+import type { ItemClassificado, OperacaoClassificada, TpEnteGov } from '@sinete/ibs-cbs/calcular';
+import type { ConteudoTributario, DatasetIbsCbs, RegistroClassTrib } from '@sinete/ibs-cbs-dados';
 
 export interface CaseItemMeta {
   readonly n: number;
@@ -20,7 +20,7 @@ export interface CaseItemMeta {
 export interface OracleCase {
   readonly id: string;
   readonly date: string;
-  readonly op: ClassifiedOperation;
+  readonly op: OperacaoClassificada;
   readonly meta: readonly CaseItemMeta[];
 }
 
@@ -76,42 +76,48 @@ export interface Generator {
   next(): OracleCase | undefined;
 }
 
-export function generator(dataset: IbsCbsDataset, nom: Nomenclatures, seed: number): Generator {
+export function generator(dataset: DatasetIbsCbs, nom: Nomenclatures, seed: number): Generator {
   const rnd = prng(seed);
   const pick = <T>(xs: readonly T[]): T => xs[Math.floor(rnd() * xs.length)] as T;
-  const models = [...new Set(dataset.tables.dfeTypes.map((t) => t.modelo))].sort((a, b) => a - b);
+  const models = [...new Set(dataset.tabelas.tiposDfe.map((t) => t.modelo))].sort((a, b) => a - b);
   let counter = 0;
 
-  const linksNcm = (content: TaxContent, c: ClassTribRecord) =>
-    dataset.tables.ncmApplicability.filter(
-      (a) => a.classTribKey === c.key && a.validity.from <= content.asOf && (a.validity.to ?? '9999') >= content.asOf,
+  const linksNcm = (content: ConteudoTributario, c: RegistroClassTrib) =>
+    dataset.tabelas.aplicabilidadeNcm.filter(
+      (a) =>
+        a.chaveClassTrib === c.chave &&
+        a.vigencia.inicio <= content.dataDeReferencia &&
+        (a.vigencia.fim ?? '9999') >= content.dataDeReferencia,
     );
-  const linksNbs = (content: TaxContent, c: ClassTribRecord) =>
-    dataset.tables.nbsApplicability.filter(
-      (a) => a.classTribKey === c.key && a.validity.from <= content.asOf && (a.validity.to ?? '9999') >= content.asOf,
+  const linksNbs = (content: ConteudoTributario, c: RegistroClassTrib) =>
+    dataset.tabelas.aplicabilidadeNbs.filter(
+      (a) =>
+        a.chaveClassTrib === c.chave &&
+        a.vigencia.inicio <= content.dataDeReferencia &&
+        (a.vigencia.fim ?? '9999') >= content.dataDeReferencia,
     );
 
-  const chooseNcm = (content: TaxContent, cts: readonly ClassTribRecord[]): string | undefined => {
+  const chooseNcm = (content: ConteudoTributario, cts: readonly RegistroClassTrib[]): string | undefined => {
     const withLinks = cts.find((c) => linksNcm(content, c).length > 0);
     const pool = withLinks
-      ? nom.ncm.filter((x) => linksNcm(content, withLinks).some((a) => x.startsWith(a.prefix)))
+      ? nom.ncm.filter((x) => linksNcm(content, withLinks).some((a) => x.startsWith(a.prefixo)))
       : nom.ncm;
     for (let t = 0; t < 40 && pool.length > 0; t++) {
       const x = pick(pool);
       if (nom.selectiveNcm.has(x)) continue;
-      if (cts.every((c) => content.applicableNcm(c, x).result !== 'no')) return x;
+      if (cts.every((c) => content.ncmAplicavel(c, x).resultado !== 'nao')) return x;
     }
     return undefined;
   };
-  const chooseNbs = (content: TaxContent, cts: readonly ClassTribRecord[]): string | undefined => {
+  const chooseNbs = (content: ConteudoTributario, cts: readonly RegistroClassTrib[]): string | undefined => {
     const withLinks = cts.find((c) => linksNbs(content, c).length > 0);
     const pool = withLinks
-      ? nom.nbs.filter((x) => linksNbs(content, withLinks).some((a) => x.startsWith(a.prefix)))
+      ? nom.nbs.filter((x) => linksNbs(content, withLinks).some((a) => x.startsWith(a.prefixo)))
       : nom.nbs;
     for (let t = 0; t < 40 && pool.length > 0; t++) {
       const x = pick(pool);
       if (nom.selectiveNbs.has(x)) continue;
-      if (cts.every((c) => content.applicableNbs(c, x).result !== 'no')) return x;
+      if (cts.every((c) => content.nbsAplicavel(c, x).resultado !== 'nao')) return x;
     }
     return undefined;
   };
@@ -124,53 +130,53 @@ export function generator(dataset: IbsCbsDataset, nom: Nomenclatures, seed: numb
     return (Math.floor(rnd() * 5e6) / 100).toFixed(2);
   };
 
-  const informed = (year: number): ClassifiedItem['informedRates'] | undefined => {
+  const informed = (year: number): ItemClassificado['aliquotasInformadas'] | undefined => {
     if (year < 2027) return undefined;
     if (year <= 2028) {
       return {
         CBS: pick(['8.8', '8.7', '9.25', '8.75']),
         IBSUF: pick(['0.05', '0.05', '0.1']),
         IBSMun: '0.05',
-        reason: 'simulação sintética do oráculo',
+        motivo: 'simulação sintética do oráculo',
       };
     }
     return {
       CBS: pick(['8.8', '9.3']),
       IBSUF: pick(['17.7', '9.5', '10.25']),
       IBSMun: pick(['7.2', '2.5', '5.05']),
-      reason: 'simulação sintética do oráculo',
+      motivo: 'simulação sintética do oráculo',
     };
   };
 
   function item(
-    content: TaxContent,
+    content: ConteudoTributario,
     modelo: number,
     n: number,
     year: number,
-  ): [ClassifiedItem, CaseItemMeta] | undefined {
+  ): [ItemClassificado, CaseItemMeta] | undefined {
     const all = content.classTribs({ modelo });
     if (all.length === 0) return undefined;
     // 85% dos itens em códigos que a Calculadora calcula; o resto exercita as recusas (monofasia, ajustes).
     const calculable = all.filter((c) => {
-      const t = content.treatment(c);
-      return t && !t.flags.possuiAjuste && !t.flags.possuiMonofasia;
+      const t = content.tratamento(c);
+      return t && !t.indicadores.possuiAjuste && !t.indicadores.possuiMonofasia;
     });
     const ct = rnd() < 0.85 && calculable.length > 0 ? pick(calculable) : pick(all);
-    const treatment = content.treatment(ct);
-    const cst = content.cstOf(ct);
+    const treatment = content.tratamento(ct);
+    const cst = content.cstDe(ct);
     if (!treatment || !cst) return undefined;
-    let regular: ClassTribRecord | undefined;
-    if (treatment.flags.exigeGrupoTribRegular) {
+    let regular: RegistroClassTrib | undefined;
+    if (treatment.indicadores.exigeGrupoTribRegular) {
       const pool = calculable.filter((c) => {
-        const t = content.treatment(c);
-        const s = content.cstOf(c);
+        const t = content.tratamento(c);
+        const s = content.cstDe(c);
         return (
           t &&
           s &&
-          !t.flags.exigeGrupoTribRegular &&
-          !t.flags.incompativelComSuspensao &&
-          s.groups.gIBSCBS === 'required' &&
-          s.groups.gDif === 'forbidden' &&
+          !t.indicadores.exigeGrupoTribRegular &&
+          !t.indicadores.incompativelComSuspensao &&
+          s.grupos.gIBSCBS === 'obrigatorio' &&
+          s.grupos.gDif === 'vedado' &&
           linksNcm(content, c).length === 0 &&
           linksNbs(content, c).length === 0
         );
@@ -186,23 +192,23 @@ export function generator(dataset: IbsCbsDataset, nom: Nomenclatures, seed: numb
     if (hasNcmLinks || (!hasNbsLinks && modelo !== 91 && [55, 65].includes(modelo))) ncm = chooseNcm(content, cts);
     else if (hasNbsLinks || modelo === 91) nbs = chooseNbs(content, cts);
     if ((hasNcmLinks && !ncm) || (hasNbsLinks && !nbs)) return undefined;
-    const rates = cst.groups.gIBSCBS === 'required' ? informed(year) : undefined;
+    const rates = cst.grupos.gIBSCBS === 'obrigatorio' ? informed(year) : undefined;
     const money = (): string => (Math.floor(rnd() * 1e6) / 100 + 0.01).toFixed(2);
     const compet = `${year}-${String(1 + Math.floor(rnd() * 12)).padStart(2, '0')}`;
-    const g = cst.groups;
+    const g = cst.grupos;
     // Grupos informados que a Calculadora não calcula: exigidos sempre, permitidos às vezes. Exercitam o motor e
     // as entradas do ledger de lacunas do oráculo.
-    const extra: { -readonly [K in keyof ClassifiedItem]?: ClassifiedItem[K] } = {
-      ...(ct.groups.gEstornoCred === 'required' || (ct.groups.gEstornoCred === 'allowed' && rnd() < 0.3)
-        ? { creditReversal: { vIBSEstCred: money(), vCBSEstCred: money() } }
+    const extra: { -readonly [K in keyof ItemClassificado]?: ItemClassificado[K] } = {
+      ...(ct.grupos.gEstornoCred === 'obrigatorio' || (ct.grupos.gEstornoCred === 'permitido' && rnd() < 0.3)
+        ? { estornoDeCredito: { vIBSEstCred: money(), vCBSEstCred: money() } }
         : {}),
-      ...(g.gTransfCred === 'required' ? { creditTransfer: { vIBS: money(), vCBS: money() } } : {}),
-      ...(g.gAjusteCompet === 'required'
-        ? { competenceAdjustment: { competApur: compet, vIBS: money(), vCBS: money() } }
+      ...(g.gTransfCred === 'obrigatorio' ? { transferenciaDeCredito: { vIBS: money(), vCBS: money() } } : {}),
+      ...(g.gAjusteCompet === 'obrigatorio'
+        ? { ajusteDeCompetencia: { competApur: compet, vIBS: money(), vCBS: money() } }
         : {}),
-      ...(g.gCredPresIBSZFM === 'required'
+      ...(g.gCredPresIBSZFM === 'obrigatorio'
         ? {
-            zfmCredit: {
+            creditoZfm: {
               competApur: compet,
               tpCredPresIBSZFM: pick([0, 1, 2, 3, 4] as const),
               vCredPresIBSZFM: money(),
@@ -210,39 +216,39 @@ export function generator(dataset: IbsCbsDataset, nom: Nomenclatures, seed: numb
           }
         : {}),
     };
-    if (ct.groups.gCredPresOper !== 'forbidden' && g.gCredPresIBSZFM !== 'required' && rnd() < 0.5) {
-      const codes = dataset.tables.credPres
-        .map((r) => content.credPres(r.code))
+    if (ct.grupos.gCredPresOper !== 'vedado' && g.gCredPresIBSZFM !== 'obrigatorio' && rnd() < 0.5) {
+      const codes = dataset.tabelas.credPres
+        .map((r) => content.credPres(r.codigo))
         .filter((x): x is NonNullable<typeof x> => x !== undefined && (x.cbs || x.ibs));
       if (codes.length > 0) {
         const cp = pick(codes);
         // Crédito abatido do IBS do item (indDeduzCredPres): percentual pequeno sobre a própria base, para não
         // exceder o IBS (o motor recusa vIBS negativo).
-        const deducts = cp.record.deductsFromTax;
-        const red = Math.max(Number(content.reduction(ct, 'IBSUF') ?? 0), Number(content.reduction(ct, 'IBSMun') ?? 0));
+        const deducts = cp.registro.deduzDoTributo;
+        const red = Math.max(Number(content.reducao(ct, 'IBSUF') ?? 0), Number(content.reducao(ct, 'IBSMun') ?? 0));
         if (deducts && red > 60) return undefined;
         const p = (): { pCredPres: string } => ({ pCredPres: deducts ? '0.01' : pick(['1.5', '20', '3.75', '0.9']) });
         Object.assign(extra, {
           presumedCredit: {
-            cCredPres: cp.record.code,
+            cCredPres: cp.registro.codigo,
             vBCCredPres: deducts ? '__BASE__' : base(),
-            ...(cp.ibs && cp.record.groups.gIBSCredPres !== 'forbidden' ? { ibs: p() } : {}),
-            ...(cp.cbs && cp.record.groups.gCBSCredPres !== 'forbidden' ? { cbs: p() } : {}),
+            ...(cp.ibs && cp.registro.grupos.gIBSCredPres !== 'vedado' ? { ibs: p() } : {}),
+            ...(cp.cbs && cp.registro.grupos.gCBSCredPres !== 'vedado' ? { cbs: p() } : {}),
           },
         });
       }
     }
     const itemBase = base();
-    if (extra.presumedCredit?.vBCCredPres === '__BASE__') {
-      extra.presumedCredit = { ...extra.presumedCredit, vBCCredPres: itemBase };
+    if (extra.creditoPresumido?.vBCCredPres === '__BASE__') {
+      extra.creditoPresumido = { ...extra.creditoPresumido, vBCCredPres: itemBase };
     }
-    const it: ClassifiedItem = {
+    const it: ItemClassificado = {
       n,
       cst: ct.cst,
-      cClassTrib: ct.code,
+      cClassTrib: ct.codigo,
       base: itemBase,
-      ...(regular ? { regular: { cst: regular.cst, cClassTrib: regular.code } } : {}),
-      ...(rates ? { informedRates: rates } : {}),
+      ...(regular ? { regular: { cst: regular.cst, cClassTrib: regular.codigo } } : {}),
+      ...(rates ? { aliquotasInformadas: rates } : {}),
       ...extra,
     };
     return [it, { n, ...(ncm ? { ncm } : {}), ...(nbs ? { nbs } : {}) }];
@@ -254,9 +260,9 @@ export function generator(dataset: IbsCbsDataset, nom: Nomenclatures, seed: numb
       const r = rnd();
       const year = r < 0.65 ? 2026 : r < 0.85 ? pick([2027, 2028]) : pick([2029, 2030, 2031, 2032, 2033]);
       const date = `${year}-${String(1 + Math.floor(rnd() * 12)).padStart(2, '0')}-${String(1 + Math.floor(rnd() * 28)).padStart(2, '0')}`;
-      const content = dataset.at(date);
+      const content = dataset.em(date);
       const modelo = rnd() < 0.85 ? pick(COMMON_MODELS) : pick(models);
-      const items: ClassifiedItem[] = [];
+      const items: ItemClassificado[] = [];
       const meta: CaseItemMeta[] = [];
       const want = 1 + Math.floor(rnd() * 3);
       for (let tries = 0; tries < want * 6 && items.length < want; tries++) {
@@ -271,7 +277,7 @@ export function generator(dataset: IbsCbsDataset, nom: Nomenclatures, seed: numb
       return {
         id: `s${seed}-${counter}`,
         date,
-        op: { modelo, place: pick(PLACES), ...(gov ? { governmentPurchase: gov } : {}), items },
+        op: { modelo, local: pick(PLACES), ...(gov ? { compraGovernamental: gov } : {}), itens: items },
         meta,
       };
     },

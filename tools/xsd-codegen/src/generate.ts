@@ -6,7 +6,7 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { compileXsdRegex } from '../../../packages/schemas/src/runtime/regex.ts';
+import { compilarRegexXsd } from '../../../packages/schemas/src/runtime/regex.ts';
 import type { EmitSource } from './emit.ts';
 import { emitModule } from './emit.ts';
 import type { ParticleIR, SchemaIR, SimpleIR } from './ir.ts';
@@ -54,7 +54,7 @@ function checkPatterns(ir: SchemaIR): void {
       for (const p of step) {
         if (seen.has(p)) continue;
         seen.add(p);
-        compileXsdRegex(p);
+        compilarRegexXsd(p);
       }
     }
   };

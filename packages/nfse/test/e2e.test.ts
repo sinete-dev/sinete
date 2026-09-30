@@ -6,7 +6,7 @@
 import { afterEach, beforeAll, describe, expect, test } from 'bun:test';
 import { contextoDeTempo, ErroDeTempoEsgotado, exigirAutorizado, recusado } from '@sinete/core';
 import { conferirAssinatura } from '@sinete/core/xml';
-import { validateRoot } from '@sinete/schemas';
+import { validarRaiz } from '@sinete/schemas';
 import { eventoElement, NFSeElement } from '@sinete/schemas/nfse/1.01-20260727';
 import type { NfseRejeicao } from '../src/index.ts';
 import { buildDps, createNfseClient, parseChaveNfse, resolverEnvioSemResposta, signDps } from '../src/index.ts';
@@ -50,7 +50,7 @@ describe('emissão', () => {
     expect(v.idDps).toBe(`DPS${SAO_PAULO}2${PRESTADOR}00001000000000000001`);
     // A DPS assinada entra na NFS-e byte a byte (sem a declaração XML).
     expect(v.xml).toContain(assinada.replace('<?xml version="1.0" encoding="UTF-8"?>', ''));
-    expect(validateRoot(NFSeElement, v.xml)).toEqual([]);
+    expect(validarRaiz(NFSeElement, v.xml)).toEqual([]);
     const assinaturas = await Promise.all([
       conferirAssinatura(v.xml, { id: `NFS${v.chaveAcesso}`, elemento: 'infNFSe' }),
       conferirAssinatura(v.xml, { id: v.idDps, elemento: 'infDPS' }),
@@ -159,7 +159,7 @@ describe('eventos e substituição', () => {
     });
     const ev = exigirAutorizado(r);
     expect(ev).toMatchObject({ chaveAcesso: v.chaveAcesso, tpEvento: '101101', nSeqEvento: '1' });
-    expect(validateRoot(eventoElement, ev.xml)).toEqual([]);
+    expect(validarRaiz(eventoElement, ev.xml)).toEqual([]);
     const lista = await s.client.consultarEventos(v.chaveAcesso, { tpEvento: '101101', nSeqEvento: 1 });
     expect(lista.map((e) => [e.tpEvento, e.nSeqEvento, e.id])).toEqual([['101101', '1', ev.id]]);
     expect(lista[0]?.xml).toBe(ev.xml);

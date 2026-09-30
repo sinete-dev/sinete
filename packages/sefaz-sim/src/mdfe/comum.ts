@@ -5,8 +5,8 @@
 
 import type { DocumentoXml } from '@sinete/core/xml';
 import { decodificarBase64, ErroXml, lerXml } from '@sinete/core/xml';
-import type { RootElement } from '@sinete/schemas';
-import { validateRoot } from '@sinete/schemas';
+import type { ElementoRaiz } from '@sinete/schemas';
+import { validarRaiz } from '@sinete/schemas';
 import type { RequestContext, Status } from '../context.ts';
 import { motivoMdfe } from '../messages.ts';
 import type { Documento, MdfeRecord } from '../state.ts';
@@ -82,7 +82,7 @@ export type PreludeMdfe =
     };
 
 /** Grupos A, B-0, B e C. `root` é o schema da área de dados. */
-export async function preludeMdfe(ctx: RequestContext, root: RootElement<unknown>): Promise<PreludeMdfe> {
+export async function preludeMdfe(ctx: RequestContext, root: ElementoRaiz<unknown>): Promise<PreludeMdfe> {
   if (ctx.transmissorRecusado !== undefined) {
     return { ok: false, status: statusMdfe(ctx.transmissorRecusado), doc: undefined };
   }
@@ -112,7 +112,7 @@ export async function preludeMdfe(ctx: RequestContext, root: RootElement<unknown
   // C03: caracteres de edição no início, no fim ou entre as tags.
   if (/>\s+</.test(payload) || payload !== payload.trim()) return { ok: false, status: statusMdfe('599'), doc };
   // C01: schema; C04: prefixo de namespace.
-  const issues = validateRoot(root, doc);
+  const issues = validarRaiz(root, doc);
   if (issues.length > 0) {
     return { ok: false, status: statusMdfe('215'), doc, schemaPaths: issues.map((i) => i.caminho) };
   }

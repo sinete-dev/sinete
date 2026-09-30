@@ -7,12 +7,12 @@
  * ledger que não aconteceu mais, para o ledger nunca envelhecer em silêncio.
  */
 import type {
-  ClassTribRecord,
-  CstRecord,
-  Indicator,
-  IsoDate,
-  TreatmentRecord,
-  Validity,
+  DataIso,
+  Indicador,
+  RegistroClassTrib,
+  RegistroCst,
+  RegistroTratamento,
+  Vigencia,
 } from '../../../packages/ibs-cbs-dados/src/types.ts';
 import type { CalcClassTrib, CalcCst } from './calculadora.ts';
 import type { ItClassTrib, ItCst } from './it.ts';
@@ -35,15 +35,15 @@ export interface LedgerEntry {
 }
 
 export interface MergeResult {
-  readonly cst: CstRecord[];
-  readonly classTrib: ClassTribRecord[];
+  readonly cst: RegistroCst[];
+  readonly classTrib: RegistroClassTrib[];
   readonly conflicts: Conflict[];
 }
 
-const inForce = (v: Validity, d: IsoDate): boolean => v.from <= d && (v.to === null || v.to >= d);
-const ind = (b: boolean): Indicator => (b ? 'required' : 'forbidden');
+const inForce = (v: Vigencia, d: DataIso): boolean => v.inicio <= d && (v.fim === null || v.fim >= d);
+const ind = (b: boolean): Indicador => (b ? 'obrigatorio' : 'vedado');
 
-const CST_FIELDS: readonly [keyof CstRecord['groups'], string][] = [
+const CST_FIELDS: readonly [keyof RegistroCst['grupos'], string][] = [
   ['gIBSCBS', 'ind_gIBSCBS'],
   ['gIBSCBSMono', 'ind_gIBSCBSMono'],
   ['gRed', 'ind_gRed'],
@@ -53,7 +53,7 @@ const CST_FIELDS: readonly [keyof CstRecord['groups'], string][] = [
   ['gAjusteCompet', 'ind_gAjusteCompet'],
 ];
 
-const CLASS_FIELDS: readonly [keyof CalcClassTrib['groups'], string][] = [
+const CLASS_FIELDS: readonly [keyof CalcClassTrib['grupos'], string][] = [
   ['gCredPresOper', 'ind_gCredPresOper'],
   ['gMonoPadrao', 'ind_gMonoPadrao'],
   ['gMonoReten', 'ind_gMonoReten'],
@@ -66,11 +66,11 @@ const CLASS_FIELDS: readonly [keyof CalcClassTrib['groups'], string][] = [
 const num = (s: string | null | undefined): string => (s === null || s === undefined ? '0' : String(Number(s)));
 
 export function merge(
-  calc: { cst: readonly CalcCst[]; classTrib: readonly CalcClassTrib[]; treatments: readonly TreatmentRecord[] },
+  calc: { cst: readonly CalcCst[]; classTrib: readonly CalcClassTrib[]; tratamentos: readonly RegistroTratamento[] },
   it: { cst: readonly ItCst[]; classTrib: readonly ItClassTrib[] },
   ids: { calculadora: string; it: string },
   /** Data da tabela do IT: é nela que se comparam valores com vigência (reduções, DF-e). */
-  itDate: IsoDate,
+  itDate: DataIso,
 ): MergeResult {
   const conflicts: Conflict[] = [];
   const push = (
@@ -85,102 +85,104 @@ export function merge(
 
   // ---------------- CST ----------------
   const itCst = new Map(it.cst.map((c) => [c.code, c]));
-  const cst: CstRecord[] = calc.cst.map(({ _id, ...c }) => {
-    if (c.family !== 'CBS_IBS') return { ...c, sources: [ids.calculadora] };
-    const i = itCst.get(c.code);
-    const current = inForce(c.validity, itDate);
+  const cst: RegistroCst[] = calc.cst.map(({ _id, ...c }) => {
+    if (c.familia !== 'CBS_IBS') return { ...c, fontes: [ids.calculadora] };
+    const i = itCst.get(c.codigo);
+    const current = inForce(c.vigencia, itDate);
     if (!i) {
-      if (current) push('cst', c.code, 'presenca', 'presente', 'ausente');
-      return { ...c, sources: [ids.calculadora] };
+      if (current) push('cst', c.codigo, 'presenca', 'presente', 'ausente');
+      return { ...c, fontes: [ids.calculadora] };
     }
     for (const [field, col] of CST_FIELDS) {
       const itv = ind(i.groups[col] === true);
-      if (c.groups[field] !== itv) push('cst', c.code, field, c.groups[field], itv);
+      if (c.grupos[field] !== itv) push('cst', c.codigo, field, c.grupos[field], itv);
     }
     return {
       ...c,
-      groups: { ...c.groups, redutorBC: ind(i.groups.ind_RedutorBC === true) },
-      sources: [ids.calculadora, ids.it],
+      grupos: { ...c.grupos, redutorBC: ind(i.groups.ind_RedutorBC === true) },
+      fontes: [ids.calculadora, ids.it],
     };
   });
   for (const i of it.cst) {
-    if (!calc.cst.some((c) => c.family === 'CBS_IBS' && c.code === i.code && inForce(c.validity, itDate))) {
+    if (!calc.cst.some((c) => c.familia === 'CBS_IBS' && c.codigo === i.code && inForce(c.vigencia, itDate))) {
       push('cst', i.code, 'presenca', 'ausente', 'presente');
     }
   }
 
   // ---------------- cClassTrib ----------------
-  const treatment = new Map(calc.treatments.map((t) => [t.id, t]));
+  const treatment = new Map(calc.tratamentos.map((t) => [t.id, t]));
   const itByCode = new Map<string, ItClassTrib[]>();
   for (const i of it.classTrib) itByCode.set(i.code, [...(itByCode.get(i.code) ?? []), i]);
   const itModels = new Set(Object.values(IT_DFE_COLUMNS));
 
-  const classTrib: ClassTribRecord[] = calc.classTrib.map(({ _id, basis, ...c }) => {
-    const base = { ...c, legal: { lc214: null, link: null, basis } };
-    const at = (v: Validity): IsoDate => (inForce(v, itDate) ? itDate : v.from);
-    const tr = c.treatments.find((t) => inForce(t.validity, at(c.validity)));
-    const trRegular = tr ? (treatment.get(tr.treatment)?.flags.exigeGrupoTribRegular ?? false) : false;
-    if (c.family !== 'CBS_IBS') {
+  const classTrib: RegistroClassTrib[] = calc.classTrib.map(({ _id, fundamento, ...c }) => {
+    const base = { ...c, legal: { lc214: null, url: null, fundamento } };
+    const at = (v: Vigencia): DataIso => (inForce(v, itDate) ? itDate : v.inicio);
+    const tr = c.tratamentos.find((t) => inForce(t.vigencia, at(c.vigencia)));
+    const trRegular = tr ? (treatment.get(tr.tratamento)?.indicadores.exigeGrupoTribRegular ?? false) : false;
+    if (c.familia !== 'CBS_IBS') {
       return {
         ...base,
-        name: null,
-        groups: { ...c.groups, gTribRegular: ind(trRegular), gpBioDiferenca: null },
-        sources: [ids.calculadora],
+        nome: null,
+        grupos: { ...c.grupos, gTribRegular: ind(trRegular), gpBioDiferenca: null },
+        fontes: [ids.calculadora],
       };
     }
-    const i = (itByCode.get(c.code) ?? []).find((x) => x.validity.from === c.validity.from);
+    const i = (itByCode.get(c.codigo) ?? []).find((x) => x.validity.inicio === c.vigencia.inicio);
     if (!i) {
-      if (inForce(c.validity, itDate) || c.validity.from > itDate)
-        push('classTrib', c.code, 'presenca', 'presente', 'ausente');
+      if (inForce(c.vigencia, itDate) || c.vigencia.inicio > itDate)
+        push('classTrib', c.codigo, 'presenca', 'presente', 'ausente');
       return {
         ...base,
-        name: null,
-        groups: { ...c.groups, gTribRegular: ind(trRegular), gpBioDiferenca: null },
-        sources: [ids.calculadora],
+        nome: null,
+        grupos: { ...c.grupos, gTribRegular: ind(trRegular), gpBioDiferenca: null },
+        fontes: [ids.calculadora],
       };
     }
-    const d = at(c.validity);
+    const d = at(c.vigencia);
     const check = (field: string, cv: unknown, iv: unknown): void => {
-      if (JSON.stringify(cv) !== JSON.stringify(iv)) push('classTrib', c.code, field, cv, iv);
+      if (JSON.stringify(cv) !== JSON.stringify(iv)) push('classTrib', c.codigo, field, cv, iv);
     };
     check('cst', c.cst, i.cst);
-    check('rateKind', c.rateKind, i.rateKind);
-    check('validity.to', c.validity.to, i.validity.to);
+    check('rateKind', c.tipoDeAliquota, i.rateKind);
+    check('validity.to', c.vigencia.fim, i.validity.fim);
     check('tpRBSN', c.tpRBSN, i.tpRBSN);
-    check('annex', c.annex, i.annex);
+    check('annex', c.anexo, i.annex);
     for (const [field, col] of CLASS_FIELDS) {
-      const iv: Indicator =
-        field === 'gCredPresOper' ? (i.indicators[col] ? 'allowed' : 'forbidden') : ind(i.indicators[col] === true);
-      check(field, c.groups[field], iv);
+      const iv: Indicador =
+        field === 'gCredPresOper' ? (i.indicators[col] ? 'permitido' : 'vedado') : ind(i.indicators[col] === true);
+      check(field, c.grupos[field], iv);
     }
     check('gTribRegular', ind(trRegular), ind(i.indicators.ind_gTribRegular === true));
-    const red = (t: string): string => num(c.reductions.find((r) => r.tributo === t && inForce(r.validity, d))?.pRed);
+    const red = (t: string): string => num(c.reducoes.find((r) => r.tributo === t && inForce(r.vigencia, d))?.pRed);
     check('pRedCBS', red('CBS'), num(i.pRedCBS));
     check('pRedIBSUF', red('IBSUF'), num(i.pRedIBS));
     check('pRedIBSMun', red('IBSMun'), num(i.pRedIBS));
     const calcDfe = [
-      ...new Set(c.dfe.filter((x) => itModels.has(x.modelo) && inForce(x.validity, d)).map((x) => x.modelo)),
+      ...new Set(c.dfe.filter((x) => itModels.has(x.modelo) && inForce(x.vigencia, d)).map((x) => x.modelo)),
     ].sort((a, b) => a - b);
     for (const m of new Set([...calcDfe, ...i.dfe])) {
       if (calcDfe.includes(m) !== i.dfe.includes(m)) {
-        push('classTrib', c.code, `dfe.${m}`, calcDfe.includes(m), i.dfe.includes(m));
+        push('classTrib', c.codigo, `dfe.${m}`, calcDfe.includes(m), i.dfe.includes(m));
       }
     }
     return {
       ...base,
-      name: i.name,
-      legal: { lc214: i.lc214, link: i.link, basis },
-      groups: {
-        ...c.groups,
+      nome: i.name,
+      legal: { lc214: i.lc214, url: i.link, fundamento },
+      grupos: {
+        ...c.grupos,
         gTribRegular: ind(i.indicators.ind_gTribRegular === true),
         gpBioDiferenca: ind(i.indicators.ind_gpBioDiferenca === true),
       },
-      sources: [ids.calculadora, ids.it],
+      fontes: [ids.calculadora, ids.it],
     };
   });
   for (const i of it.classTrib) {
     if (
-      !calc.classTrib.some((c) => c.family === 'CBS_IBS' && c.code === i.code && c.validity.from === i.validity.from)
+      !calc.classTrib.some(
+        (c) => c.familia === 'CBS_IBS' && c.codigo === i.code && c.vigencia.inicio === i.validity.inicio,
+      )
     ) {
       push('classTrib', i.code, 'presenca', 'ausente', 'presente');
     }

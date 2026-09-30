@@ -7,7 +7,7 @@ Resultado da última rodada: [docs/validacao-homologacao.md](../../docs/validaca
 ## Decisões que valem aqui
 
 - ADR 0004, seções 6 e 7. Referência: `spikes/s2-tls/real/` (não importe nada de lá).
-- A guarda é a `HostPolicy` do `@sinete/transport` com uma allowlist fechada, escrita à mão em `src/policy.ts`: 15 hosts de NF-e e MDF-e de homologação, só a porta 443, e todo `tpAmb` do corpo igual a 2. Ela roda antes de abrir socket em todo envio. Produção, NFC-e e NFS-e ficam de fora. O `sinete doctor` não recebe política, então o runner confere com ela o endpoint que o doctor vai usar antes de chamá-lo.
+- A guarda é a `PoliticaDeHosts` do `@sinete/transport` com uma allowlist fechada, escrita à mão em `src/policy.ts`: 15 hosts de NF-e e MDF-e de homologação, só a porta 443, e todo `tpAmb` do corpo igual a 2. Ela roda antes de abrir socket em todo envio. Produção, NFC-e e NFS-e ficam de fora. O `sinete doctor` não recebe política, então o runner confere com ela o endpoint que o doctor vai usar antes de chamá-lo.
 - Cada operação grava uma linha em `~/.local/state/sinete/cert-usage.log`: hora, runtime, host, serviço e desfecho. Nunca corpo nem segredo. A assinatura local da NF-e também entra, com host `local`.
 - O certificado só existe em memória. Com `--op`, o PFX (base64) e a senha vêm da CLI do 1Password por spawn sem shell; com `--pfx`, do arquivo do operador e da variável de `--senha-env`. Nada é gravado, impresso ou passado em argv de outro processo. A saída do doctor é varrida atrás de chave, senha e trechos do PFX antes de ser mostrada.
 - Resultados (JSON, a NF-e assinada, o retorno da SEFAZ) ficam em `~/.local/state/sinete/homologacao/`, fora do repo. A NF-e assinada só tem o certificado público.
