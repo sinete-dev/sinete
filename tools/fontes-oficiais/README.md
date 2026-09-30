@@ -18,11 +18,15 @@ Página que responde sem nenhum item reconhecido conta como falha de leitura (le
 
 O workflow `fontes-oficiais.yml` roda todo dia. Com diferença, abre (ou atualiza) a issue "Fontes oficiais publicaram novidades" com o relatório; sem diferença, fecha a issue se ela estiver aberta. Com alguma fonte que não deu para ler, o job não mexe na issue (o relatório estaria incompleto) e fica vermelho. Em PR que mexe no vigia, ele só lê e escreve o relatório no resumo do job.
 
+## Quando começar o trabalho
+
+Uma NT é revisada várias vezes antes de valer, e os schemas costumam sair depois dela. Por isso o trabalho sobre uma publicação só começa quando ela já está ativa no ambiente de homologação, ou quando tudo o que ela pede já foi publicado (NT na versão que vai valer e os schemas correspondentes). Até lá, a issue do vigia fica aberta como registro do que falta, sem implementação antecipada.
+
 ## Fechar a issue
 
 Traga o que for relevante pelo caminho de cada fonte: esquemas pelo `tools/xsd-codegen` (ADR 0002), Calculadora e tabelas pelo `tools/ibs-cbs-dados` (ADR 0007), regras e rejeições pelo `@sinete/nfe` e pelo `tools/rejeicoes-data`. No mesmo PR, rode `--gravar` e revise o diff do `estado.json`. O que não pede mudança (uma NT de regra que fica com a SEFAZ, por exemplo) também entra pelo `--gravar`, com o motivo no PR.
 
-O estado inicial, de 29/set/2026, deixou de fora cinco publicações ainda não avaliadas por completo, para que a primeira execução abra a issue com elas: NT 2026.006 v1.00 (grupo YC e evento 110300 do split payment, homologação em 05/10/2026 e produção em 03/11/2026, preenchimento só a partir de 2027, schemas ainda não publicados), NT 2026.009 v1.00 (regra I08-140, CFOP 1.949 e 2.949 na devolução), NT 2021.003 v1.50 (GTIN da construção civil, validado pela SEFAZ no CCG), NT 2014.001 v1.41 (EPEC, que o sinete ainda não implementa; a v1.40 veda EPEC para PR e PB a partir de 05/10/2026) e IT 2025.004 v1.20 (índice de mistura de biocombustível, da monofasia, que o `@sinete/ibs-cbs` não suporta).
+O estado inicial, de 29/set/2026, deixou de fora cinco publicações que ficam registradas para voltar depois, pela regra acima, para que a primeira execução abra a issue com elas: NT 2026.006 v1.00 (grupo YC e evento 110300 do split payment, homologação em 05/10/2026 e produção em 03/11/2026, preenchimento só a partir de 2027, schemas ainda não publicados), NT 2026.009 v1.00 (regra I08-140, CFOP 1.949 e 2.949 na devolução), NT 2021.003 v1.50 (GTIN da construção civil, validado pela SEFAZ no CCG), NT 2014.001 v1.41 (EPEC, que o sinete ainda não implementa; a v1.40 veda EPEC para PR e PB a partir de 05/10/2026) e IT 2025.004 v1.20 (índice de mistura de biocombustível, da monofasia, que o `@sinete/ibs-cbs` não suporta).
 
 ## Fonte nova
 
