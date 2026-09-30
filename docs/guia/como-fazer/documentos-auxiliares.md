@@ -22,7 +22,7 @@ const d = await nfe.emitir('pedido-42', nota);
 if (d.tipo === 'autorizado') await guardarPdf('pedido-42', await nfe.pdf(d.proc, { formato: 'paisagem' }));
 ```
 
-`pdfCancelado(proc, procEvento)` gera o mesmo documento com a marca de cancelado e o protocolo do evento de cancelamento. O `@sinete/da` é uma dependência opcional do tipo `peerDependency` do `@sinete/emissor`: o pacote `sinete` já o inclui; com os pacotes avulsos, instale `@sinete/da`. Em Node e Bun, o emissor o importa na primeira chamada; sem o pacote nem um módulo fornecido pela opção `da`, `pdf()` lança `ConfigError`. No navegador e no Deno, importe o módulo de forma estática e passe-o na opção `da`:
+`pdfCancelado(proc, procEvento)` gera o mesmo documento com a marca de cancelado e o protocolo do evento de cancelamento. O `@sinete/da` é uma dependência opcional do tipo `peerDependency` do `@sinete/emissor`: o pacote `sinete` já o inclui; com os pacotes avulsos, instale `@sinete/da`. Em Node e Bun, o emissor o importa na primeira chamada; sem o pacote nem um módulo fornecido pela opção `da`, `pdf()` lança `ErroDeConfiguracao`. No navegador e no Deno, importe o módulo de forma estática e passe-o na opção `da`:
 
 ```ts
 import * as da from 'sinete/da/nfe';

@@ -1,12 +1,12 @@
 # `ibscbs_aliquotas_invalidas`: tabela de alíquotas malformada
 
-A tabela de alíquotas foi recusada pela validação de `officialRates`, de `@sinete/ibs-cbs`. A função lança `RatesDataError`, um `SineteError` com `code: 'ibscbs_aliquotas_invalidas'`. Identifique o erro pelo `code`, usando `isSineteError(e, 'ibscbs_aliquotas_invalidas')`, de `@sinete/core`, nunca pela mensagem.
+A tabela de alíquotas foi recusada pela validação de `officialRates`, de `@sinete/ibs-cbs`. A função lança `RatesDataError`, um `ErroSinete` com `code: 'ibscbs_aliquotas_invalidas'`. Identifique o erro pelo `code`, usando `ehErroSinete(e, 'ibscbs_aliquotas_invalidas')`, de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 
 A tabela apresenta versão de estrutura incompatível (`schemaVersion`), data de vigência em formato inválido, referência a uma fonte inexistente, percentual inválido, alíquota de referência com estado desconhecido (`status: 'unknown'`) e valor diferente de `null`, ou períodos de vigência sobrepostos para o mesmo tributo nas alíquotas de referência ou para o mesmo tributo e ente nas alíquotas próprias de estados e municípios.
 
-Uma sobreposição de alíquotas passada a `withOverrides` com tributo inválido, percentual fora do formato aceito ou motivo (`reason`) ausente, vazio ou composto apenas de espaços lança `ConfigError`, com `code: 'config_invalida'`.
+Uma sobreposição de alíquotas passada a `withOverrides` com tributo inválido, percentual fora do formato aceito ou motivo (`reason`) ausente, vazio ou composto apenas de espaços lança `ErroDeConfiguracao`, com `code: 'config_invalida'`.
 
 ## Correção
 

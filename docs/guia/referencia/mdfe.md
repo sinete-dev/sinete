@@ -6,11 +6,11 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 
 `@sinete/mdfe`: MDF-e modelo 58, leiaute 3.00b, modal rodoviário.
 
-- `buildMdfe`: entrada do domínio (`MdfeInput`) para o `<MDFe>` canônico validado contra o schema vigente, com a chave de acesso, os derivados em decimal exato e as regras do MOC conferidas antes de serializar. - `signMdfe`: QR Code (com `sign` em contingência off-line) e assinatura por splice; a string devolvida é a final. - `createMdfeClient`: status, autorização síncrona, consulta, não encerrados e eventos (cancelamento, encerramento, inclusão de condutor e de DF-e, pagamento da operação), com os desfechos como `SefazOutcome` do core. - O emissor (bytes gravados antes do envio, trava, retomada, cancelamento com recuperação) está em `@sinete/emissor/mdfe` (ADR 0010). - Percurso por divisas (`conferirPercurso`, `sugerirPercurso`) e o resolvedor de envio sem resposta.
+- `buildMdfe`: entrada do domínio (`MdfeInput`) para o `<MDFe>` canônico validado contra o schema vigente, com a chave de acesso, os derivados em decimal exato e as regras do MOC conferidas antes de serializar. - `signMdfe`: QR Code (com `sign` em contingência off-line) e assinatura por splice; a string devolvida é a final. - `createMdfeClient`: status, autorização síncrona, consulta, não encerrados e eventos (cancelamento, encerramento, inclusão de condutor e de DF-e, pagamento da operação), com os desfechos como `ResultadoSefaz` do core. - O emissor (bytes gravados antes do envio, trava, retomada, cancelamento com recuperação) está em `@sinete/emissor/mdfe` (ADR 0010). - Percurso por divisas (`conferirPercurso`, `sugerirPercurso`) e o resolvedor de envio sem resposta.
 
 ### Funções
 
-- `assinaturaQrCode`: `sign` do QR Code: RSA PKCS#1 v1.5 com SHA-1 sobre os 44 caracteres da chave, com o certificado que assina o MDF-e. `assinaturaQrCode(chave: string, signer: Signer): Promise<string>`
+- `assinaturaQrCode`: `sign` do QR Code: RSA PKCS#1 v1.5 com SHA-1 sobre os 44 caracteres da chave, com o certificado que assina o MDF-e. `assinaturaQrCode(chave: string, signer: Assinador): Promise<string>`
 - `buildMdfe`: Monta o MDF-e. Devolve as ocorrências (todas de uma vez) em vez do documento quando alguma regra falha; a exceção fica para erro de configuração (vigência sem schema conhecido, UF inválida no relógio). `buildMdfe(input: MdfeInput, options: BuildMdfeOptions): BuildMdfeResult`
 - `chaveDaDuplicidade`: Chave que a SEFAZ informa no `xMotivo` da rejeição 539 (`[chMDFe: ...]`), se houver. `chaveDaDuplicidade(xMotivo: string): string | undefined`
 - `comQrCode`: O MDF-e montado com o `infMDFeSupl` (QR Code) inserido por splice antes do fechamento de `MDFe`, pronto para a assinatura. `comQrCode(built: BuiltMdfe, sign?: string): string`
@@ -18,20 +18,20 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `createMdfeClient`: Cria o cliente dos serviços do MDF-e. `createMdfeClient(options: MdfeClientOptions): MdfeClient`
 - `cstatEm`: O `cStat` pertence à classe da tabela. `cstatEm(cStat: string, classe: CStatClasse): boolean`
 - `dec`: Atalho para `Decimal.of`. `dec(input: DecimalInput): Decimal`
-- `documentoAssinado`: Confere que `xml` é um documento `raiz` assinado (no namespace do MDF-e, com `Signature` referenciando o filho `elemento`) e devolve a string sem a declaração XML. Lança `ConfigError` para qualquer outra coisa: o serviço nunca "conserta" o documento de quem chama. `documentoAssinado(xml: string, raiz: string, elemento: string): DocumentoAssinado`
-- `gunzipBase64`: Base64 de um GZip para o texto UTF-8 de dentro. `limiteBytes` para a leitura assim que o conteúdo descompactado passa do limite (`ProtocolError`), para GZip de origem não confiável. `gunzipBase64(b64: string, limiteBytes?: number): Promise<string>`
+- `documentoAssinado`: Confere que `xml` é um documento `raiz` assinado (no namespace do MDF-e, com `Signature` referenciando o filho `elemento`) e devolve a string sem a declaração XML. Lança `ErroDeConfiguracao` para qualquer outra coisa: o serviço nunca "conserta" o documento de quem chama. `documentoAssinado(xml: string, raiz: string, elemento: string): DocumentoAssinado`
+- `gunzipBase64`: Base64 de um GZip para o texto UTF-8 de dentro. `limiteBytes` para a leitura assim que o conteúdo descompactado passa do limite (`ErroRespostaInvalida`), para GZip de origem não confiável. `gunzipBase64(b64: string, limiteBytes?: number): Promise<string>`
 - `gzipBase64`: Texto UTF-8 para GZip em Base64. `gzipBase64(text: string): Promise<string>`
 - `mdfeAssinadoDoProc`: MDF-e assinado de dentro de um `mdfeProc` (ou o próprio MDF-e assinado), como fatia do texto e sem a declaração XML, pronto para `consultar`, `resolverEnvioSemResposta` e a retomada, que recusam raiz sem `xmlns` próprio. `mdfeAssinadoDoProc(xml: string): string`
 - `offsetDaUf`: Deslocamento do horário legal da UF em minutos (`-180` para Brasília). `offsetDaUf(uf: Uf): number`
-- `pagamentosDoLeiaute`: Grupos `infPag` do leiaute a partir dos pagamentos do domínio, com as regras de pagamento do Anexo I (F52, F53, F56 a F63). `pagamentosDoLeiaute(pagamentos: readonly PagamentoFrete[], dataReferencia: string, path?: string): { readonly infPag: readonly Record<string, unknown>[]; readonly issues: readonly ValidationIssue[]; }`
+- `pagamentosDoLeiaute`: Grupos `infPag` do leiaute a partir dos pagamentos do domínio, com as regras de pagamento do Anexo I (F52, F53, F56 a F63). `pagamentosDoLeiaute(pagamentos: readonly PagamentoFrete[], dataReferencia: string, path?: string): { readonly infPag: readonly Record<string, unknown>[]; readonly issues: readonly Ocorrencia[]; }`
 - `prazoContingencia`: Prazo para transmitir um MDF-e emitido em contingência off-line: 168 horas depois da emissão (Visão Geral, 11.1). `prazoContingencia(emitidoEm: Instante): Instante`
 - `qrCodeMdfe`: URL do QR Code (`qrCodMDFe`): endereço do portal, `chMDFe` e `tpAmb`; em contingência off-line, também `sign`, a assinatura RSA-SHA1 da chave em Base64 (MOC Visão Geral, item 9.2). `qrCodeMdfe(chave: string, tpAmb: '1' | '2', sign?: string): string`
 - `recuperarEventoRegistrado`: Consulta a chave e devolve o evento `tpEvento` que a SEFAZ registrou para ela (o de maior `nSeqEvento`, quando há vários, como na inclusão de condutor). `recuperarEventoRegistrado(client: MdfeClient, chave: string, tpEvento: string): Promise<RecuperacaoEvento>`
 - `resolverEnvioSemResposta`: Resolve uma autorização sem resposta, ou cuja resposta foi 204 ou 539, consultando a chave do MDF-e assinado. `anterior` é o desfecho do envio, quando houve um. `resolverEnvioSemResposta(client: MdfeClient, mdfeAssinado: string, anterior?: AutorizacaoOutcome): Promise<ResolucaoEnvio>`
 - `rotuloDoCaminho`: Rótulo em português do caminho de uma ocorrência do MDF-e: `Grupo, Campo` quando os dois são conhecidos (`Condutor 1, CPF`), só um deles quando falta o outro, e `Dados do MDF-e` quando nenhum é. `rotuloDoCaminho(path: string): string`
 - `saoVizinhas`: As duas UFs fazem divisa terrestre. `saoVizinhas(a: string, b: string): boolean`
-- `signMdfe`: Assina o MDF-e montado: QR Code (com `sign` em contingência) e `Signature` como último filho de `MDFe`, ambos por splice, e devolve a string final. É essa string que vai para a SEFAZ e para o banco. `signMdfe(built: BuiltMdfe, signer: Signer): Promise<string>`
-- `sliceElement`: Recorta o elemento da fonte, acrescentando na tag de abertura só as declarações de namespace que ele usa e que estão em ancestrais fora do recorte. O default entra apenas quando difere de `parentDefaultNs` (o default do envelope onde a fatia vai morar). `sliceElement(doc: XmlDocument, el: XmlElement, parentDefaultNs?: string): string`
+- `signMdfe`: Assina o MDF-e montado: QR Code (com `sign` em contingência) e `Signature` como último filho de `MDFe`, ambos por splice, e devolve a string final. É essa string que vai para a SEFAZ e para o banco. `signMdfe(built: BuiltMdfe, signer: Assinador): Promise<string>`
+- `sliceElement`: Recorta o elemento da fonte, acrescentando na tag de abertura só as declarações de namespace que ele usa e que estão em ancestrais fora do recorte. O default entra apenas quando difere de `parentDefaultNs` (o default do envelope onde a fatia vai morar). `sliceElement(doc: DocumentoXml, el: ElementoXml, parentDefaultNs?: string): string`
 - `sugerirPercurso`: Um percurso mínimo (menos UFs atravessadas) entre duas UFs, por busca em largura na tabela de divisas; `[]` para UFs vizinhas ou iguais. Serve de sugestão: a UF de percurso é a da rota real, que pode não ser a mais curta. `sugerirPercurso(ufIni: Uf, ufFim: Uf): Uf[] | undefined`
 - `sum`: Soma uma lista (vazia = zero). `sum(values: Iterable<Decimal>): Decimal`
 
@@ -80,11 +80,11 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 ### Tipos
 
 - `AutorDocumento`: CNPJ ou CPF do emitente para a consulta dos não encerrados. `type AutorDocumento = { readonly CNPJ: string; readonly CPF?: never; } | { readonly CPF: string; readonly CNPJ?: never; }`
-- `AutorizacaoOutcome`: `type AutorizacaoOutcome = SefazOutcome<ProtocoloMdfe, never>`
+- `AutorizacaoOutcome`: `type AutorizacaoOutcome = ResultadoSefaz<ProtocoloMdfe, never>`
 - `AutorizarOpcoes`: Opções do envio para autorização. `type AutorizarOpcoes = OpcoesEnvio`
-- `BuildMdfeResult`: `type BuildMdfeResult = { readonly ok: true; readonly value: BuiltMdfe; } | { readonly ok: false; readonly issues: readonly ValidationIssue[]; }`
+- `BuildMdfeResult`: `type BuildMdfeResult = { readonly ok: true; readonly value: BuiltMdfe; } | { readonly ok: false; readonly issues: readonly Ocorrencia[]; }`
 - `Ciot`: CIOT (`infCIOT`): código e o CPF ou CNPJ do responsável pela geração. O código é opcional desde a NT 2025.001. `type Ciot = DocumentoPessoa & { readonly CIOT?: string; }`
-- `ConsultaOutcome`: `type ConsultaOutcome = SefazOutcome<ConsultaMdfe, never>`
+- `ConsultaOutcome`: `type ConsultaOutcome = ResultadoSefaz<ConsultaMdfe, never>`
 - `Contratante`: `type Contratante = DocumentoContratante & { readonly xNome?: string; readonly contrato?: { readonly NroContrato: string; readonly vContratoGlobal: DecimalInput; }; }`
 - `CStatClasse`: `type CStatClasse = 'autorizado' | 'cancelado' | 'encerrado' | 'servicoEmOperacao' | 'naoEncerradosLocalizados' | 'naoEncerradosNenhum' | 'eventoRegistrado' | 'duplicidade' | 'duplicidadeChaveDiferente' | 'naoConsta'`
 - `CteTransportado`: `type CteTransportado = DocumentoTransportado`
@@ -93,8 +93,8 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `DocumentoContratante`: CNPJ, CPF ou identificação de estrangeiro (contratante, responsável pelo pagamento). `type DocumentoContratante = DocumentoPessoa | { readonly idEstrangeiro: string; readonly CNPJ?: never; readonly CPF?: never; }`
 - `DocumentoPessoa`: CNPJ (numérico ou alfanumérico) ou CPF, exclusivos. `type DocumentoPessoa = { readonly CNPJ: string; readonly CPF?: never; } | { readonly CPF: string; readonly CNPJ?: never; }`
 - `Emitente`: Emitente (grupo `emit`). Pessoa física (produtor rural) emite com CPF, só como carga própria (`tpEmit` 2) e nas séries 920 a 969 (Anexo I, F70 e F71). `type Emitente = DocumentoPessoa & { /** Inscrição estadual, obrigatória fora do regime especial da NFF (F72, 229). */ readonly IE: string; readonly xNome: string; readonly xFant?: string; readonly endereco: EnderecoEmitente; }`
-- `EventoOutcome`: `type EventoOutcome = SefazOutcome<EventoRegistrado, never>`
-- `Instante`: Instante no tempo, como os relógios do `@sinete/core` o devolvem (o tipo `Date`, sem tocar no global). `type Instante = ReturnType<Clock['now']>`
+- `EventoOutcome`: `type EventoOutcome = ResultadoSefaz<EventoRegistrado, never>`
+- `Instante`: Instante no tempo, como os relógios do `@sinete/core` o devolvem (o tipo `Date`, sem tocar no global). `type Instante = ReturnType<Relogio['agora']>`
 - `LocalLotacao`: Local de carregamento ou descarregamento da carga lotação: CEP ou coordenadas (6 casas). `type LocalLotacao = { readonly CEP: string; } | { readonly latitude: string; readonly longitude: string; }`
 - `MdfeIssueCode`: `type MdfeIssueCode = (typeof MDFE_ISSUE_CODES)[number]`
 - `MdfeServicoCliente`: Serviços do MDF-e que o cliente chama (a distribuição de DF-e do MDF-e fica fora deste pacote). `type MdfeServicoCliente = Exclude<MdfeServico, 'MDFeDistribuicaoDFe'>`

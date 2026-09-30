@@ -2,6 +2,7 @@
 
 - Status: aceito
 - Data: 30/set/2026
+- Emendas: 30/set/2026, na aplicação da fase 1 (`validators`, `rejeicoes`, `core`): `namespace` e `digest` entram na lista do jargão (exceção 2) e o logger compatível com `console` entra na exceção 3.
 - Substitui a regra de idioma do `CONTRIBUTING.md` (seção Estilo) e a ressalva de idioma do [ADR 0009](0009-verbos-e-caminho-curto.md) ("`create` e o nome do que é criado, em português quando não há termo técnico em inglês").
 
 ## Contexto
@@ -15,8 +16,8 @@ Uma API que já saiu 1.0 só troca nome em versão major. A decisão tem de ser 
 Toda a API pública fica em português do Brasil: funções, métodos, classes, tipos, propriedades, parâmetros com nome, valores de união literal e subpaths. Três exceções, fechadas:
 
 1. **Nome oficial fica como na fonte.** Elementos e atributos do XML e dos schemas (`infNFe`, `cStat`, `xMotivo`, `tpAmb`, `chNFe`), nomes dos serviços do WSDL e das APIs REST (`NfeStatusServico`, `statusServico`, `distribuicaoDFe`), siglas oficiais (`NFe`, `MDFe`, `DPS`, `CNPJ`, `IE`, `IBS`, `CBS`) e os tipos gerados dos XSD no `@sinete/schemas`. Eles precisam bater com o leiaute e com o MOC.
-2. **Jargão técnico sem equivalente natural fica em inglês.** Lista fechada: `store`, `logger`, `cache`, `hash`, `pool`, `buffer`, `stream`, `token`, `bundle`, `dataset`, `payload`, `handshake`, `timeout` (só no nome da opção `timeoutMs`), `signal`, `mTLS`, `PEM`, `PFX`, `DER`, `PDF`, `HTML`, `SVG`, `QR Code`, `A1` e `A3`. Traduzir esses termos gera calque (`registrador`, `armazém`) e esconde o que a pessoa procuraria. Termo novo só entra na lista por mudança neste ADR.
-3. **O que a linguagem ou a plataforma fixa fica como está.** `Error`, `message`, `name`, `cause` e `stack` das exceções, `AbortSignal`, `Uint8Array`, `Promise`, `then`, e as condições do `exports` (`node`, `default`, `types`).
+2. **Jargão técnico sem equivalente natural fica em inglês.** Lista fechada: `store`, `logger`, `cache`, `hash`, `pool`, `buffer`, `stream`, `token`, `bundle`, `dataset`, `payload`, `handshake`, `namespace`, `digest`, `timeout` (só no nome da opção `timeoutMs`), `signal`, `mTLS`, `PEM`, `PFX`, `DER`, `PDF`, `HTML`, `SVG`, `QR Code`, `A1` e `A3`. Traduzir esses termos gera calque (`registrador`, `armazém`) e esconde o que a pessoa procuraria. Termo novo só entra na lista por mudança neste ADR.
+3. **O que a linguagem ou a plataforma fixa fica como está.** `Error`, `message`, `name`, `cause` e `stack` das exceções, `AbortSignal`, `Uint8Array`, `Promise`, `then`, e as condições do `exports` (`node`, `default`, `types`). Entram aqui também os métodos e níveis de interfaces que espelham uma de fato do ecossistema, como o logger compatível com `console` (`debug`, `info`, `warn`, `error`, `child` e os níveis de mesmo nome): quem integra pluga o logger que já usa, sem adaptador.
 
 ### Glossário
 

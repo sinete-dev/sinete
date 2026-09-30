@@ -19,7 +19,7 @@ O **sinete** é uma biblioteca TypeScript/JavaScript para integrar emissão fisc
 ## Destaques
 
 - **Emissão que pode ser retomada:** grava os bytes antes de transmitir e consulta a chave após uma queda, evitando duplicidade e rejeição 539.
-- **Validação antes da SEFAZ:** aplica regras das rejeições reais e devolve todas as ocorrências locais juntas em um `ValidationError`.
+- **Validação antes da SEFAZ:** aplica regras das rejeições reais e devolve todas as ocorrências locais juntas em um `ErroDeValidacao`.
 - **A1 e A3:** usa A1 sem binário nativo, JDK ou openssl externo, e integra token PKCS#11 ou A3 em nuvem pelo `sinete-signer`.
 - **Reforma tributária:** calcula IBS/CBS e determina CST e cClassTrib pelos fatos do negócio, com dados oficiais versionados por mês.
 - **PDF e HTML locais:** gera os documentos auxiliares sem browser headless, fonte embutida ou dependência nativa.
@@ -158,7 +158,7 @@ Instale `sinete` para acessar as bibliotecas por subpaths como `sinete/nfe`, `si
 | [`sinete`](packages/sinete/README.md) | Guarda-chuva: um subpath por pacote, versões fixadas e o bin `sinete` |
 | [`@sinete/core`](packages/core/README.md) | Erros tipados, desfechos da SEFAZ, relógio, logger, ambiente, UFs; em `@sinete/core/xml`, parser, C14N e XMLDSig |
 | [`@sinete/schemas`](packages/schemas/README.md) | Código gerado dos XSD por documento e PL |
-| [`@sinete/cert`](packages/cert/README.md) | PFX, cadeia ICP-Brasil e `Signer` A1 |
+| [`@sinete/cert`](packages/cert/README.md) | PFX, cadeia ICP-Brasil e `Assinador` A1 |
 | [`@sinete/transport`](packages/transport/README.md) | SOAP e REST com mTLS, endpoints como dados |
 | [`@sinete/validators`](packages/validators/README.md) | CPF, CNPJ alfanumérico, IE e chave de acesso |
 | [`@sinete/rejeicoes`](packages/rejeicoes/README.md) | Catálogo de rejeições com causa e correção |

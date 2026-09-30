@@ -2,7 +2,7 @@
 
 O helper `sinete-signer`, processo auxiliar de assinatura e conexão TLS, fala outra versão do protocolo ou respondeu fora do contrato esperado pelo cliente `@sinete/transport/signer`. O erro também ocorre diante de método desconhecido, parâmetro inválido ou identidade não aberta ou repetida. Uma identidade associa um certificado à forma de usar sua chave naquela conexão.
 
-O erro é uma instância de `SignerError` (`@sinete/transport`), que estende `SineteError` e tem `code: 'signer_protocolo'`. Decida pelo `code`, com `isSineteError(e, 'signer_protocolo')` de `@sinete/core`, nunca pela mensagem. Quando o cliente converte um erro recebido do helper, `details.code` traz o código original, como `unknown_method`, `unknown_identity`, `identity_exists`, `bad_request`, `protocol_version` ou `forbidden`. A verificação local de identidade remota repetida também preenche `details.code` com `identity_exists`. Outras verificações locais, como a de versão do protocolo, podem lançar esse erro sem `details.code`.
+O erro é uma instância de `SignerError` (`@sinete/transport`), que estende `ErroSinete` e tem `code: 'signer_protocolo'`. Decida pelo `code`, com `ehErroSinete(e, 'signer_protocolo')` de `@sinete/core`, nunca pela mensagem. Quando o cliente converte um erro recebido do helper, `detalhes.code` traz o código original, como `unknown_method`, `unknown_identity`, `identity_exists`, `bad_request`, `protocol_version` ou `forbidden`. A verificação local de identidade remota repetida também preenche `detalhes.code` com `identity_exists`. Outras verificações locais, como a de versão do protocolo, podem lançar esse erro sem `detalhes.code`.
 
 ## Causa
 

@@ -1,6 +1,6 @@
 # `servico_nao_oferecido`: o autorizador não oferece esse serviço
 
-O serviço pedido não está disponível para aquela UF (estado ou Distrito Federal), aquele autorizador ou aquele ambiente, segundo os dados oficiais incorporados ao sinete. O autorizador é o sistema fiscal responsável pelo atendimento da solicitação. O erro é uma instância de `ServicoNaoOferecidoError` (`@sinete/core`), que estende `SineteError` com `code: 'servico_nao_oferecido'`. Decida pelo `code`, usando `isSineteError(e, 'servico_nao_oferecido')`, nunca pela mensagem.
+O serviço pedido não está disponível para aquela UF (estado ou Distrito Federal), aquele autorizador ou aquele ambiente, segundo os dados oficiais incorporados ao sinete. O autorizador é o sistema fiscal responsável pelo atendimento da solicitação. O erro é uma instância de `ErroServicoNaoOferecido` (`@sinete/core`), que estende `ErroSinete` com `code: 'servico_nao_oferecido'`. Decida pelo `code`, usando `ehErroSinete(e, 'servico_nao_oferecido')`, nunca pela mensagem.
 
 ## Causa
 
@@ -10,11 +10,11 @@ Também ocorre ao pedir inutilização de numeração de NF-e (Nota Fiscal Eletr
 
 A consulta de cadastro da NF-e de uma UF atendida pela SVRS (Sefaz Virtual do Rio Grande do Sul) segue para a SVRS quando se usa o autorizador normal da UF, mesmo que ela não apareça na relação específica de consulta de cadastro. Se a SVRS não atender aquela UF, a rejeição vem na resposta do serviço.
 
-`details` traz `autorizador`, `servico`, `ambiente`, `uf` quando informada e `source`, que identifica a fonte oficial consultada. Para a inutilização na SVC, `source` indica a nota técnica que estabelece a restrição.
+`detalhes` traz `autorizador`, `servico`, `ambiente`, `uf` quando informada e `source`, que identifica a fonte oficial consultada. Para a inutilização na SVC, `source` indica a nota técnica que estabelece a restrição.
 
 ## Correção
 
-Confira em `details` qual serviço, autorizador e ambiente foram selecionados. Alterar os dados do documento não disponibiliza um serviço ausente. Se a operação puder continuar sem ele, trate a indisponibilidade como uma situação esperada. Quando o serviço faltante for uma consulta, peça os dados a quem preenche em vez de mostrar erro.
+Confira em `detalhes` qual serviço, autorizador e ambiente foram selecionados. Alterar os dados do documento não disponibiliza um serviço ausente. Se a operação puder continuar sem ele, trate a indisponibilidade como uma situação esperada. Quando o serviço faltante for uma consulta, peça os dados a quem preenche em vez de mostrar erro.
 
 Se o pedido for de inutilização na SVC, use o autorizador normal da UF. Se um autorizador tiver sido escolhido explicitamente, confira se ele é adequado ao serviço pedido.
 

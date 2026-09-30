@@ -10,25 +10,25 @@ Entrada do domínio (`DpsInput`), montagem validada no XSD vigente (`buildDps`, 
 
 ### Funções
 
-- `buildDps`: Monta e valida a DPS. Nunca lança por dado de entrada: tudo o que impede a DPS vira `ValidationIssue` (formato, documento com DV errado, competência depois da emissão, schema). Lança `ConfigError` só por opção inválida. `buildDps(input: DpsInput, options: BuildDpsOptions): BuildDpsResult`
+- `buildDps`: Monta e valida a DPS. Nunca lança por dado de entrada: tudo o que impede a DPS vira `Ocorrencia` (formato, documento com DV errado, competência depois da emissão, schema). Lança `ErroDeConfiguracao` só por opção inválida. `buildDps(input: DpsInput, options: BuildDpsOptions): BuildDpsResult`
 - `buildPedidoAnaliseFiscal`: Pedido de análise fiscal para cancelamento (e101103). `buildPedidoAnaliseFiscal(p: AnaliseFiscalPedido, options: PedidoEventoOptions): PedidoEventoResult`
 - `buildPedidoCancelamento`: Pedido de cancelamento da NFS-e (e101101). `buildPedidoCancelamento(p: CancelamentoPedido, options: PedidoEventoOptions): PedidoEventoResult`
 - `cacheEmMemoria`: Cache em memória com limite de entradas (sai a mais antiga). `cacheEmMemoria(maxEntradas?: number): CacheParametros`
 - `codigoServicoParametrizacao`: Código de serviço da parametrização municipal do ADN: `01.01.01.000`, o `cTribNac` com pontos seguido do código de tributação municipal (`cTribMun`, 3 dígitos, `000` sem desdobro municipal). `codigoServicoParametrizacao(cTribNac: string, cTribMun?: string): string`
 - `createNfseClient`: Cria o cliente. Nada é enviado até a primeira operação. `createNfseClient(options: NfseClientOptions): NfseClient`
 - `createParametrosMunicipais`: Cliente da parametrização municipal. `createNfseClient` já cria um em `client.parametros`. `createParametrosMunicipais(o: ParametrosOptions): ParametrosMunicipais`
-- `cTribNacDps`: `cTribNac` na forma da DPS (6 dígitos), a partir de `010101` ou `01.01.01`. Lança `ConfigError` fora disso. `cTribNacDps(codigo: string): string`
-- `formatValor`: Converte para texto com `casas` casas decimais. Devolve `undefined` e acrescenta a ocorrência em `issues` quando o valor não tem representação exata. `formatValor(valor: Valor, path: string, issues: ValidationIssue[], casas?: number): string | undefined`
-- `gunzipBase64`: Gzip em base64 para o texto UTF-8 de dentro. Lança `ProtocolError` se não for base64 de um gzip. `gunzipBase64(b64: string, campo?: string): Promise<string>`
+- `cTribNacDps`: `cTribNac` na forma da DPS (6 dígitos), a partir de `010101` ou `01.01.01`. Lança `ErroDeConfiguracao` fora disso. `cTribNacDps(codigo: string): string`
+- `formatValor`: Converte para texto com `casas` casas decimais. Devolve `undefined` e acrescenta a ocorrência em `issues` quando o valor não tem representação exata. `formatValor(valor: Valor, path: string, issues: Ocorrencia[], casas?: number): string | undefined`
+- `gunzipBase64`: Gzip em base64 para o texto UTF-8 de dentro. Lança `ErroRespostaInvalida` se não for base64 de um gzip. `gunzipBase64(b64: string, campo?: string): Promise<string>`
 - `gzipBase64`: Texto (UTF-8) para gzip em base64. `gzipBase64(text: string): Promise<string>`
 - `idDps`: Id da DPS (`DPS` + 42 posições). `idDps(p: IdDpsPartes): string`
 - `idPedidoEvento`: Id do pedido de registro de evento: `PRE` + chave + código do evento. `idPedidoEvento(chave: string, tpEvento: string): string`
 - `inscricaoId`: Tipo de inscrição (1 CPF, 2 CNPJ) e inscrição com 14 posições, como entram no Id da DPS e na chave. `inscricaoId(doc: InscricaoFederal): { readonly tpInsc: '1' | '2'; readonly inscricao: string; }`
-- `leiauteVigente`: O pacote de esquemas vigente no ambiente e no dia do relógio (fuso de Brasília). `leiauteVigente(ambiente: Ambiente, relogio: Clock): { readonly vigencia: VigenciaEntry; readonly leiaute: LeiauteNfse; }`
-- `parseChaveNfse`: Lê a chave de 50 posições. Lança `ConfigError` se a estrutura não bate; o DV não é conferido (ver o topo). `parseChaveNfse(chave: string): ChaveNfse`
+- `leiauteVigente`: O pacote de esquemas vigente no ambiente e no dia do relógio (fuso de Brasília). `leiauteVigente(ambiente: Ambiente, relogio: Relogio): { readonly vigencia: VigenciaEntry; readonly leiaute: LeiauteNfse; }`
+- `parseChaveNfse`: Lê a chave de 50 posições. Lança `ErroDeConfiguracao` se a estrutura não bate; o DV não é conferido (ver o topo). `parseChaveNfse(chave: string): ChaveNfse`
 - `resolverEnvioSemResposta`: Depois de um envio sem resposta (timeout, conexão caída), descobre se a DPS gerou NFS-e: consulta pelo Id da DPS e, achando a chave, lê a NFS-e. `resolverEnvioSemResposta(client: NfseClient, dpsAssinada: string): Promise<ResolucaoEnvio>`
-- `signDps`: Assina a DPS (enveloped, `Reference` para o `infDPS`). A string devolvida é a que vai para a Sefin e para o banco. `signDps(dps: DpsMontada, signer: Signer): Promise<string>`
-- `signPedidoEvento`: Assina o pedido (Reference para o `infPedReg`). A string devolvida é a que vai para a Sefin. `signPedidoEvento(pedido: PedidoEventoMontado, signer: Signer): Promise<string>`
+- `signDps`: Assina a DPS (enveloped, `Reference` para o `infDPS`). A string devolvida é a que vai para a Sefin e para o banco. `signDps(dps: DpsMontada, signer: Assinador): Promise<string>`
+- `signPedidoEvento`: Assina o pedido (Reference para o `infPedReg`). A string devolvida é a que vai para a Sefin. `signPedidoEvento(pedido: PedidoEventoMontado, signer: Assinador): Promise<string>`
 
 ### Interfaces
 
@@ -54,7 +54,7 @@ Entrada do domínio (`DpsInput`), montagem validada no XSD vigente (`buildDps`, 
 - `NfseConsultada`: NFS-e lida numa consulta por chave. Membros: `chaveAcesso`, `xml`, `nfse`.
 - `NfseGerada`: NFS-e gerada pela Sefin. `xml` é a string recebida, nunca reserializada; `nfse` é a leitura tolerante dela. Membros: `chaveAcesso`, `idDps`, `xml`, `nfse`, `nNFSe`, `dhProc`, `alertas`, `dataHoraProcessamento`, `versaoAplicativo`.
 - `NfseMensagem`: Uma mensagem de erro ou alerta da Sefin, com a entrada do catálogo quando o código é conhecido. Membros: `codigo`, `descricao`, `complemento`, `catalogo`.
-- `NfseRejeicao` (estende `Rejected`): Rejeição da NFS-e: o `cStat` é o código do primeiro erro (`E0312`), o `xMotivo` a descrição dele, e `erros` traz a lista inteira na ordem da resposta. Membros: `erros`, `httpStatus`.
+- `NfseRejeicao` (estende `Recusado`): Rejeição da NFS-e: o `cStat` é o código do primeiro erro (`E0312`), o `xMotivo` a descrição dele, e `erros` traz a lista inteira na ordem da resposta. Membros: `erros`, `httpStatus`.
 - `OpcoesEnvio`: Membros: `signal`.
 - `ParametrosMunicipais`: Membros: `convenio()`, `aliquota()`, `historicoAliquotas()`, `regimesEspeciais()`, `retencoes()`, `beneficio()`, `limparCache()`.
 - `ParametrosOptions`: Membros: `transport`, `endpoint`, `clock`, `cache`, `ttlMs`, `ttlNaoEncontradoMs`, `timeoutMs`, `logger`.
@@ -68,11 +68,11 @@ Entrada do domínio (`DpsInput`), montagem validada no XSD vigente (`buildDps`, 
 
 ### Tipos
 
-- `BuildDpsResult`: `type BuildDpsResult = { readonly ok: true; readonly value: DpsMontada; } | { readonly ok: false; readonly issues: readonly ValidationIssue[]; }`
+- `BuildDpsResult`: `type BuildDpsResult = { readonly ok: true; readonly value: DpsMontada; } | { readonly ok: false; readonly issues: readonly Ocorrencia[]; }`
 - `InscricaoFederal`: Inscrição do emitente da DPS: CNPJ (14, numérico ou alfanumérico) ou CPF (11). `type InscricaoFederal = { readonly CNPJ: string; readonly CPF?: never; } | { readonly CPF: string; readonly CNPJ?: never; }`
 - `LocalPrestacao`: Local da prestação: município (IBGE, `0000000` para águas marítimas) ou país (ISO, prestação no exterior). `type LocalPrestacao = { readonly cLocPrestacao: string; readonly cPaisPrestacao?: never; } | { readonly cPaisPrestacao: string; readonly cLocPrestacao?: never; }`
-- `NfseOutcome`: Desfecho de uma operação da NFS-e: gerada ou registrada, ou rejeitada. Não há pendente nem denegação na NFS-e. `type NfseOutcome<T> = Authorized<T> | NfseRejeicao`
-- `PedidoEventoResult`: `type PedidoEventoResult = { readonly ok: true; readonly value: PedidoEventoMontado; } | { readonly ok: false; readonly issues: readonly ValidationIssue[]; }`
+- `NfseOutcome`: Desfecho de uma operação da NFS-e: gerada ou registrada, ou rejeitada. Não há pendente nem denegação na NFS-e. `type NfseOutcome<T> = Autorizado<T> | NfseRejeicao`
+- `PedidoEventoResult`: `type PedidoEventoResult = { readonly ok: true; readonly value: PedidoEventoMontado; } | { readonly ok: false; readonly issues: readonly Ocorrencia[]; }`
 - `Pessoa`: Tomador ou intermediário. `type Pessoa = TCInfoPessoa`
 - `Prestador`: Prestador: CNPJ, CPF, NIF ou motivo de não ter NIF, mais o regime de tributação (`regTrib`). `type Prestador = TCInfoPrestador`
 - `ResolucaoEnvio`: Desfecho de `resolverEnvioSemResposta`, com a mesma forma do resolvedor da NF-e e do MDF-e.

@@ -1,6 +1,6 @@
 # `transmissao_ja_gravada`: já há bytes gravados para o documento
 
-O `TransmissaoStore`, responsável por persistir o XML assinado e controlar a trava de transmissão, recusou uma gravação porque já existem bytes assinados para o mesmo `tipo` de documento e a mesma `ref`, o identificador do documento no sistema do integrador. O erro é uma instância de `TransmissaoJaGravadaError` (`@sinete/emissor`), que estende `SineteError` e tem `code: 'transmissao_ja_gravada'`. Identifique-o pelo `code`, usando `isSineteError(e, 'transmissao_ja_gravada')` de `@sinete/core`, nunca pela mensagem.
+O `TransmissaoStore`, responsável por persistir o XML assinado e controlar a trava de transmissão, recusou uma gravação porque já existem bytes assinados para o mesmo `tipo` de documento e a mesma `ref`, o identificador do documento no sistema do integrador. O erro é uma instância de `TransmissaoJaGravadaError` (`@sinete/emissor`), que estende `ErroSinete` e tem `code: 'transmissao_ja_gravada'`. Identifique-o pelo `code`, usando `ehErroSinete(e, 'transmissao_ja_gravada')` de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 

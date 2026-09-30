@@ -1,6 +1,6 @@
 # `imagem_invalida`: o logotipo não é PNG nem JPEG legível
 
-O logotipo passado em `logo` não pôde ser lido. O erro lançado é um `DanfeError` (`@sinete/da`), que herda de `SineteError` e tem `code: 'imagem_invalida'`. Identifique o erro pelo `code`, usando `isSineteError(e, 'imagem_invalida')` de `@sinete/core`, nunca pelo texto da mensagem.
+O logotipo passado em `logo` não pôde ser lido. O erro lançado é um `DanfeError` (`@sinete/da`), que herda de `ErroSinete` e tem `code: 'imagem_invalida'`. Identifique o erro pelo `code`, usando `ehErroSinete(e, 'imagem_invalida')` de `@sinete/core`, nunca pelo texto da mensagem.
 
 ## Causa
 

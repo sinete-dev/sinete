@@ -6,31 +6,31 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 
 `@sinete/rejeicoes`: catálogo de rejeições e denegações da SEFAZ para NF-e e NFC-e.
 
-O catálogo vive em `data/rejeicoes.json`, gerado por `tools/rejeicoes-data` a partir dos PDFs oficiais (MOC 7.0 Anexo I e NT 2025.002, mais códigos avulsos das NT 2025.001 e 2024.003) com sha256 conferido, mais a curadoria manual de causa provável e correção. Este módulo só consulta a tabela e preenche o `RejectionHint` do `SefazOutcome` do `@sinete/core`.
+O catálogo vive em `data/rejeicoes.json`, gerado por `tools/rejeicoes-data` a partir dos PDFs oficiais (MOC 7.0 Anexo I e NT 2025.002, mais códigos avulsos das NT 2025.001 e 2024.003) com sha256 conferido, mais a curadoria manual de causa provável e correção. Este módulo só consulta a tabela e preenche o `DicaRejeicao` do `ResultadoSefaz` do `@sinete/core`.
 
 ### Funções
 
-- `enrichOutcome`: Como `enrichRejected`, aceitando qualquer desfecho; só o `rejected` muda. `enrichOutcome<T, D = T>(outcome: SefazOutcome<T, D>): SefazOutcome<T, D>`
-- `enrichRejected`: Preenche o `hint` de um desfecho `rejected` a partir do catálogo. Não sobrescreve um `hint` já presente e devolve o mesmo objeto quando não há o que acrescentar. `enrichRejected(outcome: Rejected): Rejected`
-- `rejectionHint`: `RejectionHint` do core para o código, quando há curadoria de causa e correção. `rejectionHint(cStat: string): RejectionHint | undefined`
-- `rejeicaoByCode`: Entrada do catálogo para o `cStat` (`'204'`, `'1020'`), ou `undefined` se o código não está catalogado. `rejeicaoByCode(cStat: string): Rejeicao | undefined`
+- `completarRecusado`: Preenche a `dica` de um desfecho `recusado` a partir do catálogo. Não sobrescreve uma `dica` já presente e devolve o mesmo objeto quando não há o que acrescentar. `completarRecusado(desfecho: Recusado): Recusado`
+- `completarResultado`: Como `completarRecusado`, aceitando qualquer desfecho; só o `recusado` muda. `completarResultado<T, D = T>(desfecho: ResultadoSefaz<T, D>): ResultadoSefaz<T, D>`
+- `dicaRejeicao`: `DicaRejeicao` do core para o código, quando há curadoria de causa e correção. `dicaRejeicao(cStat: string): DicaRejeicao | undefined`
+- `rejeicaoPorCodigo`: Entrada do catálogo para o `cStat` (`'204'`, `'1020'`), ou `undefined` se o código não está catalogado. `rejeicaoPorCodigo(cStat: string): Rejeicao | undefined`
 
 ### Interfaces
 
-- `Rejeicao`: Membros: `code`, `effect`, `message`, `messages`, `modelos`, `source`, `rules`, `category`, `causaProvavel`, `comoCorrigir`, `referencia`.
-- `RejeicaoRule`: Regra de validação em que o código aparece. Membros: `doc`, `id`.
-- `RejeicaoSource` (estende `DataSource`): Membros: `id`, `versao`, `citation`, `sha256`.
-- `RejeicoesTableInfo`: Membros: `schemaVersion`, `version`, `sources`.
+- `DescricaoTabelaRejeicoes`: Membros: `versaoDoFormato`, `versao`, `fontes`.
+- `FonteRejeicao` (estende `FonteDeDados`): Membros: `id`, `versao`, `citacao`, `sha256`.
+- `RegraRejeicao`: Regra de validação em que o código aparece. Membros: `documento`, `id`.
+- `Rejeicao`: Membros: `codigo`, `efeito`, `mensagem`, `mensagens`, `modelos`, `fonte`, `regras`, `categoria`, `causaProvavel`, `comoCorrigir`, `referencia`.
 
 ### Tipos
 
-- `RejeicaoCategory`: Categoria do problema, para agrupar tratamento e mensagens de interface. `type RejeicaoCategory = 'schema' | 'assinatura' | 'certificado' | 'cadastro' | 'regra-negocio' | 'duplicidade' | 'reforma'`
+- `CategoriaRejeicao`: Categoria do problema, para agrupar tratamento e mensagens de interface. `type CategoriaRejeicao = 'schema' | 'assinatura' | 'certificado' | 'cadastro' | 'regra-negocio' | 'duplicidade' | 'reforma'`
 
 ### Constantes
 
-- `REJEICAO_CATEGORIES`: `REJEICAO_CATEGORIES: readonly RejeicaoCategory[]`
+- `CATEGORIAS_REJEICAO`: `CATEGORIAS_REJEICAO: readonly CategoriaRejeicao[]`
 - `REJEICOES`: Todas as entradas, em ordem numérica de código. `REJEICOES: readonly Rejeicao[]`
-- `REJEICOES_TABLE`: Metadados do catálogo: versão (data de coleta) e documentos de origem com sha256. `REJEICOES_TABLE: RejeicoesTableInfo`
+- `TABELA_REJEICOES`: Metadados do catálogo: versão (data de coleta) e documentos de origem com sha256. `TABELA_REJEICOES: DescricaoTabelaRejeicoes`
 
 ## `@sinete/rejeicoes/mdfe`
 
@@ -40,37 +40,37 @@ Os códigos do MDF-e colidem com os da NF-e com outro significado (611 e 686 sã
 
 ### Funções
 
-- `enrichOutcomeMdfe`: Como `enrichRejectedMdfe`, aceitando qualquer desfecho; só o `rejected` muda. `enrichOutcomeMdfe<T, D = T>(outcome: SefazOutcome<T, D>): SefazOutcome<T, D>`
-- `enrichRejectedMdfe`: Preenche o `hint` de um desfecho `rejected` do MDF-e. Não sobrescreve um `hint` já presente. `enrichRejectedMdfe(outcome: Rejected): Rejected`
-- `rejectionHintMdfe`: `RejectionHint` do core para o código do MDF-e, quando há curadoria de causa e correção. `rejectionHintMdfe(cStat: string): RejectionHint | undefined`
-- `rejeicaoMdfeByCode`: Entrada do catálogo do MDF-e para o `cStat`, ou `undefined` se o código não está catalogado. `rejeicaoMdfeByCode(cStat: string): RejeicaoMdfe | undefined`
+- `completarRecusadoMdfe`: Preenche a `dica` de um desfecho `recusado` do MDF-e. Não sobrescreve uma `dica` já presente. `completarRecusadoMdfe(desfecho: Recusado): Recusado`
+- `completarResultadoMdfe`: Como `completarRecusadoMdfe`, aceitando qualquer desfecho; só o `recusado` muda. `completarResultadoMdfe<T, D = T>(desfecho: ResultadoSefaz<T, D>): ResultadoSefaz<T, D>`
+- `dicaRejeicaoMdfe`: `DicaRejeicao` do core para o código do MDF-e, quando há curadoria de causa e correção. `dicaRejeicaoMdfe(cStat: string): DicaRejeicao | undefined`
+- `rejeicaoMdfePorCodigo`: Entrada do catálogo do MDF-e para o `cStat`, ou `undefined` se o código não está catalogado. `rejeicaoMdfePorCodigo(cStat: string): RejeicaoMdfe | undefined`
 
 ### Interfaces
 
-- `RejeicaoMdfe`: Membros: `code`, `effect`, `message`, `messages`, `modelos`, `source`, `rules`, `category`, `causaProvavel`, `comoCorrigir`, `referencia`.
+- `RejeicaoMdfe`: Membros: `codigo`, `efeito`, `mensagem`, `mensagens`, `modelos`, `fonte`, `regras`, `categoria`, `causaProvavel`, `comoCorrigir`, `referencia`.
 
 ### Constantes
 
 - `REJEICOES_MDFE`: Todas as entradas do MDF-e, em ordem numérica de código. `REJEICOES_MDFE: readonly RejeicaoMdfe[]`
-- `REJEICOES_MDFE_TABLE`: Metadados do catálogo do MDF-e: versão (data de coleta) e documentos de origem com sha256. `REJEICOES_MDFE_TABLE: RejeicoesTableInfo`
+- `TABELA_REJEICOES_MDFE`: Metadados do catálogo do MDF-e: versão (data de coleta) e documentos de origem com sha256. `TABELA_REJEICOES_MDFE: DescricaoTabelaRejeicoes`
 
 ## `@sinete/rejeicoes/nfse`
 
 `@sinete/rejeicoes/nfse`: catálogo dos códigos de erro da NFS-e Nacional (`E0312`, `E1229`...).
 
-O catálogo vive em `data/nfse-erros.json`, gerado por `tools/rejeicoes-data/nfse.ts` a partir das planilhas oficiais do Anexo I (DPS e NFS-e) e do Anexo II (pedido de registro de evento e evento) do leiaute do Sistema Nacional NFS-e, com sha256 conferido, mais a curadoria manual de causa provável e correção. Na NFS-e o código de erro faz o papel do `cStat`: a Sefin responde com uma lista de erros (`Codigo`, `Descricao`), e o desfecho `rejected` do core traz o código no `cStat`.
+O catálogo vive em `data/nfse-erros.json`, gerado por `tools/rejeicoes-data/nfse.ts` a partir das planilhas oficiais do Anexo I (DPS e NFS-e) e do Anexo II (pedido de registro de evento e evento) do leiaute do Sistema Nacional NFS-e, com sha256 conferido, mais a curadoria manual de causa provável e correção. Na NFS-e o código de erro faz o papel do `cStat`: a Sefin responde com uma lista de erros (`Codigo`, `Descricao`), e o desfecho `recusado` do core traz o código no `cStat`.
 
 ### Funções
 
-- `enrichNfseRejected`: Preenche o `hint` de um desfecho `rejected` da NFS-e a partir do catálogo. Não sobrescreve um `hint` já presente e devolve o mesmo objeto quando não há o que acrescentar. `enrichNfseRejected(outcome: Rejected): Rejected`
-- `nfseErroByCode`: Entrada do catálogo para o código (`'E0312'`), ou `undefined` se não está catalogado. `nfseErroByCode(code: string): NfseErro | undefined`
-- `nfseRejectionHint`: `RejectionHint` do core para o código, quando há curadoria de causa e correção. `nfseRejectionHint(code: string): RejectionHint | undefined`
+- `completarRecusadoNfse`: Preenche a `dica` de um desfecho `recusado` da NFS-e a partir do catálogo. Não sobrescreve uma `dica` já presente e devolve o mesmo objeto quando não há o que acrescentar. `completarRecusadoNfse(desfecho: Recusado): Recusado`
+- `dicaRejeicaoNfse`: `DicaRejeicao` do core para o código, quando há curadoria de causa e correção. `dicaRejeicaoNfse(codigo: string): DicaRejeicao | undefined`
+- `nfseErroPorCodigo`: Entrada do catálogo para o código (`'E0312'`), ou `undefined` se não está catalogado. `nfseErroPorCodigo(codigo: string): NfseErro | undefined`
 
 ### Interfaces
 
-- `NfseErro`: Membros: `code`, `mensagem`, `mensagens`, `nivel`, `regras`, `categoria`, `fonte`, `causaProvavel`, `comoCorrigir`, `referencia`.
-- `NfseErroRegra`: Regra de negócio da planilha em que o código aparece. Membros: `doc`, `aba`, `linha`, `caminho`, `nivel`, `regra`.
-- `NfseErrosTableInfo`: Membros: `schemaVersion`, `version`, `sources`.
+- `DescricaoTabelaErrosNfse`: Membros: `versaoDoFormato`, `versao`, `fontes`.
+- `NfseErro`: Membros: `codigo`, `mensagem`, `mensagens`, `nivel`, `regras`, `categoria`, `fonte`, `causaProvavel`, `comoCorrigir`, `referencia`.
+- `NfseErroRegra`: Regra de negócio da planilha em que o código aparece. Membros: `documento`, `aba`, `linha`, `caminho`, `nivel`, `regra`.
 
 ### Tipos
 
@@ -80,4 +80,4 @@ O catálogo vive em `data/nfse-erros.json`, gerado por `tools/rejeicoes-data/nfs
 
 - `NFSE_ERRO_CATEGORIAS`: `NFSE_ERRO_CATEGORIAS: readonly NfseErroCategoria[]`
 - `NFSE_ERROS`: Todas as entradas, em ordem de código. `NFSE_ERROS: readonly NfseErro[]`
-- `NFSE_ERROS_TABLE`: Metadados do catálogo: versão (data de coleta) e planilhas de origem com sha256. `NFSE_ERROS_TABLE: NfseErrosTableInfo`
+- `TABELA_ERROS_NFSE`: Metadados do catálogo: versão (data de coleta) e planilhas de origem com sha256. `TABELA_ERROS_NFSE: DescricaoTabelaErrosNfse`

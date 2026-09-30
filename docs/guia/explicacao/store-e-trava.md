@@ -1,6 +1,6 @@
 # Por que o emissor exige um `store` com trava
 
-O emissor do sinete (`@sinete/emissor`) exige um `TransmissaoStore`: a opção `store` é obrigatória, e a criação do emissor lança `ConfigError` sem ela. Esta página explica por quê, e por que o store é uma interface que o integrador implementa no próprio banco em vez de uma tabela que o sinete cria. As decisões estão no registro de decisão de arquitetura ADR 0010 do sinete.
+O emissor do sinete (`@sinete/emissor`) exige um `TransmissaoStore`: a opção `store` é obrigatória, e a criação do emissor lança `ErroDeConfiguracao` sem ela. Esta página explica por quê, e por que o store é uma interface que o integrador implementa no próprio banco em vez de uma tabela que o sinete cria. As decisões estão no registro de decisão de arquitetura ADR 0010 do sinete.
 
 ## Gravar não basta: dois processos
 

@@ -1,6 +1,6 @@
 # `ibscbs_dados_invalidos`: o bundle de dados do IBS/CBS não confere
 
-O bundle, conjunto de tabelas e manifesto do IBS (Imposto sobre Bens e Serviços) e da CBS (Contribuição sobre Bens e Serviços), não passou na validação de estrutura ou integridade. O erro é um `IbsCbsDataError` (`@sinete/ibs-cbs-dados`), que herda de `SineteError` e tem `code: 'ibscbs_dados_invalidos'`. Identifique-o pelo `code`, usando `isSineteError(e, 'ibscbs_dados_invalidos')` de `sinete/core`, nunca pela mensagem.
+O bundle, conjunto de tabelas e manifesto do IBS (Imposto sobre Bens e Serviços) e da CBS (Contribuição sobre Bens e Serviços), não passou na validação de estrutura ou integridade. O erro é um `IbsCbsDataError` (`@sinete/ibs-cbs-dados`), que herda de `ErroSinete` e tem `code: 'ibscbs_dados_invalidos'`. Identifique-o pelo `code`, usando `ehErroSinete(e, 'ibscbs_dados_invalidos')` de `sinete/core`, nunca pela mensagem.
 
 ## Causa
 
@@ -8,7 +8,7 @@ Bundle sem `manifest` ou `tables`, tabela obrigatória ausente ou que não seja 
 
 Em `loadDataset`, o erro também ocorre quando um vínculo aponta para um registro inexistente de `cClassTrib`, o código de classificação tributária.
 
-Uma data inválida passada a `dataset.at(data)`, seja pelo formato diferente de `AAAA-MM-DD` ou por não existir no calendário, gera `ConfigError` com `code: 'config_invalida'`.
+Uma data inválida passada a `dataset.at(data)`, seja pelo formato diferente de `AAAA-MM-DD` ou por não existir no calendário, gera `ErroDeConfiguracao` com `code: 'config_invalida'`.
 
 ## Correção
 

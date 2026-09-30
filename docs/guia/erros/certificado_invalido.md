@@ -1,6 +1,6 @@
 # `certificado_invalido`: o certificado ou a chave não é um DER válido
 
-O conteúdo não pôde ser lido como DER, a codificação binária usada para certificados X.509 e chaves privadas PKCS#8, ou contém uma estrutura de certificado incompleta. Base64 inválido também pode gerar esse erro. Ele é lançado por `CertError` (`@sinete/cert`), que estende `SineteError` com `code: 'certificado_invalido'`. Identifique o erro pelo `code`, usando `isSineteError(e, 'certificado_invalido')` de `@sinete/core`, nunca pela mensagem.
+O conteúdo não pôde ser lido como DER, a codificação binária usada para certificados X.509 e chaves privadas PKCS#8, ou contém uma estrutura de certificado incompleta. Base64 inválido também pode gerar esse erro. Ele é lançado por `CertError` (`@sinete/cert`), que estende `ErroSinete` com `code: 'certificado_invalido'`. Identifique o erro pelo `code`, usando `ehErroSinete(e, 'certificado_invalido')` de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 

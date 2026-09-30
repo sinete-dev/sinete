@@ -19,7 +19,7 @@ O layout é uma função pura do XML para um `Doc` (páginas de operações em m
 
 ### Classes
 
-- `DanfeError` (estende `SineteError<DanfeErrorCode>`)
+- `DanfeError` (estende `ErroSinete<DanfeErrorCode>`)
 
 ### Interfaces
 
@@ -57,7 +57,7 @@ O layout é uma função pura do XML para um `Doc` (páginas de operações em m
 
 ### Classes
 
-- `DanfeError` (estende `SineteError<DanfeErrorCode>`)
+- `DanfeError` (estende `ErroSinete<DanfeErrorCode>`)
 
 ### Interfaces
 
@@ -87,7 +87,7 @@ O layout é uma função pura do XML para um `Doc` (páginas de operações em m
 
 ### Classes
 
-- `DanfeError` (estende `SineteError<DanfeErrorCode>`)
+- `DanfeError` (estende `ErroSinete<DanfeErrorCode>`)
 
 ### Interfaces
 
@@ -114,7 +114,7 @@ O layout é uma função pura do XML para um `Doc` (páginas de operações em m
 
 ### Classes
 
-- `DanfeError` (estende `SineteError<DanfeErrorCode>`)
+- `DanfeError` (estende `ErroSinete<DanfeErrorCode>`)
 
 ### Interfaces
 
@@ -140,7 +140,7 @@ O layout é uma função pura do XML para um `Doc` (páginas de operações em m
 
 ### Classes
 
-- `DanfeError` (estende `SineteError<DanfeErrorCode>`)
+- `DanfeError` (estende `ErroSinete<DanfeErrorCode>`)
 
 ### Interfaces
 
@@ -166,7 +166,7 @@ O layout é uma função pura do XML para um `Doc` (páginas de operações em m
 
 ### Classes
 
-- `DanfeError` (estende `SineteError<DanfeErrorCode>`)
+- `DanfeError` (estende `ErroSinete<DanfeErrorCode>`)
 
 ### Interfaces
 

@@ -1,6 +1,6 @@
 # `campo_ausente`: falta um grupo obrigatório para o documento auxiliar
 
-O XML tem a raiz esperada, mas falta um grupo ou campo necessário para gerar o documento auxiliar, a representação do documento fiscal para impressão. O erro é uma instância de `DanfeError` (`@sinete/da`), que estende `SineteError`, com `code: 'campo_ausente'`. Identifique-o pelo `code`, usando `isSineteError(e, 'campo_ausente')` de `@sinete/core`, nunca pela mensagem.
+O XML tem a raiz esperada, mas falta um grupo ou campo necessário para gerar o documento auxiliar, a representação do documento fiscal para impressão. O erro é uma instância de `DanfeError` (`@sinete/da`), que estende `ErroSinete`, com `code: 'campo_ausente'`. Identifique-o pelo `code`, usando `ehErroSinete(e, 'campo_ausente')` de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 

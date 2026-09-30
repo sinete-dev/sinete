@@ -1,6 +1,6 @@
 # `pfx_sem_chave`: o PFX não tem chave privada
 
-O arquivo PKCS#12 (`.pfx` ou `.p12`, formato que pode reunir certificados e chaves privadas) foi aberto, mas não contém nenhuma chave privada. A função `openPfx` de `@sinete/cert` lança um `CertError`, que é um `SineteError` com `code: 'pfx_sem_chave'`. Trate o erro pelo `code`, usando `isSineteError(e, 'pfx_sem_chave')` de `@sinete/core`, nunca pela mensagem.
+O arquivo PKCS#12 (`.pfx` ou `.p12`, formato que pode reunir certificados e chaves privadas) foi aberto, mas não contém nenhuma chave privada. A função `openPfx` de `@sinete/cert` lança um `CertError`, que é um `ErroSinete` com `code: 'pfx_sem_chave'`. Trate o erro pelo `code`, usando `ehErroSinete(e, 'pfx_sem_chave')` de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 

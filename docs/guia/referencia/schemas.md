@@ -10,42 +10,42 @@ Os módulos de cada documento e pacote de liberação ficam em subpaths (`@sinet
 
 ### Funções
 
-- `assertValid`: Como `validateRoot`, mas lança `ValidationError` (`validacao_falhou`) com todas as ocorrências. `assertValid<T>(root: RootElement<T>, xml: string | XmlDocument): void`
+- `assertValid`: Como `validateRoot`, mas lança `ErroDeValidacao` (`validacao_falhou`) com todas as ocorrências. `assertValid<T>(root: RootElement<T>, xml: string | DocumentoXml): void`
 - `checkSimple`: Confere um valor simples contra o tipo. Empilha as ocorrências em `out`. `checkSimple(t: SimpleType, raw: string, path: string, out: SchemaIssue[]): void`
 - `compareCalendar`: Ordem parcial do XSD: com fuso nos dois (ou em nenhum) a comparação é direta; com fuso em só um, o outro vale por qualquer fuso de -14:00 a +14:00, e se o resultado muda nesse intervalo a comparação é indeterminada (`NaN`). `compareCalendar(b: string, x: string, y: string): number`
 - `compareDecimal`: Compara dois decimais lexicais válidos sem passar por `number` (sem perda de precisão). `compareDecimal(a: string, b: string): number`
 - `compileXsdRegex`: Compila um pattern do XSD. `compileXsdRegex(src: string): RegExp`
-- `decode`: Decodifica o elemento `el` como o tipo `ct`. Nunca lança por causa do conteúdo. `decode<T>(ct: ComplexType<T>, el: XmlElement, source?: string): Decoded<T>`
-- `decodeRoot`: Decodifica um documento parseado pela raiz esperada. Raiz com outro nome ou namespace vira ocorrência. `decodeRoot<T>(root: RootElement<T>, doc: XmlDocument): Decoded<T>`
-- `decodeXml`: Parse estrito (`@sinete/core/xml`) seguido do decode tolerante pela raiz. Lança `XmlError` só se o XML for malformado. `decodeXml<T>(root: RootElement<T>, xml: string | XmlDocument): Decoded<T>`
+- `decode`: Decodifica o elemento `el` como o tipo `ct`. Nunca lança por causa do conteúdo. `decode<T>(ct: ComplexType<T>, el: ElementoXml, source?: string): Decoded<T>`
+- `decodeRoot`: Decodifica um documento parseado pela raiz esperada. Raiz com outro nome ou namespace vira ocorrência. `decodeRoot<T>(root: RootElement<T>, doc: DocumentoXml): Decoded<T>`
+- `decodeXml`: Parse estrito (`@sinete/core/xml`) seguido do decode tolerante pela raiz. Lança `ErroXml` só se o XML for malformado. `decodeXml<T>(root: RootElement<T>, xml: string | DocumentoXml): Decoded<T>`
 - `isComplexType`: `isComplexType(t: ComplexType | SimpleType): t is ComplexType`
 - `isElementParticle`: `isElementParticle(p: Particle): p is ElementParticle`
 - `isWildcard`: `isWildcard(p: Particle): p is WildcardParticle`
 - `maxOccurs`: `maxOccurs(p: Particle): number`
 - `minOccurs`: `minOccurs(p: Particle): number`
-- `selecionarPl`: O módulo vigente para a família no instante do relógio e no ambiente dados: a entrada de início mais recente que não passa da data. `selecionarPl(familia: FamiliaSchema, ambiente: Ambiente, relogio: Clock): VigenciaEntry`
+- `selecionarPl`: O módulo vigente para a família no instante do relógio e no ambiente dados: a entrada de início mais recente que não passa da data. `selecionarPl(familia: FamiliaSchema, ambiente: Ambiente, relogio: Relogio): VigenciaEntry`
 - `serialize`: Serializa `value` como o elemento `name` do tipo `ct`. `inheritedNs` é o namespace default já em escopo onde a string vai ser inserida (vazio para documento novo, que então recebe `xmlns`). `serialize<T>(ct: ComplexType<T>, name: string, value: T, inheritedNs?: string): string`
 - `serializeRoot`: Serializa um documento a partir do elemento raiz, com o `xmlns` do namespace dele. `serializeRoot<T>(root: RootElement<T>, value: T): string`
-- `validate`: Valida o elemento `el` como o tipo `ct`. Lista vazia = válido. `validate(ct: ComplexType, el: XmlElement): SchemaIssue[]`
-- `validateRoot`: Valida um documento (string ou já parseado) pela raiz esperada. Lança `XmlError` se o XML for malformado. `validateRoot<T>(root: RootElement<T>, xml: string | XmlDocument): SchemaIssue[]`
+- `validate`: Valida o elemento `el` como o tipo `ct`. Lista vazia = válido. `validate(ct: ComplexType, el: ElementoXml): SchemaIssue[]`
+- `validateRoot`: Valida um documento (string ou já parseado) pela raiz esperada. Lança `ErroXml` se o XML for malformado. `validateRoot<T>(root: RootElement<T>, xml: string | DocumentoXml): SchemaIssue[]`
 - `xsdRegexToJs`: `xsdRegexToJs(src: string): string`
 
 ### Classes
 
-- `SerializeError` (estende `SineteError<'serializacao_invalida'>`): O objeto não tem a forma do tipo gerado (campo simples que não é string, grupo repetido desalinhado). Membros: `path`.
-- `VigenciaError` (estende `SineteError<'pl_sem_vigencia'>`): Nenhum pacote de liberação da tabela de vigências cobre a data e o ambiente pedidos.
-- `XsdRegexError` (estende `UnsupportedError`): Construção de regex do XSD que o tradutor não implementa: `nao_suportado`, com o `pattern` em `details`.
+- `SerializeError` (estende `ErroSinete<'serializacao_invalida'>`): O objeto não tem a forma do tipo gerado (campo simples que não é string, grupo repetido desalinhado). Membros: `path`.
+- `VigenciaError` (estende `ErroSinete<'pl_sem_vigencia'>`): Nenhum pacote de liberação da tabela de vigências cobre a data e o ambiente pedidos.
+- `XsdRegexError` (estende `ErroNaoSuportado`): Construção de regex do XSD que o tradutor não implementa: `nao_suportado`, com o `pattern` em `detalhes`.
 
 ### Interfaces
 
 - `AttributeDecl`: Membros: `a`, `t`, `r`, `f`.
 - `ComplexType`: Tipo complexo. `T` é um parâmetro fantasma que carrega o tipo TS gerado. Membros: `id`, `ns`, `a`, `c`, `tx`, `aa`, `__t`.
 - `Decoded`: Membros: `value`, `issues`.
-- `DecodeIssue` (estende `ValidationIssue`): Membros: `code`.
+- `DecodeIssue` (estende `Ocorrencia`): Membros: `code`.
 - `ElementParticle`: Partícula elemento. Membros: `e`, `t`, `n`, `x`, `ns`, `u`.
 - `GroupParticle`: Grupo `sequence` (`s`) ou `choice` (`c`). Membros: `g`, `i`, `n`, `x`.
 - `RootElement`: Elemento global que pode ser raiz de um documento. Membros: `name`, `ns`, `type`.
-- `SchemaIssue` (estende `ValidationIssue`): Membros: `code`.
+- `SchemaIssue` (estende `Ocorrencia`): Membros: `code`.
 - `SchemaModuleInfo`: Membros: `subpath`, `documento`, `pl`, `fontes`, `patches`.
 - `SchemaPatch`: Correção de um pattern do XSD oficial que nenhum validador conforme aceita (o arquivo oficial não muda). Membros: `tipo`, `de`, `para`, `motivo`.
 - `SchemaSource`: Proveniência de um módulo gerado: de qual pacote oficial saiu cada schema. Membros: `pacote`, `arquivo`, `sha256`, `url`.

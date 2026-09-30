@@ -14,19 +14,19 @@ O dataset vem do SQLite da Calculadora offline da RFB e das tabelas do IT 2025.0
 - `canonicalJson`: `canonicalJson(value: unknown): string`
 - `canonicalTable`: Serialização canônica das tabelas: chaves ordenadas, um registro por linha, newline final. `canonicalTable(records: readonly unknown[]): string`
 - `changeKind`: `changeKind(path: string): ChangeKind`
-- `civilDate`: Data civil de um instante no deslocamento informado. O deslocamento depende do local da operação (UTC-4 no Amazonas e em Rondônia, UTC-5 no Acre), então vem do chamador; o padrão é Brasília. `civilDate(instant: ReturnType<Clock['now']>, offsetMinutes?: number): IsoDate`
+- `civilDate`: Data civil de um instante no deslocamento informado. O deslocamento depende do local da operação (UTC-4 no Amazonas e em Rondônia, UTC-5 no Acre), então vem do chamador; o padrão é Brasília. `civilDate(instant: ReturnType<Relogio['agora']>, offsetMinutes?: number): IsoDate`
 - `contentVersionOf`: Identificador curto do conteúdo (ver `IbsCbsDataset.contentVersion`). `contentVersionOf(manifest: DatasetManifest): string`
 - `diffDatasets`: `diffDatasets(a: DatasetBundle, b: DatasetBundle): DatasetDiff`
 - `formatDiff`: Resumo em Markdown do diff, para o corpo do PR de atualização do pacote. `limit` corta cada lista. `formatDiff(diff: DatasetDiff, limit?: number): string`
 - `inForce`: Vigência fechada nas duas pontas, como nas consultas da Calculadora (`inicio <= data <= fim`). `inForce(validity: Validity, date: IsoDate): boolean`
 - `isIsoDate`: Confere o formato e a existência da data (`2026-02-30` é inválida). `isIsoDate(value: unknown): value is IsoDate`
 - `loadDataset`: `loadDataset(bundle: DatasetBundle): IbsCbsDataset`
-- `requireIsoDate`: Valida e devolve a data, ou lança `ConfigError`. `requireIsoDate(value: unknown, what?: string): IsoDate`
+- `requireIsoDate`: Valida e devolve a data, ou lança `ErroDeConfiguracao`. `requireIsoDate(value: unknown, what?: string): IsoDate`
 - `verifyDataset`: Confere cada tabela contra o sha256 do manifest e o `datasetSha256`. Use antes de `loadDataset` num bundle obtido fora do pacote. Lança `IbsCbsDataError` (`ibscbs_dados_invalidos`) na primeira divergência. `verifyDataset(bundle: DatasetBundle): Promise<void>`
 
 ### Classes
 
-- `IbsCbsDataError` (estende `SineteError<IbsCbsDataErrorCode>`): Pacote de dados que não pode ser usado: formato inesperado, tabela ausente, hash que não confere com o manifest (`ibscbs_dados_invalidos`), ou `dataSchemaVersion` que este código não conhece (`ibscbs_dados_versao_incompativel`).
+- `IbsCbsDataError` (estende `ErroSinete<IbsCbsDataErrorCode>`): Pacote de dados que não pode ser usado: formato inesperado, tabela ausente, hash que não confere com o manifest (`ibscbs_dados_invalidos`), ou `dataSchemaVersion` que este código não conhece (`ibscbs_dados_versao_incompativel`).
 
 ### Interfaces
 

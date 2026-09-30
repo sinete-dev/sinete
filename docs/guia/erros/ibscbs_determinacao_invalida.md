@@ -2,7 +2,7 @@
 
 A determinação da classificação tributária define o CST (Código de Situação Tributária) e o cClassTrib (código de classificação tributária). Esse erro ocorre quando `determine` recebe fatos da operação inválidos, uma resposta inválida ou uma decisão inválida de um resolvedor, componente que escolhe a classificação de um item. Também ocorre quando `toClassified` recebe um item ainda sem decisão.
 
-O erro é uma instância de `DeterminationError` (`@sinete/ibs-cbs`), que estende `SineteError` e tem `code: 'ibscbs_determinacao_invalida'`. O campo `details.reason` informa o motivo, e `details.item`, quando presente, informa o número do item. Identifique o erro pelo `code`, usando `isSineteError(e, 'ibscbs_determinacao_invalida')`, de `@sinete/core`, nunca pela mensagem.
+O erro é uma instância de `DeterminationError` (`@sinete/ibs-cbs`), que estende `ErroSinete` e tem `code: 'ibscbs_determinacao_invalida'`. O campo `detalhes.reason` informa o motivo, e `detalhes.item`, quando presente, informa o número do item. Identifique o erro pelo `code`, usando `ehErroSinete(e, 'ibscbs_determinacao_invalida')`, de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 

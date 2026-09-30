@@ -1,6 +1,6 @@
 # `nome_servidor_divergente`: o certificado do servidor é de outro host
 
-O certificado apresentado pelo servidor não é válido para o host solicitado, isto é, o nome ou endereço IP do servidor na URL. O transporte lança um `TransportError` de `@sinete/transport`, que é um `SineteError` com `code: 'nome_servidor_divergente'`. Trate o erro pelo `code`, usando `isSineteError(e, 'nome_servidor_divergente')` de `@sinete/core`, nunca pelo texto da mensagem.
+O certificado apresentado pelo servidor não é válido para o host solicitado, isto é, o nome ou endereço IP do servidor na URL. O transporte lança um `TransportError` de `@sinete/transport`, que é um `ErroSinete` com `code: 'nome_servidor_divergente'`. Trate o erro pelo `code`, usando `ehErroSinete(e, 'nome_servidor_divergente')` de `@sinete/core`, nunca pelo texto da mensagem.
 
 ## Causa
 

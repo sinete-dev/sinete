@@ -1,6 +1,6 @@
 # `cadeia_servidor_nao_confiavel`: o certificado do servidor não fecha numa raiz confiável
 
-O transporte não conseguiu validar a cadeia de certificados do servidor com o conjunto de confiança configurado. Por padrão, esse conjunto reúne as raízes confiáveis da runtime e os certificados da ICP-Brasil (Infraestrutura de Chaves Públicas Brasileira) incluídos no sinete. A falha gera um `TransportError` (`@sinete/transport`), que herda de `SineteError`, com `code: 'cadeia_servidor_nao_confiavel'`. Trate o erro pelo `code`, usando `isSineteError(e, 'cadeia_servidor_nao_confiavel')` de `@sinete/core`, nunca pela mensagem.
+O transporte não conseguiu validar a cadeia de certificados do servidor com o conjunto de confiança configurado. Por padrão, esse conjunto reúne as raízes confiáveis da runtime e os certificados da ICP-Brasil (Infraestrutura de Chaves Públicas Brasileira) incluídos no sinete. A falha gera um `TransportError` (`@sinete/transport`), que herda de `ErroSinete`, com `code: 'cadeia_servidor_nao_confiavel'`. Trate o erro pelo `code`, usando `ehErroSinete(e, 'cadeia_servidor_nao_confiavel')` de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 

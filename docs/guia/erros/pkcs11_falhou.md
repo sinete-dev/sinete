@@ -1,6 +1,6 @@
 # `pkcs11_falhou`: o token PKCS#11 falhou
 
-O helper `sinete-signer` não conseguiu usar o token pela interface PKCS#11: o módulo do fabricante não carregou, o token não foi encontrado, o PIN (senha de acesso ao token) foi recusado, houve falha ao localizar o certificado ou a chave privada, ou a operação de assinatura (`C_SignInit` ou `C_Sign`) falhou. O erro também ocorre quando o binário é a versão estática, sem suporte a PKCS#11. Ele é representado por `SignerError` (`@sinete/transport`), que estende `SineteError` e tem `code: 'pkcs11_falhou'`. Trate o erro pelo `code`, usando `isSineteError(e, 'pkcs11_falhou')` de `@sinete/core`, nunca pelo texto da mensagem.
+O helper `sinete-signer` não conseguiu usar o token pela interface PKCS#11: o módulo do fabricante não carregou, o token não foi encontrado, o PIN (senha de acesso ao token) foi recusado, houve falha ao localizar o certificado ou a chave privada, ou a operação de assinatura (`C_SignInit` ou `C_Sign`) falhou. O erro também ocorre quando o binário é a versão estática, sem suporte a PKCS#11. Ele é representado por `SignerError` (`@sinete/transport`), que estende `ErroSinete` e tem `code: 'pkcs11_falhou'`. Trate o erro pelo `code`, usando `ehErroSinete(e, 'pkcs11_falhou')` de `@sinete/core`, nunca pelo texto da mensagem.
 
 ## Causa
 

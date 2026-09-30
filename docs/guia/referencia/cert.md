@@ -14,11 +14,11 @@ Leitura de PFX em JS (inclusive o legado RC2-40 + 3DES), escolha do certificado 
 - `buildChain`: Monta a cadeia do certificado até uma âncora, tentando todos os emissores candidatos (com retrocesso): a ordem dos certificados de entrada nunca esconde um caminho confiável, como o de uma intermediária com versão autoassinada e versão com certificação cruzada. `buildChain(leaf: CertificateInfo | Uint8Array, options?: BuildChainOptions): Promise<ChainResult>`
 - `bytesToBase64`: Base64 e PEM sem `Buffer`: `atob`/`btoa` existem em Node, Bun, Deno e no browser. `bytesToBase64(bytes: Uint8Array): string`
 - `certificateToPem`: Certificado em PEM (`CERTIFICATE`). `certificateToPem(cert: CertificateInfo | Uint8Array): string`
-- `createA1Signer`: Signer A1 em memória, modo `data`. Recebe a chave em PKCS#8 DER (como sai do `openPfx`) e o certificado da folha. A importação acontece uma vez por hash; a `CryptoKey` não é exportável. `createA1Signer(pkcs8: Uint8Array, certificateDer: Uint8Array): Promise<DataSigner>`
+- `createA1Signer`: Assinador A1 em memória, modo `dados`. Recebe a chave em PKCS#8 DER (como sai do `openPfx`) e o certificado da folha. A importação acontece uma vez por hash; a `CryptoKey` não é exportável. `createA1Signer(pkcs8: Uint8Array, certificateDer: Uint8Array): Promise<AssinadorDeDados>`
 - `derToPem`: PEM com linhas de 64 colunas, como o OpenSSL escreve. `derToPem(der: Uint8Array, label: string): string`
-- `digestInfoOf`: Calcula o hash de `data` e devolve o DigestInfo DER, que é o que um `DigestSigner` assina. `digestInfoOf(data: Uint8Array, hash: SignatureHash): Promise<Uint8Array>`
-- `digestSignerAsDataSigner`: Adaptador: um `DigestSigner` com a interface de `DataSigner`. A assinatura sai idêntica à do modo `data`. `digestSignerAsDataSigner(signer: DigestSigner): DataSigner`
-- `encodeDigestInfo`: DigestInfo DER (`AlgorithmIdentifier` + hash) de um hash já calculado. `encodeDigestInfo(hash: SignatureHash, digest: Uint8Array): Uint8Array`
+- `digestInfoOf`: Calcula o hash dos bytes e devolve o DigestInfo DER, que é o que um `AssinadorDeDigest` assina. `digestInfoOf(data: Uint8Array, hash: HashDaAssinatura): Promise<Uint8Array>`
+- `digestSignerAsDataSigner`: Adaptador: um `AssinadorDeDigest` com a interface de `AssinadorDeDados`. A assinatura sai idêntica à do modo `dados`. `digestSignerAsDataSigner(signer: AssinadorDeDigest): AssinadorDeDados`
+- `encodeDigestInfo`: DigestInfo DER (`AlgorithmIdentifier` + hash) de um hash já calculado. `encodeDigestInfo(hash: HashDaAssinatura, digest: Uint8Array): Uint8Array`
 - `fingerprintSha256`: SHA-256 do DER em hexadecimal maiúsculo com `:`, no formato do OpenSSL e do Node (`fingerprint256`). `fingerprintSha256(cert: CertificateInfo | Uint8Array): Promise<string>`
 - `icpBrasilCertificates`: Todos os certificados do bundle, com o DER já decodificado. `icpBrasilCertificates(): readonly IcpBundleCertificate[]`
 - `icpBrasilTlsPem`: Conjunto de confiança TLS (raízes + intermediárias vistas), em PEM, para somar à loja padrão da runtime. `icpBrasilTlsPem(): string[]`
@@ -29,14 +29,14 @@ Leitura de PFX em JS (inclusive o legado RC2-40 + 3DES), escolha do certificado 
 - `openPfx`: Abre um PFX A1 em memória e devolve o `KeyStore`. `openPfx(pfx: Uint8Array, options: OpenPfxOptions): Promise<A1KeyStore>`
 - `parseCertificate`: Lê um certificado X.509 em DER. Lança `CertError('certificado_invalido')` se o DER não for um certificado. `parseCertificate(der: Uint8Array): CertificateInfo`
 - `pemToDers`: Todos os blocos PEM com o rótulo dado (padrão `CERTIFICATE`), em DER, na ordem do texto. `pemToDers(pem: string, label?: string): Uint8Array[]`
-- `signBytes`: Assina `data` com qualquer `Signer` (RSASSA-PKCS1-v1_5). `signBytes(signer: Signer, data: Uint8Array, hash: SignatureHash): Promise<Uint8Array>`
-- `validityAt`: Validade de um certificado num instante. `validityAt(cert: CertificateInfo, clock: Clock): Validity`
-- `verifyBytes`: Confere uma assinatura RSASSA-PKCS1-v1_5 com a chave pública do certificado. `verifyBytes(cert: CertificateInfo | Uint8Array, data: Uint8Array, signature: Uint8Array, hash: SignatureHash): Promise<boolean>`
+- `signBytes`: Assina os bytes com qualquer `Assinador` (RSASSA-PKCS1-v1_5). `signBytes(signer: Assinador, data: Uint8Array, hash: HashDaAssinatura): Promise<Uint8Array>`
+- `validityAt`: Validade de um certificado num instante. `validityAt(cert: CertificateInfo, clock: Relogio): Validity`
+- `verifyBytes`: Confere uma assinatura RSASSA-PKCS1-v1_5 com a chave pública do certificado. `verifyBytes(cert: CertificateInfo | Uint8Array, data: Uint8Array, signature: Uint8Array, hash: HashDaAssinatura): Promise<boolean>`
 - `verifyIssuedBy`: Confere se `issuer` assinou `cert`. `undefined` quando o algoritmo não é suportado (ex.: RSA-PSS, ECDSA). `verifyIssuedBy(cert: CertificateInfo, issuer: CertificateInfo): Promise<boolean | undefined>`
 
 ### Classes
 
-- `CertError` (estende `SineteError<CertErrorCode>`)
+- `CertError` (estende `ErroSinete<CertErrorCode>`)
 
 ### Interfaces
 

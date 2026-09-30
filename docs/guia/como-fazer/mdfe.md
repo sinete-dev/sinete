@@ -72,10 +72,10 @@ else console.log(r.tipo, r.cStat, r.xMotivo);
 - `nProt` é o protocolo de autorização (`desfecho.protocolo.nProt` quando `emitir` retorna `tipo: 'autorizado'`). `dtEnc` é a data de encerramento e é opcional: o padrão é a data de hoje no fuso da UF da chave. Se registrar o encerramento depois da chegada, informe a data real.
 - O município deve pertencer à UF informada (regras K03 e K04). Antes do envio, o cliente confere se os dois primeiros dígitos de `cMun` correspondem à UF. Para encerramento no exterior, use `uf: 'EX'` com `cMun: '9999999'`.
 - **Encerramento por terceiro.** O proprietário do veículo de tração, quando não é o emitente, pode encerrar com o próprio certificado: passe `terceiro` com o CNPJ ou CPF dele e use um emissor criado com o certificado dele (Nota Técnica 2024.001, regras HP07 e K11).
-- O retorno é o `SefazOutcome` do cliente: `status` indica o resultado, `cStat` é o código de resposta da SEFAZ e `xMotivo` é a descrição. Quando `status` é `'authorized'`, `value.procEventoMDFe` contém o XML do evento com o retorno do registro. A função `guardarEvento` do exemplo deve persistir esse XML.
+- O retorno é o `ResultadoSefaz` do cliente: `tipo` indica o resultado, `cStat` é o código de resposta da SEFAZ e `xMotivo` é a descrição. Quando `tipo` é `'autorizado'`, `valor.procEventoMDFe` contém o XML do evento com o retorno do registro. A função `guardarEvento` do exemplo deve persistir esse XML.
 - O encerramento não recupera automaticamente uma resposta perdida. Antes de reenviar, use `recuperarEventoRegistrado(emissor.cliente, chave, '110112')`, exportada por `sinete/mdfe`, para consultar o evento de encerramento. Se retornar `registrado: true`, o evento está em `evento`. Se retornar `registrado: false`, examine `consulta`: isso não prova que o evento não foi registrado.
 
-Para saber o que ainda está aberto, `emissor.cliente.consultarNaoEncerrados()` consulta os MDF-e do titular do certificado. Quando `status` é `'authorized'`, `value` contém a lista de chaves e protocolos: `cStat: '111'` indica documentos encontrados e `cStat: '112'` indica uma lista vazia.
+Para saber o que ainda está aberto, `emissor.cliente.consultarNaoEncerrados()` consulta os MDF-e do titular do certificado. Quando `tipo` é `'autorizado'`, `valor` contém a lista de chaves e protocolos: `cStat: '111'` indica documentos encontrados e `cStat: '112'` indica uma lista vazia.
 
 ## Contingência off-line
 

@@ -1,6 +1,6 @@
 # Como usar o sinete no browser com a transmissão no servidor
 
-No browser, o sinete monta, valida e assina documentos; a transmissão direta à SEFAZ, a Secretaria da Fazenda, exige TLS com certificado de cliente (mTLS). O `fetch` do browser não permite fornecer o certificado usado pelo sinete. Por isso, a entrada padrão do `@sinete/transport`, usada pelo bundler no browser, lança `UnsupportedError` (`nao_suportado`) ao criar o transporte. Nos dois arranjos abaixo, a transmissão fica no servidor; a escolha depende de onde fica o certificado do emitente.
+No browser, o sinete monta, valida e assina documentos; a transmissão direta à SEFAZ, a Secretaria da Fazenda, exige TLS com certificado de cliente (mTLS). O `fetch` do browser não permite fornecer o certificado usado pelo sinete. Por isso, a entrada padrão do `@sinete/transport`, usada pelo bundler no browser, lança `ErroNaoSuportado` (`nao_suportado`) ao criar o transporte. Nos dois arranjos abaixo, a transmissão fica no servidor; a escolha depende de onde fica o certificado do emitente.
 
 Também é possível usar o helper nativo `sinete-signer`, distribuído no npm como `@sinete/signer`, para estabelecer o mTLS fora do browser sem exportar a chave privada. O cliente `@sinete/transport/signer` aceita um canal até o helper, inclusive uma integração por WebSocket. Essa alternativa atende certificados A3 em token PKCS#11, A3 em nuvem de um Prestador de Serviço de Confiança (PSC) e chaves não exportáveis. Ela exige integrar o helper e o canal de comunicação; os exemplos abaixo usam certificados A1 em arquivo PFX.
 
@@ -45,7 +45,7 @@ if (r.ok) {
 }
 ```
 
-No servidor, confira a assinatura e se a chave de acesso corresponde ao emitente autenticado, à série e ao número reservado para o pedido. `verifySignature` verifica a assinatura criptográfica com o certificado incluído no XML; a validação da cadeia de confiança e do vínculo desse certificado com o emitente precisa ser feita pela aplicação, com os recursos de `@sinete/cert`. Depois das conferências, grave os bytes com a trava do próprio `store` e retome: `retomar` consulta a chave antes e, se a consulta confirmar que a nota não consta, pode transmitir os mesmos bytes.
+No servidor, confira a assinatura e se a chave de acesso corresponde ao emitente autenticado, à série e ao número reservado para o pedido. `conferirAssinatura` verifica a assinatura criptográfica com o certificado incluído no XML; a validação da cadeia de confiança e do vínculo desse certificado com o emitente precisa ser feita pela aplicação, com os recursos de `@sinete/cert`. Depois das conferências, grave os bytes com a trava do próprio `store` e retome: `retomar` consulta a chave antes e, se a consulta confirmar que a nota não consta, pode transmitir os mesmos bytes.
 
 ```ts
 import { conferirAssinatura } from 'sinete/core/xml';
@@ -72,7 +72,7 @@ async function receberAssinada(ref: string, xml: string) {
 }
 ```
 
-O exemplo mostra a verificação criptográfica e a gravação com trava. `conferirChaveDoPedido` é uma função da aplicação; as verificações da cadeia de confiança e do titular do certificado devem ser acrescentadas antes da gravação, usando o certificado retornado em `v.certificateDer`.
+O exemplo mostra a verificação criptográfica e a gravação com trava. `conferirChaveDoPedido` é uma função da aplicação; as verificações da cadeia de confiança e do titular do certificado devem ser acrescentadas antes da gravação, usando o certificado retornado em `v.certificadoDer`.
 
 Guarde o corpo da requisição como texto e preserve essa string no `store`. As funções de conferência analisam o XML, mas não substitua o texto recebido por uma versão serializada novamente. Na transmissão, o sinete pode remover a declaração XML para inserir a nota no envelope do serviço, preservando o conteúdo assinado.
 
@@ -80,7 +80,7 @@ Guarde o corpo da requisição como texto e preserve essa string no `store`. As 
 
 - **Encoding.** Os dados usados no cálculo da assinatura são codificados em UTF-8. Uma página servida sem `<meta charset="utf-8">` fez o browser decodificar o bundle como windows-1252 e gerar outra assinatura, conforme registrado no documento de decisão de arquitetura ADR 0003 do sinete. Sirva a página e o corpo do POST em UTF-8.
 - **Assinar de novo a cada clique.** O browser pode assinar quantas vezes quiser enquanto nada foi gravado no servidor. Enquanto houver um registro no `store`, o código acima ignora os bytes novos daquele pedido e retoma os gravados. Depois que o registro é concluído e removido, cabe à aplicação impedir uma nova emissão para um pedido já atendido. Não gere número novo no browser para o mesmo pedido.
-- **Servidor que confia no XML.** Sem conferir a chave, um cliente pode mandar uma nota de outro emitente ou de outro número. `verifySignature` exige o `Id` esperado e aceita também o nome do elemento esperado, informado como `infNFe` no exemplo. A função recusa múltiplos elementos com esse `Id` ou múltiplas assinaturas que o referenciem. Uma assinatura criptograficamente válida, por si só, não comprova a confiança no certificado nem sua relação com o emitente.
+- **Servidor que confia no XML.** Sem conferir a chave, um cliente pode mandar uma nota de outro emitente ou de outro número. `conferirAssinatura` exige o `Id` esperado e aceita também o nome do elemento esperado, informado como `infNFe` no exemplo. A função recusa múltiplos elementos com esse `Id` ou múltiplas assinaturas que o referenciem. Uma assinatura criptograficamente válida, por si só, não comprova a confiança no certificado nem sua relação com o emitente.
 - **Senha do PFX.** Mantenha a senha apenas na memória da página pelo tempo necessário para abrir o PFX; nunca a mande ao servidor. O leitor do PFX não a guarda depois da leitura, mas cabe à aplicação limpar o campo e deixar de manter referências à senha. O sinete não garante sua remoção imediata da memória do browser.
 
 ## Veja também

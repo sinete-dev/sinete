@@ -1,6 +1,6 @@
 # `tempo_esgotado`: a operação passou do prazo
 
-A operação não terminou dentro do prazo configurado. A propriedade `timeoutMs` informa esse prazo em milissegundos. O erro é representado por `TimeoutError` (`@sinete/core`), um `SineteError` com `code: 'tempo_esgotado'`. Identifique-o pelo `code`, usando `isSineteError(e, 'tempo_esgotado')`, nunca pela mensagem.
+A operação não terminou dentro do prazo configurado. A propriedade `timeoutMs` informa esse prazo em milissegundos. O erro é representado por `ErroDeTempoEsgotado` (`@sinete/core`), um `ErroSinete` com `code: 'tempo_esgotado'`. Identifique-o pelo `code`, usando `ehErroSinete(e, 'tempo_esgotado')`, nunca pela mensagem.
 
 ## Causa
 

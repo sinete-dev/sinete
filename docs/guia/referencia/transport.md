@@ -15,11 +15,11 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `allPolicies`: Todas as políticas precisam aceitar, na ordem. `allPolicies(...policies: readonly HostPolicy[]): HostPolicy`
 - `ambienteHosts`: Hosts distintos de um ambiente (base para a allowlist de homologação, por exemplo). `ambienteHosts(ambiente: Ambiente): string[]`
 - `checkLocalCertificate` (só na condição `node`): Confere se o socket carregou o certificado da identidade. `undefined` quando a runtime não expõe o certificado local (o transporte então não afirma nada). `checkLocalCertificate(socket: { getCertificate?: () => LocalCert | null | undefined; }, expectedLeaf: Uint8Array): boolean | undefined`
-- `classifyHelperFailure`: Converte a falha de transporte relatada pelo helper (código `transport` com `data` estruturado) no mesmo erro tipado que o transporte em processo produziria. O prazo estourado fica de fora: quem chama lança `TimeoutError`. `classifyHelperFailure(data: HelperFailureData, message: string, host: string): TransportError`
-- `classifyTransportFailure`: Converte a falha de uma runtime num erro tipado do sinete. `SineteError` passa direto. `classifyTransportFailure(err: unknown, context: { readonly host: string; }): SineteError`
+- `classifyHelperFailure`: Converte a falha de transporte relatada pelo helper (código `transport` com `data` estruturado) no mesmo erro tipado que o transporte em processo produziria. O prazo estourado fica de fora: quem chama lança `ErroDeTempoEsgotado`. `classifyHelperFailure(data: HelperFailureData, message: string, host: string): TransportError`
+- `classifyTransportFailure`: Converte a falha de uma runtime num erro tipado do sinete. `ErroSinete` passa direto. `classifyTransportFailure(err: unknown, context: { readonly host: string; }): ErroSinete`
 - `createDenoTransport`: Cria o transporte do Deno. Fora do Deno, só com `deno` e `fetch` injetados. `createDenoTransport(options: DenoTransportOptions): Transport`
 - `createNodeTransport` (só na condição `node`): Cria o transporte de Node e Bun. `createNodeTransport(options: NodeTransportOptions): Transport`
-- `createTransport`: Cria o transporte da runtime atual. Nesta entrada só há o do Deno; em outra runtime, lança `UnsupportedError` em vez de cair num `fetch` genérico que ignoraria a identidade TLS. `createTransport(options: CreateTransportOptions): Transport`
+- `createTransport`: Cria o transporte da runtime atual. Nesta entrada só há o do Deno; em outra runtime, lança `ErroNaoSuportado` em vez de cair num `fetch` genérico que ignoraria a identidade TLS. `createTransport(options: CreateTransportOptions): Transport`
 - `detectRuntime`: Detecta a runtime pelo global, sem depender de condição de export. `detectRuntime(): TransportRuntime | 'browser' | 'desconhecida'`
 - `http403Error`: HTTP 403 do IIS da SEFAZ: certificado ausente ou recusado (o subcódigo 403.7/403.16 só às vezes vem no corpo). `http403Error(host: string): TransportError`
 - `mdfeEndpoint`: Resolve o endpoint de um serviço de MDF-e 3.00 (sempre SVRS). `mdfeEndpoint(query: { readonly ambiente: Ambiente; readonly servico: MdfeServico; }): EndpointRef`
@@ -33,7 +33,7 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `pemIdentity`: Identidade `pem` a partir de um A1 aberto pelo `@sinete/cert`. Por padrão manda o titular e as intermediárias que vieram no PFX; passe `chain` (o resultado de `buildChain`) para mandar a cadeia completada. `pemIdentity(keyStore: A1KeyStore, options?: { readonly chain?: readonly CertificateInfo[]; }): Extract<TlsIdentity, { kind: 'pem'; }>`
 - `soap12ContentType`: `Content-Type` do SOAP 1.2, com a `action` do WSDL quando houver (`<namespace do WSDL>/<operação>`). `soap12ContentType(action?: string): string`
 - `soap12Envelope`: Envelope SOAP 1.2 com o corpo (e o cabeçalho, se houver) inseridos como texto, sem tocar neles. `soap12Envelope(body: string, options?: { readonly header?: string; }): string`
-- `soapBody`: Conteúdo do `Body` da resposta, como fatia da string recebida (sem parse nem reserialização). Lança `ProtocolError` se não houver `Body`. `soapBody(envelope: string): string`
+- `soapBody`: Conteúdo do `Body` da resposta, como fatia da string recebida (sem parse nem reserialização). Lança `ErroRespostaInvalida` se não houver `Body`. `soapBody(envelope: string): string`
 - `soapFault`: Fault SOAP 1.2 (ou 1.1) da resposta, se houver. `soapFault(envelope: string): SoapFault | undefined`
 - `tlsProfileForHost`: Perfil TLS medido do host, ou `undefined` para host fora dos dados. `tlsProfileForHost(host: string): TlsProfile | undefined`
 - `tlsProfiles`: Todos os perfis conhecidos. `tlsProfiles(): readonly TlsProfile[]`
@@ -42,9 +42,9 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 ### Classes
 
 - `PolicyError` (estende `TransportError`): Recusa da `HostPolicy`. Sempre antes de qualquer socket.
-- `SignerError` (estende `SineteError<SignerErrorCode>`)
-- `TransportError` (estende `SineteError<TransportErrorCode>`)
-- `TransportUnsupportedError` (estende `UnsupportedError`): A runtime não consegue falar com o host pedido (ADR 0004, decisão 4): hoje, o Deno (rustls) diante de um host que pede o certificado numa renegociação ou que só oferece CBC ou DHE. `details` traz `host`, `reasons` e `alternative`. O código é o `nao_suportado` do core. Membros: `host`, `reasons`.
+- `SignerError` (estende `ErroSinete<SignerErrorCode>`)
+- `TransportError` (estende `ErroSinete<TransportErrorCode>`)
+- `TransportUnsupportedError` (estende `ErroNaoSuportado`): A runtime não consegue falar com o host pedido (ADR 0004, decisão 4): hoje, o Deno (rustls) diante de um host que pede o certificado numa renegociação ou que só oferece CBC ou DHE. `detalhes` traz `host`, `reasons` e `alternative`. O código é o `nao_suportado` do core. Membros: `host`, `reasons`.
 
 ### Interfaces
 
@@ -104,11 +104,11 @@ Identidades: - `openRemote`: a chave fica com quem chamou, num `TlsSigner` (A1 e
 
 ### Funções
 
-- `certificadoAberto`: O certificado aberto que o `@sinete/emissor` aceita no lugar do PFX (`OpcoesEmissor.certificado`): o signer dos documentos, o titular lido da folha e a identidade do mTLS pelo helper. `certificadoAberto(identity: SignerIdentity, options?: { readonly signer?: Signer; }): { readonly signer: Signer; readonly titular: IcpIdentity; readonly identidade: TlsIdentity; }`
+- `certificadoAberto`: O certificado aberto que o `@sinete/emissor` aceita no lugar do PFX (`OpcoesEmissor.certificado`): o signer dos documentos, o titular lido da folha e a identidade do mTLS pelo helper. `certificadoAberto(identity: SignerIdentity, options?: { readonly signer?: Assinador; }): { readonly signer: Assinador; readonly titular: IcpIdentity; readonly identidade: TlsIdentity; }`
 - `connectSigner` (só na condição `node`): Conecta no helper que atende num socket Unix (`sinete-signer --socket caminho`), em contêiner próprio. `connectSigner(options: SignerClientOptions & { readonly socketPath: string; }): Promise<SignerConnection>`
 - `connectSignerChannel`: Conecta ao helper por um canal já aberto e faz o `hello`. Recusa helper de outra versão do protocolo (`signer_protocolo`). `connectSignerChannel(channel: SignerChannel, options?: SignerClientOptions): Promise<SignerConnection>`
 - `cryptoKeyTlsSigner`: `TlsSigner` sobre uma `CryptoKey` RSASSA-PKCS1-v1_5 com SHA-256 (não exportável serve), no modo `message`: o helper manda o transcript e a chave assina a mensagem. É o caminho do A1 guardado como `CryptoKey` e da chave no navegador. `cryptoKeyTlsSigner(key: CryptoKey, chain: readonly Uint8Array[]): TlsSigner`
-- `digestTlsSigner`: `TlsSigner` no modo `digest` sobre um `DigestSigner` do `@sinete/core` (PSC em RAW, OpenBao Transit com `prehashed`, HSM): monta o DigestInfo SHA-256 e pede só o RSA. `digestTlsSigner(signer: DigestSigner, chain?: readonly Uint8Array[]): TlsSigner`
+- `digestTlsSigner`: `TlsSigner` no modo `digest` sobre um `AssinadorDeDigest` do `@sinete/core` (PSC em RAW, OpenBao Transit com `prehashed`, HSM): monta o DigestInfo SHA-256 e pede só o RSA. `digestTlsSigner(signer: AssinadorDeDigest, chain?: readonly Uint8Array[]): TlsSigner`
 - `lineSplitter`: Converte linhas cruas (com `\n`) em linhas de frame, guardando o pedaço incompleto. `lineSplitter(onLine: (line: string) => void): (chunk: string) => void`
 - `parseTlsTranscript`: Lê do transcript TLS 1.2 o SNI do ClientHello e o primeiro certificado da mensagem Certificate do servidor. O transcript é a sequência de mensagens de handshake (tipo, 3 bytes de tamanho, corpo), RFC 5246, seção 7.4. `parseTlsTranscript(transcript: Uint8Array): { readonly sni: string | undefined; readonly serverCertificate: Uint8Array | undefined; }`
 - `startSigner` (só na condição `node`): Sobe o helper como processo filho e conecta pelo stdio. Fechar a conexão fecha o stdin, e o helper encerra as requisições em andamento, fecha as identidades (sessões PKCS#11 inclusive) e sai. `startSigner(options: StartSignerOptions): Promise<SignerConnection>`

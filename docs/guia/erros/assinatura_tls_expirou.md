@@ -1,6 +1,6 @@
 # `assinatura_tls_expirou`: quem assina não respondeu a tempo
 
-O helper `sinete-signer` pediu uma assinatura para o handshake TLS, a negociação da conexão segura, e o dono da chave não respondeu dentro do prazo da identidade (`signTimeoutMs`, padrão 30 s). O erro é um `SignerError` (`@sinete/transport`), que estende `SineteError` e tem `code: 'assinatura_tls_expirou'`. Identifique-o pelo `code`, usando `isSineteError(e, 'assinatura_tls_expirou')` de `@sinete/core`, nunca pela mensagem.
+O helper `sinete-signer` pediu uma assinatura para o handshake TLS, a negociação da conexão segura, e o dono da chave não respondeu dentro do prazo da identidade (`signTimeoutMs`, padrão 30 s). O erro é um `SignerError` (`@sinete/transport`), que estende `ErroSinete` e tem `code: 'assinatura_tls_expirou'`. Identifique-o pelo `code`, usando `ehErroSinete(e, 'assinatura_tls_expirou')` de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 

@@ -25,7 +25,7 @@ Os dados oficiais (CST, cClassTrib, tratamentos, anexos) ficam no `@sinete/ibs-c
 - `documentFromRoc`: Documento para `validate` a partir do `Roc` do motor, com os campos de identificação que o `Roc` não tem. `documentFromRoc(roc: Roc, ident: Omit<RulesDocument, 'items' | 'IBSCBSTot' | 'gCompraGov'> & { readonly items?: readonly Omit<RulesDocument['items'][number], 'IBSCBS'>[]; }): RulesDocument`
 - `enteOf`: Ente equivalente para a redistribuição. `enteOf(tp: TpEnteGov): Ente`
 - `evaluate`: `evaluate(expr: string, vars: Variables): Decimal`
-- `factDate`: Data civil do fato gerador. `factDate(time: TimeContext, utcOffsetMinutes?: number): string`
+- `factDate`: Data civil do fato gerador. `factDate(time: ContextoDeTempo, utcOffsetMinutes?: number): string`
 - `fromPercent`: Percentual (`'0.9'`) para fração com 8 casas HALF_EVEN, como o `dividirPorCem` da Calculadora. `fromPercent(value: Decimal): Decimal`
 - `fromProfile`: Reaproveita a classificação guardada no cadastro do item, se ela ainda estiver entre os candidatos. `fromProfile(): Resolver`
 - `isActive`: A regra está implantada para o documento na data de emissão e no ambiente. `isActive(rule: RuleMeta, doc: RulesDocument, ambiente: Ambiente, emission: string): boolean`
@@ -45,13 +45,13 @@ Os dados oficiais (CST, cClassTrib, tratamentos, anexos) ficam no `@sinete/ibs-c
 
 ### Classes
 
-- `ClassificationError` (estende `SineteError<'ibscbs_classificacao_invalida'>`): A classificação informada não pode ser calculada: código inexistente ou fora de vigência na data do fato gerador, cClassTrib fora da CST, não habilitado no modelo de DF-e, grupo exigido ausente ou vedado presente. `reason` diz qual. Membros: `reason`, `item`.
+- `ClassificationError` (estende `ErroSinete<'ibscbs_classificacao_invalida'>`): A classificação informada não pode ser calculada: código inexistente ou fora de vigência na data do fato gerador, cClassTrib fora da CST, não habilitado no modelo de DF-e, grupo exigido ausente ou vedado presente. `reason` diz qual. Membros: `reason`, `item`.
 - `Decimal`: Valor decimal imutável: `unscaled × 10^-scale`. Membros: `unscaled`, `scale`, `ZERO`, `ONE`, `HUNDRED`, `of()`, `parse()`, `isDecimalText()`, `add()`, `sub()`, `mul()`, `div()`, `roundSignificant()`, `setScale()`, `stripZeros()`, `movePointRight()`, `neg()`, `cmp()`, `eq()`, `isZero()`, `isNegative()`, `toString()`, `toFixed()`, `toJSON()`.
-- `DeterminationError` (estende `SineteError<'ibscbs_determinacao_invalida'>`): A determinação não pode seguir: fatos malformados (item repetido, NCM com letras), resolvedor ou resposta que escolhe código fora dos candidatos, ou `toClassified` com item sem decisão. `reason` diz qual; `item` diz onde. Membros: `reason`, `item`.
-- `ExpressionError` (estende `SineteError<'ibscbs_expressao_invalida'>`): Expressão de cálculo do dataset fora da gramática conhecida: mudança de dado que precisa de revisão. Membros: `expression`.
-- `RatesDataError` (estende `SineteError<'ibscbs_aliquotas_invalidas'>`): Tabela de alíquotas inconsistente (vigências sobrepostas, valor fora do domínio, formato desconhecido).
-- `RateUnknownError` (estende `SineteError<'ibscbs_aliquota_desconhecida'>`): A alíquota pedida ainda não foi publicada (estado `unknown`). O cálculo não segue com zero nem com um palpite: quem precisa simular informa a alíquota com `withOverrides`, e o resultado sai marcado como simulado. Membros: `tributo`, `date`.
-- `UnsupportedRegimeError` (estende `SineteError<'ibscbs_regime_nao_suportado'>`): Membros: `regime`, `item`.
+- `DeterminationError` (estende `ErroSinete<'ibscbs_determinacao_invalida'>`): A determinação não pode seguir: fatos malformados (item repetido, NCM com letras), resolvedor ou resposta que escolhe código fora dos candidatos, ou `toClassified` com item sem decisão. `reason` diz qual; `item` diz onde. Membros: `reason`, `item`.
+- `ExpressionError` (estende `ErroSinete<'ibscbs_expressao_invalida'>`): Expressão de cálculo do dataset fora da gramática conhecida: mudança de dado que precisa de revisão. Membros: `expression`.
+- `RatesDataError` (estende `ErroSinete<'ibscbs_aliquotas_invalidas'>`): Tabela de alíquotas inconsistente (vigências sobrepostas, valor fora do domínio, formato desconhecido).
+- `RateUnknownError` (estende `ErroSinete<'ibscbs_aliquota_desconhecida'>`): A alíquota pedida ainda não foi publicada (estado `unknown`). O cálculo não segue com zero nem com um palpite: quem precisa simular informa a alíquota com `withOverrides`, e o resultado sai marcado como simulado. Membros: `tributo`, `date`.
+- `UnsupportedRegimeError` (estende `ErroSinete<'ibscbs_regime_nao_suportado'>`): Membros: `regime`, `item`.
 
 ### Interfaces
 
@@ -179,8 +179,8 @@ Toda alíquota é `official` (com dispositivo legal e fonte), `user-provided` (i
 
 ### Classes
 
-- `RatesDataError` (estende `SineteError<'ibscbs_aliquotas_invalidas'>`): Tabela de alíquotas inconsistente (vigências sobrepostas, valor fora do domínio, formato desconhecido).
-- `RateUnknownError` (estende `SineteError<'ibscbs_aliquota_desconhecida'>`): A alíquota pedida ainda não foi publicada (estado `unknown`). O cálculo não segue com zero nem com um palpite: quem precisa simular informa a alíquota com `withOverrides`, e o resultado sai marcado como simulado. Membros: `tributo`, `date`.
+- `RatesDataError` (estende `ErroSinete<'ibscbs_aliquotas_invalidas'>`): Tabela de alíquotas inconsistente (vigências sobrepostas, valor fora do domínio, formato desconhecido).
+- `RateUnknownError` (estende `ErroSinete<'ibscbs_aliquota_desconhecida'>`): A alíquota pedida ainda não foi publicada (estado `unknown`). O cálculo não segue com zero nem com um palpite: quem precisa simular informa a alíquota com `withOverrides`, e o resultado sai marcado como simulado. Membros: `tributo`, `date`.
 
 ### Interfaces
 
@@ -231,10 +231,10 @@ Recebe CST, cClassTrib e grupos informados por item (`ClassifiedOperation`) e de
 
 ### Classes
 
-- `ClassificationError` (estende `SineteError<'ibscbs_classificacao_invalida'>`): A classificação informada não pode ser calculada: código inexistente ou fora de vigência na data do fato gerador, cClassTrib fora da CST, não habilitado no modelo de DF-e, grupo exigido ausente ou vedado presente. `reason` diz qual. Membros: `reason`, `item`.
+- `ClassificationError` (estende `ErroSinete<'ibscbs_classificacao_invalida'>`): A classificação informada não pode ser calculada: código inexistente ou fora de vigência na data do fato gerador, cClassTrib fora da CST, não habilitado no modelo de DF-e, grupo exigido ausente ou vedado presente. `reason` diz qual. Membros: `reason`, `item`.
 - `Decimal`: Valor decimal imutável: `unscaled × 10^-scale`. Membros: `unscaled`, `scale`, `ZERO`, `ONE`, `HUNDRED`, `of()`, `parse()`, `isDecimalText()`, `add()`, `sub()`, `mul()`, `div()`, `roundSignificant()`, `setScale()`, `stripZeros()`, `movePointRight()`, `neg()`, `cmp()`, `eq()`, `isZero()`, `isNegative()`, `toString()`, `toFixed()`, `toJSON()`.
-- `ExpressionError` (estende `SineteError<'ibscbs_expressao_invalida'>`): Expressão de cálculo do dataset fora da gramática conhecida: mudança de dado que precisa de revisão. Membros: `expression`.
-- `UnsupportedRegimeError` (estende `SineteError<'ibscbs_regime_nao_suportado'>`): Membros: `regime`, `item`.
+- `ExpressionError` (estende `ErroSinete<'ibscbs_expressao_invalida'>`): Expressão de cálculo do dataset fora da gramática conhecida: mudança de dado que precisa de revisão. Membros: `expression`.
+- `UnsupportedRegimeError` (estende `ErroSinete<'ibscbs_regime_nao_suportado'>`): Membros: `regime`, `item`.
 
 ### Interfaces
 
@@ -338,7 +338,7 @@ Recebe CST, cClassTrib e grupos informados por item (`ClassifiedOperation`) e de
 - `constrainAt`: Restrições oficiais numa visão já fixada numa data. `constrainAt(facts: OperationFacts, content: TaxContent): readonly ItemConstraints[]`
 - `determine`: Determinação na data do fato gerador de `options.time`. `determine(facts: OperationFacts, options: DetermineOptions): Promise<Determination>`
 - `determineAt`: Determinação numa visão já fixada numa data. `determineAt(facts: OperationFacts, content: TaxContent, options: DetermineAtOptions): Promise<Determination>`
-- `factDate`: Data civil do fato gerador. `factDate(time: TimeContext, utcOffsetMinutes?: number): string`
+- `factDate`: Data civil do fato gerador. `factDate(time: ContextoDeTempo, utcOffsetMinutes?: number): string`
 - `fromProfile`: Reaproveita a classificação guardada no cadastro do item, se ela ainda estiver entre os candidatos. `fromProfile(): Resolver`
 - `questionId`: Id estável da pergunta de classificação de um item. `questionId(n: number): string`
 - `toClassified`: Monta a entrada do `@sinete/ibs-cbs/calcular`. Falha se algum item ficou sem decisão. `toClassified(det: Determination, op: OperationInput, item: (n: number, candidate: Candidate) => ItemInput): ClassifiedOperation`
@@ -346,7 +346,7 @@ Recebe CST, cClassTrib e grupos informados por item (`ClassifiedOperation`) e de
 
 ### Classes
 
-- `DeterminationError` (estende `SineteError<'ibscbs_determinacao_invalida'>`): A determinação não pode seguir: fatos malformados (item repetido, NCM com letras), resolvedor ou resposta que escolhe código fora dos candidatos, ou `toClassified` com item sem decisão. `reason` diz qual; `item` diz onde. Membros: `reason`, `item`.
+- `DeterminationError` (estende `ErroSinete<'ibscbs_determinacao_invalida'>`): A determinação não pode seguir: fatos malformados (item repetido, NCM com letras), resolvedor ou resposta que escolhe código fora dos candidatos, ou `toClassified` com item sem decisão. `reason` diz qual; `item` diz onde. Membros: `reason`, `item`.
 
 ### Interfaces
 

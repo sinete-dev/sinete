@@ -1,6 +1,6 @@
 # `pfx_invalido`: o arquivo não é um PFX legível
 
-O arquivo passado como PFX não é um PKCS#12, formato que armazena certificados e chaves privadas, que o leitor consiga abrir. O erro é uma instância de `CertError` (`@sinete/cert`), que estende `SineteError`, com `code: 'pfx_invalido'`. Trate o erro pelo `code`, usando `isSineteError(e, 'pfx_invalido')` de `@sinete/core`, nunca pela mensagem.
+O arquivo passado como PFX não é um PKCS#12, formato que armazena certificados e chaves privadas, que o leitor consiga abrir. O erro é uma instância de `CertError` (`@sinete/cert`), que estende `ErroSinete`, com `code: 'pfx_invalido'`. Trate o erro pelo `code`, usando `ehErroSinete(e, 'pfx_invalido')` de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 

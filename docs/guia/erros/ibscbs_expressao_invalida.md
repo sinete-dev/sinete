@@ -1,6 +1,6 @@
 # `ibscbs_expressao_invalida`: expressão de cálculo do dataset fora da gramática
 
-Uma expressão de cálculo do dataset (conjunto de dados) do IBS (Imposto sobre Bens e Serviços) e da CBS (Contribuição sobre Bens e Serviços) usa uma variável ou sintaxe que o motor não reconhece, ou resulta em divisão por zero. O erro é uma instância de `ExpressionError` (`@sinete/ibs-cbs`), que estende `SineteError` e tem `code: 'ibscbs_expressao_invalida'`. O campo `details.expression` traz a expressão. Identifique o erro pelo `code`, usando `isSineteError(e, 'ibscbs_expressao_invalida')`, de `@sinete/core`, nunca pelo texto da mensagem.
+Uma expressão de cálculo do dataset (conjunto de dados) do IBS (Imposto sobre Bens e Serviços) e da CBS (Contribuição sobre Bens e Serviços) usa uma variável ou sintaxe que o motor não reconhece, ou resulta em divisão por zero. O erro é uma instância de `ExpressionError` (`@sinete/ibs-cbs`), que estende `ErroSinete` e tem `code: 'ibscbs_expressao_invalida'`. O campo `detalhes.expression` traz a expressão. Identifique o erro pelo `code`, usando `ehErroSinete(e, 'ibscbs_expressao_invalida')`, de `@sinete/core`, nunca pelo texto da mensagem.
 
 ## Causa
 

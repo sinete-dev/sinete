@@ -1,6 +1,6 @@
 # `falha_rede`: falha de rede
 
-Indica uma falha de rede, como erro de DNS (resolução do nome do servidor) ou falta de rota, geralmente antes de estabelecer a conexão segura por TLS. O transporte também usa esse código para falhas que não se encaixam em uma classificação mais específica. Portanto, o código sozinho não garante que o pedido deixou de chegar ao servidor. O erro é um `TransportError` de `@sinete/transport`, derivado de `SineteError`, com `code: 'falha_rede'`. Decida pelo `code`, usando `isSineteError(e, 'falha_rede')` de `@sinete/core`, nunca pela mensagem.
+Indica uma falha de rede, como erro de DNS (resolução do nome do servidor) ou falta de rota, geralmente antes de estabelecer a conexão segura por TLS. O transporte também usa esse código para falhas que não se encaixam em uma classificação mais específica. Portanto, o código sozinho não garante que o pedido deixou de chegar ao servidor. O erro é um `TransportError` de `@sinete/transport`, derivado de `ErroSinete`, com `code: 'falha_rede'`. Decida pelo `code`, usando `ehErroSinete(e, 'falha_rede')` de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 
