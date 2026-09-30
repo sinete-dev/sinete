@@ -9,17 +9,17 @@ O emissor de MDF-e grava os bytes do XML assinado no `store`, o armazenamento us
 No exemplo, `pfx` e `senha` são os dados do certificado, `store` é o armazenamento configurado e `aoDecidir` é a função responsável por guardar o documento decidido. Os dados do emitente e do condutor devem vir do cadastro da aplicação, e `chaveDaNfeTransportada` é a chave da NF-e da carga.
 
 ```ts
-import { createMdfeEmissor } from 'sinete/emissor/mdfe';
-import type { MdfeInput } from 'sinete/mdfe';
+import { criarEmissorMdfe } from 'sinete/emissor/mdfe';
+import type { DadosMdfe } from 'sinete/mdfe';
 
 declare const cpfEmitente: string;
 declare const nomeEmitente: string;
 declare const cpfCondutor: string;
 declare const nomeCondutor: string;
 
-const emissor = await createMdfeEmissor({ pfx, senha, ambiente: 'homologacao', store, aoDecidir });
+const emissor = await criarEmissorMdfe({ pfx, senha, ambiente: 'homologacao', store, aoDecidir });
 
-const mdfe: MdfeInput = {
+const mdfe: DadosMdfe = {
   tpEmit: '2', // carga própria
   serie: 920, // série de emitente pessoa física
   nMDF: 1,
@@ -61,19 +61,20 @@ if (d.tipo === 'autorizado') console.log(d.id, d.protocolo.nProt);
 ## Encerrar na chegada
 
 ```ts
-import { createMdfeEmissor } from 'sinete/emissor/mdfe';
+import { criarEmissorMdfe } from 'sinete/emissor/mdfe';
 
-const emissor = await createMdfeEmissor({ pfx, senha, ambiente: 'homologacao', store, aoDecidir });
+const emissor = await criarEmissorMdfe({ pfx, senha, ambiente: 'homologacao', store, aoDecidir });
 const r = await emissor.encerrar({ chave, nProt, uf: 'SP', cMun: '3550308' });
-if (r.tipo === 'autorizado') await guardarEvento(chave, r.valor.procEventoMDFe);
-else console.log(r.tipo, r.cStat, r.xMotivo);
+if (r.tipo === 'registrado') await guardarEvento(chave, r.procEvento);
+else if (r.tipo === 'recusado') console.log(r.cStat, r.xMotivo, r.dica);
+else agendarNovaTentativa(chave, r.motivo);
 ```
 
 - `nProt` é o protocolo de autorização (`desfecho.protocolo.nProt` quando `emitir` retorna `tipo: 'autorizado'`). `dtEnc` é a data de encerramento e é opcional: o padrão é a data de hoje no fuso da UF da chave. Se registrar o encerramento depois da chegada, informe a data real.
 - O município deve pertencer à UF informada (regras K03 e K04). Antes do envio, o cliente confere se os dois primeiros dígitos de `cMun` correspondem à UF. Para encerramento no exterior, use `uf: 'EX'` com `cMun: '9999999'`.
 - **Encerramento por terceiro.** O proprietário do veículo de tração, quando não é o emitente, pode encerrar com o próprio certificado: passe `terceiro` com o CNPJ ou CPF dele e use um emissor criado com o certificado dele (Nota Técnica 2024.001, regras HP07 e K11).
-- O retorno é o `ResultadoSefaz` do cliente: `tipo` indica o resultado, `cStat` é o código de resposta da SEFAZ e `xMotivo` é a descrição. Quando `tipo` é `'autorizado'`, `valor.procEventoMDFe` contém o XML do evento com o retorno do registro. A função `guardarEvento` do exemplo deve persistir esse XML.
-- O encerramento não recupera automaticamente uma resposta perdida. Antes de reenviar, use `recuperarEventoRegistrado(emissor.cliente, chave, '110112')`, exportada por `sinete/mdfe`, para consultar o evento de encerramento. Se retornar `registrado: true`, o evento está em `evento`. Se retornar `registrado: false`, examine `consulta`: isso não prova que o evento não foi registrado.
+- O retorno é um `DesfechoEvento`, o mesmo do `cancelar`: `registrado` traz o `evento` e o `procEvento` (o XML do evento com o retorno do registro), que a função `guardarEvento` do exemplo deve persistir; `recusado` traz `cStat`, `xMotivo` e, quando o catálogo tem, a `dica`; `pendente` diz que ainda não se sabe se a SEFAZ registrou o encerramento.
+- **Resposta perdida.** Sem resposta, ou com a rejeição 631 (duplicidade de evento), o emissor consulta a chave e nunca conclui pelo `cStat` sozinho. O encerramento registrado no mesmo município volta como `registrado` com `recuperado: true`. Encerrado em outro município, o desfecho é `recusado` com o 631. Se a consulta mostra o MDF-e encerrado mas sem o evento legível, ou não mostra o evento depois de um pedido sem resposta, o desfecho é `pendente`: consulte de novo mais tarde. Sem o emissor, `recuperarEventoRegistrado(cliente, chave, '110112')`, do `sinete/mdfe`, faz a mesma consulta.
 
 Para saber o que ainda está aberto, `emissor.cliente.consultarNaoEncerrados()` consulta os MDF-e do titular do certificado. Quando `tipo` é `'autorizado'`, `valor` contém a lista de chaves e protocolos: `cStat: '111'` indica documentos encontrados e `cStat: '112'` indica uma lista vazia.
 

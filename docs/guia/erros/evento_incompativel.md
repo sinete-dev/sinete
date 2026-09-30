@@ -1,6 +1,6 @@
 # `evento_incompativel`: o evento não é da nota ou não é o esperado
 
-O evento informado, como um cancelamento ou uma Carta de Correção Eletrônica (CC-e), não corresponde ao documento ou ao tipo esperado. O erro também ocorre quando são solicitadas marcas de cancelamento e substituição ao mesmo tempo para uma Nota Fiscal de Serviço Eletrônica (NFS-e). É lançado como `DanfeError`, de `@sinete/da`, que estende `ErroSinete` e tem `code: 'evento_incompativel'`. Identifique o erro pelo `code`, usando `ehErroSinete(e, 'evento_incompativel')`, de `@sinete/core`, nunca pela mensagem.
+O evento informado, como um cancelamento ou uma Carta de Correção Eletrônica (CC-e), não corresponde ao documento ou ao tipo esperado. O erro também ocorre quando são solicitadas marcas de cancelamento e substituição ao mesmo tempo para uma Nota Fiscal de Serviço Eletrônica (NFS-e). É lançado como `ErroDa`, de `@sinete/da`, que estende `ErroSinete` e tem `code: 'evento_incompativel'`. Identifique o erro pelo `code`, usando `ehErroSinete(e, 'evento_incompativel')`, de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 

@@ -1,6 +1,6 @@
 # `transmissao_em_andamento`: outro processo está transmitindo este documento
 
-O emissor tentou adquirir a trava que impede transmissões simultâneas do mesmo documento, identificado pelo par `tipo` (tipo de documento) e `ref` (identificador no seu sistema). Outro processo, ou outra chamada do mesmo processo, já tem essa trava em vigor. O erro lançado é `TransmissaoEmAndamentoError`, de `@sinete/emissor`, que estende `ErroSinete` e tem `code: 'transmissao_em_andamento'`. Identifique-o pelo `code`, usando `ehErroSinete(e, 'transmissao_em_andamento')`, de `@sinete/core`, nunca pela mensagem.
+O emissor tentou adquirir a trava que impede transmissões simultâneas do mesmo documento, identificado pelo par `tipo` (tipo de documento) e `ref` (identificador no seu sistema). Outro processo, ou outra chamada do mesmo processo, já tem essa trava em vigor. O erro lançado é `ErroTransmissaoEmAndamento`, de `@sinete/emissor`, que estende `ErroSinete` e tem `code: 'transmissao_em_andamento'`. Identifique-o pelo `code`, usando `ehErroSinete(e, 'transmissao_em_andamento')`, de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 

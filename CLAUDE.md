@@ -5,7 +5,7 @@ Monorepo bun de pacotes `@sinete/*` (DF-e brasileiros em TypeScript, Apache-2.0)
 ## Invariantes
 
 - **Assinar a string final e nunca mais tocar nela.** Nada de reparsear ou reserializar XML assinado.
-- **Dados como dados.** Endpoints, tabelas, rejeições, cadeia ICP e regras por UF em arquivos versionados com `source` e vigência. Nunca `if (uf === 'MT')`.
+- **Dados como dados.** Endpoints, tabelas, rejeições, cadeia ICP e regras por UF em arquivos versionados com `fonte` e vigência. Nunca `if (uf === 'MT')`.
 - **Relógio injetado.** Nada de `new Date()` ou `Date.now()` fora de `packages/core/src/clock.ts` (o Biome barra). Dois relógios: emissão e fato gerador (`ContextoDeTempo`).
 - **Erro tipado.** Todo erro estende `ErroSinete` com `code` estável; rejeição da SEFAZ é `ResultadoSefaz`, não exceção.
 - **Sem LGPL/GPL.** Implementar das specs oficiais, registrar a origem de cada regra, nunca copiar código de projetos LGPL/GPL.

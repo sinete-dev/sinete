@@ -10,7 +10,7 @@ Os valores possíveis de `regime` são `monofasia` (tributação concentrada em 
 
 ## Correção
 
-Calcule o grupo de tributos em outro sistema ou em uma implementação própria e informe-o pronto no item (`impostos.ibsCbs.grupo` na NF-e). Outra opção é substituir a calculadora em `montagem.ibsCbs` do emissor por uma implementação da interface `IbsCbsCalculator`, exportada por `@sinete/nfe`.
+Calcule o grupo de tributos em outro sistema ou em uma implementação própria e informe-o pronto no item (`impostos.ibsCbs.grupo` na NF-e). Outra opção é substituir a calculadora em `montagem.ibsCbs` do emissor por uma implementação da interface `CalculadoraIbsCbs`, exportada por `@sinete/nfe`.
 
 ## Armadilha
 

@@ -8,7 +8,7 @@ O servidor da SEFAZ (Secretaria da Fazenda) pode ter trocado de autoridade certi
 
 ## Correção
 
-Atualize os pacotes `@sinete/*`: o conjunto de certificados ICP-Brasil é distribuído e versionado no `@sinete/cert`. Com proxy corporativo, passe os certificados da AC dele em formato PEM, como uma lista de strings em `acsAdicionais` do transporte. No emissor, configure essa opção ao criar o transporte na função passada à opção `transporte`. No comando `doctor`, use `--ca <arquivo.pem>`. Se o certificado do servidor estiver expirado ou a cadeia enviada estiver incompleta, a configuração precisa ser corrigida pelo responsável pelo servidor.
+Atualize os pacotes `@sinete/*`: o conjunto de certificados ICP-Brasil é distribuído e versionado no `@sinete/cert`. Com proxy corporativo, passe os certificados da AC dele em formato PEM, como uma lista de strings em `acsAdicionais` do transporte. No emissor, configure essa opção ao criar o transporte na função passada à opção `transporte`. No comando `doctor`, use `--ac <arquivo.pem>`. Se o certificado do servidor estiver expirado ou a cadeia enviada estiver incompleta, a configuração precisa ser corrigida pelo responsável pelo servidor.
 
 ## Armadilha
 

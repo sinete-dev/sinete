@@ -1,15 +1,15 @@
 # Como cancelar NF-e, MDF-e e NFS-e
 
-Cancele pelo emissor do documento (`sinete/emissor/nfe`, `sinete/emissor/mdfe` ou `sinete/emissor/nfse`). O método `cancelar` devolve `registrado` quando a resposta confirma o registro do evento. Se o pedido ficar sem resposta ou receber um dos códigos descritos abaixo, o emissor tenta recuperar o evento por consulta: na SEFAZ (Secretaria da Fazenda), para NF-e e MDF-e, ou na Sefin Nacional (serviço autorizador da NFS-e). Nessa recuperação, só devolve `registrado` quando encontra o evento de cancelamento. O cliente de baixo nível (`createNfeClient().cancelar`) envia o pedido e interpreta a resposta, mas não faz essa recuperação; se você o usar diretamente, ela fica por sua conta.
+Cancele pelo emissor do documento (`sinete/emissor/nfe`, `sinete/emissor/mdfe` ou `sinete/emissor/nfse`). O método `cancelar` devolve `registrado` quando a resposta confirma o registro do evento. Se o pedido ficar sem resposta ou receber um dos códigos descritos abaixo, o emissor tenta recuperar o evento por consulta: na SEFAZ (Secretaria da Fazenda), para NF-e e MDF-e, ou na Sefin Nacional (serviço autorizador da NFS-e). Nessa recuperação, só devolve `registrado` quando encontra o evento de cancelamento. O cliente de baixo nível (`criarClienteNfe().cancelar`) envia o pedido e interpreta a resposta, mas não faz essa recuperação; se você o usar diretamente, ela fica por sua conta.
 
 Nos desfechos, `cStat` é o código de situação ou rejeição retornado pelo serviço, e `xMotivo` é a descrição correspondente.
 
 ## NF-e
 
 ```ts
-import { createNfeEmissor } from 'sinete/emissor/nfe';
+import { criarEmissorNfe } from 'sinete/emissor/nfe';
 
-const nfe = await createNfeEmissor({ pfx, senha, ambiente: 'homologacao', store, aoDecidir });
+const nfe = await criarEmissorNfe({ pfx, senha, ambiente: 'homologacao', store, aoDecidir });
 const d = await nfe.cancelar({ chave, xJust: 'Pedido cancelado pelo cliente antes do envio' });
 switch (d.tipo) {
   case 'registrado':
@@ -17,7 +17,7 @@ switch (d.tipo) {
     await guardarPdf(chave, await nfe.pdfCancelado(nfeProc, d.procEvento));
     break;
   case 'recusado':
-    console.log(d.cStat, d.xMotivo, d.hint?.comoCorrigir);
+    console.log(d.cStat, d.xMotivo, d.dica?.comoCorrigir);
     break;
   case 'pendente':
     break; // sem decisão: chame cancelar de novo mais tarde, com os mesmos dados
@@ -35,9 +35,9 @@ switch (d.tipo) {
 ## MDF-e
 
 ```ts
-import { createMdfeEmissor } from 'sinete/emissor/mdfe';
+import { criarEmissorMdfe } from 'sinete/emissor/mdfe';
 
-const mdfe = await createMdfeEmissor({ pfx, senha, ambiente: 'homologacao', store, aoDecidir });
+const mdfe = await criarEmissorMdfe({ pfx, senha, ambiente: 'homologacao', store, aoDecidir });
 const d = await mdfe.cancelar({ chave, xJust: 'Viagem cancelada antes da saida' });
 if (d.tipo === 'registrado') await guardarEvento(chave, d.procEvento); // procEventoMDFe
 ```
@@ -49,9 +49,9 @@ O cancelamento do MDF-e (Manifesto Eletrônico de Documentos Fiscais) segue o me
 A NFS-e (Nota Fiscal de Serviço Eletrônica) Nacional usa a Sefin Nacional para registrar e consultar o cancelamento.
 
 ```ts
-import { createNfseEmissor } from 'sinete/emissor/nfse';
+import { criarEmissorNfse } from 'sinete/emissor/nfse';
 
-const nfse = await createNfseEmissor({ pfx, senha, ambiente: 'homologacao', store, aoDecidir });
+const nfse = await criarEmissorNfse({ pfx, senha, ambiente: 'homologacao', store, aoDecidir });
 const d = await nfse.cancelar({ chave, cMotivo: '1', xMotivo: 'Erro na emissao do valor do servico' });
 if (d.tipo === 'recusado') console.log(d.cStat, d.xMotivo); // código E da Sefin, por exemplo E0822
 ```

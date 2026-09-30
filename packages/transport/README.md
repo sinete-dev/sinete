@@ -59,7 +59,7 @@ Antes de abrir socket, o transporte cruza o perfil TLS do host com as capacidade
 - Travas fixas antes da política: só `https`, sem credencial na URL.
 - Redirecionamento nunca é seguido (o `node:https` não segue; no Deno, `redirect: 'manual'`): a política só vale para a URL conferida, e um 307/308 reenviaria o documento. O 3xx volta como resposta.
 - `timeoutMs` é prazo total da requisição, não inatividade do socket.
-- `PoliticaDeHosts` roda antes de qualquer socket. `politicaDeHostsPermitidos({ hosts, ports?, tpAmb?, requireTpAmbInBody? })` generaliza a guarda do spike; `todasAsPoliticas` combina.
+- `PoliticaDeHosts` roda antes de qualquer socket. `politicaDeHostsPermitidos({ hosts, portas?, tpAmb?, exigirTpAmbNoCorpo? })` generaliza a guarda do spike; `todasAsPoliticas` combina.
 - Node e Bun conferem, depois do handshake (inclusive no socket reaproveitado do pool), que o certificado local do socket é o da identidade (`certificado_nao_carregado` se não for). `tls.certificadoLocalCarregado` sai na resposta.
 - `auditoria` recebe um evento por envio (host, caminho, método, status ou código de erro, duração), sem corpo nem segredo.
 

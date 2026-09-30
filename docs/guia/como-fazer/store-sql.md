@@ -5,7 +5,7 @@ O emissor do sinete (`@sinete/emissor`) não conhece o seu banco: ele recebe um 
 ## O que o store precisa garantir
 
 - **Trava com prazo, por documento.** `travar(tipo, ref, prazoMs)` pega a trava se não houver outra em vigor; uma trava vencida é assumida por quem chega, e o dono antigo perde o direito de gravar, descartar e renovar. `ref` é o identificador do documento no sistema do integrador. `tipo` (`nfe`, `mdfe`, `nfse`) faz parte da chave: a Nota Fiscal Eletrônica (NF-e) e o Manifesto Eletrônico de Documentos Fiscais (MDF-e) com a mesma `ref` têm travas separadas. `nfse` identifica a Nota Fiscal de Serviço Eletrônica (NFS-e).
-- **Bytes gravados uma vez.** `gravar` só grava com a trava em vigor (senão lança `TravaPerdidaError`) e se não houver bytes guardados (senão lança `TransmissaoJaGravadaError`). Nos dois casos de erro, nada muda.
+- **Bytes gravados uma vez.** `gravar` só grava com a trava em vigor (senão lança `ErroTravaPerdida`) e se não houver bytes guardados (senão lança `ErroTransmissaoJaGravada`). Nos dois casos de erro, nada muda.
 - **Relógio do banco.** Prazo, renovação, "parado há" e "assinado há" são comparados com o `now()` do banco. A interface recebe durações (`prazoMs`, `idadeMaximaMs`), nunca instantes calculados no processo: dois servidores com relógios diferentes poderiam discordar sobre o vencimento de uma trava.
 - **`concluir` idempotente e sem exigir a trava em vigor.** Repetir a chamada não muda o resultado, mas ela só limpa a gravação se o `token` ainda for o do dono. A gravação de quem assumiu a trava fica.
 - **Seleção da retomada automática.** `listarPendentes` devolve as gravações sem trava em vigor e dentro do filtro, com as nunca tentadas primeiro. `registrarTentativa` conta a tentativa só na mesma `gravacao` e marca o alerta uma única vez.
@@ -47,7 +47,7 @@ import type {
   TransmissaoStore,
   Trava,
 } from 'sinete/emissor';
-import { TransmissaoJaGravadaError, TravaPerdidaError } from 'sinete/emissor';
+import { ErroTransmissaoJaGravada, ErroTravaPerdida } from 'sinete/emissor';
 
 /** O mínimo do driver: texto com $1, $2... e as linhas devolvidas (use RETURNING para saber o que mudou). */
 export interface Sql {
@@ -150,8 +150,8 @@ export function createPgStore(sql: Sql): TransmissaoStore {
          WHERE tipo = $1 AND ref = $2 AND token = $3 AND trava_ate > now() AND xml IS NOT NULL`,
         [t.tipo, t.ref, t.token],
       );
-      if (dono.rows.length === 1) throw new TransmissaoJaGravadaError('já há bytes gravados: retome com eles');
-      throw new TravaPerdidaError('a trava venceu: outro processo pode ter assumido');
+      if (dono.rows.length === 1) throw new ErroTransmissaoJaGravada('já há bytes gravados: retome com eles');
+      throw new ErroTravaPerdida('a trava venceu: outro processo pode ter assumido');
     },
 
     async descartar(t) {
@@ -162,7 +162,7 @@ export function createPgStore(sql: Sql): TransmissaoStore {
          WHERE tipo = $1 AND ref = $2 AND token = $3 AND trava_ate > now() RETURNING ref`,
         [t.tipo, t.ref, t.token],
       );
-      if (r.rows.length === 0) throw new TravaPerdidaError('a trava venceu: outro processo pode ter assumido');
+      if (r.rows.length === 0) throw new ErroTravaPerdida('a trava venceu: outro processo pode ter assumido');
     },
 
     async concluir(t) {
@@ -218,9 +218,9 @@ Este adaptador passou nos 14 casos básicos da suíte de contrato contra o Postg
 
 Para comparar o conteúdo, os perfis retiram campos que mudam a cada montagem, como a data e hora de emissão e a assinatura. Na NF-e e no MDF-e, também retiram o código numérico, o dígito verificador e outros campos derivados da chave de acesso. Se a recusa puder ser corrigida justamente num dos campos retirados, o emissor compara o SHA-256 do XML assinado completo, para permitir a correção.
 
-Quando a contagem chega ao limite, 3 por padrão, dentro da janela de 1 hora desde a primeira recusa da sequência, a próxima emissão do mesmo conteúdo lança `RecusaRepetidaError` antes de gravar. O reenvio da mesma nota com a mesma rejeição mais de 30 vezes pode levar ao bloqueio por consumo indevido, a rejeição 656, conforme o Manual de Orientação do Contribuinte (MOC) 7.0, Anexo I, item 4.3.1. Os limites dessa regra são parametrizáveis por ambiente autorizador.
+Quando a contagem chega ao limite, 3 por padrão, dentro da janela de 1 hora desde a primeira recusa da sequência, a próxima emissão do mesmo conteúdo lança `ErroRecusaRepetida` antes de gravar. O reenvio da mesma nota com a mesma rejeição mais de 30 vezes pode levar ao bloqueio por consumo indevido, a rejeição 656, conforme o Manual de Orientação do Contribuinte (MOC) 7.0, Anexo I, item 4.3.1. Os limites dessa regra são parametrizáveis por ambiente autorizador.
 
-Abaixo do limite da barreira, a mesma nota pode ser enviada novamente, pois a causa pode ter sido resolvida fora dela. A opção `recusaRepetida` permite configurar `limite` e `janelaMs`, ou desligar a barreira com `false`. Sem os dois métodos, o emissor não mantém essa barreira local; com apenas um deles, `createEmissor` lança `ErroDeConfiguracao`.
+Abaixo do limite da barreira, a mesma nota pode ser enviada novamente, pois a causa pode ter sido resolvida fora dela. A opção `recusaRepetida` permite configurar `limite` e `janelaMs`, ou desligar a barreira com `false`. Sem os dois métodos, o emissor não mantém essa barreira local; com apenas um deles, `criarEmissor` lança `ErroDeConfiguracao`.
 
 A contagem fica numa tabela à parte: `soltar` apaga a linha de `transmissao` quando não há bytes, e a recusa precisa sobreviver a isso e ser visível para outro processo. Basta uma linha por documento, com a sequência atual, o instante da primeira recusa e quantas vezes ela se repetiu. A janela é comparada com o relógio do banco:
 
@@ -296,7 +296,7 @@ Apague periodicamente as linhas antigas. Por exemplo, `DELETE FROM transmissao_r
 
 `registrarFalhaDoAutorizador`, `contingenciaAtiva`, `entrarEmContingencia`, `sairDaContingencia`, `reservarSonda` e `marcarFimDaSvc` são opcionais e devem ser implementados juntos. Eles guardam o estado da [contingência automática](contingencia.md#contingência-automática), a emissão alternativa quando o serviço autorizador normal falha, no banco. Assim, todas as réplicas da aplicação veem o mesmo estado, somam as falhas umas das outras e apenas uma avisa a entrada em contingência. A reserva de consulta também garante que apenas uma réplica por intervalo consulte o status do autorizador ou da SEFAZ Virtual de Contingência (SVC), o serviço alternativo da NF-e.
 
-Sem os seis métodos, o emissor guarda a contingência na memória do processo; com apenas parte deles, `createEmissor` lança `ErroDeConfiguracao`. Implementar os métodos não ativa a contingência por si só: ela depende da configuração do emissor. Na NF-e, a entrada na SVC exige que a consulta feita à própria SVC responda 107, indicando serviço em operação. O escopo é um texto como `homologacao:nfe:55:SP`, que identifica ambiente, tipo de documento, modelo e unidade federativa (UF). Uma linha por escopo basta:
+Sem os seis métodos, o emissor guarda a contingência na memória do processo; com apenas parte deles, `criarEmissor` lança `ErroDeConfiguracao`. Implementar os métodos não ativa a contingência por si só: ela depende da configuração do emissor. Na NF-e, a entrada na SVC exige que a consulta feita à própria SVC responda 107, indicando serviço em operação. O escopo é um texto como `homologacao:nfe:55:SP`, que identifica ambiente, tipo de documento, modelo e unidade federativa (UF). Uma linha por escopo basta:
 
 ```sql
 CREATE TABLE autorizador_contingencia (
@@ -424,7 +424,7 @@ A suíte inclui os casos da contagem de recusas: a mesma recusa soma, outra reco
 
 A suíte inclui também os casos da contingência automática: as falhas somam entre processos e recomeçam depois da janela, apenas um processo entra e apenas um sai, a saída zera a contagem, a reserva da consulta de status é de um processo por intervalo dentro e fora da contingência, e o fim da SVC fica no escopo e é apagado na saída. Para testar um store sem os seis métodos, passe `contingencia: false`; nesse caso, o emissor guarda a contingência na memória do processo. Para testar `createPgStore`, que não implementa nenhum dos dois grupos opcionais, passe tanto `recusas: false` quanto `contingencia: false`.
 
-Os casos conferem, entre outros comportamentos: dez travas simultâneas de dois processos com uma só vencedora; a trava vencida assumida sem o dono antigo conseguir gravar ou soltar a nova trava; a renovação perdida impedindo a gravação; os bytes, o `id` e o `meta` disponíveis por outra conexão; `concluir` idempotente; a seleção e a contagem da retomada. Uma falha lança `ContratoVioladoError` (`contrato_violado`) com o nome do caso. Os casos que verificam prazos esperam as travas vencerem de verdade: `prazoCurtoMs` vale 1 segundo por padrão, e a suíte completa leva cerca de 20 vezes esse prazo, além do tempo das consultas.
+Os casos conferem, entre outros comportamentos: dez travas simultâneas de dois processos com uma só vencedora; a trava vencida assumida sem o dono antigo conseguir gravar ou soltar a nova trava; a renovação perdida impedindo a gravação; os bytes, o `id` e o `meta` disponíveis por outra conexão; `concluir` idempotente; a seleção e a contagem da retomada. Uma falha lança `ErroContratoViolado` (`contrato_violado`) com o nome do caso. Os casos que verificam prazos esperam as travas vencerem de verdade: `prazoCurtoMs` vale 1 segundo por padrão, e a suíte completa leva cerca de 20 vezes esse prazo, além do tempo das consultas.
 
 ## Armadilhas
 

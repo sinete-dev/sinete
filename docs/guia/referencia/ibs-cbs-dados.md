@@ -6,7 +6,7 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 
 `@sinete/ibs-cbs-dados`: dados oficiais do IBS/CBS versionados, com leitor tipado e sem regra de negócio.
 
-O dataset vem do SQLite da Calculadora offline da RFB e das tabelas do IT 2025.002, fixados por hash e extraídos por `tools/ibs-cbs-dados` (ADR 0007). Esta entrada tem o leitor, a aplicabilidade de NCM/NBS e o diff semântico; o dataset embarcado está em `@sinete/ibs-cbs-dados/bundled`, e qualquer outro bundle compatível pode ser carregado em runtime com `carregarDataset` (depois de `conferirDataset`, se veio de fora).
+O dataset vem do SQLite da Calculadora offline da RFB e das tabelas do IT 2025.002, fixados por hash e extraídos por `tools/ibs-cbs-dados` (ADR 0007). Esta entrada tem o leitor, a aplicabilidade de NCM/NBS e o diff semântico; o dataset embarcado está em `@sinete/ibs-cbs-dados/embarcado`, e qualquer outro bundle compatível pode ser carregado em runtime com `carregarDataset` (depois de `conferirDataset`, se veio de fora).
 
 ### Funções
 
@@ -98,9 +98,9 @@ O dataset vem do SQLite da Calculadora offline da RFB e das tabelas do IT 2025.0
 - `NOMES_DAS_TABELAS`: `NOMES_DAS_TABELAS: readonly NomeDaTabela[]`
 - `VERSAO_DO_FORMATO_DOS_DADOS`: Versão do formato que este código lê. Bundle com versão maior é recusado. `VERSAO_DO_FORMATO_DOS_DADOS = 2`
 
-## `@sinete/ibs-cbs-dados/bundled`
+## `@sinete/ibs-cbs-dados/embarcado`
 
-`@sinete/ibs-cbs-dados/bundled`: o dataset embarcado nesta versão do pacote, extraído por `tools/ibs-cbs-dados` das fontes oficiais fixadas em `manifesto.fontes`. Entrada separada da principal para que quem carrega dados em runtime de outra origem não leve os ~2 MB de JSON para o bundle.
+`@sinete/ibs-cbs-dados/embarcado`: o dataset embarcado nesta versão do pacote, extraído por `tools/ibs-cbs-dados` das fontes oficiais fixadas em `manifesto.fontes`. Entrada separada da principal para que quem carrega dados em runtime de outra origem não leve os ~2 MB de JSON para o bundle.
 
 ### Funções
 

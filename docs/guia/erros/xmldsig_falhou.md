@@ -17,7 +17,7 @@ A função `conferirAssinatura`, de `@sinete/core/xml`, não lança exceções p
 
 ## Correção
 
-Assine o documento que a montagem do sinete devolveu, usando o `Id` gerado por ela. No fluxo de `buildNfe` e `signNfe`, a primeira função monta o documento e gera o identificador; a segunda usa esse identificador para assinar.
+Assine o documento que a montagem do sinete devolveu, usando o `Id` gerado por ela. No fluxo de `montarNfe` e `assinarNfe`, a primeira função monta o documento e gera o identificador; a segunda usa esse identificador para assinar.
 
 Se implementar um `Assinador` próprio, a interface de assinatura de `@sinete/core`, confira que ele devolve os bytes completos da assinatura RSA PKCS#1 v1.5. Isso vale para integrações com certificado A3, módulo de segurança de hardware (HSM) ou serviço em nuvem. No modo `digest`, `assinarDigestInfo` recebe o DigestInfo SHA-1 de 35 bytes, composto pelo prefixo que identifica o algoritmo e pelo hash do `SignedInfo`. Esse conteúdo já está preparado para a operação RSA PKCS#1 v1.5 e não deve passar por um novo cálculo de hash.
 

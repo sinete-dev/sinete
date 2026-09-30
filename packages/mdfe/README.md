@@ -5,9 +5,9 @@ MDF-e modelo 58, leiaute 3.00b, modal rodoviário: modelo de entrada tipado, mon
 Para emitir, retomar, encerrar e cancelar com estado entre chamadas (bytes assinados gravados antes do envio, trava entre processos, retomada automática, cancelamento com recuperação), use o emissor de MDF-e do [`@sinete/emissor`](../emissor) (`@sinete/emissor/mdfe`, ou `sinete/emissor/mdfe` pelo guarda-chuva). Este pacote é o protocolo e as primitivas sem estado que ele usa (ADR 0010):
 
 ```ts
-import { createMdfeEmissor } from '@sinete/emissor/mdfe';
+import { criarEmissorMdfe } from '@sinete/emissor/mdfe';
 
-const emissor = await createMdfeEmissor({ pfx, senha, ambiente: 'homologacao', store, aoDecidir });
+const emissor = await criarEmissorMdfe({ pfx, senha, ambiente: 'homologacao', store, aoDecidir });
 const desfecho = await emissor.emitir('viagem-7', mdfe);
 ```
 
@@ -17,32 +17,32 @@ Status: pré-alfa, API instável até a 1.0. Nada foi enviado à SEFAZ real. Os 
 
 ```ts
 import { relogioDoSistema, contextoDeTempo } from '@sinete/core';
-import { buildMdfe, createMdfeClient, signMdfe } from '@sinete/mdfe';
+import { montarMdfe, criarClienteMdfe, assinarMdfe } from '@sinete/mdfe';
 
-const r = buildMdfe(mdfe, { ambiente: 'homologacao', time: contextoDeTempo({ emissao: relogioDoSistema }) });
-if (!r.ok) throw new Error(r.issues.map((i) => `${i.caminho}: ${i.mensagem}`).join('\n'));
-const assinado = await signMdfe(r.value, signer); // grave esta string antes de enviar
-const client = createMdfeClient({ transport, signer, ambiente: 'homologacao', clock: relogioDoSistema });
+const r = await montarMdfe(mdfe, { ambiente: 'homologacao', tempo: contextoDeTempo({ emissao: relogioDoSistema }) });
+if (!r.ok) throw new Error(r.ocorrencias.map((i) => `${i.caminho}: ${i.mensagem}`).join('\n'));
+const assinado = await assinarMdfe(r.valor, signer); // grave esta string antes de enviar
+const client = criarClienteMdfe({ transporte: transport, assinador: signer, ambiente: 'homologacao', relogio: relogioDoSistema });
 const desfecho = await client.autorizar(assinado);
 if (desfecho.tipo !== 'autorizado') throw new Error(`${desfecho.cStat} ${desfecho.xMotivo}`);
 guardar(desfecho.valor.mdfeProc);
 // Na chegada:
-await client.encerrar({ chave: r.value.chave, nProt: desfecho.valor.nProt ?? '', uf: 'SP', cMun: '3550308' });
+await client.encerrar({ chave: r.valor.chave, nProt: desfecho.valor.nProt ?? '', uf: 'SP', cMun: '3550308' });
 ```
 
-## Montagem (`buildMdfe`)
+## Montagem (`montarMdfe`)
 
-A entrada (`MdfeInput`) usa os nomes do MOC nos campos e nomes em português nos grupos (`emitente`, `carregamento`, `percurso`, `rodoviario.tracao`, `rodoviario.reboques`, `rodoviario.ciot`, `rodoviario.valePedagio`, `rodoviario.contratantes`, `rodoviario.pagamentos`, `descarregamentos[].nfe`/`cte`, `seguros`, `produtoPredominante`, `totais`). Valores aceitam `string`, `number`, `bigint` ou `Decimal`; prefira texto.
+A entrada (`DadosMdfe`) usa os nomes do MOC nos campos e nomes em português nos grupos (`emitente`, `carregamento`, `percurso`, `rodoviario.tracao`, `rodoviario.reboques`, `rodoviario.ciot`, `rodoviario.valePedagio`, `rodoviario.contratantes`, `rodoviario.pagamentos`, `descarregamentos[].nfe`/`cte`, `seguros`, `produtoPredominante`, `totais`). Valores aceitam `string`, `number`, `bigint` ou `Decimal`; prefira texto.
 
 - **Schema por vigência.** O relógio de emissão e o ambiente escolhem o schema (`selecionarPl('mdfe')` do `@sinete/schemas`); o XML é validado contra ele antes de devolver.
-- **Chave.** cUF, AAMM, CNPJ (ou `000` + CPF), modelo 58, série, nMDF, tpEmis, cMDF e DV. cMDF aleatório (WebCrypto, injetável em `options.random`) que não repete o nMDF; cMDF informado é conferido. Emitente CPF usa as séries 920 a 969.
+- **Chave.** cUF, AAMM, CNPJ (ou `000` + CPF), modelo 58, série, nMDF, tpEmis, cMDF e DV. cMDF aleatório (WebCrypto, injetável em `opcoes.aleatorio`) que não repete o nMDF; cMDF informado é conferido. Emitente CPF usa as séries 920 a 969.
 - **Derivados e conferências.** `qCTe` e `qNFe` do `tot` saem das listas de documentos; `vCarga` e `qCarga` informados são formatados no leiaute. No pagamento do frete, componentes e parcelas mais adiantamento conferem com o `vContrato` na tolerância de R$ 0,01 (F58 e F62), e as datas das parcelas, com a emissão e entre si (F60 e F61).
 - **Percurso.** `percurso` é conferido contra a tabela de divisas (`src/data/ufs-vizinhas.json`, fronteiras do IBGE, regra F90): cada trecho `ufIni → percurso → ufFim` tem de ligar UFs vizinhas, e o erro sugere o caminho mais curto (`sugerirPercurso`). `conferirPercurso` e `saoVizinhas` estão exportados para a tela.
 - **Produto predominante.** `infLotacao` fica dentro do `prodPred`, com o local de carregamento e o de descarregamento (CEP ou latitude e longitude). A obrigatoriedade do NCM e do `infLotacao` segue a vigência da NT 2025.001 (`src/data/regras.json`).
 - **CIOT por vigência.** A rejeição 684 (CIOT obrigatório para o TAC e equiparado) entra em homologação em 21/09/2026 e em produção em 23/11/2026 (NT 2026.001), como dado.
 - **IE.** Sai com os dígitos informados, sem completar zeros à esquerda: é o que a SEFAZ autoriza (checagem do corpus).
-- **Validação estrita.** Cada problema volta como `Ocorrencia` (`caminho`, `code`, `mensagem` com a regra do MOC e a rejeição, por exemplo `(F90, rejeição 663)`), nunca como exceção. Os códigos estão em `MDFE_ISSUE_CODES`. `origem` diz se a ocorrência veio da conferência da entrada (`entrada`, com o caminho da `MdfeInput`) ou do documento montado (`montagem`: schema, chave, `tpEmis` das opções), e `rotuloDoCaminho(path)` dá o caminho em português para a tela (`Condutor 1, CPF`); veja o [ADR 0011](../../docs/adr/0011-origem-e-rotulo-das-ocorrencias.md).
-- **`verProc`.** Padrão `sinete <versão do @sinete/mdfe>` (`formatarVerProc` do `@sinete/core`, cortado com segurança em 20 caracteres); `options.verProc` sobrepõe.
+- **Validação estrita.** Cada problema volta como `Ocorrencia` (`caminho`, `code`, `mensagem` com a regra do MOC e a rejeição, por exemplo `(F90, rejeição 663)`), nunca como exceção. Os códigos estão em `CODIGOS_OCORRENCIA_MDFE`. `origem` diz se a ocorrência veio da conferência da entrada (`entrada`, com o caminho da `DadosMdfe`) ou do documento montado (`montagem`: schema, chave, `tpEmis` das opções), e `rotuloDoCaminho(path)` dá o caminho em português para a tela (`Condutor 1, CPF`); veja o [ADR 0011](../../docs/adr/0011-origem-e-rotulo-das-ocorrencias.md).
+- **`verProc`.** Padrão `sinete <versão do @sinete/mdfe>` (`formatarVerProc` do `@sinete/core`, cortado com segurança em 20 caracteres); `opcoes.verProc` sobrepõe.
 
 - **NT 2024.001.** Chave de CT-e ou NF-e anterior a 6 meses da emissão (518 e 519; o mês limite passa) e cavalo mecânico sem reboque (523), com os parâmetros em `src/data/emissao.json`.
 
@@ -50,15 +50,15 @@ Regras do Anexo I conferidas no builder: F08, F10, F11, F13 a F22, F24, F26 a F3
 
 ### QR Code, contingência e assinatura
 
-`signMdfe` coloca o `infMDFeSupl` com o QR Code (`src/data/qrcode.json`) antes de `</MDFe>` e depois insere a `Signature` como último filho, por splice. Em contingência off-line (`tpEmis: '2'`), o QR Code leva `sign`, a assinatura RSA-SHA1 da chave em Base64, e o MDF-e tem 168 horas para ser transmitido com o mesmo cMDF (`prazoContingencia`). Na emissão normal, transmitir depois de 24 horas é recusado com 228 (F80). `comQrCode` e `assinaturaQrCode` estão exportados para quem assina de outro jeito.
+`assinarMdfe` coloca o `infMDFeSupl` com o QR Code (`src/data/qrcode.json`) antes de `</MDFe>` e depois insere a `Signature` como último filho, por splice. Em contingência off-line (`tpEmis: '2'`), o QR Code leva `sign`, a assinatura RSA-SHA1 da chave em Base64, e o MDF-e tem 168 horas para ser transmitido com o mesmo cMDF (`prazoContingencia`). Na emissão normal, transmitir depois de 24 horas é recusado com 228 (F80). `comQrCode` e `assinaturaQrCode` estão exportados para quem assina de outro jeito.
 
-## Serviços (`createMdfeClient`)
+## Serviços (`criarClienteMdfe`)
 
-`MdfeClient` fala SOAP 1.2 com o holder `mdfeDadosMsg` sobre qualquer `Transporte` do `@sinete/transport`, com os endpoints do MDF-e (SVRS) vindos dele. Cada operação devolve um `ResultadoSefaz` do core, com a rejeição enriquecida pelo catálogo do MDF-e do `@sinete/rejeicoes` (os códigos colidem com os da NF-e, por isso a entrada própria). O mapa de cStat é dado (`src/data/cstat.json`).
+`ClienteMdfe` fala SOAP 1.2 com o holder `mdfeDadosMsg` sobre qualquer `Transporte` do `@sinete/transport`, com os endpoints do MDF-e (SVRS) vindos dele. Cada operação devolve um `ResultadoSefaz` do core, com a rejeição enriquecida pelo catálogo do MDF-e do `@sinete/rejeicoes` (os códigos colidem com os da NF-e, por isso a entrada própria). O mapa de cStat é dado (`src/data/cstat.json`).
 
 - `statusServico`, `autorizar` (MDFeRecepcaoSinc, o MDF-e em gzip e Base64; como a política do transporte não enxerga o `tpAmb` dentro do gzip, o cliente confere o `tpAmb` do MDF-e contra o ambiente dele e recusa com `ErroPolitica` antes do envio), `consultar` (situação, protocolo, eventos e conferência do `digVal` contra o MDF-e assinado), `consultarNaoEncerrados`.
-- Eventos: `cancelar`, `encerrar` (`dtEnc`, padrão a data de hoje no fuso da UF da chave, `cUF` e `cMun`; o município tem de ser da UF, ou 9999999 no exterior, conferido antes do envio como K03 e K04; `terceiro` é o encerramento pelo proprietário do veículo de tração, que assina com o próprio certificado, vira o autor e liga o `indEncPorTerceiro`, NT 2024.001), `incluirCondutor`, `incluirDFe`, `pagamentoOperacao`. O `Id` segue o leiaute, `cOrgao` é o cUF da chave e o autor é o emitente da chave (fora o encerramento por terceiro); `options.autor` é o padrão da consulta de não encerrados.
-- Cancelamento: todo método que vai à rede aceita `opcoes?: OpcoesEnvio` como último parâmetro, com o `signal` que cancela a requisição em curso. Abortar rejeita com `ErroTransporte` de `code: 'cancelado'` (com o transporte do `@sinete/transport`), e um pedido que já saiu pode ter sido processado: confirme por consulta antes de repetir.
+- Eventos: `cancelar`, `encerrar` (`dtEnc`, padrão a data de hoje no fuso da UF da chave, `cUF` e `cMun`; o município tem de ser da UF, ou 9999999 no exterior, conferido antes do envio como K03 e K04; `terceiro` é o encerramento pelo proprietário do veículo de tração, que assina com o próprio certificado, vira o autor e liga o `indEncPorTerceiro`, NT 2024.001), `incluirCondutor`, `incluirDFe`, `pagamentoOperacao`. O `Id` segue o leiaute, `cOrgao` é o cUF da chave e o autor é o emitente da chave (fora o encerramento por terceiro); `opcoes.autor` é o padrão da consulta de não encerrados.
+- Cancelamento: todo método que vai à rede aceita `opcoes?: EnvioOpcoes` como último parâmetro, com o `signal` que cancela a requisição em curso. Abortar rejeita com `ErroTransporte` de `code: 'cancelado'` (com o transporte do `@sinete/transport`), e um pedido que já saiu pode ter sido processado: confirme por consulta antes de repetir.
 - `mdfeProc` e `procEventoMDFe` são montados por splice: o documento assinado entra byte a byte.
 - Envio sem resposta: `resolverEnvioSemResposta(client, assinado, desfecho?)` consulta a chave e devolve `concluida`, `reenviar`, `divergente` (duplicidade com outra chave, extraída do xMotivo 539), `sem-prova` (a chave consta e o protocolo não traz o `digVal` para provar que é este MDF-e) ou `indefinida`. `recuperarEventoRegistrado(client, chave, tpEvento)` confirma pela consulta um evento cujo pedido ficou sem resposta ou voltou como duplicidade, e devolve o `procEventoMDFe` que a SEFAZ tem. `mdfeAssinadoDoProc(xml)` tira do `mdfeProc` guardado o MDF-e assinado pronto para isso, com o namespace declarado na raiz quando ele o herdava do envelope.
 

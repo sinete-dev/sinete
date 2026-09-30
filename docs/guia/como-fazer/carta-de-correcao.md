@@ -7,49 +7,53 @@ A carta de correção eletrônica (CC-e) é o evento 110110 da Nota Fiscal Eletr
 Use o emissor de NF-e, que reutiliza o transporte e o certificado da emissão. O texto da condição de uso é preenchido pelo sinete.
 
 ```ts
-import { createNfeEmissor } from 'sinete/emissor/nfe';
+import { criarEmissorNfe } from 'sinete/emissor/nfe';
 
-const nfe = await createNfeEmissor({ pfx, senha, ambiente: 'homologacao', store, aoDecidir });
+const nfe = await criarEmissorNfe({ pfx, senha, ambiente: 'homologacao', store, aoDecidir });
 const r = await nfe.cartaCorrecao({
   chave,
   xCorrecao: 'Onde se le Rua A, numero 1, leia-se Rua A, numero 10',
   nSeqEvento: 1,
 });
-if (r.tipo === 'autorizado') await guardarEvento(chave, r.valor.procEventoNFe);
-else console.log(r.tipo, r.cStat, r.xMotivo);
+if (r.tipo === 'registrado') await guardarEvento(chave, r.procEvento);
+else if (r.tipo === 'recusado') console.log(r.cStat, r.xMotivo, r.dica);
+else agendarNovaTentativa(chave, r.motivo);
 ```
 
 - **Sequência.** Cada nova CC-e da mesma nota substitui a anterior e leva o número sequencial seguinte (`nSeqEvento` de 1 a 20). Inclua no texto as correções anteriores que devem continuar valendo. O sinete lança `ErroDeConfiguracao` antes do envio se o sequencial não for inteiro ou estiver fora desse intervalo. A Secretaria da Fazenda (SEFAZ) rejeita sequencial repetido com o código 573 (duplicidade de evento). O código 594 corresponde à rejeição por sequencial acima do permitido, mas o sinete impede esse envio na validação local.
 - **Texto.** `xCorrecao` deve ter de 15 a 1000 caracteres, conforme o schema do evento no pacote PL_010d. Fora desse intervalo, o sinete lança `ErroDeValidacao` antes do envio.
 - **Autorizador.** A CC-e vai sempre ao autorizador da unidade federativa (UF), mesmo quando a nota foi autorizada pela SEFAZ Virtual de Contingência (SVC), usada como alternativa ao autorizador habitual.
-- O retorno é o `EventoOutcome`, definido como um `ResultadoSefaz` do cliente. Neste método, `tipo` é `autorizado` quando o evento foi registrado ou `recusado` quando foi rejeitado; `cStat` é o código de resposta da SEFAZ e `xMotivo` é sua descrição. Em caso de registro, `procEventoNFe` contém o XML do evento com a resposta da SEFAZ. A CC-e não usa o desfecho normalizado do emissor nem mantém estado entre chamadas.
+- O retorno é um `DesfechoEvento`, o mesmo do `cancelar`: `registrado` traz o `evento` e o `procEvento` (o XML do evento com a resposta da SEFAZ); `recusado` traz `cStat`, `xMotivo` e, quando o catálogo tem, a `dica`; `pendente` diz que ainda não se sabe se a SEFAZ registrou a correção. O campo `recuperado` do `registrado` indica que o evento veio da consulta da chave, e não da resposta do pedido.
 
 ## Quando o pedido fica sem resposta
 
-`cartaCorrecao` propaga falhas de transporte, como `ErroDeTempoEsgotado` com código `tempo_esgotado` ou `ErroTransporte` com código `conexao_recusada`. Se a resposta não chegou, o evento pode ter sido registrado. Antes de reenviar, consulte: `recuperarEventoRegistrado` devolve o evento 110110 de maior sequencial encontrado na consulta da chave, desde que tenha retorno de registro válido.
+O emissor trata a falta de resposta e a duplicidade de evento pela consulta da chave, e nunca conclui pelo `cStat` sozinho:
+
+- **Sem resposta** (tempo esgotado, conexão caída): o emissor consulta a chave. Se a SEFAZ registrou a CC-e com o mesmo `nSeqEvento` e o mesmo `xCorrecao`, o desfecho é `registrado` com `recuperado: true`. Se a consulta não mostra o evento, o desfecho é `pendente` com `motivo: 'sem-resposta'` e o erro do pedido em `causa`: tente de novo com o mesmo sequencial e o mesmo texto.
+- **Rejeição 573 ou 580** (evento já registrado): a mesma consulta decide. A correção registrada com o mesmo texto volta como `registrado` com `recuperado: true`; se a sequência já tem outro texto, o desfecho é `recusado` com o 573, e a próxima CC-e leva o `nSeqEvento` seguinte.
+
+Sem o emissor, a mesma recuperação está em `recuperarEventoRegistrado`, do `sinete/nfe`. Com o sequencial, ela devolve só o evento dessa sequência; sem ele, o de maior sequencial.
 
 ```ts
 import { recuperarEventoRegistrado } from 'sinete/nfe';
 
-const rec = await recuperarEventoRegistrado(nfe.cliente, chave, '110110');
-if (rec.registrado && rec.evento.nSeqEvento === '1') await guardarEvento(chave, rec.evento.procEventoNFe);
+const rec = await recuperarEventoRegistrado(cliente, chave, '110110', 1);
+if (rec.registrado) await guardarEvento(chave, rec.evento.procEventoNFe);
 ```
 
-Se o evento recuperado tem o sequencial que você enviou, confira o conteúdo da correção e guarde o XML. A mesma consulta serve após uma rejeição 573: o código de duplicidade, sozinho, não comprova que o conteúdo registrado é o que você pretendia enviar.
-
-`registrado: false` significa que a consulta não mostrou um evento válido desse tipo; não prova que ele não existe. A função examina os eventos quando `rec.consulta.tipo` é `autorizado` ou `denegado`. Nos demais casos, a consulta foi inconclusiva: tente novamente depois. Com a consulta concluída, confira também a situação da nota antes de reenviar o pedido com o mesmo sequencial. Se a função recuperar outro sequencial, verifique os registros antes de decidir pelo reenvio, pois ela devolve apenas o maior.
+Confira o texto da correção no `procEventoNFe` antes de guardar. `registrado: false` significa que a consulta não mostrou um evento válido dessa sequência; não prova que ele não existe. A função examina os eventos quando `rec.consulta.tipo` é `autorizado` ou `denegado`. Nos demais casos, a consulta foi inconclusiva: tente novamente depois.
 
 ## Imprimir o DACCe
 
 O DACCe é o Documento Auxiliar da Carta de Correção Eletrônica, a representação impressa da CC-e.
 
 ```ts
-import { dacce, toPdf } from 'sinete/da/cce';
+import { dacce, gerarPdf } from 'sinete/da/cce';
 
-const pdf = toPdf(dacce(procEventoNFe, { nfe: nfeProc }));
+const pdf = gerarPdf(dacce(procEventoNFe, { nfe: nfeProc }));
 ```
 
-A opção `nfe` recebe o XML da nota autorizada (`nfeProc`) e é opcional: completa o DACCe com os dados da nota. Se o XML for de outra chave, `dacce` lança `DanfeError` com código `evento_incompativel`. O leiaute do DACCe segue uma convenção de mercado: o Manual de Orientação do Contribuinte (MOC) não define um.
+A opção `nfe` recebe o XML da nota autorizada (`nfeProc`) e é opcional: completa o DACCe com os dados da nota. Se o XML for de outra chave, `dacce` lança `ErroDa` com código `evento_incompativel`. O leiaute do DACCe segue uma convenção de mercado: o Manual de Orientação do Contribuinte (MOC) não define um.
 
 ## Armadilhas
 

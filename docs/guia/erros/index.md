@@ -30,21 +30,21 @@ Gerado do fonte por `scripts/docs-gerados.ts`; não edite à mão. Todo erro lan
 
 ## `@sinete/da`
 
-- [`campo_ausente`](campo_ausente.md) (`DanfeError`): falta um grupo obrigatório para o documento auxiliar
-- [`codigo_barras_invalido`](codigo_barras_invalido.md) (`DanfeError`): o conteúdo não cabe no código de barras
-- [`documento_inesperado`](documento_inesperado.md) (`DanfeError`): o XML é de outro documento
-- [`evento_incompativel`](evento_incompativel.md) (`DanfeError`): o evento não é da nota ou não é o esperado
-- [`formato_incompativel`](formato_incompativel.md) (`DanfeError`): o formato pedido não se aplica ao modelo
-- [`imagem_invalida`](imagem_invalida.md) (`DanfeError`): o logotipo não é PNG nem JPEG legível
-- [`xml_invalido`](xml_invalido.md) (`DanfeError`): o XML do documento auxiliar é malformado
+- [`campo_ausente`](campo_ausente.md) (`ErroDa`): falta um grupo obrigatório para o documento auxiliar
+- [`codigo_barras_invalido`](codigo_barras_invalido.md) (`ErroDa`): o conteúdo não cabe no código de barras
+- [`documento_inesperado`](documento_inesperado.md) (`ErroDa`): o XML é de outro documento
+- [`evento_incompativel`](evento_incompativel.md) (`ErroDa`): o evento não é da nota ou não é o esperado
+- [`formato_incompativel`](formato_incompativel.md) (`ErroDa`): o formato pedido não se aplica ao modelo
+- [`imagem_invalida`](imagem_invalida.md) (`ErroDa`): o logotipo não é PNG nem JPEG legível
+- [`xml_invalido`](xml_invalido.md) (`ErroDa`): o XML do documento auxiliar é malformado
 
 ## `@sinete/emissor`
 
-- [`contrato_violado`](contrato_violado.md) (`ContratoVioladoError`): o adaptador do store não cumpre o contrato
-- [`recusa_repetida`](recusa_repetida.md) (`RecusaRepetidaError`): a mesma nota já foi recusada pela SEFAZ o limite de vezes
-- [`transmissao_em_andamento`](transmissao_em_andamento.md) (`TransmissaoEmAndamentoError`): outro processo está transmitindo este documento
-- [`transmissao_ja_gravada`](transmissao_ja_gravada.md) (`TransmissaoJaGravadaError`): já há bytes gravados para o documento
-- [`trava_perdida`](trava_perdida.md) (`TravaPerdidaError`): a trava venceu antes de o emissor terminar
+- [`contrato_violado`](contrato_violado.md) (`ErroContratoViolado`): o adaptador do store não cumpre o contrato
+- [`recusa_repetida`](recusa_repetida.md) (`ErroRecusaRepetida`): a mesma nota já foi recusada pela SEFAZ o limite de vezes
+- [`transmissao_em_andamento`](transmissao_em_andamento.md) (`ErroTransmissaoEmAndamento`): outro processo está transmitindo este documento
+- [`transmissao_ja_gravada`](transmissao_ja_gravada.md) (`ErroTransmissaoJaGravada`): já há bytes gravados para o documento
+- [`trava_perdida`](trava_perdida.md) (`ErroTravaPerdida`): a trava venceu antes de o emissor terminar
 
 ## `@sinete/ibs-cbs`
 

@@ -4,32 +4,32 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 
 ## `@sinete/cli`
 
-`@sinete/cli`: o executável `sinete` e, para quem quiser embutir, o `runDoctor` programático e o upsert do bloco do `AGENTS.md` e da skill `sinete` (`upsertBloco`, `BLOCO_AGENTS`, `upsertSkill`, `SKILL_SINETE`).
+`@sinete/cli`: o executável `sinete` e, para quem quiser embutir, o `rodarDoctor` programático e o upsert do bloco do `AGENTS.md` e da skill `sinete` (`aplicarBloco`, `BLOCO_AGENTS`, `aplicarSkill`, `SKILL_SINETE`).
 
 ### Funções
 
-- `formatCnpj`: `formatCnpj(cnpj: string): string`
-- `formatReport`: `formatReport(report: DoctorReport): string[]`
-- `main`: Executa a CLI e devolve o código de saída. `main(argv: readonly string[], io: CliIo): Promise<number>`
-- `maskCpf`: Máscara de CPF para a saída (o doctor costuma ir parar em issue e chat). `maskCpf(cpf: string): string`
-- `maskCpfs`: Mascara todo CPF (11 dígitos soltos) num texto de saída: CN de e-CPF, DN com serialNumber. `maskCpfs(text: string): string`
-- `parseHttpDate`: `Date` HTTP (IMF-fixdate, RFC 9110) em ms desde a época, sem o global `Date`. `parseHttpDate(value: string | undefined): number | undefined`
-- `runDoctor`: `runDoctor(options: DoctorOptions): Promise<DoctorReport>`
-- `upsertBloco`: Devolve o `AGENTS.md` com o bloco: cria o arquivo, acrescenta o bloco no fim ou troca o que estiver entre os marcadores. Lança se os marcadores estiverem incompletos, repetidos ou fora de ordem, para não apagar texto do integrador. `upsertBloco(atual: string | undefined, bloco: string): { texto: string; acao: AcaoAgentsMd; }`
-- `upsertSkill`: Devolve o `SKILL.md` a gravar. `upsertSkill(atual: string | undefined, skill: string): { texto: string; acao: AcaoSkill; }`
+- `aplicarBloco`: Devolve o `AGENTS.md` com o bloco: cria o arquivo, acrescenta o bloco no fim ou troca o que estiver entre os marcadores. Lança se os marcadores estiverem incompletos, repetidos ou fora de ordem, para não apagar texto do integrador. `aplicarBloco(atual: string | undefined, bloco: string): { texto: string; acao: AcaoAgentsMd; }`
+- `aplicarSkill`: Devolve o `SKILL.md` a gravar. `aplicarSkill(atual: string | undefined, skill: string): { texto: string; acao: AcaoSkill; }`
+- `formatarCnpj`: `formatarCnpj(cnpj: string): string`
+- `formatarRelatorio`: `formatarRelatorio(relatorio: RelatorioDoDoctor): string[]`
+- `lerDataHttp`: `Date` HTTP (IMF-fixdate, RFC 9110) em ms desde a época, sem o global `Date`. `lerDataHttp(valor: string | undefined): number | undefined`
+- `main`: Executa a CLI e devolve o código de saída. `main(argv: readonly string[], io: EntradaSaidaCli): Promise<number>`
+- `mascararCpf`: Máscara de CPF para a saída (o doctor costuma ir parar em issue e chat). `mascararCpf(cpf: string): string`
+- `mascararCpfs`: Mascara todo CPF (11 dígitos soltos) num texto de saída: CN de e-CPF, DN com serialNumber. `mascararCpfs(texto: string): string`
+- `rodarDoctor`: `rodarDoctor(opcoes: DoctorOpcoes): Promise<RelatorioDoDoctor>`
 
 ### Interfaces
 
-- `CliIo`: Membros: `out`, `err`, `env`, `promptPassword`, `readFile`, `writeFile`, `doctor`.
-- `DoctorCheck`: Membros: `id`, `status`, `message`, `details`.
-- `DoctorOptions`: Membros: `pfx`, `password`, `extraChainPem`, `extraCaPem`, `allowExpired`, `endpoint`, `documento`, `uf`, `ambiente`, `status`, `clockUrl`, `timeoutMs`, `clock`.
-- `DoctorReport`: Membros: `ok`, `checks`.
+- `DoctorOpcoes`: Membros: `pfx`, `senha`, `cadeiaAdicionalPem`, `acsAdicionaisPem`, `aceitarVencido`, `endpoint`, `documento`, `uf`, `ambiente`, `consultarStatus`, `urlDoRelogio`, `timeoutMs`, `relogio`.
+- `EntradaSaidaCli`: Membros: `saida`, `erro`, `env`, `pedirSenha`, `lerArquivo`, `gravarArquivo`, `doctor`.
+- `RelatorioDoDoctor`: Membros: `ok`, `verificacoes`.
+- `VerificacaoDoDoctor`: Membros: `id`, `situacao`, `mensagem`, `detalhes`.
 
 ### Tipos
 
 - `AcaoAgentsMd`: O que o upsert fez com o `AGENTS.md`. `type AcaoAgentsMd = 'criado' | 'inserido' | 'atualizado' | 'sem-mudanca'`
 - `AcaoSkill`: O que o upsert fez com o `SKILL.md`. `preservada`: existe sem o marcador, logo é do integrador e não foi tocada. `type AcaoSkill = 'criada' | 'atualizada' | 'sem-mudanca' | 'preservada'`
-- `CheckStatus`: `type CheckStatus = 'ok' | 'aviso' | 'falha' | 'pulado'`
+- `SituacaoDaVerificacao`: `type SituacaoDaVerificacao = 'ok' | 'aviso' | 'falha' | 'pulado'`
 
 ### Constantes
 

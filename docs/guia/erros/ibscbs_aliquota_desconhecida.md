@@ -10,7 +10,7 @@ O erro também ocorre quando a classificação tributária exige uma alíquota f
 
 ## Correção
 
-Para simular com alíquotas nominais ou de referência, informe os valores e o motivo (`motivo`) com `comAliquotasInformadas` de `sinete/ibs-cbs/aliquotas`. Na NF-e (Nota Fiscal Eletrônica), passe esse provedor em `ibsCbsCalculator({ rates })`, de `sinete/nfe`, e use a calculadora na opção `ibsCbs` da montagem. Para alíquotas fixas ou uniformes setoriais ausentes, informe os valores e o motivo em `aliquotasInformadas` do item ao usar diretamente o motor de cálculo. O resultado do motor fica marcado como simulado.
+Para simular com alíquotas nominais ou de referência, informe os valores e o motivo (`motivo`) com `comAliquotasInformadas` de `sinete/ibs-cbs/aliquotas`. Na NF-e (Nota Fiscal Eletrônica), passe esse provedor em `calculadoraIbsCbs({ rates })`, de `sinete/nfe`, e use a calculadora na opção `ibsCbs` da montagem. Para alíquotas fixas ou uniformes setoriais ausentes, informe os valores e o motivo em `aliquotasInformadas` do item ao usar diretamente o motor de cálculo. O resultado do motor fica marcado como simulado.
 
 Para emitir com as alíquotas oficiais, aguarde a publicação dos valores ausentes e atualize os pacotes para uma versão que os inclua. Na montagem da NF-e, este erro retorna como ocorrência da nota, com `caminho: 'impostos.ibsCbs'` e `origem: 'montagem'`.
 

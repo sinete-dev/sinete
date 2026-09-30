@@ -38,12 +38,12 @@ Na integração abaixo, `meuStore` implementa o `TransmissaoStore` sobre o banco
 
 ```ts sem-execucao
 import { readFile } from 'node:fs/promises';
-import { createNfeEmissor } from 'sinete/emissor/nfe';
+import { criarEmissorNfe } from 'sinete/emissor/nfe';
 
 const senha = process.env.SINETE_PFX_SENHA;
 if (senha === undefined) throw new Error('defina SINETE_PFX_SENHA');
 
-const emissor = await createNfeEmissor({
+const emissor = await criarEmissorNfe({
   pfx: await readFile('empresa.pfx'),
   senha,
   ambiente: 'homologacao',
