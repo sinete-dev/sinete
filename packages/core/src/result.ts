@@ -1,7 +1,7 @@
 /**
  * Desfechos discriminados de uma chamada à SEFAZ (princípio 7).
  *
- * Toda operação que chega a uma resposta da SEFAZ devolve um `SefazOutcome`, nunca lança por causa do `cStat`. Quem
+ * Toda operação que chega a uma resposta da SEFAZ devolve um `ResultadoSefaz`, nunca lança por causa do `cStat`. Quem
  * decide o que é autorizado, rejeitado, denegado ou pendente é o pacote do documento (`@sinete/nfe` e afins), a partir
  * de tabelas versionadas de `cStat`; aqui fica só a forma do resultado.
  *
@@ -28,7 +28,7 @@ export interface DicaRejeicao {
   readonly fonte: string;
 }
 
-/** Documento ou evento autorizado; `value` traz o protocolo e o que mais o pacote do documento devolver. */
+/** Documento ou evento autorizado; `valor` traz o protocolo e o que mais o pacote do documento devolver. */
 export interface Autorizado<T> extends StatusSefaz {
   readonly tipo: 'autorizado';
   readonly valor: T;
@@ -42,7 +42,7 @@ export interface Recusado extends StatusSefaz {
 
 /**
  * Uso denegado (irregularidade do emitente ou do destinatário). Diferente da rejeição, a denegação é registrada na
- * SEFAZ e o número fica consumido; `value` traz o protocolo de denegação.
+ * SEFAZ e o número fica consumido; `valor` traz o protocolo de denegação.
  */
 export interface Denegado<T> extends StatusSefaz {
   readonly tipo: 'denegado';
@@ -69,8 +69,8 @@ const CSTAT = /^(?:\d{3,4}|E\d{4})$/;
  * Confere o formato lexical do `cStat`: 3 ou 4 dígitos, como o `TStat` do XSD, ou `E` e 4 dígitos, o código de erro
  * da NFS-e Nacional (Anexo I e Anexo II do leiaute, coluna "CÓD. ERRO").
  */
-export function ehCStat(value: unknown): value is string {
-  return typeof value === 'string' && CSTAT.test(value);
+export function ehCStat(valor: unknown): valor is string {
+  return typeof valor === 'string' && CSTAT.test(valor);
 }
 
 function checkStatus(s: StatusSefaz): void {
@@ -79,34 +79,34 @@ function checkStatus(s: StatusSefaz): void {
   }
 }
 
-export function criarAutorizado<T>(status: StatusSefaz, value: T): Autorizado<T> {
-  checkStatus(status);
-  return { tipo: 'autorizado', cStat: status.cStat, xMotivo: status.xMotivo, valor: value };
+export function criarAutorizado<T>(resposta: StatusSefaz, valor: T): Autorizado<T> {
+  checkStatus(resposta);
+  return { tipo: 'autorizado', cStat: resposta.cStat, xMotivo: resposta.xMotivo, valor };
 }
 
-export function criarRecusado(status: StatusSefaz, hint?: DicaRejeicao): Recusado {
-  checkStatus(status);
-  return hint === undefined
-    ? { tipo: 'recusado', cStat: status.cStat, xMotivo: status.xMotivo }
-    : { tipo: 'recusado', cStat: status.cStat, xMotivo: status.xMotivo, dica: hint };
+export function criarRecusado(resposta: StatusSefaz, dica?: DicaRejeicao): Recusado {
+  checkStatus(resposta);
+  return dica === undefined
+    ? { tipo: 'recusado', cStat: resposta.cStat, xMotivo: resposta.xMotivo }
+    : { tipo: 'recusado', cStat: resposta.cStat, xMotivo: resposta.xMotivo, dica };
 }
 
-export function criarDenegado<D>(status: StatusSefaz, value: D): Denegado<D> {
-  checkStatus(status);
-  return { tipo: 'denegado', cStat: status.cStat, xMotivo: status.xMotivo, valor: value };
+export function criarDenegado<D>(resposta: StatusSefaz, valor: D): Denegado<D> {
+  checkStatus(resposta);
+  return { tipo: 'denegado', cStat: resposta.cStat, xMotivo: resposta.xMotivo, valor };
 }
 
 export function criarPendente(
-  status: StatusSefaz,
-  options: { referencia?: string; aguardarMs?: number } = {},
+  resposta: StatusSefaz,
+  opcoes: { referencia?: string; aguardarMs?: number } = {},
 ): Pendente {
-  checkStatus(status);
+  checkStatus(resposta);
   return {
     tipo: 'pendente',
-    cStat: status.cStat,
-    xMotivo: status.xMotivo,
-    ...(options.referencia === undefined ? {} : { referencia: options.referencia }),
-    ...(options.aguardarMs === undefined ? {} : { aguardarMs: options.aguardarMs }),
+    cStat: resposta.cStat,
+    xMotivo: resposta.xMotivo,
+    ...(opcoes.referencia === undefined ? {} : { referencia: opcoes.referencia }),
+    ...(opcoes.aguardarMs === undefined ? {} : { aguardarMs: opcoes.aguardarMs }),
   };
 }
 
@@ -134,20 +134,20 @@ export interface TratadoresDeResultado<T, D, R> {
   pendente(o: Pendente): R;
 }
 
-export function tratarResultado<T, D, R>(o: ResultadoSefaz<T, D>, handlers: TratadoresDeResultado<T, D, R>): R {
+export function tratarResultado<T, D, R>(o: ResultadoSefaz<T, D>, tratadores: TratadoresDeResultado<T, D, R>): R {
   switch (o.tipo) {
     case 'autorizado':
-      return handlers.autorizado(o);
+      return tratadores.autorizado(o);
     case 'recusado':
-      return handlers.recusado(o);
+      return tratadores.recusado(o);
     case 'denegado':
-      return handlers.denegado(o);
+      return tratadores.denegado(o);
     case 'pendente':
-      return handlers.pendente(o);
+      return tratadores.pendente(o);
   }
 }
 
-/** Devolve o valor autorizado ou lança `SefazError` com o código do desfecho e o `cStat` oficial. */
+/** Devolve o valor autorizado ou lança `ErroSefaz` com o código do desfecho e o `cStat` oficial. */
 export function exigirAutorizado<T, D>(o: ResultadoSefaz<T, D>): T {
   switch (o.tipo) {
     case 'autorizado':
@@ -162,7 +162,7 @@ export function exigirAutorizado<T, D>(o: ResultadoSefaz<T, D>): T {
 }
 
 function throwSefaz(code: 'sefaz_rejeitou' | 'sefaz_denegou' | 'sefaz_pendente', o: ResultadoSefaz<unknown>): never {
-  throw new ErroSefaz(code, o.cStat, o.xMotivo, { detalhes: { status: o.tipo } });
+  throw new ErroSefaz(code, o.cStat, o.xMotivo, { detalhes: { tipo: o.tipo } });
 }
 
 /** Resultado genérico para operações locais que podem falhar sem exceção (parse tolerante, validação). */
@@ -170,10 +170,10 @@ export type Resultado<T, E = Error> =
   | { readonly ok: true; readonly valor: T }
   | { readonly ok: false; readonly erro: E };
 
-export function ok<T>(value: T): { readonly ok: true; readonly valor: T } {
-  return { ok: true, valor: value };
+export function ok<T>(valor: T): { readonly ok: true; readonly valor: T } {
+  return { ok: true, valor };
 }
 
-export function falha<E>(error: E): { readonly ok: false; readonly erro: E } {
-  return { ok: false, erro: error };
+export function falha<E>(erro: E): { readonly ok: false; readonly erro: E } {
+  return { ok: false, erro };
 }

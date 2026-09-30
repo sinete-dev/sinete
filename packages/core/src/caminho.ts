@@ -8,9 +8,9 @@
  * conferências do documento montado (`itens[0].produto.xProd`, `infNFe.det[0].prod.xProd`) e o do validador de XSD, com
  * barras e índice a partir de um, só quando o elemento se repete (`/infNFe/det[2]/prod/xProd`).
  */
-export function normalizarCaminho(path: string): string {
-  if (!path.startsWith('/')) return path;
-  return path
+export function normalizarCaminho(caminho: string): string {
+  if (!caminho.startsWith('/')) return caminho;
+  return caminho
     .slice(1)
     .split('/')
     .map((parte) => parte.replace(/\[(\d+)\]$/, (_t, n: string) => `[${Number(n) - 1}]`))
@@ -40,9 +40,9 @@ export interface TabelaDeRotulos {
  * Cria a função de rótulo de um documento: `Grupo, Campo` quando os dois são conhecidos (`Item 2, Descrição do
  * produto`), só um deles quando falta o outro, e o `padrao` da tabela quando nenhum casa.
  */
-export function criarRotuloDoCaminho(tabela: TabelaDeRotulos): (path: string) => string {
-  return (path: string): string => {
-    const p = normalizarCaminho(path);
+export function criarRotuloDoCaminho(tabela: TabelaDeRotulos): (caminho: string) => string {
+  return (caminho: string): string => {
+    const p = normalizarCaminho(caminho);
     let grupo = '';
     for (const g of tabela.grupos) {
       const m = g.padrao.exec(p);

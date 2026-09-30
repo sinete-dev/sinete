@@ -13,7 +13,7 @@
       "coletadoEm": "2026-09-25"
     }
   ],
-  "notes": "A sigla EX do TUf (exterior) não é UF e fica fora da tabela. Os cOrgao 90, 91 e 92 do TCOrgaoIBGE também ficam fora: entram com fonte própria no pacote que os usa.",
+  "notas": "A sigla EX do TUf (exterior) não é UF e fica fora da tabela. Os cOrgao 90, 91 e 92 do TCOrgaoIBGE também ficam fora: entram com fonte própria no pacote que os usa.",
   "ufs": [
     { "sigla": "RO", "cUF": "11", "nome": "Rondônia", "regiao": "N" },
     { "sigla": "AC", "cUF": "12", "nome": "Acre", "regiao": "N" },

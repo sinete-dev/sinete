@@ -1,0 +1,9 @@
+{
+  // Ferramenta do repo: roda no Bun. A saída dos geradores tem os tipos do `@sinete/rejeicoes`, e o typecheck confere.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["bun"],
+    "isolatedDeclarations": false
+  },
+  "include": ["*.ts"]
+}

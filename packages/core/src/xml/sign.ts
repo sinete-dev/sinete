@@ -2,12 +2,12 @@
  * Assinatura XMLDSig enveloped em três fases, sem reserializar o documento (ADR 0003, invariante "assinar a string
  * final e nunca mais tocar nela"):
  *
- * 1. `prepareSignature`: acha o elemento pelo `Id`, calcula o digest do C14N dele e insere por splice o `<Signature>`
+ * 1. `prepararAssinatura`: acha o elemento pelo `Id`, calcula o digest do C14N dele e insere por splice o `<Signature>`
  *    como último filho do pai do elemento, com um placeholder no `SignatureValue`. O `SignedInfo` é canonicalizado
  *    já no contexto final, herdando os namespaces reais dos ancestrais.
- * 2. `signPrepared`: o `Signer` do `@sinete/core` assina os bytes do `SignedInfo` (modo `data`) ou só o DigestInfo
+ * 2. `assinarPreparada`: o `Assinador` do `@sinete/core` assina os bytes do `SignedInfo` (modo `dados`) ou só o DigestInfo
  *    SHA-1 de 35 bytes (modo `digest`, para PKCS#11, HSM e A3 em nuvem).
- * 3. `assembleSignature`: troca o placeholder pelo `SignatureValue`. É a única edição depois do digest.
+ * 3. `montarAssinatura`: troca o placeholder pelo `SignatureValue`. É a única edição depois do digest.
  *
  * A saída é a entrada com exatamente uma inserção; é ela que vai para a SEFAZ e para o banco.
  */
@@ -34,11 +34,11 @@ export interface AssinaturaPreparada {
   readonly marcador: string;
   /** Offset onde o `<Signature>` foi inserido: logo antes da tag de fechamento do pai do elemento referenciado. */
   readonly inseridaEm: number;
-  /** O `SignedInfo` canonicalizado: exatamente os bytes que o signer assina no modo `data`. */
+  /** O `SignedInfo` canonicalizado: exatamente os bytes que o signer assina no modo `dados`. */
   readonly signedInfo: Uint8Array<ArrayBuffer>;
   /** DigestValue (base64) do elemento referenciado. */
   readonly digestValue: string;
-  /** O elemento referenciado canonicalizado, de onde saiu o `DigestValue`; vai no `SignContext` do signer `data`. */
+  /** O elemento referenciado canonicalizado, de onde saiu o `DigestValue`; vai no `ContextoDaAssinatura` do assinador `dados`. */
   readonly referenciado?: Uint8Array<ArrayBuffer>;
   readonly id: string;
 }
@@ -51,15 +51,15 @@ export interface PrepararAssinaturaOpcoes {
 }
 
 /** Fase 1: calcula o digest e insere o `<Signature>` com placeholder, sem tocar no resto do texto. */
-export async function prepararAssinatura(xml: string, options: PrepararAssinaturaOpcoes): Promise<AssinaturaPreparada> {
+export async function prepararAssinatura(xml: string, opcoes: PrepararAssinaturaOpcoes): Promise<AssinaturaPreparada> {
   if (xml.includes(PLACEHOLDER)) {
     throw new ErroAssinaturaXml('marcador-no-documento', 'o documento já contém o placeholder de assinatura');
   }
   const doc = lerXml(xml);
-  const targets = doc.ids.get(options.id) ?? [];
-  if (targets.length === 0) throw new ErroAssinaturaXml('id-ausente', `nenhum elemento com Id=${options.id}`);
+  const targets = doc.ids.get(opcoes.id) ?? [];
+  if (targets.length === 0) throw new ErroAssinaturaXml('id-ausente', `nenhum elemento com Id=${opcoes.id}`);
   if (targets.length > 1) {
-    throw new ErroAssinaturaXml('id-duplicado', `${targets.length} elementos com Id=${options.id}`);
+    throw new ErroAssinaturaXml('id-duplicado', `${targets.length} elementos com Id=${opcoes.id}`);
   }
   const target = targets[0] as ElementoXml;
   if (target.pai === null) {
@@ -74,12 +74,12 @@ export async function prepararAssinatura(xml: string, options: PrepararAssinatur
   const A = ALGORITMOS_XMLDSIG;
   const signedInfo =
     `<SignedInfo><CanonicalizationMethod Algorithm="${A.c14n}"/><SignatureMethod Algorithm="${A.rsaSha1}"/>` +
-    `<Reference URI="#${options.id}"><Transforms><Transform Algorithm="${A.envelopedSignature}"/>` +
+    `<Reference URI="#${opcoes.id}"><Transforms><Transform Algorithm="${A.envelopedSignature}"/>` +
     `<Transform Algorithm="${A.c14n}"/></Transforms><DigestMethod Algorithm="${A.sha1}"/>` +
     `<DigestValue>${digestValue}</DigestValue></Reference></SignedInfo>`;
   const signature =
     `<Signature xmlns="${XMLDSIG_NS}">${signedInfo}<SignatureValue>${PLACEHOLDER}</SignatureValue>` +
-    `<KeyInfo><X509Data><X509Certificate>${codificarBase64(options.certificadoDer)}</X509Certificate></X509Data>` +
+    `<KeyInfo><X509Data><X509Certificate>${codificarBase64(opcoes.certificadoDer)}</X509Certificate></X509Data>` +
     '</KeyInfo></Signature>';
   // Último filho do pai, não logo depois do elemento: NFC-e (`infNFeSupl`), MDF-e (`infMDFeSupl`) e CT-e têm um
   // irmão entre o elemento assinado e a Signature no schema. Em NFe, evento, MDFe e inutNFe a Signature é o último
@@ -107,47 +107,49 @@ export async function prepararAssinatura(xml: string, options: PrepararAssinatur
     signedInfo: te.encode(c14n(si)),
     digestValue,
     referenciado: referenced,
-    id: options.id,
+    id: opcoes.id,
   };
 }
 
 /** Monta o DigestInfo DER (prefixo SHA-1 + hash) do `SignedInfo`, entrada do modo `digest`. */
-export async function digestInfoDoSignedInfo(prepared: AssinaturaPreparada): Promise<Uint8Array> {
-  const h = new Uint8Array(await globalThis.crypto.subtle.digest('SHA-1', prepared.signedInfo));
+export async function digestInfoDoSignedInfo(preparada: AssinaturaPreparada): Promise<Uint8Array> {
+  const h = new Uint8Array(await globalThis.crypto.subtle.digest('SHA-1', preparada.signedInfo));
   const di = new Uint8Array(PREFIXO_DIGEST_INFO_SHA1.length + h.length);
   di.set(PREFIXO_DIGEST_INFO_SHA1);
   di.set(h, PREFIXO_DIGEST_INFO_SHA1.length);
   return di;
 }
 
-/** Fase 2: pede a assinatura RSA PKCS#1 v1.5 com SHA-1 ao signer, no modo dele. */
-export async function assinarPreparada(prepared: AssinaturaPreparada, signer: Assinador): Promise<Uint8Array> {
+/** Fase 2: pede a assinatura RSA PKCS#1 v1.5 com SHA-1 ao assinador, no modo dele. */
+export async function assinarPreparada(preparada: AssinaturaPreparada, assinador: Assinador): Promise<Uint8Array> {
   const value =
-    signer.tipo === 'dados'
-      ? await signer.assinar(
-          prepared.signedInfo,
+    assinador.tipo === 'dados'
+      ? await assinador.assinar(
+          preparada.signedInfo,
           'SHA-1',
-          prepared.referenciado === undefined ? undefined : { id: prepared.id, referenciado: prepared.referenciado },
+          preparada.referenciado === undefined ? undefined : { id: preparada.id, referenciado: preparada.referenciado },
         )
-      : await signer.assinarDigestInfo(await digestInfoDoSignedInfo(prepared));
-  if (value.length === 0) throw new ErroAssinaturaXml('assinatura-vazia', 'o signer devolveu assinatura vazia');
+      : await assinador.assinarDigestInfo(await digestInfoDoSignedInfo(preparada));
+  if (value.length === 0) throw new ErroAssinaturaXml('assinatura-vazia', 'o assinador devolveu assinatura vazia');
   return value;
 }
 
-/** Fase 3: troca o placeholder pelo `SignatureValue`. Nada mais no texto muda. */
-export function montarAssinatura(prepared: AssinaturaPreparada, signatureValue: Uint8Array): string {
-  if (signatureValue.length === 0) throw new ErroAssinaturaXml('assinatura-vazia', 'SignatureValue vazio');
-  const i = prepared.modelo.indexOf(prepared.marcador);
-  if (i === -1 || prepared.modelo.indexOf(prepared.marcador, i + 1) !== -1) {
-    throw new ErroAssinaturaXml('marcador-ausente', 'o template precisa ter exatamente um placeholder');
+/** Fase 3: troca o marcador pelo `SignatureValue`. Nada mais no texto muda. */
+export function montarAssinatura(preparada: AssinaturaPreparada, valorDaAssinatura: Uint8Array): string {
+  if (valorDaAssinatura.length === 0) throw new ErroAssinaturaXml('assinatura-vazia', 'SignatureValue vazio');
+  const i = preparada.modelo.indexOf(preparada.marcador);
+  if (i === -1 || preparada.modelo.indexOf(preparada.marcador, i + 1) !== -1) {
+    throw new ErroAssinaturaXml('marcador-ausente', 'o modelo precisa ter exatamente um marcador');
   }
   return (
-    prepared.modelo.slice(0, i) + codificarBase64(signatureValue) + prepared.modelo.slice(i + prepared.marcador.length)
+    preparada.modelo.slice(0, i) +
+    codificarBase64(valorDaAssinatura) +
+    preparada.modelo.slice(i + preparada.marcador.length)
   );
 }
 
-/** As três fases de uma vez: prepara com o certificado do signer, assina e monta. */
-export async function assinarXml(xml: string, options: { readonly id: string }, signer: Assinador): Promise<string> {
-  const prepared = await prepararAssinatura(xml, { id: options.id, certificadoDer: await signer.certificadoDer() });
-  return montarAssinatura(prepared, await assinarPreparada(prepared, signer));
+/** As três fases de uma vez: prepara com o certificado do assinador, assina e monta. */
+export async function assinarXml(xml: string, opcoes: { readonly id: string }, assinador: Assinador): Promise<string> {
+  const preparada = await prepararAssinatura(xml, { id: opcoes.id, certificadoDer: await assinador.certificadoDer() });
+  return montarAssinatura(preparada, await assinarPreparada(preparada, assinador));
 }

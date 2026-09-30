@@ -23,9 +23,9 @@ export function calcularDvCaepf(base: string): string {
 }
 
 /** Valida e normaliza um CAEPF (aceita máscara); devolve os 14 algarismos. */
-export function lerCaepf(input: string, options: LerOpcoes = {}): Resultado<string, Ocorrencia> {
-  const path = options.caminho ?? 'CAEPF';
-  const value = stripMask(input.trim());
+export function lerCaepf(entrada: string, opcoes: LerOpcoes = {}): Resultado<string, Ocorrencia> {
+  const path = opcoes.caminho ?? 'CAEPF';
+  const value = stripMask(entrada.trim());
   if (!/^\d*$/.test(value)) return falha(issue(path, 'caepf_caractere_invalido', 'CAEPF só tem algarismos'));
   if (value.length !== 14) return falha(issue(path, 'caepf_tamanho_invalido', 'CAEPF tem 14 algarismos'));
   if (allSame(value)) return falha(issue(path, 'caepf_digitos_repetidos', 'CAEPF com todos os algarismos iguais'));
@@ -35,11 +35,11 @@ export function lerCaepf(input: string, options: LerOpcoes = {}): Resultado<stri
   return ok(value);
 }
 
-export function caepfValido(input: string): boolean {
-  return lerCaepf(input).ok;
+export function caepfValido(entrada: string): boolean {
+  return lerCaepf(entrada).ok;
 }
 
 /** `000.000.000/000-00`. Não valida. */
-export function formatarCaepf(value: string): string {
-  return applyMask(stripMask(value), '###.###.###/###-##');
+export function formatarCaepf(valor: string): string {
+  return applyMask(stripMask(valor), '###.###.###/###-##');
 }

@@ -17,7 +17,7 @@ function codeOf(fn: () => unknown): string | undefined {
   return undefined;
 }
 
-describe('systemClock', () => {
+describe('relogioDoSistema', () => {
   test('acompanha o relógio do sistema', () => {
     const before = Date.now();
     const t = relogioDoSistema.agora().getTime();
@@ -26,7 +26,7 @@ describe('systemClock', () => {
   });
 });
 
-describe('fixedClock', () => {
+describe('relogioFixo', () => {
   test('aceita ISO com fuso, epoch e Date, e devolve cópias independentes', () => {
     const iso = relogioFixo('2026-09-25T09:00:00-03:00');
     const a = iso.agora();
@@ -39,7 +39,7 @@ describe('fixedClock', () => {
     expect(fromDate.agora().toISOString()).toBe('2026-01-01T00:00:00.000Z');
   });
 
-  test('recusa instante sem fuso ou inválido com ConfigError', () => {
+  test('recusa instante sem fuso ou inválido com ErroDeConfiguracao', () => {
     expect(codeOf(() => relogioFixo('2026-09-25T12:00:00'))).toBe('config_invalida');
     expect(codeOf(() => relogioFixo('2026-09-25'))).toBe('config_invalida');
     expect(codeOf(() => relogioFixo('xyzZ'))).toBe('config_invalida');
@@ -48,7 +48,7 @@ describe('fixedClock', () => {
   });
 });
 
-describe('manualClock', () => {
+describe('relogioManual', () => {
   test('set e advance', () => {
     const c = relogioManual('2026-09-25T12:00:00Z');
     c.avancar(1500);
@@ -61,7 +61,7 @@ describe('manualClock', () => {
   });
 });
 
-describe('timeContext', () => {
+describe('contextoDeTempo', () => {
   test('sem fato gerador explícito, usa o relógio da emissão', () => {
     const emissao = relogioFixo('2026-09-25T12:00:00Z');
     const ctx = contextoDeTempo({ emissao });
@@ -78,7 +78,7 @@ describe('timeContext', () => {
   });
 });
 
-describe('formatDateTimeOffset', () => {
+describe('formatarDataHoraComFuso', () => {
   const t = new Date('2027-01-01T02:30:05.999Z');
   test('formata no fuso pedido, virando o dia quando precisa', () => {
     expect(formatarDataHoraComFuso(t, -180)).toBe('2026-12-31T23:30:05-03:00');

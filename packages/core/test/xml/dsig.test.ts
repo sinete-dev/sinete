@@ -92,7 +92,7 @@ describe('assinatura em três fases', () => {
     expect(di.subarray(0, 15)).toEqual(PREFIXO_DIGEST_INFO_SHA1);
   });
 
-  test('prepare, sign e assemble separados dão o mesmo resultado de signXml', async () => {
+  test('prepare, sign e assemble separados dão o mesmo resultado de assinarXml', async () => {
     const p = await prepararAssinatura(DOC, { id: ID, certificadoDer: keys.certificateDer });
     expect(p.modelo.includes(p.marcador)).toBe(true);
     expect(p.inseridaEm).toBe(DOC.indexOf('</infNFe>') + 9);
@@ -288,10 +288,10 @@ describe('erros de preparo', () => {
     expect(await reasons(DOC, 'nada')).toBe('id-ausente');
     expect(await reasons('<r><a Id="x"/><b Id="x"/></r>', 'x')).toBe('id-duplicado');
     expect(await reasons('<r Id="x"/>', 'x')).toBe('referencia-na-raiz');
-    expect(await reasons('<r><a Id="x">@@SINETE_SIGNATURE_VALUE@@</a></r>', 'x')).toBe('placeholder-no-documento');
+    expect(await reasons('<r><a Id="x">@@SINETE_SIGNATURE_VALUE@@</a></r>', 'x')).toBe('marcador-no-documento');
   });
 
-  test('assemble exige exatamente um placeholder e assinatura não vazia', async () => {
+  test('montarAssinatura exige exatamente um marcador e assinatura não vazia', async () => {
     const p = await prepararAssinatura(DOC, { id: ID, certificadoDer: certificateDer });
     expect(() => montarAssinatura(p, new Uint8Array())).toThrow(ErroAssinaturaXml);
     expect(() => montarAssinatura({ ...p, modelo: DOC }, new Uint8Array([1]))).toThrow(ErroAssinaturaXml);

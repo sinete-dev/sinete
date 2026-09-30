@@ -47,21 +47,21 @@ export function rejeicaoMdfePorCodigo(cStat: string): RejeicaoMdfe | undefined {
   return byCode.get(cStat.trim());
 }
 
-/** `RejectionHint` do core para o código do MDF-e, quando há curadoria de causa e correção. */
+/** `DicaRejeicao` do core para o código do MDF-e, quando há curadoria de causa e correção. */
 export function dicaRejeicaoMdfe(cStat: string): DicaRejeicao | undefined {
   const r = rejeicaoMdfePorCodigo(cStat);
   if (!r?.causaProvavel || !r.comoCorrigir) return undefined;
   return { causaProvavel: r.causaProvavel, comoCorrigir: r.comoCorrigir, fonte: r.referencia ?? r.fonte };
 }
 
-/** Preenche o `hint` de um desfecho `rejected` do MDF-e. Não sobrescreve um `hint` já presente. */
-export function completarRecusadoMdfe(outcome: Recusado): Recusado {
-  if (outcome.dica !== undefined) return outcome;
-  const hint = dicaRejeicaoMdfe(outcome.cStat);
-  return hint === undefined ? outcome : { ...outcome, dica: hint };
+/** Preenche a `dica` de um desfecho `recusado` do MDF-e. Não sobrescreve uma `dica` já presente. */
+export function completarRecusadoMdfe(desfecho: Recusado): Recusado {
+  if (desfecho.dica !== undefined) return desfecho;
+  const dica = dicaRejeicaoMdfe(desfecho.cStat);
+  return dica === undefined ? desfecho : { ...desfecho, dica };
 }
 
-/** Como `enrichRejectedMdfe`, aceitando qualquer desfecho; só o `rejected` muda. */
-export function completarResultadoMdfe<T, D = T>(outcome: ResultadoSefaz<T, D>): ResultadoSefaz<T, D> {
-  return outcome.tipo === 'recusado' ? completarRecusadoMdfe(outcome) : outcome;
+/** Como `completarRecusadoMdfe`, aceitando qualquer desfecho; só o `recusado` muda. */
+export function completarResultadoMdfe<T, D = T>(desfecho: ResultadoSefaz<T, D>): ResultadoSefaz<T, D> {
+  return desfecho.tipo === 'recusado' ? completarRecusadoMdfe(desfecho) : desfecho;
 }

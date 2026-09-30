@@ -53,17 +53,17 @@ describe('construtores', () => {
 
   test('campos opcionais ausentes não viram undefined explícito', () => {
     const r = criarRecusado({ cStat: '215', xMotivo: 'Falha no schema XML' });
-    expect('hint' in r).toBe(false);
+    expect('dica' in r).toBe(false);
     const p = criarPendente({ cStat: '105', xMotivo: 'Lote em processamento' });
-    expect(Object.keys(p).sort()).toEqual(['cStat', 'status', 'xMotivo']);
+    expect(Object.keys(p).sort()).toEqual(['cStat', 'tipo', 'xMotivo']);
   });
 
   test('não copiam campos extras do status de entrada', () => {
     const raw = { cStat: '100', xMotivo: 'ok', tpAmb: '2' };
-    expect(Object.keys(criarAutorizado(raw, 1)).sort()).toEqual(['cStat', 'status', 'value', 'xMotivo']);
+    expect(Object.keys(criarAutorizado(raw, 1)).sort()).toEqual(['cStat', 'tipo', 'valor', 'xMotivo']);
   });
 
-  test('cStat fora do formato lexical vira ProtocolError', () => {
+  test('cStat fora do formato lexical vira ErroRespostaInvalida', () => {
     for (const cStat of ['1', '10000', 'abc', '', ' 100']) {
       let caught: unknown;
       try {
@@ -78,7 +78,7 @@ describe('construtores', () => {
     expect(() => criarPendente({ cStat: 'x', xMotivo: '' })).toThrow();
   });
 
-  test('isCStat', () => {
+  test('ehCStat', () => {
     expect(ehCStat('100')).toBe(true);
     expect(ehCStat(100)).toBe(false);
     expect(ehCStat('1001')).toBe(true);
@@ -103,7 +103,7 @@ describe('guardas e match', () => {
     expect(ALL.map(pendente)).toEqual([false, false, false, true]);
   });
 
-  test('matchOutcome chama o tratador certo', () => {
+  test('tratarResultado chama o tratador certo', () => {
     const labels = ALL.map((o) =>
       tratarResultado(o, {
         autorizado: (a) => `ok ${a.valor.nProt}`,
@@ -116,12 +116,12 @@ describe('guardas e match', () => {
   });
 });
 
-describe('unwrapAuthorized', () => {
+describe('exigirAutorizado', () => {
   test('devolve o valor autorizado', () => {
     expect(exigirAutorizado(AUT)).toEqual({ nProt: '135260000000001' });
   });
 
-  test('lança SefazError com o código de cada desfecho', () => {
+  test('lança ErroSefaz com o código de cada desfecho', () => {
     const codes = [REJ, DEN, PEN].map((o) => {
       try {
         exigirAutorizado(o);
@@ -131,7 +131,7 @@ describe('unwrapAuthorized', () => {
         const s = e as ErroSefaz;
         expect(s.cStat).toBe(o.cStat);
         expect(s.xMotivo).toBe(o.xMotivo);
-        expect(s.detalhes).toEqual({ status: o.tipo });
+        expect(s.detalhes).toEqual({ tipo: o.tipo });
         return s.code;
       }
     });
@@ -139,8 +139,8 @@ describe('unwrapAuthorized', () => {
   });
 });
 
-describe('Result genérico', () => {
-  test('ok e err', () => {
+describe('Resultado genérico', () => {
+  test('ok e falha', () => {
     expect(ok(1)).toEqual({ ok: true, valor: 1 });
     const e = new Error('x');
     expect(falha(e)).toEqual({ ok: false, erro: e });

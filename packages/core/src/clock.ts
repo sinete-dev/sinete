@@ -2,7 +2,7 @@
  * Relógio injetável (princípio 6).
  *
  * Nenhuma função do sinete chama `new Date()` ou `Date.now()` por conta própria: quem precisa do tempo recebe um
- * `Clock`. Este arquivo é o único do repositório autorizado a usar o global `Date` como construtor (regra do Biome).
+ * `Relogio`. Este arquivo é o único do repositório autorizado a usar o global `Date` como construtor (regra do Biome).
  *
  * Existem dois relógios, e eles não se confundem:
  *
@@ -13,7 +13,7 @@
  *   aplica, como as alíquotas e as classificações de IBS/CBS com vigência. Pode ser anterior à emissão (nota emitida
  *   hoje de uma operação de ontem, ou reemissão em contingência).
  *
- * `TimeContext` carrega os dois. Sem fato gerador explícito, vale o da emissão.
+ * `ContextoDeTempo` carrega os dois. Sem fato gerador explícito, vale o da emissão.
  */
 
 import { ErroDeConfiguracao } from './errors.ts';
@@ -23,7 +23,7 @@ export interface Relogio {
   agora(): Date;
 }
 
-/** Relógio do sistema. Use só na borda da aplicação; bibliotecas recebem o `Clock` de fora. */
+/** Relógio do sistema. Use só na borda da aplicação; bibliotecas recebem o `Relogio` de fora. */
 export const relogioDoSistema: Relogio = {
   agora: (): Date => new Date(),
 };
@@ -33,39 +33,39 @@ export type InstanteInformado = Date | number | string;
 
 const ISO_WITH_ZONE = /(?:Z|[+-]\d{2}:\d{2})$/;
 
-function toEpoch(at: InstanteInformado): number {
-  if (typeof at === 'string' && !ISO_WITH_ZONE.test(at)) {
-    throw new ErroDeConfiguracao(`instante sem fuso explícito: ${JSON.stringify(at)}; use Z ou ±hh:mm`, {
-      detalhes: { instant: at },
+function toEpoch(instante: InstanteInformado): number {
+  if (typeof instante === 'string' && !ISO_WITH_ZONE.test(instante)) {
+    throw new ErroDeConfiguracao(`instante sem fuso explícito: ${JSON.stringify(instante)}; use Z ou ±hh:mm`, {
+      detalhes: { instante },
     });
   }
-  const ms = at instanceof Date ? at.getTime() : new Date(at).getTime();
+  const ms = instante instanceof Date ? instante.getTime() : new Date(instante).getTime();
   if (!Number.isFinite(ms)) {
-    throw new ErroDeConfiguracao(`instante inválido: ${JSON.stringify(String(at))}`, {
-      detalhes: { instant: String(at) },
+    throw new ErroDeConfiguracao(`instante inválido: ${JSON.stringify(String(instante))}`, {
+      detalhes: { instante: String(instante) },
     });
   }
   return ms;
 }
 
 /** Relógio parado num instante. Para testes e para reprocessar um documento com o horário original. */
-export function relogioFixo(at: InstanteInformado): Relogio {
-  const ms = toEpoch(at);
+export function relogioFixo(instante: InstanteInformado): Relogio {
+  const ms = toEpoch(instante);
   return { agora: (): Date => new Date(ms) };
 }
 
 /** Relógio de teste controlado à mão. */
 export interface RelogioManual extends Relogio {
-  ajustar(at: InstanteInformado): void;
+  ajustar(instante: InstanteInformado): void;
   avancar(ms: number): void;
 }
 
-export function relogioManual(start: InstanteInformado): RelogioManual {
-  let current = toEpoch(start);
+export function relogioManual(inicio: InstanteInformado): RelogioManual {
+  let current = toEpoch(inicio);
   return {
     agora: (): Date => new Date(current),
-    ajustar(at: InstanteInformado): void {
-      current = toEpoch(at);
+    ajustar(instante: InstanteInformado): void {
+      current = toEpoch(instante);
     },
     avancar(ms: number): void {
       if (!Number.isFinite(ms)) throw new ErroDeConfiguracao(`avanço inválido: ${ms}`);
@@ -95,17 +95,17 @@ function pad(n: number, width = 2): string {
  * Formata no padrão `TDateTimeUTC` dos leiautes (`AAAA-MM-DDThh:mm:ss±hh:mm`), no deslocamento pedido em minutos
  * (`-180` para Brasília). O deslocamento vem do chamador, porque ele depende do local do emitente e não da máquina.
  */
-export function formatarDataHoraComFuso(date: Date, offsetMinutes: number): string {
-  if (!Number.isInteger(offsetMinutes) || offsetMinutes < -720 || offsetMinutes > 840) {
-    throw new ErroDeConfiguracao(`deslocamento de fuso inválido: ${offsetMinutes} min`, {
-      detalhes: { offsetMinutes },
+export function formatarDataHoraComFuso(data: Date, deslocamentoMin: number): string {
+  if (!Number.isInteger(deslocamentoMin) || deslocamentoMin < -720 || deslocamentoMin > 840) {
+    throw new ErroDeConfiguracao(`deslocamento de fuso inválido: ${deslocamentoMin} min`, {
+      detalhes: { deslocamentoMin },
     });
   }
-  const ms = date.getTime();
+  const ms = data.getTime();
   if (!Number.isFinite(ms)) throw new ErroDeConfiguracao('data inválida');
-  const local = new Date(ms + offsetMinutes * 60_000);
-  const sign = offsetMinutes < 0 ? '-' : '+';
-  const abs = Math.abs(offsetMinutes);
+  const local = new Date(ms + deslocamentoMin * 60_000);
+  const sign = deslocamentoMin < 0 ? '-' : '+';
+  const abs = Math.abs(deslocamentoMin);
   return (
     `${pad(local.getUTCFullYear(), 4)}-${pad(local.getUTCMonth() + 1)}-${pad(local.getUTCDate())}` +
     `T${pad(local.getUTCHours())}:${pad(local.getUTCMinutes())}:${pad(local.getUTCSeconds())}` +

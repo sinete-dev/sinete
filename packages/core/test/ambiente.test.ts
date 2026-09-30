@@ -7,7 +7,7 @@ describe('Ambiente', () => {
     for (const a of AMBIENTES) expect(ambienteDoTpAmb(tpAmbDoAmbiente(a))).toBe(a);
   });
 
-  test('tpAmb desconhecido vira ValidationError com ocorrência', () => {
+  test('tpAmb desconhecido vira ErroDeValidacao com ocorrência', () => {
     for (const bad of ['0', '3', '', ' 1', 'producao']) {
       let caught: unknown;
       try {
@@ -20,7 +20,7 @@ describe('Ambiente', () => {
     }
   });
 
-  test('isAmbiente', () => {
+  test('ehAmbiente', () => {
     expect(ehAmbiente('producao')).toBe(true);
     expect(ehAmbiente('homologacao')).toBe(true);
     expect(ehAmbiente('1')).toBe(false);

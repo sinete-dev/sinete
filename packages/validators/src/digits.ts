@@ -62,7 +62,7 @@ export function applyMask(value: string, mask: string): string {
 }
 
 /**
- * Lança `ValidationError` (código `validacao_falhou`) com uma ocorrência de código estável. Usado pelas funções de
+ * Lança `ErroDeValidacao` (código `validacao_falhou`) com uma ocorrência de código estável. Usado pelas funções de
  * cálculo de dígito quando a base não tem o formato esperado: erro do chamador, não dado a validar.
  */
 export function throwInvalid(path: string, code: string, message: string): never {

@@ -48,8 +48,8 @@ export interface C14nOpcoes {
 }
 
 /** C14N 1.0 inclusivo, sem comentários, do elemento `apex` e seus descendentes. */
-export function c14n(apex: ElementoXml, options: C14nOpcoes = {}): string {
-  const exclude = options.excluir;
+export function c14n(apex: ElementoXml, opcoes: C14nOpcoes = {}): string {
+  const exclude = opcoes.excluir;
   const out: string[] = [];
 
   // Atributos xml:* herdados dos ancestrais entram no ápice (C14N 1.0, 2.4), a menos que o ápice os redeclare.

@@ -24,7 +24,8 @@ import {
 } from '../src/index.ts';
 import { expectValidationError } from './helpers.ts';
 
-const codeOf = (r: { ok: boolean; error?: { code: string } }): string | undefined => (r.ok ? undefined : r.error?.code);
+const codeOf = (r: { ok: true } | { ok: false; erro: { code: string } }): string | undefined =>
+  r.ok ? undefined : r.erro.code;
 
 /** Implementação independente do módulo 11 "resto com pesos crescentes", equivalente ao complemento. */
 function mod11Remainder(text: string): number {

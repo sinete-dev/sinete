@@ -13,7 +13,7 @@
       "coletadoEm": "2026-09-25"
     }
   ],
-  "notes": "Cada UF tem variantes de formato; a primeira que casa em tamanho, padrão e dígitos verificadores vence. Pesos alinhados com `over` (padrão: posições 0 a n-1). `result`: complement = mod - resto, remainder = resto. `map` troca o resultado pelo dígito aceito (lista = qualquer um). `times` multiplica a soma antes do módulo; `digitSum` soma os algarismos de cada produto; `ranges` troca `add` e `map` quando o número em `slice` cai na faixa. `legacy` marca formatos anteriores ao vigente.",
+  "notas": "Cada UF tem variantes de formato; a primeira que casa em tamanho, padrão e dígitos verificadores vence. Pesos alinhados com `posicoesSomadas` (padrão: posições 0 a n-1). `resultado`: complemento = modulo - resto, resto = o próprio resto. `troca` substitui o resultado pelo dígito aceito (lista = qualquer um). `multiplicador` multiplica a soma antes do módulo; `somarAlgarismos` soma os algarismos de cada produto; `faixas` trocam `acrescimo` e `troca` quando o número em `posicoes` cai na faixa. `legado` marca formatos anteriores ao vigente.",
   "ufs": {
     "AC": {
       "fontes": [

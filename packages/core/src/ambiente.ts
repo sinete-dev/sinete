@@ -12,8 +12,8 @@ export type TpAmb = '1' | '2';
 
 export const AMBIENTES: readonly Ambiente[] = ['producao', 'homologacao'];
 
-export function ehAmbiente(value: unknown): value is Ambiente {
-  return value === 'producao' || value === 'homologacao';
+export function ehAmbiente(valor: unknown): valor is Ambiente {
+  return valor === 'producao' || valor === 'homologacao';
 }
 
 export function tpAmbDoAmbiente(ambiente: Ambiente): TpAmb {

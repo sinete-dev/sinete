@@ -23,6 +23,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { $ } from 'bun';
+import type { DescricaoTabelaRejeicoes, Rejeicao } from '../../packages/rejeicoes/src/index.ts';
 
 type Doc = {
   id: string;
@@ -402,21 +403,22 @@ if (unknownCurated.length > 0) {
   process.exit(1);
 }
 const ntCodes = new Set(ntRules.map((r) => r.code));
-const result: Entry[] = [...entries.values()]
+// A saída tem o tipo do pacote: um membro renomeado no `@sinete/rejeicoes` quebra a compilação aqui, e não o JSON.
+const result: Rejeicao[] = [...entries.values()]
   .sort((a, b) => Number(a.code) - Number(b.code))
-  .map((e) => {
+  .map((e): Rejeicao => {
     const c = curadoria.entries[e.code] ?? {};
     const fromNt = ntCodes.has(e.code) && !table.some((t) => t.code === e.code);
     const modelos = e.modelos.length > 0 ? e.modelos.sort() : ['55', '65'];
     return {
-      code: e.code,
-      effect: e.effect,
-      message: e.message,
-      ...(e.messages ? { messages: e.messages } : {}),
-      modelos,
-      source: e.source,
-      rules: e.rules,
-      category: c.category ?? (e.effect === 'denegacao' ? 'cadastro' : categorize(e.code, e.message, fromNt)),
+      codigo: e.code,
+      efeito: e.effect,
+      mensagem: e.message,
+      ...(e.messages ? { mensagens: e.messages } : {}),
+      modelos: modelos as Rejeicao['modelos'],
+      fonte: e.source,
+      regras: e.rules.map((r) => ({ documento: r.doc, id: r.id })),
+      categoria: c.category ?? (e.effect === 'denegacao' ? 'cadastro' : categorize(e.code, e.message, fromNt)),
       ...(c.causaProvavel ? { causaProvavel: c.causaProvavel } : {}),
       ...(c.comoCorrigir ? { comoCorrigir: c.comoCorrigir } : {}),
       ...(c.referencia ? { referencia: c.referencia } : {}),
@@ -449,21 +451,21 @@ if (suspects.length > 0) {
   process.exit(1);
 }
 
-const data = {
-  schemaVersion: 1,
-  version: sources.retrievedAt.replaceAll('-', '.'),
-  generatedBy: 'tools/rejeicoes-data/build.ts',
-  sources: sources.documents.map((d) => ({
+const data: DescricaoTabelaRejeicoes & { geradoPor: string; notas: string; rejeicoes: readonly Rejeicao[] } = {
+  versaoDoFormato: 1,
+  versao: sources.retrievedAt.replaceAll('-', '.'),
+  geradoPor: 'tools/rejeicoes-data/build.ts',
+  fontes: sources.documents.map((d) => ({
     id: d.id,
-    title: d.title,
+    titulo: d.title,
     versao: d.versao,
-    citation: d.citation,
+    citacao: d.citation,
     url: d.url,
     sha256: d.sha256,
-    retrievedAt: sources.retrievedAt,
+    coletadoEm: sources.retrievedAt,
   })),
-  notes:
-    'União da tabela 4.4.2/4.4.3 do Anexo I com os códigos das regras de validação do Anexo I e da NT 2025.002, os códigos de outras NT listados em `adicionais` da curadoria (regra conferida no PDF) e os códigos novos das tabelas de mensagens da NT 2025.001 e da NT 2023.002 (NFC-e). Mensagem oficial sem ajuste (placeholders como [nItem: 999] mantidos). `modelos` vem das regras; sem regra localizada, 55 e 65. `category` é heurística sobre a mensagem, com correções manuais na curadoria. `causaProvavel` e `comoCorrigir` só onde houve curadoria, com a regra citada em `referencia`.',
+  notas:
+    'União da tabela 4.4.2/4.4.3 do Anexo I com os códigos das regras de validação do Anexo I e da NT 2025.002, os códigos de outras NT listados em `adicionais` da curadoria (regra conferida no PDF) e os códigos novos das tabelas de mensagens da NT 2025.001 e da NT 2023.002 (NFC-e). Mensagem oficial sem ajuste (placeholders como [nItem: 999] mantidos). `modelos` vem das regras; sem regra localizada, 55 e 65. `categoria` é heurística sobre a mensagem, com correções manuais na curadoria. `causaProvavel` e `comoCorrigir` só onde houve curadoria, com a regra citada em `referencia`.',
   rejeicoes: result,
 };
 // Formatado pelo Biome do repo, para o `bun run format` não reescrever o arquivo gerado.
@@ -477,7 +479,7 @@ const csvPath = arg('--compare-csv');
 if (csvPath) {
   const csv = (await Bun.file(csvPath).text()).split('\n').slice(1).filter(Boolean);
   const theirs = new Set(csv.map((l) => l.split(',')[0] ?? ''));
-  const ours = new Set(result.map((e) => e.code));
+  const ours = new Set(result.map((e) => e.codigo));
   const onlyTheirs = [...theirs].filter((c) => !ours.has(c));
   const onlyOurs = [...ours].filter((c) => !theirs.has(c));
   console.log(`csv: ${theirs.size} códigos; builder: ${ours.size}`);
@@ -486,7 +488,7 @@ if (csvPath) {
 }
 
 const counts = new Map<string, number>();
-for (const e of result) counts.set(e.category, (counts.get(e.category) ?? 0) + 1);
+for (const e of result) counts.set(e.categoria, (counts.get(e.categoria) ?? 0) + 1);
 console.log(
   `${result.length} códigos (tabela ${table.length}, regras Anexo I ${anexoRules.length}, regras NT ${ntRules.length}); categorias: ${[
     ...counts,

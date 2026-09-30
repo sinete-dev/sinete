@@ -39,9 +39,9 @@ export function calcularDvCnpj(base: string): string {
 }
 
 /** Valida e normaliza um CNPJ, numérico ou alfanumérico (aceita máscara e minúsculas); devolve os 14 caracteres. */
-export function lerCnpj(input: string, options: LerOpcoes = {}): Resultado<string, Ocorrencia> {
-  const path = options.caminho ?? 'CNPJ';
-  const value = stripMask(input.trim()).toUpperCase();
+export function lerCnpj(entrada: string, opcoes: LerOpcoes = {}): Resultado<string, Ocorrencia> {
+  const path = opcoes.caminho ?? 'CNPJ';
+  const value = stripMask(entrada.trim()).toUpperCase();
   if (!/^[A-Z0-9]*$/.test(value)) {
     return falha(issue(path, 'cnpj_caractere_invalido', 'CNPJ só tem letras e algarismos'));
   }
@@ -56,16 +56,16 @@ export function lerCnpj(input: string, options: LerOpcoes = {}): Resultado<strin
   return ok(value);
 }
 
-export function cnpjValido(input: string): boolean {
-  return lerCnpj(input).ok;
+export function cnpjValido(entrada: string): boolean {
+  return lerCnpj(entrada).ok;
 }
 
 /** Verdadeiro se o CNPJ (já normalizado ou com máscara) tem alguma letra na raiz ou na ordem. */
-export function cnpjAlfanumerico(value: string): boolean {
-  return /[A-Z]/i.test(stripMask(value).slice(0, 12));
+export function cnpjAlfanumerico(valor: string): boolean {
+  return /[A-Z]/i.test(stripMask(valor).slice(0, 12));
 }
 
 /** `00.000.000/0000-00`, também para o alfanumérico (`12.ABC.345/01DE-35`). Não valida. */
-export function formatarCnpj(value: string): string {
-  return applyMask(stripMask(value).toUpperCase(), '##.###.###/####-##');
+export function formatarCnpj(valor: string): string {
+  return applyMask(stripMask(valor).toUpperCase(), '##.###.###/####-##');
 }

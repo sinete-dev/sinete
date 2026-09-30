@@ -37,7 +37,7 @@ export const ALGORITMOS_XMLDSIG: {
 
 /** Categoria de uma verificação que falhou. */
 export type MotivoFalhaConferencia =
-  /** O texto não é XML bem formado (`detail` traz o motivo e o offset). */
+  /** O texto não é XML bem formado (`detalhe` traz o motivo e o offset). */
   | 'leitura'
   /** Nenhum `Signature` do XMLDSig no documento. */
   | 'sem-assinatura'
@@ -109,9 +109,9 @@ async function digestOf(hash: HashName, data: Uint8Array<ArrayBuffer>): Promise<
 }
 
 /** Todos os `Signature` do XMLDSig no documento, em ordem de documento. */
-export function encontrarAssinaturas(doc: DocumentoXml): ElementoXml[] {
+export function encontrarAssinaturas(documento: DocumentoXml): ElementoXml[] {
   const out: ElementoXml[] = [];
-  for (const e of descendentes(doc.raiz)) if (e.local === 'Signature' && e.ns === XMLDSIG_NS) out.push(e);
+  for (const e of descendentes(documento.raiz)) if (e.local === 'Signature' && e.ns === XMLDSIG_NS) out.push(e);
   return out;
 }
 
@@ -123,7 +123,7 @@ function referenceUri(sig: ElementoXml): string | undefined {
 
 /**
  * Verifica a assinatura que referencia `expected.id`. Aceita a string XML ou um documento já parseado por
- * `parseXml`. Nunca lança por causa do documento: toda falha volta como `VerifyFailed` com categoria.
+ * `lerXml`. Nunca lança por causa do documento: toda falha volta como `ConferenciaInvalida` com categoria.
  */
 export async function conferirAssinatura(
   xml: string | DocumentoXml,

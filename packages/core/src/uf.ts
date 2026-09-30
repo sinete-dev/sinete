@@ -101,12 +101,12 @@ export const UFS: readonly UnidadeFederativa[] = table.ufs as readonly UnidadeFe
 const bySigla: ReadonlyMap<string, UnidadeFederativa> = new Map(UFS.map((u) => [u.sigla, u]));
 const byCUf: ReadonlyMap<string, UnidadeFederativa> = new Map(UFS.map((u) => [u.cUF, u]));
 
-export function ehUf(value: unknown): value is Uf {
-  return typeof value === 'string' && bySigla.has(value);
+export function ehUf(valor: unknown): valor is Uf {
+  return typeof valor === 'string' && bySigla.has(valor);
 }
 
-export function ehCUf(value: unknown): value is CUf {
-  return typeof value === 'string' && byCUf.has(value);
+export function ehCUf(valor: unknown): valor is CUf {
+  return typeof valor === 'string' && byCUf.has(valor);
 }
 
 /** Informações da UF pela sigla, ou `undefined` se a sigla não existe. */
