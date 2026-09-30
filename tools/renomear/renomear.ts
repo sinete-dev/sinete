@@ -775,6 +775,16 @@ for (const e of mapa.simbolos ?? []) {
         if (vistos.has(chave)) continue;
         vistos.add(chave);
         const alvo = programa().getSourceFile(l.fileName);
+        // O serviço liga um membro a um `@param {Object} [options]` de JSDoc de mesmo nome num `.d.ts` de dependência (o
+        // `pixelmatch`, o `astro`): é comentário de outro pacote, não referência.
+        if (alvo !== undefined && (alvo.isDeclarationFile || l.fileName.includes('node_modules'))) {
+          const t = (ts as unknown as { getTokenAtPosition(sf: ts.SourceFile, p: number): ts.Node }).getTokenAtPosition(
+            alvo,
+            l.textSpan.start,
+          );
+          const jsdoc = t.kind >= ts.SyntaxKind.FirstJSDocNode && t.kind <= ts.SyntaxKind.LastJSDocNode;
+          if (jsdoc || l.textSpan.start < t.getStart(alvo) || ts.findAncestor(t, ts.isJSDoc) !== undefined) continue;
+        }
         if (alvo === undefined || alvo.isDeclarationFile || l.fileName.includes('node_modules')) {
           erro = `referência fora do repo: ${l.fileName}`;
           break;
