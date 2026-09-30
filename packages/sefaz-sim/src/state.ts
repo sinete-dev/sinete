@@ -26,7 +26,7 @@ export function docBase(d: Documento | undefined): string | undefined {
 
 export type SituacaoNfe = 'autorizada' | 'cancelada' | 'denegada';
 
-export interface NfeRecord {
+export interface RegistroNfe {
   readonly chave: string;
   readonly cUF: string;
   readonly mod: string;
@@ -58,7 +58,7 @@ export interface NfeRecord {
   liberadaAoDestinatario: boolean;
 }
 
-export interface EventoRecord {
+export interface RegistroEvento {
   readonly chave: string;
   readonly tpEvento: string;
   readonly nSeqEvento: number;
@@ -74,7 +74,7 @@ export interface EventoRecord {
   readonly retEvento: string;
 }
 
-export interface InutilizacaoRecord {
+export interface RegistroInutilizacao {
   readonly cUF: string;
   readonly ano: string;
   readonly CNPJ: string;
@@ -88,34 +88,34 @@ export interface InutilizacaoRecord {
 }
 
 /** NF-e de um lote assíncrono ainda não processado. */
-export interface PendingNfe {
+export interface NfePendente {
   readonly chave: string;
-  readonly emitenteKey: string;
+  readonly chaveDoEmitente: string;
   readonly mod: string;
   readonly serie: string;
   readonly nNF: string;
 }
 
-export interface LoteRecord {
+export interface RegistroLote {
   readonly nRec: string;
   readonly autorizador: 'uf' | 'svc';
   /** SVC que aceitou o lote, fixada no recebimento. */
   readonly svc: Svc | undefined;
-  readonly receivedAt: number;
-  readonly availableAt: number;
+  readonly recebidoEm: number;
+  readonly disponivelEm: number;
   readonly dhRecbto: string;
-  /** `enviNFe` como recebido; as NF-e são processadas quando o relógio passa de `availableAt`. */
+  /** `enviNFe` como recebido; as NF-e são processadas quando o relógio passa de `disponivelEm`. */
   readonly payload: string;
-  readonly pending: readonly PendingNfe[];
+  readonly pendente: readonly NfePendente[];
   /** CNPJ/CPF do certificado de transmissão, para a regra de consulta pelo mesmo transmissor. */
   readonly transmissor: string | undefined;
   /** `protNFe` de cada NF-e, depois de processado. */
   protNFe: TProtNFe[] | undefined;
-  processedAt: string | undefined;
+  processadoEm: string | undefined;
 }
 
 /** Documento na fila de distribuição de um interessado. */
-export interface DistDoc {
+export interface DocumentoDaDistribuicao {
   readonly nsu: number;
   /** `resNFe_v1.01.xsd`, `procNFe_v4.00.xsd`, `resEvento_v1.01.xsd`, `procEventoNFe_v1.00.xsd`. */
   readonly schema: string;
@@ -144,7 +144,7 @@ export type TipoAutorizador = '1' | '3' | '4' | '8' | '9';
 export type SituacaoMdfe = 'autorizado' | 'cancelado' | 'encerrado';
 
 /** MDF-e autorizado, com o que as regras de não encerrados, eventos e consulta precisam. */
-export interface MdfeRecord {
+export interface RegistroMdfe {
   readonly chave: string;
   readonly cUF: string;
   readonly emitente: Documento;
@@ -180,7 +180,7 @@ export interface MdfeRecord {
   situacao: SituacaoMdfe;
 }
 
-export interface MdfeEventoRecord {
+export interface RegistroEventoMdfe {
   readonly chave: string;
   readonly tpEvento: string;
   readonly nSeqEvento: number;
@@ -199,13 +199,13 @@ export interface MdfeEventoRecord {
 }
 
 export class SimState {
-  readonly nfes: Map<string, NfeRecord> = new Map();
-  readonly eventos: EventoRecord[] = [];
-  readonly inutilizacoes: InutilizacaoRecord[] = [];
-  readonly lotes: Map<string, LoteRecord> = new Map();
-  readonly distribuicao: Map<string, DistDoc[]> = new Map();
-  readonly mdfes: Map<string, MdfeRecord> = new Map();
-  readonly eventosMdfe: MdfeEventoRecord[] = [];
+  readonly nfes: Map<string, RegistroNfe> = new Map();
+  readonly eventos: RegistroEvento[] = [];
+  readonly inutilizacoes: RegistroInutilizacao[] = [];
+  readonly lotes: Map<string, RegistroLote> = new Map();
+  readonly distribuicao: Map<string, DocumentoDaDistribuicao[]> = new Map();
+  readonly mdfes: Map<string, RegistroMdfe> = new Map();
+  readonly eventosMdfe: RegistroEventoMdfe[] = [];
   /** Última consulta `distNSU` sem documentos novos, por interessado (regra de consumo indevido). */
   readonly ultimaConsultaVazia: Map<string, number> = new Map();
   private readonly protocolos = new Map<string, number>();
@@ -225,7 +225,7 @@ export class SimState {
     return `${cUF}${tipo}${String(this.recibos).padStart(12, '0')}`;
   }
 
-  nfeByNumero(emitenteKey: string, mod: string, serie: string, nNF: string): NfeRecord | undefined {
+  nfeByNumero(emitenteKey: string, mod: string, serie: string, nNF: string): RegistroNfe | undefined {
     for (const n of this.nfes.values()) {
       if (docKey(n.emitente) === emitenteKey && n.mod === mod && Number(n.serie) === Number(serie)) {
         if (Number(n.nNF) === Number(nNF)) return n;
@@ -244,13 +244,13 @@ export class SimState {
     serie: string,
     nNF: string,
     recebidoAntesDe?: string,
-  ): PendingNfe | undefined {
+  ): NfePendente | undefined {
     for (const l of this.lotes.values()) {
       if (l.nRec === recebidoAntesDe) return undefined;
       if (l.protNFe !== undefined) continue;
-      const p = l.pending.find(
+      const p = l.pendente.find(
         (x) =>
-          x.emitenteKey === emitenteKey &&
+          x.chaveDoEmitente === emitenteKey &&
           x.mod === mod &&
           Number(x.serie) === Number(serie) &&
           Number(x.nNF) === Number(nNF),
@@ -261,7 +261,13 @@ export class SimState {
   }
 
   /** Inutilização do ano (`AA`) que cobre o número: o `Id` da inutilização leva o ano, e cada ano é uma faixa própria. */
-  inutilizacaoCom(CNPJ: string, ano: string, mod: string, serie: number, nNF: number): InutilizacaoRecord | undefined {
+  inutilizacaoCom(
+    CNPJ: string,
+    ano: string,
+    mod: string,
+    serie: number,
+    nNF: number,
+  ): RegistroInutilizacao | undefined {
     return this.inutilizacoes.find(
       (i) =>
         i.CNPJ === CNPJ && i.ano === ano && i.mod === mod && i.serie === serie && nNF >= i.nNFIni && nNF <= i.nNFFin,
@@ -269,7 +275,7 @@ export class SimState {
   }
 
   /** MDF-e com o mesmo emitente, série e número (a chave natural das regras F81, F82 e G04). */
-  mdfeByNumero(emitente: string, serie: string, nMDF: string): MdfeRecord | undefined {
+  mdfeByNumero(emitente: string, serie: string, nMDF: string): RegistroMdfe | undefined {
     for (const m of this.mdfes.values()) {
       if (docKey(m.emitente) === emitente && Number(m.serie) === Number(serie) && Number(m.nMDF) === Number(nMDF)) {
         return m;
@@ -278,11 +284,11 @@ export class SimState {
     return undefined;
   }
 
-  eventosDoMdfe(chave: string): MdfeEventoRecord[] {
+  eventosDoMdfe(chave: string): RegistroEventoMdfe[] {
     return this.eventosMdfe.filter((e) => e.chave === chave);
   }
 
-  eventosDa(chave: string): EventoRecord[] {
+  eventosDa(chave: string): RegistroEvento[] {
     return this.eventos.filter((e) => e.chave === chave);
   }
 

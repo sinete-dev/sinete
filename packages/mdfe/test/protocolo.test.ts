@@ -6,10 +6,17 @@ import { beforeAll, describe, expect, test } from 'bun:test';
 import type { AssinadorDeDados } from '@sinete/core';
 import { ErroDeConfiguracao, ErroRespostaInvalida, relogioFixo } from '@sinete/core';
 import { codificarBase64, lerXml, primeiroFilho } from '@sinete/core/xml';
-import { syntheticCertificate } from '@sinete/sefaz-sim';
+import { certificadoSintetico } from '@sinete/sefaz-sim';
 import type { RespostaTransporte, Transporte } from '@sinete/transport';
 import { montarChaveAcesso } from '@sinete/validators';
-import { createMdfeClient, documentoAssinado, gunzipBase64, gzipBase64, MDFE_NS, sliceElement } from '../src/index.ts';
+import {
+  comprimirGzipBase64,
+  criarClienteMdfe,
+  descomprimirGzipBase64,
+  documentoAssinado,
+  MDFE_NS,
+  recortarElemento,
+} from '../src/index.ts';
 import { EMISSAO } from './helpers/mdfe.ts';
 
 const SOAP12 = 'http://www.w3.org/2003/05/soap-envelope';
@@ -17,8 +24,9 @@ const SOAP12 = 'http://www.w3.org/2003/05/soap-envelope';
 let signer: AssinadorDeDados;
 beforeAll(async () => {
   const clock = relogioFixo(EMISSAO);
-  const ac = await syntheticCertificate({ clock, role: 'ac' });
-  signer = (await syntheticCertificate({ clock, role: 'titular', cnpj: '11222333000181', issuer: ac })).signer;
+  const ac = await certificadoSintetico({ relogio: clock, papel: 'ac' });
+  signer = (await certificadoSintetico({ relogio: clock, papel: 'titular', cnpj: '11222333000181', emissor: ac }))
+    .assinador;
 }, 30_000);
 
 function respondendo(body: string, status = 200): Transporte {
@@ -48,21 +56,26 @@ const envelope = (inner: string): string =>
   `<soap:Envelope xmlns:soap="${SOAP12}"><soap:Body><mdfeStatusServicoMDFResult xmlns="${MDFE_NS}/wsdl/MDFeStatusServico">${inner}</mdfeStatusServicoMDFResult></soap:Body></soap:Envelope>`;
 
 const status = (body: string, http = 200): Promise<unknown> =>
-  createMdfeClient({ transport: respondendo(body, http), signer, ambiente: 'homologacao', clock: relogioFixo(EMISSAO) })
+  criarClienteMdfe({
+    transporte: respondendo(body, http),
+    assinador: signer,
+    ambiente: 'homologacao',
+    relogio: relogioFixo(EMISSAO),
+  })
     .statusServico()
     .catch((e: unknown) => e);
 
 describe('gzip da área de dados', () => {
   test('ida e volta, Base64 inválido e bytes que não são GZip viram ErroRespostaInvalida', async () => {
-    expect(await gunzipBase64(await gzipBase64('<MDFe>ação</MDFe>'))).toBe('<MDFe>ação</MDFe>');
-    expect(await gunzipBase64('!!!').catch((e: unknown) => e)).toBeInstanceOf(ErroRespostaInvalida);
+    expect(await descomprimirGzipBase64(await comprimirGzipBase64('<MDFe>ação</MDFe>'))).toBe('<MDFe>ação</MDFe>');
+    expect(await descomprimirGzipBase64('!!!').catch((e: unknown) => e)).toBeInstanceOf(ErroRespostaInvalida);
     const texto = codificarBase64(new TextEncoder().encode('nao e gzip'));
-    expect(await gunzipBase64(texto).catch((e: unknown) => e)).toBeInstanceOf(ErroRespostaInvalida);
-    const grande = await gzipBase64('A'.repeat(1024 * 1024));
-    expect(((await gunzipBase64(grande, 1000).catch((e: unknown) => e)) as ErroRespostaInvalida).message).toContain(
-      'passa de',
-    );
-    expect((await gunzipBase64(grande, 2 * 1024 * 1024)).length).toBe(1024 * 1024);
+    expect(await descomprimirGzipBase64(texto).catch((e: unknown) => e)).toBeInstanceOf(ErroRespostaInvalida);
+    const grande = await comprimirGzipBase64('A'.repeat(1024 * 1024));
+    expect(
+      ((await descomprimirGzipBase64(grande, 1000).catch((e: unknown) => e)) as ErroRespostaInvalida).message,
+    ).toContain('passa de');
+    expect((await descomprimirGzipBase64(grande, 2 * 1024 * 1024)).length).toBe(1024 * 1024);
   });
 });
 
@@ -101,11 +114,11 @@ describe('respostas SOAP defeituosas', () => {
       cNF: '12345678',
     });
     const corpo = `<soap:Envelope xmlns:soap="${SOAP12}"><soap:Body><mdfeRecepcaoEventoResult xmlns="${MDFE_NS}/wsdl/MDFeRecepcaoEvento"><retEventoMDFe xmlns="${MDFE_NS}" versao="3.00"><cStat>135</cStat></retEventoMDFe></mdfeRecepcaoEventoResult></soap:Body></soap:Envelope>`;
-    const client = createMdfeClient({
-      transport: respondendo(corpo),
-      signer,
+    const client = criarClienteMdfe({
+      transporte: respondendo(corpo),
+      assinador: signer,
       ambiente: 'homologacao',
-      clock: relogioFixo(EMISSAO),
+      relogio: relogioFixo(EMISSAO),
     });
     const e = await client
       .cancelar({ chave, nProt: '951260000000001', xJust: 'VIAGEM NAO REALIZADA TESTE' })
@@ -140,13 +153,13 @@ describe('documento assinado', () => {
     const doc = lerXml(`<a xmlns="${MDFE_NS}" xmlns:p="urn:p"><b><p:c xmlns:p="urn:p"/><p:d xmlns:p="urn:p"/></b></a>`);
     const b = primeiroFilho(doc.raiz, 'b', MDFE_NS);
     if (b === undefined) throw new Error('sem <b>');
-    expect(sliceElement(doc, b)).toBe('<b><p:c xmlns:p="urn:p"/><p:d xmlns:p="urn:p"/></b>');
+    expect(recortarElemento(doc, b)).toBe('<b><p:c xmlns:p="urn:p"/><p:d xmlns:p="urn:p"/></b>');
   });
 
   test('o recorte leva os prefixos declarados em ancestrais', () => {
     const doc = lerXml(`<a xmlns="${MDFE_NS}" xmlns:p="urn:p"><b><p:c/></b></a>`);
     const b = primeiroFilho(doc.raiz, 'b', MDFE_NS);
     if (b === undefined) throw new Error('sem <b>');
-    expect(sliceElement(doc, b)).toBe('<b xmlns:p="urn:p"><p:c/></b>');
+    expect(recortarElemento(doc, b)).toBe('<b xmlns:p="urn:p"><p:c/></b>');
   });
 });

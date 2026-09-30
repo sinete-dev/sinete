@@ -10,34 +10,34 @@
 
 import type { AddressInfo, Socket } from 'node:net';
 import tls from 'node:tls';
-import type { SimHandler } from './handler.ts';
-import type { SimAutorizador, SimServico } from './services.ts';
-import type { SefazSim, SimResult } from './sim.ts';
+import type { TratadorSim } from './handler.ts';
+import type { AutorizadorSim, ServicoSim } from './services.ts';
+import type { RespostaSim, SefazSim } from './sim.ts';
 
-export interface SefazSimServerOptions {
-  /** Certificado e chave do servidor em PEM (ex.: `syntheticCertificate({ role: 'servidor', issuer: ac })`). */
-  readonly cert: string;
-  readonly key: string;
+export interface ServidorSefazSimOpcoes {
+  /** Certificado e chave do servidor em PEM (ex.: `certificadoSintetico({ papel: 'servidor', emissor: ac })`). */
+  readonly certificado: string;
+  readonly chave: string;
   /** Pede certificado de cliente no handshake (sem recusar, para que o simulador decida). Padrão: `true`. */
-  readonly requestCert?: boolean;
+  readonly pedirCertificado?: boolean;
   /** Padrão: `127.0.0.1`. */
-  readonly hostname?: string;
+  readonly host?: string;
   /** Padrão: 0 (porta livre). */
-  readonly port?: number;
+  readonly porta?: number;
 }
 
 /** Servidor HTTPS de um simulador (NF-e ou NFS-e). */
-export interface SimServer {
+export interface ServidorSim {
   /** `https://127.0.0.1:<porta>`. */
-  readonly baseUrl: string;
-  readonly port: number;
+  readonly urlBase: string;
+  readonly porta: number;
   /** Fecha o servidor e destrói as conexões abertas (inclusive as que o cenário deixou sem resposta). */
-  close(): Promise<void>;
+  fechar(): Promise<void>;
 }
 
-export interface SefazSimServer extends SimServer {
+export interface ServidorSefazSim extends ServidorSim {
   /** URL completa de um serviço. */
-  url(servico: SimServico, autorizador?: SimAutorizador): string;
+  url(servico: ServicoSim, autorizador?: AutorizadorSim): string;
 }
 
 interface ParsedRequest {
@@ -131,11 +131,11 @@ const REASONS: Readonly<Record<number, string>> = {
   503: 'Service Unavailable',
 };
 
-function serialize(r: SimResult, keepAlive: boolean): Uint8Array {
-  const body = new TextEncoder().encode(r.body);
+function serialize(r: RespostaSim, keepAlive: boolean): Uint8Array {
+  const body = new TextEncoder().encode(r.corpo);
   const head = [
     `HTTP/1.1 ${r.status} ${REASONS[r.status] ?? 'Status'}`,
-    ...Object.entries(r.headers).map(([k, v]) => `${k}: ${v}`),
+    ...Object.entries(r.cabecalhos).map(([k, v]) => `${k}: ${v}`),
     `content-length: ${body.length}`,
     `connection: ${keepAlive ? 'keep-alive' : 'close'}`,
     '',
@@ -145,19 +145,27 @@ function serialize(r: SimResult, keepAlive: boolean): Uint8Array {
 }
 
 /** Sobe o simulador da NF-e num servidor HTTPS local. */
-export async function startSefazSimServer(sim: SefazSim, options: SefazSimServerOptions): Promise<SefazSimServer> {
-  const server = await startSimServer(sim, options);
+export async function iniciarServidorSefazSim(
+  sim: SefazSim,
+  opcoes: ServidorSefazSimOpcoes,
+): Promise<ServidorSefazSim> {
+  const server = await iniciarServidorSim(sim, opcoes);
   return {
     ...server,
-    url: (servico: SimServico, autorizador?: SimAutorizador): string => sim.url(server.baseUrl, servico, autorizador),
+    url: (servico: ServicoSim, autorizador?: AutorizadorSim): string => sim.url(server.urlBase, servico, autorizador),
   };
 }
 
 /** Sobe um simulador qualquer (o da NFS-e, por exemplo) num servidor HTTPS local com mTLS. */
-export async function startSimServer(sim: SimHandler, options: SefazSimServerOptions): Promise<SimServer> {
+export async function iniciarServidorSim(sim: TratadorSim, opcoes: ServidorSefazSimOpcoes): Promise<ServidorSim> {
   const sockets = new Set<tls.TLSSocket>();
   const server = tls.createServer(
-    { cert: options.cert, key: options.key, requestCert: options.requestCert ?? true, rejectUnauthorized: false },
+    {
+      cert: opcoes.certificado,
+      key: opcoes.chave,
+      requestCert: opcoes.pedirCertificado ?? true,
+      rejectUnauthorized: false,
+    },
     (socket) => {
       sockets.add(socket);
       // Espera do atraso injetado: cancelada quando a conexão fecha, para não segurar o processo depois do close().
@@ -181,26 +189,26 @@ export async function startSimServer(sim: SimHandler, options: SefazSimServerOpt
             const req = parseRequest(buf);
             if (req === undefined) break;
             buf = buf.subarray(req.used);
-            const result = await sim.handle({
-              method: req.method,
-              path: req.path,
-              headers: req.headers,
-              body: req.body,
-              ...(clientCertificate === undefined ? {} : { clientCertificate }),
+            const result = await sim.atender({
+              metodo: req.method,
+              caminho: req.path,
+              cabecalhos: req.headers,
+              corpo: req.body,
+              ...(clientCertificate === undefined ? {} : { certificadoDoCliente: clientCertificate }),
             });
-            if (result.delayMs > 0) {
+            if (result.atrasoMs > 0) {
               await new Promise<void>((resolve) => {
                 acordar = resolve;
-                espera = setTimeout(resolve, result.delayMs);
+                espera = setTimeout(resolve, result.atrasoMs);
               });
             }
             if (socket.destroyed) return;
-            if (result.effect === 'drop') {
+            if (result.efeito === 'derrubar') {
               socket.destroy();
               return;
             }
             // Sem resposta: o socket fica aberto até o cliente desistir ou o servidor fechar.
-            if (result.effect === 'hang') return;
+            if (result.efeito === 'travar') return;
             const keepAlive = (req.headers.connection ?? 'keep-alive').toLowerCase() !== 'close';
             socket.write(serialize(result, keepAlive));
             if (!keepAlive) {
@@ -234,16 +242,16 @@ export async function startSimServer(sim: SimHandler, options: SefazSimServerOpt
   });
   await new Promise<void>((resolve, reject) => {
     server.once('error', reject);
-    server.listen(options.port ?? 0, options.hostname ?? '127.0.0.1', () => resolve());
+    server.listen(opcoes.porta ?? 0, opcoes.host ?? '127.0.0.1', () => resolve());
   });
   const port = (server.address() as AddressInfo).port;
-  const hostname = options.hostname ?? '127.0.0.1';
+  const hostname = opcoes.host ?? '127.0.0.1';
   // IPv6 literal vai entre colchetes na URL (RFC 3986, 3.2.2); o listen() recebe sem.
   const baseUrl = `https://${hostname.includes(':') ? `[${hostname}]` : hostname}:${port}`;
   return {
-    baseUrl,
-    port,
-    close(): Promise<void> {
+    urlBase: baseUrl,
+    porta: port,
+    fechar(): Promise<void> {
       for (const s of sockets) s.destroy();
       for (const s of brutas) s.destroy();
       return new Promise<void>((resolve) => server.close(() => resolve()));

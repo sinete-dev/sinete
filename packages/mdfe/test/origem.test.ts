@@ -1,33 +1,33 @@
 /**
- * Classificação das ocorrências do `buildMdfe` (ADR 0011) e rótulo em português dos caminhos do MDF-e.
+ * Classificação das ocorrências do `montarMdfe` (ADR 0011) e rótulo em português dos caminhos do MDF-e.
  */
 import { describe, expect, test } from 'bun:test';
 import type { Ocorrencia } from '@sinete/core';
-import type { BuildMdfeResult } from '../src/index.ts';
-import { buildMdfe, rotuloDoCaminho } from '../src/index.ts';
+import type { ResultadoMontagemMdfe } from '../src/index.ts';
+import { montarMdfe, rotuloDoCaminho } from '../src/index.ts';
 import { cargaPropria, opcoes } from './helpers/mdfe.ts';
 
-function falha(r: BuildMdfeResult): readonly Ocorrencia[] {
+function falha(r: ResultadoMontagemMdfe): readonly Ocorrencia[] {
   if (r.ok) throw new Error('esperava ocorrências');
-  return r.issues;
+  return r.ocorrencias;
 }
 
-describe('buildMdfe: origem das ocorrências', () => {
-  test('dado da entrada é entrada, inclusive a regra do MOC', () => {
-    const issues = falha(buildMdfe(cargaPropria({ serie: 1000, percurso: ['MT'] }), opcoes()));
+describe('montarMdfe: origem das ocorrências', () => {
+  test('dado da entrada é entrada, inclusive a regra do MOC', async () => {
+    const issues = falha(await montarMdfe(cargaPropria({ serie: 1000, percurso: ['MT'] }), opcoes()));
     expect(issues.length).toBeGreaterThan(1);
     expect(issues.every((i) => i.origem === 'entrada')).toBe(true);
   });
 
-  test('tpEmis das opções é montagem', () => {
-    const issues = falha(buildMdfe(cargaPropria(), opcoes({ tpEmis: '3' as '1' })));
+  test('tpEmis das opções é montagem', async () => {
+    const issues = falha(await montarMdfe(cargaPropria(), opcoes({ tpEmis: '3' as '1' })));
     expect(issues).toEqual([expect.objectContaining({ caminho: 'tpEmis', origem: 'montagem' })]);
   });
 
-  test('caractere fora do XML é conferido no documento montado', () => {
+  test('caractere fora do XML é conferido no documento montado', async () => {
     const base = cargaPropria();
     const issues = falha(
-      buildMdfe(
+      await montarMdfe(
         cargaPropria({ produtoPredominante: { ...base.produtoPredominante, xProd: 'SOJA \u0001' } as never }),
         opcoes(),
       ),

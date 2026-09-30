@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'bun:test';
 import { unzlibSync } from 'fflate';
-import type { Doc } from '../src/model.ts';
+import type { Documento } from '../src/model.ts';
 import { Canvas, fit, lineHeight } from '../src/render/canvas.ts';
-import { toHtml, toSvg } from '../src/render/html.ts';
+import { gerarHtml, gerarSvg } from '../src/render/html.ts';
 import { decodePng, jpegInfo, loadImage } from '../src/render/image.ts';
-import { toPdf } from '../src/render/pdf.ts';
+import { gerarPdf } from '../src/render/pdf.ts';
 import { ascentMm, ellipsis, shrinkToFit, toWinAnsi, widthMm, winAnsiCode, wrap } from '../src/render/text.ts';
 import { encodePng, fakeJpeg } from './helpers/png.ts';
 
@@ -88,7 +88,7 @@ describe('canvas', () => {
     expect(rest).toEqual(['c']);
     expect(c.block('uma frase bem comprida para quebrar', 0, 0, 10, 50, { size: 10 })).toBeGreaterThan(0);
     expect(c.stats.quebrados).toBeGreaterThan(0);
-    expect(c.ops.some((o) => o.t === 'text' && o.s === 'RÓTULO')).toBe(true);
+    expect(c.ops.some((o) => o.t === 'texto' && o.s === 'RÓTULO')).toBe(true);
   });
 });
 
@@ -165,7 +165,7 @@ describe('imagens', () => {
   test('JPEG: dimensões e componentes', () => {
     expect(jpegInfo(fakeJpeg(40, 30, 3))).toEqual({ width: 40, height: 30, components: 3, adobe: false });
     expect(jpegInfo(fakeJpeg(1, 2, 4, true)).adobe).toBe(true);
-    expect(loadImage(fakeJpeg(5, 6, 1))).toMatchObject({ format: 'jpeg', width: 5, height: 6 });
+    expect(loadImage(fakeJpeg(5, 6, 1))).toMatchObject({ formato: 'jpeg', largura: 5, altura: 6 });
   });
   test('formatos inválidos viram imagem_invalida', () => {
     const bad: Uint8Array[] = [
@@ -204,22 +204,22 @@ describe('imagens', () => {
   });
 });
 
-function sample(): Doc {
+function sample(): Documento {
   const c = new Canvas('Helvetica', 'Helvetica-Bold');
   c.rect(1, 1, 10, 5, 0.2, 0.5);
   c.rect(1, 1, 10, 5, 0.2);
-  c.ops.push({ t: 'rect', x: 0, y: 0, w: 1, h: 1, stroke: 0.1, dash: 0.5 });
+  c.ops.push({ t: 'retangulo', x: 0, y: 0, w: 1, h: 1, contorno: 0.1, tracejado: 0.5 });
   c.line(0, 0, 10, 10, 0.3, 1);
-  c.ops.push({ t: 'line', x1: 0, y1: 0, x2: 1, y2: 1, w: 0.3, gray: 0.5 });
+  c.ops.push({ t: 'linha', x1: 0, y1: 0, x2: 1, y2: 1, w: 0.3, cinza: 0.5 });
   c.raw('Texto (com) \\ e ç', 5, 5, 'Helvetica', 10);
   c.raw('<cinza & "girado">', 5, 5, 'Helvetica-Bold', 10, 0.5, 30);
-  c.bars({ x: 0, y: 0, h: 5, module: 0.3, widths: [2, 1, 1, 2] });
-  c.bars({ x: 0, y: 0, h: 5, module: 0.3, widths: [2, 1, 1, 2], vertical: true });
+  c.bars({ x: 0, y: 0, h: 5, modulo: 0.3, larguras: [2, 1, 1, 2] });
+  c.bars({ x: 0, y: 0, h: 5, modulo: 0.3, larguras: [2, 1, 1, 2], vertical: true });
   c.qr({
     x: 0,
     y: 0,
-    size: 5,
-    modules: [
+    tamanho: 5,
+    modulos: [
       [true, true, false],
       [false, true, true],
       [true, false, true],
@@ -230,12 +230,12 @@ function sample(): Doc {
   c.image('cmyk', 0, 0, 10, 10);
   c.image('faltando', 0, 0, 10, 10);
   return {
-    title: 'Teste (1)',
-    pages: [
+    titulo: 'Teste (1)',
+    paginas: [
       { w: 50, h: 40, ops: c.ops },
       { w: 40, h: 50, ops: [] },
     ],
-    images: {
+    imagens: {
       png: loadImage(
         encodePng({ width: 2, height: 2, colorType: 6, depth: 8, sample: (x, y, ch) => x * 100 + y + ch }),
       ),
@@ -243,7 +243,7 @@ function sample(): Doc {
       cmyk: loadImage(fakeJpeg(3, 3, 4, true)),
       gray: loadImage(encodePng({ width: 2, height: 2, colorType: 0, depth: 8, sample: () => 3 })),
     },
-    stats: { reduzidos: 0, quebrados: 0, cortados: 0 },
+    estatisticas: { reduzidos: 0, quebrados: 0, cortados: 0 },
   };
 }
 
@@ -256,8 +256,8 @@ function latin1(b: Uint8Array): string {
 describe('PDF', () => {
   test('estrutura válida: xref com offsets reais, imagens, SMask e determinismo', () => {
     const doc = sample();
-    const pdf = toPdf(doc);
-    expect(toPdf(doc)).toEqual(pdf);
+    const pdf = gerarPdf(doc);
+    expect(gerarPdf(doc)).toEqual(pdf);
     const s = latin1(pdf);
     expect(s.startsWith('%PDF-1.4')).toBe(true);
     const xref = Number(/startxref\n(\d+)/.exec(s)?.[1]);
@@ -272,7 +272,7 @@ describe('PDF', () => {
     expect(s).not.toContain('CreationDate');
   });
   test('sem compressão, o conteúdo aparece legível', () => {
-    const s = latin1(toPdf(sample(), { compress: false, info: { Author: 'sinete' } }));
+    const s = latin1(gerarPdf(sample(), { comprimir: false, informacoes: { Author: 'sinete' } }));
     expect(s).toContain('(Texto \\(com\\) \\\\ e \\347) Tj');
     expect(s).toContain('Tm');
     expect(s).toContain('/Author (sinete)');
@@ -280,7 +280,7 @@ describe('PDF', () => {
     expect(s).toContain('0.5 G');
   });
   test('fluxo comprimido é zlib válido', () => {
-    const s = latin1(toPdf(sample()));
+    const s = latin1(gerarPdf(sample()));
     const m = /\/Filter \/FlateDecode \/Length (\d+) >>\nstream\n/.exec(s.slice(s.indexOf('/Contents')));
     expect(m).not.toBeNull();
     const start = s.indexOf(m?.[0] ?? '', s.indexOf('/Contents')) + (m?.[0].length ?? 0);
@@ -292,7 +292,7 @@ describe('PDF', () => {
 describe('HTML e SVG', () => {
   test('uma svg por página, textLength e imagem como data URI', () => {
     const doc = sample();
-    const html = toHtml(doc);
+    const html = gerarHtml(doc);
     expect(html.match(/<svg /g)).toHaveLength(2);
     expect(html).toContain('textLength=');
     expect(html).toContain('data:image/png;base64,');
@@ -300,33 +300,33 @@ describe('HTML e SVG', () => {
     expect(html).toContain('&lt;cinza &amp; &quot;girado&quot;&gt;');
     expect(html).toContain('rotate(-30');
     expect(html).toContain('@page{size:50mm 40mm');
-    const svg = toSvg(doc.pages[0] as Doc['pages'][number]);
+    const svg = gerarSvg(doc.paginas[0] as Documento['paginas'][number]);
     expect(svg).not.toContain('<image');
-    expect(toSvg(doc.pages[0] as Doc['pages'][number], doc)).toContain('<image');
-    expect(toHtml({ ...doc, pages: [] })).toContain('@page{size:A4');
+    expect(gerarSvg(doc.paginas[0] as Documento['paginas'][number], doc)).toContain('<image');
+    expect(gerarHtml({ ...doc, paginas: [] })).toContain('@page{size:A4');
   });
 });
 
 test('página acima de 14.400 pt usa /UserUnit (PDF 1.6); abaixo, PDF 1.4 sem mudança', () => {
-  const longa = toPdf(
+  const longa = gerarPdf(
     {
-      title: 't',
-      pages: [{ w: 80, h: 6000, ops: [] }],
-      images: {},
-      stats: { reduzidos: 0, quebrados: 0, cortados: 0 },
+      titulo: 't',
+      paginas: [{ w: 80, h: 6000, ops: [] }],
+      imagens: {},
+      estatisticas: { reduzidos: 0, quebrados: 0, cortados: 0 },
     },
-    { compress: false },
+    { comprimir: false },
   );
   const s = new TextDecoder('latin1').decode(longa);
   expect(s.startsWith('%PDF-1.6')).toBe(true);
   expect(s).toContain('/MediaBox [0 0 113.386 8503.937] /UserUnit 2');
   expect(s).toContain('0.500000 0 0 0.500000 0 0 cm');
   const curta = new TextDecoder('latin1').decode(
-    toPdf({
-      title: 't',
-      pages: [{ w: 80, h: 200, ops: [] }],
-      images: {},
-      stats: { reduzidos: 0, quebrados: 0, cortados: 0 },
+    gerarPdf({
+      titulo: 't',
+      paginas: [{ w: 80, h: 200, ops: [] }],
+      imagens: {},
+      estatisticas: { reduzidos: 0, quebrados: 0, cortados: 0 },
     }),
   );
   expect(curta.startsWith('%PDF-1.4')).toBe(true);

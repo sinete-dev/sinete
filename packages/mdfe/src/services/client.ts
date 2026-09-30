@@ -48,10 +48,10 @@ import { lerChaveAcesso, lerCnpj, lerCpf } from '@sinete/validators';
 import { pagamentosDoLeiaute } from '../build/build.ts';
 import emissao from '../data/emissao.json' with { type: 'json' };
 import type { Condutor, PagamentoFrete } from '../model.ts';
-import { dataDe, formatDh, offsetDaUf } from '../time.ts';
+import { dataDe, deslocamentoDaUf, formatarDh } from '../time.ts';
 import { cstatEm, rejeitado } from './outcome.ts';
 import type { DocumentoAssinado } from './proc.ts';
-import { documentoAssinado, envelope, MDFE_NS, sliceElement } from './proc.ts';
+import { documentoAssinado, envelope, MDFE_NS, recortarElemento } from './proc.ts';
 import type { MdfeServicoCliente, RespostaSoap } from './soap.ts';
 import { chamar } from './soap.ts';
 
@@ -64,18 +64,18 @@ export type AutorDocumento =
   | { readonly CNPJ: string; readonly CPF?: never }
   | { readonly CPF: string; readonly CNPJ?: never };
 
-export interface MdfeClientOptions {
-  readonly transport: Transporte;
+export interface ClienteMdfeOpcoes {
+  readonly transporte: Transporte;
   /** Assina o MDF-e e os eventos (A1 WebCrypto, A3 via PKCS#11, HSM). */
-  readonly signer: Assinador;
+  readonly assinador: Assinador;
   readonly ambiente: Ambiente;
   /** Relógio de emissão: `dhEvento`. */
-  readonly clock: Relogio;
+  readonly relogio: Relogio;
   readonly logger?: Logger;
   /** Prazo por requisição; padrão o do transporte. */
   readonly timeoutMs?: number;
   /** Fuso do emitente em minutos; padrão o da UF da chave (`data/fusos.json`). */
-  readonly offsetMinutes?: number;
+  readonly deslocamentoMin?: number;
   /** CNPJ ou CPF do emitente, padrão da consulta dos não encerrados. */
   readonly autor?: AutorDocumento;
   /** Sobrepõe o endpoint por serviço (padrão: a tabela do MDF-e do `@sinete/transport`). */
@@ -107,16 +107,16 @@ export interface ProtocoloMdfe {
   readonly mdfeProc?: string;
 }
 
-export type AutorizacaoOutcome = ResultadoSefaz<ProtocoloMdfe, never>;
+export type ResultadoAutorizacao = ResultadoSefaz<ProtocoloMdfe, never>;
 
 /** Opções de toda chamada que vai à rede. */
-export interface OpcoesEnvio {
+export interface EnvioOpcoes {
   /** Cancela a requisição em curso. */
   readonly signal?: AbortSignal;
 }
 
 /** Opções do envio para autorização. */
-export type AutorizarOpcoes = OpcoesEnvio;
+export type AutorizarOpcoes = EnvioOpcoes;
 
 /** Situação do MDF-e na consulta: autorizado (100), cancelado (101) ou encerrado (132). */
 export interface ConsultaMdfe {
@@ -129,7 +129,7 @@ export interface ConsultaMdfe {
   readonly digValConfere?: boolean;
 }
 
-export type ConsultaOutcome = ResultadoSefaz<ConsultaMdfe, never>;
+export type ResultadoConsulta = ResultadoSefaz<ConsultaMdfe, never>;
 
 /** MDF-e autorizado e ainda não encerrado do emitente. */
 export interface MdfeNaoEncerrado {
@@ -151,7 +151,7 @@ export interface EventoRegistrado {
   readonly procEventoMDFe: string;
 }
 
-export type EventoOutcome = ResultadoSefaz<EventoRegistrado, never>;
+export type ResultadoEvento = ResultadoSefaz<EventoRegistrado, never>;
 
 export interface CancelamentoPedido {
   readonly chave: string;
@@ -205,26 +205,26 @@ export interface PagamentoOperacaoPedido {
   readonly pagamentos: readonly PagamentoFrete[];
 }
 
-export interface MdfeClient {
-  readonly options: MdfeClientOptions;
-  statusServico(opcoes?: OpcoesEnvio): Promise<ResultadoSefaz<StatusServico, never>>;
+export interface ClienteMdfe {
+  readonly opcoes: ClienteMdfeOpcoes;
+  statusServico(opcoes?: EnvioOpcoes): Promise<ResultadoSefaz<StatusServico, never>>;
   /**
-   * Envia um MDF-e assinado (a string devolvida pelo `signMdfe`, sem outra alteração). O `tpAmb` do MDF-e diferente do
+   * Envia um MDF-e assinado (a string devolvida pelo `assinarMdfe`, sem outra alteração). O `tpAmb` do MDF-e diferente do
    * ambiente do cliente lança `ErroPolitica` antes do envio.
    */
-  autorizar(mdfeAssinado: string, opcoes?: AutorizarOpcoes): Promise<AutorizacaoOutcome>;
+  autorizar(mdfeAssinado: string, opcoes?: AutorizarOpcoes): Promise<ResultadoAutorizacao>;
   /** Situação do MDF-e; com o MDF-e assinado, confere o `digVal` e monta o `mdfeProc`. */
-  consultar(chave: string, mdfeAssinado?: string, opcoes?: OpcoesEnvio): Promise<ConsultaOutcome>;
+  consultar(chave: string, mdfeAssinado?: string, opcoes?: EnvioOpcoes): Promise<ResultadoConsulta>;
   /** MDF-e autorizados e não encerrados do emitente (111 com a lista; 112 sem nenhum). */
   consultarNaoEncerrados(
     autor?: AutorDocumento,
-    opcoes?: OpcoesEnvio,
+    opcoes?: EnvioOpcoes,
   ): Promise<ResultadoSefaz<readonly MdfeNaoEncerrado[], never>>;
-  cancelar(p: CancelamentoPedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome>;
-  encerrar(p: EncerramentoPedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome>;
-  incluirCondutor(p: InclusaoCondutorPedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome>;
-  incluirDFe(p: InclusaoDfePedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome>;
-  pagamentoOperacao(p: PagamentoOperacaoPedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome>;
+  cancelar(p: CancelamentoPedido, opcoes?: EnvioOpcoes): Promise<ResultadoEvento>;
+  encerrar(p: EncerramentoPedido, opcoes?: EnvioOpcoes): Promise<ResultadoEvento>;
+  incluirCondutor(p: InclusaoCondutorPedido, opcoes?: EnvioOpcoes): Promise<ResultadoEvento>;
+  incluirDFe(p: InclusaoDfePedido, opcoes?: EnvioOpcoes): Promise<ResultadoEvento>;
+  pagamentoOperacao(p: PagamentoOperacaoPedido, opcoes?: EnvioOpcoes): Promise<ResultadoEvento>;
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -274,7 +274,7 @@ function autorDaChave(c: ChaveAcesso): { CNPJ: string } | { CPF: string } {
 
 /** Fatia autossuficiente (com o `xmlns` do elemento), para devolver ao chamador fora de um envelope. */
 function avulso(doc: DocumentoXml, el: ElementoXml): string {
-  return sliceElement(doc, el, '');
+  return recortarElemento(doc, el, '');
 }
 
 interface ProtocoloLido {
@@ -295,7 +295,7 @@ function lerProtocolo(doc: DocumentoXml, el: ElementoXml): ProtocoloLido {
     ...(inf.nProt === undefined ? {} : { nProt: inf.nProt }),
     ...(inf.digVal === undefined ? {} : { digVal: inf.digVal }),
   };
-  return { p, embutido: sliceElement(doc, el) };
+  return { p, embutido: recortarElemento(doc, el) };
 }
 
 /** `mdfeProc`: MDF-e assinado + protocolo, só quando o `digVal` prova que o protocolo é deste conteúdo. */
@@ -319,7 +319,7 @@ function comProc({ p, embutido }: ProtocoloLido, a: DocumentoAssinado): Protocol
  * transporte, o mesmo que a NF-e recebe da política, antes de qualquer socket.
  */
 function conferirAmbiente(a: DocumentoAssinado, tpAmb: string): void {
-  const inf = primeiroFilho(a.doc.raiz, 'infMDFe', MDFE_NS);
+  const inf = primeiroFilho(a.documento.raiz, 'infMDFe', MDFE_NS);
   const ide = inf === undefined ? undefined : primeiroFilho(inf, 'ide', MDFE_NS);
   const el = ide === undefined ? undefined : primeiroFilho(ide, 'tpAmb', MDFE_NS);
   const doDocumento = el === undefined ? undefined : textoDe(el).trim();
@@ -347,12 +347,17 @@ interface EventoPedido {
 // ---------------------------------------------------------------------------------------------------------------
 
 /** Cria o cliente dos serviços do MDF-e. */
-export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
-  const logger = (options.logger ?? loggerSilencioso).child({ modulo: 'mdfe', ambiente: options.ambiente });
-  const tpAmb = tpAmbDoAmbiente(options.ambiente);
+export function criarClienteMdfe(opcoesDoCliente: ClienteMdfeOpcoes): ClienteMdfe {
+  const logger = (opcoesDoCliente.logger ?? loggerSilencioso).child({
+    modulo: 'mdfe',
+    ambiente: opcoesDoCliente.ambiente,
+  });
+  const tpAmb = tpAmbDoAmbiente(opcoesDoCliente.ambiente);
   const endpoint = (servico: MdfeServicoCliente): EndpointResolvido =>
-    options.endpoint ? options.endpoint(servico) : mdfeEndpoint({ ambiente: options.ambiente, servico });
-  const offsetDe = (c: ChaveAcesso): number => options.offsetMinutes ?? offsetDaUf(c.uf);
+    opcoesDoCliente.endpoint
+      ? opcoesDoCliente.endpoint(servico)
+      : mdfeEndpoint({ ambiente: opcoesDoCliente.ambiente, servico });
+  const offsetDe = (c: ChaveAcesso): number => opcoesDoCliente.deslocamentoMin ?? deslocamentoDaUf(c.uf);
 
   const call = (
     servico: MdfeServicoCliente,
@@ -363,17 +368,17 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
   ): Promise<RespostaSoap> =>
     chamar({
       ...(cStatEm === undefined ? {} : { cStatEm }),
-      transport: options.transport,
+      transport: opcoesDoCliente.transporte,
       endpoint: endpoint(servico),
       servico,
       mensagem,
       retorno,
       logger,
-      ...(options.timeoutMs === undefined ? {} : { timeoutMs: options.timeoutMs }),
+      ...(opcoesDoCliente.timeoutMs === undefined ? {} : { timeoutMs: opcoesDoCliente.timeoutMs }),
       ...(signal === undefined ? {} : { signal }),
     });
 
-  async function enviarEvento(p: EventoPedido): Promise<EventoOutcome> {
+  async function enviarEvento(p: EventoPedido): Promise<ResultadoEvento> {
     const nSeq = p.nSeqEvento;
     if (!Number.isInteger(nSeq) || nSeq < 1 || nSeq > 999) throw new ErroDeConfiguracao(`nSeqEvento inválido: ${nSeq}`);
     const nSeqEvento = String(nSeq);
@@ -385,7 +390,7 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
       tpAmb,
       ...(p.autor ?? autorDaChave(p.c)),
       chMDFe: p.c.chave,
-      dhEvento: formatDh(options.clock.agora(), offsetDe(p.c)),
+      dhEvento: formatarDh(opcoesDoCliente.relogio.agora(), offsetDe(p.c)),
       tpEvento: p.tpEvento,
       nSeqEvento,
       detEvento: { versaoEvento: VERSAO, [p.detalhe.nome]: p.detalhe.valor },
@@ -394,7 +399,7 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
     const evento = `<eventoMDFe xmlns="${MDFE_NS}" versao="${VERSAO}">${infXml}</eventoMDFe>`;
     const infEl = primeiroFilho(lerXml(evento).raiz, 'infEvento', MDFE_NS) as ElementoXml;
     schemaIssues('evento', validar(TEvento_infEvento, infEl));
-    const assinado = await assinarXml(evento, { id }, options.signer);
+    const assinado = await assinarXml(evento, { id }, opcoesDoCliente.assinador);
     const r = await call('MDFeRecepcaoEvento', assinado, 'retEventoMDFe', p.signal, 'infEvento');
     const ret = decodificar(TRetEvento, r.ret, r.doc.texto).valor.infEvento;
     logger.info('mdfe.evento', { chMDFe: p.c.chave, tpEvento: p.tpEvento, cStat: ret.cStat });
@@ -418,7 +423,7 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
       tpEvento: p.tpEvento,
       nSeqEvento,
       retEventoMDFe: avulso(r.doc, r.ret),
-      procEventoMDFe: envelope('procEventoMDFe', VERSAO, [assinado, sliceElement(r.doc, r.ret)]),
+      procEventoMDFe: envelope('procEventoMDFe', VERSAO, [assinado, recortarElemento(r.doc, r.ret)]),
       ...(ret.nProt === undefined ? {} : { nProt: ret.nProt }),
       ...(ret.dhRegEvento === undefined ? {} : { dhRegEvento: ret.dhRegEvento }),
       ...(ret.xEvento === undefined ? {} : { xEvento: ret.xEvento }),
@@ -430,10 +435,10 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
     return nProt;
   };
 
-  const client: MdfeClient = {
-    options,
+  const client: ClienteMdfe = {
+    opcoes: opcoesDoCliente,
 
-    async statusServico(opcoes?: OpcoesEnvio): Promise<ResultadoSefaz<StatusServico, never>> {
+    async statusServico(opcoes?: EnvioOpcoes): Promise<ResultadoSefaz<StatusServico, never>> {
       const msg = serializarRaiz(consStatServMDFeElement, { versao: VERSAO, tpAmb, xServ: 'STATUS' });
       const r = await call('MDFeStatusServico', msg, 'retConsStatServMDFe', opcoes?.signal);
       const v = decodificar(TRetConsStatServ, r.ret, r.doc.texto).valor;
@@ -450,7 +455,7 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
       });
     },
 
-    async autorizar(mdfeAssinado: string, opcoes: AutorizarOpcoes = {}): Promise<AutorizacaoOutcome> {
+    async autorizar(mdfeAssinado: string, opcoes: AutorizarOpcoes = {}): Promise<ResultadoAutorizacao> {
       const a = documentoAssinado(mdfeAssinado, 'MDFe', 'infMDFe');
       conferirAmbiente(a, tpAmb);
       const r = await call('MDFeRecepcaoSinc', a.xml, 'retMDFe', opcoes.signal);
@@ -465,7 +470,7 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
       return criarAutorizado(status, comProc(lido, a));
     },
 
-    async consultar(chave: string, mdfeAssinado?: string, opcoes?: OpcoesEnvio): Promise<ConsultaOutcome> {
+    async consultar(chave: string, mdfeAssinado?: string, opcoes?: EnvioOpcoes): Promise<ResultadoConsulta> {
       const c = chaveValida(chave, 'chMDFe');
       const a = mdfeAssinado === undefined ? undefined : documentoAssinado(mdfeAssinado, 'MDFe', 'infMDFe');
       if (a && a.id !== `MDFe${c.chave}`) throw new ErroDeConfiguracao('o MDF-e assinado não é o da chave consultada');
@@ -520,11 +525,11 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
 
     async consultarNaoEncerrados(
       autor?: AutorDocumento,
-      opcoes?: OpcoesEnvio,
+      opcoes?: EnvioOpcoes,
     ): Promise<ResultadoSefaz<readonly MdfeNaoEncerrado[], never>> {
-      const quem = autor ?? options.autor;
+      const quem = autor ?? opcoesDoCliente.autor;
       if (!quem)
-        throw new ErroDeConfiguracao('informe o CNPJ ou CPF do emitente (argumento ou MdfeClientOptions.autor)');
+        throw new ErroDeConfiguracao('informe o CNPJ ou CPF do emitente (argumento ou ClienteMdfeOpcoes.autor)');
       const doc = documentoAutor(quem, 'autor');
       const msg = serializarRaiz(consMDFeNaoEncElement, {
         versao: VERSAO,
@@ -544,7 +549,7 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
       );
     },
 
-    async cancelar(p: CancelamentoPedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome> {
+    async cancelar(p: CancelamentoPedido, opcoes?: EnvioOpcoes): Promise<ResultadoEvento> {
       const c = chaveValida(p.chave, 'chave');
       return enviarEvento({
         c,
@@ -558,7 +563,7 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
       });
     },
 
-    async encerrar(p: EncerramentoPedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome> {
+    async encerrar(p: EncerramentoPedido, opcoes?: EnvioOpcoes): Promise<ResultadoEvento> {
       const c = chaveValida(p.chave, 'chave');
       const exterior = p.uf === 'EX';
       const cUF = exterior ? '99' : cUFdaUf(p.uf);
@@ -577,7 +582,7 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
           { caminho: 'cMun', code: 'municipio_uf_divergente', mensagem: `cMun fora da UF ${p.uf} (K03, rejeição 614)` },
         ]);
       }
-      const dtEnc = p.dtEnc ?? dataDe(options.clock.agora(), offsetDe(c));
+      const dtEnc = p.dtEnc ?? dataDe(opcoesDoCliente.relogio.agora(), offsetDe(c));
       const terceiro = p.terceiro === undefined ? undefined : documentoAutor(p.terceiro, 'terceiro');
       const emitente = autorDaChave(c);
       if (
@@ -608,7 +613,7 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
       });
     },
 
-    async incluirCondutor(p: InclusaoCondutorPedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome> {
+    async incluirCondutor(p: InclusaoCondutorPedido, opcoes?: EnvioOpcoes): Promise<ResultadoEvento> {
       const c = chaveValida(p.chave, 'chave');
       if (!Number.isInteger(p.nSeqEvento) || p.nSeqEvento < 1 || p.nSeqEvento > 99) {
         throw new ErroDeConfiguracao(`nSeqEvento da inclusão de condutor vai de 1 a 99 (K01): ${p.nSeqEvento}`);
@@ -627,7 +632,7 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
       });
     },
 
-    async incluirDFe(p: InclusaoDfePedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome> {
+    async incluirDFe(p: InclusaoDfePedido, opcoes?: EnvioOpcoes): Promise<ResultadoEvento> {
       const c = chaveValida(p.chave, 'chave');
       if (!Number.isInteger(p.nSeqEvento) || p.nSeqEvento < 1 || p.nSeqEvento > 99) {
         throw new ErroDeConfiguracao(`nSeqEvento da inclusão de DF-e vai de 1 a 99 (K01): ${p.nSeqEvento}`);
@@ -661,16 +666,16 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
       });
     },
 
-    async pagamentoOperacao(p: PagamentoOperacaoPedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome> {
+    async pagamentoOperacao(p: PagamentoOperacaoPedido, opcoes?: EnvioOpcoes): Promise<ResultadoEvento> {
       const c = chaveValida(p.chave, 'chave');
       const viagem = (n: number, k: string): string => {
         if (!Number.isInteger(n) || n < 1 || n > 99_999) throw new ErroDeConfiguracao(`${k} de 1 a 99999: ${n}`);
         return String(n).padStart(5, '0');
       };
       if (p.pagamentos.length === 0) throw new ErroDeConfiguracao('informe ao menos um pagamento');
-      const { infPag, issues } = pagamentosDoLeiaute(
+      const { infPag, ocorrencias: issues } = pagamentosDoLeiaute(
         p.pagamentos,
-        dataDe(options.clock.agora(), offsetDe(c)),
+        dataDe(opcoesDoCliente.relogio.agora(), offsetDe(c)),
         'pagamentos',
       );
       if (issues.length > 0) throw new ErroDeValidacao('pagamento da operação inválido', issues);

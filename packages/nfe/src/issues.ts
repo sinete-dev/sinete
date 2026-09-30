@@ -1,12 +1,12 @@
 /**
  * Coletor de ocorrências de validação (`Ocorrencia` do core). O builder junta todas as ocorrências antes de
  * decidir, em vez de parar na primeira. Os códigos são API pública (snake_case, português, sem acento) e estão listados
- * em `NFE_ISSUE_CODES`.
+ * em `CODIGOS_OCORRENCIA_NFE`.
  */
 
 import type { Ocorrencia, OrigemOcorrencia } from '@sinete/core';
 
-export const NFE_ISSUE_CODES = [
+export const CODIGOS_OCORRENCIA_NFE = [
   'campo_obrigatorio',
   'campo_invalido',
   'campo_fora_do_pl',
@@ -37,7 +37,7 @@ export const NFE_ISSUE_CODES = [
   'schema',
 ] as const;
 
-export type NfeIssueCode = (typeof NFE_ISSUE_CODES)[number];
+export type CodigoOcorrenciaNfe = (typeof CODIGOS_OCORRENCIA_NFE)[number];
 
 export class Issues {
   readonly list: Ocorrencia[];
@@ -47,12 +47,12 @@ export class Issues {
   }
 
   /** Ocorrência sobre a entrada, a não ser que `origem` diga outra coisa (ADR 0011). */
-  add(path: string, code: NfeIssueCode | string, message: string, origem: OrigemOcorrencia = 'entrada'): void {
+  add(path: string, code: CodigoOcorrenciaNfe | string, message: string, origem: OrigemOcorrencia = 'entrada'): void {
     this.list.push({ caminho: path, code, mensagem: message, origem });
   }
 
   /** Ocorrência sobre o que o sinete montou a partir da entrada (XML, schema, PL, chave gerada, calculadora). */
-  montagem(path: string, code: NfeIssueCode | string, message: string): void {
+  montagem(path: string, code: CodigoOcorrenciaNfe | string, message: string): void {
     this.add(path, code, message, 'montagem');
   }
 

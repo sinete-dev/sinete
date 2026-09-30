@@ -6,8 +6,8 @@
 import type { ElementoXml } from '@sinete/core/xml';
 import { descendentes, ErroXml, elementosFilhos, lerXml, textoDe } from '@sinete/core/xml';
 import { SOAP12_NS } from '@sinete/transport';
-import type { ServiceDef } from './services.ts';
-import { soapAction, wsdlNamespace } from './services.ts';
+import type { DefinicaoDeServico } from './services.ts';
+import { acaoSoap, namespaceDoWsdl } from './services.ts';
 
 /** Pedido recusado antes da área de dados: vira SOAP Fault com HTTP 500, como o IIS da SEFAZ responde. */
 export interface SoapReject {
@@ -39,15 +39,15 @@ export function actionOf(contentType: string | undefined): string | undefined {
 /** Extrai a área de dados do envelope conforme o estilo do serviço. */
 export function parseSoapRequest(
   body: string,
-  def: ServiceDef,
+  def: DefinicaoDeServico,
   contentType: string | undefined,
 ): SoapReject | SoapPayload {
   if (!/^application\/soap\+xml\b/i.test(contentType ?? '')) {
     return reject(`Content-Type deve ser application/soap+xml (SOAP 1.2), recebido ${contentType ?? 'nenhum'}`);
   }
   const action = actionOf(contentType);
-  if (action !== undefined && action !== soapAction(def)) {
-    return reject(`action ${action} não é a operação ${soapAction(def)}`);
+  if (action !== undefined && action !== acaoSoap(def)) {
+    return reject(`action ${action} não é a operação ${acaoSoap(def)}`);
   }
   let root: ElementoXml;
   try {
@@ -60,17 +60,17 @@ export function parseSoapRequest(
   if (root.ns !== SOAP12_NS) return reject(`envelope fora do SOAP 1.2 (${root.ns})`, 'soap:VersionMismatch');
   const bodyEl = only(root).find((e) => e.local === 'Body' && e.ns === SOAP12_NS);
   if (!bodyEl) return reject('envelope sem Body');
-  const ns = wsdlNamespace(def);
+  const ns = namespaceDoWsdl(def);
   let holder = only(bodyEl)[0];
   let naOperacao = false;
-  if (def.style === 'operacao') {
-    if (holder?.local !== def.operation || holder.ns !== ns) return reject(`Body sem ${def.operation} de ${ns}`);
+  if (def.estilo === 'operacao') {
+    if (holder?.local !== def.operacao || holder.ns !== ns) return reject(`Body sem ${def.operacao} de ${ns}`);
     holder = only(holder)[0];
-  } else if (def.operacaoEm !== undefined && holder?.local === def.operation && holder.ns === ns) {
+  } else if (def.operacaoEm !== undefined && holder?.local === def.operacao && holder.ns === ns) {
     naOperacao = true;
     holder = only(holder)[0];
   }
-  const dadosMsg = def.style === 'mdfe' ? 'mdfeDadosMsg' : 'nfeDadosMsg';
+  const dadosMsg = def.estilo === 'mdfe' ? 'mdfeDadosMsg' : 'nfeDadosMsg';
   if (holder?.local !== dadosMsg || holder.ns !== ns) return reject(`Body sem ${dadosMsg} de ${ns}`);
   const data = only(holder);
   if (def.compactado === true) {
@@ -84,20 +84,20 @@ export function parseSoapRequest(
     // A UF da consulta é a do autorizador que responde: a do MT exige o elemento da operação por fora.
     const uf = Array.from(descendentes(el)).find((e) => e.local === 'UF');
     if (uf !== undefined && def.operacaoEm.includes(textoDe(uf).trim()))
-      return reject(`Body sem ${def.operation} de ${ns}`);
+      return reject(`Body sem ${def.operacao} de ${ns}`);
   }
   return { ok: true, payload: body.slice(el.inicio, el.fim), ...(naOperacao ? { naOperacao } : {}) };
 }
 
 /** Envelope da resposta com o retorno (`retEnviNFe`, `retConsSitNFe`...) inserido como texto. */
-export function soapResponse(def: ServiceDef, ret: string, naOperacao = false): string {
-  const ns = wsdlNamespace(def);
+export function soapResponse(def: DefinicaoDeServico, ret: string, naOperacao = false): string {
+  const ns = namespaceDoWsdl(def);
   const inner = naOperacao
-    ? `<nfeResultMsg xmlns="${ns}"><${def.operation}Result>${ret}</${def.operation}Result></nfeResultMsg>`
-    : def.style === 'operacao'
-      ? `<${def.operation}Response xmlns="${ns}"><${def.operation}Result>${ret}</${def.operation}Result></${def.operation}Response>`
-      : def.style === 'mdfe'
-        ? `<${def.operation}Result xmlns="${ns}">${ret}</${def.operation}Result>`
+    ? `<nfeResultMsg xmlns="${ns}"><${def.operacao}Result>${ret}</${def.operacao}Result></nfeResultMsg>`
+    : def.estilo === 'operacao'
+      ? `<${def.operacao}Response xmlns="${ns}"><${def.operacao}Result>${ret}</${def.operacao}Result></${def.operacao}Response>`
+      : def.estilo === 'mdfe'
+        ? `<${def.operacao}Result xmlns="${ns}">${ret}</${def.operacao}Result>`
         : `<nfeResultMsg xmlns="${ns}">${ret}</nfeResultMsg>`;
   return `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="${SOAP12_NS}"><soap:Body>${inner}</soap:Body></soap:Envelope>`;
 }

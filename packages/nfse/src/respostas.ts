@@ -13,7 +13,7 @@ import type { NfseErro } from '@sinete/rejeicoes/nfse';
 import { dicaRejeicaoNfse, nfseErroPorCodigo } from '@sinete/rejeicoes/nfse';
 
 /** Uma mensagem de erro ou alerta da Sefin, com a entrada do catálogo quando o código é conhecido. */
-export interface NfseMensagem {
+export interface MensagemNfse {
   readonly codigo: string;
   readonly descricao: string;
   readonly complemento?: string;
@@ -25,14 +25,14 @@ export interface NfseMensagem {
  * Rejeição da NFS-e: o `cStat` é o código do primeiro erro (`E0312`), o `xMotivo` a descrição dele, e `erros` traz a
  * lista inteira na ordem da resposta.
  */
-export interface NfseRejeicao extends Recusado {
-  readonly erros: readonly NfseMensagem[];
+export interface RejeicaoNfse extends Recusado {
+  readonly erros: readonly MensagemNfse[];
   /** Status HTTP da resposta (400 na recusa da DPS). */
-  readonly httpStatus: number;
+  readonly statusHttp: number;
 }
 
 /** Desfecho de uma operação da NFS-e: gerada ou registrada, ou rejeitada. Não há pendente nem denegação na NFS-e. */
-export type NfseOutcome<T> = Autorizado<T> | NfseRejeicao;
+export type ResultadoNfse<T> = Autorizado<T> | RejeicaoNfse;
 
 type Json = Record<string, unknown>;
 
@@ -60,11 +60,11 @@ export function lerJson(texto: string): Json | undefined {
 }
 
 /** Mensagens da lista `erros` (ou `erro`) ou `alertas` (ou `alerta`), em qualquer das grafias. */
-export function mensagens(json: Json, tipo: 'erros' | 'alertas'): NfseMensagem[] {
+export function mensagens(json: Json, tipo: 'erros' | 'alertas'): MensagemNfse[] {
   const singular = tipo.slice(0, -1);
   const bruto = campo(json, tipo) ?? campo(json, singular);
   const lista: unknown[] = Array.isArray(bruto) ? bruto : bruto === undefined || bruto === null ? [] : [bruto];
-  const out: NfseMensagem[] = [];
+  const out: MensagemNfse[] = [];
   for (const item of lista) {
     if (typeof item !== 'object' || item === null) continue;
     const o = item as Json;
@@ -89,12 +89,12 @@ const CODIGO = /^E\d{4}$/;
  * Rejeição a partir de uma resposta 4xx com erros. Lança `ErroRespostaInvalida` quando o corpo não traz nenhum erro com
  * código no formato do Anexo I (`E` e 4 dígitos): aí não há desfecho, há resposta fora do contrato.
  */
-export function rejeicao(json: Json | undefined, httpStatus: number, operacao: string): NfseRejeicao {
+export function rejeicao(json: Json | undefined, httpStatus: number, operacao: string): RejeicaoNfse {
   const erros = json === undefined ? [] : mensagens(json, 'erros');
   const primeiro = erros.find((e) => CODIGO.test(e.codigo));
   if (primeiro === undefined) {
     throw new ErroRespostaInvalida(`${operacao}: HTTP ${httpStatus} sem erro no formato do Anexo I`, {
-      detalhes: { operacao, httpStatus, codigos: erros.map((e) => e.codigo) },
+      detalhes: { operacao, statusHttp: httpStatus, codigos: erros.map((e) => e.codigo) },
     });
   }
   const hint: DicaRejeicao | undefined = dicaRejeicaoNfse(primeiro.codigo);
@@ -104,7 +104,7 @@ export function rejeicao(json: Json | undefined, httpStatus: number, operacao: s
     xMotivo: primeiro.descricao,
     ...(hint === undefined ? {} : { dica: hint }),
     erros,
-    httpStatus,
+    statusHttp: httpStatus,
   };
 }
 

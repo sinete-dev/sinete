@@ -1,11 +1,11 @@
 // Tipos do pacote publicado, vistos por um consumidor com tsc nodenext (e por deno check).
 import type { Ocorrencia } from '@sinete/core';
 import type {
-  AutorizacaoOutcome,
-  BuildMdfeResult,
-  MdfeClient,
-  MdfeInput,
-  MdfeIssueCode,
+  ResultadoAutorizacao,
+  ResultadoMontagemMdfe,
+  ClienteMdfe,
+  DadosMdfe,
+  CodigoOcorrenciaMdfe,
   TrechoInvalido,
   UfMdfe,
   VeiculoTracao,
@@ -25,15 +25,15 @@ const tipo: TipoEmitente = TipoEmitente.CARGA_PROPRIA;
 const carga: TipoCarga = TipoCarga.GRANEL_SOLIDO;
 const uf: UfMdfe = 'MS';
 const trecho: TrechoInvalido | undefined = conferirPercurso('MT', [uf], 'SP');
-declare const input: MdfeInput;
-declare const r: BuildMdfeResult;
-declare const client: MdfeClient;
+declare const input: DadosMdfe;
+declare const r: ResultadoMontagemMdfe;
+declare const client: ClienteMdfe;
 if (!r.ok) {
-  const issues: readonly Ocorrencia[] = r.issues;
+  const issues: readonly Ocorrencia[] = r.ocorrencias;
   void issues;
 }
-const code: MdfeIssueCode = 'percurso_invalido';
+const code: CodigoOcorrenciaMdfe = 'percurso_invalido';
 const d: Decimal = Decimal.of('1.5');
-declare const emitido: AutorizacaoOutcome;
+declare const emitido: ResultadoAutorizacao;
 const mdfeProc: string | undefined = emitido.tipo === 'autorizado' ? emitido.valor.mdfeProc : undefined;
 void [errado, tipo, carga, trecho, input, client, code, d, mdfeProc];

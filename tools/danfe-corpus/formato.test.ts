@@ -17,7 +17,9 @@ test('formato vem da lista fechada; nenhum pedaço do título (chave, CNPJ) pass
 
 test('marca vem da lista fechada, pela primeira linha girada; o protocolo não passa', () => {
   const doc = (...linhas: string[]) => ({
-    pages: [{ ops: [{ t: 'text', s: 'CHAVE', rot: 0 }, ...linhas.map((s) => ({ t: 'text', s, rot: 54.7 }))] }],
+    paginas: [
+      { ops: [{ t: 'texto', s: 'CHAVE', rotacao: 0 }, ...linhas.map((s) => ({ t: 'texto', s, rotacao: 54.7 }))] },
+    ],
   });
   expect(marcaDe(doc())).toBe('nenhuma');
   expect(marcaDe(doc('DENEGADA', 'USO DENEGADO', 'PROTOCOLO 135260000000001'))).toBe('denegada');
@@ -26,5 +28,5 @@ test('marca vem da lista fechada, pela primeira linha girada; o protocolo não p
   expect(marcaDe(doc('EMISSÃO EM CONTINGÊNCIA'))).toBe('contingencia');
   expect(marcaDe(doc('CANCELADO', 'PROTOCOLO 9'))).toBe('cancelada');
   expect(marcaDe(doc('PROTOCOLO 135260000000001'))).toBe('outra');
-  expect(marcaDe({ pages: [{ ops: [{ t: 'text', s: 'CANHOTO', rot: 90 }] }] })).toBe('nenhuma');
+  expect(marcaDe({ paginas: [{ ops: [{ t: 'texto', s: 'CANHOTO', rotacao: 90 }] }] })).toBe('nenhuma');
 });

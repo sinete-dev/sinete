@@ -7,8 +7,8 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { CABECALHO_DANFSE, QR_DANFSE, TEXTOS_DANFSE } from '../src/data/leiaute-danfse.ts';
 import { readNfse } from '../src/input/nfse.ts';
-import type { Doc, TextOp } from '../src/model.ts';
-import { DanfeError, danfse, toHtml, toPdf, toSvg } from '../src/nfse.ts';
+import type { Documento, OpTexto } from '../src/model.ts';
+import { danfse, ErroDa, gerarHtml, gerarPdf, gerarSvg } from '../src/nfse.ts';
 import type { NfseFx } from './fixtures-nfse.ts';
 import { chaveNfse, eventoNfseXml, NFSE_FIXTURES, nfseXml, PREST_CNPJ, PREST_CNPJ_ALFA } from './fixtures-nfse.ts';
 
@@ -18,8 +18,8 @@ function fx(name: string): NfseFx {
   return f;
 }
 
-const textos = (d: Doc): TextOp[] => (d.pages[0]?.ops ?? []).filter((o): o is TextOp => o.t === 'text');
-const tem = (d: Doc, s: string): boolean => textos(d).some((o) => o.s.includes(s));
+const textos = (d: Documento): OpTexto[] => (d.paginas[0]?.ops ?? []).filter((o): o is OpTexto => o.t === 'texto');
+const tem = (d: Documento, s: string): boolean => textos(d).some((o) => o.s.includes(s));
 
 const completa = nfseXml(fx('danfse-completa'));
 const alfa = nfseXml(fx('danfse-alfanumerico-homologacao'));
@@ -52,20 +52,20 @@ describe('entrada nos dois pacotes de esquemas', () => {
     ] as const) {
       const d = danfse(xml);
       const chave = chaveNfse(cnpj);
-      expect(d.pages).toHaveLength(1);
-      expect(d.pages[0]).toMatchObject({ w: 210, h: 297 });
-      expect(d.title).toBe(`DANFSe ${chave}`);
+      expect(d.paginas).toHaveLength(1);
+      expect(d.paginas[0]).toMatchObject({ w: 210, h: 297 });
+      expect(d.titulo).toBe(`DANFSe ${chave}`);
       expect(textos(d).filter((o) => o.s === chave)).toHaveLength(1);
       expect(tem(d, `1234 / ${chave}`)).toBe(true);
-      expect(new TextDecoder().decode(toPdf(d).slice(0, 8))).toBe('%PDF-1.4');
-      expect(toHtml(d)).toContain(chave);
-      expect(toSvg(d.pages[0] as Doc['pages'][number], d)).toContain('<svg');
+      expect(new TextDecoder().decode(gerarPdf(d).slice(0, 8))).toBe('%PDF-1.4');
+      expect(gerarHtml(d)).toContain(chave);
+      expect(gerarSvg(d.paginas[0] as Documento['paginas'][number], d)).toContain('<svg');
     }
     expect(tem(danfse(alfa), '12.ABC.345/01DE-35')).toBe(true);
   });
 
   test('determinístico', () => {
-    expect(toPdf(danfse(completa))).toEqual(toPdf(danfse(completa)));
+    expect(gerarPdf(danfse(completa))).toEqual(gerarPdf(danfse(completa)));
   });
 
   test('campos da NT com as descrições das opções e os formatos do 2.4.5', () => {
@@ -112,8 +112,8 @@ describe('entrada nos dois pacotes de esquemas', () => {
   test('conteúdo em 7 pt, rótulos em 6 pt ou mais (NT 008/2026, 2.4)', () => {
     for (const f of NFSE_FIXTURES) {
       for (const o of textos(danfse(nfseXml(f)))) {
-        expect({ s: o.s, ok: o.size >= 6 }).toEqual({ s: o.s, ok: true });
-        if (o.font === 'Helvetica' && !o.rot && o.size < 7) {
+        expect({ s: o.s, ok: o.tamanho >= 6 }).toEqual({ s: o.s, ok: true });
+        if (o.fonte === 'Helvetica' && !o.rotacao && o.tamanho < 7) {
           // Só o cabeçalho (ambientes) e o texto do QR Code saem em 6 pt normal.
           expect(
             o.s.startsWith('Ambiente') || o.s.startsWith('Tipo de Ambiente') || QR_DANFSE.texto.includes(o.s),
@@ -124,7 +124,7 @@ describe('entrada nos dois pacotes de esquemas', () => {
   });
 
   test('texto de autenticidade do QR Code em três linhas (2.4.3)', () => {
-    const linhas = textos(danfse(completa)).filter((o) => QR_DANFSE.texto.includes(o.s) && o.size === 6);
+    const linhas = textos(danfse(completa)).filter((o) => QR_DANFSE.texto.includes(o.s) && o.tamanho === 6);
     expect(linhas).toHaveLength(3);
     expect(linhas.map((o) => o.s).join(' ')).toBe(QR_DANFSE.texto);
   });
@@ -165,11 +165,11 @@ describe('blocos suprimidos e linhas condicionais (2.3 e notas 1 a 6)', () => {
 
   test('retenção de PIS e COFINS tributo a tributo, pelo tpRetPisCofins (2.4.5 estendido aos códigos 3 a 9)', () => {
     // O valor de um campo é o texto logo depois do rótulo (o `campo` desenha os dois em sequência).
-    const valor = (d: Doc, rotulo: string): string | undefined => {
+    const valor = (d: Documento, rotulo: string): string | undefined => {
       const ts = textos(d);
       return ts[ts.findIndex((o) => o.s === rotulo) + 1]?.s;
     };
-    const com = (codigo: string): Doc =>
+    const com = (codigo: string): Documento =>
       danfse(completa.replace(/<tpRetPisCofins>\d<\/tpRetPisCofins>/, `<tpRetPisCofins>${codigo}</tpRetPisCofins>`));
     // CSLL 8,50, PIS 5,53 e COFINS 25,50 na fixture.
     for (const [codigo, retidas, pis, cofins] of [
@@ -223,36 +223,36 @@ describe('blocos suprimidos e linhas condicionais (2.3 e notas 1 a 6)', () => {
 describe('página única com textos longos (2.2)', () => {
   test('descrição e informações de 2.000 caracteres: uma página, reticências e a linha dos tributos intacta', () => {
     const d = danfse(longos);
-    expect(d.pages).toHaveLength(1);
-    expect(d.stats.cortados).toBeGreaterThanOrEqual(2);
+    expect(d.paginas).toHaveLength(1);
+    expect(d.estatisticas.cortados).toBeGreaterThanOrEqual(2);
     const ts = textos(d);
     expect(ts.some((o) => o.s.endsWith('...') && o.s.includes('LOREM'))).toBe(true);
     expect(tem(d, 'Totais Aproximados dos Tributos cfe. Lei nº 12.741/2012:')).toBe(true);
     // Nada passa da borda nem invade o canhoto.
     const canhoto = ts.find((o) => o.s === 'DATA CIENTIFICAÇÃO:');
     for (const o of ts) {
-      if (o.rot) continue;
+      if (o.rotacao) continue;
       expect(o.y).toBeLessThan(295);
       expect(o.x + o.w).toBeLessThanOrEqual(207.2);
       if (o.s.includes('LOREM') || o.s.startsWith('Totais')) expect(o.y).toBeLessThan(canhoto?.y ?? 0);
     }
     // Sem canhoto, o quadro das informações cresce.
     const sem = danfse(longos, { canhoto: false });
-    const linhas = (x: Doc): number => textos(x).filter((o) => o.s.includes('LOREM')).length;
+    const linhas = (x: Documento): number => textos(x).filter((o) => o.s.includes('LOREM')).length;
     expect(linhas(sem)).toBeGreaterThan(linhas(d));
   });
 });
 
 describe('marcas (2, 2.4.3, 2.5.1 e 2.5.2)', () => {
-  const marca = (d: Doc): TextOp | undefined => textos(d).find((o) => o.rot);
+  const marca = (d: Documento): OpTexto | undefined => textos(d).find((o) => o.rotacao);
 
   test('produção restrita: "NFS-e SEM VALIDADE JURÍDICA" em vermelho, negrito, 9 pt, abaixo do título', () => {
     const h = textos(danfse(alfa)).find((o) => o.s === CABECALHO_DANFSE.homologacao);
-    expect(h).toMatchObject({ font: 'Helvetica-Bold', size: 9, rgb: [1, 0, 0] });
+    expect(h).toMatchObject({ fonte: 'Helvetica-Bold', tamanho: 9, rgb: [1, 0, 0] });
     const titulo = textos(danfse(alfa)).find((o) => o.s === 'Documento Auxiliar da NFS-e');
     expect(h?.y ?? 0).toBeGreaterThan(titulo?.y ?? 0);
     expect(tem(danfse(completa), CABECALHO_DANFSE.homologacao)).toBe(false);
-    expect(toHtml(danfse(alfa))).toContain('fill="rgb(255,0,0)"');
+    expect(gerarHtml(danfse(alfa))).toContain('fill="rgb(255,0,0)"');
     expect(marca(danfse(alfa))).toBeUndefined();
   });
 
@@ -266,16 +266,16 @@ describe('marcas (2, 2.4.3, 2.5.1 e 2.5.2)', () => {
     ] as const) {
       const d = danfse(completa, { cancelamento: c });
       const m = marca(d);
-      expect(m).toMatchObject({ s: 'CANCELADA', font: 'Helvetica', gray: TEXTOS_DANFSE.marca.cinza });
-      expect(m?.size ?? 0).toBeGreaterThanOrEqual(TEXTOS_DANFSE.marca.minimo);
-      expect(d.pages[0]?.ops[0]).toBe(m);
+      expect(m).toMatchObject({ s: 'CANCELADA', fonte: 'Helvetica', cinza: TEXTOS_DANFSE.marca.cinza });
+      expect(m?.tamanho ?? 0).toBeGreaterThanOrEqual(TEXTOS_DANFSE.marca.minimo);
+      expect(d.paginas[0]?.ops[0]).toBe(m);
     }
   });
 
   test('substituída: "SUBSTITUÍDA" pelo evento de cancelamento por substituição', () => {
     const d = danfse(completa, { substituicao: eventoNfseXml('e105102', chaveNfse(PREST_CNPJ)) });
-    expect(marca(d)).toMatchObject({ s: 'SUBSTITUÍDA', font: 'Helvetica' });
-    expect(marca(d)?.size ?? 0).toBeGreaterThanOrEqual(50);
+    expect(marca(d)).toMatchObject({ s: 'SUBSTITUÍDA', fonte: 'Helvetica' });
+    expect(marca(d)?.tamanho ?? 0).toBeGreaterThanOrEqual(50);
     expect(marca(danfse(completa, { substituicao: true }))?.s).toBe('SUBSTITUÍDA');
     expect(marca(danfse(completa))).toBeUndefined();
   });
@@ -286,7 +286,7 @@ describe('marcas (2, 2.4.3, 2.5.1 e 2.5.2)', () => {
       try {
         f();
       } catch (e) {
-        return e instanceof DanfeError ? e.code : String(e);
+        return e instanceof ErroDa ? e.code : String(e);
       }
       return 'sem erro';
     };
@@ -318,7 +318,7 @@ describe('entrada inválida', () => {
     const d = danfse(
       `<NFSe xmlns="http://www.sped.fazenda.gov.br/nfse" versao="1.01"><infNFSe Id="NFS${chaveNfse()}"><nNFSe>1</nNFSe></infNFSe></NFSe>`,
     );
-    expect(d.pages).toHaveLength(1);
+    expect(d.paginas).toHaveLength(1);
     expect(tem(d, TEXTOS_DANFSE.tomadorAusente)).toBe(true);
   });
 });
@@ -343,9 +343,9 @@ describe.skipIf(!hasZbar)('QR Code lido com o zbarimg', () => {
       const dir = mkdtempSync(path.join(tmpdir(), 'sinete-danfse-'));
       try {
         const d = danfse(xml, { cancelamento: true });
-        const qr = d.pages[0]?.ops.find((o) => o.t === 'qr');
-        expect(qr).toMatchObject({ x: QR_DANFSE.x, y: QR_DANFSE.y, size: QR_DANFSE.lado });
-        writeFileSync(path.join(dir, 'x.pdf'), toPdf(d));
+        const qr = d.paginas[0]?.ops.find((o) => o.t === 'qr');
+        expect(qr).toMatchObject({ x: QR_DANFSE.x, y: QR_DANFSE.y, tamanho: QR_DANFSE.lado });
+        writeFileSync(path.join(dir, 'x.pdf'), gerarPdf(d));
         for (const dpi of [150, 300]) {
           // Só o canto do QR Code (de 160 a 207 mm na horizontal, de 10 a 40 mm na vertical), para o zbar ser rápido.
           const px = (mm: number): string => String(Math.round((mm / 25.4) * dpi));

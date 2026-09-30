@@ -3,7 +3,7 @@
  *
  * O dataset vem do SQLite da Calculadora offline da RFB e das tabelas do IT 2025.002, fixados por hash e extraídos por
  * `tools/ibs-cbs-dados` (ADR 0007). Esta entrada tem o leitor, a aplicabilidade de NCM/NBS e o diff semântico; o dataset
- * embarcado está em `@sinete/ibs-cbs-dados/bundled`, e qualquer outro bundle compatível pode ser carregado em runtime com
+ * embarcado está em `@sinete/ibs-cbs-dados/embarcado`, e qualquer outro bundle compatível pode ser carregado em runtime com
  * `carregarDataset` (depois de `conferirDataset`, se veio de fora).
  */
 

@@ -132,40 +132,40 @@ export class Decimal {
 }
 
 /** Atalho para `Decimal.of`. */
-export function dec(input: DecimalInput): Decimal {
-  return Decimal.of(input);
+export function dec(valor: DecimalInput): Decimal {
+  return Decimal.of(valor);
 }
 
 /** Soma uma lista (vazia = zero). */
-export function sum(values: Iterable<Decimal>): Decimal {
+export function sum(valores: Iterable<Decimal>): Decimal {
   let acc = Decimal.ZERO;
-  for (const v of values) acc = acc.plus(v);
+  for (const v of valores) acc = acc.plus(v);
   return acc;
 }
 
 /** Formato de um campo decimal do leiaute: dígitos inteiros e casas (ADR 0002: as casas vêm do pattern do XSD). */
-export interface DecimalFormat {
-  readonly name: string;
-  readonly intDigits: number;
+export interface FormatoDecimal {
+  readonly nome: string;
+  readonly digitosInteiros: number;
   /** Casas fixas na saída. */
   readonly casas: number;
   /** O pattern recusa zero (`TDec_1302Opc`). */
-  readonly nonZero?: boolean;
+  readonly naoNulo?: boolean;
 }
 
 /** `TDec_1302`: 13 inteiros e 2 casas. */
-export const D1302: DecimalFormat = { name: 'TDec_1302', intDigits: 13, casas: 2 };
+export const D1302: FormatoDecimal = { nome: 'TDec_1302', digitosInteiros: 13, casas: 2 };
 /** `TDec_1302Opc`: como `TDec_1302`, sem zero. */
-export const D1302_OPC: DecimalFormat = { name: 'TDec_1302Opc', intDigits: 13, casas: 2, nonZero: true };
+export const D1302_OPC: FormatoDecimal = { nome: 'TDec_1302Opc', digitosInteiros: 13, casas: 2, naoNulo: true };
 /** `TDec_1104`: 11 inteiros e 4 casas. */
-export const D1104: DecimalFormat = { name: 'TDec_1104', intDigits: 11, casas: 4 };
+export const D1104: FormatoDecimal = { nome: 'TDec_1104', digitosInteiros: 11, casas: 4 };
 
 /** Por que o valor não cabe no formato, ou `undefined` se cabe sem perder dígitos. */
-export function formatProblem(value: Decimal, format: DecimalFormat): string | undefined {
+export function problemaDeFormato(value: Decimal, format: FormatoDecimal): string | undefined {
   if (value.isNegative()) return 'valor negativo';
-  if (format.nonZero && value.isZero()) return 'valor zero não é aceito neste campo';
+  if (format.naoNulo && value.isZero()) return 'valor zero não é aceito neste campo';
   if (value.significantScale() > format.casas) return `mais de ${format.casas} casas decimais`;
-  if (value.intDigits() > format.intDigits) return `mais de ${format.intDigits} dígitos inteiros`;
+  if (value.intDigits() > format.digitosInteiros) return `mais de ${format.digitosInteiros} dígitos inteiros`;
   return undefined;
 }
 
@@ -173,6 +173,6 @@ export function formatProblem(value: Decimal, format: DecimalFormat): string | u
  * Texto do valor no formato. O pattern de `TDec_1302` e `TDec_1104` aceita `0` e o inteiro sem casas, mas as casas
  * fixas são sempre aceitas e são a forma que os autorizadores devolvem; zero sai como `0.00`/`0.0000`.
  */
-export function formatDecimal(value: Decimal, format: DecimalFormat): string {
+export function formatarDecimal(value: Decimal, format: FormatoDecimal): string {
   return value.toFixed(format.casas);
 }

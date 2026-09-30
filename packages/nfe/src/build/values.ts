@@ -6,8 +6,8 @@
 
 import type { DecimalInput, RoundingMode } from '../decimal.ts';
 import { Decimal } from '../decimal.ts';
-import type { DecimalFormat } from '../format.ts';
-import { formatDecimal, formatProblem } from '../format.ts';
+import type { FormatoDecimal } from '../format.ts';
+import { formatarDecimal, problemaDeFormato } from '../format.ts';
 import type { Issues } from '../issues.ts';
 
 /** Famílias de campo com modo de arredondamento próprio (`data/arredondamento.json`). */
@@ -32,23 +32,23 @@ export class Ctx {
   }
 
   /** Entrada opcional; inválida vira ocorrência e `undefined`. */
-  opt(value: DecimalInput | undefined, path: string, format: DecimalFormat): Decimal | undefined {
+  opt(value: DecimalInput | undefined, path: string, format: FormatoDecimal): Decimal | undefined {
     if (value === undefined) return undefined;
     const d = Decimal.tryOf(value);
     if (d === undefined) {
       this.issues.add(path, 'decimal_invalido', 'número decimal inválido (use ponto como separador, sem milhar)');
       return undefined;
     }
-    const problem = formatProblem(d, format);
+    const problem = problemaDeFormato(d, format);
     if (problem !== undefined) {
-      this.issues.add(path, 'decimal_invalido', `${problem} (${format.name})`);
+      this.issues.add(path, 'decimal_invalido', `${problem} (${format.nome})`);
       return undefined;
     }
     return d;
   }
 
   /** Entrada obrigatória; ausente ou inválida vira ocorrência e zero, para que a montagem siga e junte tudo. */
-  req(value: DecimalInput | undefined, path: string, format: DecimalFormat): Decimal {
+  req(value: DecimalInput | undefined, path: string, format: FormatoDecimal): Decimal {
     if (value === undefined) {
       this.issues.add(path, 'campo_obrigatorio', 'campo obrigatório');
       return Decimal.ZERO;
@@ -57,7 +57,7 @@ export class Ctx {
   }
 
   /** Arredonda um valor calculado no formato do campo pelo modo da família. */
-  round(value: Decimal, format: DecimalFormat, familia: Familia): Decimal {
+  round(value: Decimal, format: FormatoDecimal, familia: Familia): Decimal {
     return value.round(format.max, this.modes[familia]);
   }
 
@@ -73,7 +73,7 @@ export class Ctx {
     given: DecimalInput | undefined,
     padrao: Decimal,
     path: string,
-    format: DecimalFormat,
+    format: FormatoDecimal,
     familia: Familia,
   ): Decimal {
     return this.opt(given, path, format) ?? this.round(padrao, format, familia);
@@ -83,7 +83,7 @@ export class Ctx {
     given: DecimalInput | undefined,
     computed: Decimal,
     path: string,
-    format: DecimalFormat,
+    format: FormatoDecimal,
     familia: Familia,
   ): Decimal {
     const r = this.round(computed, format, familia);
@@ -101,15 +101,15 @@ export class Ctx {
   }
 
   /** Texto no formato do campo. */
-  s(value: Decimal, format: DecimalFormat): string {
-    return formatDecimal(value, format);
+  s(value: Decimal, format: FormatoDecimal): string {
+    return formatarDecimal(value, format);
   }
 
   /** Texto opcional: ausente fica ausente, e zero some nos formatos que não aceitam zero. */
-  so(value: Decimal | undefined, format: DecimalFormat): string | undefined {
+  so(value: Decimal | undefined, format: FormatoDecimal): string | undefined {
     if (value === undefined) return undefined;
-    if (format.nonZero && value.isZero()) return undefined;
-    return formatDecimal(value, format);
+    if (format.naoNulo && value.isZero()) return undefined;
+    return formatarDecimal(value, format);
   }
 }
 

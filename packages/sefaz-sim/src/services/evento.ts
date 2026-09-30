@@ -19,15 +19,15 @@ import * as ciencia from '@sinete/schemas/nfe/evento-ciencia-operacao/PL_010d';
 import * as confirmacao from '@sinete/schemas/nfe/evento-confirmacao-operacao/PL_010d';
 import * as desconhecimento from '@sinete/schemas/nfe/evento-desconhecimento-operacao/PL_010d';
 import * as naoRealizada from '@sinete/schemas/nfe/evento-operacao-nao-realizada/PL_010d';
-import { checkAssinatura } from '../certs.ts';
-import type { RequestContext, Status } from '../context.ts';
+import { conferirAssinaturaDoDocumento } from '../certs.ts';
+import type { ContextoDoPedido, Status } from '../context.ts';
 import { dh, prelude, status, tipoAutorizador, verAplic } from '../context.ts';
 import { retEventoXml, standalone } from '../docs.ts';
 import { motivo } from '../messages.ts';
-import type { EventoFacts } from '../rules.ts';
-import { firstRejection } from '../rules.ts';
+import type { FatosEvento } from '../rules.ts';
+import { primeiraRejeicao } from '../rules.ts';
 import { NFE_NS } from '../services.ts';
-import type { EventoRecord } from '../state.ts';
+import type { RegistroEvento } from '../state.ts';
 import { yearOf } from '../time.ts';
 import { all, at, documento, hasPrefix, req, text } from '../xmlutil.ts';
 import { viewOf } from './autorizacao.ts';
@@ -62,7 +62,7 @@ function envelopeOk(doc: DocumentoXml): boolean {
   return validarRaiz(canc.envEventoElement, doc).every((i) => /\/detEvento(?:\/|\[|$)/.test(i.caminho));
 }
 
-function factsOf(evento: ElementoXml): EventoFacts {
+function factsOf(evento: ElementoXml): FatosEvento {
   const inf = at(evento, 'infEvento') as ElementoXml;
   const det: Record<string, string> = {};
   for (const c of elementosFilhos(at(inf, 'detEvento') as ElementoXml)) det[c.local] = textoDe(c);
@@ -81,8 +81,8 @@ function factsOf(evento: ElementoXml): EventoFacts {
 }
 
 /** NFeRecepcaoEvento4 (nfeRecepcaoEvento). */
-export async function recepcaoEvento(ctx: RequestContext): Promise<string> {
-  const cOrgao = ctx.autorizador === 'an' ? '91' : ctx.rt.config.cUF;
+export async function recepcaoEvento(ctx: ContextoDoPedido): Promise<string> {
+  const cOrgao = ctx.autorizador === 'an' ? '91' : ctx.rt.configuracao.cUF;
   // D01 do lote: o envelope genérico, com o detEvento livre; cada evento é conferido depois pelo schema do tipo.
   const pre = prelude(ctx, { roots: [canc.envEventoElement], lote: false });
   const idLido = pre.doc === undefined ? undefined : text(pre.doc.raiz, 'idLote');
@@ -91,7 +91,7 @@ export async function recepcaoEvento(ctx: RequestContext): Promise<string> {
     const value: TRetEnvEvento = {
       versao: '1.00',
       idLote,
-      tpAmb: ctx.rt.config.tpAmb,
+      tpAmb: ctx.rt.configuracao.tpAmb,
       verAplic: verAplic(ctx),
       cOrgao: cOrgao as TRetEnvEvento['cOrgao'],
       cStat: s.cStat,
@@ -110,21 +110,21 @@ export async function recepcaoEvento(ctx: RequestContext): Promise<string> {
   return ret(pre.status);
 }
 
-async function processarLote(ctx: RequestContext, doc: DocumentoXml, cOrgao: string): Promise<TRetEvento[]> {
+async function processarLote(ctx: ContextoDoPedido, doc: DocumentoXml, cOrgao: string): Promise<TRetEvento[]> {
   const out: TRetEvento[] = [];
   for (const el of all(doc.raiz, 'evento')) out.push(await processarEvento(ctx, doc, el, cOrgao));
   return out;
 }
 
 async function processarEvento(
-  ctx: RequestContext,
+  ctx: ContextoDoPedido,
   doc: DocumentoXml,
   el: ElementoXml,
   cOrgao: string,
 ): Promise<TRetEvento> {
   const e = factsOf(el);
   const base = {
-    tpAmb: ctx.rt.config.tpAmb,
+    tpAmb: ctx.rt.configuracao.tpAmb,
     verAplic: verAplic(ctx),
     cOrgao: cOrgao as TRetEvento['infEvento']['cOrgao'],
   };
@@ -132,7 +132,7 @@ async function processarEvento(
     chNFe: e.chNFe,
     tpEvento: e.tpEvento,
     nSeqEvento: e.nSeqEvento,
-    dhRegEvento: dh(ctx, ctx.now),
+    dhRegEvento: dh(ctx, ctx.agora),
   };
   const rejeitado = (cStat: string, params?: Readonly<Record<string, string>>): TRetEvento => ({
     versao: '1.00',
@@ -146,20 +146,29 @@ async function processarEvento(
   const single = `<envEvento versao="1.00" xmlns="${NFE_NS}"><idLote>0</idLote>${eventoXml}</envEvento>`;
   if (validarRaiz(schema, single).length > 0) return rejeitado('493');
   // Grupos E e F no lote como recebido (o C14N depende dos namespaces em escopo); o titular é o autor do evento.
-  const sig = await checkAssinatura({
-    doc,
+  const sig = await conferirAssinaturaDoDocumento({
+    documento: doc,
     id: e.id,
-    element: 'infEvento',
-    now: ctx.now,
+    elemento: 'infEvento',
+    agora: ctx.agora,
     titular: e.autor,
   });
   if (!sig.ok) return rejeitado(sig.cStat);
   const view = viewOf(ctx.rt);
-  const r = firstRejection(ctx.rt.config.rules.evento, { evento: e, autorizador: ctx.autorizador, view, now: ctx.now });
-  if (r !== undefined) return rejeitado(r.cStat, r.params);
+  const r = primeiraRejeicao(ctx.rt.configuracao.regras.evento, {
+    evento: e,
+    autorizador: ctx.autorizador,
+    visao: view,
+    agora: ctx.agora,
+  });
+  if (r !== undefined) return rejeitado(r.cStat, r.parametros);
   const nfe = view.nfe(e.chNFe);
   if (nfe === undefined) return rejeitado('494', { chNFe: e.chNFe });
-  const nProt = ctx.rt.state.nextProtocolo(tipoAutorizador(ctx), cOrgao, yearOf(ctx.now, ctx.rt.config.offsetMinutes));
+  const nProt = ctx.rt.estado.nextProtocolo(
+    tipoAutorizador(ctx),
+    cOrgao,
+    yearOf(ctx.agora, ctx.rt.configuracao.deslocamentoMin),
+  );
   const xEvento = X_EVENTO[e.tpEvento] as string;
   const destino = e.tpEvento === '110111' ? nfe.destinatario : undefined;
   const destFields =
@@ -185,7 +194,7 @@ async function processarEvento(
       nProt,
     } as TRetEvento['infEvento'],
   };
-  const record: EventoRecord = {
+  const record: RegistroEvento = {
     chave: e.chNFe,
     tpEvento: e.tpEvento,
     nSeqEvento: Number(e.nSeqEvento),
@@ -198,8 +207,8 @@ async function processarEvento(
     xml: eventoXml,
     retEvento: retEventoXml(retEvento, NFE_NS),
   };
-  ctx.rt.state.eventos.push(record);
+  ctx.rt.estado.eventos.push(record);
   if (e.tpEvento === '110111' || e.tpEvento === '110112') nfe.situacao = 'cancelada';
-  distribuirEvento(ctx.rt.state, record, nfe);
+  distribuirEvento(ctx.rt.estado, record, nfe);
   return retEvento;
 }

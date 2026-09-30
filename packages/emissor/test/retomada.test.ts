@@ -7,14 +7,14 @@
 import { beforeEach, describe, expect, test } from 'bun:test';
 import type { RelogioManual } from '@sinete/core';
 import { relogioManual } from '@sinete/core';
-import type { Desfecho, OpcoesRetomada, RegistroTransmissao, TipoDocumento, TransmissaoStore } from '../src/index.ts';
+import type { Desfecho, RegistroTransmissao, RetomadaOpcoes, TipoDocumento, TransmissaoStore } from '../src/index.ts';
 import {
+  ErroTransmissaoEmAndamento,
+  ErroTravaPerdida,
   POLITICA_RETOMADA_PADRAO,
   retomarPendentes,
-  TransmissaoEmAndamentoError,
-  TravaPerdidaError,
 } from '../src/index.ts';
-import { createMemoriaStore } from '../src/memoria.ts';
+import { criarMemoriaStore } from '../src/memoria.ts';
 
 const MIN = 60_000;
 const HORA = 60 * MIN;
@@ -30,7 +30,7 @@ let alertas: { registro: RegistroTransmissao; ultimo: unknown; tentativas: numbe
 
 beforeEach(() => {
   clock = relogioManual('2026-09-27T10:00:00-03:00');
-  store = createMemoriaStore({ clock });
+  store = criarMemoriaStore({ relogio: clock });
   comportamento = new Map();
   chamadas = [];
   alertas = [];
@@ -47,17 +47,17 @@ async function gravada(ref: string, tipo: TipoDocumento = 'nfe'): Promise<void> 
 const divergente: Desfecho = { documento: 'nfe', tipo: 'divergente', id: 'x', cStat: '539', xMotivo: 'outra nota' };
 const pendente: Desfecho = { documento: 'nfe', tipo: 'pendente', id: 'x', motivo: 'consulta-indefinida' };
 
-function opcoes(extra: Partial<OpcoesRetomada> = {}): OpcoesRetomada {
+function opcoes(extra: Partial<RetomadaOpcoes> = {}): RetomadaOpcoes {
   return {
     store,
-    clock,
+    relogio: clock,
     usarEmissor: (_r, fn) =>
       fn({
         async retomar(ref: string): Promise<Desfecho | undefined> {
           chamadas.push(ref);
           const c = comportamento.get(ref) ?? 'falha';
           const t = await store.travar('nfe', ref, 10 * MIN);
-          if (c === 'ocupada' || t === undefined) throw new TransmissaoEmAndamentoError('ocupada');
+          if (c === 'ocupada' || t === undefined) throw new ErroTransmissaoEmAndamento('ocupada');
           try {
             if (c === 'sem-bytes') return undefined;
             if (c === 'resolve') {
@@ -211,7 +211,7 @@ describe('retomarPendentes', () => {
         usarEmissor: (_r, fn) =>
           fn({
             retomar: async (): Promise<Desfecho | undefined> => {
-              throw new TravaPerdidaError('assumida por outro processo');
+              throw new ErroTravaPerdida('assumida por outro processo');
             },
           }),
         politica: { alertarDepoisDe: 1 },
@@ -296,7 +296,7 @@ describe('retomarPendentes', () => {
       await expect(retomarPendentes(opcoes({ politica }))).rejects.toMatchObject({ code: 'config_invalida' });
     }
     await expect(
-      retomarPendentes({ ...opcoes(), aoAlertar: undefined } as unknown as OpcoesRetomada),
+      retomarPendentes({ ...opcoes(), aoAlertar: undefined } as unknown as RetomadaOpcoes),
     ).rejects.toMatchObject({ code: 'config_invalida' });
   });
 

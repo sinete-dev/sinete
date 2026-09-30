@@ -13,7 +13,7 @@
 
 import { ufPorCUf } from '@sinete/core';
 import { decodificarBase64 } from '@sinete/core/xml';
-import { qrMatrix } from '../barcode/qr.ts';
+import { matrizQr } from '../barcode/qr.ts';
 import {
   CABECALHO_DANFSE,
   GRADE_DANFSE,
@@ -25,12 +25,12 @@ import {
 import { LOGO_NFSE_PNG_B64 } from '../data/logo-nfse.ts';
 import * as f from '../format.ts';
 import type { EnderecoNfseView, NfseView, PessoaNfseView } from '../input/nfse.ts';
-import type { Doc } from '../model.ts';
+import type { Documento } from '../model.ts';
 import { Canvas, lineHeight } from '../render/canvas.ts';
 import { ascentMm, toWinAnsi, widthMm, wrap } from '../render/text.ts';
 import { DocBuilder, drawLogo, watermark } from './common.ts';
 
-export interface DanfseOptions {
+export interface DanfseOpcoes {
   /**
    * NFS-e cancelada (NT 008/2026, 2.5.1): o `evento` registrado de cancelamento (e101101), de cancelamento deferido
    * por análise fiscal (e105104) ou de cancelamento por ofício (e305101), que precisa ser desta NFS-e, ou `true`.
@@ -107,7 +107,7 @@ function endereco(e: EnderecoNfseView | undefined): string {
   return e ? [e.xLgr, e.nro, e.xCpl, e.xBairro].filter(Boolean).join(', ') : '';
 }
 
-export function danfseLayout(n: NfseView, options: DanfseOptions, marca: MarcaDanfse | undefined): Doc {
+export function danfseLayout(n: NfseView, options: DanfseOpcoes, marca: MarcaDanfse | undefined): Documento {
   const b = new DocBuilder({ logo: decodificarBase64(LOGO_NFSE_PNG_B64) });
   const c = new Canvas('Helvetica', 'Helvetica-Bold');
   const d = n.dps;
@@ -395,8 +395,8 @@ export function danfseLayout(n: NfseView, options: DanfseOptions, marca: MarcaDa
   c.qr({
     x: QR_DANFSE.x,
     y: QR_DANFSE.y,
-    size: QR_DANFSE.lado,
-    modules: qrMatrix(`${QR_DANFSE.url}${n.chave}`, { ecc: 'M' }),
+    tamanho: QR_DANFSE.lado,
+    modulos: matrizQr(`${QR_DANFSE.url}${n.chave}`, { nivelDeCorrecao: 'M' }),
   });
   const Q = QR_DANFSE.quadroTexto;
   c.block(QR_DANFSE.texto, Q.x, Q.y, G.x + G.w - Q.x - 0.2, Q.h, { size: 6, min: 6, fixo: true });

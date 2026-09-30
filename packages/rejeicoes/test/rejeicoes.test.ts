@@ -127,7 +127,7 @@ describe('consulta e enriquecimento', () => {
     expect(dicaRejeicao('100')).toBeUndefined();
   });
 
-  test('completarRecusado preenche o hint sem sobrescrever', () => {
+  test('completarRecusado preenche a dica sem sobrescrever', () => {
     const r = criarRecusado({ cStat: '297', xMotivo: 'Rejeição: Assinatura difere do calculado' });
     const e = completarRecusado(r);
     expect(e.dica?.fonte).toBe('MOC 7.0 Anexo I, RV F02');

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { carregarDataset } from '@sinete/ibs-cbs-dados';
-import { DATASET_EMBARCADO } from '@sinete/ibs-cbs-dados/bundled';
+import { DATASET_EMBARCADO } from '@sinete/ibs-cbs-dados/embarcado';
 import {
   avaliar,
   conferirExpressao,

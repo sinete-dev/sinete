@@ -1,7 +1,7 @@
 /**
  * Carga do dataset e visão numa data de fato gerador (`ConteudoTributario`).
  *
- * `carregarDataset` aceita qualquer `BundleDoDataset`: o embarcado neste pacote (`@sinete/ibs-cbs-dados/bundled`) ou um obtido em
+ * `carregarDataset` aceita qualquer `BundleDoDataset`: o embarcado neste pacote (`@sinete/ibs-cbs-dados/embarcado`) ou um obtido em
  * runtime de outra origem (arquivo, URL), o que permite atualizar dados sem atualizar código enquanto o
  * `versaoDoFormato` for compatível. `conferirDataset` confere os hashes do manifesto antes de confiar num bundle externo.
  */

@@ -10,7 +10,7 @@ import type { Determinacao, MotivoDaExclusao, FatosDaOperacao, Resolvedor } from
 import { determinar, candidatoUnico } from '@sinete/ibs-cbs/determinar';
 import type { Ambiente, TabelasNt, Regra, DocumentoDasRegras, RelatorioDeValidacao } from '@sinete/ibs-cbs/validar';
 import { TABELAS_NT, REGRAS, validar } from '@sinete/ibs-cbs/validar';
-import { datasetEmbarcado } from '@sinete/ibs-cbs-dados/bundled';
+import { datasetEmbarcado } from '@sinete/ibs-cbs-dados/embarcado';
 
 // aliquotas
 {

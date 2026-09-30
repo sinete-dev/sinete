@@ -12,21 +12,21 @@ import { relogioManual } from '@sinete/core';
 import * as daMdfe from '@sinete/da/mdfe';
 import * as daNfe from '@sinete/da/nfe';
 import * as daNfse from '@sinete/da/nfse';
-import { destinoDosBytes, TransmissaoEmAndamentoError } from '@sinete/emissor';
+import { destinoDosBytes, ErroTransmissaoEmAndamento } from '@sinete/emissor';
 import { casosDoContrato } from '@sinete/emissor/contrato';
-import { createMdfeEmissor } from '@sinete/emissor/mdfe';
-import { createBancoMemoria, createMemoriaStore } from '@sinete/emissor/memoria';
-import { createNfeEmissor } from '@sinete/emissor/nfe';
-import { createNfseEmissor } from '@sinete/emissor/nfse';
+import { criarEmissorMdfe } from '@sinete/emissor/mdfe';
+import { criarBancoMemoria, criarMemoriaStore } from '@sinete/emissor/memoria';
+import { criarEmissorNfe } from '@sinete/emissor/nfe';
+import { criarEmissorNfse } from '@sinete/emissor/nfse';
 import {
-  createNfseSim,
-  createSefazSim,
-  redirectNfseToSim,
-  redirectToSim,
-  SIM_BASE_URL,
-  simTransport,
-  syntheticCertificate,
-  syntheticPfx,
+  criarNfseSim,
+  criarSefazSim,
+  redirecionarNfseParaSim,
+  redirecionarParaSim,
+  URL_BASE_SIM,
+  transporteSim,
+  certificadoSintetico,
+  pfxSintetico,
 } from '@sinete/sefaz-sim';
 
 const CNPJ = '11222333000181';
@@ -129,10 +129,10 @@ export async function runChecks() {
   const relogioDoBanco = relogioManual('2026-09-26T10:00:00-03:00');
   const casos = casosDoContrato({
     criar: () => {
-      const banco = createBancoMemoria();
+      const banco = criarBancoMemoria();
       return {
-        a: createMemoriaStore({ banco, clock: relogioDoBanco }),
-        b: createMemoriaStore({ banco, clock: relogioDoBanco }),
+        a: criarMemoriaStore({ banco, relogio: relogioDoBanco }),
+        b: criarMemoriaStore({ banco, relogio: relogioDoBanco }),
       };
     },
     esperar: async (ms) => {
@@ -151,31 +151,31 @@ export async function runChecks() {
   expect('contrato do store em memória', contratoOk);
 
   const clock = relogioManual('2026-09-26T10:00:00-03:00');
-  const ac = await syntheticCertificate({ clock, role: 'ac' });
+  const ac = await certificadoSintetico({ relogio: clock, papel: 'ac' });
 
   // NF-e
   {
-    const titular = await syntheticCertificate({ clock, role: 'titular', cnpj: CNPJ, issuer: ac });
-    const sim = createSefazSim({ clock });
-    const store = createMemoriaStore({ clock });
+    const titular = await certificadoSintetico({ relogio: clock, papel: 'titular', cnpj: CNPJ, emissor: ac });
+    const sim = criarSefazSim({ relogio: clock });
+    const store = criarMemoriaStore({ relogio: clock });
     const decididos = [];
-    const nfe = await createNfeEmissor({
-      pfx: syntheticPfx(titular, 'senha-sintetica', { chain: [ac] }),
+    const nfe = await criarEmissorNfe({
+      pfx: pfxSintetico(titular, 'senha-sintetica', { cadeia: [ac] }),
       senha: 'senha-sintetica',
       ambiente: 'homologacao',
-      clock,
+      relogio: clock,
       store,
       aoDecidir: (registro, desfecho) => {
         decididos.push({ xml: registro.xml, desfecho });
       },
-      transporte: () => redirectToSim(simTransport(sim, { clientCertificate: titular.der }), SIM_BASE_URL),
+      transporte: () => redirecionarParaSim(transporteSim(sim, { certificadoDoCliente: titular.der }), URL_BASE_SIM),
       ...(deno ? { da: daNfe } : {}),
     });
     expect('nfe: titular do PFX', nfe.titular.cnpj === CNPJ);
     const a = await nfe.assinar(nota);
     expect('nfe: assina sem gravar', a.id.length === 44 && a.xml.includes('<Signature') && (await store.ler('nfe', 'n1')) === undefined);
     if (!browser) {
-      sim.injectFault({ kind: 'drop', phase: 'after' }, { servico: 'NFeAutorizacao' });
+      sim.injetarFalha({ tipo: 'derrubar', fase: 'depois' }, { servico: 'NFeAutorizacao' });
       const d = await nfe.emitir('n1', nota);
       expect(
         'nfe: sem resposta resolvido pela consulta com os bytes gravados',
@@ -195,25 +195,25 @@ export async function runChecks() {
     // Outro "processo" com a trava em vigor: nada vai à SEFAZ.
     const trava = await store.travar('nfe', 'n3', 60_000);
     const ocupado = await nfe.emitir('n3', nota).catch((e) => e);
-    expect('nfe: trava em vigor', trava !== undefined && ocupado instanceof TransmissaoEmAndamentoError);
+    expect('nfe: trava em vigor', trava !== undefined && ocupado instanceof ErroTransmissaoEmAndamento);
     await nfe.fechar();
   }
 
   // MDF-e
   {
-    const produtor = await syntheticCertificate({ clock, role: 'titular', cpf: CPF, issuer: ac });
-    const sim = createSefazSim({ clock, uf: 'MT' });
+    const produtor = await certificadoSintetico({ relogio: clock, papel: 'titular', cpf: CPF, emissor: ac });
+    const sim = criarSefazSim({ relogio: clock, uf: 'MT' });
     const decididos = [];
-    const e = await createMdfeEmissor({
-      pfx: syntheticPfx(produtor, 'senha-sintetica', { chain: [ac] }),
+    const e = await criarEmissorMdfe({
+      pfx: pfxSintetico(produtor, 'senha-sintetica', { cadeia: [ac] }),
       senha: 'senha-sintetica',
       ambiente: 'homologacao',
-      clock,
-      store: createMemoriaStore({ clock }),
+      relogio: clock,
+      store: criarMemoriaStore({ relogio: clock }),
       aoDecidir: (registro, desfecho) => {
         decididos.push({ xml: registro.xml, desfecho });
       },
-      transporte: () => redirectToSim(simTransport(sim, { clientCertificate: produtor.der }), SIM_BASE_URL),
+      transporte: () => redirecionarParaSim(transporteSim(sim, { certificadoDoCliente: produtor.der }), URL_BASE_SIM),
       ...(deno ? { da: daMdfe } : {}),
     });
     expect('mdfe: titular do PFX', e.titular.cpf === CPF);
@@ -221,7 +221,7 @@ export async function runChecks() {
       const a = await e.assinar(mdfe);
       expect('mdfe: assina no browser', a.id.length === 44 && a.xml.includes('<Signature'));
     } else {
-      sim.injectFault({ kind: 'drop', phase: 'after' }, { servico: 'MDFeRecepcaoSinc' });
+      sim.injetarFalha({ tipo: 'derrubar', fase: 'depois' }, { servico: 'MDFeRecepcaoSinc' });
       const d = await e.emitir('m1', mdfe);
       expect(
         'mdfe: sem resposta resolvido pela consulta',
@@ -238,12 +238,12 @@ export async function runChecks() {
   // NFS-e
   {
     const [servidor, titular] = await Promise.all([
-      syntheticCertificate({ clock, role: 'servidor', issuer: ac }),
-      syntheticCertificate({ clock, role: 'titular', cnpj: CNPJ, issuer: ac }),
+      certificadoSintetico({ relogio: clock, papel: 'servidor', emissor: ac }),
+      certificadoSintetico({ relogio: clock, papel: 'titular', cnpj: CNPJ, emissor: ac }),
     ]);
-    const sim = createNfseSim({
-      clock,
-      signer: servidor.signer,
+    const sim = criarNfseSim({
+      relogio: clock,
+      assinador: servidor.assinador,
       municipios: [
         {
           cMun: SAO_PAULO,
@@ -253,16 +253,16 @@ export async function runChecks() {
       ],
     });
     const decididos = [];
-    const e = await createNfseEmissor({
-      pfx: syntheticPfx(titular, 'senha-sintetica', { chain: [ac] }),
+    const e = await criarEmissorNfse({
+      pfx: pfxSintetico(titular, 'senha-sintetica', { cadeia: [ac] }),
       senha: 'senha-sintetica',
       ambiente: 'homologacao',
-      clock,
-      store: createMemoriaStore({ clock }),
+      relogio: clock,
+      store: criarMemoriaStore({ relogio: clock }),
       aoDecidir: (registro, desfecho) => {
         decididos.push({ id: registro.id, desfecho });
       },
-      transporte: () => redirectNfseToSim(simTransport(sim, { clientCertificate: titular.der }), SIM_BASE_URL),
+      transporte: () => redirecionarNfseParaSim(transporteSim(sim, { certificadoDoCliente: titular.der }), URL_BASE_SIM),
       ...(deno ? { da: daNfse } : {}),
     });
     expect('nfse: titular do PFX', e.titular.cnpj === CNPJ);
@@ -270,7 +270,7 @@ export async function runChecks() {
       const a = await e.assinar(dps);
       expect('nfse: assina no browser', a.id.startsWith('DPS') && a.xml.includes('<Signature'));
     } else {
-      sim.injectFault({ kind: 'drop', phase: 'after' }, { rota: 'emitir' });
+      sim.injetarFalha({ tipo: 'derrubar', fase: 'depois' }, { rota: 'emitir' });
       const d = await e.emitir('s1', dps);
       expect(
         'nfse: sem resposta resolvido pela consulta da DPS',

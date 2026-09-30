@@ -8,14 +8,14 @@
 import * as f from '../format.ts';
 import type { EventoView } from '../input/evento.ts';
 import type { NotaView } from '../input/nfe.ts';
-import type { Doc } from '../model.ts';
+import type { Documento } from '../model.ts';
 import { Canvas, lineHeight } from '../render/canvas.ts';
 import { toWinAnsi, wrap } from '../render/text.ts';
-import type { CommonOptions } from './common.ts';
+import type { DaOpcoes } from './common.ts';
 import { barcode, DocBuilder, drawLogo } from './common.ts';
 import { marcas } from './marcas.ts';
 
-export interface DacceOptions extends CommonOptions {
+export interface DacceOpcoes extends DaOpcoes {
   /** `nfeProc` da nota corrigida, para o nome e o endereço do emitente no cabeçalho. */
   readonly nfe?: string;
 }
@@ -26,7 +26,7 @@ const RH = 8.5;
 const PAGE_H = 297;
 const BOTTOM = 289;
 
-export function dacceLayout(ev: EventoView, nota: NotaView | undefined, options: CommonOptions): Doc {
+export function dacceLayout(ev: EventoView, nota: NotaView | undefined, options: DaOpcoes): Documento {
   const b = new DocBuilder(options);
   const pages: Canvas[] = [];
   let c = new Canvas('Times-Roman', 'Times-Bold');

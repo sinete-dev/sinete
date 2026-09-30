@@ -89,7 +89,7 @@ describe('catálogo da NFS-e', () => {
 });
 
 describe('dicas', () => {
-  test('hint com curadoria e sem curadoria', () => {
+  test('dica com curadoria e sem curadoria', () => {
     const h = dicaRejeicaoNfse('E1229');
     expect(h?.comoCorrigir).toContain('encoding="UTF-8"');
     expect(h?.fonte).toContain('RN_RECEPCAO_DPS');

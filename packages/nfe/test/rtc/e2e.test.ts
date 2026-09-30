@@ -1,6 +1,6 @@
 /**
  * Ponta a ponta com IBS/CBS: casos gravados da Calculadora offline da RFB (fixtures do oráculo do `@sinete/ibs-cbs/calcular`,
- * só os sem divergência) viram notas pelo `buildNfe` com a calculadora padrão (o `ibsCbsCalculator`), são assinados e autorizados na
+ * só os sem divergência) viram notas pelo `montarNfe` com a calculadora padrão (o `calculadoraIbsCbs`), são assinados e autorizados na
  * `@sinete/sefaz-sim` por HTTPS com mTLS e o transporte real. Os grupos `IBSCBS` e o `IBSCBSTot` da nota autorizada
  * têm de bater, campo a campo, com o que a Calculadora devolveu.
  */
@@ -8,12 +8,12 @@ import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import { relogioManual } from '@sinete/core';
 import { decodificarXml } from '@sinete/schemas';
 import { nfeProcElement } from '@sinete/schemas/nfe/PL_010f';
-import type { SefazSimServer, SyntheticCertificate } from '@sinete/sefaz-sim';
-import { createSefazSim, redirectToSim, startSefazSimServer, syntheticCertificate } from '@sinete/sefaz-sim';
+import type { CertificadoSintetico, ServidorSefazSim } from '@sinete/sefaz-sim';
+import { certificadoSintetico, criarSefazSim, iniciarServidorSefazSim, redirecionarParaSim } from '@sinete/sefaz-sim';
 import type { Transporte } from '@sinete/transport';
 import { criarTransporte } from '@sinete/transport';
 import fixture from '../../../ibs-cbs/test/calcular/fixtures/oracle-cases.json' with { type: 'json' };
-import { buildNfe, createNfeClient, signNfe } from '../../src/index.ts';
+import { assinarNfe, criarClienteNfe, montarNfe } from '../../src/index.ts';
 import type { ItemRtc, Local } from './helpers.ts';
 import { CNPJ_EMIT, flatten, LOCAIS, notaRtc, opcoesRtc } from './helpers.ts';
 
@@ -38,17 +38,17 @@ interface Caso {
 const IDS = ['s1-22', 's1-89'];
 const casos = (fixture.cases as unknown as Caso[]).filter((c) => IDS.includes(c.id));
 
-let ac: SyntheticCertificate;
-let servidor: SyntheticCertificate;
-let emitente: SyntheticCertificate;
+let ac: CertificadoSintetico;
+let servidor: CertificadoSintetico;
+let emitente: CertificadoSintetico;
 const fechar: (() => Promise<void>)[] = [];
 
 beforeAll(async () => {
   const clock = relogioManual('2026-09-01T00:00:00-03:00');
-  ac = await syntheticCertificate({ clock, role: 'ac', validDays: 3650 });
+  ac = await certificadoSintetico({ relogio: clock, papel: 'ac', diasDeValidade: 3650 });
   [servidor, emitente] = await Promise.all([
-    syntheticCertificate({ clock, role: 'servidor', issuer: ac, validDays: 3650 }),
-    syntheticCertificate({ clock, role: 'titular', cnpj: CNPJ_EMIT, issuer: ac, validDays: 3650 }),
+    certificadoSintetico({ relogio: clock, papel: 'servidor', emissor: ac, diasDeValidade: 3650 }),
+    certificadoSintetico({ relogio: clock, papel: 'titular', cnpj: CNPJ_EMIT, emissor: ac, diasDeValidade: 3650 }),
   ]);
 }, 60_000);
 
@@ -72,26 +72,29 @@ describe('IBS/CBS pelo @sinete/ibs-cbs, autorizado na SEFAZ simulada, conferido 
       expect(local.cMun).toBe(caso.op.local.cMun);
       // Emissão e fato gerador no dia do caso, ao meio-dia de Brasília.
       const clock = relogioManual(`${caso.date}T12:00:00-03:00`);
-      const sim = createSefazSim({ clock, uf: local.UF });
-      const server: SefazSimServer = await startSefazSimServer(sim, { cert: servidor.pem, key: servidor.keyPem });
-      const real: Transporte = criarTransporte({ identidade: emitente.tlsIdentity, acsAdicionais: [ac.pem] });
+      const sim = criarSefazSim({ relogio: clock, uf: local.UF });
+      const server: ServidorSefazSim = await iniciarServidorSefazSim(sim, {
+        certificado: servidor.pem,
+        chave: servidor.chavePem,
+      });
+      const real: Transporte = criarTransporte({ identidade: emitente.identidadeTls, acsAdicionais: [ac.pem] });
       fechar.push(async () => {
         await real.fechar();
-        await server.close();
+        await server.fechar();
       });
-      const client = createNfeClient({
-        transport: redirectToSim(real, server.baseUrl),
-        signer: emitente.signer,
+      const client = criarClienteNfe({
+        transporte: redirecionarParaSim(real, server.urlBase),
+        assinador: emitente.assinador,
         ambiente: 'homologacao',
         uf: local.UF,
-        clock,
+        relogio: clock,
       });
 
       const itens: ItemRtc[] = caso.op.itens.map((i) => ({ CST: i.cst, cClassTrib: i.cClassTrib, base: i.base }));
-      // Sem `ibsCbs` nas opções: a calculadora padrão do buildNfe, com o dataset embarcado importado sob demanda.
-      const r = await buildNfe(notaRtc(local, itens), opcoesRtc(clock));
-      if (!r.ok) throw new Error(r.issues.map((i) => `${i.caminho}: ${i.mensagem}`).join('\n'));
-      const assinada = await signNfe(r.value, emitente.signer);
+      // Sem `ibsCbs` nas opções: a calculadora padrão do montarNfe, com o dataset embarcado importado sob demanda.
+      const r = await montarNfe(notaRtc(local, itens), opcoesRtc(clock));
+      if (!r.ok) throw new Error(r.ocorrencias.map((i) => `${i.caminho}: ${i.mensagem}`).join('\n'));
+      const assinada = await assinarNfe(r.valor, emitente.assinador);
       const aut = await client.autorizar(assinada);
       expect([aut.tipo, aut.cStat]).toEqual(['autorizado', '100']);
       if (aut.tipo !== 'autorizado') return;

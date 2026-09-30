@@ -14,7 +14,7 @@ import type {
   TNfeProc,
 } from '@sinete/schemas/nfe/PL_010f';
 import { NFeElement, nfeProcElement } from '@sinete/schemas/nfe/PL_010f';
-import { DanfeError } from '../errors.ts';
+import { ErroDa } from '../errors.ts';
 import type { Rec } from './xml.ts';
 import { choice, decodeAs, parse, str, vista } from './xml.ts';
 
@@ -332,7 +332,7 @@ export function readNota(xml: string): NotaView {
   const proc = root === 'nfeProc' ? (value as TNfeProc) : undefined;
   const nfe = proc ? proc.NFe : (value as TNFe);
   if (!nfe?.infNFe?.ide || !nfe.infNFe.emit || !nfe.infNFe.total?.ICMSTot) {
-    throw new DanfeError('campo_ausente', 'NF-e sem infNFe, ide, emit ou total');
+    throw new ErroDa('campo_ausente', 'NF-e sem infNFe, ide, emit ou total');
   }
   return vista('NF-e', () => view(nfe, proc));
 }

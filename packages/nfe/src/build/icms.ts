@@ -6,7 +6,7 @@
 import type { TNFe_infNFe_det_imposto_ICMS } from '@sinete/schemas/nfe/PL_010f';
 import type { DecimalInput } from '../decimal.ts';
 import { Decimal } from '../decimal.ts';
-import type { DecimalFormat } from '../format.ts';
+import type { FormatoDecimal } from '../format.ts';
 import { D0302A04, D0302A04_OPC, D1104V, D1302 } from '../format.ts';
 import type {
   Desoneracao,
@@ -74,9 +74,9 @@ export interface IcmsItemBase {
 
 type Out = Record<string, string | undefined>;
 
-const M: DecimalFormat = D1302;
-const P: DecimalFormat = D0302A04;
-const PO: DecimalFormat = D0302A04_OPC;
+const M: FormatoDecimal = D1302;
+const P: FormatoDecimal = D0302A04;
+const PO: FormatoDecimal = D0302A04_OPC;
 
 function nonNeg(d: Decimal): Decimal {
   return d.isNegative() ? Decimal.ZERO : d;
@@ -221,7 +221,7 @@ export function buildIcms(
 
   /** Retido anteriormente (N26 a N26b, N27a a N27c, N34 a N37): informativo, só o FCP retido entra no total. */
   const retido = (i: IcmsStRetido): Out => {
-    const o = (k: keyof IcmsStRetido, f: DecimalFormat): string | undefined =>
+    const o = (k: keyof IcmsStRetido, f: FormatoDecimal): string | undefined =>
       ctx.so(ctx.opt(i[k], `${path}.${k}`, f), f);
     const vFCPSTRet = ctx.opt(i.vFCPSTRet, `${path}.vFCPSTRet`, M);
     if (vFCPSTRet !== undefined) t.vFCPSTRet = t.vFCPSTRet.plus(vFCPSTRet);
@@ -259,7 +259,7 @@ export function buildIcms(
       vFCPDif?: DecimalInput;
       vFCPEfet?: DecimalInput;
     },
-    redFormat: DecimalFormat,
+    redFormat: FormatoDecimal,
     triade: boolean,
   ): Out => {
     const pRedBC = ctx.opt(i.pRedBC, `${path}.pRedBC`, redFormat);

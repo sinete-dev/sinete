@@ -1,7 +1,7 @@
 // Casos do teste de regressão visual: cada fixture sintética com o formato e as opções que ela exercita.
 import { dacce } from '../src/cce.ts';
 import { damdfe } from '../src/mdfe.ts';
-import type { Doc } from '../src/model.ts';
+import type { Documento } from '../src/model.ts';
 import { danfe } from '../src/nfe.ts';
 import { danfse } from '../src/nfse.ts';
 import { chaveDe, eventoXml, MDFE_FIXTURES, mdfeXml, NFE_FIXTURES, nfeXml } from './fixtures.ts';
@@ -19,7 +19,7 @@ export const LOGO: Uint8Array = encodePng({
 
 export interface Case {
   readonly name: string;
-  readonly doc: () => Doc;
+  readonly doc: () => Documento;
 }
 
 const basica = NFE_FIXTURES[0];
@@ -32,40 +32,45 @@ if (!basica || !nfseCompleta || !nfseAlfa || !nfseLongos) throw new Error('fixtu
 export const EPEC = { nProt: '891260000000001', dhRegEvento: '2026-09-01T10:30:00-03:00' } as const;
 
 export const CASES: readonly Case[] = [
-  ...NFE_FIXTURES.map((fx) => ({ name: fx.name, doc: (): Doc => danfe(nfeXml(fx), fx.epec ? { epec: EPEC } : {}) })),
-  ...MDFE_FIXTURES.map((fx) => ({ name: fx.name, doc: (): Doc => damdfe(mdfeXml(fx)) })),
+  ...NFE_FIXTURES.map((fx) => ({
+    name: fx.name,
+    doc: (): Documento => danfe(nfeXml(fx), fx.epec ? { epec: EPEC } : {}),
+  })),
+  ...MDFE_FIXTURES.map((fx) => ({ name: fx.name, doc: (): Documento => damdfe(mdfeXml(fx)) })),
   {
     name: 'dacce',
-    doc: (): Doc => dacce(eventoXml({ tpEvento: '110110', chave: chaveDe('55') }), { nfe: nfeXml(basica) }),
+    doc: (): Documento => dacce(eventoXml({ tpEvento: '110110', chave: chaveDe('55') }), { nfe: nfeXml(basica) }),
   },
   {
     name: 'cancelada',
-    doc: (): Doc => danfe(nfeXml(basica), { cancelamento: eventoXml({ tpEvento: '110111', chave: chaveDe('55') }) }),
+    doc: (): Documento =>
+      danfe(nfeXml(basica), { cancelamento: eventoXml({ tpEvento: '110111', chave: chaveDe('55') }) }),
   },
   {
     // Cancelada pelo cStat do protocolo e pelo evento: o carimbo é o do evento (ADR 0006, decisão 15).
     name: 'cancelada-protocolo-evento',
-    doc: (): Doc =>
+    doc: (): Documento =>
       danfe(nfeXml({ ...basica, cStat: '101' }), {
         cancelamento: eventoXml({ tpEvento: '110111', chave: chaveDe('55') }),
       }),
   },
-  { name: 'logo', doc: (): Doc => danfe(nfeXml(basica), { logo: LOGO }) },
-  { name: 'etiqueta', doc: (): Doc => danfe(nfeXml(basica), { formato: 'etiqueta', largura: 58 }) },
+  { name: 'logo', doc: (): Documento => danfe(nfeXml(basica), { logo: LOGO }) },
+  { name: 'etiqueta', doc: (): Documento => danfe(nfeXml(basica), { formato: 'etiqueta', largura: 58 }) },
   {
     name: 'previa-etiqueta',
-    doc: (): Doc => danfe(nfeXml({ ...basica, semProt: true }), { formato: 'etiqueta', largura: 58 }),
+    doc: (): Documento => danfe(nfeXml({ ...basica, semProt: true }), { formato: 'etiqueta', largura: 58 }),
   },
   // DANFSe v2 (NT 008/2026): os dois pacotes de esquemas, as marcas d'água e o quadro das informações sem canhoto.
-  ...NFSE_FIXTURES.map((fx) => ({ name: fx.name, doc: (): Doc => danfse(nfseXml(fx)) })),
+  ...NFSE_FIXTURES.map((fx) => ({ name: fx.name, doc: (): Documento => danfse(nfseXml(fx)) })),
   {
     name: 'danfse-cancelada',
-    doc: (): Doc => danfse(nfseXml(nfseCompleta), { cancelamento: eventoNfseXml('e101101', chaveNfse(PREST_CNPJ)) }),
+    doc: (): Documento =>
+      danfse(nfseXml(nfseCompleta), { cancelamento: eventoNfseXml('e101101', chaveNfse(PREST_CNPJ)) }),
   },
-  { name: 'danfse-substituida', doc: (): Doc => danfse(nfseXml(nfseAlfa), { substituicao: true }) },
-  { name: 'danfse-sem-canhoto', doc: (): Doc => danfse(nfseXml(nfseLongos), { canhoto: false }) },
+  { name: 'danfse-substituida', doc: (): Documento => danfse(nfseXml(nfseAlfa), { substituicao: true }) },
+  { name: 'danfse-sem-canhoto', doc: (): Documento => danfse(nfseXml(nfseLongos), { canhoto: false }) },
   {
     name: 'denegada-etiqueta',
-    doc: (): Doc => danfe(nfeXml({ ...basica, cStat: '301' }), { formato: 'etiqueta', largura: 58 }),
+    doc: (): Documento => danfe(nfeXml({ ...basica, cStat: '301' }), { formato: 'etiqueta', largura: 58 }),
   },
 ];

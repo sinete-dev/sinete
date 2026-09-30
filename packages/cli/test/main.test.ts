@@ -1,33 +1,33 @@
 import { describe, expect, test } from 'bun:test';
-import type { CliIo, DoctorOptions, DoctorReport } from '../src/index.ts';
+import type { DoctorOpcoes, EntradaSaidaCli, RelatorioDoDoctor } from '../src/index.ts';
 import { main } from '../src/index.ts';
 
 function io(
-  overrides: Partial<CliIo> = {},
-): CliIo & { outLines: string[]; errLines: string[]; calls: DoctorOptions[] } {
+  overrides: Partial<EntradaSaidaCli> = {},
+): EntradaSaidaCli & { outLines: string[]; errLines: string[]; calls: DoctorOpcoes[] } {
   const outLines: string[] = [];
   const errLines: string[] = [];
-  const calls: DoctorOptions[] = [];
+  const calls: DoctorOpcoes[] = [];
   const files: Record<string, string> = { 'a.pfx': 'PFX', 'cadeia.pem': 'CADEIA', 'ca.pem': 'CA' };
   return {
     outLines,
     errLines,
     calls,
-    out: (l) => outLines.push(l),
-    err: (l) => errLines.push(l),
+    saida: (l) => outLines.push(l),
+    erro: (l) => errLines.push(l),
     env: { SINETE_PFX_SENHA: 'senha-do-env' },
-    promptPassword: async () => undefined,
-    readFile: async (p) => {
+    pedirSenha: async () => undefined,
+    lerArquivo: async (p) => {
       const v = files[p];
       if (v === undefined) throw Object.assign(new Error(`ENOENT: ${p}`), { code: 'ENOENT' });
       return new TextEncoder().encode(v);
     },
-    writeFile: async (p, text) => {
+    gravarArquivo: async (p, text) => {
       files[p] = text;
     },
-    doctor: async (o): Promise<DoctorReport> => {
+    doctor: async (o): Promise<RelatorioDoDoctor> => {
       calls.push(o);
-      return { ok: true, checks: [{ id: 'pfx', status: 'ok', message: 'tudo certo' }] };
+      return { ok: true, verificacoes: [{ id: 'pfx', situacao: 'ok', mensagem: 'tudo certo' }] };
     },
     ...overrides,
   };
@@ -83,29 +83,29 @@ describe('sinete (CLI)', () => {
         'https://hora.invalid/',
         '--cadeia',
         'cadeia.pem',
-        '--ca',
+        '--ac',
         'ca.pem',
         '--timeout',
         '5000',
-        '--allow-expired',
+        '--aceitar-vencido',
       ],
       x,
     );
     expect(code).toBe(0);
-    const o = x.calls[0] as DoctorOptions;
+    const o = x.calls[0] as DoctorOpcoes;
     expect(new TextDecoder().decode(o.pfx)).toBe('PFX');
     expect(o).toMatchObject({
-      password: 'senha-do-env',
+      senha: 'senha-do-env',
       uf: 'SP',
       ambiente: 'producao',
       documento: 'nfe',
       endpoint: { url: 'https://exemplo.invalid/ws' },
-      status: true,
-      clockUrl: 'https://hora.invalid/',
-      extraChainPem: 'CADEIA',
-      extraCaPem: 'CA',
+      consultarStatus: true,
+      urlDoRelogio: 'https://hora.invalid/',
+      cadeiaAdicionalPem: 'CADEIA',
+      acsAdicionaisPem: 'CA',
       timeoutMs: 5000,
-      allowExpired: true,
+      aceitarVencido: true,
     });
     expect(x.outLines).toEqual(['ok     pfx      tudo certo', 'doctor: nada impede o uso']);
   });
@@ -113,17 +113,17 @@ describe('sinete (CLI)', () => {
   test('senha por variável escolhida, por prompt, ou erro sem terminal', async () => {
     const a = io({ env: { OUTRA: 'x' } });
     expect(await main(['doctor', '--pfx', 'a.pfx', '--senha-env', 'OUTRA'], a)).toBe(0);
-    expect(a.calls[0]?.password).toBe('x');
-    const b = io({ env: {}, promptPassword: async () => 'digitada' });
+    expect(a.calls[0]?.senha).toBe('x');
+    const b = io({ env: {}, pedirSenha: async () => 'digitada' });
     expect(await main(['doctor', '--pfx', 'a.pfx'], b)).toBe(0);
-    expect(b.calls[0]?.password).toBe('digitada');
+    expect(b.calls[0]?.senha).toBe('digitada');
     const c = io({ env: {} });
     expect(await main(['doctor', '--pfx', 'a.pfx'], c)).toBe(2);
     expect(c.errLines[0]).toContain('SINETE_PFX_SENHA');
   });
 
   test('--json, código de saída de falha e erro inesperado', async () => {
-    const report: DoctorReport = { ok: false, checks: [{ id: 'pfx', status: 'falha', message: 'm' }] };
+    const report: RelatorioDoDoctor = { ok: false, verificacoes: [{ id: 'pfx', situacao: 'falha', mensagem: 'm' }] };
     const a = io({ doctor: async () => report });
     expect(await main(['doctor', '--pfx', 'a.pfx', '--json'], a)).toBe(1);
     expect(JSON.parse(a.outLines[0] ?? '')).toEqual(report);

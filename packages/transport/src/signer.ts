@@ -719,7 +719,7 @@ export async function conectarCanalSigner(
 }
 
 /**
- * O certificado aberto que o `@sinete/emissor` aceita no lugar do PFX (`OpcoesEmissor.certificado`): o signer dos
+ * O certificado aberto que o `@sinete/emissor` aceita no lugar do PFX (`EmissorOpcoes.certificado`): o signer dos
  * documentos, o titular lido da folha e a identidade do mTLS pelo helper. No `pkcs11`, o assinador é o `assinadorDeDocumentos`
  * (a chave do token assina pelo `dfe.sign`); no `remote`, passe o signer de quem tem a chave.
  */

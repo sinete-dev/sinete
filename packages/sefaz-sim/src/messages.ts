@@ -10,11 +10,11 @@ import { rejeicaoMdfePorCodigo } from '@sinete/rejeicoes/mdfe';
 import tableMdfe from './data/mdfe-status.json' with { type: 'json' };
 import table from './data/status.json' with { type: 'json' };
 
-const RESULTS: ReadonlyMap<string, string> = new Map(Object.entries(table.codes));
-const RESULTS_MDFE: ReadonlyMap<string, string> = new Map(Object.entries(tableMdfe.codes));
+const RESULTS: ReadonlyMap<string, string> = new Map(Object.entries(table.codigos));
+const RESULTS_MDFE: ReadonlyMap<string, string> = new Map(Object.entries(tableMdfe.codigos));
 
 /** Valores dos marcadores entre colchetes da mensagem oficial (`nRec`, `chNFe`, `nProt`) ou `campo` do `<nome do campo>`. */
-export type MotivoParams = Readonly<Record<string, string>>;
+export type ParametrosDoMotivo = Readonly<Record<string, string>>;
 
 /**
  * O `TMotivo` do leiaute só aceita Latin-1 (`[!-ÿ]`); o catálogo guarda aspas e travessões tipográficos do PDF, que
@@ -35,7 +35,7 @@ function latin1(text: string): string {
   return out;
 }
 
-function fill(message: string, params: MotivoParams): string {
+function fill(message: string, params: ParametrosDoMotivo): string {
   // O catálogo guarda algumas mensagens com o marcador sem o `]` final (quebra de linha no PDF, como o 562).
   const withMarkers = message.replace(/\[\s*([A-Za-z]+)\s*:[^\]]*(?:\]|$)/g, (all, name: string) => {
     const value = params[name];
@@ -47,7 +47,7 @@ function fill(message: string, params: MotivoParams): string {
 }
 
 /** O `cStat` é um resultado de processamento da tabela 4.4.1 (100, 103, 135...)? */
-export function isResultado(cStat: string): boolean {
+export function ehResultado(cStat: string): boolean {
   return RESULTS.has(cStat);
 }
 
@@ -55,22 +55,22 @@ export function isResultado(cStat: string): boolean {
  * Mensagem de um resultado da tabela 4.4.1 quando houver; senão a rejeição ou denegação do catálogo, com o prefixo
  * `Rejeição: ` ou `Uso Denegado: ` que o Anexo I usa na coluna "Descrição Erro".
  */
-export function motivo(cStat: string, params: MotivoParams = {}): string {
+export function motivo(cStat: string, parametros: ParametrosDoMotivo = {}): string {
   const result = RESULTS.get(cStat);
   if (result !== undefined) return result;
-  return motivoRejeicao(cStat, params);
+  return motivoRejeicao(cStat, parametros);
 }
 
 /** Mensagem do catálogo com o prefixo, mesmo para os códigos que também são resultado (108 e 109 nos grupos B03 e B04). */
-export function motivoRejeicao(cStat: string, params: MotivoParams = {}): string {
+export function motivoRejeicao(cStat: string, parametros: ParametrosDoMotivo = {}): string {
   const r = rejeicaoPorCodigo(cStat);
   if (r === undefined)
     throw new ErroDeConfiguracao(`cStat ${cStat} fora do catálogo de rejeições`, { detalhes: { cStat } });
-  return `${r.efeito === 'denegacao' ? 'Uso Denegado' : 'Rejeição'}: ${fill(r.mensagem, params)}`;
+  return `${r.efeito === 'denegacao' ? 'Uso Denegado' : 'Rejeição'}: ${fill(r.mensagem, parametros)}`;
 }
 
 /** O código é uma denegação (o número fica consumido e há protocolo)? */
-export function isDenegacao(cStat: string): boolean {
+export function ehDenegacao(cStat: string): boolean {
   return rejeicaoPorCodigo(cStat)?.efeito === 'denegacao';
 }
 
@@ -78,11 +78,11 @@ export function isDenegacao(cStat: string): boolean {
  * Mensagem de um `cStat` do MDF-e: resultado (`data/mdfe-status.json`) ou rejeição do catálogo do MDF-e no
  * `@sinete/rejeicoes/mdfe` (os códigos do MDF-e colidem com os da NF-e e têm outro sentido).
  */
-export function motivoMdfe(cStat: string, params: MotivoParams = {}): string {
+export function motivoMdfe(cStat: string, parametros: ParametrosDoMotivo = {}): string {
   const result = RESULTS_MDFE.get(cStat);
   if (result !== undefined) return result;
   const r = rejeicaoMdfePorCodigo(cStat);
   if (r === undefined)
     throw new ErroDeConfiguracao(`cStat ${cStat} fora do catálogo do MDF-e`, { detalhes: { cStat } });
-  return `Rejeição: ${fill(r.mensagem, params)}`;
+  return `Rejeição: ${fill(r.mensagem, parametros)}`;
 }

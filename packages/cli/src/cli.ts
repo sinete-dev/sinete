@@ -2,25 +2,25 @@
 /** Executável `sinete`: liga a CLI ao processo (stdout, stderr, env, arquivos e o prompt de senha sem eco). */
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import type { CliIo } from './main.ts';
+import type { EntradaSaidaCli } from './main.ts';
 import { main } from './main.ts';
 
 /** IO real do processo. */
-function processIo(): CliIo {
+function processIo(): EntradaSaidaCli {
   return {
-    out: (line: string): void => {
+    saida: (line: string): void => {
       process.stdout.write(`${line}\n`);
     },
-    err: (line: string): void => {
+    erro: (line: string): void => {
       process.stderr.write(`${line}\n`);
     },
     env: process.env,
-    readFile: async (p: string): Promise<Uint8Array> => new Uint8Array(await readFile(p)),
-    writeFile: async (p: string, text: string): Promise<void> => {
+    lerArquivo: async (p: string): Promise<Uint8Array> => new Uint8Array(await readFile(p)),
+    gravarArquivo: async (p: string, text: string): Promise<void> => {
       await mkdir(path.dirname(p), { recursive: true });
       await writeFile(p, text);
     },
-    promptPassword: async (question: string): Promise<string | undefined> => {
+    pedirSenha: async (question: string): Promise<string | undefined> => {
       const stdin = process.stdin;
       if (!stdin.isTTY) return undefined;
       process.stderr.write(question);

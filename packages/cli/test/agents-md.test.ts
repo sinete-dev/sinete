@@ -1,6 +1,8 @@
 import { describe, expect, test } from 'bun:test';
-import type { CliIo } from '../src/index.ts';
+import type { EntradaSaidaCli } from '../src/index.ts';
 import {
+  aplicarBloco,
+  aplicarSkill,
   BLOCO_AGENTS,
   CLAUDE_MD,
   DIRETORIOS_SKILL,
@@ -9,8 +11,6 @@ import {
   MARCADOR_SKILL,
   main,
   SKILL_SINETE,
-  upsertBloco,
-  upsertSkill,
 } from '../src/index.ts';
 
 const BLOCO = `${INICIO_BLOCO}\nregras novas\n${FIM_BLOCO}\n`;
@@ -18,41 +18,41 @@ const BLOCO = `${INICIO_BLOCO}\nregras novas\n${FIM_BLOCO}\n`;
 /** Sistema de arquivos em memória: só o que o comando lê e escreve. */
 function io(
   files: Record<string, string> = {},
-): CliIo & { files: Record<string, string>; outLines: string[]; errLines: string[] } {
+): EntradaSaidaCli & { files: Record<string, string>; outLines: string[]; errLines: string[] } {
   const outLines: string[] = [];
   const errLines: string[] = [];
   return {
     files,
     outLines,
     errLines,
-    out: (l) => outLines.push(l),
-    err: (l) => errLines.push(l),
+    saida: (l) => outLines.push(l),
+    erro: (l) => errLines.push(l),
     env: {},
-    promptPassword: async () => undefined,
-    readFile: async (p) => {
+    pedirSenha: async () => undefined,
+    lerArquivo: async (p) => {
       const v = files[p];
       if (v === undefined) throw Object.assign(new Error(`ENOENT: ${p}`), { code: 'ENOENT' });
       return new TextEncoder().encode(v);
     },
-    writeFile: async (p, text) => {
+    gravarArquivo: async (p, text) => {
       files[p] = text;
     },
   };
 }
 
-describe('upsertBloco', () => {
+describe('aplicarBloco', () => {
   test('cria, acrescenta no fim e troca só o que está entre os marcadores', () => {
-    expect(upsertBloco(undefined, BLOCO)).toEqual({ texto: BLOCO, acao: 'criado' });
-    expect(upsertBloco('', BLOCO)).toEqual({ texto: BLOCO, acao: 'inserido' });
-    expect(upsertBloco('# Projeto\n\nregra minha\n', BLOCO)).toEqual({
+    expect(aplicarBloco(undefined, BLOCO)).toEqual({ texto: BLOCO, acao: 'criado' });
+    expect(aplicarBloco('', BLOCO)).toEqual({ texto: BLOCO, acao: 'inserido' });
+    expect(aplicarBloco('# Projeto\n\nregra minha\n', BLOCO)).toEqual({
       texto: `# Projeto\n\nregra minha\n\n${BLOCO}`,
       acao: 'inserido',
     });
     const antigo = `# Projeto\n\n${INICIO_BLOCO}\nregras velhas\n${FIM_BLOCO}\n\n## Depois\n\nnão mexa\n`;
-    const r = upsertBloco(antigo, BLOCO);
+    const r = aplicarBloco(antigo, BLOCO);
     expect(r.acao).toBe('atualizado');
     expect(r.texto).toBe(`# Projeto\n\n${INICIO_BLOCO}\nregras novas\n${FIM_BLOCO}\n\n## Depois\n\nnão mexa\n`);
-    expect(upsertBloco(r.texto, BLOCO)).toEqual({ texto: r.texto, acao: 'sem-mudanca' });
+    expect(aplicarBloco(r.texto, BLOCO)).toEqual({ texto: r.texto, acao: 'sem-mudanca' });
   });
 
   test('marcadores incompletos, repetidos ou fora de ordem: lança sem mexer', () => {
@@ -62,7 +62,7 @@ describe('upsertBloco', () => {
       `${FIM_BLOCO}\n${INICIO_BLOCO}\n`,
       `${BLOCO}\n${BLOCO}`,
     ]) {
-      expect(() => upsertBloco(ruim, BLOCO)).toThrow('marcadores');
+      expect(() => aplicarBloco(ruim, BLOCO)).toThrow('marcadores');
     }
   });
 
@@ -120,17 +120,17 @@ describe('sinete agents-md', () => {
     const x = io();
     const falha = {
       ...x,
-      readFile: async () => Promise.reject(Object.assign(new Error('EACCES'), { code: 'EACCES' })),
+      lerArquivo: async () => Promise.reject(Object.assign(new Error('EACCES'), { code: 'EACCES' })),
     };
     expect(await main(['agents-md', '--sem-skill'], falha)).toBe(1);
     expect(x.errLines[0]).toContain('EACCES');
     expect(x.files).toEqual({});
   });
 
-  test('CLI embutida sem writeFile: sai com 2 e aponta o --imprimir', async () => {
-    const { writeFile: _, ...semEscrita } = io();
+  test('CLI embutida sem gravarArquivo: sai com 2 e aponta o --imprimir', async () => {
+    const { gravarArquivo: _, ...semEscrita } = io();
     const x = { ...semEscrita, errLines: [] as string[] };
-    const r = await main(['agents-md'], { ...x, err: (l) => x.errLines.push(l) });
+    const r = await main(['agents-md'], { ...x, erro: (l) => x.errLines.push(l) });
     expect(r).toBe(2);
     expect(x.errLines[0]).toContain('--imprimir');
   });
@@ -147,16 +147,16 @@ describe('sinete agents-md', () => {
 
 const CAMINHOS_SKILL = DIRETORIOS_SKILL.map((d) => `${d}/SKILL.md`);
 
-describe('upsertSkill', () => {
+describe('aplicarSkill', () => {
   test('cria, atualiza a gerada, mantém a do integrador', () => {
-    expect(upsertSkill(undefined, SKILL_SINETE)).toEqual({ texto: SKILL_SINETE, acao: 'criada' });
-    expect(upsertSkill(SKILL_SINETE, SKILL_SINETE)).toEqual({ texto: SKILL_SINETE, acao: 'sem-mudanca' });
-    expect(upsertSkill(`antiga\n${MARCADOR_SKILL} v0 -->\n`, SKILL_SINETE)).toEqual({
+    expect(aplicarSkill(undefined, SKILL_SINETE)).toEqual({ texto: SKILL_SINETE, acao: 'criada' });
+    expect(aplicarSkill(SKILL_SINETE, SKILL_SINETE)).toEqual({ texto: SKILL_SINETE, acao: 'sem-mudanca' });
+    expect(aplicarSkill(`antiga\n${MARCADOR_SKILL} v0 -->\n`, SKILL_SINETE)).toEqual({
       texto: SKILL_SINETE,
       acao: 'atualizada',
     });
     const dele = '---\nname: sinete\ndescription: minha\n---\nmeu texto\n';
-    expect(upsertSkill(dele, SKILL_SINETE)).toEqual({ texto: dele, acao: 'preservada' });
+    expect(aplicarSkill(dele, SKILL_SINETE)).toEqual({ texto: dele, acao: 'preservada' });
   });
 
   test('a skill publicada segue o formato Agent Skills e aponta para a documentação instalada', () => {
@@ -189,10 +189,10 @@ describe('sinete agents-md: skill', () => {
     const x = io();
     await main(['agents-md'], x);
     const escritas: string[] = [];
-    const escreve = x.writeFile;
+    const escreve = x.gravarArquivo;
     const y = {
       ...x,
-      writeFile: async (p: string, t: string) => {
+      gravarArquivo: async (p: string, t: string) => {
         escritas.push(p);
         await escreve?.(p, t);
       },

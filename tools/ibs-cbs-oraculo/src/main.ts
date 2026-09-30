@@ -7,7 +7,7 @@ import path from 'node:path';
 import { parseArgs } from 'node:util';
 import { aliquotasOficiais } from '@sinete/ibs-cbs/aliquotas';
 import { carregarDataset } from '@sinete/ibs-cbs-dados';
-import { DATASET_EMBARCADO } from '@sinete/ibs-cbs-dados/bundled';
+import { DATASET_EMBARCADO } from '@sinete/ibs-cbs-dados/embarcado';
 import { unpackCalculadora } from '../../ibs-cbs-dados/src/artifact.ts';
 import { defaultCacheDir, ensureFile } from '../../ibs-cbs-dados/src/fetch.ts';
 import type { CaseResult } from './check.ts';

@@ -12,21 +12,21 @@ import {
   loggerEmMemoria,
   relogioManual,
 } from '@sinete/core';
-import type { SyntheticCertificate } from '@sinete/sefaz-sim';
-import { syntheticCertificate } from '@sinete/sefaz-sim';
+import type { CertificadoSintetico } from '@sinete/sefaz-sim';
+import { certificadoSintetico } from '@sinete/sefaz-sim';
 import type { EndpointResolvido, PedidoTransporte, RespostaTransporte, Transporte } from '@sinete/transport';
 import { nfseEndpoint } from '@sinete/transport';
-import type { NfseClient } from '../src/index.ts';
+import type { ClienteNfse } from '../src/index.ts';
 import {
-  buildDps,
-  buildPedidoCancelamento,
+  assinarDps,
+  assinarPedidoEvento,
   cacheEmMemoria,
-  createNfseClient,
-  createParametrosMunicipais,
-  gzipBase64,
+  comprimirGzipBase64,
+  criarClienteNfse,
+  criarParametrosMunicipais,
+  montarDps,
+  montarPedidoCancelamento,
   resolverEnvioSemResposta,
-  signDps,
-  signPedidoEvento,
 } from '../src/index.ts';
 import { dps, EMISSAO, PRESTADOR, SAO_PAULO } from './helpers.ts';
 
@@ -60,7 +60,7 @@ function falso(respostas: Resposta[]): Transporte & { readonly pedidos: PedidoTr
   };
 }
 
-let cert: SyntheticCertificate;
+let cert: CertificadoSintetico;
 let clock: RelogioManual;
 let assinada: string;
 let idDps: string;
@@ -68,21 +68,21 @@ const CHAVE = `${SAO_PAULO}22${PRESTADOR}${'1'.padStart(13, '0')}2609${'1'.padSt
 
 beforeAll(async () => {
   clock = relogioManual(EMISSAO);
-  cert = await syntheticCertificate({ clock, role: 'titular', cnpj: PRESTADOR });
-  const r = buildDps(dps(), { ambiente: 'homologacao', time: contextoDeTempo({ emissao: clock }) });
+  cert = await certificadoSintetico({ relogio: clock, papel: 'titular', cnpj: PRESTADOR });
+  const r = await montarDps(dps(), { ambiente: 'homologacao', tempo: contextoDeTempo({ emissao: clock }) });
   if (!r.ok) throw new Error('montagem');
-  idDps = r.value.id;
-  assinada = await signDps(r.value, cert.signer);
+  idDps = r.valor.id;
+  assinada = await assinarDps(r.valor, cert.assinador);
 }, 30_000);
 
-function cliente(t: Transporte, extra: Partial<Parameters<typeof createNfseClient>[0]> = {}): NfseClient {
-  return createNfseClient({ transport: t, ambiente: 'homologacao', clock, ...extra });
+function cliente(t: Transporte, extra: Partial<Parameters<typeof criarClienteNfse>[0]> = {}): ClienteNfse {
+  return criarClienteNfse({ transporte: t, ambiente: 'homologacao', relogio: clock, ...extra });
 }
 
 const json = (o: unknown): string => JSON.stringify(o);
 
 async function nfseXml(id: string, idDpsNaNfse: string): Promise<string> {
-  return gzipBase64(
+  return comprimirGzipBase64(
     `<NFSe xmlns="http://www.sped.fazenda.gov.br/nfse" versao="1.01"><infNFSe Id="NFS${id}"><nNFSe>1</nNFSe><cStat>103</cStat><dhProc>x</dhProc><DPS versao="1.01"><infDPS Id="${idDpsNaNfse}"/></DPS></infNFSe></NFSe>`,
   );
 }
@@ -94,8 +94,8 @@ describe('emissão fora do contrato', () => {
       { status: 500, body: json({ erros: [{ Codigo: 'E9999' }] }) },
       { status: 201, body: json({ nfseXmlGZipB64: 'x' }) },
       { status: 201, body: json({ chaveAcesso: CHAVE, nfseXmlGZipB64: outra }) },
-      { status: 201, body: json({ chaveAcesso: CHAVE, nfseXmlGZipB64: await gzipBase64('<outro/>') }) },
-      { status: 201, body: json({ chaveAcesso: CHAVE, nfseXmlGZipB64: await gzipBase64('<NFSe') }) },
+      { status: 201, body: json({ chaveAcesso: CHAVE, nfseXmlGZipB64: await comprimirGzipBase64('<outro/>') }) },
+      { status: 201, body: json({ chaveAcesso: CHAVE, nfseXmlGZipB64: await comprimirGzipBase64('<NFSe') }) },
       { status: 200, body: 'não é json' },
     ]);
     const c = cliente(t, { logger: loggerEmMemoria() });
@@ -181,14 +181,14 @@ describe('consultas e eventos fora do contrato', () => {
       { status: 200, body: json({ tipoAmbiente: 2 }) },
       { status: 200, body: json({ eventos: [{ tipoEvento: '101101' }] }) },
       { status: 200, body: json({ eventos: [{ arquivoXml: 'SDRz%%' }] }) },
-      { status: 200, body: json({ eventos: [{ eventoXmlGZipB64: await gzipBase64(ev(outro)) }] }) },
-      { status: 201, body: json({ eventoXmlGZipB64: await gzipBase64(ev(outro)) }) },
-      { status: 201, body: json({ eventoXmlGZipB64: await gzipBase64('<evento') }) },
-      { status: 201, body: json({ eventoXmlGZipB64: await gzipBase64('<outro/>') }) },
+      { status: 200, body: json({ eventos: [{ eventoXmlGZipB64: await comprimirGzipBase64(ev(outro)) }] }) },
+      { status: 201, body: json({ eventoXmlGZipB64: await comprimirGzipBase64(ev(outro)) }) },
+      { status: 201, body: json({ eventoXmlGZipB64: await comprimirGzipBase64('<evento') }) },
+      { status: 201, body: json({ eventoXmlGZipB64: await comprimirGzipBase64('<outro/>') }) },
       { status: 500 },
-      { status: 200, body: json({ eventos: [{ eventoXmlGZipB64: await gzipBase64(ev(CHAVE)) }] }) },
+      { status: 200, body: json({ eventos: [{ eventoXmlGZipB64: await comprimirGzipBase64(ev(CHAVE)) }] }) },
     ]);
-    const c = cliente(t, { signer: cert.signer });
+    const c = cliente(t, { assinador: cert.assinador });
     const semFiltro = c.consultarEventos(CHAVE, undefined as unknown as { tpEvento: string; nSeqEvento: number });
     await expect(semFiltro).rejects.toBeInstanceOf(ErroDeConfiguracao);
     await expect(semFiltro).rejects.toThrow('405 sem o tipo e 404 sem a sequência');
@@ -230,7 +230,7 @@ describe('consultas e eventos fora do contrato', () => {
   test('eventos no formato da Sefin real: arquivoXml em base64 do gzip em base64', async () => {
     // Forma observada na produção restrita em 28/09/2026, com chave e XML sintéticos.
     const xml = `<evento xmlns="http://www.sped.fazenda.gov.br/nfse" versao="1.01"><infEvento Id="EVT${CHAVE}101101001"><nSeqEvento>1</nSeqEvento><dhProc>2026-09-28T18:17:10-03:00</dhProc><pedRegEvento><infPedReg><chNFSe>${CHAVE}</chNFSe><e101101><xDesc>Cancelamento de NFS-e</xDesc></e101101></infPedReg></pedRegEvento></infEvento></evento>`;
-    const arquivoXml = btoa(await gzipBase64(xml));
+    const arquivoXml = btoa(await comprimirGzipBase64(xml));
     expect(arquivoXml).toStartWith('SDRzSUFBQUFB');
     const t = falso([
       {
@@ -268,12 +268,12 @@ describe('consultas e eventos fora do contrato', () => {
   test('registrarEvento confere o pedido antes do envio', async () => {
     const t = falso([]);
     const c = cliente(t);
-    const r = buildPedidoCancelamento(
+    const r = montarPedidoCancelamento(
       { chave: CHAVE, autor: { CNPJ: PRESTADOR }, cMotivo: '1', xMotivo: 'Motivo com mais de 15' },
-      { ambiente: 'producao', clock },
+      { ambiente: 'producao', relogio: clock },
     );
     if (!r.ok) throw new Error('montagem');
-    const prod = await signPedidoEvento(r.value, cert.signer);
+    const prod = await assinarPedidoEvento(r.valor, cert.assinador);
     await expect(c.registrarEvento('<x')).rejects.toThrow('bem formado');
     await expect(c.registrarEvento('<DPS/>')).rejects.toThrow('não é um pedido');
     await expect(c.registrarEvento(prod)).rejects.toThrow('tpAmb 1');
@@ -309,7 +309,7 @@ describe('parametrização', () => {
       { status: 200, body: json({ semParametros: true }) },
       { status: 200, body: json({ parametrosConvenio: { aderenteEmissorNacional: 1 } }) },
     ]);
-    const p = createParametrosMunicipais({ transport: t, endpoint, clock });
+    const p = criarParametrosMunicipais({ transporte: t, endpoint, relogio: clock });
     await expect(p.convenio(SAO_PAULO)).rejects.toThrow('HTTP 200');
     await expect(p.convenio(SAO_PAULO)).rejects.toThrow('parametrosConvenio');
     expect(await p.convenio(SAO_PAULO)).toMatchObject({ aderenteEmissorNacional: true });
@@ -319,7 +319,7 @@ describe('parametrização', () => {
 
   test('entradas inválidas não chegam ao transporte', async () => {
     const t = falso([]);
-    const p = createParametrosMunicipais({ transport: t, endpoint, clock });
+    const p = criarParametrosMunicipais({ transporte: t, endpoint, relogio: clock });
     await expect(p.convenio('355')).rejects.toThrow('município');
     await expect(p.aliquota(SAO_PAULO, '010101', '25/09/2026')).rejects.toThrow('competência');
     await expect(p.aliquota(SAO_PAULO, '0101', '2026-09-25')).rejects.toThrow('tributação');
@@ -344,7 +344,7 @@ describe('parametrização', () => {
       { status: 404, body: '{}' },
       { status: 200, body: json({ parametrosConvenio: { aderenteAmbienteNacional: '1', aderenteMAN: true } }) },
     ]);
-    const p = createParametrosMunicipais({ transport: t, endpoint, clock, cache: false, timeoutMs: 5 });
+    const p = criarParametrosMunicipais({ transporte: t, endpoint, relogio: clock, cache: false, timeoutMs: 5 });
     await expect(p.convenio(SAO_PAULO)).rejects.toThrow('parametrosConvenio');
     await expect(p.historicoAliquotas(SAO_PAULO, '010101')).rejects.toThrow('fora do formato');
     await expect(p.aliquota(SAO_PAULO, '010101', '2026-09-25')).rejects.toThrow('sem aliquotas');
@@ -374,7 +374,13 @@ describe('parametrização', () => {
       { status: 200, body: json({ parametrosConvenio: {} }) },
     ]);
     const cache = cacheEmMemoria(1);
-    const p = createParametrosMunicipais({ transport: t, endpoint, clock, cache, ttlNaoEncontradoMs: 1_000 });
+    const p = criarParametrosMunicipais({
+      transporte: t,
+      endpoint,
+      relogio: clock,
+      cache,
+      validadeNaoEncontradoMs: 1_000,
+    });
     await Promise.all([p.convenio(SAO_PAULO), p.convenio(SAO_PAULO)]);
     expect(t.pedidos).toHaveLength(1);
     expect(await p.convenio('3509502')).toBeUndefined();
@@ -384,6 +390,6 @@ describe('parametrização', () => {
     await expect(p.convenio('3304557')).rejects.toThrow('HTTP 500');
     await p.convenio('3304557');
     await p.limparCache();
-    expect(await cache.get(`${endpoint.url}/3304557/convenio`)).toBeUndefined();
+    expect(await cache.obter(`${endpoint.url}/3304557/convenio`)).toBeUndefined();
   });
 });

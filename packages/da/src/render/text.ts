@@ -3,7 +3,7 @@
  * milímetros e pontos, sem depender de fonte instalada: o mesmo texto mede o mesmo em qualquer runtime.
  */
 
-import type { FontName } from '../model.ts';
+import type { NomeDaFonte } from '../model.ts';
 import { PT } from '../model.ts';
 import { ASCENT, WIDTHS, WINANSI_EXTRA } from './metrics.ts';
 
@@ -38,7 +38,7 @@ export function winAnsiCode(ch: string): number {
 }
 
 /** Largura do texto (já em WinAnsi) em mm. */
-export function widthMm(s: string, font: FontName, size: number): number {
+export function widthMm(s: string, font: NomeDaFonte, size: number): number {
   const w = WIDTHS[font];
   let u = 0;
   for (const ch of s) u += w[winAnsiCode(ch)] || 500;
@@ -46,12 +46,12 @@ export function widthMm(s: string, font: FontName, size: number): number {
 }
 
 /** Altura do ascendente em mm: da linha de base ao topo das maiúsculas acentuadas. */
-export function ascentMm(font: FontName, size: number): number {
+export function ascentMm(font: NomeDaFonte, size: number): number {
   return (ASCENT[font] / 1000) * size * PT;
 }
 
 /** Corta uma palavra maior que a linha por caractere; devolve os pedaços. */
-function breakWord(word: string, font: FontName, size: number, maxW: number): string[] {
+function breakWord(word: string, font: NomeDaFonte, size: number, maxW: number): string[] {
   const parts: string[] = [];
   let part = '';
   for (const ch of word) {
@@ -69,7 +69,7 @@ function breakWord(word: string, font: FontName, size: number, maxW: number): st
  * Quebra por palavra na largura `maxW`; palavra maior que a linha é cortada por caractere. O texto de entrada já deve
  * estar em WinAnsi. Sempre devolve ao menos uma linha.
  */
-export function wrap(s: string, font: FontName, size: number, maxW: number): string[] {
+export function wrap(s: string, font: NomeDaFonte, size: number, maxW: number): string[] {
   const lines: string[] = [];
   let cur = '';
   for (const word of s.split(' ')) {
@@ -89,14 +89,14 @@ export function wrap(s: string, font: FontName, size: number, maxW: number): str
 }
 
 /** Maior tamanho, de `size` para baixo em passos de 0,25 pt até `min`, em que o texto cabe em `maxW`. */
-export function shrinkToFit(s: string, font: FontName, size: number, min: number, maxW: number): number {
+export function shrinkToFit(s: string, font: NomeDaFonte, size: number, min: number, maxW: number): number {
   let z = size;
   while (z > min && widthMm(s, font, z) > maxW) z = Math.max(min, z - 0.25);
   return z;
 }
 
 /** Corta o texto e acrescenta reticências até caber em `maxW`. */
-export function ellipsis(s: string, font: FontName, size: number, maxW: number): string {
+export function ellipsis(s: string, font: NomeDaFonte, size: number, maxW: number): string {
   if (widthMm(s, font, size) <= maxW) return s;
   let str = s;
   while (str && widthMm(`${str}...`, font, size) > maxW) str = str.slice(0, -1);

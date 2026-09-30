@@ -2,7 +2,7 @@
 // Bun, Deno e Chromium geram os mesmos bytes; o teste smoke-dados.test.ts confere que o arquivo está em dia.
 // Uso: bun packages/da/test/smoke-dados.ts
 import path from 'node:path';
-import { toPdf } from '../src/index.ts';
+import { gerarPdf } from '../src/index.ts';
 import { damdfe } from '../src/mdfe.ts';
 import { danfe } from '../src/nfe.ts';
 import { danfse } from '../src/nfse.ts';
@@ -24,10 +24,10 @@ export async function dadosSmoke(): Promise<string> {
   if (!fxNfse) throw new Error('fixtures da NFS-e vazias');
   const nfse = nfseXml(fxNfse);
   const hashes = {
-    danfe: await sha256(toPdf(danfe(nfe))),
-    nfce: await sha256(toPdf(danfe(nfce))),
-    damdfe: await sha256(toPdf(damdfe(mdfe))),
-    danfse: await sha256(toPdf(danfse(nfse))),
+    danfe: await sha256(gerarPdf(danfe(nfe))),
+    nfce: await sha256(gerarPdf(danfe(nfce))),
+    damdfe: await sha256(gerarPdf(damdfe(mdfe))),
+    danfse: await sha256(gerarPdf(danfse(nfse))),
   };
   return `// Gerado por packages/da/test/smoke-dados.ts: não edite à mão. Só dado sintético.
 export const NFE = ${JSON.stringify(nfe)};

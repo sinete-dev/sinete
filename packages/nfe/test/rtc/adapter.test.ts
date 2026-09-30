@@ -5,16 +5,16 @@ import type { ProvedorDeAliquotas } from '@sinete/ibs-cbs/aliquotas';
 import { aliquotasOficiais } from '@sinete/ibs-cbs/aliquotas';
 import { calcularEm } from '@sinete/ibs-cbs/calcular';
 import type { Regra } from '@sinete/ibs-cbs/validar';
-import { datasetEmbarcado } from '@sinete/ibs-cbs-dados/bundled';
-import type { IbsCbsItemRequest, IbsCbsNotaRequest, Item } from '../../src/index.ts';
-import { buildNfe, carregarDatasetEmbarcado, Decimal, ibsCbsCalculator, localDaOperacao } from '../../src/index.ts';
+import { datasetEmbarcado } from '@sinete/ibs-cbs-dados/embarcado';
+import type { Item, PedidoIbsCbsItem, PedidoIbsCbsNota } from '../../src/index.ts';
+import { calculadoraIbsCbs, carregarDatasetEmbarcado, Decimal, localDaOperacao, montarNfe } from '../../src/index.ts';
 import { LOCAIS, notaRtc, opcoesRtc } from './helpers.ts';
 
 const dataset = datasetEmbarcado();
 const rates = aliquotasOficiais();
 const QUANDO = relogioFixo('2026-10-10T12:00:00-03:00').agora();
 
-function nota(extra: Partial<IbsCbsNotaRequest> = {}): IbsCbsNotaRequest {
+function nota(extra: Partial<PedidoIbsCbsNota> = {}): PedidoIbsCbsNota {
   return {
     fatoGerador: QUANDO,
     emissao: QUANDO,
@@ -31,7 +31,7 @@ function nota(extra: Partial<IbsCbsNotaRequest> = {}): IbsCbsNotaRequest {
 
 const zero = Decimal.of('0');
 
-function item(extra: Partial<IbsCbsItemRequest> = {}): IbsCbsItemRequest {
+function item(extra: Partial<PedidoIbsCbsItem> = {}): PedidoIbsCbsItem {
   return {
     nItem: 1,
     CST: '000',
@@ -61,10 +61,10 @@ function item(extra: Partial<IbsCbsItemRequest> = {}): IbsCbsItemRequest {
   };
 }
 
-describe('ibsCbsCalculator', () => {
+describe('calculadoraIbsCbs', () => {
   test('tributação integral: o grupo do leiaute é o do motor, na data do fato gerador', async () => {
-    const r = await ibsCbsCalculator({ dataset, rates }).calcular({ nota: nota(), itens: [item()] });
-    expect(r.issues).toBeUndefined();
+    const r = await calculadoraIbsCbs({ dataset, aliquotas: rates }).calcular({ nota: nota(), itens: [item()] });
+    expect(r.ocorrencias).toBeUndefined();
     const motor = calcularEm(
       {
         modelo: 55,
@@ -81,41 +81,43 @@ describe('ibsCbsCalculator', () => {
   });
 
   test('indDoacao passa para o grupo; compra governamental chega ao motor', async () => {
-    const calc = ibsCbsCalculator({ dataset, rates });
+    const calc = calculadoraIbsCbs({ dataset, aliquotas: rates });
     const r = await calc.calcular({
       nota: nota({ compraGov: { tpEnteGov: '1', pRedutor: Decimal.of('0'), tpOperGov: '1' } }),
       itens: [item({ indDoacao: '1' })],
     });
-    expect(r.issues).toBeUndefined();
+    expect(r.ocorrencias).toBeUndefined();
     expect(r.itens[0]?.IBSCBS.indDoacao).toBe('1');
     expect(r.itens[0]?.IBSCBS.gIBSCBS?.gTribCompraGov).toBeDefined();
   });
 
   test('compra governamental com pRedutor diferente do vigente: ocorrência, sem valores inconsistentes', async () => {
-    const calc = ibsCbsCalculator({ dataset, rates });
+    const calc = calculadoraIbsCbs({ dataset, aliquotas: rates });
     const r = await calc.calcular({
       nota: nota({ compraGov: { tpEnteGov: '1', pRedutor: Decimal.of('50.00'), tpOperGov: '1' } }),
       itens: [item()],
     });
-    expect(r.issues?.map((i) => [i.caminho, i.code])).toEqual([['gCompraGov.pRedutor', 'ibscbs_redutor_divergente']]);
+    expect(r.ocorrencias?.map((i) => [i.caminho, i.code])).toEqual([
+      ['gCompraGov.pRedutor', 'ibscbs_redutor_divergente'],
+    ]);
     const igual = await calc.calcular({
       nota: nota({ compraGov: { tpEnteGov: '1', pRedutor: Decimal.of('0.0000'), tpOperGov: '1' } }),
       itens: [item()],
     });
-    expect(igual.issues).toBeUndefined();
+    expect(igual.ocorrencias).toBeUndefined();
   });
 
   test('base: vBC do item, senão a função das opções; sem as duas, ocorrência em vez de base presumida', async () => {
     const semVbc = item({ nItem: 2 });
     const { vBC: _, ...sem } = semVbc;
-    const semBase = await ibsCbsCalculator({ dataset, rates }).calcular({ nota: nota(), itens: [sem] });
-    expect(semBase.issues).toEqual([
+    const semBase = await calculadoraIbsCbs({ dataset, aliquotas: rates }).calcular({ nota: nota(), itens: [sem] });
+    expect(semBase.ocorrencias).toEqual([
       expect.objectContaining({ caminho: 'itens[1].impostos.ibsCbs.classificacao.vBC', code: 'ibscbs_base_ausente' }),
     ]);
     const vistos: number[] = [];
-    const comFuncao = await ibsCbsCalculator({
+    const comFuncao = await calculadoraIbsCbs({
       dataset,
-      rates,
+      aliquotas: rates,
       base: (it) => {
         vistos.push(it.nItem);
         return it.vProd.minus(it.vDesc).toFixed(2);
@@ -123,31 +125,31 @@ describe('ibsCbsCalculator', () => {
     }).calcular({ nota: nota(), itens: [sem] });
     expect(vistos).toEqual([2]);
     expect(comFuncao.itens[0]?.IBSCBS.gIBSCBS?.vBC).toBe('1000.00');
-    const invalida = await ibsCbsCalculator({ dataset, rates, base: () => '1,5' }).calcular({
+    const invalida = await calculadoraIbsCbs({ dataset, aliquotas: rates, base: () => '1,5' }).calcular({
       nota: nota(),
       itens: [sem],
     });
-    expect(invalida.issues?.map((i) => [i.code, i.origem])).toEqual([['decimal_invalido', 'montagem']]);
+    expect(invalida.ocorrencias?.map((i) => [i.code, i.origem])).toEqual([['decimal_invalido', 'montagem']]);
     // vBC do próprio item fora da forma é da entrada (ADR 0011).
-    const negativa = await ibsCbsCalculator({ dataset, rates }).calcular({
+    const negativa = await calculadoraIbsCbs({ dataset, aliquotas: rates }).calcular({
       nota: nota(),
       itens: [item({ vBC: Decimal.of('-1') })],
     });
-    expect(negativa.issues?.map((i) => [i.code, i.origem])).toEqual([['decimal_invalido', 'entrada']]);
+    expect(negativa.ocorrencias?.map((i) => [i.code, i.origem])).toEqual([['decimal_invalido', 'entrada']]);
   });
 
   test('gTribRegular da classificação chega ao motor; o cClassTrib que o exige, sem ele, vira ocorrência', async () => {
-    const calc = ibsCbsCalculator({ dataset, rates });
+    const calc = calculadoraIbsCbs({ dataset, aliquotas: rates });
     const exportacao = item({ CST: '550', cClassTrib: '550001', CFOP: '7101' });
     const sem = await calc.calcular({ nota: nota(), itens: [exportacao] });
-    expect(sem.issues?.map((i) => [i.caminho, i.code])).toEqual([
+    expect(sem.ocorrencias?.map((i) => [i.caminho, i.code])).toEqual([
       ['itens[0].impostos.ibsCbs', 'ibscbs_classificacao_invalida'],
     ]);
     const com = await calc.calcular({
       nota: nota(),
       itens: [{ ...exportacao, gTribRegular: { CSTReg: '000', cClassTribReg: '000001' } }],
     });
-    expect(com.issues).toBeUndefined();
+    expect(com.ocorrencias).toBeUndefined();
     expect(com.itens[0]?.IBSCBS.gIBSCBS?.gTribRegular).toMatchObject({
       CSTReg: '000',
       cClassTribReg: '000001',
@@ -156,7 +158,7 @@ describe('ibsCbsCalculator', () => {
     });
   });
 
-  test('no buildNfe: ICMS e FCP de partilha chegam à base; gTribRegular vai da entrada ao XML', async () => {
+  test('no montarNfe: ICMS e FCP de partilha chegam à base; gTribRegular vai da entrada ao XML', async () => {
     const clock = relogioFixo('2026-10-10T12:00:00-03:00');
     const entrada = notaRtc(LOCAIS.SP, [
       { CST: '000', cClassTrib: '000001', base: '1000.00' },
@@ -194,9 +196,9 @@ describe('ibsCbsCalculator', () => {
       },
     ];
     const vistos: [number, string, string][] = [];
-    const calc = ibsCbsCalculator({
+    const calc = calculadoraIbsCbs({
       dataset,
-      rates,
+      aliquotas: rates,
       regras: false,
       // A base de quem emite: valor do item menos o ICMS próprio e o de partilha.
       base: (it) => {
@@ -204,35 +206,40 @@ describe('ibsCbsCalculator', () => {
         return it.vProd.minus(it.vICMS).minus(it.vICMSUFDest).minus(it.vFCPUFDest).toFixed(2);
       },
     });
-    const r = await buildNfe({ ...entrada, itens }, opcoesRtc(clock, calc));
-    if (!r.ok) throw new Error(r.issues.map((i) => `${i.caminho}: ${i.mensagem}`).join('\n'));
+    const r = await montarNfe({ ...entrada, itens }, opcoesRtc(clock, calc));
+    if (!r.ok) throw new Error(r.ocorrencias.map((i) => `${i.caminho}: ${i.mensagem}`).join('\n'));
     expect(vistos).toEqual([
       [1, '60.00', '20.00'],
       [2, '0.00', '0.00'],
     ]);
     // 1000 - 180 de ICMS - 60 - 20 de partilha.
-    expect(r.value.xml).toContain('<IBSCBS><CST>000</CST><cClassTrib>000001</cClassTrib><gIBSCBS><vBC>740.00</vBC>');
-    expect(r.value.xml).toContain('<gTribRegular><CSTReg>000</CSTReg><cClassTribReg>000001</cClassTribReg>');
+    expect(r.valor.xml).toContain('<IBSCBS><CST>000</CST><cClassTrib>000001</cClassTrib><gIBSCBS><vBC>740.00</vBC>');
+    expect(r.valor.xml).toContain('<gTribRegular><CSTReg>000</CSTReg><cClassTribReg>000001</cClassTribReg>');
   });
 
   test('crédito presumido sem os percentuais: ocorrência de não suportado', async () => {
-    const r = await ibsCbsCalculator({ dataset, rates }).calcular({ nota: nota(), itens: [item({ cCredPres: '01' })] });
-    expect(r.issues?.map((i) => [i.caminho, i.code])).toEqual([['itens[0].impostos.ibsCbs', 'ibscbs_nao_suportado']]);
+    const r = await calculadoraIbsCbs({ dataset, aliquotas: rates }).calcular({
+      nota: nota(),
+      itens: [item({ cCredPres: '01' })],
+    });
+    expect(r.ocorrencias?.map((i) => [i.caminho, i.code])).toEqual([
+      ['itens[0].impostos.ibsCbs', 'ibscbs_nao_suportado'],
+    ]);
   });
 
   test('erros do motor e das alíquotas viram ocorrências; outro erro propaga', async () => {
-    const calc = ibsCbsCalculator({ dataset, rates });
+    const calc = calculadoraIbsCbs({ dataset, aliquotas: rates });
     const inexistente = await calc.calcular({ nota: nota(), itens: [item({ nItem: 3, cClassTrib: '000999' })] });
-    expect(inexistente.issues).toEqual([
+    expect(inexistente.ocorrencias).toEqual([
       expect.objectContaining({ caminho: 'itens[2].impostos.ibsCbs', code: 'ibscbs_classificacao_invalida' }),
     ]);
     // Monofasia (CST 620): o motor recusa em vez de zerar.
     const mono = await calc.calcular({ nota: nota(), itens: [item({ CST: '620', cClassTrib: '620001' })] });
-    expect(mono.issues?.map((i) => i.code)).toEqual([expect.stringMatching(/^ibscbs_/)]);
+    expect(mono.ocorrencias?.map((i) => i.code)).toEqual([expect.stringMatching(/^ibscbs_/)]);
     // 2027: a CBS ainda não foi fixada pelo Senado.
     const em2027 = relogioFixo('2027-03-10T12:00:00-03:00').agora();
     const futuro = await calc.calcular({ nota: nota({ fatoGerador: em2027, emissao: em2027 }), itens: [item()] });
-    expect(futuro.issues?.map((i) => [i.caminho, i.code])).toEqual([
+    expect(futuro.ocorrencias?.map((i) => [i.caminho, i.code])).toEqual([
       ['impostos.ibsCbs', 'ibscbs_aliquota_desconhecida'],
     ]);
     const quebrado: ProvedorDeAliquotas = {
@@ -244,9 +251,9 @@ describe('ibsCbsCalculator', () => {
         throw new Error('provedor quebrado');
       },
     };
-    expect(() => ibsCbsCalculator({ dataset, rates: quebrado }).calcular({ nota: nota(), itens: [item()] })).toThrow(
-      'provedor quebrado',
-    );
+    expect(() =>
+      calculadoraIbsCbs({ dataset, aliquotas: quebrado }).calcular({ nota: nota(), itens: [item()] }),
+    ).toThrow('provedor quebrado');
   });
 
   test('regras da NT: violação vira ocorrência com a regra, a rejeição e a fonte; `false` desliga', async () => {
@@ -262,11 +269,11 @@ describe('ibsCbsCalculator', () => {
         report(undefined, 'total reprovado');
       },
     };
-    const r = await ibsCbsCalculator({ dataset, rates, regras: { rules: [sempre] } }).calcular({
+    const r = await calculadoraIbsCbs({ dataset, aliquotas: rates, regras: { regras: [sempre] } }).calcular({
       nota: nota(),
       itens: [item()],
     });
-    expect(r.issues).toEqual([
+    expect(r.ocorrencias).toEqual([
       {
         caminho: 'itens[0].impostos.ibsCbs',
         code: 'ibscbs_regra_nt',
@@ -280,16 +287,16 @@ describe('ibsCbsCalculator', () => {
         origem: 'montagem',
       },
     ]);
-    const desligadas = await ibsCbsCalculator({ dataset, rates, regras: false }).calcular({
+    const desligadas = await calculadoraIbsCbs({ dataset, aliquotas: rates, regras: false }).calcular({
       nota: nota(),
       itens: [item()],
     });
-    expect(desligadas.issues).toBeUndefined();
-    const todas = await ibsCbsCalculator({
+    expect(desligadas.ocorrencias).toBeUndefined();
+    const todas = await calculadoraIbsCbs({
       dataset,
-      rates,
-      regras: { ignoreActivation: true },
-      utcOffsetMinutes: -180,
+      aliquotas: rates,
+      regras: { ignorarAtivacao: true },
+      deslocamentoMin: -180,
     }).calcular({
       nota: nota({ destino: { UF: 'SP', cMun: '3550308' }, tpNFDebito: '01' }),
       itens: [item()],
@@ -298,10 +305,10 @@ describe('ibsCbsCalculator', () => {
   });
 
   test('sem opções: dataset embarcado importado sob demanda e alíquotas oficiais, mesmo resultado', async () => {
-    const semOpcoes = ibsCbsCalculator().calcular({ nota: nota(), itens: [item()] });
+    const semOpcoes = calculadoraIbsCbs().calcular({ nota: nota(), itens: [item()] });
     expect(semOpcoes).toBeInstanceOf(Promise);
     expect(await semOpcoes).toEqual(
-      await ibsCbsCalculator({ dataset, rates }).calcular({ nota: nota(), itens: [item()] }),
+      await calculadoraIbsCbs({ dataset, aliquotas: rates }).calcular({ nota: nota(), itens: [item()] }),
     );
     // O import dinâmico e o estático chegam à mesma instância, carregada uma vez por processo.
     expect(await carregarDatasetEmbarcado()).toBe(dataset);
@@ -318,17 +325,17 @@ describe('ibsCbsCalculator', () => {
     expect(localDaOperacao(nota({ cMunFGIBS: '0000000' }))).toEqual({ uf: 'SP', cMun: '3550308' });
   });
 
-  test('no buildNfe: grupos do motor no XML e IBSCBSTot somado pelo builder', async () => {
+  test('no montarNfe: grupos do motor no XML e IBSCBSTot somado pelo builder', async () => {
     const clock = relogioFixo('2026-10-10T12:00:00-03:00');
-    const r = await buildNfe(
+    const r = await montarNfe(
       notaRtc(LOCAIS.SP, [
         { CST: '000', cClassTrib: '000001', base: '1000.00' },
         { CST: '200', cClassTrib: '200036', base: '7.56' },
       ]),
-      opcoesRtc(clock, ibsCbsCalculator({ dataset, rates })),
+      opcoesRtc(clock, calculadoraIbsCbs({ dataset, aliquotas: rates })),
     );
-    if (!r.ok) throw new Error(r.issues.map((i) => `${i.caminho}: ${i.mensagem}`).join('\n'));
-    expect(r.value.xml).toContain('<IBSCBS><CST>000</CST><cClassTrib>000001</cClassTrib><gIBSCBS><vBC>1000.00</vBC>');
-    expect(r.value.infNFe.total.IBSCBSTot).toMatchObject({ vBCIBSCBS: '1007.56', gCBS: { vCBS: '9.03' } });
+    if (!r.ok) throw new Error(r.ocorrencias.map((i) => `${i.caminho}: ${i.mensagem}`).join('\n'));
+    expect(r.valor.xml).toContain('<IBSCBS><CST>000</CST><cClassTrib>000001</cClassTrib><gIBSCBS><vBC>1000.00</vBC>');
+    expect(r.valor.infNFe.total.IBSCBSTot).toMatchObject({ vBCIBSCBS: '1007.56', gCBS: { vCBS: '9.03' } });
   });
 });

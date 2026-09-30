@@ -1,6 +1,6 @@
 /**
  * Checagem local do builder contra o corpus (nunca no CI, nunca no repo). Para cada NF-e modelo 55 do corpus, remonta
- * a entrada do domínio a partir do XML autorizado e roda o `buildNfe` em duas passadas:
+ * a entrada do domínio a partir do XML autorizado e roda o `montarNfe` em duas passadas:
  *
  * - `informado`: todos os valores do XML vão na entrada. Mede quantas notas reais o builder aceita, quais ocorrências
  *   aparecem (por caminho sem índice) e se os totais recalculados (`ICMSTot`, `vNF`) batem com os autorizados.
@@ -22,8 +22,8 @@ import { descendentes, lerXml } from '@sinete/core/xml';
 import { decodificar } from '@sinete/schemas';
 import type { TNFe_infNFe } from '@sinete/schemas/nfe/PL_010f';
 import { TNFe_infNFe as InfNFe } from '@sinete/schemas/nfe/PL_010f';
-import type { BuildNfeOptions, Icms, Item, NfeInput } from '../../src/index.ts';
-import { buildNfe, Decimal } from '../../src/index.ts';
+import type { DadosNfe, Icms, Item, MontarNfeOpcoes } from '../../src/index.ts';
+import { Decimal, montarNfe } from '../../src/index.ts';
 
 const corpusDir = process.env.SINETE_CORPUS ?? path.join(homedir(), '.local/state/sinete/corpus');
 const PASTAS = ['nfe-proprias', 'nfe-importadas'];
@@ -200,7 +200,7 @@ function endereco(e: Obj | undefined): Obj | undefined {
   });
 }
 
-function entradaDoXml(inf: TNFe_infNFe, modo: Modo): { input: NfeInput; grupos: string[] } {
+function entradaDoXml(inf: TNFe_infNFe, modo: Modo): { input: DadosNfe; grupos: string[] } {
   const ide = o(inf.ide);
   const emit = o(inf.emit);
   const dest = inf.dest ? o(inf.dest) : undefined;
@@ -255,7 +255,7 @@ function entradaDoXml(inf: TNFe_infNFe, modo: Modo): { input: NfeInput; grupos: 
           vTroco: pag.vTroco,
         })
       : undefined,
-  }) as unknown as NfeInput;
+  }) as unknown as DadosNfe;
   return { input, grupos: itens.map((i) => i.icms ?? 'sem ICMS') };
 }
 
@@ -278,9 +278,9 @@ function comparar(
   }
 }
 
-const opcoes: BuildNfeOptions = {
+const opcoes: MontarNfeOpcoes = {
   ambiente: 'homologacao',
-  time: contextoDeTempo({ emissao: relogioFixo('2026-09-26T12:00:00-03:00') }),
+  tempo: contextoDeTempo({ emissao: relogioFixo('2026-09-26T12:00:00-03:00') }),
   exigencias: { infRespTec: 'opcional', csrt: 'opcional' },
 };
 
@@ -335,9 +335,9 @@ for (const pasta of PASTAS) {
     for (const modo of ['informado', 'derivado'] as const) {
       const { input, grupos } = entradaDoXml(inf, modo);
       if (modo === 'informado') for (const g of grupos) inc(r.gruposIcms, g);
-      let res: Awaited<ReturnType<typeof buildNfe>>;
+      let res: Awaited<ReturnType<typeof montarNfe>>;
       try {
-        res = await buildNfe(input, opcoes);
+        res = await montarNfe(input, opcoes);
       } catch (e) {
         inc(r[modo].ocorrencias, `exceção ${(e as Error).name}`);
         r[modo].falha++;
@@ -345,11 +345,11 @@ for (const pasta of PASTAS) {
       }
       if (!res.ok) {
         r[modo].falha++;
-        for (const i of res.issues) inc(r[modo].ocorrencias, `${i.code} ${semIndice(i.caminho)}`);
+        for (const i of res.ocorrencias) inc(r[modo].ocorrencias, `${i.code} ${semIndice(i.caminho)}`);
         continue;
       }
       r[modo].ok++;
-      const novo = res.value.infNFe;
+      const novo = res.valor.infNFe;
       if (modo === 'informado') {
         const t = r.informado.totais;
         comparar(

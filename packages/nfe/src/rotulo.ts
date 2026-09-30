@@ -1,6 +1,6 @@
 /**
  * Rótulo em português do caminho de uma ocorrência da NF-e (ADR 0011), para mostrar a quem preencheu a nota: `Item 2,
- * Descrição do produto` em vez de `itens[1].produto.xProd`. Aceita os caminhos da entrada (`NfeInput`) e os do
+ * Descrição do produto` em vez de `itens[1].produto.xProd`. Aceita os caminhos da entrada (`DadosNfe`) e os do
  * documento montado, tanto os das conferências do montador (`infNFe.det[1].prod.xProd`) quanto os do validador de XSD
  * (`/infNFe/det[2]/prod/xProd`).
  */
@@ -15,7 +15,7 @@ const item =
 
 /** Do mais específico ao mais geral. Os índices chegam somados de um. */
 const GRUPOS: readonly GrupoDeCaminho[] = [
-  // Entrada (NfeInput)
+  // Entrada (DadosNfe)
   { padrao: /^emitente\b/, rotulo: 'Emitente' },
   { padrao: /^destinatario\b/, rotulo: 'Destinatário' },
   { padrao: /^retirada\b/, rotulo: 'Local de retirada' },
@@ -132,6 +132,6 @@ const rotular = criarRotuloDoCaminho({ grupos: GRUPOS, campos: CAMPOS, padrao: '
  * Rótulo em português do caminho de uma ocorrência da NF-e: `Grupo, Campo` quando os dois são conhecidos (`Emitente,
  * Inscrição estadual`), só um deles quando falta o outro, e `Dados da NF-e` quando nenhum é.
  */
-export function rotuloDoCaminho(path: string): string {
-  return rotular(path);
+export function rotuloDoCaminho(caminho: string): string {
+  return rotular(caminho);
 }

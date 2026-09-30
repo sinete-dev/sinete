@@ -14,19 +14,19 @@ import {
 import { codificarBase64 } from '@sinete/core/xml';
 import { gunzipBase64Duplo } from '../src/gzip.ts';
 import {
-  buildDps,
-  buildPedidoAnaliseFiscal,
-  buildPedidoCancelamento,
   codigoServicoParametrizacao,
+  comprimirGzipBase64,
   cTribNacDps,
-  formatValor,
-  gunzipBase64,
-  gzipBase64,
+  descomprimirGzipBase64,
+  formatarValor,
   idDps,
   idPedidoEvento,
   inscricaoId,
   leiauteVigente,
-  parseChaveNfse,
+  lerChaveNfse,
+  montarDps,
+  montarPedidoAnaliseFiscal,
+  montarPedidoCancelamento,
 } from '../src/index.ts';
 import { documentosCompactados, documentosDosEventos, lerJson, mensagens, rejeicao } from '../src/respostas.ts';
 import { VERSAO_PACOTE } from '../src/versao-gerada.ts';
@@ -39,17 +39,17 @@ const CHAVE = `${SAO_PAULO}22${PRESTADOR}${RESTO}`;
 describe('valores', () => {
   test('texto e número viram 2 casas; o resto é ocorrência', () => {
     const issues: Ocorrencia[] = [];
-    expect(formatValor('1500', 'v', issues)).toBe('1500.00');
-    expect(formatValor('007.5', 'v', issues)).toBe('7.50');
-    expect(formatValor('2.500', 'v', issues)).toBe('2.50');
-    expect(formatValor(0.1 + 0.2, 'v', issues)).toBe('0.30');
-    expect(formatValor(12, 'v', issues)).toBe('12.00');
+    expect(formatarValor('1500', 'v', issues)).toBe('1500.00');
+    expect(formatarValor('007.5', 'v', issues)).toBe('7.50');
+    expect(formatarValor('2.500', 'v', issues)).toBe('2.50');
+    expect(formatarValor(0.1 + 0.2, 'v', issues)).toBe('0.30');
+    expect(formatarValor(12, 'v', issues)).toBe('12.00');
     expect(issues).toEqual([]);
-    expect(formatValor(1.005, 'a', issues)).toBeUndefined();
-    expect(formatValor(-1, 'b', issues)).toBeUndefined();
-    expect(formatValor(Number.NaN, 'c', issues)).toBeUndefined();
-    expect(formatValor('1,50', 'd', issues)).toBeUndefined();
-    expect(formatValor('1.505', 'e', issues)).toBeUndefined();
+    expect(formatarValor(1.005, 'a', issues)).toBeUndefined();
+    expect(formatarValor(-1, 'b', issues)).toBeUndefined();
+    expect(formatarValor(Number.NaN, 'c', issues)).toBeUndefined();
+    expect(formatarValor('1,50', 'd', issues)).toBeUndefined();
+    expect(formatarValor('1.505', 'e', issues)).toBeUndefined();
     expect(issues.map((i) => `${i.caminho}:${i.code}`)).toEqual([
       'a:valor_casas',
       'b:valor_invalido',
@@ -81,11 +81,11 @@ describe('códigos e identificadores', () => {
     expect(() => idDps({ cLocEmi: '355', emitente: { CNPJ: PRESTADOR }, serie: '1', nDPS: '1' })).toThrow('cLocEmi');
     expect(() => idDps({ cLocEmi: SAO_PAULO, emitente: { CNPJ: PRESTADOR }, serie: 'A', nDPS: '1' })).toThrow('série');
     expect(() => idDps({ cLocEmi: SAO_PAULO, emitente: { CNPJ: PRESTADOR }, serie: '1', nDPS: 'x' })).toThrow('nDPS');
-    expect(parseChaveNfse(CHAVE)).toMatchObject({ tpInsc: '2', inscricao: PRESTADOR, anoMes: '2609', dv: '7' });
+    expect(lerChaveNfse(CHAVE)).toMatchObject({ tpInsc: '2', inscricao: PRESTADOR, anoMes: '2609', dv: '7' });
     const comCpf = `${SAO_PAULO}21000${PRESTADOR_CPF}${RESTO}`;
-    expect(parseChaveNfse(comCpf).inscricao).toBe(PRESTADOR_CPF);
-    expect(() => parseChaveNfse(`${SAO_PAULO}21123${PRESTADOR_CPF}${RESTO}`)).toThrow('CPF');
-    expect(() => parseChaveNfse('123')).toThrow(ErroDeConfiguracao);
+    expect(lerChaveNfse(comCpf).inscricao).toBe(PRESTADOR_CPF);
+    expect(() => lerChaveNfse(`${SAO_PAULO}21123${PRESTADOR_CPF}${RESTO}`)).toThrow('CPF');
+    expect(() => lerChaveNfse('123')).toThrow(ErroDeConfiguracao);
     expect(idPedidoEvento(CHAVE, '101101')).toBe(`PRE${CHAVE}101101`);
     expect(() => idPedidoEvento(CHAVE, '1011')).toThrow('evento');
   });
@@ -100,9 +100,9 @@ describe('códigos e identificadores', () => {
   });
 });
 
-describe('buildDps', () => {
-  test('DPS completa: declaração UTF-8, Id, competência padrão, grupos opcionais e IBS/CBS', () => {
-    const r = buildDps(
+describe('montarDps', () => {
+  test('DPS completa: declaração UTF-8, Id, competência padrão, grupos opcionais e IBS/CBS', async () => {
+    const r = await montarDps(
       dps({
         nDPS: 123n,
         serie: 2,
@@ -139,18 +139,18 @@ describe('buildDps', () => {
           },
         },
       }),
-      { ambiente: 'homologacao', time, verAplic: 'app-teste', offsetMinutes: -240 },
+      { ambiente: 'homologacao', tempo: time, verAplic: 'app-teste', deslocamentoMin: -240 },
     );
-    if (!r.ok) throw new Error(JSON.stringify(r.issues));
-    const x = r.value.xml;
+    if (!r.ok) throw new Error(JSON.stringify(r.ocorrencias));
+    const x = r.valor.xml;
     expect(
       x.startsWith(
         '<?xml version="1.0" encoding="UTF-8"?><DPS xmlns="http://www.sped.fazenda.gov.br/nfse" versao="1.01">',
       ),
     ).toBe(true);
-    expect(r.value.id).toBe(`DPS${SAO_PAULO}2${PRESTADOR}00002000000000000123`);
-    expect(r.value.dhEmi).toBe('2026-09-25T09:00:00-04:00');
-    expect(r.value.dCompet).toBe('2026-09-25');
+    expect(r.valor.id).toBe(`DPS${SAO_PAULO}2${PRESTADOR}00002000000000000123`);
+    expect(r.valor.dhEmi).toBe('2026-09-25T09:00:00-04:00');
+    expect(r.valor.dCompet).toBe('2026-09-25');
     expect(x).toContain('<verAplic>app-teste</verAplic>');
     expect(x).toContain('<vServPrest><vReceb>900.00</vReceb><vServ>1000.00</vServ></vServPrest>');
     expect(x).toContain(
@@ -161,25 +161,25 @@ describe('buildDps', () => {
     expect(x).toContain(`<gRefNFSe><refNFSe>${CHAVE}</refNFSe></gRefNFSe>`);
   });
 
-  test('verAplic padrão é "sinete <versão do pacote>"; override explícito prevalece', () => {
-    const padrao = buildDps(dps(), { ambiente: 'homologacao', time });
+  test('verAplic padrão é "sinete <versão do pacote>"; override explícito prevalece', async () => {
+    const padrao = await montarDps(dps(), { ambiente: 'homologacao', tempo: time });
     const esperado = formatarVerProc('sinete', VERSAO_PACOTE);
-    expect(padrao.ok && padrao.value.xml).toContain(`<verAplic>${esperado}</verAplic>`);
+    expect(padrao.ok && padrao.valor.xml).toContain(`<verAplic>${esperado}</verAplic>`);
     expect(esperado.length).toBeLessThanOrEqual(20);
 
-    const override = buildDps(dps(), { ambiente: 'homologacao', time, verAplic: 'app-teste' });
-    expect(override.ok && override.value.xml).toContain('<verAplic>app-teste</verAplic>');
+    const override = await montarDps(dps(), { ambiente: 'homologacao', tempo: time, verAplic: 'app-teste' });
+    expect(override.ok && override.valor.xml).toContain('<verAplic>app-teste</verAplic>');
   });
 
-  test('tpEmit 2 usa a inscrição do tomador; sem CNPJ ou CPF do emitente é ocorrência', () => {
-    const r = buildDps(dps({ tpEmit: '2', cMotivoEmisTI: '1' }), { ambiente: 'homologacao', time });
-    expect(r.ok && r.value.id).toBe(`DPS${SAO_PAULO}2${TOMADOR}00001000000000000001`);
-    const semDoc = buildDps(dps({ tpEmit: '3' }), { ambiente: 'homologacao', time });
-    expect(!semDoc.ok && semDoc.issues.map((i) => i.code)).toEqual(['emitente_sem_inscricao']);
+  test('tpEmit 2 usa a inscrição do tomador; sem CNPJ ou CPF do emitente é ocorrência', async () => {
+    const r = await montarDps(dps({ tpEmit: '2', cMotivoEmisTI: '1' }), { ambiente: 'homologacao', tempo: time });
+    expect(r.ok && r.valor.id).toBe(`DPS${SAO_PAULO}2${TOMADOR}00001000000000000001`);
+    const semDoc = await montarDps(dps({ tpEmit: '3' }), { ambiente: 'homologacao', tempo: time });
+    expect(!semDoc.ok && semDoc.ocorrencias.map((i) => i.code)).toEqual(['emitente_sem_inscricao']);
   });
 
-  test('todas as ocorrências de uma vez, antes do schema', () => {
-    const r = buildDps(
+  test('todas as ocorrências de uma vez, antes do schema', async () => {
+    const r = await montarDps(
       dps({
         serie: '99999',
         nDPS: '0',
@@ -197,11 +197,11 @@ describe('buildDps', () => {
           classificacao: { CST: '000', cClassTrib: '000001', diferimento: { pDifUF: 'x', pDifMun: '0', pDifCBS: '0' } },
         },
       }),
-      { ambiente: 'homologacao', time },
+      { ambiente: 'homologacao', tempo: time },
     );
     expect(r.ok).toBe(false);
     if (r.ok) return;
-    expect(r.issues.map((i) => `${i.caminho}:${i.code}`).sort()).toEqual(
+    expect(r.ocorrencias.map((i) => `${i.caminho}:${i.code}`).sort()).toEqual(
       [
         'dCompet:competencia_posterior_emissao',
         'serie:campo_invalido',
@@ -220,9 +220,9 @@ describe('buildDps', () => {
     );
   });
 
-  test('total de tributos pelo regime do Simples (E0710, E0712, E0713)', () => {
+  test('total de tributos pelo regime do Simples (E0710, E0712, E0713)', async () => {
     const regime = (opSimpNac: '1' | '2' | '3', totTrib?: Record<string, unknown>) =>
-      buildDps(
+      montarDps(
         dps({
           prestador: { ...dps().prestador, regTrib: { opSimpNac, regEspTrib: '0' } },
           tributacao: {
@@ -230,23 +230,27 @@ describe('buildDps', () => {
             ...(totTrib === undefined ? {} : { totTrib: totTrib as never }),
           },
         }),
-        { ambiente: 'homologacao', time },
+        { ambiente: 'homologacao', tempo: time },
       );
-    const mei = regime('2');
-    expect(mei.ok && mei.value.xml).toContain('<totTrib><indTotTrib>0</indTotTrib></totTrib>');
-    const codigos = (r: ReturnType<typeof regime>): string[] =>
-      r.ok ? [] : r.issues.map((i) => `${i.caminho}:${i.code}`);
-    expect(codigos(regime('3'))).toEqual(['tributacao.totTrib:campo_obrigatorio']);
-    expect(codigos(regime('1'))).toEqual(['tributacao.totTrib:campo_obrigatorio']);
-    expect(codigos(regime('3', { indTotTrib: '0' }))).toEqual(['tributacao.totTrib.indTotTrib:campo_proibido']);
-    expect(codigos(regime('1', { indTotTrib: '0' }))).toEqual(['tributacao.totTrib.indTotTrib:campo_proibido']);
-    expect(codigos(regime('1', { pTotTribSN: '6.00' }))).toEqual(['tributacao.totTrib.pTotTribSN:campo_proibido']);
-    expect(codigos(regime('2', { pTotTribSN: '6.00' }))).toEqual(['tributacao.totTrib.pTotTribSN:campo_proibido']);
-    const percentual = regime('1', { pTotTrib: { pTotTribFed: '1.00', pTotTribEst: '0', pTotTribMun: '2.00' } });
+    const mei = await regime('2');
+    expect(mei.ok && mei.valor.xml).toContain('<totTrib><indTotTrib>0</indTotTrib></totTrib>');
+    const codigos = (r: Awaited<ReturnType<typeof regime>>): string[] =>
+      r.ok ? [] : r.ocorrencias.map((i) => `${i.caminho}:${i.code}`);
+    expect(codigos(await regime('3'))).toEqual(['tributacao.totTrib:campo_obrigatorio']);
+    expect(codigos(await regime('1'))).toEqual(['tributacao.totTrib:campo_obrigatorio']);
+    expect(codigos(await regime('3', { indTotTrib: '0' }))).toEqual(['tributacao.totTrib.indTotTrib:campo_proibido']);
+    expect(codigos(await regime('1', { indTotTrib: '0' }))).toEqual(['tributacao.totTrib.indTotTrib:campo_proibido']);
+    expect(codigos(await regime('1', { pTotTribSN: '6.00' }))).toEqual([
+      'tributacao.totTrib.pTotTribSN:campo_proibido',
+    ]);
+    expect(codigos(await regime('2', { pTotTribSN: '6.00' }))).toEqual([
+      'tributacao.totTrib.pTotTribSN:campo_proibido',
+    ]);
+    const percentual = await regime('1', { pTotTrib: { pTotTribFed: '1.00', pTotTribEst: '0', pTotTribMun: '2.00' } });
     expect(percentual.ok).toBe(true);
     // Tomador emitente: o regime do prestador não vale para ele; nada é presumido nem recusado.
     const tomador = (totTrib?: Record<string, unknown>) =>
-      buildDps(
+      montarDps(
         dps({
           tpEmit: '2',
           prestador: { ...dps().prestador, regTrib: { opSimpNac: '2', regEspTrib: '0' } },
@@ -255,81 +259,86 @@ describe('buildDps', () => {
             ...(totTrib === undefined ? {} : { totTrib: totTrib as never }),
           },
         }),
-        { ambiente: 'homologacao', time },
+        { ambiente: 'homologacao', tempo: time },
       );
-    expect(codigos(tomador())).toEqual(['tributacao.totTrib:campo_obrigatorio']);
-    expect(tomador({ indTotTrib: '0' }).ok).toBe(true);
-    expect(tomador({ pTotTribSN: '6.00' }).ok).toBe(true);
+    expect(codigos(await tomador())).toEqual(['tributacao.totTrib:campo_obrigatorio']);
+    expect((await tomador({ indTotTrib: '0' })).ok).toBe(true);
+    expect((await tomador({ pTotTribSN: '6.00' })).ok).toBe(true);
   });
 
-  test('schema e serialização viram ocorrência; verAplic inválido é ErroDeConfiguracao', () => {
-    const schema = buildDps(dps({ servico: { ...dps().servico, xDescServ: '' } }), { ambiente: 'homologacao', time });
-    expect(!schema.ok && schema.issues[0]?.code).toBe('schema');
-    const serial = buildDps(
+  test('schema e serialização viram ocorrência; verAplic inválido é ErroDeConfiguracao', async () => {
+    const schema = await montarDps(dps({ servico: { ...dps().servico, xDescServ: '' } }), {
+      ambiente: 'homologacao',
+      tempo: time,
+    });
+    expect(!schema.ok && schema.ocorrencias[0]?.code).toBe('schema');
+    const serial = await montarDps(
       dps({ tributacao: { ...dps().tributacao, issqn: { tribISSQN: '1', tpRetISSQN: 1 as never } } }),
       {
         ambiente: 'homologacao',
-        time,
+        tempo: time,
       },
     );
-    expect(!serial.ok && serial.issues[0]).toMatchObject({ code: 'schema' });
-    expect(() => buildDps(dps(), { ambiente: 'homologacao', time, verAplic: '' })).toThrow(ErroDeConfiguracao);
-    const nulo = buildDps(dps({ servico: { ...dps().servico, xDescServ: 'Servico\u0000teste' } }), {
+    expect(!serial.ok && serial.ocorrencias[0]).toMatchObject({ code: 'schema' });
+    await expect(montarDps(dps(), { ambiente: 'homologacao', tempo: time, verAplic: '' })).rejects.toThrow(
+      ErroDeConfiguracao,
+    );
+    const nulo = await montarDps(dps({ servico: { ...dps().servico, xDescServ: 'Servico\u0000teste' } }), {
       ambiente: 'homologacao',
-      time,
+      tempo: time,
     });
-    expect(!nulo.ok && nulo.issues[0]?.code).toBe('caractere_invalido');
+    expect(!nulo.ok && nulo.ocorrencias[0]?.code).toBe('caractere_invalido');
   });
 });
 
 describe('pedido de evento', () => {
-  const opts = { ambiente: 'homologacao' as const, clock: relogioFixo('2026-09-25T10:00:00-03:00') };
+  const opts = { ambiente: 'homologacao' as const, relogio: relogioFixo('2026-09-25T10:00:00-03:00') };
 
   test('verAplic padrão é "sinete <versão do pacote>"; override explícito prevalece', () => {
     const esperado = formatarVerProc('sinete', VERSAO_PACOTE);
-    const padrao = buildPedidoCancelamento(
+    const padrao = montarPedidoCancelamento(
       { chave: CHAVE, autor: { CPF: PRESTADOR_CPF }, cMotivo: '9', xMotivo: 'Motivo com mais de 15' },
       opts,
     );
-    expect(padrao.ok && padrao.value.xml).toContain(`<verAplic>${esperado}</verAplic>`);
+    expect(padrao.ok && padrao.valor.xml).toContain(`<verAplic>${esperado}</verAplic>`);
 
-    const override = buildPedidoCancelamento(
+    const override = montarPedidoCancelamento(
       { chave: CHAVE, autor: { CPF: PRESTADOR_CPF }, cMotivo: '9', xMotivo: 'Motivo com mais de 15' },
       { ...opts, verAplic: 'app-teste' },
     );
-    expect(override.ok && override.value.xml).toContain('<verAplic>app-teste</verAplic>');
+    expect(override.ok && override.valor.xml).toContain('<verAplic>app-teste</verAplic>');
   });
 
   test('cancelamento e análise fiscal com autor CPF; chave, motivo curto e verAplic', () => {
-    const c = buildPedidoCancelamento(
+    const c = montarPedidoCancelamento(
       { chave: CHAVE, autor: { CPF: PRESTADOR_CPF }, cMotivo: '9', xMotivo: 'Motivo com mais de 15' },
       opts,
     );
-    expect(c.ok && c.value.xml).toContain(`<CPFAutor>${PRESTADOR_CPF}</CPFAutor><chNFSe>${CHAVE}</chNFSe><e101101>`);
-    const a = buildPedidoAnaliseFiscal(
+    expect(c.ok && c.valor.xml).toContain(`<CPFAutor>${PRESTADOR_CPF}</CPFAutor><chNFSe>${CHAVE}</chNFSe><e101101>`);
+    const a = montarPedidoAnaliseFiscal(
       { chave: CHAVE, autor: { CNPJ: PRESTADOR }, cMotivo: '1', xMotivo: 'Motivo com mais de 15' },
       opts,
     );
-    expect(a.ok && a.value.tpEvento).toBe('101103');
-    const ruim = buildPedidoCancelamento({ chave: '1', autor: { CNPJ: PRESTADOR }, cMotivo: '1', xMotivo: 'x' }, opts);
-    expect(!ruim.ok && ruim.issues[0]?.code).toBe('chave_invalida');
-    const curto = buildPedidoCancelamento(
+    expect(a.ok && a.valor.tpEvento).toBe('101103');
+    const ruim = montarPedidoCancelamento({ chave: '1', autor: { CNPJ: PRESTADOR }, cMotivo: '1', xMotivo: 'x' }, opts);
+    expect(!ruim.ok && ruim.ocorrencias[0]?.code).toBe('chave_invalida');
+    const curto = montarPedidoCancelamento(
       { chave: CHAVE, autor: { CNPJ: PRESTADOR }, cMotivo: '1', xMotivo: 'curto' },
       opts,
     );
-    expect(!curto.ok && curto.issues[0]?.code).toBe('schema');
-    const serial = buildPedidoCancelamento(
+    expect(!curto.ok && curto.ocorrencias[0]?.code).toBe('schema');
+    const serial = montarPedidoCancelamento(
       { chave: CHAVE, autor: { CNPJ: PRESTADOR }, cMotivo: 1 as never, xMotivo: 'Motivo com mais de 15' },
       opts,
     );
-    expect(!serial.ok && serial.issues[0]?.code).toBe('schema');
-    const nulo = buildPedidoCancelamento(
+    expect(!serial.ok && serial.ocorrencias[0]?.code).toBe('schema');
+    const nulo = montarPedidoCancelamento(
       { chave: CHAVE, autor: { CNPJ: PRESTADOR }, cMotivo: '1', xMotivo: 'Motivo com\u0000 mais de 15' },
       opts,
     );
-    expect(!nulo.ok && nulo.issues[0]?.code).toBe('caractere_invalido');
+    expect(!nulo.ok && nulo.ocorrencias[0]?.code).toBe('caractere_invalido');
     expect(() =>
-      buildPedidoCancelamento(
+      montarPedidoCancelamento(
         { chave: CHAVE, autor: { CNPJ: PRESTADOR }, cMotivo: '1', xMotivo: 'x' },
         { ...opts, verAplic: '' },
       ),
@@ -339,10 +348,12 @@ describe('pedido de evento', () => {
 
 describe('gzip e respostas', () => {
   test('gzip em base64 de ida e volta; base64 e gzip inválidos são ErroRespostaInvalida', async () => {
-    expect(await gunzipBase64(await gzipBase64('<a>ção</a>'))).toBe('<a>ção</a>');
-    await expect(gunzipBase64('***')).rejects.toBeInstanceOf(ErroRespostaInvalida);
-    await expect(gunzipBase64(codificarBase64(new TextEncoder().encode('nao e gzip')), 'nfse')).rejects.toThrow('nfse');
-    const duplo = codificarBase64(new TextEncoder().encode(await gzipBase64('<a>ção</a>')));
+    expect(await descomprimirGzipBase64(await comprimirGzipBase64('<a>ção</a>'))).toBe('<a>ção</a>');
+    await expect(descomprimirGzipBase64('***')).rejects.toBeInstanceOf(ErroRespostaInvalida);
+    await expect(
+      descomprimirGzipBase64(codificarBase64(new TextEncoder().encode('nao e gzip')), 'nfse'),
+    ).rejects.toThrow('nfse');
+    const duplo = codificarBase64(new TextEncoder().encode(await comprimirGzipBase64('<a>ção</a>')));
     expect(await gunzipBase64Duplo(duplo)).toBe('<a>ção</a>');
     await expect(gunzipBase64Duplo('***', 'arquivoXml')).rejects.toThrow('arquivoXml com base64 inválido');
     await expect(gunzipBase64Duplo(codificarBase64(new Uint8Array([0xff])))).rejects.toBeInstanceOf(
@@ -355,7 +366,7 @@ describe('gzip e respostas', () => {
     const original = g.CompressionStream;
     g.CompressionStream = undefined;
     try {
-      await expect(gzipBase64('x')).rejects.toBeInstanceOf(ErroNaoSuportado);
+      await expect(comprimirGzipBase64('x')).rejects.toBeInstanceOf(ErroNaoSuportado);
     } finally {
       g.CompressionStream = original;
     }
@@ -383,7 +394,7 @@ describe('gzip e respostas', () => {
     expect(() => rejeicao({ erros: [{ Codigo: 'X' }] }, 400, 'op')).toThrow(ErroRespostaInvalida);
     expect(() => rejeicao(undefined, 400, 'op')).toThrow(ErroRespostaInvalida);
     const r = rejeicao({ erros: [{ Codigo: 'E9999', Descricao: 'fora do catálogo' }] }, 409, 'op');
-    expect(r).toMatchObject({ tipo: 'recusado', cStat: 'E9999', httpStatus: 409 });
+    expect(r).toMatchObject({ tipo: 'recusado', cStat: 'E9999', statusHttp: 409 });
     expect(r.dica).toBeUndefined();
     expect(
       documentosCompactados({ a: [{ eventoXmlGZipB64: '1' }, { b: { nfseXmlGZipB64: '2', outro: 3 } }], c: 'x' }),

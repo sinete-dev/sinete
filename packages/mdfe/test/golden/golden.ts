@@ -1,6 +1,6 @@
 /**
  * Checagem local do builder contra o corpus de MDF-e autorizados (nunca no CI, nunca no repo). Para cada `mdfeProc`,
- * remonta a entrada do domínio a partir do XML autorizado, roda o `buildMdfe` com o mesmo `cMDF`, `tpEmis` e fuso, e
+ * remonta a entrada do domínio a partir do XML autorizado, roda o `montarMdfe` com o mesmo `cMDF`, `tpEmis` e fuso, e
  * compara o `infMDFe` montado com o autorizado em forma canônica (C14N), elemento a elemento.
  *
  * Também confere, sobre o mesmo corpus: a tabela de divisas contra o percurso de cada MDF-e autorizado, o endereço do
@@ -21,8 +21,8 @@ import { atributoDe, c14n, elementosFilhos, lerXml, primeiroFilho, textoDe } fro
 import { decodificar } from '@sinete/schemas';
 import type { TMDFe_infMDFe } from '@sinete/schemas/mdfe/3.00b';
 import { TMDFe_infMDFe as InfMDFe } from '@sinete/schemas/mdfe/3.00b';
-import type { MdfeInput, UfMdfe } from '../../src/index.ts';
-import { buildMdfe, conferirPercurso, MDFE_NS } from '../../src/index.ts';
+import type { DadosMdfe, UfMdfe } from '../../src/index.ts';
+import { conferirPercurso, MDFE_NS, montarMdfe } from '../../src/index.ts';
 
 const dir = process.env.SINETE_CORPUS_MDFE ?? path.join(homedir(), '.local/state/sinete/corpus/mdfe');
 if (!existsSync(dir)) {
@@ -42,13 +42,13 @@ const docC = (x: Obj): Obj =>
   def({ CNPJ: x.CNPJ as string | undefined, CPF: x.CPF as string | undefined, idEstrangeiro: x.idEstrangeiro });
 
 /** Entrada do domínio a partir do `infMDFe` autorizado (o caminho inverso do builder). */
-function entradaDoXml(inf: TMDFe_infMDFe): MdfeInput {
+function entradaDoXml(inf: TMDFe_infMDFe): DadosMdfe {
   const ide = inf.ide;
   const e = inf.emit;
   const rodo = o(inf.infModal.rodo);
   const antt = o(rodo.infANTT);
   const tr = o(rodo.veicTracao);
-  const prop = (p: unknown): MdfeInput['rodoviario']['tracao']['proprietario'] =>
+  const prop = (p: unknown): DadosMdfe['rodoviario']['tracao']['proprietario'] =>
     p === undefined
       ? undefined
       : (def({
@@ -213,7 +213,7 @@ function entradaDoXml(inf: TMDFe_infMDFe): MdfeInput {
                 ? undefined
                 : { idCSRT: inf.infRespTec.idCSRT, hashCSRT: inf.infRespTec.hashCSRT },
           }),
-  }) as unknown as MdfeInput;
+  }) as unknown as DadosMdfe;
 }
 
 /** Primeira diferença entre dois elementos, como caminho sem índice e o tipo da diferença. */
@@ -333,24 +333,24 @@ for (const nome of readdirSync(dir).sort()) {
   if (!vigente) r.foraDaVigencia++;
   const quando = vigente ? dhEmi : `${inicio}T12:00:00${dhEmi.slice(-6)}`;
   const entrada = entradaDoXml(inf);
-  const b = buildMdfe(entrada, {
+  const b = await montarMdfe(entrada, {
     ambiente,
-    time: contextoDeTempo({ emissao: relogioFixo(quando) }),
-    offsetMinutes: offset,
+    tempo: contextoDeTempo({ emissao: relogioFixo(quando) }),
+    deslocamentoMin: offset,
     verProc: inf.ide.verProc,
     tpEmis: inf.ide.tpEmis as '1' | '2',
   });
   if (!b.ok) {
-    if (!vigente && b.issues.every((i) => /\(F(30|37)a, /.test(i.mensagem))) {
+    if (!vigente && b.ocorrencias.every((i) => /\(F(30|37)a, /.test(i.mensagem))) {
       r.rejeitadosSoPelaDataDeslocada++;
       continue;
     }
     r.rejeitadosPeloBuilder++;
-    for (const i of b.issues) inc(r.ocorrencias, `${i.code} ${semIndice(i.caminho)}`);
+    for (const i of b.ocorrencias) inc(r.ocorrencias, `${i.code} ${semIndice(i.caminho)}`);
     continue;
   }
   r.montados++;
-  const montadoEl = primeiroFilho(lerXml(b.value.xml).raiz, 'infMDFe', MDFE_NS) as ElementoXml;
+  const montadoEl = primeiroFilho(lerXml(b.valor.xml).raiz, 'infMDFe', MDFE_NS) as ElementoXml;
   if (c14n(montadoEl) === c14n(infEl)) {
     r.identicosC14n++;
     r.identicosNormalizados++;

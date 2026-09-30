@@ -5,7 +5,7 @@
 import { describe, expect, test } from 'bun:test';
 import { relogioManual } from '@sinete/core';
 import type { CertificadoA1 } from '../src/index.ts';
-import { createPoolDeEmissores } from '../src/index.ts';
+import { criarPoolDeEmissores } from '../src/index.ts';
 
 interface Falso {
   readonly n: number;
@@ -14,12 +14,12 @@ interface Falso {
   fechar(): Promise<void>;
 }
 
-function montar(o: { ttlMs?: number; maximo?: number; falhar?: (c: CertificadoA1) => boolean } = {}) {
+function montar(o: { validadeMs?: number; maximo?: number; falhar?: (c: CertificadoA1) => boolean } = {}) {
   const clock = relogioManual('2026-09-27T10:00:00-03:00');
   const criados: Falso[] = [];
-  const pool = createPoolDeEmissores<Falso>({
-    clock,
-    ...(o.ttlMs === undefined ? {} : { ttlMs: o.ttlMs }),
+  const pool = criarPoolDeEmissores<Falso>({
+    relogio: clock,
+    ...(o.validadeMs === undefined ? {} : { validadeMs: o.validadeMs }),
     ...(o.maximo === undefined ? {} : { maximo: o.maximo }),
     criar: async (cert) => {
       if (o.falhar?.(cert)) throw new Error('senha errada');
@@ -40,7 +40,7 @@ function montar(o: { ttlMs?: number; maximo?: number; falhar?: (c: CertificadoA1
 
 const cert = (b: number, senha = 's'): CertificadoA1 => ({ pfx: new Uint8Array([b, b, b]), senha });
 
-describe('createPoolDeEmissores', () => {
+describe('criarPoolDeEmissores', () => {
   test('um emissor por PFX e senha; outra senha é outro emissor', async () => {
     const { criados, pool } = montar();
     const a = await pool.usar(cert(1), async (e) => e.n);
@@ -52,7 +52,7 @@ describe('createPoolDeEmissores', () => {
   });
 
   test('vencido pelo ttl: sai do pool e só fecha quando o empréstimo em curso termina', async () => {
-    const { clock, criados, pool } = montar({ ttlMs: 1000 });
+    const { clock, criados, pool } = montar({ validadeMs: 1000 });
     let soltar = (): void => {};
     const emUso = pool.usar(cert(1), (e) => new Promise<number>((r) => (soltar = () => r(e.n))));
     await Bun.sleep(1);
@@ -66,7 +66,7 @@ describe('createPoolDeEmissores', () => {
   });
 
   test('o vencido de outro certificado sai no próximo empréstimo, mesmo abaixo do máximo', async () => {
-    const { clock, criados, pool } = montar({ ttlMs: 1000 });
+    const { clock, criados, pool } = montar({ validadeMs: 1000 });
     await pool.usar(cert(1), async () => undefined);
     clock.avancar(500);
     await pool.usar(cert(2), async () => undefined);
@@ -101,7 +101,7 @@ describe('createPoolDeEmissores', () => {
   });
 
   test('fechar alcança o emissor aposentado com empréstimo em curso', async () => {
-    const { clock, criados, pool } = montar({ ttlMs: 1000 });
+    const { clock, criados, pool } = montar({ validadeMs: 1000 });
     let soltar = (): void => {};
     const emUso = pool.usar(cert(1), (e) => new Promise<number>((r) => (soltar = () => r(e.n))));
     await Bun.sleep(1);
@@ -123,7 +123,7 @@ describe('createPoolDeEmissores', () => {
   });
 
   test('o erro do emissor que falha ao fechar não escapa', async () => {
-    const pool = createPoolDeEmissores({
+    const pool = criarPoolDeEmissores({
       maximo: 1,
       criar: async () => ({
         fechar: async (): Promise<void> => {
@@ -137,15 +137,17 @@ describe('createPoolDeEmissores', () => {
   });
 
   test('opções conferidas', () => {
-    expect(() => createPoolDeEmissores({ criar: async () => ({ fechar: async () => {} }), ttlMs: 0 })).toThrow('ttlMs');
-    expect(() => createPoolDeEmissores({ criar: async () => ({ fechar: async () => {} }), maximo: 0 })).toThrow(
+    expect(() => criarPoolDeEmissores({ criar: async () => ({ fechar: async () => {} }), validadeMs: 0 })).toThrow(
+      'validadeMs',
+    );
+    expect(() => criarPoolDeEmissores({ criar: async () => ({ fechar: async () => {} }), maximo: 0 })).toThrow(
       'maximo',
     );
   });
 
   test('certificado de outro tipo com a chave do integrador; sem chave, recusa', async () => {
     const criados: string[] = [];
-    const pool = createPoolDeEmissores<{ id: string; fechar(): Promise<void> }, { id: string }>({
+    const pool = criarPoolDeEmissores<{ id: string; fechar(): Promise<void> }, { id: string }>({
       chave: (c) => c.id,
       criar: async (c) => {
         criados.push(c.id);
@@ -155,7 +157,7 @@ describe('createPoolDeEmissores', () => {
     expect(await pool.usar({ id: 'cert-1' }, async (e) => e.id)).toBe('cert-1');
     expect(await pool.usar({ id: 'cert-1' }, async (e) => e.id)).toBe('cert-1');
     expect(criados).toEqual(['cert-1']);
-    const semChave = createPoolDeEmissores<{ fechar(): Promise<void> }, { id: string }>({
+    const semChave = criarPoolDeEmissores<{ fechar(): Promise<void> }, { id: string }>({
       criar: async () => ({ fechar: async () => {} }),
     });
     await expect(semChave.usar({ id: 'x' }, async () => 1)).rejects.toThrow('opção chave');

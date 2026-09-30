@@ -5,11 +5,11 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import qrcode from 'qrcode-generator';
 import { code128C, code128Chave, modules, valoresChave } from '../src/barcode/code128.ts';
-import type { QrEcc } from '../src/barcode/qr.ts';
-import { qrMatrix } from '../src/barcode/qr.ts';
+import type { NivelCorrecaoQr } from '../src/barcode/qr.ts';
+import { matrizQr } from '../src/barcode/qr.ts';
 import { barcode, qrcode as drawQr } from '../src/layout/common.ts';
 import { Canvas } from '../src/render/canvas.ts';
-import { toPdf } from '../src/render/pdf.ts';
+import { gerarPdf } from '../src/render/pdf.ts';
 import { chaveDe } from './fixtures.ts';
 
 describe('CODE-128C', () => {
@@ -68,7 +68,7 @@ function maskOf(m: boolean[][]): number {
   return ((bits ^ 0x5412) >> 10) & 7;
 }
 
-function reference(text: string, ecc: QrEcc): boolean[][] {
+function reference(text: string, ecc: NivelCorrecaoQr): boolean[][] {
   const q = qrcode(0, ecc);
   q.addData(unescape(encodeURIComponent(text)), 'Byte');
   q.make();
@@ -89,19 +89,19 @@ describe('QR Code', () => {
         } catch {
           continue; // maior que a versão 40 no nível
         }
-        const mine = qrMatrix(text, { ecc, mask: maskOf(ref) });
+        const mine = matrizQr(text, { nivelDeCorrecao: ecc, mascara: maskOf(ref) });
         expect(mine.length).toBe(ref.length);
         expect(mine).toEqual(ref);
       }
     });
   }
   test('escolhe a máscara de menor penalidade e é determinístico', () => {
-    const a = qrMatrix('https://dfe-portal.svrs.rs.gov.br/mdfe/qrCode?chMDFe=1&tpAmb=1');
-    expect(qrMatrix('https://dfe-portal.svrs.rs.gov.br/mdfe/qrCode?chMDFe=1&tpAmb=1')).toEqual(a);
+    const a = matrizQr('https://dfe-portal.svrs.rs.gov.br/mdfe/qrCode?chMDFe=1&tpAmb=1');
+    expect(matrizQr('https://dfe-portal.svrs.rs.gov.br/mdfe/qrCode?chMDFe=1&tpAmb=1')).toEqual(a);
     expect(a.length).toBeGreaterThanOrEqual(21);
   });
   test('conteúdo maior que a versão 40 é erro tipado', () => {
-    expect(() => qrMatrix('x'.repeat(3000), { ecc: 'H' })).toThrow(
+    expect(() => matrizQr('x'.repeat(3000), { nivelDeCorrecao: 'H' })).toThrow(
       expect.objectContaining({ code: 'codigo_barras_invalido' }),
     );
   });
@@ -129,11 +129,11 @@ describe.skipIf(!hasZbar)('leitura com zbarimg', () => {
       drawQr(c, url, 10, 30, 25);
       writeFileSync(
         path.join(dir, 'x.pdf'),
-        toPdf({
-          title: 't',
-          pages: [{ w: 100, h: 60, ops: c.ops }],
-          images: {},
-          stats: { reduzidos: 0, quebrados: 0, cortados: 0 },
+        gerarPdf({
+          titulo: 't',
+          paginas: [{ w: 100, h: 60, ops: c.ops }],
+          imagens: {},
+          estatisticas: { reduzidos: 0, quebrados: 0, cortados: 0 },
         }),
       );
       execFileSync('pdftoppm', ['-r', '150', '-png', '-singlefile', path.join(dir, 'x.pdf'), path.join(dir, 'x')]);
@@ -153,11 +153,11 @@ describe.skipIf(!hasZbar)('leitura com zbarimg', () => {
       barcode(c, chave, 5, 10, 90, 10);
       writeFileSync(
         path.join(dir, 'x.pdf'),
-        toPdf({
-          title: 't',
-          pages: [{ w: 100, h: 30, ops: c.ops }],
-          images: {},
-          stats: { reduzidos: 0, quebrados: 0, cortados: 0 },
+        gerarPdf({
+          titulo: 't',
+          paginas: [{ w: 100, h: 30, ops: c.ops }],
+          imagens: {},
+          estatisticas: { reduzidos: 0, quebrados: 0, cortados: 0 },
         }),
       );
       execFileSync('pdftoppm', ['-r', '300', '-png', '-singlefile', path.join(dir, 'x.pdf'), path.join(dir, 'x')]);

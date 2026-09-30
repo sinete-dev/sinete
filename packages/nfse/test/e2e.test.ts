@@ -1,15 +1,15 @@
 /**
  * Ponta a ponta: o `@sinete/nfse` contra a NFS-e simulada do `@sinete/sefaz-sim`, pelo `@sinete/transport` real em
  * HTTPS com mTLS. O cliente resolve as bases pelos dados do transporte (`nfseEndpoint`), como em produção; o
- * `redirectNfseToSim` troca só a origem. Nenhum pedido sai da máquina.
+ * `redirecionarNfseParaSim` troca só a origem. Nenhum pedido sai da máquina.
  */
 import { afterEach, beforeAll, describe, expect, test } from 'bun:test';
 import { contextoDeTempo, ErroDeTempoEsgotado, exigirAutorizado, recusado } from '@sinete/core';
 import { conferirAssinatura } from '@sinete/core/xml';
 import { validarRaiz } from '@sinete/schemas';
 import { eventoElement, NFSeElement } from '@sinete/schemas/nfse/1.01-20260727';
-import type { NfseRejeicao } from '../src/index.ts';
-import { buildDps, createNfseClient, parseChaveNfse, resolverEnvioSemResposta, signDps } from '../src/index.ts';
+import type { RejeicaoNfse } from '../src/index.ts';
+import { assinarDps, criarClienteNfse, lerChaveNfse, montarDps, resolverEnvioSemResposta } from '../src/index.ts';
 import type { Cenario, Certs } from './helpers.ts';
 import { cenario, dps, gerarCerts, PRESTADOR, SAO_PAULO, TOMADOR } from './helpers.ts';
 
@@ -39,7 +39,7 @@ describe('emissão', () => {
     const v = exigirAutorizado(r);
     expect(r.cStat).toBe('100');
     expect(r.xMotivo).toBe('NFS-e Gerada');
-    const ch = parseChaveNfse(v.chaveAcesso);
+    const ch = lerChaveNfse(v.chaveAcesso);
     expect(ch).toMatchObject({
       cMun: SAO_PAULO,
       ambGer: '2',
@@ -95,9 +95,9 @@ describe('emissão', () => {
     const s = await novo();
     const r = await s.client.autorizar(await s.assinar(dps({ servico: { ...dps().servico, cTribNac: '17.01.01' } })));
     expect(recusado(r)).toBe(true);
-    const rej = r as NfseRejeicao;
+    const rej = r as RejeicaoNfse;
     expect(rej.cStat).toBe('E0312');
-    expect(rej.httpStatus).toBe(400);
+    expect(rej.statusHttp).toBe(400);
     expect(rej.erros[0]?.catalogo?.nivel).toBe('3');
     expect(rej.dica?.fonte).toContain('Anexo I');
     expect(() => exigirAutorizado(r)).toThrow('E0312');
@@ -115,21 +115,24 @@ describe('emissão', () => {
   test('duplicidade (E0014) e envio sem resposta resolvido pela consulta da DPS', async () => {
     const s = await novo();
     const assinada = await s.assinar(dps({ nDPS: '7' }));
-    s.sim.injectFault({ kind: 'drop', phase: 'after' }, { rota: 'emitir' });
+    s.sim.injetarFalha({ tipo: 'derrubar', fase: 'depois' }, { rota: 'emitir' });
     await expect(s.client.autorizar(assinada)).rejects.toThrow();
     const res = await resolverEnvioSemResposta(s.client, assinada);
     expect(res.acao).toBe('concluida');
     if (res.acao === 'concluida')
-      expect([res.outcome.tipo, res.outcome.valor.idDps]).toEqual(['autorizado', res.nfse.nfse.infNFSe.DPS.infDPS.Id]);
+      expect([res.resultado.tipo, res.resultado.valor.idDps]).toEqual([
+        'autorizado',
+        res.nfse.nfse.infNFSe.DPS.infDPS.Id,
+      ]);
     const dup = await s.client.autorizar(assinada);
     expect(dup.cStat).toBe('E0014');
     // Pedido que não chegou: reenviar os mesmos bytes.
     const outra = await s.assinar(dps({ nDPS: '8' }));
-    s.sim.injectFault({ kind: 'hang', phase: 'before' }, { rota: 'emitir' });
-    const cliente = createNfseClient({
-      transport: s.transport,
+    s.sim.injetarFalha({ tipo: 'travar', fase: 'antes' }, { rota: 'emitir' });
+    const cliente = criarClienteNfse({
+      transporte: s.transport,
       ambiente: 'homologacao',
-      clock: s.clock,
+      relogio: s.clock,
       timeoutMs: 300,
     });
     await expect(cliente.autorizar(outra)).rejects.toBeInstanceOf(ErroDeTempoEsgotado);
@@ -139,9 +142,9 @@ describe('emissão', () => {
 
   test('DPS de produção num cliente de homologação é erro de configuração', async () => {
     const s = await novo();
-    const r = buildDps(dps(), { ambiente: 'producao', time: contextoDeTempo({ emissao: s.clock }) });
+    const r = await montarDps(dps(), { ambiente: 'producao', tempo: contextoDeTempo({ emissao: s.clock }) });
     if (!r.ok) throw new Error('montagem');
-    const assinada = await signDps(r.value, c.prestador.signer);
+    const assinada = await assinarDps(r.valor, c.prestador.assinador);
     await expect(s.client.autorizar(assinada)).rejects.toThrow('tpAmb 1');
   });
 });

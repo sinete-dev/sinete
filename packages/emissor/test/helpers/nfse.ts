@@ -4,9 +4,9 @@
  */
 
 import { relogioManual } from '@sinete/core';
-import type { DpsInput } from '@sinete/nfse';
-import type { MunicipioSim, SyntheticCertificate } from '@sinete/sefaz-sim';
-import { syntheticCertificate } from '@sinete/sefaz-sim';
+import type { DadosDps } from '@sinete/nfse';
+import type { CertificadoSintetico, MunicipioSim } from '@sinete/sefaz-sim';
+import { certificadoSintetico } from '@sinete/sefaz-sim';
 import { calcularDvCnpj, calcularDvCpf } from '@sinete/validators';
 
 export const cnpj = (base12: string): string => base12 + calcularDvCnpj(base12);
@@ -41,7 +41,7 @@ export const MUNICIPIOS: readonly MunicipioSim[] = [
   { cMun: CAMPINAS, nome: 'Campinas', convenio: { aderenteEmissorNacional: 0 } },
 ];
 
-export function dps(over: Partial<DpsInput> = {}): DpsInput {
+export function dps(over: Partial<DadosDps> = {}): DadosDps {
   return {
     serie: '1',
     nDPS: '1',
@@ -61,19 +61,19 @@ export function dps(over: Partial<DpsInput> = {}): DpsInput {
 }
 
 export interface Certs {
-  readonly ac: SyntheticCertificate;
-  readonly servidor: SyntheticCertificate;
-  readonly prestador: SyntheticCertificate;
-  readonly outro: SyntheticCertificate;
+  readonly ac: CertificadoSintetico;
+  readonly servidor: CertificadoSintetico;
+  readonly prestador: CertificadoSintetico;
+  readonly outro: CertificadoSintetico;
 }
 
 export async function gerarCerts(): Promise<Certs> {
   const clock = relogioManual(EMISSAO);
-  const ac = await syntheticCertificate({ clock, role: 'ac', validDays: 3650 });
+  const ac = await certificadoSintetico({ relogio: clock, papel: 'ac', diasDeValidade: 3650 });
   const [servidor, prestador, outro] = await Promise.all([
-    syntheticCertificate({ clock, role: 'servidor', issuer: ac }),
-    syntheticCertificate({ clock, role: 'titular', cnpj: PRESTADOR, issuer: ac }),
-    syntheticCertificate({ clock, role: 'titular', cnpj: OUTRO, issuer: ac }),
+    certificadoSintetico({ relogio: clock, papel: 'servidor', emissor: ac }),
+    certificadoSintetico({ relogio: clock, papel: 'titular', cnpj: PRESTADOR, emissor: ac }),
+    certificadoSintetico({ relogio: clock, papel: 'titular', cnpj: OUTRO, emissor: ac }),
   ]);
   return { ac, servidor, prestador, outro };
 }

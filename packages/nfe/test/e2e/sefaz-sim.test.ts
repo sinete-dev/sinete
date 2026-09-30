@@ -1,29 +1,29 @@
 /**
  * Ponta a ponta: o `@sinete/nfe` contra o `@sinete/sefaz-sim` pelo `@sinete/transport` real, em HTTPS com mTLS. A AC,
  * os e-CNPJ e o certificado do servidor são gerados na hora (nada vai para o repo). O cliente resolve os endpoints
- * pelos dados do transporte, como em produção; o `redirectToSim` do simulador troca só a URL de cada pedido.
+ * pelos dados do transporte, como em produção; o `redirecionarParaSim` do simulador troca só a URL de cada pedido.
  */
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'bun:test';
 import type { RelogioManual } from '@sinete/core';
 import { contextoDeTempo, ErroDeTempoEsgotado, ErroDeValidacao, relogioManual } from '@sinete/core';
-import type { SefazSim, SefazSimOptions, SyntheticCertificate } from '@sinete/sefaz-sim';
-import { createSefazSim, redirectToSim, startSefazSimServer, syntheticCertificate } from '@sinete/sefaz-sim';
+import type { CertificadoSintetico, SefazSim, SefazSimOpcoes } from '@sinete/sefaz-sim';
+import { certificadoSintetico, criarSefazSim, iniciarServidorSefazSim, redirecionarParaSim } from '@sinete/sefaz-sim';
 import type { Transporte } from '@sinete/transport';
 import { criarTransporte } from '@sinete/transport';
 import { calcularDvCnpj } from '@sinete/validators';
-import type { NfeClient, NfeClientOptions, NfeInput } from '../../src/index.ts';
-import { buildNfe, createNfeClient, resolverEnvioSemResposta, signNfe } from '../../src/index.ts';
+import type { ClienteNfe, ClienteNfeOpcoes, DadosNfe } from '../../src/index.ts';
+import { assinarNfe, criarClienteNfe, montarNfe, resolverEnvioSemResposta } from '../../src/index.ts';
 import { CNPJ_DEST, CNPJ_EMIT, EMISSAO, IE_SP, nota, opcoes } from '../helpers/nota.ts';
 
 /** Transmissor terceiro (contabilidade): outra raiz de CNPJ. */
 const CNPJ_TERCEIRO = `778889990001${calcularDvCnpj('778889990001')}`;
 
 interface Certs {
-  readonly ac: SyntheticCertificate;
-  readonly servidor: SyntheticCertificate;
-  readonly emitente: SyntheticCertificate;
-  readonly destinatario: SyntheticCertificate;
-  readonly terceiro: SyntheticCertificate;
+  readonly ac: CertificadoSintetico;
+  readonly servidor: CertificadoSintetico;
+  readonly emitente: CertificadoSintetico;
+  readonly destinatario: CertificadoSintetico;
+  readonly terceiro: CertificadoSintetico;
 }
 
 let c: Certs;
@@ -31,11 +31,11 @@ const fechar: (() => Promise<void>)[] = [];
 
 beforeAll(async () => {
   const clock = relogioManual(EMISSAO);
-  const ac = await syntheticCertificate({ clock, role: 'ac', validDays: 3650 });
-  const titular = (cnpj: string): Promise<SyntheticCertificate> =>
-    syntheticCertificate({ clock, role: 'titular', cnpj, issuer: ac });
+  const ac = await certificadoSintetico({ relogio: clock, papel: 'ac', diasDeValidade: 3650 });
+  const titular = (cnpj: string): Promise<CertificadoSintetico> =>
+    certificadoSintetico({ relogio: clock, papel: 'titular', cnpj, emissor: ac });
   const [servidor, emitente, destinatario, terceiro] = await Promise.all([
-    syntheticCertificate({ clock, role: 'servidor', issuer: ac }),
+    certificadoSintetico({ relogio: clock, papel: 'servidor', emissor: ac }),
     titular(CNPJ_EMIT),
     titular(CNPJ_DEST),
     titular(CNPJ_TERCEIRO),
@@ -56,19 +56,19 @@ interface Cenario {
   readonly sim: SefazSim;
   /** Caminhos pedidos ao simulador, na ordem (`/uf/ws/NFeAutorizacao4`...). */
   readonly caminhos: string[];
-  readonly client: NfeClient;
+  readonly client: ClienteNfe;
   /** Outro cliente no mesmo simulador: canal TLS, assinatura e opções próprias. */
   cliente(o: {
-    readonly canal: SyntheticCertificate;
-    readonly assinante?: SyntheticCertificate;
-    readonly opcoes?: Partial<NfeClientOptions>;
+    readonly canal: CertificadoSintetico;
+    readonly assinante?: CertificadoSintetico;
+    readonly opcoes?: Partial<ClienteNfeOpcoes>;
     readonly timeoutMs?: number;
-  }): NfeClient;
+  }): ClienteNfe;
   /** Monta e assina uma NF-e no relógio do cenário. */
-  emitir(extra?: Partial<NfeInput>, assinante?: SyntheticCertificate): Promise<{ chave: string; xml: string }>;
+  emitir(extra?: Partial<DadosNfe>, assinante?: CertificadoSintetico): Promise<{ chave: string; xml: string }>;
 }
 
-const DEST_CNPJ: NonNullable<NfeInput['destinatario']> = {
+const DEST_CNPJ: NonNullable<DadosNfe['destinatario']> = {
   CNPJ: CNPJ_DEST,
   xNome: 'DESTINATARIO SINTETICO LTDA',
   indIEDest: '9',
@@ -82,26 +82,26 @@ const DEST_CNPJ: NonNullable<NfeInput['destinatario']> = {
   },
 };
 
-async function cenario(simOptions: Partial<SefazSimOptions> = {}): Promise<Cenario> {
+async function cenario(simOptions: Partial<SefazSimOpcoes> = {}): Promise<Cenario> {
   const clock = relogioManual(EMISSAO);
-  const sim = createSefazSim({
-    clock,
+  const sim = criarSefazSim({
+    relogio: clock,
     uf: 'SP',
     cadastro: [{ UF: 'SP', IE: IE_SP, CNPJ: CNPJ_EMIT, xNome: 'EMPRESA SINTETICA LTDA' }],
     ...simOptions,
   });
-  const server = await startSefazSimServer(sim, { cert: c.servidor.pem, key: c.servidor.keyPem });
+  const server = await iniciarServidorSefazSim(sim, { certificado: c.servidor.pem, chave: c.servidor.chavePem });
   const caminhos: string[] = [];
   const transports: Transporte[] = [];
   fechar.push(async () => {
     for (const t of transports) await t.fechar();
-    await server.close();
+    await server.fechar();
   });
 
   const cliente: Cenario['cliente'] = (o) => {
     // O transporte real, com o certificado do canal; o gravador só anota o caminho que chegou ao simulador.
     const real = criarTransporte({
-      identidade: o.canal.tlsIdentity,
+      identidade: o.canal.identidadeTls,
       acsAdicionais: [c.ac.pem],
       timeoutMs: o.timeoutMs ?? 10_000,
     });
@@ -113,28 +113,28 @@ async function cenario(simOptions: Partial<SefazSimOptions> = {}): Promise<Cenar
       },
       fechar: () => real.fechar(),
     };
-    const transport = redirectToSim(gravador, server.baseUrl);
+    const transport = redirecionarParaSim(gravador, server.urlBase);
     transports.push(transport);
-    return createNfeClient({
-      transport,
-      signer: (o.assinante ?? o.canal).signer,
+    return criarClienteNfe({
+      transporte: transport,
+      assinador: (o.assinante ?? o.canal).assinador,
       ambiente: 'homologacao',
       uf: 'SP',
-      clock,
+      relogio: clock,
       // A espera entre consultas do recibo avança o relógio injetado, sem dormir.
-      sleep: async (ms) => clock.avancar(ms),
+      esperar: async (ms) => clock.avancar(ms),
       ...(o.timeoutMs === undefined ? {} : { timeoutMs: o.timeoutMs }),
       ...o.opcoes,
     });
   };
 
   const emitir: Cenario['emitir'] = async (extra = {}, assinante = c.emitente) => {
-    const r = await buildNfe(
+    const r = await montarNfe(
       nota({ destinatario: DEST_CNPJ, ...extra }),
-      opcoes({ time: contextoDeTempo({ emissao: clock }) }),
+      opcoes({ tempo: contextoDeTempo({ emissao: clock }) }),
     );
-    if (!r.ok) throw new Error(r.issues.map((i) => `${i.caminho}: ${i.mensagem}`).join('\n'));
-    return { chave: r.value.chave, xml: await signNfe(r.value, assinante.signer) };
+    if (!r.ok) throw new Error(r.ocorrencias.map((i) => `${i.caminho}: ${i.mensagem}`).join('\n'));
+    return { chave: r.valor.chave, xml: await assinarNfe(r.valor, assinante.assinador) };
   };
 
   const client = cliente({ canal: c.emitente, opcoes: { autor: { CNPJ: CNPJ_EMIT } } });
@@ -153,7 +153,7 @@ describe('NF-e contra a SEFAZ simulada, HTTPS com mTLS', () => {
   test('status do serviço da NFC-e: o autorizador do modelo 65', async () => {
     const { client, sim } = await cenario();
     expect((await client.statusServico({ mod: '65' })).tipo).toBe('autorizado');
-    sim.setParalisacao('108');
+    sim.definirParalisacao('108');
     expect((await client.statusServico({ mod: '65' })).cStat).toBe('108');
   });
 
@@ -163,7 +163,7 @@ describe('NF-e contra a SEFAZ simulada, HTTPS com mTLS', () => {
     const r = await client.autorizar(nfe.xml);
     expect([r.tipo, r.cStat]).toEqual(['autorizado', '100']);
     if (r.tipo !== 'autorizado') throw new Error('não autorizou');
-    expect(r.valor.nProt).toBe(sim.inspect.nfe(nfe.chave)?.nProt as string);
+    expect(r.valor.nProt).toBe(sim.inspecao.nfe(nfe.chave)?.nProt as string);
     // O nfeProc leva a NF-e assinada byte a byte.
     expect(r.valor.nfeProc).toContain(nfe.xml);
     const consulta = await client.consultar(nfe.chave, nfe.xml);
@@ -191,17 +191,17 @@ describe('NF-e contra a SEFAZ simulada, HTTPS com mTLS', () => {
   test('processou e não respondeu: timeout, reenvio com 204 e 539 resolvidos pela consulta protocolo', async () => {
     const cen = await cenario();
     const nfe = await cen.emitir({ nNF: 3 });
-    cen.sim.injectFault({ kind: 'hang', phase: 'after' }, { servico: 'NFeAutorizacao' });
+    cen.sim.injetarFalha({ tipo: 'travar', fase: 'depois' }, { servico: 'NFeAutorizacao' });
     const apressado = cen.cliente({ canal: c.emitente, timeoutMs: 400 });
     expect(await apressado.autorizar(nfe.xml).catch((e: unknown) => e)).toBeInstanceOf(ErroDeTempoEsgotado);
-    expect(cen.sim.inspect.nfe(nfe.chave)?.situacao).toBe('autorizada');
+    expect(cen.sim.inspecao.nfe(nfe.chave)?.situacao).toBe('autorizada');
 
     // Sem resposta: a consulta recupera o protocolo e monta o nfeProc com os bytes gravados.
     const semResposta = await resolverEnvioSemResposta(cen.client, nfe.xml);
     expect(semResposta.acao).toBe('concluida');
     if (semResposta.acao === 'concluida') {
-      expect(semResposta.outcome.tipo).toBe('autorizado');
-      if (semResposta.outcome.tipo === 'autorizado') expect(semResposta.outcome.valor.nfeProc).toContain(nfe.xml);
+      expect(semResposta.resultado.tipo).toBe('autorizado');
+      if (semResposta.resultado.tipo === 'autorizado') expect(semResposta.resultado.valor.nfeProc).toContain(nfe.xml);
     }
 
     // Reenvio dos mesmos bytes: 204; o resolvedor conclui pela consulta.
@@ -314,7 +314,7 @@ describe('NF-e contra a SEFAZ simulada, HTTPS com mTLS', () => {
 
   test('contingência SVC: a UF responde 108 e a NF-e tpEmis 6 é autorizada no SVC-AN', async () => {
     const cen = await cenario();
-    cen.sim.setContingencia('SVC-AN');
+    cen.sim.definirContingencia('SVC-AN');
     expect((await cen.client.statusServico()).cStat).toBe('108');
     const svc = cen.cliente({ canal: c.emitente, opcoes: { contingencia: 'svc' } });
     expect((await svc.statusServico()).cStat).toBe('107');

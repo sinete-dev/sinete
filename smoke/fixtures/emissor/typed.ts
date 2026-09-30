@@ -14,18 +14,18 @@ import type {
 import { POLITICA_RETOMADA_PADRAO, retomarPendentes } from '@sinete/emissor';
 import type { CasoContrato } from '@sinete/emissor/contrato';
 import { casosDoContrato } from '@sinete/emissor/contrato';
-import type { MdfeEmissor, MdfeEmissorOptions } from '@sinete/emissor/mdfe';
-import { createMdfeEmissor } from '@sinete/emissor/mdfe';
-import { createMemoriaStore } from '@sinete/emissor/memoria';
-import type { DesfechoNfe, NfeEmissor, NfeEmissorOptions } from '@sinete/emissor/nfe';
-import { createNfeEmissor } from '@sinete/emissor/nfe';
-import type { NfseEmissor, NfseEmissorOptions } from '@sinete/emissor/nfse';
-import { createNfseEmissor } from '@sinete/emissor/nfse';
+import type { EmissorMdfe, EmissorMdfeOpcoes } from '@sinete/emissor/mdfe';
+import { criarEmissorMdfe } from '@sinete/emissor/mdfe';
+import { criarMemoriaStore } from '@sinete/emissor/memoria';
+import type { DesfechoNfe, EmissorNfe, EmissorNfeOpcoes } from '@sinete/emissor/nfe';
+import { criarEmissorNfe } from '@sinete/emissor/nfe';
+import type { EmissorNfse, EmissorNfseOpcoes } from '@sinete/emissor/nfse';
+import { criarEmissorNfse } from '@sinete/emissor/nfse';
 
 declare const pfx: Uint8Array;
-const store: TransmissaoStore = createMemoriaStore();
+const store: TransmissaoStore = criarMemoriaStore();
 const aoDecidir: AoDecidir = async (_registro: RegistroTransmissao, _desfecho): Promise<void> => {};
-const nfe: Promise<NfeEmissor> = createNfeEmissor({
+const nfe: Promise<EmissorNfe> = criarEmissorNfe({
   pfx,
   senha: 's',
   ambiente: 'homologacao',
@@ -34,16 +34,16 @@ const nfe: Promise<NfeEmissor> = createNfeEmissor({
   // O módulo do @sinete/da serve como está para o pdf().
   da: daNfe,
 });
-const mdfe: Promise<MdfeEmissor> = createMdfeEmissor({ pfx, senha: 's', ambiente: 'homologacao', store, aoDecidir, da: daMdfe });
-const nfse: Promise<NfseEmissor> = createNfseEmissor({ pfx, senha: 's', ambiente: 'homologacao', store, aoDecidir, da: daNfse });
+const mdfe: Promise<EmissorMdfe> = criarEmissorMdfe({ pfx, senha: 's', ambiente: 'homologacao', store, aoDecidir, da: daMdfe });
+const nfse: Promise<EmissorNfse> = criarEmissorNfse({ pfx, senha: 's', ambiente: 'homologacao', store, aoDecidir, da: daNfse });
 const danfsePdf: Promise<Uint8Array> = nfse.then((e) => e.pdf('<NFSe/>', { canhoto: false }));
 const danfsePorChave: Promise<Uint8Array | undefined> = nfse.then((e) => e.pdfPorChave('chave'));
 // @ts-expect-error store é obrigatório
-const semStore: NfeEmissorOptions = { pfx, senha: 's', ambiente: 'homologacao', aoDecidir };
+const semStore: EmissorNfeOpcoes = { pfx, senha: 's', ambiente: 'homologacao', aoDecidir };
 // aoDecidir pode vir na criação ou em cada chamada de emitir e retomar.
-const semDecisao: MdfeEmissorOptions = { pfx, senha: 's', ambiente: 'homologacao', store };
+const semDecisao: EmissorMdfeOpcoes = { pfx, senha: 's', ambiente: 'homologacao', store };
 // @ts-expect-error aoAssinar saiu: os bytes vão para o store
-const comGancho: NfseEmissorOptions = { pfx, senha: 's', ambiente: 'homologacao', store, aoDecidir, aoAssinar: () => {} };
+const comGancho: EmissorNfseOpcoes = { pfx, senha: 's', ambiente: 'homologacao', store, aoDecidir, aoAssinar: () => {} };
 declare const d: DesfechoNfe;
 const proc: string | undefined = d.tipo === 'autorizado' ? d.proc : undefined;
 const generico: Desfecho = d;

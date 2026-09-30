@@ -107,7 +107,7 @@ export class ErroDeConfiguracao extends ErroSinete<'config_invalida'> {
 
 /**
  * De onde vem uma ocorrência (ADR 0011):
- * - `entrada`: conferência feita sobre a entrada do domínio (`NfeInput`, `MdfeInput`, `DpsInput`), antes de montar o
+ * - `entrada`: conferência feita sobre a entrada do domínio (`DadosNfe`, `DadosMdfe`, `DadosDps`), antes de montar o
  *   documento. O `caminho` é um caminho da entrada (`emitente.IE`, `itens[0].produto.NCM`) e corrigir o valor ali resolve.
  * - `montagem`: conferência feita sobre o que o sinete produziu a partir da entrada: o XML contra o XSD e o PL, a chave
  *   gerada, o grupo IBS/CBS devolvido pela calculadora e as regras da NT sobre ele. O `caminho` é do documento montado
@@ -123,7 +123,7 @@ export interface Ocorrencia {
   readonly code: string;
   readonly mensagem: string;
   /**
-   * De onde vem a ocorrência (veja `OrigemOcorrencia`). Os montadores do sinete (`buildNfe`, `buildMdfe`, `buildDps`)
+   * De onde vem a ocorrência (veja `OrigemOcorrencia`). Os montadores do sinete (`montarNfe`, `montarMdfe`, `montarDps`)
    * sempre preenchem; ausente, a ocorrência não foi classificada (validadores avulsos, ocorrência criada fora do
    * sinete).
    */

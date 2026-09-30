@@ -24,8 +24,8 @@ import { main as cli } from '@sinete/cli';
 import type { ResultadoSefaz, Uf } from '@sinete/core';
 import { contextoDeTempo, ehErroSinete, ehUf, relogioDoSistema, UFS } from '@sinete/core';
 import { conferirAssinatura } from '@sinete/core/xml';
-import type { NfeClient, NfeInput } from '@sinete/nfe';
-import { buildNfe, createNfeClient, signNfe } from '@sinete/nfe';
+import type { ClienteNfe, DadosNfe } from '@sinete/nfe';
+import { assinarNfe, criarClienteNfe, montarNfe } from '@sinete/nfe';
 import type { EventoDeAuditoria, PedidoTransporte, RespostaTransporte, Transporte } from '@sinete/transport';
 import {
   criarTransporte,
@@ -145,13 +145,13 @@ function transporte(): Transporte {
   };
 }
 
-function cliente(t: Transporte, extra: { uf?: Uf; contingencia?: 'svc' } = {}): NfeClient {
-  return createNfeClient({
-    transport: t,
-    signer,
+function cliente(t: Transporte, extra: { uf?: Uf; contingencia?: 'svc' } = {}): ClienteNfe {
+  return criarClienteNfe({
+    transporte: t,
+    assinador: signer,
     ambiente: AMBIENTE,
     uf: extra.uf ?? (uf as Uf),
-    clock: relogioDoSistema,
+    relogio: relogioDoSistema,
     autor: { CNPJ },
     ...(extra.contingencia ? { contingencia: extra.contingencia } : {}),
   });
@@ -304,7 +304,7 @@ interface EmitenteArquivo {
   readonly xNome: string;
   readonly CRT: '1' | '2' | '3' | '4';
   readonly IE?: string;
-  readonly endereco: NfeInput['emitente']['endereco'];
+  readonly endereco: DadosNfe['emitente']['endereco'];
 }
 
 async function autorizacao(): Promise<void> {
@@ -320,7 +320,7 @@ async function autorizacao(): Promise<void> {
   // Mesmo perfil de conteúdo do spike S2: Simples Nacional (CRT do arquivo), destinatário = o próprio CNPJ, um item
   // de R$ 1,00 com CSOSN 102, PIS e COFINS 49 zerados, sem frete, pagamento em dinheiro. O builder troca o xNome do
   // destinatário pelo literal de homologação (RV E04-20).
-  const nota: NfeInput = {
+  const nota: DadosNfe = {
     serie: opt.serie as string,
     nNF: opt.nnf,
     natOp: 'VENDA DE MERCADORIA',
@@ -357,18 +357,18 @@ async function autorizacao(): Promise<void> {
     transporte: { modFrete: '9' },
     pagamento: { detPag: [{ indPag: '0', tPag: '01', vPag: '1.00' }] },
   };
-  const built = await buildNfe(nota, {
+  const built = await montarNfe(nota, {
     ambiente: AMBIENTE,
-    time: contextoDeTempo({ emissao: relogioDoSistema }),
+    tempo: contextoDeTempo({ emissao: relogioDoSistema }),
     verProc: 'sinete-homologacao',
   });
   if (!built.ok) {
-    for (const i of built.issues) console.log(`  ${i.caminho}: ${i.code}: ${i.mensagem}`);
+    for (const i of built.ocorrencias) console.log(`  ${i.caminho}: ${i.code}: ${i.mensagem}`);
     throw new Error('o builder recusou a NF-e');
   }
-  const b = built.value;
-  const assinada = await signNfe(b, signer);
-  led.registrar('local', 'assinatura da NF-e (signNfe)', `chave ${b.chave}`);
+  const b = built.valor;
+  const assinada = await assinarNfe(b, signer);
+  led.registrar('local', 'assinatura da NF-e (assinarNfe)', `chave ${b.chave}`);
   if (!assinada.startsWith(b.xml.slice(0, b.xml.indexOf('</infNFe>'))))
     throw new Error('assinatura alterou o conteúdo');
   const ver = await conferirAssinatura(assinada, { id: b.id, elemento: 'infNFe' });
@@ -440,11 +440,11 @@ async function doctor(): Promise<void> {
   const code = await cli(
     ['doctor', '--pfx', PFX, '--uf', uf, '--ambiente', AMBIENTE, '--json', ...(cadeiaPem ? ['--cadeia', CADEIA] : [])],
     {
-      out: (l) => saida.push(l),
-      err: (l) => saida.push(l),
+      saida: (l) => saida.push(l),
+      erro: (l) => saida.push(l),
       env: { SINETE_PFX_SENHA: cert.senha },
-      promptPassword: () => Promise.resolve(undefined),
-      readFile: (p) => {
+      pedirSenha: () => Promise.resolve(undefined),
+      lerArquivo: (p) => {
         if (p === PFX) return Promise.resolve(cert.pfx);
         if (p === CADEIA && cadeiaPem) return Promise.resolve(new Uint8Array(cadeiaPem));
         return Promise.reject(new Error(`fora do escopo: ${p}`));

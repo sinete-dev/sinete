@@ -30,9 +30,9 @@ export interface EntradaCache {
 
 /** Cache das consultas de parametrização. O padrão é `cacheEmMemoria()`; troque por um compartilhado entre processos. */
 export interface CacheParametros {
-  get(chave: string): EntradaCache | undefined | Promise<EntradaCache | undefined>;
-  set(chave: string, entrada: EntradaCache): void | Promise<void>;
-  clear(): void | Promise<void>;
+  obter(chave: string): EntradaCache | undefined | Promise<EntradaCache | undefined>;
+  gravar(chave: string, entrada: EntradaCache): void | Promise<void>;
+  limpar(): void | Promise<void>;
 }
 
 /** Cache em memória com limite de entradas (sai a mais antiga). */
@@ -41,13 +41,13 @@ export function cacheEmMemoria(maxEntradas: number = 500): CacheParametros {
     throw new ErroDeConfiguracao('maxEntradas precisa ser inteiro >= 1');
   const m = new Map<string, EntradaCache>();
   return {
-    get: (chave: string): EntradaCache | undefined => m.get(chave),
-    set(chave: string, entrada: EntradaCache): void {
+    obter: (chave: string): EntradaCache | undefined => m.get(chave),
+    gravar(chave: string, entrada: EntradaCache): void {
       m.delete(chave);
       m.set(chave, entrada);
       while (m.size > maxEntradas) m.delete(m.keys().next().value as string);
     },
-    clear: (): void => m.clear(),
+    limpar: (): void => m.clear(),
   };
 }
 
@@ -99,16 +99,16 @@ export interface ParametrosMunicipais {
   limparCache(): Promise<void>;
 }
 
-export interface ParametrosOptions {
-  readonly transport: Transporte;
+export interface ParametrosOpcoes {
+  readonly transporte: Transporte;
   readonly endpoint: EndpointResolvido;
-  readonly clock: Relogio;
+  readonly relogio: Relogio;
   /** `false` desliga. Padrão: `cacheEmMemoria()`. */
   readonly cache?: CacheParametros | false;
   /** Validade de uma resposta 200. Padrão: 6 horas. */
-  readonly ttlMs?: number;
+  readonly validadeMs?: number;
   /** Validade de um 404 (parâmetro inexistente). Padrão: 30 minutos. */
-  readonly ttlNaoEncontradoMs?: number;
+  readonly validadeNaoEncontradoMs?: number;
   readonly timeoutMs?: number;
   readonly logger?: Logger;
 }
@@ -158,11 +158,11 @@ function flag(v: unknown): boolean {
   return v === true || v === 1 || v === '1';
 }
 
-/** Cliente da parametrização municipal. `createNfseClient` já cria um em `client.parametros`. */
-export function createParametrosMunicipais(o: ParametrosOptions): ParametrosMunicipais {
+/** Cliente da parametrização municipal. `criarClienteNfse` já cria um em `cliente.parametros`. */
+export function criarParametrosMunicipais(o: ParametrosOpcoes): ParametrosMunicipais {
   const cache = o.cache === false ? undefined : (o.cache ?? cacheEmMemoria());
-  const ttl = o.ttlMs ?? 6 * 3_600_000;
-  const ttlNaoEncontrado = o.ttlNaoEncontradoMs ?? 30 * 60_000;
+  const ttl = o.validadeMs ?? 6 * 3_600_000;
+  const ttlNaoEncontrado = o.validadeNaoEncontradoMs ?? 30 * 60_000;
   const logger = o.logger ?? loggerSilencioso;
   const emVoo = new Map<string, Promise<EntradaCache>>();
   const base = o.endpoint.url.replace(/\/+$/, '');
@@ -190,14 +190,14 @@ export function createParametrosMunicipais(o: ParametrosOptions): ParametrosMuni
     ler: (body: Record<string, unknown>) => T,
   ): Promise<T | undefined> {
     const url = `${base}${caminho}`;
-    const guardada = await cache?.get(url);
-    if (guardada !== undefined && guardada.expiraEm > o.clock.agora().getTime()) {
+    const guardada = await cache?.obter(url);
+    if (guardada !== undefined && guardada.expiraEm > o.relogio.agora().getTime()) {
       return lerEntrada(guardada, operacao, ler);
     }
     let pendente = emVoo.get(url);
     if (pendente === undefined) {
       pendente = (async (): Promise<EntradaCache> => {
-        const res = await o.transport.enviar({
+        const res = await o.transporte.enviar({
           url,
           metodo: 'GET',
           cabecalhos: { accept: 'application/json' },
@@ -208,14 +208,14 @@ export function createParametrosMunicipais(o: ParametrosOptions): ParametrosMuni
         return {
           status: res.status,
           corpo: res.texto(),
-          expiraEm: o.clock.agora().getTime() + (res.status === 404 ? ttlNaoEncontrado : ttl),
+          expiraEm: o.relogio.agora().getTime() + (res.status === 404 ? ttlNaoEncontrado : ttl),
         };
       })();
       emVoo.set(url, pendente);
       try {
         const entrada = await pendente;
         const valor = lerEntrada(entrada, operacao, ler);
-        await cache?.set(url, entrada);
+        await cache?.gravar(url, entrada);
         return valor;
       } finally {
         emVoo.delete(url);
@@ -287,7 +287,7 @@ export function createParametrosMunicipais(o: ParametrosOptions): ParametrosMuni
       return bruta(`/${cMun}/${nBM}/${competencia}/beneficio`, 'beneficio');
     },
     async limparCache(): Promise<void> {
-      await cache?.clear();
+      await cache?.limpar();
     },
   };
 }

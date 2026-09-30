@@ -5,7 +5,7 @@ import { nfceEndpoint, nfeEndpoint } from '@sinete/transport';
 import {
   autorizadorContingencia,
   chaveDaDuplicidade,
-  createNfeClient,
+  criarClienteNfe,
   documentoAssinado,
   nfeAssinadaDoProc,
   recuperarEventoRegistrado,
@@ -329,7 +329,7 @@ describe('autorizar assíncrono e recibo', () => {
     await expect(c.aguardarRecibo('351000000000001', undefined, { multiplicador: 0.5 })).rejects.toBeInstanceOf(
       ErroDeConfiguracao,
     );
-    const { c: real } = await client(fakeTransport(), { sleep: undefined as never });
+    const { c: real } = await client(fakeTransport(), { esperar: undefined as never });
     const ac = new AbortController();
     ac.abort(new Error('parou'));
     await expect(real.aguardarRecibo('351000000000001', undefined, { signal: ac.signal })).rejects.toThrow('parou');
@@ -367,7 +367,7 @@ describe('autorizar assíncrono e recibo', () => {
 
   test('sleep padrão resolve depois do prazo', async () => {
     const t = fakeTransport(soap(retConsReciNFe({ cStat: '106' })));
-    const { c } = await client(t, { sleep: undefined as never });
+    const { c } = await client(t, { esperar: undefined as never });
     const r = await c.aguardarRecibo('351000000000001', undefined, { esperaMinimaMs: 1, esperaMaximaMs: 1 });
     expect(r.tipo).toBe('recusado');
   });
@@ -375,7 +375,7 @@ describe('autorizar assíncrono e recibo', () => {
   test('sleep padrão remove o listener de abort quando o prazo vence', async () => {
     const pend = soap(retConsReciNFe({ cStat: '105' }));
     const t = fakeTransport(pend, pend, pend);
-    const { c } = await client(t, { sleep: undefined as never });
+    const { c } = await client(t, { esperar: undefined as never });
     const ac = new AbortController();
     let ativos = 0;
     const add = ac.signal.addEventListener.bind(ac.signal);
@@ -509,11 +509,11 @@ describe('resolverEnvioSemResposta', () => {
     expect(r.acao).toBe('concluida');
     if (r.acao !== 'concluida') return;
     expect(r.situacao).toBe('autorizada');
-    expect(r.outcome.tipo).toBe('autorizado');
-    expect(r.outcome.cStat).toBe('100');
-    if (r.outcome.tipo === 'autorizado') {
-      expect(r.outcome.valor.nfeProc).toBe(
-        `<nfeProc xmlns="${NFE_NS}" versao="4.00">${nfe}${r.outcome.valor.protNFe.replace(` xmlns="${NFE_NS}"`, '')}</nfeProc>`,
+    expect(r.resultado.tipo).toBe('autorizado');
+    expect(r.resultado.cStat).toBe('100');
+    if (r.resultado.tipo === 'autorizado') {
+      expect(r.resultado.valor.nfeProc).toBe(
+        `<nfeProc xmlns="${NFE_NS}" versao="4.00">${nfe}${r.resultado.valor.protNFe.replace(` xmlns="${NFE_NS}"`, '')}</nfeProc>`,
       );
     }
   });
@@ -532,9 +532,9 @@ describe('resolverEnvioSemResposta', () => {
     );
     const { c } = await client(t);
     const r = await resolverEnvioSemResposta(c, nfe);
-    expect(r.acao === 'concluida' && r.outcome.tipo).toBe('denegado');
+    expect(r.acao === 'concluida' && r.resultado.tipo).toBe('denegado');
     expect(r.acao === 'concluida' && r.conteudo).toBe('confere');
-    expect(r.acao === 'concluida' && r.outcome.tipo === 'denegado' && r.outcome.valor.nfeProc).toContain(nfe);
+    expect(r.acao === 'concluida' && r.resultado.tipo === 'denegado' && r.resultado.valor.nfeProc).toContain(nfe);
   });
 
   test('denegada sem digVal ou com outro digVal: concluída como denegado, sem nfeProc, com o conteúdo dito', async () => {
@@ -559,10 +559,10 @@ describe('resolverEnvioSemResposta', () => {
     for (const conteudo of ['sem-digval', 'difere'] as const) {
       const r = await resolverEnvioSemResposta(c, nfe);
       expect(r).toMatchObject({ acao: 'concluida', situacao: 'denegada', conteudo });
-      if (r.acao !== 'concluida' || r.outcome.tipo !== 'denegado') throw new Error('esperado denegado');
-      expect(r.outcome.cStat).toBe('302');
-      expect(r.outcome.valor.nfeProc).toBeUndefined();
-      expect(r.outcome.valor.protNFe).toContain('<cStat>302</cStat>');
+      if (r.acao !== 'concluida' || r.resultado.tipo !== 'denegado') throw new Error('esperado denegado');
+      expect(r.resultado.cStat).toBe('302');
+      expect(r.resultado.valor.nfeProc).toBeUndefined();
+      expect(r.resultado.valor.protNFe).toContain('<cStat>302</cStat>');
     }
     // Sem o protocolo não há o que guardar: a consulta não decidiu.
     expect((await resolverEnvioSemResposta(c, nfe)).acao).toBe('indefinida');
@@ -733,11 +733,11 @@ describe('autorizador pelo documento e pela chave', () => {
   test('sem uf nas opções: os serviços do documento funcionam; os sem documento pedem a UF', async () => {
     const ch = chave({ cUF: '41' });
     const t = fakeTransport(soap(retEnviNFe({ cStat: '104', inner: protNFe({ chNFe: ch }) })));
-    const c = createNfeClient({
-      transport: t,
-      signer: await testSigner(),
+    const c = criarClienteNfe({
+      transporte: t,
+      assinador: await testSigner(),
       ambiente: 'homologacao',
-      clock: relogioFixo(CLOCK_ISO),
+      relogio: relogioFixo(CLOCK_ISO),
       autor: { CNPJ: CNPJ_EMIT },
     });
     expect((await c.autorizar(await nfeAssinada(ch))).tipo).toBe('autorizado');
@@ -806,7 +806,7 @@ describe('NFC-e (modelo 65)', () => {
     const vistos: string[] = [];
     const base = nfeEndpoint({ ambiente: 'homologacao', servico: 'NFeAutorizacao', uf: 'SP' });
     const { c } = await client(t, {
-      nfceEndpoint: (servico, uf) => {
+      endpointNfce: (servico, uf) => {
         vistos.push(`${servico} ${uf}`);
         return { ...base, url: `https://nfce.exemplo.invalid/${servico}` };
       },
@@ -825,7 +825,7 @@ describe('NFC-e (modelo 65)', () => {
     const t = fakeTransport(pend, pend);
     const base = nfeEndpoint({ ambiente: 'homologacao', servico: 'NFeRetAutorizacao', uf: 'SP' });
     const { c } = await client(t, {
-      nfceEndpoint: (servico) => ({ ...base, url: `https://nfce.exemplo.invalid/${servico}` }),
+      endpointNfce: (servico) => ({ ...base, url: `https://nfce.exemplo.invalid/${servico}` }),
     });
     await c.consultarRecibo('351000000000001', undefined, { mod: '65' });
     await c.aguardarRecibo('351000000000001', undefined, { mod: '65', maxTentativas: 1 });
@@ -845,15 +845,17 @@ describe('recuperarEventoRegistrado com respostas sintéticas', () => {
     cStat?: string;
     tpEvento?: string;
     nSeqRet?: string;
+    nSeq?: string;
     semChRet?: boolean;
   }): string => {
     const tp = p.tpEvento ?? '110111';
+    const seq = p.nSeq ?? '1';
     const chPedido = p.chPedido ?? p.ch;
     return (
-      `<procEventoNFe versao="1.00"><evento versao="1.00"><infEvento Id="ID${tp}${chPedido}01">` +
-      `<chNFe>${chPedido}</chNFe><tpEvento>${tp}</tpEvento><nSeqEvento>1</nSeqEvento></infEvento></evento>` +
+      `<procEventoNFe versao="1.00"><evento versao="1.00"><infEvento Id="ID${tp}${chPedido}${seq.padStart(2, '0')}">` +
+      `<chNFe>${chPedido}</chNFe><tpEvento>${tp}</tpEvento><nSeqEvento>${seq}</nSeqEvento></infEvento></evento>` +
       `<retEvento versao="1.00"><infEvento><cStat>${p.cStat ?? '135'}</cStat>${p.semChRet ? '' : `<chNFe>${p.ch}</chNFe>`}` +
-      `<tpEvento>${tp}</tpEvento><nSeqEvento>${p.nSeqRet ?? '1'}</nSeqEvento><dhRegEvento>2026-09-10T10:00:00-03:00</dhRegEvento>` +
+      `<tpEvento>${tp}</tpEvento><nSeqEvento>${p.nSeqRet ?? seq}</nSeqEvento><dhRegEvento>2026-09-10T10:00:00-03:00</dhRegEvento>` +
       '</infEvento></retEvento></procEventoNFe>'
     );
   };
@@ -882,6 +884,20 @@ describe('recuperarEventoRegistrado com respostas sintéticas', () => {
       '2026-09-10T10:00:00-03:00',
     ]);
     expect(achado.evento.retEvento).toStartWith(`<retEvento xmlns="${NFE_NS}"`);
+  });
+
+  test('com nSeqEvento, só o evento dessa sequência; sem ele, o de maior sequência', async () => {
+    const ch = chave({ nNF: 53 });
+    const cces = procEvento({ ch, tpEvento: '110110' }) + procEvento({ ch, tpEvento: '110110', nSeq: '2' });
+    const consulta = (): string =>
+      soap(retConsSitNFe({ cStat: '100', chNFe: ch, inner: protNFe({ chNFe: ch }) + cces }));
+    const t = fakeTransport(consulta(), consulta(), consulta());
+    const { c } = await client(t);
+    const maior = await recuperarEventoRegistrado(c, ch, '110110');
+    expect(maior.registrado && maior.evento.nSeqEvento).toBe('2');
+    const primeira = await recuperarEventoRegistrado(c, ch, '110110', 1);
+    expect(primeira.registrado && primeira.evento.nSeqEvento).toBe('1');
+    expect((await recuperarEventoRegistrado(c, ch, '110110', 3)).registrado).toBe(false);
   });
 
   test('consulta que não decide volta registrado false com o desfecho', async () => {

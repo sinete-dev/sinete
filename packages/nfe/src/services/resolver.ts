@@ -28,7 +28,7 @@
 
 import type { Recusado } from '@sinete/core';
 import { criarAutorizado, criarDenegado } from '@sinete/core';
-import type { AutorizacaoOutcome, ConsultaOutcome, NfeClient, ProtocoloNfe } from './client.ts';
+import type { ClienteNfe, ProtocoloNfe, ResultadoAutorizacao, ResultadoConsulta } from './client.ts';
 import { cstatEm } from './outcome.ts';
 import { documentoAssinado } from './proc.ts';
 
@@ -41,15 +41,15 @@ export type ConteudoDoProtocolo = 'confere' | 'sem-digval' | 'difere';
 /** O que fazer com uma NF-e cujo envio ficou sem resposta ou voltou como duplicidade. */
 export type ResolucaoEnvio =
   /**
-   * A chave está decidida: autorizada (ou cancelada) com o mesmo conteúdo, e `outcome` traz o protocolo e o `nfeProc`;
-   * ou denegada, com qualquer conteúdo (a denegação é da chave), e `outcome` traz o protocolo, com o `nfeProc` só
+   * A chave está decidida: autorizada (ou cancelada) com o mesmo conteúdo, e `resultado` traz o protocolo e o `nfeProc`;
+   * ou denegada, com qualquer conteúdo (a denegação é da chave), e `resultado` traz o protocolo, com o `nfeProc` só
    * quando `conteudo` é `confere`.
    */
   | {
       readonly acao: 'concluida';
       readonly situacao: 'autorizada' | 'cancelada' | 'denegada';
       readonly conteudo: ConteudoDoProtocolo;
-      readonly outcome: AutorizacaoOutcome;
+      readonly resultado: ResultadoAutorizacao;
     }
   /** A NF-e não consta na SEFAZ (217): reenvie `nfeAssinada`, os mesmos bytes. */
   | { readonly acao: 'reenviar'; readonly nfeAssinada: string }
@@ -60,20 +60,20 @@ export type ResolucaoEnvio =
   | {
       readonly acao: 'divergente';
       readonly chNFe?: string;
-      readonly consulta?: ConsultaOutcome;
-      readonly motivo: Recusado | ConsultaOutcome;
+      readonly consulta?: ResultadoConsulta;
+      readonly motivo: Recusado | ResultadoConsulta;
     }
   /**
    * A chave está autorizada (ou cancelada), mas o protocolo não traz `digVal`: nada prova que o conteúdo autorizado é o
    * destes bytes. Não reenvie nem descarte a nota local, e não a guarde como autorizada sem conferir o XML registrado
    * na SEFAZ (a Distribuição DF-e ou o portal devolvem a NF-e autorizada).
    */
-  | { readonly acao: 'sem-prova'; readonly situacao: 'autorizada' | 'cancelada'; readonly consulta: ConsultaOutcome }
+  | { readonly acao: 'sem-prova'; readonly situacao: 'autorizada' | 'cancelada'; readonly consulta: ResultadoConsulta }
   /**
    * A consulta não decidiu (serviço paralisado, consumo indevido, rejeição de schema, situação sem protocolo): tente de
    * novo mais tarde, sem descartar a nota local.
    */
-  | { readonly acao: 'indefinida'; readonly outcome: ConsultaOutcome };
+  | { readonly acao: 'indefinida'; readonly resultado: ResultadoConsulta };
 
 /** Chave com CNPJ alfanumérico (NT 2025.001): 6 dígitos, 12 alfanuméricos, 26 dígitos. */
 const CHAVE_NO_MOTIVO = /\[\s*chNFe\s*:\s*([0-9]{6}[0-9A-Z]{12}[0-9]{26})\s*\]/i;
@@ -88,9 +88,9 @@ export function chaveDaDuplicidade(xMotivo: string): string | undefined {
  * assinada. `anterior` é o desfecho do envio, quando houve um.
  */
 export async function resolverEnvioSemResposta(
-  client: NfeClient,
+  cliente: ClienteNfe,
   nfeAssinada: string,
-  anterior?: AutorizacaoOutcome,
+  anterior?: ResultadoAutorizacao,
 ): Promise<ResolucaoEnvio> {
   const a = documentoAssinado(nfeAssinada, 'NFe', 'infNFe');
   const chave = a.id.slice(3);
@@ -98,7 +98,7 @@ export async function resolverEnvioSemResposta(
     const outra = chaveDaDuplicidade(anterior.xMotivo);
     return { acao: 'divergente', motivo: anterior, ...(outra === undefined ? {} : { chNFe: outra }) };
   }
-  const consulta = await client.consultar(chave, nfeAssinada);
+  const consulta = await cliente.consultar(chave, nfeAssinada);
   if (consulta.tipo === 'recusado') {
     if (cstatEm(consulta.cStat, 'naoConsta')) return { acao: 'reenviar', nfeAssinada: a.xml };
     // 561, 562 e 613 na consulta: a chave local não consta, mas a numeração dela tem outra NF-e (outro mês, outro cNF
@@ -107,21 +107,21 @@ export async function resolverEnvioSemResposta(
       const outra = chaveDaDuplicidade(consulta.xMotivo);
       return { acao: 'divergente', motivo: consulta, ...(outra === undefined ? {} : { chNFe: outra }) };
     }
-    return { acao: 'indefinida', outcome: consulta };
+    return { acao: 'indefinida', resultado: consulta };
   }
-  if (consulta.tipo === 'pendente') return { acao: 'indefinida', outcome: consulta };
+  if (consulta.tipo === 'pendente') return { acao: 'indefinida', resultado: consulta };
   const v = consulta.valor;
   const p: ProtocoloNfe | undefined = v.protocolo;
-  if (!p) return { acao: 'indefinida', outcome: consulta };
+  if (!p) return { acao: 'indefinida', resultado: consulta };
   const conteudo: ConteudoDoProtocolo =
     p.digVal === undefined ? 'sem-digval' : v.digValConfere === true ? 'confere' : 'difere';
   const protStatus = { cStat: p.cStat, xMotivo: p.xMotivo };
   // A denegação é da chave: o número está denegado com qualquer conteúdo, e o `conteudo` diz se é o destes bytes.
   if (v.situacao === 'denegada')
-    return { acao: 'concluida', situacao: 'denegada', conteudo, outcome: criarDenegado(protStatus, p) };
+    return { acao: 'concluida', situacao: 'denegada', conteudo, resultado: criarDenegado(protStatus, p) };
   // Só um digVal presente e diferente prova outro conteúdo para a chave.
   if (conteudo === 'difere') return { acao: 'divergente', chNFe: chave, consulta, motivo: consulta };
   if (conteudo === 'sem-digval') return { acao: 'sem-prova', situacao: v.situacao, consulta };
-  if (p.nfeProc === undefined) return { acao: 'indefinida', outcome: consulta };
-  return { acao: 'concluida', situacao: v.situacao, conteudo, outcome: criarAutorizado(protStatus, p) };
+  if (p.nfeProc === undefined) return { acao: 'indefinida', resultado: consulta };
+  return { acao: 'concluida', situacao: v.situacao, conteudo, resultado: criarAutorizado(protStatus, p) };
 }

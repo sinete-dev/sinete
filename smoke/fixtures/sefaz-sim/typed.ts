@@ -1,24 +1,24 @@
 // Tipos do pacote publicado, vistos por um consumidor com tsc nodenext (e por deno check).
 import type { Relogio } from '@sinete/core';
-import type { AutorizacaoContext, SefazSim, SimFault, SimRule, SyntheticCertificate } from '@sinete/sefaz-sim';
-import { createSefazSim, DEFAULT_RULES, simTransport, syntheticCertificate } from '@sinete/sefaz-sim';
+import type { ContextoAutorizacao, SefazSim, FalhaSim, RegraSim, CertificadoSintetico } from '@sinete/sefaz-sim';
+import { criarSefazSim, REGRAS_PADRAO, transporteSim, certificadoSintetico } from '@sinete/sefaz-sim';
 
 export async function usar(clock: Relogio): Promise<number> {
-  const ac: SyntheticCertificate = await syntheticCertificate({ clock, role: 'ac' });
-  const serie: SimRule<AutorizacaoContext> = {
+  const ac: CertificadoSintetico = await certificadoSintetico({ relogio: clock, papel: 'ac' });
+  const serie: RegraSim<ContextoAutorizacao> = {
     id: 'serie-9',
-    source: 'teste',
-    check: (ctx) => (ctx.nfe.serie === '9' ? { cStat: '503' } : undefined),
+    fonte: 'teste',
+    conferir: (ctx) => (ctx.nfe.serie === '9' ? { cStat: '503' } : undefined),
   };
-  const sim: SefazSim = createSefazSim({
-    clock,
+  const sim: SefazSim = criarSefazSim({
+    relogio: clock,
     uf: 'SP',
-    rules: { ...DEFAULT_RULES, autorizacao: [serie, ...DEFAULT_RULES.autorizacao] },
+    regras: { ...REGRAS_PADRAO, autorizacao: [serie, ...REGRAS_PADRAO.autorizacao] },
   });
-  const fault: SimFault = { kind: 'drop', phase: 'after' };
-  sim.injectFault(fault, { servico: 'NFeAutorizacao' });
+  const fault: FalhaSim = { tipo: 'derrubar', fase: 'depois' };
+  sim.injetarFalha(fault, { servico: 'NFeAutorizacao' });
   // @ts-expect-error serviço fora do portal
-  sim.path('NfeInexistente');
-  const t = simTransport(sim, { clientCertificate: ac.der });
+  sim.caminho('NfeInexistente');
+  const t = transporteSim(sim, { certificadoDoCliente: ac.der });
   return t.capacidades.renegociacao ? 1 : 0;
 }

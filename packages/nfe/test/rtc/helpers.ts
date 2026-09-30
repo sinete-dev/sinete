@@ -4,7 +4,7 @@
  */
 import type { Relogio } from '@sinete/core';
 import { contextoDeTempo } from '@sinete/core';
-import type { BuildNfeOptions, IbsCbsCalculator, Item, NfeInput } from '../../src/index.ts';
+import type { CalculadoraIbsCbs, DadosNfe, Item, MontarNfeOpcoes } from '../../src/index.ts';
 
 export const CNPJ_EMIT = '11222333000181';
 export const CNPJ_DEST = '11444777000161';
@@ -49,7 +49,7 @@ export function itemRtc(i: ItemRtc, n: number): Item {
   };
 }
 
-export function notaRtc(local: Local, itens: readonly ItemRtc[], nNF = 1): NfeInput {
+export function notaRtc(local: Local, itens: readonly ItemRtc[], nNF = 1): DadosNfe {
   const endereco = {
     xLgr: 'RUA DOS TESTES',
     nro: '100',
@@ -75,14 +75,14 @@ export function notaRtc(local: Local, itens: readonly ItemRtc[], nNF = 1): NfeIn
   };
 }
 
-/** Opções do `buildNfe` com cNF determinístico; sem `ibsCbs`, vale a calculadora padrão. */
-export function opcoesRtc(clock: Relogio, ibsCbs?: IbsCbsCalculator, fatoGerador?: Relogio): BuildNfeOptions {
+/** Opções do `montarNfe` com cNF determinístico; sem `ibsCbs`, vale a calculadora padrão. */
+export function opcoesRtc(clock: Relogio, ibsCbs?: CalculadoraIbsCbs, fatoGerador?: Relogio): MontarNfeOpcoes {
   let seed = 4242;
   return {
     ambiente: 'homologacao',
-    time: contextoDeTempo({ emissao: clock, ...(fatoGerador === undefined ? {} : { fatoGerador }) }),
+    tempo: contextoDeTempo({ emissao: clock, ...(fatoGerador === undefined ? {} : { fatoGerador }) }),
     ...(ibsCbs === undefined ? {} : { ibsCbs }),
-    random: (b: Uint8Array): Uint8Array => {
+    aleatorio: (b: Uint8Array): Uint8Array => {
       for (let i = 0; i < b.length; i++) {
         seed = (seed * 1103515245 + 12345) % 2 ** 31;
         b[i] = seed & 0xff;

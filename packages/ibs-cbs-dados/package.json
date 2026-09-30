@@ -22,9 +22,9 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./bundled": {
-      "types": "./dist/bundled.d.ts",
-      "default": "./dist/bundled.js"
+    "./embarcado": {
+      "types": "./dist/embarcado.d.ts",
+      "default": "./dist/embarcado.js"
     },
     "./package.json": "./package.json"
   },

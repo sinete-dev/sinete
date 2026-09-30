@@ -13,17 +13,17 @@ import type { FormatoA4, Linha } from '../data/leiaute-a4.ts';
 import { CONSULTA_NFE, FONTES, FORMA_EMISSAO, MOD_FRETE, QUADRO_IBSCBS } from '../data/leiaute-a4.ts';
 import * as f from '../format.ts';
 import type { ItemView, NotaView } from '../input/nfe.ts';
-import type { Doc } from '../model.ts';
+import type { Documento } from '../model.ts';
 import type { Align } from '../render/canvas.ts';
 import { Canvas, fit, lineHeight, MIN_SIZE } from '../render/canvas.ts';
 import { ascentMm, toWinAnsi, widthMm, wrap } from '../render/text.ts';
-import type { CommonOptions } from './common.ts';
+import type { DaOpcoes } from './common.ts';
 import { barcode, DocBuilder, drawLogo } from './common.ts';
 import { dadosNfe } from './contingencia.ts';
 import type { Cancelamento, Situacao } from './marcas.ts';
 import { avisoSituacao, marcas, protocoloDeUso } from './marcas.ts';
 
-export interface DanfeA4Options extends CommonOptions {
+export interface DanfeA4Opcoes extends DaOpcoes {
   /** Bloco de canhoto (padrão: sim; MOC 3.3.1 permite suprimir). */
   readonly canhoto?: boolean;
   /**
@@ -120,10 +120,10 @@ function ender(e: NotaView['emit']['ender']): string {
 export function danfeA4(
   nota: NotaView,
   fmt: FormatoA4,
-  options: DanfeA4Options,
+  options: DanfeA4Opcoes,
   situacao: Situacao,
   cancel?: Cancelamento,
-): Doc {
+): Documento {
   const b = new DocBuilder(options);
   const paisagem = fmt.faixa > 0;
   const X = fmt.x;
@@ -321,10 +321,10 @@ export function danfeA4(
   const extra = probe.stats;
   return {
     ...doc,
-    stats: {
-      reduzidos: doc.stats.reduzidos + extra.reduzidos,
-      quebrados: doc.stats.quebrados + extra.quebrados,
-      cortados: doc.stats.cortados + extra.cortados,
+    estatisticas: {
+      reduzidos: doc.estatisticas.reduzidos + extra.reduzidos,
+      quebrados: doc.estatisticas.quebrados + extra.quebrados,
+      cortados: doc.estatisticas.cortados + extra.cortados,
     },
   };
 

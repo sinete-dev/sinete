@@ -1,12 +1,12 @@
 // Verificações do @sinete/da compartilhadas por Node, Bun, Deno e Chromium: layout, PDF e HTML a partir de XML
 // sintéticos, com o sha256 do PDF igual em todas as runtimes. Devolve a lista de falhas (vazia = ok).
 import { ehErroSinete } from '@sinete/core';
-import { code128C, DanfeError, qrMatrix, toHtml, toPdf, toSvg } from '@sinete/da';
+import { code128C, ErroDa, matrizQr, gerarHtml, gerarPdf, gerarSvg } from '@sinete/da';
 import { dacce } from '@sinete/da/cce';
 import { damdfe } from '@sinete/da/mdfe';
-import { danfce, toPdf as toPdfNfce } from '@sinete/da/nfce';
+import { danfce, gerarPdf as toPdfNfce } from '@sinete/da/nfce';
 import { danfe } from '@sinete/da/nfe';
-import { danfse, toPdf as toPdfNfse } from '@sinete/da/nfse';
+import { danfse, gerarPdf as toPdfNfse } from '@sinete/da/nfse';
 import { MDFE, NFCE, NFE, NFSE, SHA256 } from './dados.mjs';
 
 async function sha256(b) {
@@ -20,17 +20,17 @@ export async function runChecks() {
     if (!cond) failures.push(name);
   };
   const doc = danfe(NFE);
-  const pdf = toPdf(doc);
+  const pdf = gerarPdf(doc);
   expect('PDF começa com %PDF-1.4', String.fromCharCode(...pdf.subarray(0, 8)) === '%PDF-1.4');
   expect('sha256 do DANFE', (await sha256(pdf)) === SHA256.danfe);
-  expect('sha256 do DANFE NFC-e', (await sha256(toPdf(danfe(NFCE)))) === SHA256.nfce);
+  expect('sha256 do DANFE NFC-e', (await sha256(gerarPdf(danfe(NFCE)))) === SHA256.nfce);
   expect('danfce de /nfce igual ao danfe', (await sha256(toPdfNfce(danfce(NFCE)))) === SHA256.nfce);
-  expect('renderizador reexportado é o mesmo', toPdfNfce === toPdf);
-  expect('sha256 do DAMDFE', (await sha256(toPdf(damdfe(MDFE)))) === SHA256.damdfe);
+  expect('renderizador reexportado é o mesmo', toPdfNfce === gerarPdf);
+  expect('sha256 do DAMDFE', (await sha256(gerarPdf(damdfe(MDFE)))) === SHA256.damdfe);
   expect('sha256 do DANFSe', (await sha256(toPdfNfse(danfse(NFSE)))) === SHA256.danfse);
-  expect('HTML', toHtml(doc).includes('<svg class="pg"'));
-  expect('SVG', toSvg(doc.pages[0], doc).startsWith('<svg'));
-  expect('QR', qrMatrix('sinete').length === 21);
+  expect('HTML', gerarHtml(doc).includes('<svg class="pg"'));
+  expect('SVG', gerarSvg(doc.paginas[0], doc).startsWith('<svg'));
+  expect('QR', matrizQr('sinete').length === 21);
   expect('CODE-128C', code128C('09758364').length === 43);
   let err;
   try {
@@ -38,7 +38,7 @@ export async function runChecks() {
   } catch (e) {
     err = e;
   }
-  expect('DanfeError', err instanceof DanfeError && ehErroSinete(err, 'formato_incompativel'));
+  expect('ErroDa', err instanceof ErroDa && ehErroSinete(err, 'formato_incompativel'));
   let err2;
   try {
     dacce(NFE);

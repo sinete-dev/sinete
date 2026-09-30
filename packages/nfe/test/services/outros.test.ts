@@ -2,15 +2,15 @@ import { describe, expect, test } from 'bun:test';
 import { ErroDeConfiguracao, ErroDeValidacao, ErroNaoSuportado, ErroRespostaInvalida } from '@sinete/core';
 import { assinarXml, conferirAssinatura, lerXml } from '@sinete/core/xml';
 import { nfceEndpoint, nfeEndpoint } from '@sinete/transport';
-import { documentoAssinado, gunzipBase64, sliceElement } from '../../src/services/index.ts';
+import { descomprimirGzipBase64, documentoAssinado, recortarElemento } from '../../src/services/index.ts';
 import {
   CNPJ_DEST,
   CNPJ_EMIT,
   CPF_EMIT,
   chave,
   client,
+  comprimirGzipBase64,
   fakeTransport,
-  gzipBase64,
   mensagem,
   NFE_NS,
   nfeAssinada,
@@ -85,7 +85,7 @@ describe('inutilizar', () => {
       ...nfeEndpoint({ ambiente: 'homologacao', servico: 'NfeInutilizacao', uf: 'SP' }),
       url: 'https://nfce.exemplo.invalid/ws/NFeInutilizacao4.asmx',
     };
-    const { c } = await client(t, { autor: { CNPJ: CNPJ_EMIT }, nfceEndpoint: () => nfce });
+    const { c } = await client(t, { autor: { CNPJ: CNPJ_EMIT }, endpointNfce: () => nfce });
     await c.inutilizar(pedido);
     expect(t.requests[0]?.url).toBe(nfce.url);
   });
@@ -224,7 +224,7 @@ describe('distribuicaoDFe', () => {
     ] as const;
     let lote = '<loteDistDFeInt>';
     for (const [nsu, schema, xml] of docs)
-      lote += `<docZip NSU="${nsu}" schema="${schema}">${await gzipBase64(xml)}</docZip>`;
+      lote += `<docZip NSU="${nsu}" schema="${schema}">${await comprimirGzipBase64(xml)}</docZip>`;
     lote += '</loteDistDFeInt>';
     const t = fakeTransport(ret('138', lote));
     const { c } = await client(t, { autor: { CNPJ: CNPJ_DEST } });
@@ -272,12 +272,12 @@ describe('distribuicaoDFe', () => {
   });
 });
 
-describe('gunzipBase64', () => {
+describe('descomprimirGzipBase64', () => {
   test('ida e volta com CompressionStream; base64 inválido e gzip inválido são ErroRespostaInvalida', async () => {
     const texto = '<resNFe>ação ✓</resNFe>';
-    expect(await gunzipBase64(await gzipBase64(texto))).toBe(texto);
-    await expect(gunzipBase64('***')).rejects.toBeInstanceOf(ErroRespostaInvalida);
-    await expect(gunzipBase64(btoa('nao e gzip'))).rejects.toBeInstanceOf(ErroRespostaInvalida);
+    expect(await descomprimirGzipBase64(await comprimirGzipBase64(texto))).toBe(texto);
+    await expect(descomprimirGzipBase64('***')).rejects.toBeInstanceOf(ErroRespostaInvalida);
+    await expect(descomprimirGzipBase64(btoa('nao e gzip'))).rejects.toBeInstanceOf(ErroRespostaInvalida);
   });
 
   test('sem DecompressionStream é ErroNaoSuportado', async () => {
@@ -285,7 +285,7 @@ describe('gunzipBase64', () => {
     try {
       // @ts-expect-error simulando runtime sem a API
       globalThis.DecompressionStream = undefined;
-      await expect(gunzipBase64('AAAA')).rejects.toBeInstanceOf(ErroNaoSuportado);
+      await expect(descomprimirGzipBase64('AAAA')).rejects.toBeInstanceOf(ErroNaoSuportado);
     } finally {
       globalThis.DecompressionStream = original;
     }
@@ -318,30 +318,30 @@ describe('respostas SOAP defeituosas', () => {
 });
 
 describe('proc: fatias e documento assinado', () => {
-  test('sliceElement injeta os prefixos usados que vêm de ancestrais e o default quando difere', () => {
+  test('recortarElemento injeta os prefixos usados que vêm de ancestrais e o default quando difere', () => {
     const src = `<a:raiz xmlns:a="urn:a" xmlns:b="urn:b" xmlns="urn:d"><a:x b:attr="1"><y/><c:z xmlns:c="urn:c"/></a:x><w/></a:raiz>`;
     const doc = lerXml(src);
     const x = doc.raiz.filhos.find((n) => n.tipo === 'elemento' && n.local === 'x');
     const w = doc.raiz.filhos.find((n) => n.tipo === 'elemento' && n.local === 'w');
     if (x?.tipo !== 'elemento' || w?.tipo !== 'elemento') throw new Error('árvore');
-    expect(sliceElement(doc, x)).toBe(
+    expect(recortarElemento(doc, x)).toBe(
       '<a:x xmlns="urn:d" xmlns:a="urn:a" xmlns:b="urn:b" b:attr="1"><y/><c:z xmlns:c="urn:c"/></a:x>',
     );
     // o <y/> sem prefixo herda urn:d: no envelope cujo default já é urn:d, nada entra
-    expect(sliceElement(doc, x, 'urn:d')).toBe(
+    expect(recortarElemento(doc, x, 'urn:d')).toBe(
       '<a:x xmlns:a="urn:a" xmlns:b="urn:b" b:attr="1"><y/><c:z xmlns:c="urn:c"/></a:x>',
     );
     const cobertos = lerXml('<r xmlns="urn:d"><n:p xmlns:n="urn:n"><q xmlns="urn:q"/></n:p></r>');
     const pp = cobertos.raiz.filhos[0];
     if (pp?.tipo !== 'elemento') throw new Error('árvore');
-    expect(sliceElement(cobertos, pp, '')).toBe('<n:p xmlns:n="urn:n"><q xmlns="urn:q"/></n:p>');
+    expect(recortarElemento(cobertos, pp, '')).toBe('<n:p xmlns:n="urn:n"><q xmlns="urn:q"/></n:p>');
     // Prefixo declarado num ancestral e redeclarado dentro do recorte: nada entra na raiz da fatia.
     const redeclarado = lerXml('<r xmlns:p="urn:p"><x><p:y xmlns:p="urn:p"/></x></r>');
     const rx = redeclarado.raiz.filhos[0];
     if (rx?.tipo !== 'elemento') throw new Error('árvore');
-    expect(sliceElement(redeclarado, rx, '')).toBe('<x><p:y xmlns:p="urn:p"/></x>');
-    expect(sliceElement(doc, w)).toBe('<w xmlns="urn:d"/>');
-    expect(sliceElement(doc, w, 'urn:d')).toBe('<w/>');
+    expect(recortarElemento(redeclarado, rx, '')).toBe('<x><p:y xmlns:p="urn:p"/></x>');
+    expect(recortarElemento(doc, w)).toBe('<w xmlns="urn:d"/>');
+    expect(recortarElemento(doc, w, 'urn:d')).toBe('<w/>');
   });
 
   test('documentoAssinado lê Id e DigestValue e preserva os bytes', async () => {

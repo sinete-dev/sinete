@@ -1,5 +1,5 @@
 /**
- * `@sinete/emissor/nfe`: o emissor de NF-e (`createNfeEmissor`) e o perfil da NF-e (`perfilNfe`).
+ * `@sinete/emissor/nfe`: o emissor de NF-e (`criarEmissorNfe`) e o perfil da NF-e (`perfilNfe`).
  *
  * Importa o `@sinete/nfe` (peer dependency) de forma estática; a raiz do `@sinete/emissor` não o importa.
  *
@@ -12,31 +12,32 @@
 
 import type { Denegado, Recusado, Uf } from '@sinete/core';
 import { contextoDeTempo, ErroDeConfiguracao, ErroDeValidacao, ufPorCUf } from '@sinete/core';
+import { descendentes, lerXml, textoDe } from '@sinete/core/xml';
 import type {
   AutorDocumento,
-  AutorizacaoOutcome,
-  BuildNfeOptions,
   CartaCorrecaoPedido,
-  ConsultaOutcome,
-  EventoOutcome,
+  ClienteNfe,
+  ClienteNfeOpcoes,
+  DadosNfe,
   EventoRegistrado,
-  NfeClient,
-  NfeClientOptions,
-  NfeInput,
+  MontarNfeOpcoes,
   PoliticaRecibo,
   ProtocoloNfe,
   RecuperacaoEvento,
   ResolucaoEnvio,
+  ResultadoAutorizacao,
+  ResultadoConsulta,
+  ResultadoEvento,
 } from '@sinete/nfe';
 import {
+  assinarNfe,
   autorizadorContingencia,
-  buildNfe,
   conferirEmitenteDoCertificado,
-  createNfeClient,
+  criarClienteNfe,
   documentoAssinado,
+  montarNfe,
   recuperarEventoRegistrado,
   resolverEnvioSemResposta,
-  signNfe,
 } from '@sinete/nfe';
 import { conteudoNfe } from './conteudo.ts';
 import type {
@@ -48,39 +49,46 @@ import type {
   SondaSvc,
 } from './contingencia.ts';
 import { codigosDe, codigosSvc } from './cstat.ts';
+import type { PdfNfeOpcoes } from './da.ts';
 import { carregadorDa } from './da.ts';
+
+export type { FormatoPdfNfe, PdfNfeOpcoes, ProtocoloDoEvento } from './da.ts';
+
 import type { ConteudoRegistrado, Desfecho, DesfechoEvento } from './desfecho.ts';
 import { semResposta } from './desfecho.ts';
-import type { ContextoEmissor, Emissor, OpcoesEmissor, PerfilDocumento } from './emissor.ts';
-import { createEmissor } from './emissor.ts';
+import type { ContextoEmissor, Emissor, EmissorOpcoes, PerfilDocumento } from './emissor.ts';
+import { criarEmissor } from './emissor.ts';
 import { eventoRecusado, eventoRegistrado, statusDoRetorno } from './evento.ts';
 import { fimDaSvcPeloMotivo } from './svc.ts';
 
 /** De onde sai o desfecho da NF-e: a autorização (ou o recibo) ou a consulta da chave. */
-export type BrutoNfe = AutorizacaoOutcome | ConsultaOutcome;
+export type BrutoNfe = ResultadoAutorizacao | ResultadoConsulta;
 
 /** Desfecho de `emitir` e `retomar` da NF-e. */
 export type DesfechoNfe = Desfecho<ProtocoloNfe, BrutoNfe>;
 
 /** Desfecho do `cancelar` da NF-e: o evento, ou a consulta que o recuperou. */
-export type DesfechoCancelamentoNfe = DesfechoEvento<EventoRegistrado, EventoOutcome | ConsultaOutcome>;
+export type DesfechoCancelamentoNfe = DesfechoEvento<EventoRegistrado, ResultadoEvento | ResultadoConsulta>;
+
+/** Desfecho da `cartaCorrecao` da NF-e: o evento, ou a consulta que o recuperou. */
+export type DesfechoCartaCorrecaoNfe = DesfechoEvento<EventoRegistrado, ResultadoEvento | ResultadoConsulta>;
 
 /** Opções da montagem além do ambiente (relógio da emissão, IBS/CBS, arredondamento, responsável técnico). */
-export type MontagemNfe = Omit<Partial<BuildNfeOptions>, 'ambiente'>;
+export type MontagemNfe = Omit<Partial<MontarNfeOpcoes>, 'ambiente'>;
 
 /**
  * A nota com opções de montagem só dela, por cima das do emissor: a data de emissão que o sistema do integrador já
  * fixou, o pagamento igual ao total, uma exigência relaxada para este emitente.
  */
 export interface NotaComMontagem {
-  readonly nfe: NfeInput;
+  readonly nfe: DadosNfe;
   readonly montagem: MontagemNfe;
 }
 
 /** A entrada do emissor de NF-e: a nota, ou a nota com a montagem dela. */
-export type EntradaNfe = NfeInput | NotaComMontagem;
+export type EntradaNfe = DadosNfe | NotaComMontagem;
 
-export interface OpcoesPerfilNfe {
+export interface PerfilNfeOpcoes {
   /**
    * UF dos serviços sem documento do `cliente` (status do serviço, inutilização, distribuição). Não escolhe o
    * autorizador da emissão, que sai do documento e da chave.
@@ -95,11 +103,11 @@ export interface OpcoesPerfilNfe {
   readonly montagem?: MontagemNfe;
   /**
    * Opções do cliente além das que o emissor preenche (fuso, endpoints da NFC-e). Sem `contingencia`: a NF-e em SVC
-   * sai da montagem (`NfeInput.contingencia`, tpEmis 6 ou 7) e o autorizador sai da chave.
+   * sai da montagem (`DadosNfe.contingencia`, tpEmis 6 ou 7) e o autorizador sai da chave.
    */
   readonly cliente?: Omit<
-    Partial<NfeClientOptions>,
-    'transport' | 'signer' | 'ambiente' | 'uf' | 'clock' | 'contingencia'
+    Partial<ClienteNfeOpcoes>,
+    'transporte' | 'assinador' | 'ambiente' | 'uf' | 'relogio' | 'contingencia'
   >;
 }
 
@@ -107,6 +115,23 @@ const CODIGOS = codigosDe('nfe');
 
 /** Cancelamento (MOC 7.0, Anexo II, evento 110111). */
 const CANCELAMENTO = '110111';
+/** Carta de correção (MOC 7.0, Anexo II, evento 110110). */
+const CARTA_CORRECAO = '110110';
+
+/** O evento que a recuperação procura na consulta da chave. */
+interface BuscaDoEvento {
+  readonly tpEvento: string;
+  /** Só o desta sequência; sem ela, o de maior `nSeqEvento`. */
+  readonly nSeqEvento?: number;
+  /** O evento registrado é o deste pedido (mesmo conteúdo)? Sem ela, basta o tipo e a sequência. */
+  readonly confere?: (evento: EventoRegistrado) => boolean;
+}
+
+/** `xCorrecao` do pedido de CC-e dentro do `procEventoNFe`. */
+function xCorrecaoDe(procEventoNFe: string): string | undefined {
+  for (const el of descendentes(lerXml(procEventoNFe).raiz)) if (el.local === 'xCorrecao') return textoDe(el);
+  return undefined;
+}
 
 const chaveDe = (xml: string): string => documentoAssinado(xml, 'NFe', 'infNFe').id.slice(3);
 
@@ -116,17 +141,17 @@ function autorDe(ctx: ContextoEmissor): AutorDocumento | undefined {
   return undefined;
 }
 
-/** Perfil da NF-e para o `createEmissor` da raiz. */
+/** Perfil da NF-e para o `criarEmissor` da raiz. */
 export function perfilNfe(
-  opcoes: OpcoesPerfilNfe = {},
-): PerfilDocumento<EntradaNfe, NfeClient, ProtocoloNfe, BrutoNfe> {
+  opcoes: PerfilNfeOpcoes = {},
+): PerfilDocumento<EntradaNfe, ClienteNfe, ProtocoloNfe, BrutoNfe> {
   const recusado = (id: string, r: Recusado, bruto: BrutoNfe): DesfechoNfe => ({
     documento: 'nfe',
     tipo: 'recusado',
     id,
     cStat: r.cStat,
     xMotivo: r.xMotivo,
-    ...(r.dica === undefined ? {} : { hint: r.dica }),
+    ...(r.dica === undefined ? {} : { dica: r.dica }),
     bruto,
   });
 
@@ -148,9 +173,9 @@ export function perfilNfe(
   });
 
   /** Autoriza; 103 espera o recibo; sem resposta, 204 ou 539, resolve pela consulta. `reenvia` limita o reenvio a um. */
-  async function autorizar(cli: NfeClient, xml: string, reenvia: boolean): Promise<DesfechoNfe> {
+  async function autorizar(cli: ClienteNfe, xml: string, reenvia: boolean): Promise<DesfechoNfe> {
     const id = chaveDe(xml);
-    let r: AutorizacaoOutcome;
+    let r: ResultadoAutorizacao;
     let nRec: string | undefined;
     try {
       r = await cli.autorizar(xml);
@@ -200,7 +225,7 @@ export function perfilNfe(
   }
 
   async function resolver(
-    cli: NfeClient,
+    cli: ClienteNfe,
     xml: string,
     anterior: Recusado | undefined,
     erroEnvio: unknown,
@@ -219,7 +244,7 @@ export function perfilNfe(
     }
     switch (res.acao) {
       case 'concluida': {
-        const o = res.outcome;
+        const o = res.resultado;
         if (o.tipo === 'denegado') return denegado(id, xml, o, res.conteudo);
         // A autorização só conclui com o protocolo e o nfeProc destes bytes.
         if (o.tipo === 'autorizado' && o.valor.nfeProc !== undefined) {
@@ -243,10 +268,10 @@ export function perfilNfe(
           tipo: 'pendente',
           id,
           motivo: 'consulta-indefinida',
-          cStat: res.outcome.cStat,
-          xMotivo: res.outcome.xMotivo,
+          cStat: res.resultado.cStat,
+          xMotivo: res.resultado.xMotivo,
           ...ant,
-          bruto: res.outcome,
+          bruto: res.resultado,
         };
       case 'divergente':
         return {
@@ -296,16 +321,16 @@ export function perfilNfe(
    * Cliente da consulta de status por UF, criado no primeiro uso (a sonda da contingência automática): o do autorizador
    * normal e, com `svc`, o da SVC da UF (`contingencia: 'svc'` no cliente).
    */
-  const sondas = new Map<string, NfeClient>();
-  const clienteDaSonda = (uf: string, svc: boolean, ctx: ContextoEmissor): NfeClient => {
+  const sondas = new Map<string, ClienteNfe>();
+  const clienteDaSonda = (uf: string, svc: boolean, ctx: ContextoEmissor): ClienteNfe => {
     const k = `${svc ? 'svc' : 'normal'}:${uf}`;
     let cli = sondas.get(k);
     if (cli === undefined) {
-      cli = createNfeClient({
-        transport: ctx.transporte(),
-        signer: ctx.signer,
+      cli = criarClienteNfe({
+        transporte: ctx.transporte(),
+        assinador: ctx.assinador,
         ambiente: ctx.ambiente,
-        clock: ctx.clock,
+        relogio: ctx.relogio,
         ...(ctx.logger === undefined ? {} : { logger: ctx.logger }),
         ...(ctx.timeoutMs === undefined ? {} : { timeoutMs: ctx.timeoutMs }),
         ...opcoes.cliente,
@@ -344,8 +369,8 @@ export function perfilNfe(
       const tpEmis = escopo.modelo === '65' ? '9' : autorizadorContingencia(escopo.uf as Uf, ctx.ambiente).tpEmis;
       // dhCont não passa da emissão (B28-40): a emissão é a do relógio que a montagem vai usar (o da nota, o das opções
       // de montagem ou o do emissor), que pode estar atrás do banco.
-      const daNota = 'montagem' in entrada ? entrada.montagem.time : undefined;
-      const emissao = (daNota ?? opcoes.montagem?.time ?? contextoDeTempo({ emissao: ctx.clock })).emissao.agora();
+      const daNota = 'montagem' in entrada ? entrada.montagem.tempo : undefined;
+      const emissao = (daNota ?? opcoes.montagem?.tempo ?? contextoDeTempo({ emissao: ctx.relogio })).emissao.agora();
       const dhCont = c.desde.getTime() <= emissao.getTime() ? c.desde : emissao;
       const cont = { tpEmis, dhCont, xJust: c.xJust } as const;
       return 'montagem' in entrada
@@ -371,7 +396,7 @@ export function perfilNfe(
         const detalhe = `${r.cStat} ${r.xMotivo}`;
         if (r.tipo === 'autorizado') return { situacao: 'ativa', detalhe };
         if (codigosSvc.desativando.has(r.cStat)) {
-          return { situacao: 'desativando', fim: fimDaSvcPeloMotivo(r.xMotivo, ctx.clock), detalhe };
+          return { situacao: 'desativando', fim: fimDaSvcPeloMotivo(r.xMotivo, ctx.relogio), detalhe };
         }
         if (codigosSvc.desativada.has(r.cStat)) return { situacao: 'desativada', detalhe };
         return { situacao: 'indisponivel', detalhe };
@@ -396,14 +421,14 @@ export function perfilNfe(
     transitorio: (cStat: string): boolean => CODIGOS.transitorio.has(cStat),
     recusaPorCampoVolatil: (cStat: string): boolean => CODIGOS.campoVolatil.has(cStat),
     conteudoParaRecusa: conteudoNfe,
-    criarCliente(ctx: ContextoEmissor): NfeClient {
+    criarCliente(ctx: ContextoEmissor): ClienteNfe {
       const autor = autorDe(ctx);
-      return createNfeClient({
-        transport: ctx.transporte(),
-        signer: ctx.signer,
+      return criarClienteNfe({
+        transporte: ctx.transporte(),
+        assinador: ctx.assinador,
         ambiente: ctx.ambiente,
         ...(opcoes.uf === undefined ? {} : { uf: opcoes.uf }),
-        clock: ctx.clock,
+        relogio: ctx.relogio,
         ...(autor === undefined ? {} : { autor }),
         ...(ctx.logger === undefined ? {} : { logger: ctx.logger }),
         ...(ctx.timeoutMs === undefined ? {} : { timeoutMs: ctx.timeoutMs }),
@@ -412,13 +437,13 @@ export function perfilNfe(
     },
     async assinar(entrada: EntradaNfe, ctx: ContextoEmissor): Promise<{ readonly id: string; readonly xml: string }> {
       const [nota, daNota] = 'montagem' in entrada ? [entrada.nfe, entrada.montagem] : [entrada, undefined];
-      const r = await buildNfe(nota, {
-        time: contextoDeTempo({ emissao: ctx.clock }),
+      const r = await montarNfe(nota, {
+        tempo: contextoDeTempo({ emissao: ctx.relogio }),
         ...opcoes.montagem,
         ...daNota,
         ambiente: ctx.ambiente,
       });
-      if (!r.ok) throw new ErroDeValidacao('a NF-e não passou na validação', r.issues);
+      if (!r.ok) throw new ErroDeValidacao('a NF-e não passou na validação', r.ocorrencias);
       // O certificado que assina é o do emitente (MOC 7.0 Anexo I, grupo A e F): sem CNPJ nem CPF da ICP-Brasil, a
       // SEFAZ recusa com 282 (A07); com outro CNPJ-base ou outro CPF, com 213 (F03) ou 227 (F03A).
       if (ctx.titular.cnpj === undefined && ctx.titular.cpf === undefined) {
@@ -430,20 +455,20 @@ export function perfilNfe(
       if (doCertificado.length > 0) {
         throw new ErroDeValidacao('o emitente da NF-e não é o titular do certificado', doCertificado);
       }
-      return { id: r.value.chave, xml: await signNfe(r.value, ctx.signer) };
+      return { id: r.valor.chave, xml: await assinarNfe(r.valor, ctx.assinador) };
     },
-    enviar: (cli: NfeClient, xml: string, modo: 'primeiro' | 'retomada'): Promise<DesfechoNfe> =>
+    enviar: (cli: ClienteNfe, xml: string, modo: 'primeiro' | 'retomada'): Promise<DesfechoNfe> =>
       modo === 'primeiro' ? autorizar(cli, xml, true) : resolver(cli, xml, undefined, undefined, true),
   };
 }
 
 /** O que o emissor precisa do `@sinete/da`: o módulo `@sinete/da/nfe` serve como está. */
 export interface ModuloDanfe {
-  danfe(xml: string, opcoes?: object): unknown;
-  toPdf(doc: never): Uint8Array;
+  danfe(xml: string, opcoes?: PdfNfeOpcoes): unknown;
+  gerarPdf(documento: never): Uint8Array;
 }
 
-export interface NfeEmissorOptions extends OpcoesEmissor<ProtocoloNfe, BrutoNfe>, OpcoesPerfilNfe {
+export interface EmissorNfeOpcoes extends EmissorOpcoes<ProtocoloNfe, BrutoNfe>, PerfilNfeOpcoes {
   /**
    * Módulo `@sinete/da/nfe` para o `pdf` e o `pdfCancelado`. Padrão: importado na primeira chamada, se estiver
    * instalado (Node e Bun). No Deno e num bundle de browser, importe `@sinete/da/nfe` de forma estática e passe aqui.
@@ -460,52 +485,63 @@ export interface CancelamentoNfeEmissor {
   readonly autor?: AutorDocumento;
 }
 
-export interface NfeEmissor extends Emissor<EntradaNfe, NfeClient, ProtocoloNfe, BrutoNfe> {
-  consultar(chave: string, nfeAssinada?: string): Promise<ConsultaOutcome>;
+export interface EmissorNfe extends Emissor<EntradaNfe, ClienteNfe, ProtocoloNfe, BrutoNfe> {
+  consultar(chave: string, nfeAssinada?: string): Promise<ResultadoConsulta>;
   /**
    * Cancela (110111) com recuperação: sem `nProt`, consulta a chave e, se a nota já está cancelada, devolve o evento
    * registrado; sem resposta, ou com 573 ou 580, confirma pela consulta se a SEFAZ registrou o cancelamento
    * (`recuperado: true`). Nunca conclui pelo `cStat` sozinho.
    */
   cancelar(pedido: CancelamentoNfeEmissor): Promise<DesfechoCancelamentoNfe>;
-  cartaCorrecao(pedido: CartaCorrecaoPedido): Promise<EventoOutcome>;
-  /** PDF do DANFE a partir do `nfeProc` (`opcoes` são as do `danfe`: `formato`, `logo`). */
-  pdf(nfeProc: string, opcoes?: object): Promise<Uint8Array>;
+  /**
+   * Carta de correção (110110) com a mesma recuperação do `cancelar`: sem resposta, ou com 573 ou 580, confirma pela
+   * consulta se a SEFAZ registrou a CC-e desta sequência (`nSeqEvento`) com este texto (`recuperado: true`). Se a
+   * sequência já tem outra correção registrada, a SEFAZ recusa o pedido e o desfecho é `recusado`: a CC-e seguinte leva
+   * o próximo `nSeqEvento`.
+   */
+  cartaCorrecao(pedido: CartaCorrecaoPedido): Promise<DesfechoCartaCorrecaoNfe>;
+  /** PDF do DANFE a partir do `nfeProc` (`opcoes` são as do `danfe` do `@sinete/da/nfe`). */
+  pdf(nfeProc: string, opcoes?: PdfNfeOpcoes): Promise<Uint8Array>;
   /**
    * PDF do DANFE com a marca de cancelada e o protocolo do evento. Só o render: guardar é do integrador. Se a marca
    * falhar (evento de outra nota, por exemplo), lança, e o integrador decide manter o PDF antigo.
    */
-  pdfCancelado(nfeProc: string, procEventoNFe: string, opcoes?: object): Promise<Uint8Array>;
+  pdfCancelado(
+    nfeProc: string,
+    procEventoNFe: string,
+    opcoes?: Omit<PdfNfeOpcoes, 'cancelamento'>,
+  ): Promise<Uint8Array>;
 }
 
 /**
  * Abre o PFX e devolve o emissor de NF-e. Nada vai à rede até a primeira operação que precisa dela; o certificado fora
  * da validade é recusado aqui (`ErroCertificado`).
  */
-export async function createNfeEmissor(opcoes: NfeEmissorOptions): Promise<NfeEmissor> {
-  const base = await createEmissor(perfilNfe(opcoes), opcoes);
+export async function criarEmissorNfe(opcoes: EmissorNfeOpcoes): Promise<EmissorNfe> {
+  const base = await criarEmissor(perfilNfe(opcoes), opcoes);
   const da = carregadorDa<ModuloDanfe>('nfe', opcoes.da);
 
-  type Bruto = EventoOutcome | ConsultaOutcome;
+  type Bruto = ResultadoEvento | ResultadoConsulta;
   const registrado = (e: EventoRegistrado, recuperado: boolean, bruto: Bruto): DesfechoCancelamentoNfe =>
     eventoRegistrado(e, e.procEventoNFe, statusDoRetorno(e.retEvento), recuperado, bruto);
 
   /**
    * Depois de um pedido sem resposta ou recusado por duplicidade de evento: a consulta diz se a SEFAZ registrou o
-   * cancelamento. Nunca conclui pelo `cStat` do pedido.
+   * evento (o cancelamento, ou a CC-e da sequência pedida e com o mesmo texto). Nunca conclui pelo `cStat` do pedido.
    */
   async function recuperar(
     chave: string,
     falha: { readonly erro: unknown } | Recusado,
+    busca: BuscaDoEvento = { tpEvento: CANCELAMENTO },
   ): Promise<DesfechoCancelamentoNfe> {
     let rec: RecuperacaoEvento;
     try {
-      rec = await recuperarEventoRegistrado(base.cliente, chave, CANCELAMENTO);
+      rec = await recuperarEventoRegistrado(base.cliente, chave, busca.tpEvento, busca.nSeqEvento);
     } catch (e) {
       if (!semResposta(e)) throw e;
       return { tipo: 'pendente', motivo: 'sem-resposta', causa: 'erro' in falha ? falha.erro : e };
     }
-    if (rec.registrado) return registrado(rec.evento, true, rec.consulta);
+    if (rec.registrado && (busca.confere?.(rec.evento) ?? true)) return registrado(rec.evento, true, rec.consulta);
     if ('erro' in falha) return { tipo: 'pendente', motivo: 'sem-resposta', causa: falha.erro, bruto: rec.consulta };
     return eventoRecusado(falha, rec.consulta);
   }
@@ -533,7 +569,7 @@ export async function createNfeEmissor(opcoes: NfeEmissorOptions): Promise<NfeEm
       }
       nProt = achado;
     }
-    let o: EventoOutcome;
+    let o: ResultadoEvento;
     try {
       o = await base.cliente.cancelar({
         chave: p.chave,
@@ -555,6 +591,30 @@ export async function createNfeEmissor(opcoes: NfeEmissorOptions): Promise<NfeEm
     }
   }
 
+  async function cartaCorrecao(p: CartaCorrecaoPedido): Promise<DesfechoCartaCorrecaoNfe> {
+    // A sequência pode já ter outra correção registrada: só é a nossa com o mesmo texto.
+    const busca: BuscaDoEvento = {
+      tpEvento: CARTA_CORRECAO,
+      nSeqEvento: p.nSeqEvento,
+      confere: (e: EventoRegistrado): boolean => xCorrecaoDe(e.procEventoNFe) === p.xCorrecao,
+    };
+    let o: ResultadoEvento;
+    try {
+      o = await base.cliente.cartaCorrecao(p);
+    } catch (e) {
+      if (!semResposta(e)) throw e;
+      return recuperar(p.chave, { erro: e }, busca);
+    }
+    switch (o.tipo) {
+      case 'autorizado':
+        return registrado(o.valor, false, o);
+      case 'recusado':
+        return CODIGOS.eventoJaRegistrado.has(o.cStat) ? recuperar(p.chave, o, busca) : eventoRecusado(o, o);
+      default:
+        return { tipo: 'pendente', motivo: 'consulta-indefinida', cStat: o.cStat, xMotivo: o.xMotivo, bruto: o };
+    }
+  }
+
   return {
     tipo: base.tipo,
     titular: base.titular,
@@ -562,20 +622,24 @@ export async function createNfeEmissor(opcoes: NfeEmissorOptions): Promise<NfeEm
     assinar: base.assinar,
     retomar: base.retomar,
     fechar: base.fechar,
-    get cliente(): NfeClient {
+    get cliente(): ClienteNfe {
       return base.cliente;
     },
-    consultar: (chave: string, nfeAssinada?: string): Promise<ConsultaOutcome> =>
+    consultar: (chave: string, nfeAssinada?: string): Promise<ResultadoConsulta> =>
       base.cliente.consultar(chave, nfeAssinada),
     cancelar,
-    cartaCorrecao: (pedido: CartaCorrecaoPedido): Promise<EventoOutcome> => base.cliente.cartaCorrecao(pedido),
-    async pdf(nfeProc: string, o?: object): Promise<Uint8Array> {
+    cartaCorrecao,
+    async pdf(nfeProc: string, o?: PdfNfeOpcoes): Promise<Uint8Array> {
       const m = await da();
-      return (m.toPdf as (doc: unknown) => Uint8Array)(m.danfe(nfeProc, o));
+      return (m.gerarPdf as (doc: unknown) => Uint8Array)(m.danfe(nfeProc, o));
     },
-    async pdfCancelado(nfeProc: string, procEventoNFe: string, o?: object): Promise<Uint8Array> {
+    async pdfCancelado(
+      nfeProc: string,
+      procEventoNFe: string,
+      o?: Omit<PdfNfeOpcoes, 'cancelamento'>,
+    ): Promise<Uint8Array> {
       const m = await da();
-      return (m.toPdf as (doc: unknown) => Uint8Array)(m.danfe(nfeProc, { ...o, cancelamento: procEventoNFe }));
+      return (m.gerarPdf as (doc: unknown) => Uint8Array)(m.danfe(nfeProc, { ...o, cancelamento: procEventoNFe }));
     },
   };
 }

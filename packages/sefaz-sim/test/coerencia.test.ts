@@ -35,12 +35,12 @@ describe('coerência do estado', () => {
     const lote =
       `<enviNFe versao="4.00" xmlns="${NFE_NS}" xmlns:x="urn:sinete:teste"><idLote>1</idLote><indSinc>1</indSinc>` +
       `${semAssinatura(n.xml)}</enviNFe>`;
-    const assinado = await assinarXml(lote, { id: `NFe${n.chave}` }, c.emitente.signer);
+    const assinado = await assinarXml(lote, { id: `NFe${n.chave}` }, c.emitente.assinador);
     expect(tags(await h.send('NFeAutorizacao', assinado), 'cStat')[1]).toBe('100');
-    const guardada = h.sim.inspect.nfe(n.chave)?.xml as string;
+    const guardada = h.sim.inspecao.nfe(n.chave)?.xml as string;
     expect(guardada).toContain('xmlns:x="urn:sinete:teste"');
     expect((await conferirAssinatura(guardada, { id: `NFe${n.chave}`, elemento: 'infNFe' })).ok).toBe(true);
-    const [proc] = h.sim.inspect.distribuicao(TERCEIRO);
+    const [proc] = h.sim.inspecao.distribuicao(TERCEIRO);
     expect((await conferirAssinatura(proc?.xml ?? '', { id: `NFe${n.chave}`, elemento: 'infNFe' })).ok).toBe(true);
   });
 
@@ -48,8 +48,8 @@ describe('coerência do estado', () => {
     const h = await harness({}, (await certs()).emitente);
     const n = await nfe({ autXML: [EMITENTE, TERCEIRO] });
     await h.send('NFeAutorizacao', enviNFe([n.xml]));
-    expect(h.sim.inspect.distribuicao(EMITENTE)).toHaveLength(0);
-    expect(h.sim.inspect.distribuicao(TERCEIRO).map((d) => d.schema)).toEqual(['procNFe_v4.00.xsd']);
+    expect(h.sim.inspecao.distribuicao(EMITENTE)).toHaveLength(0);
+    expect(h.sim.inspecao.distribuicao(TERCEIRO).map((d) => d.schema)).toEqual(['procNFe_v4.00.xsd']);
     expect(tag(await h.send('NFeDistribuicaoDFe', distDFe(EMITENTE, consChNFe(n.chave))), 'cStat')).toBe('641');
   });
 
@@ -57,14 +57,14 @@ describe('coerência do estado', () => {
     const h = await harness();
     const n = await nfe({ mod: '65' });
     expect(tags(await h.send('NFeAutorizacao', enviNFe([n.xml])), 'cStat')[1]).toBe('100');
-    expect(h.sim.inspect.distribuicao(DESTINATARIO)).toHaveLength(0);
+    expect(h.sim.inspecao.distribuicao(DESTINATARIO)).toHaveLength(0);
   });
 
   test('o recibo do lote síncrono devolvido no 204 é consultável', async () => {
     const h = await harness();
     const n = await nfe();
     const primeira = await h.send('NFeAutorizacao', enviNFe([n.xml]));
-    const nRec = h.sim.inspect.nfe(n.chave)?.nRec as string;
+    const nRec = h.sim.inspecao.nfe(n.chave)?.nRec as string;
     expect(tags(primeira, 'cStat')[1]).toBe('100');
     expect(tags(await h.send('NFeAutorizacao', enviNFe([n.xml])), 'xMotivo')[1]).toContain(`[nRec:${nRec}]`);
     const consulta = await h.send('NFeRetAutorizacao', consReciNFe(nRec));
@@ -74,14 +74,14 @@ describe('coerência do estado', () => {
 
   test('lote assíncrono aceito pela SVC-RS é processado como SVC-RS mesmo com a contingência desligada depois', async () => {
     const h = await harness({ atrasoProcessamentoMs: 1000 });
-    h.sim.setContingencia('SVC-RS');
+    h.sim.definirContingencia('SVC-RS');
     const n = await nfe({ tpEmis: '7' });
     const rec = await h.send('NFeAutorizacao', enviNFe([n.xml], '0'), { autorizador: 'svc' });
     const nRec = tag(rec, 'nRec') as string;
-    h.sim.setContingencia(undefined);
+    h.sim.definirContingencia(undefined);
     h.clock.avancar(1000);
-    await h.sim.settle();
-    const [prot] = h.sim.inspect.lote(nRec)?.protNFe ?? [];
+    await h.sim.processarLotes();
+    const [prot] = h.sim.inspecao.lote(nRec)?.protNFe ?? [];
     expect(prot?.infProt.cStat).toBe('100');
     expect(prot?.infProt.verAplic).toBe('SVC-RS_SINETE_SIM');
     expect(prot?.infProt.nProt).toMatch(/^335/);
@@ -123,7 +123,7 @@ describe('coerência do estado', () => {
         autorizador: 'an',
       },
     );
-    expect(h.sim.inspect.distribuicao(DESTINATARIO).map((d) => d.schema)).toEqual([
+    expect(h.sim.inspecao.distribuicao(DESTINATARIO).map((d) => d.schema)).toEqual([
       'procNFe_v4.00.xsd',
       'procEventoNFe_v1.00.xsd',
     ]);
@@ -137,7 +137,7 @@ describe('coerência do estado', () => {
     const prefixado = `<p:envEvento versao="1.00" xmlns:p="${NFE_NS}"><p:idLote>1</p:idLote>${cce}</p:envEvento>`;
     const r = await h.send('RecepcaoEvento', prefixado);
     expect(tag(r, 'cStat')).toBe('404');
-    expect(h.sim.inspect.eventos(chave)).toHaveLength(0);
+    expect(h.sim.inspecao.eventos(chave)).toHaveLength(0);
   });
 
   test('evento com $$ e $& no texto volta intacto e verificável na consulta de protocolo', async () => {

@@ -1,6 +1,6 @@
 // Verificações do @sinete/ibs-cbs/calcular compartilhadas por Node, Deno e Chromium. Devolve a lista de falhas (vazia = ok).
 import { relogioFixo, contextoDeTempo } from '@sinete/core';
-import { datasetEmbarcado } from '@sinete/ibs-cbs-dados/bundled';
+import { datasetEmbarcado } from '@sinete/ibs-cbs-dados/embarcado';
 import { calcular, ErroClassificacao, Decimal, ErroRegimeNaoSuportado } from '@sinete/ibs-cbs/calcular';
 import { aliquotasOficiais } from '@sinete/ibs-cbs/aliquotas';
 

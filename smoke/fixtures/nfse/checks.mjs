@@ -1,23 +1,23 @@
 // Verificações do @sinete/nfse compartilhadas por Node, Bun, Deno e Chromium. Devolve a lista de falhas (vazia = ok).
 // Monta uma DPS sintética em homologação (CNPJ de exemplo, sem dado real), confere Id, declaração UTF-8 e o leiaute
 // escolhido pela tabela de vigências embutida no bundle, e emite na NFS-e simulada em processo: o cliente resolve as
-// bases pelos dados de endpoints do transporte e o redirectNfseToSim troca só a origem. Por fim, a rejeição com o
+// bases pelos dados de endpoints do transporte e o redirecionarNfseParaSim troca só a origem. Por fim, a rejeição com o
 // catálogo do Anexo I, um parâmetro municipal com cache e o gzip da plataforma.
 import { relogioManual, contextoDeTempo } from '@sinete/core';
 import {
-  buildDps,
+  montarDps,
   codigoServicoParametrizacao,
-  createNfseClient,
-  gunzipBase64,
-  gzipBase64,
-  signDps,
+  criarClienteNfse,
+  descomprimirGzipBase64,
+  comprimirGzipBase64,
+  assinarDps,
 } from '@sinete/nfse';
 import {
-  createNfseSim,
-  redirectNfseToSim,
-  SIM_BASE_URL,
-  simTransport,
-  syntheticCertificate,
+  criarNfseSim,
+  redirecionarNfseParaSim,
+  URL_BASE_SIM,
+  transporteSim,
+  certificadoSintetico,
 } from '@sinete/sefaz-sim';
 
 const PRESTADOR = '11222333000181';
@@ -39,23 +39,23 @@ export async function runChecks() {
     valores: { vServ: '1500.00' },
     tributacao: { issqn: { tribISSQN: '1', tpRetISSQN: '1' }, totTrib: { pTotTribSN: '6.00' } },
   });
-  const r = buildDps(dps('01.01.01'), { ambiente: 'homologacao', time: contextoDeTempo({ emissao: clock }) });
+  const r = await montarDps(dps('01.01.01'), { ambiente: 'homologacao', tempo: contextoDeTempo({ emissao: clock }) });
   expect('monta', r.ok);
   expect('código de 9 dígitos', codigoServicoParametrizacao('010101') === '01.01.01.000');
-  expect('gunzip', (await gunzipBase64(await gzipBase64('ok'))) === 'ok');
+  expect('gunzip', (await descomprimirGzipBase64(await comprimirGzipBase64('ok'))) === 'ok');
   if (!r.ok) return failures;
-  expect('id da DPS', r.value.id === `DPS${SAO_PAULO}2${PRESTADOR}00001000000000000001`);
-  expect('declaração UTF-8', r.value.xml.startsWith('<?xml version="1.0" encoding="UTF-8"?><DPS'));
-  expect('leiaute por vigência', r.value.modulo === 'nfse/1.01-20260727');
+  expect('id da DPS', r.valor.id === `DPS${SAO_PAULO}2${PRESTADOR}00001000000000000001`);
+  expect('declaração UTF-8', r.valor.xml.startsWith('<?xml version="1.0" encoding="UTF-8"?><DPS'));
+  expect('leiaute por vigência', r.valor.modulo === 'nfse/1.01-20260727');
 
-  const ac = await syntheticCertificate({ clock, role: 'ac' });
+  const ac = await certificadoSintetico({ relogio: clock, papel: 'ac' });
   const [servidor, titular] = await Promise.all([
-    syntheticCertificate({ clock, role: 'servidor', issuer: ac }),
-    syntheticCertificate({ clock, role: 'titular', cnpj: PRESTADOR, issuer: ac }),
+    certificadoSintetico({ relogio: clock, papel: 'servidor', emissor: ac }),
+    certificadoSintetico({ relogio: clock, papel: 'titular', cnpj: PRESTADOR, emissor: ac }),
   ]);
-  const sim = createNfseSim({
-    clock,
-    signer: servidor.signer,
+  const sim = criarNfseSim({
+    relogio: clock,
+    assinador: servidor.assinador,
     municipios: [
       {
         cMun: SAO_PAULO,
@@ -67,23 +67,23 @@ export async function runChecks() {
       },
     ],
   });
-  const transport = redirectNfseToSim(simTransport(sim, { clientCertificate: titular.der }), SIM_BASE_URL);
-  const client = createNfseClient({ transport, ambiente: 'homologacao', clock, signer: titular.signer });
-  const assinada = await signDps(r.value, titular.signer);
+  const transport = redirecionarNfseParaSim(transporteSim(sim, { certificadoDoCliente: titular.der }), URL_BASE_SIM);
+  const client = criarClienteNfse({ transporte: transport, ambiente: 'homologacao', relogio: clock, assinador: titular.assinador });
+  const assinada = await assinarDps(r.valor, titular.assinador);
   const gerada = await client.autorizar(assinada);
   expect(
     'NFS-e gerada com a DPS embutida',
     gerada.tipo === 'autorizado' && gerada.valor.chaveAcesso.length === 50 && gerada.valor.xml.includes(assinada.slice(38)),
   );
-  const outra = buildDps(dps('01.02.01'), { ambiente: 'homologacao', time: contextoDeTempo({ emissao: clock }) });
+  const outra = await montarDps(dps('01.02.01'), { ambiente: 'homologacao', tempo: contextoDeTempo({ emissao: clock }) });
   if (outra.ok) {
-    const rej = await client.autorizar(await signDps(outra.value, titular.signer));
+    const rej = await client.autorizar(await assinarDps(outra.valor, titular.assinador));
     expect('rejeição com o catálogo', rej.tipo === 'recusado' && rej.cStat === 'E0312' && rej.dica !== undefined);
   } else expect('monta a segunda', false);
   const conv = await client.parametros.convenio(SAO_PAULO);
   await client.parametros.convenio(SAO_PAULO);
   expect('convênio', conv?.aderenteEmissorNacional === true);
-  expect('cache de parâmetros', sim.inspect.nfses().length === 1);
+  expect('cache de parâmetros', sim.inspecao.nfses().length === 1);
   await transport.fechar();
 
   return failures;

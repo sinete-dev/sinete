@@ -12,7 +12,7 @@ import { descendentes, lerXml, primeiroFilho } from '@sinete/core/xml';
 import type { EndpointResolvido, MdfeServico, Transporte } from '@sinete/transport';
 import { contentTypeSoap12, envelopeSoap12, lerSoapFault } from '@sinete/transport';
 import servicos from '../data/servicos.json' with { type: 'json' };
-import { gzipBase64 } from './gzip.ts';
+import { comprimirGzipBase64 } from './gzip.ts';
 import { MDFE_NS } from './proc.ts';
 
 /** Serviços do MDF-e que o cliente chama (a distribuição de DF-e do MDF-e fica fora deste pacote). */
@@ -35,7 +35,7 @@ export function servicoInfo(servico: MdfeServicoCliente): ServicoInfo {
 /** Corpo SOAP do serviço; na recepção a mensagem vai compactada, nos demais como texto, sem reparse. */
 export async function soapBodyFor(servico: MdfeServicoCliente, mensagem: string): Promise<string> {
   const s = servicoInfo(servico);
-  const dados = s.compactado ? await gzipBase64(mensagem) : mensagem;
+  const dados = s.compactado ? await comprimirGzipBase64(mensagem) : mensagem;
   return `<mdfeDadosMsg xmlns="${s.namespace}">${dados}</mdfeDadosMsg>`;
 }
 

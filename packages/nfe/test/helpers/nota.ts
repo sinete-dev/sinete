@@ -3,7 +3,7 @@
  * (11.222.333/0001-81, 111.444.777-35, IE SP 110.042.490.114); nomes e endereços são inventados.
  */
 import { contextoDeTempo, relogioFixo } from '@sinete/core';
-import type { BuildNfeOptions, IbsCbsCalculator, Item, NfeInput } from '../../src/index.ts';
+import type { CalculadoraIbsCbs, DadosNfe, Item, MontarNfeOpcoes } from '../../src/index.ts';
 import { Decimal } from '../../src/index.ts';
 
 export const CNPJ_EMIT = '11222333000181';
@@ -14,12 +14,12 @@ export const IE_SP = '110042490114';
 /** Emissão em homologação em 26/09/2026 (PL_010f vigente em homologação). */
 export const EMISSAO = '2026-09-26T10:00:00-03:00';
 
-export function opcoes(extra: Partial<BuildNfeOptions> = {}, at: string = EMISSAO): BuildNfeOptions {
+export function opcoes(extra: Partial<MontarNfeOpcoes> = {}, at: string = EMISSAO): MontarNfeOpcoes {
   let seed = 12345;
   return {
     ambiente: 'homologacao',
-    time: contextoDeTempo({ emissao: relogioFixo(at) }),
-    random: (b: Uint8Array): Uint8Array => {
+    tempo: contextoDeTempo({ emissao: relogioFixo(at) }),
+    aleatorio: (b: Uint8Array): Uint8Array => {
       for (let i = 0; i < b.length; i++) {
         seed = (seed * 1103515245 + 12345) % 2 ** 31;
         b[i] = seed & 0xff;
@@ -50,7 +50,7 @@ export function item(extra: Partial<Item> = {}, icms: Item['impostos']['icms'] =
   };
 }
 
-export function nota(extra: Partial<NfeInput> = {}): NfeInput {
+export function nota(extra: Partial<DadosNfe> = {}): DadosNfe {
   return {
     serie: 1,
     nNF: 123,
@@ -90,7 +90,7 @@ export function nota(extra: Partial<NfeInput> = {}): NfeInput {
 }
 
 /** Dublê da calculadora: IBS UF 0,1%, IBS Mun 0%, CBS 0,9% sobre (vProd - vDesc), como na fase de teste de 2026. */
-export const calculadoraFixa: IbsCbsCalculator = {
+export const calculadoraFixa: CalculadoraIbsCbs = {
   calcular({ itens }) {
     return {
       itens: itens.map((i) => {

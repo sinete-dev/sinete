@@ -2,11 +2,11 @@
  * Escritor PDF 1.4 próprio (ADR 0006, decisão 1). Fontes padrão Type1 com `WinAnsiEncoding`, sem embutir: o leitor
  * usa a própria fonte métrica-compatível (Times atende o MOC 7.0, Anexo II, 3.7). Conteúdo comprimido com o deflate
  * do `fflate`, em JS puro, com a mesma saída em qualquer runtime. Sem data de criação e sem `/ID`: os bytes dependem
- * só do `Doc`, então a mesma entrada gera o mesmo arquivo em Node, Bun, Deno e no browser.
+ * só do `Documento`, então a mesma entrada gera o mesmo arquivo em Node, Bun, Deno e no browser.
  */
 
 import { zlibSync } from 'fflate';
-import type { Doc, DocImage, FontName, Op } from '../model.ts';
+import type { Documento, ImagemDoDocumento, NomeDaFonte, Op } from '../model.ts';
 import { decodePng, jpegInfo } from './image.ts';
 import { winAnsiCode } from './text.ts';
 
@@ -32,7 +32,7 @@ function pdfString(s: string): string {
   return `${o})`;
 }
 
-const FONTS: readonly FontName[] = ['Times-Roman', 'Times-Bold', 'Helvetica', 'Helvetica-Bold'];
+const FONTS: readonly NomeDaFonte[] = ['Times-Roman', 'Times-Bold', 'Helvetica', 'Helvetica-Bold'];
 
 function content(ops: readonly Op[], pageH: number, imageNames: ReadonlyMap<string, string>): string {
   const out: string[] = [];
@@ -58,24 +58,24 @@ function content(ops: readonly Op[], pageH: number, imageNames: ReadonlyMap<stri
   };
   for (const op of ops) {
     switch (op.t) {
-      case 'rect':
-        if (op.fill !== undefined)
-          out.push(`${n(op.fill)} g ${X(op.x)} ${Y(op.y + op.h)} ${n(op.w * K)} ${n(op.h * K)} re f 0 g`);
-        if (op.stroke) {
-          stroke(op.stroke, op.dash);
+      case 'retangulo':
+        if (op.preenchimento !== undefined)
+          out.push(`${n(op.preenchimento)} g ${X(op.x)} ${Y(op.y + op.h)} ${n(op.w * K)} ${n(op.h * K)} re f 0 g`);
+        if (op.contorno) {
+          stroke(op.contorno, op.tracejado);
           out.push(`${X(op.x)} ${Y(op.y + op.h)} ${n(op.w * K)} ${n(op.h * K)} re S`);
         }
         break;
-      case 'line':
-        stroke(op.w, op.dash, op.gray);
+      case 'linha':
+        stroke(op.w, op.tracejado, op.cinza);
         out.push(`${X(op.x1)} ${Y(op.y1)} m ${X(op.x2)} ${Y(op.y2)} l S`);
         break;
-      case 'text': {
-        const f = `/F${FONTS.indexOf(op.font) + 1} ${n(op.size)} Tf`;
-        const g = op.rgb ? `${op.rgb.map(n).join(' ')} rg ` : op.gray === undefined ? '' : `${n(op.gray)} g `;
+      case 'texto': {
+        const f = `/F${FONTS.indexOf(op.fonte) + 1} ${n(op.tamanho)} Tf`;
+        const g = op.rgb ? `${op.rgb.map(n).join(' ')} rg ` : op.cinza === undefined ? '' : `${n(op.cinza)} g `;
         const reset = g ? ' 0 g' : '';
-        if (op.rot) {
-          const a = (op.rot * Math.PI) / 180;
+        if (op.rotacao) {
+          const a = (op.rotacao * Math.PI) / 180;
           const c = Math.cos(a);
           const s = Math.sin(a);
           out.push(
@@ -84,11 +84,11 @@ function content(ops: readonly Op[], pageH: number, imageNames: ReadonlyMap<stri
         } else out.push(`${g}BT ${f} ${X(op.x)} ${Y(op.y)} Td ${pdfString(op.s)} Tj ET${reset}`);
         break;
       }
-      case 'bars': {
+      case 'barras': {
         const parts: string[] = [];
         let pos = 0;
-        op.widths.forEach((w, i) => {
-          const len = w * op.module;
+        op.larguras.forEach((w, i) => {
+          const len = w * op.modulo;
           if (i % 2 === 0) {
             parts.push(
               op.vertical
@@ -102,9 +102,9 @@ function content(ops: readonly Op[], pageH: number, imageNames: ReadonlyMap<stri
         break;
       }
       case 'qr': {
-        const m = op.size / op.modules.length;
+        const m = op.tamanho / op.modulos.length;
         const parts: string[] = [];
-        op.modules.forEach((row, r) => {
+        op.modulos.forEach((row, r) => {
           // Módulos escuros contíguos da linha viram um retângulo só.
           let c = 0;
           while (c < row.length) {
@@ -121,8 +121,8 @@ function content(ops: readonly Op[], pageH: number, imageNames: ReadonlyMap<stri
         out.push(`${parts.join(' ')} f`);
         break;
       }
-      case 'image': {
-        const name = imageNames.get(op.ref);
+      case 'imagem': {
+        const name = imageNames.get(op.imagem);
         if (name) out.push(`q ${n(op.w * K)} 0 0 ${n(op.h * K)} ${X(op.x)} ${Y(op.y + op.h)} cm /${name} Do Q`);
         break;
       }
@@ -137,11 +137,11 @@ function latin1(s: string): Uint8Array {
   return u;
 }
 
-export interface PdfOptions {
+export interface PdfOpcoes {
   /** Comprime os fluxos de conteúdo (padrão: sim). Sem compressão serve para inspecionar o PDF. */
-  readonly compress?: boolean;
+  readonly comprimir?: boolean;
   /** Entradas extras no dicionário `/Info` (ex.: `Author`). Nunca grave data aqui se quiser saída determinística. */
-  readonly info?: Readonly<Record<string, string>>;
+  readonly informacoes?: Readonly<Record<string, string>>;
 }
 
 interface ImageObjects {
@@ -150,8 +150,8 @@ interface ImageObjects {
   readonly smask?: { readonly dict: string; readonly data: Uint8Array };
 }
 
-function imageObjects(img: DocImage, compress: boolean): ImageObjects {
-  if (img.format === 'jpeg') {
+function imageObjects(img: ImagemDoDocumento, compress: boolean): ImageObjects {
+  if (img.formato === 'jpeg') {
     const info = jpegInfo(img.bytes);
     const cs = info.components === 1 ? '/DeviceGray' : info.components === 3 ? '/DeviceRGB' : '/DeviceCMYK';
     const decode = info.components === 4 && info.adobe ? ' /Decode [1 0 1 0 1 0 1 0]' : '';
@@ -172,9 +172,9 @@ function imageObjects(img: DocImage, compress: boolean): ImageObjects {
   };
 }
 
-/** Serializa o `Doc` num PDF 1.4. */
-export function toPdf(doc: Doc, options: PdfOptions = {}): Uint8Array {
-  const compress = options.compress ?? true;
+/** Serializa o `Documento` num PDF 1.4. */
+export function gerarPdf(documento: Documento, opcoes: PdfOpcoes = {}): Uint8Array {
+  const compress = opcoes.comprimir ?? true;
   const chunks: Uint8Array[] = [];
   const offsets: number[] = [];
   let pos = 0;
@@ -201,8 +201,8 @@ export function toPdf(doc: Doc, options: PdfOptions = {}): Uint8Array {
   // Imagens em ordem estável de chave, cada uma com a SMask logo depois.
   const imageNames = new Map<string, string>();
   const imageIds: { id: number; name: string; objs: ImageObjects; smaskId?: number }[] = [];
-  for (const [i, key] of Object.keys(doc.images).sort().entries()) {
-    const img = doc.images[key];
+  for (const [i, key] of Object.keys(documento.imagens).sort().entries()) {
+    const img = documento.imagens[key];
     if (!img) continue;
     const objs = imageObjects(img, compress);
     const id = alloc();
@@ -210,23 +210,23 @@ export function toPdf(doc: Doc, options: PdfOptions = {}): Uint8Array {
     imageNames.set(key, name);
     imageIds.push(objs.smask ? { id, name, objs, smaskId: alloc() } : { id, name, objs });
   }
-  const pageIds = doc.pages.map(() => [alloc(), alloc()] as const);
+  const pageIds = documento.paginas.map(() => [alloc(), alloc()] as const);
   // O PDF limita a página a 14.400 pt (5.080 mm; ISO 32000-1, anexo C). A bobina não tem limite de altura: acima disso a
   // página usa `/UserUnit` (PDF 1.6), com a MediaBox e o conteúdo divididos pelo mesmo fator. Abaixo, nada muda. Leitor
   // que ignora o `/UserUnit` (o poppler, por exemplo) mostra a página inteira em escala menor, sem cortar.
-  const units = doc.pages.map((p) => Math.max(1, Math.ceil((Math.max(p.w, p.h) * K) / MAX_PT)));
+  const units = documento.paginas.map((p) => Math.max(1, Math.ceil((Math.max(p.w, p.h) * K) / MAX_PT)));
   const version = units.some((u) => u > 1) ? '1.6' : '1.4';
 
   push(`%PDF-${version}\n%\xe2\xe3\xcf\xd3\n`);
   writeObj(catalog, `<< /Type /Catalog /Pages ${pagesId} 0 R >>`);
   writeObj(
     pagesId,
-    `<< /Type /Pages /Count ${doc.pages.length} /Kids [${pageIds.map(([p]) => `${p} 0 R`).join(' ')}] >>`,
+    `<< /Type /Pages /Count ${documento.paginas.length} /Kids [${pageIds.map(([p]) => `${p} 0 R`).join(' ')}] >>`,
   );
   FONTS.forEach((f, i) => {
     writeObj(fontIds[i] ?? 0, `<< /Type /Font /Subtype /Type1 /BaseFont /${f} /Encoding /WinAnsiEncoding >>`);
   });
-  const info: Record<string, string> = { Title: doc.title, Producer: 'sinete', ...options.info };
+  const info: Record<string, string> = { Title: documento.titulo, Producer: 'sinete', ...opcoes.informacoes };
   writeObj(
     infoId,
     `<< ${Object.entries(info)
@@ -240,7 +240,7 @@ export function toPdf(doc: Doc, options: PdfOptions = {}): Uint8Array {
   }
   const fontRes = `/Font << ${FONTS.map((_, i) => `/F${i + 1} ${fontIds[i]} 0 R`).join(' ')} >>`;
   const xobj = imageIds.length ? ` /XObject << ${imageIds.map((im) => `/${im.name} ${im.id} 0 R`).join(' ')} >>` : '';
-  doc.pages.forEach((p, i) => {
+  documento.paginas.forEach((p, i) => {
     const [pid, cid] = pageIds[i] ?? [0, 0];
     const u = units[i] ?? 1;
     const unit = u > 1 ? ` /UserUnit ${u}` : '';

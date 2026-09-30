@@ -1,26 +1,26 @@
 /**
  * Ponta a ponta: o `@sinete/mdfe` contra o `@sinete/sefaz-sim` pelo `@sinete/transport` real, em HTTPS com mTLS. A
  * AC, o e-CPF do produtor, o e-CNPJ da transportadora e o certificado do servidor são gerados na hora (nada vai para o
- * repo). O cliente resolve os endpoints do MDF-e (SVRS) pelos dados do transporte, como em produção; o `redirectToSim`
+ * repo). O cliente resolve os endpoints do MDF-e (SVRS) pelos dados do transporte, como em produção; o `redirecionarParaSim`
  * troca só a URL de cada pedido.
  */
 import { afterEach, beforeAll, describe, expect, test } from 'bun:test';
 import type { RelogioManual } from '@sinete/core';
 import { contextoDeTempo, ErroDeTempoEsgotado, relogioManual } from '@sinete/core';
 import { conferirAssinatura } from '@sinete/core/xml';
-import type { SefazSim, SyntheticCertificate } from '@sinete/sefaz-sim';
-import { createSefazSim, redirectToSim, startSefazSimServer, syntheticCertificate } from '@sinete/sefaz-sim';
+import type { CertificadoSintetico, SefazSim } from '@sinete/sefaz-sim';
+import { certificadoSintetico, criarSefazSim, iniciarServidorSefazSim, redirecionarParaSim } from '@sinete/sefaz-sim';
 import type { Transporte } from '@sinete/transport';
 import { criarTransporte } from '@sinete/transport';
-import type { BuildMdfeOptions, MdfeClient, MdfeInput } from '../../src/index.ts';
-import { buildMdfe, createMdfeClient, resolverEnvioSemResposta, signMdfe } from '../../src/index.ts';
+import type { ClienteMdfe, DadosMdfe, MontarMdfeOpcoes } from '../../src/index.ts';
+import { assinarMdfe, criarClienteMdfe, montarMdfe, resolverEnvioSemResposta } from '../../src/index.ts';
 import { CNPJ_EMIT, CPF_EMIT, cargaPropria, EMISSAO, opcoes, prestador } from '../helpers/mdfe.ts';
 
 interface Certs {
-  readonly ac: SyntheticCertificate;
-  readonly servidor: SyntheticCertificate;
-  readonly produtor: SyntheticCertificate;
-  readonly transportadora: SyntheticCertificate;
+  readonly ac: CertificadoSintetico;
+  readonly servidor: CertificadoSintetico;
+  readonly produtor: CertificadoSintetico;
+  readonly transportadora: CertificadoSintetico;
 }
 
 let c: Certs;
@@ -28,11 +28,11 @@ const fechar: (() => Promise<void>)[] = [];
 
 beforeAll(async () => {
   const clock = relogioManual(EMISSAO);
-  const ac = await syntheticCertificate({ clock, role: 'ac', validDays: 3650 });
+  const ac = await certificadoSintetico({ relogio: clock, papel: 'ac', diasDeValidade: 3650 });
   const [servidor, produtor, transportadora] = await Promise.all([
-    syntheticCertificate({ clock, role: 'servidor', issuer: ac }),
-    syntheticCertificate({ clock, role: 'titular', cpf: CPF_EMIT, issuer: ac }),
-    syntheticCertificate({ clock, role: 'titular', cnpj: CNPJ_EMIT, issuer: ac }),
+    certificadoSintetico({ relogio: clock, papel: 'servidor', emissor: ac }),
+    certificadoSintetico({ relogio: clock, papel: 'titular', cpf: CPF_EMIT, emissor: ac }),
+    certificadoSintetico({ relogio: clock, papel: 'titular', cnpj: CNPJ_EMIT, emissor: ac }),
   ]);
   c = { ac, servidor, produtor, transportadora };
 }, 60_000);
@@ -46,26 +46,26 @@ interface Cenario {
   readonly sim: SefazSim;
   /** Caminhos pedidos ao simulador, na ordem. */
   readonly caminhos: string[];
-  cliente(canal: SyntheticCertificate, timeoutMs?: number): MdfeClient;
+  cliente(canal: CertificadoSintetico, timeoutMs?: number): ClienteMdfe;
   emitir(
-    input: MdfeInput,
-    assinante: SyntheticCertificate,
-    o?: Partial<BuildMdfeOptions>,
+    input: DadosMdfe,
+    assinante: CertificadoSintetico,
+    o?: Partial<MontarMdfeOpcoes>,
   ): Promise<{ chave: string; xml: string }>;
 }
 
 async function cenario(): Promise<Cenario> {
   const clock = relogioManual(EMISSAO);
-  const sim = createSefazSim({ clock, uf: 'MT' });
-  const server = await startSefazSimServer(sim, { cert: c.servidor.pem, key: c.servidor.keyPem });
+  const sim = criarSefazSim({ relogio: clock, uf: 'MT' });
+  const server = await iniciarServidorSefazSim(sim, { certificado: c.servidor.pem, chave: c.servidor.chavePem });
   const caminhos: string[] = [];
   const transports: Transporte[] = [];
   fechar.push(async () => {
     for (const t of transports) await t.fechar();
-    await server.close();
+    await server.fechar();
   });
-  const cliente = (canal: SyntheticCertificate, timeoutMs = 10_000): MdfeClient => {
-    const real = criarTransporte({ identidade: canal.tlsIdentity, acsAdicionais: [c.ac.pem], timeoutMs });
+  const cliente = (canal: CertificadoSintetico, timeoutMs = 10_000): ClienteMdfe => {
+    const real = criarTransporte({ identidade: canal.identidadeTls, acsAdicionais: [c.ac.pem], timeoutMs });
     const gravador: Transporte = {
       capacidades: real.capacidades,
       enviar: (r) => {
@@ -74,20 +74,20 @@ async function cenario(): Promise<Cenario> {
       },
       fechar: () => real.fechar(),
     };
-    const transport = redirectToSim(gravador, server.baseUrl);
+    const transport = redirecionarParaSim(gravador, server.urlBase);
     transports.push(transport);
-    return createMdfeClient({
-      transport,
-      signer: canal.signer,
+    return criarClienteMdfe({
+      transporte: transport,
+      assinador: canal.assinador,
       ambiente: 'homologacao',
-      clock,
+      relogio: clock,
       autor: canal === c.produtor ? { CPF: CPF_EMIT } : { CNPJ: CNPJ_EMIT },
     });
   };
   const emitir: Cenario['emitir'] = async (input, assinante, o = {}) => {
-    const b = buildMdfe(input, { ...opcoes(), time: contextoDeTempo({ emissao: clock }), ...o });
-    if (!b.ok) throw new Error(b.issues.map((i) => `${i.caminho}: ${i.mensagem}`).join('\n'));
-    return { chave: b.value.chave, xml: await signMdfe(b.value, assinante.signer) };
+    const b = await montarMdfe(input, { ...opcoes(), tempo: contextoDeTempo({ emissao: clock }), ...o });
+    if (!b.ok) throw new Error(b.ocorrencias.map((i) => `${i.caminho}: ${i.mensagem}`).join('\n'));
+    return { chave: b.valor.chave, xml: await assinarMdfe(b.valor, assinante.assinador) };
   };
   return { clock, sim, caminhos, cliente, emitir };
 }
@@ -147,13 +147,13 @@ describe('MDF-e contra a SEFAZ simulada, HTTPS com mTLS', () => {
   test('processou e não respondeu: timeout, e o resolvedor recupera o mdfeProc pela consulta', async () => {
     const cen = await cenario();
     const mdfe = await cen.emitir(cargaPropria(), c.produtor);
-    cen.sim.injectFault({ kind: 'hang', phase: 'after' }, { servico: 'MDFeRecepcaoSinc' });
+    cen.sim.injetarFalha({ tipo: 'travar', fase: 'depois' }, { servico: 'MDFeRecepcaoSinc' });
     const apressado = cen.cliente(c.produtor, 400);
     expect(await apressado.autorizar(mdfe.xml).catch((e: unknown) => e)).toBeInstanceOf(ErroDeTempoEsgotado);
-    expect(cen.sim.inspect.mdfe(mdfe.chave)?.situacao).toBe('autorizado');
+    expect(cen.sim.inspecao.mdfe(mdfe.chave)?.situacao).toBe('autorizado');
     const res = await resolverEnvioSemResposta(cen.cliente(c.produtor), mdfe.xml);
     expect(res.acao).toBe('concluida');
     if (res.acao === 'concluida')
-      expect(res.outcome.tipo === 'autorizado' && res.outcome.valor.mdfeProc).toContain(mdfe.xml);
+      expect(res.resultado.tipo === 'autorizado' && res.resultado.valor.mdfeProc).toContain(mdfe.xml);
   });
 });

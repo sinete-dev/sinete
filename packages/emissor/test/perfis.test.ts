@@ -5,15 +5,15 @@
  */
 import { beforeAll, describe, expect, test } from 'bun:test';
 import { contextoDeTempo, ErroDeConfiguracao, ErroDeTempoEsgotado, relogioFixo, relogioManual } from '@sinete/core';
-import type { MdfeClient } from '@sinete/mdfe';
-import type { NfeClient } from '@sinete/nfe';
-import type { NfseClient } from '@sinete/nfse';
-import { syntheticCertificate, syntheticPfx } from '@sinete/sefaz-sim';
-import type { Desfecho, DocumentoAssinado, OpcoesEmissor } from '../src/index.ts';
-import { createMdfeEmissor, perfilMdfe } from '../src/mdfe.ts';
-import { createMemoriaStore } from '../src/memoria.ts';
-import { createNfeEmissor, perfilNfe } from '../src/nfe.ts';
-import { createNfseEmissor, perfilNfse } from '../src/nfse.ts';
+import type { ClienteMdfe } from '@sinete/mdfe';
+import type { ClienteNfe } from '@sinete/nfe';
+import type { ClienteNfse } from '@sinete/nfse';
+import { certificadoSintetico, pfxSintetico } from '@sinete/sefaz-sim';
+import type { Desfecho, DocumentoAssinado, EmissorOpcoes } from '../src/index.ts';
+import { criarEmissorMdfe, perfilMdfe } from '../src/mdfe.ts';
+import { criarMemoriaStore } from '../src/memoria.ts';
+import { criarEmissorNfe, perfilNfe } from '../src/nfe.ts';
+import { criarEmissorNfse, perfilNfse } from '../src/nfse.ts';
 import { CPF_EMIT, cargaPropria } from './helpers/mdfe.ts';
 import { dps, gerarCerts } from './helpers/nfse.ts';
 import { CNPJ_DEST, CNPJ_EMIT, EMISSAO, nota } from './helpers/nota.ts';
@@ -29,36 +29,36 @@ const DESTINATARIO = {
 let nfe: DocumentoAssinado;
 let mdfe: DocumentoAssinado;
 let nfse: DocumentoAssinado;
-let emissorNfe: Awaited<ReturnType<typeof createNfeEmissor>>;
-let emissorMdfe: Awaited<ReturnType<typeof createMdfeEmissor>>;
+let emissorNfe: Awaited<ReturnType<typeof criarEmissorNfe>>;
+let emissorMdfe: Awaited<ReturnType<typeof criarEmissorMdfe>>;
 
-const comum = (pfx: Uint8Array): OpcoesEmissor => ({
+const comum = (pfx: Uint8Array): EmissorOpcoes => ({
   pfx,
   senha: SENHA,
   ambiente: 'homologacao',
-  clock: relogioManual(EMISSAO),
-  store: createMemoriaStore(),
+  relogio: relogioManual(EMISSAO),
+  store: criarMemoriaStore(),
   aoDecidir: () => {},
 });
 
 beforeAll(async () => {
   const clock = relogioManual(EMISSAO);
-  const ac = await syntheticCertificate({ clock, role: 'ac', validDays: 3650 });
-  const emitente = await syntheticCertificate({ clock, role: 'titular', cnpj: CNPJ_EMIT, issuer: ac });
-  const produtor = await syntheticCertificate({ clock, role: 'titular', cpf: CPF_EMIT, issuer: ac });
+  const ac = await certificadoSintetico({ relogio: clock, papel: 'ac', diasDeValidade: 3650 });
+  const emitente = await certificadoSintetico({ relogio: clock, papel: 'titular', cnpj: CNPJ_EMIT, emissor: ac });
+  const produtor = await certificadoSintetico({ relogio: clock, papel: 'titular', cpf: CPF_EMIT, emissor: ac });
   const c = await gerarCerts();
-  const eNfe = await createNfeEmissor(comum(syntheticPfx(emitente, SENHA, { chain: [ac] })));
+  const eNfe = await criarEmissorNfe(comum(pfxSintetico(emitente, SENHA, { cadeia: [ac] })));
   emissorNfe = eNfe;
   nfe = await eNfe.assinar(nota({ nNF: 1, destinatario: DESTINATARIO }));
-  const eMdfe = await createMdfeEmissor({
-    ...comum(syntheticPfx(produtor, SENHA, { chain: [ac] })),
-    clock: relogioManual('2026-09-26T10:00:00-04:00'),
+  const eMdfe = await criarEmissorMdfe({
+    ...comum(pfxSintetico(produtor, SENHA, { cadeia: [ac] })),
+    relogio: relogioManual('2026-09-26T10:00:00-04:00'),
   });
   mdfe = await eMdfe.assinar(cargaPropria());
   emissorMdfe = eMdfe;
-  const eNfse = await createNfseEmissor({
-    ...comum(syntheticPfx(c.prestador, SENHA, { chain: [c.ac] })),
-    clock: relogioManual('2026-09-25T10:00:00-03:00'),
+  const eNfse = await criarEmissorNfse({
+    ...comum(pfxSintetico(c.prestador, SENHA, { cadeia: [c.ac] })),
+    relogio: relogioManual('2026-09-25T10:00:00-03:00'),
   });
   nfse = await eNfse.assinar(dps());
 }, 60_000);
@@ -84,7 +84,7 @@ const tipo = (d: Desfecho): string => (d.tipo === 'pendente' ? `pendente/${d.mot
 
 describe('perfil da NF-e', () => {
   const enviar = (c: Partial<Record<string, unknown[]>>, modo: 'primeiro' | 'retomada' = 'primeiro') =>
-    perfilNfe().enviar(cliente<NfeClient>(c as Record<string, unknown[]>), nfe.xml, modo);
+    perfilNfe().enviar(cliente<ClienteNfe>(c as Record<string, unknown[]>), nfe.xml, modo);
 
   test('reenvio que volta 204 de novo: recusado com o 204, e os bytes ficam (indefinido)', async () => {
     const d = await enviar({ autorizar: [duplicidade, duplicidade], consultar: [naoConsta, naoConsta] });
@@ -134,7 +134,7 @@ describe('perfil da NF-e', () => {
     const emissao = new Date('2026-09-27T08:30:00-03:00');
     const a = await emissorNfe.assinar({
       nfe: nota({ nNF: 2, destinatario: DESTINATARIO }),
-      montagem: { time: contextoDeTempo({ emissao: relogioFixo(emissao) }) },
+      montagem: { tempo: contextoDeTempo({ emissao: relogioFixo(emissao) }) },
     });
     expect(a.xml).toContain('<dhEmi>2026-09-27T08:30:00-03:00</dhEmi>');
     expect(nfe.xml).not.toContain('<dhEmi>2026-09-27T08:30:00-03:00</dhEmi>');
@@ -150,7 +150,7 @@ describe('perfil da NF-e', () => {
 
 describe('perfil do MDF-e', () => {
   const enviar = (c: Partial<Record<string, unknown[]>>, modo: 'primeiro' | 'retomada' = 'primeiro') =>
-    perfilMdfe().enviar(cliente<MdfeClient>(c as Record<string, unknown[]>), mdfe.xml, modo);
+    perfilMdfe().enviar(cliente<ClienteMdfe>(c as Record<string, unknown[]>), mdfe.xml, modo);
 
   test('recusa comum, duplicidade no reenvio e reenvio sem resposta', async () => {
     const recusa = { tipo: 'recusado', cStat: '611', xMotivo: 'Rejeição: existe MDF-e não encerrado' };
@@ -178,7 +178,7 @@ describe('perfil do MDF-e', () => {
     const emissao = new Date('2026-09-26T08:15:00-04:00');
     const a = await emissorMdfe.assinar({
       mdfe: cargaPropria(),
-      montagem: { time: contextoDeTempo({ emissao: relogioFixo(emissao) }) },
+      montagem: { tempo: contextoDeTempo({ emissao: relogioFixo(emissao) }) },
     });
     expect(a.xml).toContain('<dhEmi>2026-09-26T08:15:00-04:00</dhEmi>');
   });
@@ -194,14 +194,14 @@ describe('perfil do MDF-e', () => {
 describe('perfil da NFS-e', () => {
   const enviar = (c: Partial<Record<string, unknown[]>>, modo: 'primeiro' | 'retomada' = 'primeiro') =>
     perfilNfse().enviar(
-      { ...cliente<NfseClient>(c as Record<string, unknown[]>), ambiente: 'homologacao' } as NfseClient,
+      { ...cliente<ClienteNfse>(c as Record<string, unknown[]>), ambiente: 'homologacao' } as ClienteNfse,
       nfse.xml,
       modo,
     );
-  const e0014 = { tipo: 'recusado', cStat: 'E0014', xMotivo: 'DPS já gerou NFS-e', erros: [], httpStatus: 400 };
+  const e0014 = { tipo: 'recusado', cStat: 'E0014', xMotivo: 'DPS já gerou NFS-e', erros: [], statusHttp: 400 };
 
   test('recusa comum; duplicidade no reenvio; reenvio sem resposta', async () => {
-    const recusa = { tipo: 'recusado', cStat: 'E0312', xMotivo: 'x', erros: [], httpStatus: 400 };
+    const recusa = { tipo: 'recusado', cStat: 'E0312', xMotivo: 'x', erros: [], statusHttp: 400 };
     expect(tipo(await enviar({ autorizar: [recusa] }))).toBe('recusado');
     const cli = { consultarDps: [undefined, undefined] };
     const dup = await enviar({ autorizar: [e0014, e0014], ...cli });
@@ -212,7 +212,7 @@ describe('perfil da NFS-e', () => {
   });
 
   test('DPS sem Id é erro de configuração', async () => {
-    await expect(perfilNfse().enviar(cliente<NfseClient>({}), '<DPS/>', 'retomada')).rejects.toBeInstanceOf(
+    await expect(perfilNfse().enviar(cliente<ClienteNfse>({}), '<DPS/>', 'retomada')).rejects.toBeInstanceOf(
       ErroDeConfiguracao,
     );
   });

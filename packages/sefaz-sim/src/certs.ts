@@ -21,8 +21,8 @@ import {
 import type { Documento } from './state.ts';
 
 /** Identidade lida de um certificado: CNPJ ou CPF do `otherName` ICP-Brasil, quando houver. */
-export interface CertIdentity extends Documento {
-  readonly info: CertificadoX509;
+export interface IdentidadeDoCertificado extends Documento {
+  readonly certificado: CertificadoX509;
 }
 
 function readCert(der: Uint8Array): CertificadoX509 | undefined {
@@ -41,23 +41,23 @@ function identityOf(info: CertificadoX509): Documento {
   return id.cpf === undefined ? {} : { CPF: id.cpf };
 }
 
-export type CertCheck =
-  | { readonly ok: true; readonly identity: CertIdentity }
+export type ConferenciaDoCertificado =
+  | { readonly ok: true; readonly identidade: IdentidadeDoCertificado }
   | { readonly ok: false; readonly cStat: string };
 
 /**
  * Grupo A (certificado de transmissão, no TLS): A01 (280) ilegível, de AC ou sem `clientAuth`; A02 (281) fora da
  * validade; A07 (282) sem CNPJ nem CPF no `otherName`.
  */
-export function checkTransmissor(der: Uint8Array, now: number): CertCheck {
+export function conferirTransmissor(der: Uint8Array, agora: number): ConferenciaDoCertificado {
   const info = readCert(der);
   if (info === undefined || info.version !== 3 || info.isCA || !info.extKeyUsage.includes('clientAuth')) {
     return { ok: false, cStat: '280' };
   }
-  if (now < info.notBefore || now > info.notAfter) return { ok: false, cStat: '281' };
+  if (agora < info.notBefore || agora > info.notAfter) return { ok: false, cStat: '281' };
   const doc = identityOf(info);
   if (doc.CNPJ === undefined && doc.CPF === undefined) return { ok: false, cStat: '282' };
-  return { ok: true, identity: { ...doc, info } };
+  return { ok: true, identidade: { ...doc, certificado: info } };
 }
 
 function signatureFor(doc: DocumentoXml, id: string): ElementoXml | undefined {
@@ -82,24 +82,24 @@ function certificateOf(sig: ElementoXml): Uint8Array | undefined {
   }
 }
 
-export interface SignatureCheckInput {
-  readonly doc: DocumentoXml;
+export interface EntradaConferenciaAssinatura {
+  readonly documento: DocumentoXml;
   /** `Id` do elemento assinado (`NFe<chave>`, `ID110111<chave>01`, `ID<cUF><ano>...`). */
   readonly id: string;
   /** Nome local do elemento assinado (`infNFe`, `infEvento`, `infInut`). */
-  readonly element: string;
-  readonly now: number;
+  readonly elemento: string;
+  readonly agora: number;
   /** Documento que precisa ter a mesma raiz de CNPJ (ou o mesmo CPF) do certificado: regra F03 (213) ou F03A (227). */
   readonly titular: Documento;
 }
 
-export type SignatureCheck =
+export type ConferenciaDaAssinatura =
   | {
       readonly ok: true;
-      readonly identity: CertIdentity;
+      readonly identidade: IdentidadeDoCertificado;
       readonly digestValue: string;
       /** Certificado da assinatura (DER): confere também a assinatura do QR Code da NFC-e off-line. */
-      readonly certificateDer: Uint8Array;
+      readonly certificadoDer: Uint8Array;
     }
   | { readonly ok: false; readonly cStat: string };
 
@@ -109,8 +109,10 @@ export type SignatureCheck =
  * algoritmos); F02 (297) valor da assinatura não confere; F03 (213) e F03A (227) raiz do CNPJ ou CPF do titular
  * diferente da do certificado.
  */
-export async function checkAssinatura(input: SignatureCheckInput): Promise<SignatureCheck> {
-  const sig = signatureFor(input.doc, input.id);
+export async function conferirAssinaturaDoDocumento(
+  entrada: EntradaConferenciaAssinatura,
+): Promise<ConferenciaDaAssinatura> {
+  const sig = signatureFor(entrada.documento, entrada.id);
   if (!sig) return { ok: false, cStat: '298' };
   const der = certificateOf(sig);
   const info = der === undefined ? undefined : readCert(der);
@@ -123,14 +125,14 @@ export async function checkAssinatura(input: SignatureCheckInput): Promise<Signa
   ) {
     return { ok: false, cStat: '290' };
   }
-  if (input.now < info.notBefore || input.now > info.notAfter) return { ok: false, cStat: '291' };
+  if (entrada.agora < info.notBefore || entrada.agora > info.notAfter) return { ok: false, cStat: '291' };
   const doc = identityOf(info);
   if (doc.CNPJ === undefined && doc.CPF === undefined) return { ok: false, cStat: '292' };
-  const r = await conferirAssinatura(input.doc, { id: input.id, elemento: input.element });
+  const r = await conferirAssinatura(entrada.documento, { id: entrada.id, elemento: entrada.elemento });
   if (!r.ok) {
     return { ok: false, cStat: r.motivo === 'digest-diverge' || r.motivo === 'assinatura-invalida' ? '297' : '298' };
   }
-  const titular = input.titular;
+  const titular = entrada.titular;
   if (doc.CNPJ !== undefined && titular.CNPJ !== undefined && doc.CNPJ.slice(0, 8) !== titular.CNPJ.slice(0, 8)) {
     return { ok: false, cStat: '213' };
   }
@@ -140,8 +142,8 @@ export async function checkAssinatura(input: SignatureCheckInput): Promise<Signa
   const digest = dv && primeiroFilho(dv, 'DigestValue', XMLDSIG_NS);
   return {
     ok: true,
-    identity: { ...doc, info },
+    identidade: { ...doc, certificado: info },
     digestValue: digest ? textoDe(digest).trim() : '',
-    certificateDer: der as Uint8Array,
+    certificadoDer: der as Uint8Array,
   };
 }

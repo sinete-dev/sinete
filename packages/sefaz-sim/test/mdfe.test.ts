@@ -6,22 +6,31 @@ import { describe, expect, test } from 'bun:test';
 import { ErroDeConfiguracao } from '@sinete/core';
 import { mdfeEndpoint } from '@sinete/transport';
 import { montarChaveAcesso } from '@sinete/validators';
-import type { SyntheticCertificate } from '../src/index.ts';
-import { MDFE_SERVICES, redirectToSim, routeOf, SIM_BASE_URL, simTransport } from '../src/index.ts';
+import type { CertificadoSintetico } from '../src/index.ts';
+import { redirecionarParaSim, rotaDe, SERVICOS_MDFE, transporteSim, URL_BASE_SIM } from '../src/index.ts';
 import { CPF, cnpj, EMITENTE, harness, TERCEIRO, tag, tags } from './helpers.ts';
-import { consNaoEnc, consSit, consStat, detMdfe, eventoMdfe, gzipBase64, mdfe, sendMdfe } from './mdfe-helpers.ts';
+import {
+  comprimirGzipBase64,
+  consNaoEnc,
+  consSit,
+  consStat,
+  detMdfe,
+  eventoMdfe,
+  mdfe,
+  sendMdfe,
+} from './mdfe-helpers.ts';
 
 const HORA = 3_600_000;
 
 describe('rotas e envelope', () => {
   test('caminhos na UF simulada e nomes dos WSDL do MDF-e', () => {
-    expect(routeOf('/uf/ws/MDFeRecepcaoSinc')?.def).toBe(MDFE_SERVICES.MDFeRecepcaoSinc);
-    expect(routeOf('/svc/ws/MDFeConsulta')).toBeUndefined();
+    expect(rotaDe('/uf/ws/MDFeRecepcaoSinc')?.definicao).toBe(SERVICOS_MDFE.MDFeRecepcaoSinc);
+    expect(rotaDe('/svc/ws/MDFeConsulta')).toBeUndefined();
   });
 
-  test('redirectToSim atende o MDF-e dos dados do transporte e recusa a distribuição', async () => {
+  test('redirecionarParaSim atende o MDF-e dos dados do transporte e recusa a distribuição', async () => {
     const h = await harness();
-    const t = redirectToSim(simTransport(h.sim, { clientCertificate: h.c.ecpf.der }), SIM_BASE_URL);
+    const t = redirecionarParaSim(transporteSim(h.sim, { certificadoDoCliente: h.c.ecpf.der }), URL_BASE_SIM);
     const ep = mdfeEndpoint({ ambiente: 'homologacao', servico: 'MDFeDistribuicaoDFe' });
     await expect(t.enviar({ url: ep.url, endpoint: ep, corpo: '' })).rejects.toBeInstanceOf(ErroDeConfiguracao);
   });
@@ -38,7 +47,7 @@ describe('rotas e envelope', () => {
 
   test('214 medido durante a descompactação: GZip pequeno que abre em muito mais que o limite', async () => {
     const h = await harness({ tamanhoMaximoMdfe: 4096 });
-    const bomba = await gzipBase64(`<MDFe>${'A'.repeat(4 * 1024 * 1024)}</MDFe>`);
+    const bomba = await comprimirGzipBase64(`<MDFe>${'A'.repeat(4 * 1024 * 1024)}</MDFe>`);
     expect(bomba.length).toBeLessThan(16 * 1024);
     expect(tag(await sendMdfe(h, 'MDFeRecepcaoSinc', bomba, h.c.ecpf, true), 'cStat')).toBe('214');
   });
@@ -47,7 +56,7 @@ describe('rotas e envelope', () => {
     const h = await harness();
     expect(tag(await sendMdfe(h, 'MDFeStatusServico', consStat()), 'cStat')).toBe('107');
     expect(tag(await sendMdfe(h, 'MDFeStatusServico', consStat('1')), 'cStat')).toBe('252');
-    h.sim.setParalisacaoMdfe('109');
+    h.sim.definirParalisacaoMdfe('109');
     expect(tag(await sendMdfe(h, 'MDFeStatusServico', consStat()), 'cStat')).toBe('109');
   });
 });
@@ -60,7 +69,7 @@ describe('recepção (Anexo I, grupo F)', () => {
     expect(tags(r, 'cStat')).toEqual(['100', '100']);
     expect(tag(r, 'nProt')).toMatch(/^95126\d{10}$/);
     expect(tag(r, 'xMotivo')).toBe('Autorizado o uso do MDF-e');
-    expect(h.sim.inspect.mdfe(m.chave)?.xml).toBe(m.xml);
+    expect(h.sim.inspecao.mdfe(m.chave)?.xml).toBe(m.xml);
   });
 
   test('regras de forma: ambiente, DV, série e tipo do emitente, datas e QR Code', async () => {
@@ -99,7 +108,7 @@ describe('recepção (Anexo I, grupo F)', () => {
     const h = await harness();
     const a = await mdfe(h.c.ecpf);
     await sendMdfe(h, 'MDFeRecepcaoSinc', a.xml);
-    const nProt = h.sim.inspect.mdfe(a.chave)?.nProt as string;
+    const nProt = h.sim.inspecao.mdfe(a.chave)?.nProt as string;
     const dup = await sendMdfe(h, 'MDFeRecepcaoSinc', a.xml);
     expect(tag(dup, 'cStat')).toBe('204');
     expect(tag(dup, 'xMotivo')).toContain(`[nProt:${nProt}]`);
@@ -156,7 +165,7 @@ describe('consultas', () => {
     expect(r).toMatch(
       /<protMDFe versao="3.00"><protMDFe xmlns="http:\/\/www.portalfiscal.inf.br\/mdfe" versao="3.00"><infProt/,
     );
-    const nProt = h.sim.inspect.mdfe(a.chave)?.nProt as string;
+    const nProt = h.sim.inspecao.mdfe(a.chave)?.nProt as string;
     h.clock.avancar(HORA);
     const enc = await sendMdfe(
       h,
@@ -189,7 +198,7 @@ describe('eventos (J01 a J16 e regras de cada tipo)', () => {
     const h = await harness();
     const a = await mdfe(h.c.ecpf);
     await sendMdfe(h, 'MDFeRecepcaoSinc', a.xml);
-    const nProt = h.sim.inspect.mdfe(a.chave)?.nProt as string;
+    const nProt = h.sim.inspecao.mdfe(a.chave)?.nProt as string;
     const cStat = async (p: Parameters<typeof eventoMdfe>[1], signer = h.c.ecpf): Promise<string | undefined> =>
       tag(await sendMdfe(h, 'MDFeRecepcaoEvento', await eventoMdfe(signer, p)), 'cStat');
     const canc = { chave: a.chave, tpEvento: '110111', det: detMdfe.canc(nProt) };
@@ -198,7 +207,7 @@ describe('eventos (J01 a J16 e regras de cada tipo)', () => {
     expect(await cStat({ ...canc, det: '<evCancMDFe><descEvento>Cancelamento</descEvento></evCancMDFe>' })).toBe('630');
     // Detalhe válido de outro tipo: o schema combinado aceita, a J06 recusa e o MDF-e não muda.
     expect(await cStat({ ...canc, det: detMdfe.enc(nProt) })).toBe('630');
-    expect(h.sim.inspect.mdfe(a.chave)?.situacao).toBe('autorizado');
+    expect(h.sim.inspecao.mdfe(a.chave)?.situacao).toBe('autorizado');
     expect(await cStat({ ...canc, autor: `<CNPJ>${EMITENTE}</CNPJ>` }, h.c.emitente)).toBe('632');
     const outra = await mdfe(h.c.ecpf, { nMDF: 9 });
     expect(await cStat({ ...canc, chave: outra.chave })).toBe('217');
@@ -212,7 +221,7 @@ describe('eventos (J01 a J16 e regras de cada tipo)', () => {
     const h = await harness({ prazoCancelamentoMdfeHoras: 2 });
     const a = await mdfe(h.c.ecpf);
     await sendMdfe(h, 'MDFeRecepcaoSinc', a.xml);
-    const nProt = h.sim.inspect.mdfe(a.chave)?.nProt as string;
+    const nProt = h.sim.inspecao.mdfe(a.chave)?.nProt as string;
     const ev = (det: string, tpEvento = '110111', dhEvento = '2026-09-26T13:30:00-03:00'): Promise<string> =>
       eventoMdfe(h.c.ecpf, { chave: a.chave, tpEvento, det, dhEvento });
     h.clock.avancar(3 * HORA + 30 * 60_000);
@@ -220,7 +229,7 @@ describe('eventos (J01 a J16 e regras de cada tipo)', () => {
     const h2 = await harness();
     const b = await mdfe(h2.c.ecpf);
     await sendMdfe(h2, 'MDFeRecepcaoSinc', b.xml);
-    const nProtB = h2.sim.inspect.mdfe(b.chave)?.nProt as string;
+    const nProtB = h2.sim.inspecao.mdfe(b.chave)?.nProt as string;
     const evB = async (det: string, tpEvento = '110111'): Promise<string | undefined> =>
       tag(
         await sendMdfe(h2, 'MDFeRecepcaoEvento', await eventoMdfe(h2.c.ecpf, { chave: b.chave, tpEvento, det })),
@@ -228,7 +237,7 @@ describe('eventos (J01 a J16 e regras de cada tipo)', () => {
       );
     expect(await evB(detMdfe.canc('951260000009999'))).toBe('222');
     expect(await evB(detMdfe.canc(nProtB))).toBe('135');
-    expect(h2.sim.inspect.mdfe(b.chave)?.situacao).toBe('cancelado');
+    expect(h2.sim.inspecao.mdfe(b.chave)?.situacao).toBe('cancelado');
     expect(await evB(detMdfe.enc(nProtB), '110112')).toBe('218');
   });
 
@@ -236,7 +245,7 @@ describe('eventos (J01 a J16 e regras de cada tipo)', () => {
     const h = await harness();
     const a = await mdfe(h.c.ecpf);
     await sendMdfe(h, 'MDFeRecepcaoSinc', a.xml);
-    const nProt = h.sim.inspect.mdfe(a.chave)?.nProt as string;
+    const nProt = h.sim.inspecao.mdfe(a.chave)?.nProt as string;
     const cStat = async (det: string, tpEvento = '110112', nSeq = 1): Promise<string | undefined> =>
       tag(
         await sendMdfe(h, 'MDFeRecepcaoEvento', await eventoMdfe(h.c.ecpf, { chave: a.chave, tpEvento, det, nSeq })),
@@ -253,7 +262,7 @@ describe('eventos (J01 a J16 e regras de cada tipo)', () => {
     const h = await harness();
     const a = await mdfe(h.c.ecpf, { carregaPosterior: true, ufFim: 'MT', cMunDescarga: '5103403' });
     expect(tag(await sendMdfe(h, 'MDFeRecepcaoSinc', a.xml), 'cStat')).toBe('100');
-    const nProt = h.sim.inspect.mdfe(a.chave)?.nProt as string;
+    const nProt = h.sim.inspecao.mdfe(a.chave)?.nProt as string;
     const enc = await eventoMdfe(h.c.ecpf, {
       chave: a.chave,
       tpEvento: '110112',
@@ -268,7 +277,7 @@ describe('eventos (J01 a J16 e regras de cada tipo)', () => {
     await sendMdfe(h, 'MDFeRecepcaoSinc', normal.xml);
     const a = await mdfe(h.c.ecpf, { carregaPosterior: true, ufFim: 'MT', cMunDescarga: '5103403' });
     await sendMdfe(h, 'MDFeRecepcaoSinc', a.xml);
-    const prot = (ch: string): string => h.sim.inspect.mdfe(ch)?.nProt as string;
+    const prot = (ch: string): string => h.sim.inspecao.mdfe(ch)?.nProt as string;
     const nfe = (mod = '55'): string =>
       montarChaveAcesso({
         cUF: '51',
@@ -310,7 +319,7 @@ describe('eventos (J01 a J16 e regras de cada tipo)', () => {
     await sendMdfe(h, 'MDFeRecepcaoSinc', semTac.xml);
     const a = await mdfe(h.c.ecpf, { tpProp: '0' });
     expect(tag(await sendMdfe(h, 'MDFeRecepcaoSinc', a.xml), 'cStat')).toBe('100');
-    const prot = (ch: string): string => h.sim.inspect.mdfe(ch)?.nProt as string;
+    const prot = (ch: string): string => h.sim.inspecao.mdfe(ch)?.nProt as string;
     interface Pag {
       readonly doc?: string;
       readonly comps?: string;
@@ -362,7 +371,7 @@ describe('eventos (J01 a J16 e regras de cada tipo)', () => {
     const h2 = await harness({ regrasMdfeDesligadas: ['K08'] });
     const c2 = await mdfe(h2.c.ecpf, { tpProp: '0' });
     await sendMdfe(h2, 'MDFeRecepcaoSinc', c2.xml);
-    const nProt2 = h2.sim.inspect.mdfe(c2.chave)?.nProt as string;
+    const nProt2 = h2.sim.inspecao.mdfe(c2.chave)?.nProt as string;
     const ev2 = await eventoMdfe(h2.c.ecpf, {
       chave: c2.chave,
       tpEvento: '110116',
@@ -381,9 +390,9 @@ describe('eventos (J01 a J16 e regras de cada tipo)', () => {
     const h = await harness();
     const a = await mdfe(h.c.ecpf, { tpProp: '0', propCnpj: TERCEIRO });
     await sendMdfe(h, 'MDFeRecepcaoSinc', a.xml);
-    const nProt = h.sim.inspect.mdfe(a.chave)?.nProt as string;
+    const nProt = h.sim.inspecao.mdfe(a.chave)?.nProt as string;
     const det = detMdfe.enc(nProt).replace('</evEncMDFe>', '<indEncPorTerceiro>1</indEncPorTerceiro></evEncMDFe>');
-    const enviar = async (autor: string, signer: SyntheticCertificate, d = det): Promise<string | undefined> =>
+    const enviar = async (autor: string, signer: CertificadoSintetico, d = det): Promise<string | undefined> =>
       tag(
         await sendMdfe(
           h,
@@ -397,11 +406,11 @@ describe('eventos (J01 a J16 e regras de cada tipo)', () => {
     expect(await enviar(`<CNPJ>${TERCEIRO}</CNPJ>`, h.c.terceiro, detMdfe.enc(nProt))).toBe('632');
     expect(await enviar(`<CNPJ>${EMITENTE}</CNPJ>`, h.c.emitente)).toBe('632');
     expect(await enviar(`<CNPJ>${TERCEIRO}</CNPJ>`, h.c.terceiro)).toBe('135');
-    expect(h.sim.inspect.mdfe(a.chave)?.situacao).toBe('encerrado');
+    expect(h.sim.inspecao.mdfe(a.chave)?.situacao).toBe('encerrado');
     // O proprietário é o próprio emitente: o indicador de terceiro não cabe (K11, 524).
     const b = await mdfe(h.c.ecpf, { nMDF: 2, placa: 'OUT1R00', tpProp: '0', propCpf: CPF });
     await sendMdfe(h, 'MDFeRecepcaoSinc', b.xml);
-    const nProtB = h.sim.inspect.mdfe(b.chave)?.nProt as string;
+    const nProtB = h.sim.inspecao.mdfe(b.chave)?.nProt as string;
     const detB = detMdfe.enc(nProtB).replace('</evEncMDFe>', '<indEncPorTerceiro>1</indEncPorTerceiro></evEncMDFe>');
     const evB = await eventoMdfe(h.c.ecpf, { chave: b.chave, tpEvento: '110112', det: detB });
     expect(tag(await sendMdfe(h, 'MDFeRecepcaoEvento', evB), 'cStat')).toBe('524');

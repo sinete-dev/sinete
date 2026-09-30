@@ -1,9 +1,9 @@
 /**
- * `createNfseSim`: a Sefin Nacional e o ADN da NFS-e simulados, com estado e relógio injetado. Recebe o mesmo
- * `SimRequest` do simulador da NF-e e devolve `SimResult`, então serve pelo `simTransport` em processo e pelo servidor
+ * `criarNfseSim`: a Sefin Nacional e o ADN da NFS-e simulados, com estado e relógio injetado. Recebe o mesmo
+ * `PedidoSim` do simulador da NF-e e devolve `RespostaSim`, então serve pelo `transporteSim` em processo e pelo servidor
  * HTTPS com mTLS (`startNfseSimServer`).
  *
- * Rotas (prefixo por API, ver `NFSE_SIM_PREFIXOS` e `redirectNfseToSim`):
+ * Rotas (prefixo por API, ver `NFSE_SIM_PREFIXOS` e `redirecionarNfseParaSim`):
  * - Sefin: `POST /sefin/nfse`, `GET /sefin/nfse/{chave}`, `GET /sefin/dps/{id}`, `POST /sefin/nfse/{chave}/eventos`,
  *   `GET /sefin/nfse/{chave}/eventos/{tipo}/{seq}` (405 sem o tipo e 404 sem a sequência, como a Sefin real);
  * - ADN: `GET /parametrizacao/{cMun}/convenio` e as consultas de alíquota, histórico, regimes especiais, retenções e
@@ -16,11 +16,11 @@
 import type { DocumentoXml, ElementoXml } from '@sinete/core/xml';
 import { codificarBase64, elementosFilhos, lerXml, primeiroFilho } from '@sinete/core/xml';
 import type { NfseApi } from '@sinete/transport';
-import type { CertIdentity } from '../certs.ts';
-import { checkAssinatura, checkTransmissor } from '../certs.ts';
-import type { FaultTarget, SimFault, SimRequest, SimResult } from '../sim.ts';
+import type { IdentidadeDoCertificado } from '../certs.ts';
+import { conferirAssinaturaDoDocumento, conferirTransmissor } from '../certs.ts';
+import type { AlvoDaFalha, FalhaSim, PedidoSim, RespostaSim } from '../sim.ts';
 import { formatInstant, parseDateTime } from '../time.ts';
-import type { NfseSimOptions } from './dados.ts';
+import type { NfseSimOpcoes } from './dados.ts';
 import { aliquotaEm, codigoServico, convenioDe, resolverConfig, servicoDo } from './dados.ts';
 import { gerarEvento, gerarNfse, gunzipB64, gzipB64, montarChave, semDeclaracao } from './documentos.ts';
 import { leiauteNfseEm } from './leiaute.ts';
@@ -39,28 +39,28 @@ export const NFSE_SIM_PREFIXOS: Readonly<Record<NfseApi, string>> = {
 /** Rota do simulador, para mirar falhas. */
 export type NfseRota = 'emitir' | 'consultarNfse' | 'consultarDps' | 'evento' | 'consultarEventos' | 'parametrizacao';
 
-export interface NfseSimFaultTarget {
+export interface AlvoDaFalhaNfseSim {
   readonly rota?: NfseRota;
-  readonly times?: FaultTarget['times'];
+  readonly vezes?: AlvoDaFalha['vezes'];
 }
 
-export interface NfseSimInspect {
+export interface InspecaoNfseSim {
   nfse(chave: string): NfseRegistro | undefined;
   nfses(): readonly NfseRegistro[];
   eventos(chave?: string): readonly EventoNfseRegistro[];
 }
 
-export interface NfseSimFullOptions extends NfseSimOptions {
+export interface NfseSimOpcoesCompletas extends NfseSimOpcoes {
   /** Regras de negócio. Padrão: `NFSE_REGRAS_PADRAO`. */
   readonly regras?: NfseSimRegras;
 }
 
 export interface NfseSim {
-  handle(request: SimRequest): Promise<SimResult>;
+  atender(pedido: PedidoSim): Promise<RespostaSim>;
   /** Agenda uma falha de rede para os próximos pedidos da rota (todas, sem `rota`). */
-  injectFault(fault: SimFault, target?: NfseSimFaultTarget): void;
-  clearFaults(): void;
-  readonly inspect: NfseSimInspect;
+  injetarFalha(falha: FalhaSim, alvo?: AlvoDaFalhaNfseSim): void;
+  limparFalhas(): void;
+  readonly inspecao: InspecaoNfseSim;
 }
 
 const JSON_CT = 'application/json; charset=utf-8';
@@ -77,12 +77,18 @@ interface Erro {
   readonly troca?: Readonly<Record<string, string>>;
 }
 
-function resposta(status: number, corpo: unknown): SimResult {
-  return { status, headers: { 'content-type': JSON_CT }, body: JSON.stringify(corpo), effect: 'respond', delayMs: 0 };
+function resposta(status: number, corpo: unknown): RespostaSim {
+  return {
+    status,
+    cabecalhos: { 'content-type': JSON_CT },
+    corpo: JSON.stringify(corpo),
+    efeito: 'responder',
+    atrasoMs: 0,
+  };
 }
 
-function texto(status: number, corpo: string, ct = 'text/plain; charset=utf-8'): SimResult {
-  return { status, headers: { 'content-type': ct }, body: corpo, effect: 'respond', delayMs: 0 };
+function texto(status: number, corpo: string, ct = 'text/plain; charset=utf-8'): RespostaSim {
+  return { status, cabecalhos: { 'content-type': ct }, corpo: corpo, efeito: 'responder', atrasoMs: 0 };
 }
 
 const filho = (el: ElementoXml | undefined, nome: string): ElementoXml | undefined =>
@@ -127,7 +133,7 @@ function mesmoAtor(a: Doc, b: Doc): boolean {
  * transmissor terceiro nem procuração e responde 403 (observado e documentado na pesquisa de certificados; o Anexo I
  * não tem código de rejeição para isso). Sem certificado no canal (`exigirCertificado: false`), não há o que conferir.
  */
-function canalDeOutroAtor(canal: CertIdentity | undefined, ator: Doc): SimResult | undefined {
+function canalDeOutroAtor(canal: IdentidadeDoCertificado | undefined, ator: Doc): RespostaSim | undefined {
   if (canal === undefined || mesmoAtor(canal, ator)) return undefined;
   return texto(403, 'certificado do canal não pertence ao emitente ou autor do documento');
 }
@@ -148,15 +154,15 @@ function codigoAssinatura(cStat: string, a: Assinaturas): string {
 }
 
 /** Cria a NFS-e simulada. Cada instância tem estado próprio. */
-export function createNfseSim(options: NfseSimFullOptions): NfseSim {
-  const config = resolverConfig(options);
-  const regras = options.regras ?? NFSE_REGRAS_PADRAO;
+export function criarNfseSim(opcoes: NfseSimOpcoesCompletas): NfseSim {
+  const config = resolverConfig(opcoes);
+  const regras = opcoes.regras ?? NFSE_REGRAS_PADRAO;
   const nfses = new Map<string, NfseRegistro>();
   const porDps = new Map<string, string>();
   const eventos: EventoNfseRegistro[] = [];
   const numeros = new Map<string, number>();
   let nDFSe = 0;
-  const faults: { fault: SimFault; target: NfseSimFaultTarget; remaining: number }[] = [];
+  const faults: { fault: FalhaSim; target: AlvoDaFalhaNfseSim; remaining: number }[] = [];
   let fila: Promise<unknown> = Promise.resolve();
   function exclusivo<T>(fn: () => Promise<T>): Promise<T> {
     const run = fila.then(fn, fn);
@@ -167,7 +173,7 @@ export function createNfseSim(options: NfseSimFullOptions): NfseSim {
   const agora = (): number => config.clock.agora().getTime();
   const dh = (ms: number): string => formatInstant(ms, BRASILIA);
 
-  function falhas(rota: NfseRota): SimFault | undefined {
+  function falhas(rota: NfseRota): FalhaSim | undefined {
     const i = faults.findIndex((f) => f.target.rota === undefined || f.target.rota === rota);
     if (i < 0) return undefined;
     const armed = faults[i] as (typeof faults)[number];
@@ -176,7 +182,7 @@ export function createNfseSim(options: NfseSimFullOptions): NfseSim {
     return armed.fault;
   }
 
-  function erros(status: number, lista: readonly Erro[], extra: Record<string, unknown> = {}): SimResult {
+  function erros(status: number, lista: readonly Erro[], extra: Record<string, unknown> = {}): RespostaSim {
     return resposta(status, {
       tipoAmbiente: Number(config.tpAmb),
       versaoAplicativo: 'sefaz-sim',
@@ -192,10 +198,10 @@ export function createNfseSim(options: NfseSimFullOptions): NfseSim {
 
   /** Recepção comum da DPS e do pedido de evento: corpo JSON, base64, gzip, UTF-8 e declaração, XML, namespace. */
   async function recepcao(
-    request: SimRequest,
+    request: PedidoSim,
     campo: string,
-  ): Promise<{ ok: true; xml: string; doc: DocumentoXml } | { ok: false; res: SimResult }> {
-    const corpo = typeof request.body === 'string' ? request.body : new TextDecoder().decode(request.body);
+  ): Promise<{ ok: true; xml: string; doc: DocumentoXml } | { ok: false; res: RespostaSim }> {
+    const corpo = typeof request.corpo === 'string' ? request.corpo : new TextDecoder().decode(request.corpo);
     let b64: unknown;
     try {
       b64 = (JSON.parse(corpo) as Record<string, unknown>)[campo];
@@ -226,19 +232,19 @@ export function createNfseSim(options: NfseSimFullOptions): NfseSim {
   }
 
   function transmissor(
-    request: SimRequest,
+    request: PedidoSim,
     now: number,
-  ): { ok: true; id: CertIdentity | undefined } | { ok: false; res: SimResult } {
-    if (request.clientCertificate === undefined) {
+  ): { ok: true; id: IdentidadeDoCertificado | undefined } | { ok: false; res: RespostaSim } {
+    if (request.certificadoDoCliente === undefined) {
       if (config.exigirCertificado) return { ok: false, res: texto(403, 'certificado de cliente obrigatório') };
       return { ok: true, id: undefined };
     }
-    const c = checkTransmissor(request.clientCertificate, now);
+    const c = conferirTransmissor(request.certificadoDoCliente, now);
     if (!c.ok) return { ok: false, res: erros(400, [{ codigo: CERT_TRANSMISSOR[c.cStat] ?? 'E1200' }]) };
-    return { ok: true, id: c.identity };
+    return { ok: true, id: c.identidade };
   }
 
-  async function emitir(request: SimRequest): Promise<SimResult> {
+  async function emitir(request: PedidoSim): Promise<RespostaSim> {
     const now = agora();
     const t = transmissor(request, now);
     if (!t.ok) return t.res;
@@ -257,7 +263,13 @@ export function createNfseSim(options: NfseSimFullOptions): NfseSim {
       ...(emitente.CNPJ === undefined ? {} : { CNPJ: emitente.CNPJ }),
       ...(emitente.CPF === undefined ? {} : { CPF: emitente.CPF }),
     };
-    const sig = await checkAssinatura({ doc, id: inf.Id, element: 'infDPS', now, titular: doc14 });
+    const sig = await conferirAssinaturaDoDocumento({
+      documento: doc,
+      id: inf.Id,
+      elemento: 'infDPS',
+      agora: now,
+      titular: doc14,
+    });
     if (!sig.ok) {
       const temAssinatura = primeiroFilho(doc.raiz, 'Signature', 'http://www.w3.org/2000/09/xmldsig#') !== undefined;
       return erros(400, [
@@ -278,10 +290,10 @@ export function createNfseSim(options: NfseSimFullOptions): NfseSim {
     const chaveDup = porDps.get(inf.Id);
     const subst = inf.subst === undefined ? undefined : nfses.get(inf.subst.chSubstda);
     const fatos: DpsFatos = {
-      config,
+      configuracao: config,
       dps,
       inf,
-      now,
+      agora: now,
       dhEmi,
       diaEmissao: formatInstant(dhEmi, BRASILIA).slice(0, 10),
       municipioEmissor,
@@ -426,7 +438,7 @@ export function createNfseSim(options: NfseSimFullOptions): NfseSim {
     return ev;
   }
 
-  async function evento(request: SimRequest, chaveRota: string): Promise<SimResult> {
+  async function evento(request: PedidoSim, chaveRota: string): Promise<RespostaSim> {
     const now = agora();
     const t = transmissor(request, now);
     if (!t.ok) return t.res;
@@ -440,7 +452,13 @@ export function createNfseSim(options: NfseSimFullOptions): NfseSim {
     const pedido = leiaute.lerPedido(doc);
     const inf = pedido.infPedReg;
     const autor = inf.CNPJAutor !== undefined ? { CNPJ: inf.CNPJAutor } : { CPF: inf.CPFAutor };
-    const sig = await checkAssinatura({ doc, id: inf.Id, element: 'infPedReg', now, titular: autor });
+    const sig = await conferirAssinaturaDoDocumento({
+      documento: doc,
+      id: inf.Id,
+      elemento: 'infPedReg',
+      agora: now,
+      titular: autor,
+    });
     if (!sig.ok) {
       const temAssinatura = primeiroFilho(doc.raiz, 'Signature', 'http://www.w3.org/2000/09/xmldsig#') !== undefined;
       if (!temAssinatura) return erros(400, [{ codigo: ASSINATURA_EVENTO.ausente }]);
@@ -454,10 +472,10 @@ export function createNfseSim(options: NfseSimFullOptions): NfseSim {
     const tpEvento = grupo === undefined ? '' : grupo.local.slice(1);
     const nfse = nfses.get(inf.chNFSe);
     const fatos: EventoNfseFatos = {
-      config,
+      configuracao: config,
       pedido,
       tpEvento,
-      now,
+      agora: now,
       nfse: inf.chNFSe === chaveRota ? nfse : undefined,
       eventos: eventos.filter((e) => e.chave === inf.chNFSe),
       municipioEmissor: nfse === undefined ? undefined : config.municipios.get(nfse.cLocEmi),
@@ -484,7 +502,11 @@ export function createNfseSim(options: NfseSimFullOptions): NfseSim {
    * Consulta de eventos como a Sefin da produção restrita (28/09/2026): 405 sem o tipo, 404 com a página HTML do IIS
    * sem a sequência, 200 com `eventos[].arquivoXml` (base64 do gzip em base64) e 404 com JSON vazio sem o evento.
    */
-  async function consultarEventos(chave: string, tp: string | undefined, seq: string | undefined): Promise<SimResult> {
+  async function consultarEventos(
+    chave: string,
+    tp: string | undefined,
+    seq: string | undefined,
+  ): Promise<RespostaSim> {
     if (tp === undefined) return texto(405, IIS_405, 'text/html');
     if (seq === undefined) return texto(404, IIS_404, 'text/html');
     if (!nfses.has(chave)) return resposta(404, {});
@@ -506,12 +528,12 @@ export function createNfseSim(options: NfseSimFullOptions): NfseSim {
     });
   }
 
-  function parametrizacao(partes: readonly string[]): SimResult {
+  function parametrizacao(partes: readonly string[]): RespostaSim {
     const [cMun = '', ...resto] = partes;
     const m = config.municipios.get(cMun);
     if (m === undefined) return resposta(404, { mensagem: 'Município não encontrado.' });
-    const ok = (dados: Record<string, unknown>, mensagem: string): SimResult => resposta(200, { ...dados, mensagem });
-    const nao = (mensagem: string): SimResult => resposta(404, { mensagem });
+    const ok = (dados: Record<string, unknown>, mensagem: string): RespostaSim => resposta(200, { ...dados, mensagem });
+    const nao = (mensagem: string): RespostaSim => resposta(404, { mensagem });
     if (resto.length === 1 && resto[0] === 'convenio') {
       return ok({ parametrosConvenio: convenioDe(m) }, 'Parâmetros do convênio recuperados com sucesso.');
     }
@@ -550,7 +572,7 @@ export function createNfseSim(options: NfseSimFullOptions): NfseSim {
     const bruto = (
       tabela: Readonly<Record<string, Readonly<Record<string, unknown>>>> | undefined,
       chave: string,
-    ): SimResult => {
+    ): RespostaSim => {
       const d = tabela?.[chave];
       return d === undefined ? nao('Parâmetros não encontrados.') : ok({ ...d }, 'Parâmetros recuperados com sucesso.');
     };
@@ -561,16 +583,16 @@ export function createNfseSim(options: NfseSimFullOptions): NfseSim {
     return texto(404, 'rota não encontrada');
   }
 
-  async function atender(request: SimRequest): Promise<SimResult> {
-    const method = (request.method ?? 'GET').toUpperCase();
-    const path = request.path.split('?')[0] ?? '';
+  async function atender(request: PedidoSim): Promise<RespostaSim> {
+    const method = (request.metodo ?? 'GET').toUpperCase();
+    const path = request.caminho.split('?')[0] ?? '';
     const partes = path.split('/').filter(Boolean).map(decodeURIComponent);
     const [api, ...resto] = partes;
     let rota: NfseRota | undefined;
-    let run: (() => Promise<SimResult>) | undefined;
+    let run: (() => Promise<RespostaSim>) | undefined;
     const exigirCert =
-      (fn: () => Promise<SimResult>): (() => Promise<SimResult>) =>
-      async (): Promise<SimResult> => {
+      (fn: () => Promise<RespostaSim>): (() => Promise<RespostaSim>) =>
+      async (): Promise<RespostaSim> => {
         const t = transmissor(request, agora());
         return t.ok ? fn() : t.res;
       };
@@ -578,7 +600,7 @@ export function createNfseSim(options: NfseSimFullOptions): NfseSim {
       const [a, chave, b, tp, seq] = resto;
       if (a === 'nfse' && chave === undefined && method === 'POST') {
         rota = 'emitir';
-        run = (): Promise<SimResult> => emitir(request);
+        run = (): Promise<RespostaSim> => emitir(request);
       } else if (a === 'nfse' && chave !== undefined && b === undefined && method === 'GET') {
         rota = 'consultarNfse';
         run = exigirCert(async () => {
@@ -609,7 +631,7 @@ export function createNfseSim(options: NfseSimFullOptions): NfseSim {
         });
       } else if (a === 'nfse' && chave !== undefined && b === 'eventos' && method === 'POST' && tp === undefined) {
         rota = 'evento';
-        run = (): Promise<SimResult> => evento(request, chave);
+        run = (): Promise<RespostaSim> => evento(request, chave);
       } else if (a === 'nfse' && chave !== undefined && b === 'eventos' && method === 'GET') {
         rota = 'consultarEventos';
         run = exigirCert(() => consultarEventos(chave, tp, seq));
@@ -620,24 +642,24 @@ export function createNfseSim(options: NfseSimFullOptions): NfseSim {
     }
     if (rota === undefined || run === undefined) return texto(404, 'rota não encontrada');
     const fault = falhas(rota);
-    if (fault?.kind === 'http') return texto(fault.status, `HTTP ${fault.status}`);
-    if ((fault?.kind === 'drop' || fault?.kind === 'hang') && fault.phase === 'before') {
-      return { ...texto(0, ''), effect: fault.kind };
+    if (fault?.tipo === 'http') return texto(fault.status, `HTTP ${fault.status}`);
+    if ((fault?.tipo === 'derrubar' || fault?.tipo === 'travar') && fault.fase === 'antes') {
+      return { ...texto(0, ''), efeito: fault.tipo };
     }
     const res = await run();
-    if (fault?.kind === 'drop' || fault?.kind === 'hang') return { ...res, effect: fault.kind };
-    return fault?.kind === 'delay' ? { ...res, delayMs: fault.ms } : res;
+    if (fault?.tipo === 'derrubar' || fault?.tipo === 'travar') return { ...res, efeito: fault.tipo };
+    return fault?.tipo === 'atraso' ? { ...res, atrasoMs: fault.ms } : res;
   }
 
   return {
-    handle: (request: SimRequest): Promise<SimResult> => exclusivo(() => atender(request)),
-    injectFault(fault: SimFault, target: NfseSimFaultTarget = {}): void {
-      faults.push({ fault, target, remaining: target.times ?? 1 });
+    atender: (request: PedidoSim): Promise<RespostaSim> => exclusivo(() => atender(request)),
+    injetarFalha(fault: FalhaSim, target: AlvoDaFalhaNfseSim = {}): void {
+      faults.push({ fault, target, remaining: target.vezes ?? 1 });
     },
-    clearFaults(): void {
+    limparFalhas(): void {
       faults.length = 0;
     },
-    inspect: {
+    inspecao: {
       nfse: (chave: string): NfseRegistro | undefined => nfses.get(chave),
       nfses: (): readonly NfseRegistro[] => [...nfses.values()],
       eventos: (chave?: string): readonly EventoNfseRegistro[] =>

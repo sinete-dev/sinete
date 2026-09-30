@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { DATASET_EMBARCADO } from '../src/bundled.ts';
+import { DATASET_EMBARCADO } from '../src/embarcado.ts';
 import type { BundleDoDataset } from '../src/index.ts';
 import { compararDatasets, formatarDiferenca, tipoDeMudanca } from '../src/index.ts';
 

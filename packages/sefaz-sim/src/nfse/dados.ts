@@ -57,10 +57,10 @@ export interface AliquotasIbsCbsSim {
   readonly pIBSMun: string;
 }
 
-export interface NfseSimOptions {
-  readonly clock: Relogio;
-  /** Assinatura da Sefin simulada na NFS-e e no evento (ex.: `syntheticCertificate({ role: 'servidor' }).signer`). */
-  readonly signer: Assinador;
+export interface NfseSimOpcoes {
+  readonly relogio: Relogio;
+  /** Assinatura da Sefin simulada na NFS-e e no evento (ex.: `certificadoSintetico({ papel: 'servidor' }).assinador`). */
+  readonly assinador: Assinador;
   /** Padrão: `homologacao` (produção restrita). */
   readonly ambiente?: Ambiente;
   readonly municipios?: readonly MunicipioSim[];
@@ -88,7 +88,7 @@ export function codigoServico(c: string): string {
   return `${m[1]}.${m[2]}.${m[3]}.${m[4] ?? '000'}`;
 }
 
-export function resolverConfig(o: NfseSimOptions): NfseSimConfig {
+export function resolverConfig(o: NfseSimOpcoes): NfseSimConfig {
   const municipios = new Map<string, MunicipioSim>();
   for (const m of o.municipios ?? []) {
     if (!/^\d{7}$/.test(m.cMun)) throw new ErroDeConfiguracao(`município inválido: ${m.cMun}`);
@@ -97,8 +97,8 @@ export function resolverConfig(o: NfseSimOptions): NfseSimConfig {
   }
   const ambiente = o.ambiente ?? 'homologacao';
   return {
-    clock: o.clock,
-    signer: o.signer,
+    clock: o.relogio,
+    signer: o.assinador,
     ambiente,
     tpAmb: tpAmbDoAmbiente(ambiente),
     municipios,

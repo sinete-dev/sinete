@@ -2,7 +2,7 @@ import type { ErroSineteOpcoes } from '@sinete/core';
 import { ErroSinete } from '@sinete/core';
 
 /** Códigos estáveis dos erros do `@sinete/da`. */
-export type DanfeErrorCode =
+export type CodigoErroDa =
   /** O XML não é bem formado. */
   | 'xml_invalido'
   /** A raiz não é a esperada pela função (ex.: `mdfeProc` passado ao `danfe`). */
@@ -18,9 +18,9 @@ export type DanfeErrorCode =
   /** Conteúdo que não cabe na simbologia (CODE-128C ímpar, QR maior que a versão 40). */
   | 'codigo_barras_invalido';
 
-export class DanfeError extends ErroSinete<DanfeErrorCode> {
-  constructor(code: DanfeErrorCode, message: string, options?: ErroSineteOpcoes) {
-    super(code, message, options);
-    this.name = 'DanfeError';
+export class ErroDa extends ErroSinete<CodigoErroDa> {
+  constructor(code: CodigoErroDa, message: string, opcoes?: ErroSineteOpcoes) {
+    super(code, message, opcoes);
+    this.name = 'ErroDa';
   }
 }

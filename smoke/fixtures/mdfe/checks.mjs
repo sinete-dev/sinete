@@ -2,26 +2,26 @@
 // Monta um MDF-e sintético em homologação (produtor rural com CPF, carga própria de MT para SP; documentos de exemplo,
 // sem dado real) e confere chave, XML, divisas e QR Code; os data JSON (fusos, divisas, vigências, cStat) precisam
 // estar embutidos no bundle. Depois autoriza o MDF-e na SEFAZ simulada em processo, consulta os não encerrados e
-// encerra (o cliente resolve o endpoint pelos dados do transporte e o redirectToSim troca só a URL).
+// encerra (o cliente resolve o endpoint pelos dados do transporte e o redirecionarParaSim troca só a URL).
 import { relogioManual, contextoDeTempo } from '@sinete/core';
 import {
-  buildMdfe,
-  createMdfeClient,
+  montarMdfe,
+  criarClienteMdfe,
   dec,
-  gunzipBase64,
-  gzipBase64,
+  descomprimirGzipBase64,
+  comprimirGzipBase64,
   qrCodeMdfe,
   saoVizinhas,
   rotuloDoCaminho,
-  signMdfe,
+  assinarMdfe,
   sugerirPercurso,
 } from '@sinete/mdfe';
 import {
-  createSefazSim,
-  redirectToSim,
-  SIM_BASE_URL,
-  simTransport,
-  syntheticCertificate,
+  criarSefazSim,
+  redirecionarParaSim,
+  URL_BASE_SIM,
+  transporteSim,
+  certificadoSintetico,
 } from '@sinete/sefaz-sim';
 
 const CPF = '11144477735';
@@ -66,28 +66,28 @@ export async function runChecks() {
     totais: { vCarga: '150000', cUnid: '01', qCarga: '30000' },
   };
   const clock = relogioManual('2026-09-26T10:00:00-04:00');
-  const opcoes = { ambiente: 'homologacao', time: contextoDeTempo({ emissao: clock }) };
-  const r = buildMdfe(mdfe, opcoes);
+  const opcoes = { ambiente: 'homologacao', tempo: contextoDeTempo({ emissao: clock }) };
+  const r = await montarMdfe(mdfe, opcoes);
   expect('monta', r.ok);
-  const semPercurso = buildMdfe({ ...mdfe, percurso: [] }, opcoes);
-  expect('percurso conferido', !semPercurso.ok && semPercurso.issues.some((i) => i.code === 'percurso_invalido'));
-  expect('ocorrência da entrada', !semPercurso.ok && semPercurso.issues.every((i) => i.origem === 'entrada'));
+  const semPercurso = await montarMdfe({ ...mdfe, percurso: [] }, opcoes);
+  expect('percurso conferido', !semPercurso.ok && semPercurso.ocorrencias.some((i) => i.code === 'percurso_invalido'));
+  expect('ocorrência da entrada', !semPercurso.ok && semPercurso.ocorrencias.every((i) => i.origem === 'entrada'));
   expect('rótulo do caminho', rotuloDoCaminho('rodoviario.tracao.condutores[0].CPF') === 'Condutor 1, CPF');
   expect('qr code por dado', qrCodeMdfe('5'.repeat(44), '2').startsWith('https://dfe-portal.svrs.rs.gov.br/mdfe/qrCode?'));
-  expect('gzip', (await gunzipBase64(await gzipBase64('ok'))) === 'ok');
+  expect('gzip', (await descomprimirGzipBase64(await comprimirGzipBase64('ok'))) === 'ok');
   if (!r.ok) return failures;
-  const m = r.value;
+  const m = r.valor;
   expect('chave', m.chave.length === 44 && m.chave.startsWith('51260900011144477735589200000000011') && m.id === `MDFe${m.chave}`);
   expect('fuso da UF', m.dhEmi === '2026-09-26T10:00:00-04:00');
   expect('totais', m.infMDFe.tot.vCarga === '150000.00' && m.infMDFe.tot.qCarga === '30000.0000' && m.infMDFe.tot.qNFe === '1');
   expect('xml', m.xml.startsWith('<MDFe xmlns="http://www.portalfiscal.inf.br/mdfe"><infMDFe Id="MDFe'));
 
-  const ac = await syntheticCertificate({ clock, role: 'ac' });
-  const produtor = await syntheticCertificate({ clock, role: 'titular', cpf: CPF, issuer: ac });
-  const sim = createSefazSim({ clock, uf: 'MT' });
-  const transport = redirectToSim(simTransport(sim, { clientCertificate: produtor.der }), SIM_BASE_URL);
-  const client = createMdfeClient({ transport, signer: produtor.signer, ambiente: 'homologacao', clock, autor: { CPF } });
-  const assinado = await signMdfe(m, produtor.signer);
+  const ac = await certificadoSintetico({ relogio: clock, papel: 'ac' });
+  const produtor = await certificadoSintetico({ relogio: clock, papel: 'titular', cpf: CPF, emissor: ac });
+  const sim = criarSefazSim({ relogio: clock, uf: 'MT' });
+  const transport = redirecionarParaSim(transporteSim(sim, { certificadoDoCliente: produtor.der }), URL_BASE_SIM);
+  const client = criarClienteMdfe({ transporte: transport, assinador: produtor.assinador, ambiente: 'homologacao', relogio: clock, autor: { CPF } });
+  const assinado = await assinarMdfe(m, produtor.assinador);
   expect('qr code antes da assinatura', assinado.includes('<infMDFeSupl><qrCodMDFe>'));
   const aut = await client.autorizar(assinado);
   expect('autorizado no simulador', aut.tipo === 'autorizado' && aut.valor.mdfeProc?.includes(assinado) === true);

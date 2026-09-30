@@ -1,10 +1,10 @@
-/** Todo método do `NfeClient` que vai à rede repassa o `signal` ao transporte: abortar cancela a requisição em curso. */
+/** Todo método do `ClienteNfe` que vai à rede repassa o `signal` ao transporte: abortar cancela a requisição em curso. */
 import { describe, expect, test } from 'bun:test';
-import type { NfeClient } from '../../src/services/index.ts';
+import type { ClienteNfe } from '../../src/services/index.ts';
 import type { FakeTransport } from './helpers.ts';
 import { CNPJ_DEST, CNPJ_EMIT, chave, client, nfeAssinada, transportePendente } from './helpers.ts';
 
-type Chamada = (c: NfeClient, signal: AbortSignal) => Promise<unknown>;
+type Chamada = (c: ClienteNfe, signal: AbortSignal) => Promise<unknown>;
 
 const casos: readonly (readonly [string, Chamada])[] = [
   ['statusServico', (c, signal) => c.statusServico({ signal })],
@@ -50,7 +50,7 @@ const casos: readonly (readonly [string, Chamada])[] = [
   ['distribuicaoDFe', (c, signal) => c.distribuicaoDFe({ ultNSU: 0 }, { signal })],
 ];
 
-async function cliente(): Promise<{ c: NfeClient; t: ReturnType<typeof transportePendente> }> {
+async function cliente(): Promise<{ c: ClienteNfe; t: ReturnType<typeof transportePendente> }> {
   const t = transportePendente();
   const { c } = await client(t, { autor: { CNPJ: CNPJ_EMIT } });
   return { c, t };

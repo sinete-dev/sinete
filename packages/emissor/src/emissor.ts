@@ -1,12 +1,12 @@
 /**
- * `createEmissor(perfil, opcoes)`: o ciclo de transmissão comum aos documentos (ADR 0010).
+ * `criarEmissor(perfil, opcoes)`: o ciclo de transmissão comum aos documentos (ADR 0010).
  *
  * Trava o documento, lê o que estiver gravado; sem bytes, monta, assina e grava; envia (ou retoma, com os bytes
  * gravados, sem nunca montar de novo); renova a trava enquanto espera a SEFAZ; confere a trava antes de guardar o
  * desfecho; conclui, mantém ou descarta os bytes pela política do documento; solta a trava no fim, dê certo ou não.
  *
  * O que muda de um documento para outro (montagem, assinatura, protocolo de envio, tabela de `cStat`) fica no perfil
- * (`PerfilDocumento`). Cada subpath exporta o seu e um `create<Doc>Emissor` com os tipos fixados:
+ * (`PerfilDocumento`). Cada subpath exporta o seu e a fábrica com os tipos fixados (`criarEmissorNfe` e as outras):
  * `@sinete/emissor/nfe`, `/mdfe` e `/nfse`. Esta raiz não importa nenhum pacote de documento.
  */
 
@@ -17,18 +17,18 @@ import type { CriarTransporteOpcoes, Transporte } from '@sinete/transport';
 import { criarTransporte, hostsDoAmbiente, politicaDeHostsPermitidos } from '@sinete/transport';
 import type { CertificadoAberto } from './certificado.ts';
 import { abrirCertificado } from './certificado.ts';
-import type { ContingenciaDoPerfil, MudancaContingencia, OpcoesContingencia } from './contingencia.ts';
+import type { ContingenciaDoPerfil, ContingenciaOpcoes, MudancaContingencia } from './contingencia.ts';
 import { criarContingencia } from './contingencia.ts';
 import type { Desfecho, DesfechoDecidido, SituacaoPosterior, TipoDocumento } from './desfecho.ts';
 import { destinoDosBytes } from './desfecho.ts';
-import { RecusaRepetidaError, TransmissaoEmAndamentoError, TravaPerdidaError } from './erros.ts';
+import { ErroRecusaRepetida, ErroTransmissaoEmAndamento, ErroTravaPerdida } from './erros.ts';
 import type { RegistroTransmissao, TransmissaoStore, Trava } from './store.ts';
 
 /** O que o perfil recebe do emissor: certificado aberto, relógio e o transporte do certificado. */
 export interface ContextoEmissor {
   readonly ambiente: Ambiente;
-  readonly clock: Relogio;
-  readonly signer: Assinador;
+  readonly relogio: Relogio;
+  readonly assinador: Assinador;
   /** Titular do certificado (CNPJ ou CPF, nome). */
   readonly titular: IdentidadeIcp;
   readonly logger: Logger | undefined;
@@ -57,7 +57,7 @@ export interface PerfilDocumento<Entrada, Cliente, P = unknown, B = unknown> {
   indefinido(cStat: string): boolean;
   /**
    * `cStat` de recusa do serviço, não da nota (serviço paralisado, erro não catalogado): não barra o reenvio dos mesmos
-   * bytes (`OpcoesEmissor.recusaRepetida`). Sem a função, toda recusa descartada conta.
+   * bytes (`EmissorOpcoes.recusaRepetida`). Sem a função, toda recusa descartada conta.
    */
   transitorio?(cStat: string): boolean;
   /**
@@ -71,11 +71,11 @@ export interface PerfilDocumento<Entrada, Cliente, P = unknown, B = unknown> {
    * ela a barreira compara os bytes, para não barrar a correção.
    */
   recusaPorCampoVolatil?(cStat: string): boolean;
-  /** Contingência automática do documento (ADR 0013); sem ela, `OpcoesEmissor.contingencia.automatica` é recusada. */
+  /** Contingência automática do documento (ADR 0013); sem ela, `EmissorOpcoes.contingencia.automatica` é recusada. */
   readonly contingencia?: ContingenciaDoPerfil<Entrada, ContextoEmissor>;
-  criarCliente(ctx: ContextoEmissor): Cliente;
+  criarCliente(contexto: ContextoEmissor): Cliente;
   /** Monta, valida e assina, sem rede. Entrada inválida lança `ErroDeValidacao`. */
-  assinar(entrada: Entrada, ctx: ContextoEmissor): Promise<DocumentoAssinado>;
+  assinar(entrada: Entrada, contexto: ContextoEmissor): Promise<DocumentoAssinado>;
   enviar(cliente: Cliente, xml: string, modo: ModoEnvio): Promise<Desfecho<P, B>>;
 }
 
@@ -100,7 +100,7 @@ export type AoDecidir<P = unknown, B = unknown> = (
 export type JaGuardado = (registro: RegistroTransmissao) => boolean | Promise<boolean>;
 
 /** Como o integrador guarda o documento: no emissor (padrão de todas as chamadas) ou em cada chamada. */
-export interface OpcoesGuarda<P = unknown, B = unknown> {
+export interface GuardaOpcoes<P = unknown, B = unknown> {
   /** Guarda o documento decidido (veja `AoDecidir`). O da chamada vale sobre o do emissor. */
   readonly aoDecidir?: AoDecidir<P, B>;
   /** Veja `JaGuardado`. O da chamada vale sobre o do emissor. */
@@ -112,13 +112,13 @@ export interface OpcoesGuarda<P = unknown, B = unknown> {
  * nota volta com a mesma rejeição mais de 30 vezes (MOC 7.0 Anexo I, item 4.3.1, rejeição 656; limites
  * "parametrizáveis por ambiente autorizador"). Com o store que lembra recusas (`registrarRecusa` e `recusaRecente`), o
  * emissor conta as recusas definitivas iguais (o mesmo conteúdo com o mesmo `cStat`) e, quando a conta chega ao
- * `limite` dentro da janela, recusa com `RecusaRepetidaError`, antes de gravar, a próxima emissão do mesmo documento
+ * `limite` dentro da janela, recusa com `ErroRecusaRepetida`, antes de gravar, a próxima emissão do mesmo documento
  * com o mesmo conteúdo. O conteúdo é o XML assinado sem o que muda sozinho a cada montagem
  * (`PerfilDocumento.conteudoParaRecusa`): quem remonta a nota a cada tentativa, com a hora de agora, também é contado;
  * a nota corrigida passa e recomeça a conta, porque o conteúdo muda. Abaixo do limite, a mesma nota vai de novo: a
  * causa pode ter sido resolvida fora dela (o cadastro do emitente na SEFAZ).
  */
-export interface OpcoesRecusaRepetida {
+export interface RecusaRepetidaOpcoes {
   /** Janela da conta, desde a primeira recusa da sequência, pelo relógio do banco. Padrão: 1 hora, a da regra. */
   readonly janelaMs?: number;
   /**
@@ -128,14 +128,14 @@ export interface OpcoesRecusaRepetida {
   readonly limite?: number;
 }
 
-export interface OpcoesTrava {
+export interface TravaOpcoes {
   /** Prazo da trava. Padrão: 10 minutos, com folga para envio, consulta, reenvio e recibo com o timeout de 60 s. */
   readonly prazoMs?: number;
   /** Renovação enquanto a transmissão roda. Padrão: um terço do prazo. `0` desliga (só para testes). */
   readonly renovarACadaMs?: number;
 }
 
-export interface OpcoesEmissor<P = unknown, B = unknown> extends OpcoesGuarda<P, B> {
+export interface EmissorOpcoes<P = unknown, B = unknown> extends GuardaOpcoes<P, B> {
   /** PFX do certificado A1 (e-CNPJ ou e-CPF), com `senha`. Os bytes não ficam guardados depois de abertos. */
   readonly pfx?: Uint8Array;
   readonly senha?: string;
@@ -144,7 +144,7 @@ export interface OpcoesEmissor<P = unknown, B = unknown> extends OpcoesGuarda<P,
   readonly ambiente: Ambiente;
   /** Obrigatório: persistência dos bytes e trava entre processos. */
   readonly store: TransmissaoStore;
-  readonly trava?: OpcoesTrava;
+  readonly trava?: TravaOpcoes;
   /**
    * O documento que a consulta acha já cancelado ou encerrado fora deste fluxo (`situacaoAtual`): `guardar` (padrão)
    * devolve `autorizado` com a situação e o entrega ao `aoDecidir`; `divergente` devolve `divergente` com a situação e o
@@ -152,22 +152,22 @@ export interface OpcoesEmissor<P = unknown, B = unknown> extends OpcoesGuarda<P,
    */
   readonly situacaoPosterior?: 'guardar' | 'divergente';
   /**
-   * Barreira contra reenviar os mesmos bytes recusados (veja `OpcoesRecusaRepetida`). Ligada por padrão quando o
+   * Barreira contra reenviar os mesmos bytes recusados (veja `RecusaRepetidaOpcoes`). Ligada por padrão quando o
    * `store` implementa `registrarRecusa` e `recusaRecente`; `false` desliga. Sem esses métodos no store, não há
    * barreira (o store em memória os tem; num store SQL, são opcionais).
    */
-  readonly recusaRepetida?: false | OpcoesRecusaRepetida;
+  readonly recusaRepetida?: false | RecusaRepetidaOpcoes;
   /**
    * Contingência automática (ADR 0013), desligada por padrão: com `automatica: true`, depois de `limiteFalhas` falhas
    * do autorizador normal na janela e a consulta de status sem 107, as notas novas saem em contingência (NF-e na SVC da
    * UF, NFC-e off-line) até a sonda ver o autorizador em operação. Bytes já gravados nunca mudam de tipo de emissão.
    * Só no emissor de NF-e e NFC-e.
    */
-  readonly contingencia?: OpcoesContingencia;
+  readonly contingencia?: ContingenciaOpcoes;
   /** Avisa a entrada e a saída da contingência automática (log, alerta, tela do caixa). Se lançar, a emissão segue. */
   readonly aoMudarContingencia?: (mudanca: MudancaContingencia) => void | Promise<void>;
   /** Relógio de emissão; padrão o do sistema. */
-  readonly clock?: Relogio;
+  readonly relogio?: Relogio;
   readonly logger?: Logger;
   /** Prazo por requisição. Padrão: o do transporte (60 s). */
   readonly timeoutMs?: number;
@@ -180,7 +180,7 @@ export interface OpcoesEmissor<P = unknown, B = unknown> extends OpcoesGuarda<P,
 }
 
 /** Opções de `retomar`. */
-export interface OpcoesRetomar<P = unknown, B = unknown> extends OpcoesGuarda<P, B> {
+export interface RetomarOpcoes<P = unknown, B = unknown> extends GuardaOpcoes<P, B> {
   /**
    * Só retoma se os bytes gravados forem desta gravação (`RegistroTransmissao.gravacao`), conferida já com a trava;
    * senão, `undefined` sem enviar nada. A retomada automática usa para não enviar uma gravação que ela não selecionou.
@@ -188,17 +188,17 @@ export interface OpcoesRetomar<P = unknown, B = unknown> extends OpcoesGuarda<P,
   readonly gravacao?: string;
 }
 
-export interface OpcoesEmitir<P = unknown, B = unknown> extends OpcoesGuarda<P, B> {
+export interface EmitirOpcoes<P = unknown, B = unknown> extends GuardaOpcoes<P, B> {
   /** Dados do integrador gravados com os bytes (`RegistroTransmissao.meta`). Ignorado se já havia bytes gravados. */
   readonly meta?: Readonly<Record<string, unknown>>;
   /**
-   * Envia mesmo que os mesmos bytes tenham sido recusados dentro da janela (`OpcoesEmissor.recusaRepetida`). Para
+   * Envia mesmo que os mesmos bytes tenham sido recusados dentro da janela (`EmissorOpcoes.recusaRepetida`). Para
    * depois de resolver fora da nota a causa da recusa, como o cadastro do emitente na SEFAZ (203, 230).
    */
   readonly reenviarRecusado?: boolean;
 }
 
-/** O que `preparar` devolve: a entrada e os dados do integrador gravados com os bytes (vale sobre `OpcoesEmitir.meta`). */
+/** O que `preparar` devolve: a entrada e os dados do integrador gravados com os bytes (vale sobre `EmitirOpcoes.meta`). */
 export interface EntradaPreparada<Entrada> {
   readonly entrada: Entrada;
   readonly meta?: Readonly<Record<string, unknown>>;
@@ -218,14 +218,14 @@ export interface Emissor<Entrada, Cliente, P = unknown, B = unknown> {
    * Transmite o documento `ref` (o id dele no sistema do integrador). Com bytes já gravados para `ref`, retoma com eles
    * e ignora `entrada`: o documento nunca é montado de novo. Sem bytes, monta, valida, assina, grava e envia. `entrada`
    * pode ser a própria entrada ou `preparar` (veja `PrepararEntrada`), chamada só quando for montar.
-   * `TransmissaoEmAndamentoError` se outro processo tem a trava; `ErroDeValidacao` se a entrada não passa, antes de
-   * gravar; `TravaPerdidaError` se a trava venceu antes de guardar o desfecho (os bytes ficam para quem assumiu);
+   * `ErroTransmissaoEmAndamento` se outro processo tem a trava; `ErroDeValidacao` se a entrada não passa, antes de
+   * gravar; `ErroTravaPerdida` se a trava venceu antes de guardar o desfecho (os bytes ficam para quem assumiu);
    * `ErroDeConfiguracao` sem `aoDecidir` no emissor nem na chamada.
    */
   emitir(
     ref: string,
     entrada: Entrada | PrepararEntrada<Entrada>,
-    opcoes?: OpcoesEmitir<P, B>,
+    opcoes?: EmitirOpcoes<P, B>,
   ): Promise<Desfecho<P, B>>;
   /** Monta, valida e assina, sem gravar nem enviar. Não precisa de rede (roda no browser). */
   assinar(entrada: Entrada): Promise<DocumentoAssinado>;
@@ -233,7 +233,7 @@ export interface Emissor<Entrada, Cliente, P = unknown, B = unknown> {
    * Retoma pelos bytes gravados de `ref`; `undefined` se não há nada gravado (ou, com `opcoes.gravacao`, se a
    * gravação é outra). Nunca monta.
    */
-  retomar(ref: string, opcoes?: OpcoesRetomar<P, B>): Promise<Desfecho<P, B> | undefined>;
+  retomar(ref: string, opcoes?: RetomarOpcoes<P, B>): Promise<Desfecho<P, B> | undefined>;
   /** Cliente completo do documento, com o mesmo transporte e signer. Criado no primeiro uso. */
   readonly cliente: Cliente;
   /** Fecha o transporte (conexões keep-alive). */
@@ -268,7 +268,7 @@ type StoreComRecusas = TransmissaoStore & Required<Pick<TransmissaoStore, 'regis
 
 /** Janela e limite da barreira de recusa repetida, ou `undefined` sem barreira (desligada ou store sem os métodos). */
 function barreiraDaRecusa(
-  opcoes: OpcoesEmissor<never, never>,
+  opcoes: EmissorOpcoes<never, never>,
 ): { readonly janelaMs: number; readonly limite: number } | undefined {
   const s = opcoes.store;
   const temRegistrar = typeof s.registrarRecusa === 'function';
@@ -285,7 +285,7 @@ function barreiraDaRecusa(
   return { janelaMs, limite };
 }
 
-function conferirOpcoes(opcoes: OpcoesEmissor<never, never>): { prazoMs: number; renovarACadaMs: number } {
+function conferirOpcoes(opcoes: EmissorOpcoes<never, never>): { prazoMs: number; renovarACadaMs: number } {
   const s = opcoes.store as Partial<TransmissaoStore> | undefined;
   if (s === undefined || typeof s.travar !== 'function' || typeof s.gravar !== 'function') {
     throw new ErroDeConfiguracao(
@@ -330,15 +330,15 @@ function comoDivergente<P, B>(d: Desfecho<P, B>): Desfecho<P, B> {
  * Abre o PFX (ou usa o certificado aberto) e devolve o emissor. Nada vai à rede até a primeira operação que precisa
  * dela; o certificado fora da validade é recusado aqui (`ErroCertificado`).
  */
-export async function createEmissor<Entrada, Cliente, P, B>(
+export async function criarEmissor<Entrada, Cliente, P, B>(
   perfil: PerfilDocumento<Entrada, Cliente, P, B>,
-  opcoes: OpcoesEmissor<P, B>,
+  opcoes: EmissorOpcoes<P, B>,
 ): Promise<Emissor<Entrada, Cliente, P, B>> {
-  const { prazoMs, renovarACadaMs } = conferirOpcoes(opcoes as OpcoesEmissor<never, never>);
-  const barreira = barreiraDaRecusa(opcoes as OpcoesEmissor<never, never>);
+  const { prazoMs, renovarACadaMs } = conferirOpcoes(opcoes as EmissorOpcoes<never, never>);
+  const barreira = barreiraDaRecusa(opcoes as EmissorOpcoes<never, never>);
   const { store, ambiente } = opcoes;
   const recusas = barreira === undefined ? undefined : (store as StoreComRecusas);
-  const clock = opcoes.clock ?? relogioDoSistema;
+  const clock = opcoes.relogio ?? relogioDoSistema;
   const logger = opcoes.logger ?? loggerSilencioso;
   const contingencia = criarContingencia<Entrada, ContextoEmissor>({
     opcoes: opcoes.contingencia,
@@ -352,15 +352,15 @@ export async function createEmissor<Entrada, Cliente, P, B>(
   });
   const cert: CertificadoAberto =
     opcoes.certificado ??
-    (await abrirCertificado({ pfx: opcoes.pfx as Uint8Array, senha: opcoes.senha as string }, { clock }));
+    (await abrirCertificado({ pfx: opcoes.pfx as Uint8Array, senha: opcoes.senha as string }, { relogio: clock }));
   const { assinador: signer } = cert;
   let transport: Transporte | undefined;
   let client: Cliente | undefined;
 
   const ctx: ContextoEmissor = {
     ambiente,
-    clock,
-    signer,
+    relogio: clock,
+    assinador: signer,
     titular: cert.titular,
     logger: opcoes.logger,
     timeoutMs: opcoes.timeoutMs,
@@ -405,7 +405,7 @@ export async function createEmissor<Entrada, Cliente, P, B>(
       case 'concluir':
         // Fencing: só quem ainda tem a trava guarda o desfecho.
         if (!(await store.renovar(trava, prazoMs))) {
-          throw new TravaPerdidaError('a trava venceu antes de guardar o desfecho; outro processo pode ter assumido');
+          throw new ErroTravaPerdida('a trava venceu antes de guardar o desfecho; outro processo pode ter assumido');
         }
         if (d.tipo !== 'ja-guardado') await aoDecidir(registro, d as DesfechoDecidido<P, B>, trava);
         await store.concluir(trava);
@@ -441,7 +441,7 @@ export async function createEmissor<Entrada, Cliente, P, B>(
             return true;
           }))
         ) {
-          throw new TravaPerdidaError('a trava venceu durante a transmissão; outro processo pode ter assumido', {
+          throw new ErroTravaPerdida('a trava venceu durante a transmissão; outro processo pode ter assumido', {
             detalhes: { desfecho: d.tipo },
           });
         }
@@ -450,7 +450,7 @@ export async function createEmissor<Entrada, Cliente, P, B>(
   }
 
   /** A guarda da chamada, sobre a do emissor; sem `aoDecidir` em nenhuma, recusa antes de travar. */
-  function guardaDe(o: OpcoesGuarda<P, B> | undefined): { aoDecidir: AoDecidir<P, B>; jaGuardado?: JaGuardado } {
+  function guardaDe(o: GuardaOpcoes<P, B> | undefined): { aoDecidir: AoDecidir<P, B>; jaGuardado?: JaGuardado } {
     const aoDecidir = o?.aoDecidir ?? opcoes.aoDecidir;
     if (typeof aoDecidir !== 'function') {
       throw new ErroDeConfiguracao('aoDecidir é obrigatório, no emissor ou na chamada: guarda o documento decidido');
@@ -487,7 +487,7 @@ export async function createEmissor<Entrada, Cliente, P, B>(
   ): Promise<Desfecho<P, B> | undefined> {
     const trava = await store.travar(perfil.tipo, ref, prazoMs);
     if (trava === undefined) {
-      throw new TransmissaoEmAndamentoError('transmissão em andamento para este documento', {
+      throw new ErroTransmissaoEmAndamento('transmissão em andamento para este documento', {
         detalhes: { tipo: perfil.tipo },
       });
     }
@@ -520,7 +520,7 @@ export async function createEmissor<Entrada, Cliente, P, B>(
             r.vezes >= barreira.limite &&
             r.digest === (await resumoParaRecusa(perfil, a.xml, r.cStat))
           ) {
-            throw new RecusaRepetidaError(
+            throw new ErroRecusaRepetida(
               `a SEFAZ recusou esta mesma nota ${r.vezes} vezes desde ${r.primeiraEm.toISOString()} (${r.cStat}: ${r.xMotivo}); corrija a nota antes de reenviar`,
               {
                 detalhes: {
@@ -569,14 +569,14 @@ export async function createEmissor<Entrada, Cliente, P, B>(
     async emitir(
       ref: string,
       entrada: Entrada | PrepararEntrada<Entrada>,
-      o?: OpcoesEmitir<P, B>,
+      o?: EmitirOpcoes<P, B>,
     ): Promise<Desfecho<P, B>> {
       const d = await transmitir(ref, { entrada, meta: o?.meta ?? {} }, guardaDe(o), undefined, o?.reenviarRecusado);
       // Com a fonte dada, `transmitir` sempre chega a um desfecho.
       return d as Desfecho<P, B>;
     },
     assinar: (entrada: Entrada): Promise<DocumentoAssinado> => perfil.assinar(entrada, ctx),
-    retomar: async (ref: string, o?: OpcoesRetomar<P, B>): Promise<Desfecho<P, B> | undefined> =>
+    retomar: async (ref: string, o?: RetomarOpcoes<P, B>): Promise<Desfecho<P, B> | undefined> =>
       transmitir(ref, undefined, guardaDe(o), o?.gravacao),
     get cliente(): Cliente {
       return cliente();

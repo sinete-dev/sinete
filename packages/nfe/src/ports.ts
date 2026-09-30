@@ -1,7 +1,7 @@
 /**
  * Portas do `@sinete/nfe` para o que pode vir de fora. A montagem só conhece o contrato estreito declarado aqui; a
- * implementação padrão do IBS/CBS é o `ibsCbsCalculator` (`rtc.ts`, sobre o `@sinete/ibs-cbs`), e quem calcula em outro
- * lugar (ou testa com alíquotas fixas) injeta a sua em `BuildNfeOptions.ibsCbs`.
+ * implementação padrão do IBS/CBS é o `calculadoraIbsCbs` (`rtc.ts`, sobre o `@sinete/ibs-cbs`), e quem calcula em outro
+ * lugar (ou testa com alíquotas fixas) injeta a sua em `MontarNfeOpcoes.ibsCbs`.
  */
 
 import type { Ambiente, Ocorrencia, Uf } from '@sinete/core';
@@ -10,7 +10,7 @@ import type { Decimal } from './decimal.ts';
 import type { Instante } from './time.ts';
 
 /** Um item classificado, com os valores que a calculadora pode precisar para a base do IBS/CBS. */
-export interface IbsCbsItemRequest {
+export interface PedidoIbsCbsItem {
   /** Número do item na nota (1 a 990). */
   readonly nItem: number;
   /** CST do IBS/CBS (3 dígitos). */
@@ -54,7 +54,7 @@ export interface IbsCbsItemRequest {
 }
 
 /** Dados da nota que decidem a regra aplicável (local da operação, vigência, compra governamental). */
-export interface IbsCbsNotaRequest {
+export interface PedidoIbsCbsNota {
   /** Instante do fato gerador (relógio `fatoGerador` do `ContextoDeTempo`): decide a vigência das alíquotas. */
   readonly fatoGerador: Instante;
   /** Instante da emissão (o do `dhEmi`): decide quais regras de validação da NT já estão implantadas no ambiente. */
@@ -75,22 +75,22 @@ export interface IbsCbsNotaRequest {
 }
 
 /** Resultado da calculadora: o grupo `IBSCBS` de cada item pedido, já na forma lexical do leiaute. */
-export interface IbsCbsResponse {
+export interface RespostaIbsCbs {
   readonly itens: readonly { readonly nItem: number; readonly IBSCBS: TTribNFe }[];
   /**
    * Problemas de classificação ou de dado (`caminho` relativo ao item, como `itens[2].impostos.ibsCbs`). A ocorrência sem
    * `origem` entra como `montagem` (ADR 0011); marque `entrada` a que aponta um valor da nota.
    */
-  readonly issues?: readonly Ocorrencia[];
+  readonly ocorrencias?: readonly Ocorrencia[];
 }
 
 /**
- * Calcula o IBS e a CBS dos itens classificados. O padrão é o `ibsCbsCalculator`, sobre o `@sinete/ibs-cbs/calcular`; nos
+ * Calcula o IBS e a CBS dos itens classificados. O padrão é o `calculadoraIbsCbs`, sobre o `@sinete/ibs-cbs/calcular`; nos
  * testes, um dublê com alíquotas fixas. A calculadora não vê o XML nem o resto da nota além do que está no pedido.
  */
-export interface IbsCbsCalculator {
-  calcular(request: {
-    readonly nota: IbsCbsNotaRequest;
-    readonly itens: readonly IbsCbsItemRequest[];
-  }): IbsCbsResponse | Promise<IbsCbsResponse>;
+export interface CalculadoraIbsCbs {
+  calcular(pedido: {
+    readonly nota: PedidoIbsCbsNota;
+    readonly itens: readonly PedidoIbsCbsItem[];
+  }): RespostaIbsCbs | Promise<RespostaIbsCbs>;
 }

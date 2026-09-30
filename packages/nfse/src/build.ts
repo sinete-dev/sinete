@@ -1,6 +1,6 @@
 /**
- * Montagem da DPS: entrada do domínio (`DpsInput`) para o XML canônico do leiaute 1.01 vigente, validado no XSD antes
- * de devolver, e assinatura por splice (`signDps`).
+ * Montagem da DPS: entrada do domínio (`DadosDps`) para o XML canônico do leiaute 1.01 vigente, validado no XSD antes
+ * de devolver, e assinatura por splice (`assinarDps`).
  *
  * O XML sai com a declaração `<?xml version="1.0" encoding="UTF-8"?>`: a Sefin Nacional recusa sem ela (E1229,
  * aprendido no spike S2, ADR 0004). A declaração fica fora do elemento assinado (`infDPS`), então a assinatura é a
@@ -24,8 +24,8 @@ import { cnpjValido, cpfValido } from '@sinete/validators';
 import type { InscricaoFederal } from './codigos.ts';
 import { cTribNacDps, idDps } from './codigos.ts';
 import { leiauteVigente, VERSAO_LEIAUTE } from './leiaute.ts';
-import type { DpsInput, IbsCbsDps, Pessoa, Prestador } from './model.ts';
-import { formatValor } from './valores.ts';
+import type { DadosDps, IbsCbsDps, Pessoa, Prestador } from './model.ts';
+import { formatarValor } from './valores.ts';
 import { VERSAO_PACOTE } from './versao-gerada.ts';
 
 /** Declaração XML exigida pela Sefin Nacional (E1229). */
@@ -34,14 +34,14 @@ export const DECLARACAO_XML = '<?xml version="1.0" encoding="UTF-8"?>';
 /** Fuso de Brasília, o padrão do `dhEmi` e da data de competência. */
 const BRASILIA = -180;
 
-export interface BuildDpsOptions {
+export interface MontarDpsOpcoes {
   readonly ambiente: Ambiente;
   /** Relógios de emissão (`dhEmi`, escolha do leiaute) e de fato gerador (`dCompet` padrão). */
-  readonly time: ContextoDeTempo;
+  readonly tempo: ContextoDeTempo;
   /** Versão do aplicativo (`verAplic`, até 20 caracteres). Padrão `sinete <versão do @sinete/nfse>` (`formatarVerProc`). */
   readonly verAplic?: string;
   /** Fuso do `dhEmi` e da competência padrão, em minutos. Padrão -180 (Brasília). */
-  readonly offsetMinutes?: number;
+  readonly deslocamentoMin?: number;
 }
 
 /** DPS montada e validada, pronta para assinar. */
@@ -57,9 +57,9 @@ export interface DpsMontada {
   readonly dCompet: string;
 }
 
-export type BuildDpsResult =
-  | { readonly ok: true; readonly value: DpsMontada }
-  | { readonly ok: false; readonly issues: readonly Ocorrencia[] };
+export type ResultadoMontagemDps =
+  | { readonly ok: true; readonly valor: DpsMontada }
+  | { readonly ok: false; readonly ocorrencias: readonly Ocorrencia[] };
 
 type Doc = { CNPJ?: string; CPF?: string; NIF?: string; cNaoNIF?: string };
 
@@ -73,7 +73,7 @@ function conferirDocumento(doc: Doc | undefined, path: string, issues: Ocorrenci
   }
 }
 
-function inscricaoDoEmitente(input: DpsInput, issues: Ocorrencia[]): InscricaoFederal | undefined {
+function inscricaoDoEmitente(input: DadosDps, issues: Ocorrencia[]): InscricaoFederal | undefined {
   const tp = input.tpEmit ?? '1';
   const [quem, path]: [Doc | undefined, string] =
     tp === '1'
@@ -101,7 +101,7 @@ function ibsCbsDps(g: IbsCbsDps, issues: Ocorrencia[]): TCRTCInfoIBSCBS {
   const c = g.classificacao;
   const dif = c.diferimento;
   const pct = (v: string | number, campo: string): string =>
-    formatValor(v, `ibsCbs.classificacao.diferimento.${campo}`, issues) ?? '0';
+    formatarValor(v, `ibsCbs.classificacao.diferimento.${campo}`, issues) ?? '0';
   return {
     finNFSe: g.finNFSe ?? '0',
     ...(g.indFinal === undefined ? {} : { indFinal: g.indFinal }),
@@ -135,7 +135,7 @@ function ibsCbsDps(g: IbsCbsDps, issues: Ocorrencia[]): TCRTCInfoIBSCBS {
   };
 }
 
-function servico(input: DpsInput, issues: Ocorrencia[]): TCServ {
+function servico(input: DadosDps, issues: Ocorrencia[]): TCServ {
   const s = input.servico;
   let cTribNac = s.cTribNac;
   try {
@@ -166,7 +166,7 @@ function servico(input: DpsInput, issues: Ocorrencia[]): TCServ {
  * porque não há valor neutro permitido para eles. Com tomador ou intermediário emitindo, o grupo é obrigatório e não é
  * conferido: o regime do emitente não está na DPS.
  */
-function totalTributos(input: DpsInput, issues: Ocorrencia[]): TCTribTotal {
+function totalTributos(input: DadosDps, issues: Ocorrencia[]): TCTribTotal {
   // As regras olham o regime do emitente. A DPS só traz o do prestador: com tomador ou intermediário emitindo
   // (tpEmit 2 e 3), o regime é desconhecido aqui, então nada é presumido nem recusado localmente.
   const regime = (input.tpEmit ?? '1') === '1' ? input.prestador.regTrib.opSimpNac : undefined;
@@ -198,16 +198,16 @@ function totalTributos(input: DpsInput, issues: Ocorrencia[]): TCTribTotal {
   return t;
 }
 
-function valores(input: DpsInput, issues: Ocorrencia[]): TCInfoValores {
+function valores(input: DadosDps, issues: Ocorrencia[]): TCInfoValores {
   const v = input.valores;
   const money = (x: string | number | undefined, campo: string): string | undefined =>
-    x === undefined ? undefined : formatValor(x, `valores.${campo}`, issues);
+    x === undefined ? undefined : formatarValor(x, `valores.${campo}`, issues);
   const vServ = money(v.vServ, 'vServ') ?? '0.00';
   const vReceb = money(v.vReceb, 'vReceb');
   const vDescIncond = money(v.vDescIncond, 'vDescIncond');
   const vDescCond = money(v.vDescCond, 'vDescCond');
   const iss = input.tributacao.issqn;
-  const pAliq = iss.pAliq === undefined ? undefined : formatValor(iss.pAliq, 'tributacao.issqn.pAliq', issues);
+  const pAliq = iss.pAliq === undefined ? undefined : formatarValor(iss.pAliq, 'tributacao.issqn.pAliq', issues);
   const tribMun: TCTribMunicipal = {
     tribISSQN: iss.tribISSQN,
     ...(iss.cPaisResult === undefined ? {} : { cPaisResult: iss.cPaisResult }),
@@ -240,15 +240,15 @@ function valores(input: DpsInput, issues: Ocorrencia[]): TCInfoValores {
  * Monta e valida a DPS. Nunca lança por dado de entrada: tudo o que impede a DPS vira `Ocorrencia` (formato,
  * documento com DV errado, competência depois da emissão, schema). Lança `ErroDeConfiguracao` só por opção inválida.
  */
-export function buildDps(input: DpsInput, options: BuildDpsOptions): BuildDpsResult {
+export async function montarDps(entrada: DadosDps, opcoes: MontarDpsOpcoes): Promise<ResultadoMontagemDps> {
   const issues: Ocorrencia[] = [];
-  const offset = options.offsetMinutes ?? BRASILIA;
-  const verAplic = options.verAplic ?? formatarVerProc('sinete', VERSAO_PACOTE);
+  const offset = opcoes.deslocamentoMin ?? BRASILIA;
+  const verAplic = opcoes.verAplic ?? formatarVerProc('sinete', VERSAO_PACOTE);
   if (verAplic.length === 0 || verAplic.length > 20)
     throw new ErroDeConfiguracao('verAplic precisa ter de 1 a 20 caracteres');
-  const { vigencia, leiaute } = leiauteVigente(options.ambiente, options.time.emissao);
-  const dhEmi = formatarDataHoraComFuso(options.time.emissao.agora(), offset);
-  const dCompet = input.dCompet ?? formatarDataHoraComFuso(options.time.fatoGerador.agora(), offset).slice(0, 10);
+  const { vigencia, leiaute } = leiauteVigente(opcoes.ambiente, opcoes.tempo.emissao);
+  const dhEmi = formatarDataHoraComFuso(opcoes.tempo.emissao.agora(), offset);
+  const dCompet = entrada.dCompet ?? formatarDataHoraComFuso(opcoes.tempo.fatoGerador.agora(), offset).slice(0, 10);
   if (dCompet > dhEmi.slice(0, 10)) {
     issues.push({
       caminho: 'dCompet',
@@ -256,53 +256,57 @@ export function buildDps(input: DpsInput, options: BuildDpsOptions): BuildDpsRes
       mensagem: 'a data de competência não pode ser posterior à data de emissão (E0015)',
     });
   }
-  const serie = texto(input.serie, /^(?:\d{1,4}|[0-8]\d{4})$/, 'serie', issues);
-  const nDPS = texto(input.nDPS, /^[1-9]\d{0,14}$/, 'nDPS', issues);
-  conferirDocumento(input.prestador as Doc, 'prestador', issues);
-  conferirDocumento(input.tomador as Doc | undefined, 'tomador', issues);
-  conferirDocumento(input.intermediario as Doc | undefined, 'intermediario', issues);
-  const emitente = inscricaoDoEmitente(input, issues);
+  const serie = texto(entrada.serie, /^(?:\d{1,4}|[0-8]\d{4})$/, 'serie', issues);
+  const nDPS = texto(entrada.nDPS, /^[1-9]\d{0,14}$/, 'nDPS', issues);
+  conferirDocumento(entrada.prestador as Doc, 'prestador', issues);
+  conferirDocumento(entrada.tomador as Doc | undefined, 'tomador', issues);
+  conferirDocumento(entrada.intermediario as Doc | undefined, 'intermediario', issues);
+  const emitente = inscricaoDoEmitente(entrada, issues);
   let id = '';
   if (emitente !== undefined) {
     try {
-      id = idDps({ cLocEmi: input.cLocEmi, emitente, serie, nDPS });
+      id = idDps({ cLocEmi: entrada.cLocEmi, emitente, serie, nDPS });
     } catch (e) {
       issues.push({ caminho: 'cLocEmi', code: 'campo_invalido', mensagem: (e as Error).message });
     }
   }
   const inf: TCInfDPS = {
     Id: id,
-    tpAmb: tpAmbDoAmbiente(options.ambiente),
+    tpAmb: tpAmbDoAmbiente(opcoes.ambiente),
     dhEmi,
     verAplic,
     serie,
     nDPS,
     dCompet,
-    tpEmit: input.tpEmit ?? '1',
-    ...(input.cMotivoEmisTI === undefined ? {} : { cMotivoEmisTI: input.cMotivoEmisTI }),
-    ...(input.chNFSeRej === undefined ? {} : { chNFSeRej: input.chNFSeRej }),
-    cLocEmi: input.cLocEmi,
-    ...(input.substituicao === undefined ? {} : { subst: input.substituicao }),
-    prest: input.prestador as Prestador,
-    ...(input.tomador === undefined ? {} : { toma: input.tomador as Pessoa }),
-    ...(input.intermediario === undefined ? {} : { interm: input.intermediario as Pessoa }),
-    serv: servico(input, issues),
-    valores: valores(input, issues),
-    ...(input.ibsCbs === undefined ? {} : { IBSCBS: ibsCbsDps(input.ibsCbs, issues) }),
+    tpEmit: entrada.tpEmit ?? '1',
+    ...(entrada.cMotivoEmisTI === undefined ? {} : { cMotivoEmisTI: entrada.cMotivoEmisTI }),
+    ...(entrada.chNFSeRej === undefined ? {} : { chNFSeRej: entrada.chNFSeRej }),
+    cLocEmi: entrada.cLocEmi,
+    ...(entrada.substituicao === undefined ? {} : { subst: entrada.substituicao }),
+    prest: entrada.prestador as Prestador,
+    ...(entrada.tomador === undefined ? {} : { toma: entrada.tomador as Pessoa }),
+    ...(entrada.intermediario === undefined ? {} : { interm: entrada.intermediario as Pessoa }),
+    serv: servico(entrada, issues),
+    valores: valores(entrada, issues),
+    ...(entrada.ibsCbs === undefined ? {} : { IBSCBS: ibsCbsDps(entrada.ibsCbs, issues) }),
   };
   // Tudo o que foi conferido até aqui é da entrada (ADR 0011); daqui para baixo, do XML montado.
-  if (issues.length > 0) return { ok: false, issues: issues.map((i) => ({ ...i, origem: i.origem ?? 'entrada' })) };
+  if (issues.length > 0)
+    return { ok: false, ocorrencias: issues.map((i) => ({ ...i, origem: i.origem ?? 'entrada' })) };
   let corpo: string;
   try {
     corpo = serializarRaiz(leiaute.DPSElement, { versao: VERSAO_LEIAUTE, infDPS: inf });
   } catch (e) {
     if (!(e instanceof ErroSerializacao)) throw e;
-    return { ok: false, issues: [{ caminho: e.caminho, code: 'schema', mensagem: e.message, origem: 'montagem' }] };
+    return {
+      ok: false,
+      ocorrencias: [{ caminho: e.caminho, code: 'schema', mensagem: e.message, origem: 'montagem' }],
+    };
   }
   const xml = DECLARACAO_XML + corpo;
   const schema = validarNoSchema(leiaute.DPSElement, xml);
-  if (schema.length > 0) return { ok: false, issues: schema };
-  return { ok: true, value: { xml, id, ambiente: options.ambiente, modulo: vigencia.modulo, dhEmi, dCompet } };
+  if (schema.length > 0) return { ok: false, ocorrencias: schema };
+  return { ok: true, valor: { xml, id, ambiente: opcoes.ambiente, modulo: vigencia.modulo, dhEmi, dCompet } };
 }
 
 /**
@@ -324,8 +328,8 @@ export function validarNoSchema(raiz: ElementoRaiz<unknown>, xml: string): Ocorr
 }
 
 /** Assina a DPS (enveloped, `Reference` para o `infDPS`). A string devolvida é a que vai para a Sefin e para o banco. */
-export async function signDps(dps: DpsMontada, signer: Assinador): Promise<string> {
-  return assinarXml(dps.xml, { id: dps.id }, signer);
+export async function assinarDps(dps: DpsMontada, assinador: Assinador): Promise<string> {
+  return assinarXml(dps.xml, { id: dps.id }, assinador);
 }
 
 /** Relógio de emissão no fuso de Brasília, para quem monta outros documentos (`dhEvento`). */

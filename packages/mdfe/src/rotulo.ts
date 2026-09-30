@@ -1,6 +1,6 @@
 /**
  * Rótulo em português do caminho de uma ocorrência do MDF-e (ADR 0011), para mostrar a quem preencheu o manifesto:
- * `Condutor 1, CPF` em vez de `rodoviario.tracao.condutores[0].CPF`. Aceita os caminhos da entrada (`MdfeInput`) e os do
+ * `Condutor 1, CPF` em vez de `rodoviario.tracao.condutores[0].CPF`. Aceita os caminhos da entrada (`DadosMdfe`) e os do
  * documento montado, tanto os das conferências do montador (`infMDFe.emit.xNome`) quanto os do validador de XSD
  * (`/infMDFe/infDoc/infMunDescarga[2]/xMunDescarga`).
  */
@@ -15,7 +15,7 @@ const numerado =
 
 /** Do mais específico ao mais geral. Os índices chegam somados de um. */
 const GRUPOS: readonly GrupoDeCaminho[] = [
-  // Entrada (MdfeInput)
+  // Entrada (DadosMdfe)
   { padrao: /^emitente\b/, rotulo: 'Emitente' },
   { padrao: /^tpEmit\b/, rotulo: 'Tipo do emitente' },
   { padrao: /^tpTransp\b/, rotulo: 'Tipo do transportador' },
@@ -136,6 +136,6 @@ const rotular = criarRotuloDoCaminho({ grupos: GRUPOS, campos: CAMPOS, padrao: '
  * Rótulo em português do caminho de uma ocorrência do MDF-e: `Grupo, Campo` quando os dois são conhecidos (`Condutor 1,
  * CPF`), só um deles quando falta o outro, e `Dados do MDF-e` quando nenhum é.
  */
-export function rotuloDoCaminho(path: string): string {
-  return rotular(path);
+export function rotuloDoCaminho(caminho: string): string {
+  return rotular(caminho);
 }

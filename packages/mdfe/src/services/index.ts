@@ -2,30 +2,30 @@
 
 export type {
   AutorDocumento,
-  AutorizacaoOutcome,
   AutorizarOpcoes,
   CancelamentoPedido,
+  ClienteMdfe,
+  ClienteMdfeOpcoes,
   ConsultaMdfe,
-  ConsultaOutcome,
   EncerramentoPedido,
-  EventoOutcome,
+  EnvioOpcoes,
   EventoRegistrado,
   InclusaoCondutorPedido,
   InclusaoDfePedido,
-  MdfeClient,
-  MdfeClientOptions,
   MdfeNaoEncerrado,
-  OpcoesEnvio,
   PagamentoOperacaoPedido,
   ProtocoloMdfe,
+  ResultadoAutorizacao,
+  ResultadoConsulta,
+  ResultadoEvento,
   StatusServico,
 } from './client.ts';
-export { createMdfeClient } from './client.ts';
-export { gunzipBase64, gzipBase64 } from './gzip.ts';
+export { criarClienteMdfe } from './client.ts';
+export { comprimirGzipBase64, descomprimirGzipBase64 } from './gzip.ts';
 export type { CStatClasse } from './outcome.ts';
 export { cstatEm } from './outcome.ts';
 export type { DocumentoAssinado } from './proc.ts';
-export { documentoAssinado, MDFE_NS, mdfeAssinadoDoProc, sliceElement } from './proc.ts';
+export { documentoAssinado, MDFE_NS, mdfeAssinadoDoProc, recortarElemento } from './proc.ts';
 export type { RecuperacaoEvento } from './recuperar.ts';
 export { recuperarEventoRegistrado } from './recuperar.ts';
 export type { ResolucaoEnvio } from './resolver.ts';

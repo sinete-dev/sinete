@@ -2,7 +2,7 @@
  * Notas sintéticas para os testes do builder. Documentos são exemplos públicos de dígito verificador válido
  * (11.222.333/0001-81, 111.444.777-35, IE SP 110.042.490.114); nomes e endereços são inventados.
  */
-import type { Item, NfeInput } from '@sinete/nfe';
+import type { DadosNfe, Item } from '@sinete/nfe';
 
 export const CNPJ_EMIT = '11222333000181';
 export const CNPJ_DEST = '11444777000161';
@@ -32,7 +32,7 @@ export function item(extra: Partial<Item> = {}, icms: Item['impostos']['icms'] =
   };
 }
 
-export function nota(extra: Partial<NfeInput> = {}): NfeInput {
+export function nota(extra: Partial<DadosNfe> = {}): DadosNfe {
   return {
     serie: 1,
     nNF: 123,

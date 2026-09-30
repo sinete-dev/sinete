@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { contextoDeTempo, relogioFixo } from '@sinete/core';
 import { carregarDataset } from '@sinete/ibs-cbs-dados';
-import { DATASET_EMBARCADO } from '@sinete/ibs-cbs-dados/bundled';
+import { DATASET_EMBARCADO } from '@sinete/ibs-cbs-dados/embarcado';
 import { aliquotasOficiais, comAliquotasInformadas, ErroAliquotaDesconhecida } from '../../src/aliquotas/index.ts';
 import type { ItemClassificado, OperacaoClassificada, Roc } from '../../src/calcular/index.ts';
 import { calcular, calcularEm, Decimal, ErroClassificacao, ErroRegimeNaoSuportado } from '../../src/calcular/index.ts';

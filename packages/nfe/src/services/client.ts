@@ -56,11 +56,11 @@ import type { EndpointResolvido, NfeServico, Transporte } from '@sinete/transpor
 import { nfceEndpoint, nfeContingenciaDaUf, nfeEndpoint } from '@sinete/transport';
 import type { ChaveAcesso } from '@sinete/validators';
 import { lerChaveAcesso, lerCnpj, lerCpf } from '@sinete/validators';
-import { formatDh, offsetDaUf } from '../time.ts';
-import { gunzipBase64 } from './gzip.ts';
+import { deslocamentoDaUf, formatarDh } from '../time.ts';
+import { descomprimirGzipBase64 } from './gzip.ts';
 import { cstatEm, rejeitado } from './outcome.ts';
 import type { DocumentoAssinado } from './proc.ts';
-import { documentoAssinado, envelope, NFE_NS, sliceElement } from './proc.ts';
+import { documentoAssinado, envelope, NFE_NS, recortarElemento } from './proc.ts';
 import type { RespostaSoap } from './soap.ts';
 import { chamar } from './soap.ts';
 
@@ -74,12 +74,12 @@ export type AutorDocumento =
   | { readonly CPF: string; readonly CNPJ?: never };
 
 /** Espera injetável (testes passam uma que não dorme). */
-export type Sleep = (ms: number, signal?: AbortSignal) => Promise<void>;
+export type Espera = (ms: number, signal?: AbortSignal) => Promise<void>;
 
-export interface NfeClientOptions {
-  readonly transport: Transporte;
+export interface ClienteNfeOpcoes {
+  readonly transporte: Transporte;
   /** Assina NF-e, eventos e inutilização (A1 WebCrypto, A3 via PKCS#11, HSM). */
-  readonly signer: Assinador;
+  readonly assinador: Assinador;
   readonly ambiente: Ambiente;
   /**
    * UF dos serviços que não partem de um documento: status do serviço, inutilização, recibo consultado sem a NF-e,
@@ -89,12 +89,12 @@ export interface NfeClientOptions {
    */
   readonly uf?: Uf;
   /** Relógio de emissão: `dhEvento`, número do lote. */
-  readonly clock: Relogio;
+  readonly relogio: Relogio;
   readonly logger?: Logger;
   /** Prazo por requisição; padrão o do transporte. */
   readonly timeoutMs?: number;
   /** Fuso do emitente em minutos; padrão o da UF da chave nos eventos e o de `uf` na manifestação (`data/fusos.json`). */
-  readonly offsetMinutes?: number;
+  readonly deslocamentoMin?: number;
   /**
    * `svc`: o status do serviço e o recibo consultado sem a NF-e vão ao SVC-AN ou SVC-RS de `uf`. Não vale para o que
    * parte de um documento: a NF-e assinada em SVC (tpEmis 6 ou 7, na chave) vai ao SVC que a chave diz, e a assinada
@@ -103,25 +103,25 @@ export interface NfeClientOptions {
   readonly contingencia?: 'svc';
   /** CNPJ ou CPF do titular do certificado: autor da manifestação, interessado da distribuição, emitente da inutilização. */
   readonly autor?: AutorDocumento;
-  readonly sleep?: Sleep;
+  readonly esperar?: Espera;
   /**
    * Sobrepõe o endpoint da NFC-e (modelo 65) por serviço e UF. Sem ela, vale a tabela da NFC-e do `@sinete/transport`
    * (`nfceEndpoint`), que em várias UFs (SP, MG, PR, RS, SVRS) é outro host que o da NF-e. A NFC-e não tem SVC: com
    * `contingencia: 'svc'`, o documento modelo 65 continua indo ao autorizador normal da NFC-e.
    */
-  readonly nfceEndpoint?: (servico: NfeServico, uf: Uf) => EndpointResolvido;
+  readonly endpointNfce?: (servico: NfeServico, uf: Uf) => EndpointResolvido;
   /** Gerador de `idLote` (até 15 dígitos); padrão: os milissegundos do relógio. */
   readonly idLote?: () => string;
 }
 
 /** Opções de toda chamada que vai à rede. */
-export interface OpcoesEnvio {
+export interface EnvioOpcoes {
   /** Cancela a requisição em curso. */
   readonly signal?: AbortSignal;
 }
 
 /** Opções da consulta de um recibo. */
-export interface ConsultaReciboOpcoes extends OpcoesEnvio {
+export interface ConsultaReciboOpcoes extends EnvioOpcoes {
   /**
    * Modelo do lote, para escolher o serviço (NFC-e vai pelo `nfceEndpoint`). Com a NF-e assinada o modelo vem da
    * chave e este campo, se vier, tem de bater; sem ela, é obrigatório para NFC-e e o padrão é 55.
@@ -175,7 +175,7 @@ export interface ProtocoloNfe {
 }
 
 /** Desfecho da autorização: autorizada, denegada (número consumido), rejeitada ou pendente (recibo em `referencia`). */
-export type AutorizacaoOutcome = ResultadoSefaz<ProtocoloNfe, ProtocoloNfe>;
+export type ResultadoAutorizacao = ResultadoSefaz<ProtocoloNfe, ProtocoloNfe>;
 
 /** Situação da NF-e na consulta protocolo. */
 export interface ConsultaNfe {
@@ -188,7 +188,7 @@ export interface ConsultaNfe {
   readonly digValConfere?: boolean;
 }
 
-export type ConsultaOutcome = ResultadoSefaz<ConsultaNfe, ConsultaNfe>;
+export type ResultadoConsulta = ResultadoSefaz<ConsultaNfe, ConsultaNfe>;
 
 /** Evento registrado (cStat 135, 136 ou 155). */
 export interface EventoRegistrado {
@@ -203,7 +203,7 @@ export interface EventoRegistrado {
   readonly procEventoNFe: string;
 }
 
-export type EventoOutcome = ResultadoSefaz<EventoRegistrado, never>;
+export type ResultadoEvento = ResultadoSefaz<EventoRegistrado, never>;
 
 /** Inutilização homologada (cStat 102). */
 export interface Inutilizacao {
@@ -213,7 +213,7 @@ export interface Inutilizacao {
   readonly procInutNFe: string;
 }
 
-export type InutilizacaoOutcome = ResultadoSefaz<Inutilizacao, never>;
+export type ResultadoInutilizacao = ResultadoSefaz<Inutilizacao, never>;
 
 export interface Cadastro {
   readonly UF: string;
@@ -242,13 +242,13 @@ export interface Distribuicao {
 
 export type ManifestacaoTipo = 'ciencia' | 'confirmacao' | 'desconhecimento' | 'nao-realizada';
 
-export interface AutorizarOpcoes extends OpcoesEnvio {
+export interface AutorizarOpcoes extends EnvioOpcoes {
   /** `indSinc` 1 (padrão) ou 0 (lote assíncrono com recibo). */
   readonly sincrono?: boolean;
 }
 
 /** Opções do status do serviço. */
-export interface StatusServicoOpcoes extends OpcoesEnvio {
+export interface StatusServicoOpcoes extends EnvioOpcoes {
   /** `65` consulta o autorizador da NFC-e. Padrão 55. */
   readonly mod?: '55' | '65';
 }
@@ -311,34 +311,34 @@ export type DistribuicaoConsulta =
   | { readonly NSU: string | number }
   | { readonly chNFe: string };
 
-export interface DistribuicaoOpcoes extends OpcoesEnvio {
+export interface DistribuicaoOpcoes extends EnvioOpcoes {
   /** UF do interessado; padrão a UF do cliente. */
   readonly cUFAutor?: string;
   readonly autor?: AutorDocumento;
 }
 
-export interface NfeClient {
-  readonly options: NfeClientOptions;
+export interface ClienteNfe {
+  readonly opcoes: ClienteNfeOpcoes;
   /**
    * Status do serviço de autorização na UF das opções (MOC 7.0, tabela 4.4.1: 107 em operação, 108 e 109 paralisado).
    * Com `mod: '65'`, o do autorizador da NFC-e, que em várias UFs é outro host.
    */
   statusServico(opcoes?: StatusServicoOpcoes): Promise<ResultadoSefaz<StatusServico, never>>;
   /** Envia uma NF-e assinada (a string devolvida pela assinatura, sem outra alteração). Padrão síncrono. */
-  autorizar(nfeAssinada: string, opcoes?: AutorizarOpcoes): Promise<AutorizacaoOutcome>;
+  autorizar(nfeAssinada: string, opcoes?: AutorizarOpcoes): Promise<ResultadoAutorizacao>;
   /** Consulta o recibo de um lote assíncrono; com a NF-e assinada, monta o `nfeProc`. */
-  consultarRecibo(nRec: string, nfeAssinada?: string, opcoes?: ConsultaReciboOpcoes): Promise<AutorizacaoOutcome>;
+  consultarRecibo(nRec: string, nfeAssinada?: string, opcoes?: ConsultaReciboOpcoes): Promise<ResultadoAutorizacao>;
   /** Consulta o recibo até sair de pendente ou esgotar a política. */
-  aguardarRecibo(nRec: string, nfeAssinada?: string, politica?: PoliticaRecibo): Promise<AutorizacaoOutcome>;
-  consultar(chave: string, nfeAssinada?: string, opcoes?: OpcoesEnvio): Promise<ConsultaOutcome>;
-  cancelar(p: CancelamentoPedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome>;
+  aguardarRecibo(nRec: string, nfeAssinada?: string, politica?: PoliticaRecibo): Promise<ResultadoAutorizacao>;
+  consultar(chave: string, nfeAssinada?: string, opcoes?: EnvioOpcoes): Promise<ResultadoConsulta>;
+  cancelar(p: CancelamentoPedido, opcoes?: EnvioOpcoes): Promise<ResultadoEvento>;
   /** Cancelamento por substituição (110112): só NFC-e (modelo 65). */
-  cancelarPorSubstituicao(p: CancelamentoSubstituicaoPedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome>;
-  cartaCorrecao(p: CartaCorrecaoPedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome>;
+  cancelarPorSubstituicao(p: CancelamentoSubstituicaoPedido, opcoes?: EnvioOpcoes): Promise<ResultadoEvento>;
+  cartaCorrecao(p: CartaCorrecaoPedido, opcoes?: EnvioOpcoes): Promise<ResultadoEvento>;
   /** Manifestação do destinatário, registrada no Ambiente Nacional (cOrgao 91). */
-  manifestar(p: ManifestacaoPedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome>;
-  inutilizar(p: InutilizacaoPedido, opcoes?: OpcoesEnvio): Promise<InutilizacaoOutcome>;
-  consultarCadastro(p: CadastroPedido, opcoes?: OpcoesEnvio): Promise<ResultadoSefaz<Cadastro, never>>;
+  manifestar(p: ManifestacaoPedido, opcoes?: EnvioOpcoes): Promise<ResultadoEvento>;
+  inutilizar(p: InutilizacaoPedido, opcoes?: EnvioOpcoes): Promise<ResultadoInutilizacao>;
+  consultarCadastro(p: CadastroPedido, opcoes?: EnvioOpcoes): Promise<ResultadoSefaz<Cadastro, never>>;
   distribuicaoDFe(
     consulta: DistribuicaoConsulta,
     opcoes?: DistribuicaoOpcoes,
@@ -358,7 +358,7 @@ export function autorizadorContingencia(
   return { autorizador, tpEmis: autorizador === 'SVC-AN' ? '6' : '7' };
 }
 
-const defaultSleep: Sleep = (ms: number, signal?: AbortSignal): Promise<void> =>
+const defaultSleep: Espera = (ms: number, signal?: AbortSignal): Promise<void> =>
   new Promise<void>((resolve, reject) => {
     if (signal?.aborted) {
       reject(signal.reason);
@@ -439,7 +439,7 @@ function chaveDoDocumento(a: DocumentoAssinado): ChaveAcesso {
 
 /** Fatia autossuficiente (com o `xmlns` do elemento), para devolver ao chamador fora de um envelope. */
 function avulso(doc: DocumentoXml, el: ElementoXml): string {
-  return sliceElement(doc, el, '');
+  return recortarElemento(doc, el, '');
 }
 
 /** Protocolo lido e a fatia sem `xmlns` redundante, para entrar no `nfeProc`. */
@@ -463,7 +463,7 @@ function lerProtocolo(doc: DocumentoXml, el: ElementoXml): ProtocoloLido {
     ...(inf.nProt === undefined ? {} : { nProt: inf.nProt }),
     ...(inf.digVal === undefined ? {} : { digVal: inf.digVal }),
   };
-  return { p, embutido: sliceElement(doc, el) };
+  return { p, embutido: recortarElemento(doc, el) };
 }
 
 /**
@@ -471,7 +471,7 @@ function lerProtocolo(doc: DocumentoXml, el: ElementoXml): ProtocoloLido {
  * protocolo é de outro conteúdo e nenhum `nfeProc` é montado (`ErroRespostaInvalida`). Sem `digVal` não há como provar que o
  * protocolo é deste conteúdo: o desfecho volta sem `nfeProc` (confirme com `consultar`).
  */
-function desfechoDoProtocolo({ p, embutido }: ProtocoloLido, a: DocumentoAssinado | undefined): AutorizacaoOutcome {
+function desfechoDoProtocolo({ p, embutido }: ProtocoloLido, a: DocumentoAssinado | undefined): ResultadoAutorizacao {
   const status = { cStat: p.cStat, xMotivo: p.xMotivo };
   const autorizada = cstatEm(p.cStat, 'autorizada');
   const denegada = cstatEm(p.cStat, 'denegada');
@@ -538,33 +538,39 @@ interface EventoPedido {
 }
 
 /** Cria o cliente dos serviços da NF-e. */
-export function createNfeClient(options: NfeClientOptions): NfeClient {
-  const logger = (options.logger ?? loggerSilencioso).child({ modulo: 'nfe', ambiente: options.ambiente });
-  const sleep = options.sleep ?? defaultSleep;
-  const tpAmb = tpAmbDoAmbiente(options.ambiente);
-  const ufInfo = options.uf === undefined ? undefined : ufPorSigla(options.uf);
-  if (options.uf !== undefined && !ufInfo) throw new ErroDeConfiguracao(`UF inválida: ${String(options.uf)}`);
-  /** UF dos serviços sem documento; sem `options.uf`, `ErroDeConfiguracao` nomeando o serviço. */
+export function criarClienteNfe(opcoesDoCliente: ClienteNfeOpcoes): ClienteNfe {
+  const logger = (opcoesDoCliente.logger ?? loggerSilencioso).child({
+    modulo: 'nfe',
+    ambiente: opcoesDoCliente.ambiente,
+  });
+  const sleep = opcoesDoCliente.esperar ?? defaultSleep;
+  const tpAmb = tpAmbDoAmbiente(opcoesDoCliente.ambiente);
+  const ufInfo = opcoesDoCliente.uf === undefined ? undefined : ufPorSigla(opcoesDoCliente.uf);
+  if (opcoesDoCliente.uf !== undefined && !ufInfo)
+    throw new ErroDeConfiguracao(`UF inválida: ${String(opcoesDoCliente.uf)}`);
+  /** UF dos serviços sem documento; sem `opcoesDoCliente.uf`, `ErroDeConfiguracao` nomeando o serviço. */
   const ufPadrao = (servico: string): { readonly uf: Uf; readonly cUF: CUf } => {
-    if (options.uf === undefined || ufInfo === undefined) {
-      throw new ErroDeConfiguracao(`${servico} precisa da UF: informe NfeClientOptions.uf`);
+    if (opcoesDoCliente.uf === undefined || ufInfo === undefined) {
+      throw new ErroDeConfiguracao(`${servico} precisa da UF: informe ClienteNfeOpcoes.uf`);
     }
-    return { uf: options.uf, cUF: ufInfo.cUF };
+    return { uf: opcoesDoCliente.uf, cUF: ufInfo.cUF };
   };
   /** Fuso de um evento pela UF de quem o registra. */
-  const offsetDe = (uf: Uf): number => options.offsetMinutes ?? offsetDaUf(uf);
+  const offsetDe = (uf: Uf): number => opcoesDoCliente.deslocamentoMin ?? deslocamentoDaUf(uf);
 
   const idLote = (): string => {
-    const id = options.idLote ? options.idLote() : String(options.clock.agora().getTime()).slice(-15);
+    const id = opcoesDoCliente.idLote
+      ? opcoesDoCliente.idLote()
+      : String(opcoesDoCliente.relogio.agora().getTime()).slice(-15);
     if (!/^[0-9]{1,15}$/.test(id)) throw new ErroDeConfiguracao(`idLote inválido: ${id}`);
     return id;
   };
 
-  /** Endpoint da NFC-e: a opção `nfceEndpoint` ou a tabela da NFC-e do transporte, sempre no autorizador normal. */
+  /** Endpoint da NFC-e: a opção `endpointNfce` ou a tabela da NFC-e do transporte, sempre no autorizador normal. */
   const endpointNfce = (servico: NfeServico, uf: Uf): EndpointResolvido =>
-    options.nfceEndpoint
-      ? options.nfceEndpoint(servico, uf)
-      : nfceEndpoint({ ambiente: options.ambiente, servico, uf });
+    opcoesDoCliente.endpointNfce
+      ? opcoesDoCliente.endpointNfce(servico, uf)
+      : nfceEndpoint({ ambiente: opcoesDoCliente.ambiente, servico, uf });
 
   /**
    * Endpoint de um serviço sem documento, pela UF das opções: NF-e com SVC quando `contingencia` pede; NFC-e no
@@ -574,10 +580,10 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
     const { uf } = ufPadrao(servico);
     if (mod === '65') return endpointNfce(servico, uf);
     return nfeEndpoint({
-      ambiente: options.ambiente,
+      ambiente: opcoesDoCliente.ambiente,
       servico,
       uf,
-      ...(options.contingencia === undefined ? {} : { contingencia: options.contingencia }),
+      ...(opcoesDoCliente.contingencia === undefined ? {} : { contingencia: opcoesDoCliente.contingencia }),
     });
   };
 
@@ -590,7 +596,7 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
     if (c.mod === '65') return endpointNfce(servico, c.uf);
     const svc = naUf || c.tpEmis === undefined ? undefined : SVC_DO_TPEMIS[c.tpEmis];
     return nfeEndpoint({
-      ambiente: options.ambiente,
+      ambiente: opcoesDoCliente.ambiente,
       servico,
       ...(svc === undefined ? { uf: c.uf } : { autorizador: svc }),
     });
@@ -604,19 +610,19 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
     signal?: AbortSignal,
   ): Promise<RespostaSoap> =>
     chamar({
-      transport: options.transport,
+      transport: opcoesDoCliente.transporte,
       endpoint: ep,
       servico,
       mensagem,
       retorno,
       logger,
-      ...(options.timeoutMs === undefined ? {} : { timeoutMs: options.timeoutMs }),
+      ...(opcoesDoCliente.timeoutMs === undefined ? {} : { timeoutMs: opcoesDoCliente.timeoutMs }),
       ...(signal === undefined ? {} : { signal }),
     });
 
   const autorPadrao = (a: AutorDocumento | undefined, path: string): { CNPJ: string } | { CPF: string } => {
-    const autor = a ?? options.autor;
-    if (!autor) throw new ErroDeConfiguracao(`informe o CNPJ ou CPF do autor (${path} ou NfeClientOptions.autor)`);
+    const autor = a ?? opcoesDoCliente.autor;
+    if (!autor) throw new ErroDeConfiguracao(`informe o CNPJ ou CPF do autor (${path} ou ClienteNfeOpcoes.autor)`);
     return documentoAutor(autor, path);
   };
 
@@ -624,7 +630,7 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
     nRec: string,
     nfeAssinada?: string,
     opcoes: ConsultaReciboOpcoes = {},
-  ): Promise<AutorizacaoOutcome> {
+  ): Promise<ResultadoAutorizacao> {
     if (!/^[0-9]{15}$/.test(nRec)) throw new ErroDeConfiguracao(`número de recibo inválido: ${nRec}`);
     const a = nfeAssinada === undefined ? undefined : documentoAssinado(nfeAssinada, 'NFe', 'infNFe');
     const c = a === undefined ? undefined : chaveDoDocumento(a);
@@ -652,7 +658,7 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
     return rejeitado(status);
   }
 
-  async function consultar(chave: string, nfeAssinada?: string, opcoes?: OpcoesEnvio): Promise<ConsultaOutcome> {
+  async function consultar(chave: string, nfeAssinada?: string, opcoes?: EnvioOpcoes): Promise<ResultadoConsulta> {
     const c = chaveValida(chave, 'chNFe');
     const a = nfeAssinada === undefined ? undefined : documentoAssinado(nfeAssinada, 'NFe', 'infNFe');
     if (a && a.id !== `NFe${c.chave}`) throw new ErroDeConfiguracao('a NF-e assinada não é a da chave consultada');
@@ -699,7 +705,7 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
     return situacao === 'denegada' ? criarDenegado(status, value) : criarAutorizado(status, value);
   }
 
-  async function enviarEvento(p: EventoPedido): Promise<EventoOutcome> {
+  async function enviarEvento(p: EventoPedido): Promise<ResultadoEvento> {
     const nSeq = p.nSeqEvento;
     if (!Number.isInteger(nSeq) || nSeq < 1 || nSeq > 99) throw new ErroDeConfiguracao(`nSeqEvento inválido: ${nSeq}`);
     const nSeqEvento = String(nSeq);
@@ -711,7 +717,7 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
       tpAmb,
       ...p.autor,
       chNFe: p.chave,
-      dhEvento: formatDh(options.clock.agora(), p.offsetMinutes),
+      dhEvento: formatarDh(opcoesDoCliente.relogio.agora(), p.offsetMinutes),
       tpEvento: p.tpEvento,
       nSeqEvento,
       verEvento: EVENTO_VERSAO,
@@ -721,7 +727,7 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
     const evento = `<evento xmlns="${NFE_NS}" versao="${EVENTO_VERSAO}">${infXml}</evento>`;
     const infEl = primeiroFilho(lerXml(evento).raiz, 'infEvento', NFE_NS) as ElementoXml;
     schemaIssues('evento', validar(p.ct, infEl));
-    const assinado = await assinarXml(evento, { id }, options.signer);
+    const assinado = await assinarXml(evento, { id }, opcoesDoCliente.assinador);
     const msg = envelope('envEvento', EVENTO_VERSAO, [`<idLote>${idLote()}</idLote>`, assinado]);
     const r = await call(p.endpoint, 'RecepcaoEvento', msg, 'retEnvEvento', p.signal);
     const v = decodificar(TRetEnvEvento, r.ret, r.doc.texto).valor;
@@ -751,13 +757,13 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
       nSeqEvento,
       dhRegEvento: ret.dhRegEvento,
       retEvento: avulso(r.doc, retEl),
-      procEventoNFe: envelope('procEventoNFe', EVENTO_VERSAO, [assinado, sliceElement(r.doc, retEl)]),
+      procEventoNFe: envelope('procEventoNFe', EVENTO_VERSAO, [assinado, recortarElemento(r.doc, retEl)]),
       ...(ret.nProt === undefined ? {} : { nProt: ret.nProt }),
     });
   }
 
-  const client: NfeClient = {
-    options,
+  const client: ClienteNfe = {
+    opcoes: opcoesDoCliente,
 
     async statusServico(opcoes?: StatusServicoOpcoes): Promise<ResultadoSefaz<StatusServico, never>> {
       const { cUF } = ufPadrao('NfeStatusServico');
@@ -783,7 +789,7 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
       });
     },
 
-    async autorizar(nfeAssinada: string, opcoes: AutorizarOpcoes = {}): Promise<AutorizacaoOutcome> {
+    async autorizar(nfeAssinada: string, opcoes: AutorizarOpcoes = {}): Promise<ResultadoAutorizacao> {
       const a = documentoAssinado(nfeAssinada, 'NFe', 'infNFe');
       const sincrono = opcoes.sincrono ?? true;
       const msg = envelope('enviNFe', '4.00', [
@@ -813,7 +819,7 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
       nRec: string,
       nfeAssinada?: string,
       politica: PoliticaRecibo = {},
-    ): Promise<AutorizacaoOutcome> {
+    ): Promise<ResultadoAutorizacao> {
       const max = politica.maxTentativas ?? 10;
       const minimo = politica.esperaMinimaMs ?? 2000;
       const mult = politica.multiplicador ?? 1.5;
@@ -824,7 +830,7 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
         });
       }
       let espera = minimo;
-      let ultimo: AutorizacaoOutcome | undefined;
+      let ultimo: ResultadoAutorizacao | undefined;
       for (let i = 0; i < max; i++) {
         await sleep(espera, politica.signal);
         // O mesmo signal cancela a espera e a requisição em curso.
@@ -832,12 +838,12 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
         if (ultimo.tipo !== 'pendente') return ultimo;
         espera = Math.min(teto, Math.max(minimo, Math.round(espera * mult), ultimo.aguardarMs ?? 0));
       }
-      return ultimo as AutorizacaoOutcome;
+      return ultimo as ResultadoAutorizacao;
     },
 
     consultar,
 
-    async cancelar(p: CancelamentoPedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome> {
+    async cancelar(p: CancelamentoPedido, opcoes?: EnvioOpcoes): Promise<ResultadoEvento> {
       const c = chaveValida(p.chave, 'chave');
       return enviarEvento({
         ct: TEventoCanc,
@@ -854,7 +860,7 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
       });
     },
 
-    async cancelarPorSubstituicao(p: CancelamentoSubstituicaoPedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome> {
+    async cancelarPorSubstituicao(p: CancelamentoSubstituicaoPedido, opcoes?: EnvioOpcoes): Promise<ResultadoEvento> {
       const c = chaveValida(p.chave, 'chave');
       if (c.mod !== '65') {
         throw new ErroDeValidacao('cancelamento por substituição só existe para NFC-e', [
@@ -891,7 +897,7 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
       });
     },
 
-    async cartaCorrecao(p: CartaCorrecaoPedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome> {
+    async cartaCorrecao(p: CartaCorrecaoPedido, opcoes?: EnvioOpcoes): Promise<ResultadoEvento> {
       const c = chaveValida(p.chave, 'chave');
       if (!Number.isInteger(p.nSeqEvento) || p.nSeqEvento < 1 || p.nSeqEvento > 20) {
         throw new ErroDeConfiguracao(`nSeqEvento da CC-e vai de 1 a 20: ${p.nSeqEvento}`);
@@ -916,7 +922,7 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
       });
     },
 
-    async manifestar(p: ManifestacaoPedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome> {
+    async manifestar(p: ManifestacaoPedido, opcoes?: EnvioOpcoes): Promise<ResultadoEvento> {
       const c = chaveValida(p.chave, 'chave');
       const m = MANIFESTACOES[p.tipo];
       if (!m) throw new ErroDeConfiguracao(`tipo de manifestação desconhecido: ${String(p.tipo)}`);
@@ -933,14 +939,14 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
           descEvento: m.descEvento,
           ...(p.xJust === undefined ? {} : { xJust: p.xJust }),
         },
-        endpoint: nfeEndpoint({ ambiente: options.ambiente, servico: 'RecepcaoEvento', autorizador: 'AN' }),
+        endpoint: nfeEndpoint({ ambiente: opcoesDoCliente.ambiente, servico: 'RecepcaoEvento', autorizador: 'AN' }),
         // Quem manifesta é o destinatário: o fuso é o da UF dele, quando informada.
-        offsetMinutes: offsetDe(options.uf ?? c.uf),
+        offsetMinutes: offsetDe(opcoesDoCliente.uf ?? c.uf),
         signal: opcoes?.signal,
       });
     },
 
-    async inutilizar(p: InutilizacaoPedido, opcoes?: OpcoesEnvio): Promise<InutilizacaoOutcome> {
+    async inutilizar(p: InutilizacaoPedido, opcoes?: EnvioOpcoes): Promise<ResultadoInutilizacao> {
       const autor = autorPadrao(p.autor, 'autor');
       // NT 2018.001 v1.10, item 6.1: o controle de inutilização não se aplica ao emitente pessoa física, e o leiaute do
       // pedido não prevê o CPF; a série 910 a 969 (emitente CPF) é rejeitada com 266 (regra I02a, item 6.2).
@@ -999,12 +1005,12 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
       const inut = envelope('inutNFe', '4.00', [infXml]);
       const infEl = primeiroFilho(lerXml(inut).raiz, 'infInut', NFE_NS) as ElementoXml;
       schemaIssues('pedido de inutilização', validar(TInutNFe_infInut, infEl));
-      const assinado = await assinarXml(inut, { id }, options.signer);
+      const assinado = await assinarXml(inut, { id }, opcoesDoCliente.assinador);
       // A inutilização não existe no SVC (o SVC-RS nem publica o serviço): vai sempre ao autorizador normal da UF.
       const ep =
         mod === '65'
           ? endpointNfce('NfeInutilizacao', uf)
-          : nfeEndpoint({ ambiente: options.ambiente, servico: 'NfeInutilizacao', uf });
+          : nfeEndpoint({ ambiente: opcoesDoCliente.ambiente, servico: 'NfeInutilizacao', uf });
       const r = await call(ep, 'NfeInutilizacao', assinado, 'retInutNFe', opcoes?.signal);
       const v = decodificar(TRetInutNFe, r.ret, r.doc.texto).valor;
       const status = { cStat: v.infInut.cStat, xMotivo: v.infInut.xMotivo };
@@ -1030,12 +1036,12 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
       return criarAutorizado(status, {
         dhRecbto: v.infInut.dhRecbto,
         retInutNFe: avulso(r.doc, r.ret),
-        procInutNFe: envelope('ProcInutNFe', '4.00', [assinado, sliceElement(r.doc, r.ret)]),
+        procInutNFe: envelope('ProcInutNFe', '4.00', [assinado, recortarElemento(r.doc, r.ret)]),
         ...(v.infInut.nProt === undefined ? {} : { nProt: v.infInut.nProt }),
       });
     },
 
-    async consultarCadastro(p: CadastroPedido, opcoes?: OpcoesEnvio): Promise<ResultadoSefaz<Cadastro, never>> {
+    async consultarCadastro(p: CadastroPedido, opcoes?: EnvioOpcoes): Promise<ResultadoSefaz<Cadastro, never>> {
       const doc =
         'CNPJ' in p
           ? documentoAutor({ CNPJ: p.CNPJ }, 'CNPJ')
@@ -1043,7 +1049,7 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
             ? documentoAutor({ CPF: p.CPF }, 'CPF')
             : { IE: p.IE.replace(/[^0-9A-Za-z]/g, '').toUpperCase() };
       const msg = serializarRaiz(ConsCadElement, { versao: '2.00', infCons: { xServ: 'CONS-CAD', UF: p.uf, ...doc } });
-      const ep = nfeEndpoint({ ambiente: options.ambiente, servico: 'NfeConsultaCadastro', uf: p.uf });
+      const ep = nfeEndpoint({ ambiente: opcoesDoCliente.ambiente, servico: 'NfeConsultaCadastro', uf: p.uf });
       const r = await call(ep, 'NfeConsultaCadastro', msg, 'retConsCad', opcoes?.signal);
       const v = decodificar(TRetConsCad, r.ret, r.doc.texto).valor;
       const i = v.infCons;
@@ -1078,7 +1084,7 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
         ...autor,
         ...grupo,
       } as distDFeInt);
-      const ep = nfeEndpoint({ ambiente: options.ambiente, servico: 'NFeDistribuicaoDFe' });
+      const ep = nfeEndpoint({ ambiente: opcoesDoCliente.ambiente, servico: 'NFeDistribuicaoDFe' });
       const r = await call(ep, 'NFeDistribuicaoDFe', msg, 'retDistDFeInt', opcoes.signal);
       const v = decodificar(retDistDFeInt, r.ret, r.doc.texto).valor;
       const status = { cStat: v.cStat, xMotivo: v.xMotivo };
@@ -1088,7 +1094,7 @@ export function createNfeClient(options: NfeClientOptions): NfeClient {
       if (!cstatEm(v.cStat, 'distribuicaoDocumentos')) return rejeitado(status);
       const documentos: DocumentoDistribuido[] = [];
       for (const z of v.loteDistDFeInt?.docZip ?? []) {
-        const xml = await gunzipBase64(z.$text);
+        const xml = await descomprimirGzipBase64(z.$text);
         documentos.push(documentoDistribuido(z.NSU ?? '', z.schema, xml));
       }
       return criarAutorizado(status, { ...base, documentos });

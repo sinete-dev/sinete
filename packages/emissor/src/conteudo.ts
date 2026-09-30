@@ -1,5 +1,5 @@
 /**
- * Conteúdo comparável de um documento assinado, para a barreira da recusa repetida (`OpcoesRecusaRepetida`): o XML sem
+ * Conteúdo comparável de um documento assinado, para a barreira da recusa repetida (`RecusaRepetidaOpcoes`): o XML sem
  * os elementos que mudam sozinhos entre duas montagens da mesma nota. Só serve para comparar; o XML enviado nunca passa
  * por aqui.
  */

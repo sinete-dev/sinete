@@ -1,23 +1,29 @@
 /**
- * Serviços do `@sinete/mdfe` contra o `@sinete/sefaz-sim` em processo (`simTransport`): o cliente resolve os
- * endpoints pelos dados do transporte e o `redirectToSim` troca só a URL. A suíte por HTTPS com mTLS está em
+ * Serviços do `@sinete/mdfe` contra o `@sinete/sefaz-sim` em processo (`transporteSim`): o cliente resolve os
+ * endpoints pelos dados do transporte e o `redirecionarParaSim` troca só a URL. A suíte por HTTPS com mTLS está em
  * `e2e/sefaz-sim.test.ts`.
  */
 import { beforeAll, describe, expect, test } from 'bun:test';
 import type { RelogioManual } from '@sinete/core';
 import { contextoDeTempo, ErroDeTempoEsgotado, ErroDeValidacao, relogioManual } from '@sinete/core';
-import type { SefazSim, SefazSimOptions, SyntheticCertificate } from '@sinete/sefaz-sim';
-import { createSefazSim, redirectToSim, SIM_BASE_URL, simTransport, syntheticCertificate } from '@sinete/sefaz-sim';
-import { ErroPolitica } from '@sinete/transport';
-import type { BuildMdfeOptions, MdfeClient, MdfeInput } from '../src/index.ts';
+import type { CertificadoSintetico, SefazSim, SefazSimOpcoes } from '@sinete/sefaz-sim';
 import {
-  buildMdfe,
-  createMdfeClient,
+  certificadoSintetico,
+  criarSefazSim,
+  redirecionarParaSim,
+  transporteSim,
+  URL_BASE_SIM,
+} from '@sinete/sefaz-sim';
+import { ErroPolitica } from '@sinete/transport';
+import type { ClienteMdfe, DadosMdfe, MontarMdfeOpcoes } from '../src/index.ts';
+import {
+  assinarMdfe,
+  criarClienteMdfe,
   MDFE_NS,
   mdfeAssinadoDoProc,
+  montarMdfe,
   recuperarEventoRegistrado,
   resolverEnvioSemResposta,
-  signMdfe,
 } from '../src/index.ts';
 import {
   CNPJ_EMIT,
@@ -32,20 +38,20 @@ import {
 } from './helpers/mdfe.ts';
 
 interface Certs {
-  readonly produtor: SyntheticCertificate;
-  readonly transportadora: SyntheticCertificate;
-  readonly terceiro: SyntheticCertificate;
+  readonly produtor: CertificadoSintetico;
+  readonly transportadora: CertificadoSintetico;
+  readonly terceiro: CertificadoSintetico;
 }
 
 let c: Certs;
 
 beforeAll(async () => {
   const clock = relogioManual(EMISSAO);
-  const ac = await syntheticCertificate({ clock, role: 'ac', validDays: 3650 });
+  const ac = await certificadoSintetico({ relogio: clock, papel: 'ac', diasDeValidade: 3650 });
   const [produtor, transportadora, terceiro] = await Promise.all([
-    syntheticCertificate({ clock, role: 'titular', cpf: CPF_EMIT, issuer: ac }),
-    syntheticCertificate({ clock, role: 'titular', cnpj: CNPJ_EMIT, issuer: ac }),
-    syntheticCertificate({ clock, role: 'titular', cnpj: CNPJ_TERCEIRO, issuer: ac }),
+    certificadoSintetico({ relogio: clock, papel: 'titular', cpf: CPF_EMIT, emissor: ac }),
+    certificadoSintetico({ relogio: clock, papel: 'titular', cnpj: CNPJ_EMIT, emissor: ac }),
+    certificadoSintetico({ relogio: clock, papel: 'titular', cnpj: CNPJ_TERCEIRO, emissor: ac }),
   ]);
   c = { produtor, transportadora, terceiro };
 }, 60_000);
@@ -53,35 +59,35 @@ beforeAll(async () => {
 interface Cenario {
   readonly clock: RelogioManual;
   readonly sim: SefazSim;
-  readonly client: MdfeClient;
-  cliente(canal: SyntheticCertificate, timeoutMs?: number): MdfeClient;
+  readonly client: ClienteMdfe;
+  cliente(canal: CertificadoSintetico, timeoutMs?: number): ClienteMdfe;
   emitir(
-    input?: MdfeInput,
-    o?: Partial<BuildMdfeOptions>,
-    assinante?: SyntheticCertificate,
+    input?: DadosMdfe,
+    o?: Partial<MontarMdfeOpcoes>,
+    assinante?: CertificadoSintetico,
   ): Promise<{ chave: string; xml: string }>;
   /** Emite e autoriza; devolve a chave e o nProt. */
-  autorizado(input?: MdfeInput, o?: Partial<BuildMdfeOptions>): Promise<{ chave: string; nProt: string; xml: string }>;
+  autorizado(input?: DadosMdfe, o?: Partial<MontarMdfeOpcoes>): Promise<{ chave: string; nProt: string; xml: string }>;
 }
 
-function cenario(simOptions: Partial<SefazSimOptions> = {}, canal: SyntheticCertificate = c.produtor): Cenario {
+function cenario(simOptions: Partial<SefazSimOpcoes> = {}, canal: CertificadoSintetico = c.produtor): Cenario {
   const clock = relogioManual(EMISSAO);
-  const sim = createSefazSim({ clock, uf: 'MT', ...simOptions });
-  const cliente = (ch: SyntheticCertificate, timeoutMs?: number): MdfeClient =>
-    createMdfeClient({
-      transport: redirectToSim(
-        simTransport(sim, { clientCertificate: ch.der, ...(timeoutMs === undefined ? {} : { timeoutMs }) }),
-        SIM_BASE_URL,
+  const sim = criarSefazSim({ relogio: clock, uf: 'MT', ...simOptions });
+  const cliente = (ch: CertificadoSintetico, timeoutMs?: number): ClienteMdfe =>
+    criarClienteMdfe({
+      transporte: redirecionarParaSim(
+        transporteSim(sim, { certificadoDoCliente: ch.der, ...(timeoutMs === undefined ? {} : { timeoutMs }) }),
+        URL_BASE_SIM,
       ),
-      signer: ch.signer,
+      assinador: ch.assinador,
       ambiente: 'homologacao',
-      clock,
+      relogio: clock,
       autor: ch === c.produtor ? { CPF: CPF_EMIT } : { CNPJ: CNPJ_EMIT },
     });
   const emitir: Cenario['emitir'] = async (input = cargaPropria(), o = {}, assinante = canal) => {
-    const b = buildMdfe(input, { ...opcoes(), time: contextoDeTempo({ emissao: clock }), ...o });
-    if (!b.ok) throw new Error(b.issues.map((i) => `${i.caminho}: ${i.mensagem}`).join('\n'));
-    return { chave: b.value.chave, xml: await signMdfe(b.value, assinante.signer) };
+    const b = await montarMdfe(input, { ...opcoes(), tempo: contextoDeTempo({ emissao: clock }), ...o });
+    if (!b.ok) throw new Error(b.ocorrencias.map((i) => `${i.caminho}: ${i.mensagem}`).join('\n'));
+    return { chave: b.valor.chave, xml: await assinarMdfe(b.valor, assinante.assinador) };
   };
   const client = cliente(canal);
   return {
@@ -106,7 +112,7 @@ describe('status e autorização', () => {
     const s = cenario();
     const r = await s.client.statusServico();
     expect(r.tipo === 'autorizado' && r.cStat).toBe('107');
-    s.sim.setParalisacaoMdfe('108');
+    s.sim.definirParalisacaoMdfe('108');
     const p = await s.client.statusServico();
     expect(p.tipo === 'recusado' && p.cStat).toBe('108');
   });
@@ -121,7 +127,7 @@ describe('status e autorização', () => {
     expect(r.valor.mdfeProc).toStartWith(
       `<mdfeProc xmlns="http://www.portalfiscal.inf.br/mdfe" versao="3.00">${e.xml}<protMDFe`,
     );
-    expect(s.sim.inspect.mdfe(e.chave)?.situacao).toBe('autorizado');
+    expect(s.sim.inspecao.mdfe(e.chave)?.situacao).toBe('autorizado');
   });
 
   test('MDF-e de outro ambiente é recusado com ErroPolitica antes do envio', async () => {
@@ -130,11 +136,11 @@ describe('status e autorização', () => {
     const erro = await s.client.autorizar(producao.xml).catch((e: unknown) => e);
     expect(erro).toBeInstanceOf(ErroPolitica);
     expect(erro).toMatchObject({ code: 'politica_recusou', detalhes: { tpAmb: '1', esperado: '2' } });
-    expect(s.sim.inspect.mdfes()).toHaveLength(0);
+    expect(s.sim.inspecao.mdfes()).toHaveLength(0);
 
     // Um cliente de produção também recusa o MDF-e de homologação.
     const homologacao = await s.emitir(cargaPropria({ nMDF: 2 }));
-    const clienteProducao = createMdfeClient({ ...s.client.options, ambiente: 'producao' });
+    const clienteProducao = criarClienteMdfe({ ...s.client.opcoes, ambiente: 'producao' });
     await expect(clienteProducao.autorizar(homologacao.xml)).rejects.toMatchObject({
       code: 'politica_recusou',
       detalhes: { tpAmb: '2', esperado: '1' },
@@ -142,7 +148,7 @@ describe('status e autorização', () => {
     // Sem tpAmb no ide, também recusa: o schema exige o campo.
     const semTpAmb = homologacao.xml.replace('<tpAmb>2</tpAmb>', '');
     await expect(s.client.autorizar(semTpAmb)).rejects.toMatchObject({ detalhes: { tpAmb: '', esperado: '2' } });
-    expect(s.sim.inspect.mdfes()).toHaveLength(0);
+    expect(s.sim.inspecao.mdfes()).toHaveLength(0);
   });
 
   test('mdfeAssinadoDoProc: os bytes assinados de dentro do mdfeProc servem na retomada', async () => {
@@ -173,7 +179,7 @@ describe('status e autorização', () => {
     const res = await resolverEnvioSemResposta(s.client, e.xml, dup);
     expect(res.acao).toBe('concluida');
     if (res.acao === 'concluida')
-      expect(res.outcome.tipo === 'autorizado' && res.outcome.valor.mdfeProc).toContain(e.xml);
+      expect(res.resultado.tipo === 'autorizado' && res.resultado.valor.mdfeProc).toContain(e.xml);
   });
 
   test('o mesmo número com outro cMDF: 539 com a chave autorizada, e o resolvedor manda descartar', async () => {
@@ -190,7 +196,7 @@ describe('status e autorização', () => {
     const s = cenario();
     const lento = s.cliente(c.produtor, 200);
     const e = await s.emitir();
-    s.sim.injectFault({ kind: 'hang', phase: 'after' }, { servico: 'MDFeRecepcaoSinc' });
+    s.sim.injetarFalha({ tipo: 'travar', fase: 'depois' }, { servico: 'MDFeRecepcaoSinc' });
     await expect(lento.autorizar(e.xml)).rejects.toBeInstanceOf(ErroDeTempoEsgotado);
     const res = await resolverEnvioSemResposta(s.client, e.xml);
     expect(res.acao === 'concluida' && res.situacao).toBe('autorizado');
@@ -201,7 +207,7 @@ describe('status e autorização', () => {
         rodoviario: { ...cargaPropria().rodoviario, tracao: { ...cargaPropria().rodoviario.tracao, placa: 'DEF2G34' } },
       }),
     );
-    s.sim.injectFault({ kind: 'drop', phase: 'before' }, { servico: 'MDFeRecepcaoSinc' });
+    s.sim.injetarFalha({ tipo: 'derrubar', fase: 'antes' }, { servico: 'MDFeRecepcaoSinc' });
     await expect(s.client.autorizar(outro.xml)).rejects.toThrow();
     const r2 = await resolverEnvioSemResposta(s.client, outro.xml);
     expect(r2.acao).toBe('reenviar');
@@ -211,20 +217,20 @@ describe('status e autorização', () => {
   test('protocolo sem digVal na resposta e na consulta: sem mdfeProc, e o resolvedor devolve sem-prova', async () => {
     const s = cenario();
     const e = await s.emitir();
-    s.sim.setProtocoloSemDigVal('todos');
+    s.sim.definirProtocoloSemDigVal('todos');
     const r = await s.client.autorizar(e.xml);
     expect(r.tipo === 'autorizado' && r.valor.digVal).toBeUndefined();
     expect(r.tipo === 'autorizado' && r.valor.mdfeProc).toBeUndefined();
     const res = await resolverEnvioSemResposta(s.client, e.xml);
     expect(res).toMatchObject({ acao: 'sem-prova', situacao: 'autorizado' });
     // Só a resposta da autorização sem digVal: a consulta prova o conteúdo e conclui.
-    s.sim.setProtocoloSemDigVal('todos', 'autorizacao');
+    s.sim.definirProtocoloSemDigVal('todos', 'autorizacao');
     const res2 = await resolverEnvioSemResposta(s.client, e.xml);
-    expect(res2.acao === 'concluida' && res2.outcome.tipo === 'autorizado' && res2.outcome.valor.mdfeProc).toContain(
-      e.xml,
-    );
+    expect(
+      res2.acao === 'concluida' && res2.resultado.tipo === 'autorizado' && res2.resultado.valor.mdfeProc,
+    ).toContain(e.xml);
     // `denegacao` não alcança o MDF-e, que não tem denegação.
-    s.sim.setProtocoloSemDigVal('denegacao');
+    s.sim.definirProtocoloSemDigVal('denegacao');
     expect((await resolverEnvioSemResposta(s.client, e.xml)).acao).toBe('concluida');
   });
 
@@ -274,7 +280,7 @@ describe('consultas', () => {
 });
 
 describe('não encerrados bloqueiam a emissão (F85 a F88)', () => {
-  const mesmaPlaca = (extra: Partial<MdfeInput>): MdfeInput => cargaPropria({ nMDF: 2, ...extra });
+  const mesmaPlaca = (extra: Partial<DadosMdfe>): DadosMdfe => cargaPropria({ nMDF: 2, ...extra });
 
   test('611: mesma placa e UF de descarga; libera depois do encerramento', async () => {
     const s = cenario();
@@ -322,12 +328,12 @@ describe('não encerrados bloqueiam a emissão (F85 a F88)', () => {
 describe('eventos', () => {
   test('CPF cujo 000 + CPF também forma CNPJ válido: o autor dos eventos sai como CPF (série 920 a 969)', async () => {
     const ambiguo = '00123456797';
-    const ac = await syntheticCertificate({ clock: relogioManual(EMISSAO), role: 'ac' });
-    const cert = await syntheticCertificate({
-      clock: relogioManual(EMISSAO),
-      role: 'titular',
+    const ac = await certificadoSintetico({ relogio: relogioManual(EMISSAO), papel: 'ac' });
+    const cert = await certificadoSintetico({
+      relogio: relogioManual(EMISSAO),
+      papel: 'titular',
       cpf: ambiguo,
-      issuer: ac,
+      emissor: ac,
     });
     const s = cenario({}, cert);
     const base = cargaPropria();
@@ -362,7 +368,7 @@ describe('eventos', () => {
     const r = await s.cliente(c.terceiro).encerrar({ ...pedido, terceiro: { CNPJ: CNPJ_TERCEIRO } });
     expect(r.tipo === 'autorizado' && r.cStat).toBe('135');
     expect(r.tipo === 'autorizado' && r.valor.procEventoMDFe).toContain('<indEncPorTerceiro>1</indEncPorTerceiro>');
-    expect(s.sim.inspect.mdfe(a.chave)?.situacao).toBe('encerrado');
+    expect(s.sim.inspecao.mdfe(a.chave)?.situacao).toBe('encerrado');
   });
 
   test('cancelamento no prazo (101 na consulta); fora do prazo 220; protocolo errado 222', async () => {
@@ -401,7 +407,7 @@ describe('eventos', () => {
     const antes = await recuperarEventoRegistrado(s.client, a.chave, '110111');
     expect([antes.registrado, antes.consulta.cStat]).toEqual([false, '100']);
     s.clock.avancar(HORA);
-    s.sim.injectFault({ kind: 'hang', phase: 'after' }, { servico: 'MDFeRecepcaoEvento' });
+    s.sim.injetarFalha({ tipo: 'travar', fase: 'depois' }, { servico: 'MDFeRecepcaoEvento' });
     const curto = s.cliente(c.produtor, 300);
     const pedido = { chave: a.chave, nProt: a.nProt, xJust: 'JUSTIFICATIVA SINTETICA DE TESTE' };
     expect(await curto.cancelar(pedido).catch((e: unknown) => e)).toBeInstanceOf(ErroDeTempoEsgotado);
@@ -504,7 +510,7 @@ describe('eventos', () => {
     const s = cenario({}, c.transportadora);
     const prop = { CPF: CPF_CONDUTOR, RNTRC: '87654321', xNome: 'TAC AGREGADO SINTETICO', tpProp: '0' as const };
     const base = prestador();
-    const comTac: MdfeInput = {
+    const comTac: DadosMdfe = {
       ...base,
       tpTransp: '2',
       rodoviario: {
@@ -615,7 +621,7 @@ describe('signal', () => {
       const erro = await chamar().catch((e: unknown) => e);
       expect([nome, erro]).toMatchObject([nome, { code: 'cancelado', cause: signal.reason }]);
     }
-    expect(s.sim.inspect.mdfes()).toHaveLength(1);
-    expect(s.sim.inspect.mdfe(a.chave)?.situacao).toBe('autorizado');
+    expect(s.sim.inspecao.mdfes()).toHaveLength(1);
+    expect(s.sim.inspecao.mdfe(a.chave)?.situacao).toBe('autorizado');
   });
 });

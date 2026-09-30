@@ -3,32 +3,32 @@
  * retrato, paisagem, Simplificado, Simplificado - Etiqueta e Simplificado Tipo 2. O `danfe` também aceita a NFC-e
  * (modelo 65), para quem imprime os dois modelos pela mesma chamada: a bobina já está aqui por causa do Tipo 2, então
  * isso não custa nada ao bundle. Quem só imprime NFC-e usa `@sinete/da/nfce`, que não carrega os layouts A4 e
- * Simplificado. Os renderizadores (`toPdf`, `toHtml`, `toSvg`) são reexportados aqui para bastar um import.
+ * Simplificado. Os renderizadores (`gerarPdf`, `gerarHtml`, `gerarSvg`) são reexportados aqui para bastar um import.
  */
 
 import { PAISAGEM, RETRATO } from './data/leiaute-a4.ts';
-import { DanfeError } from './errors.ts';
+import { ErroDa } from './errors.ts';
 import { cancelamentoNfe } from './input/cancelamento.ts';
 import { readNota } from './input/nfe.ts';
-import type { BobinaOptions } from './layout/bobina.ts';
+import type { BobinaOpcoes } from './layout/bobina.ts';
 import { bobina } from './layout/bobina.ts';
-import type { DanfeA4Options } from './layout/danfe-a4.ts';
+import type { DanfeA4Opcoes } from './layout/danfe-a4.ts';
 import { danfeA4 } from './layout/danfe-a4.ts';
 import { carimbo, situacaoNfe } from './layout/marcas.ts';
-import type { SimplificadoOptions } from './layout/simplificado.ts';
+import type { SimplificadoOpcoes } from './layout/simplificado.ts';
 import { simplificado } from './layout/simplificado.ts';
-import type { Doc } from './model.ts';
+import type { Documento } from './model.ts';
 
-export type { DanfeErrorCode } from './errors.ts';
-export { DanfeError } from './errors.ts';
-export type { BobinaOptions } from './layout/bobina.ts';
-export type { CommonOptions } from './layout/common.ts';
-export type { DanfeA4Options } from './layout/danfe-a4.ts';
-export type { SimplificadoOptions } from './layout/simplificado.ts';
-export type { Doc } from './model.ts';
-export { toHtml, toSvg } from './render/html.ts';
-export type { PdfOptions } from './render/pdf.ts';
-export { toPdf } from './render/pdf.ts';
+export type { CodigoErroDa } from './errors.ts';
+export { ErroDa } from './errors.ts';
+export type { BobinaOpcoes } from './layout/bobina.ts';
+export type { DaOpcoes } from './layout/common.ts';
+export type { DanfeA4Opcoes } from './layout/danfe-a4.ts';
+export type { SimplificadoOpcoes } from './layout/simplificado.ts';
+export type { Documento } from './model.ts';
+export { gerarHtml, gerarSvg } from './render/html.ts';
+export type { PdfOpcoes } from './render/pdf.ts';
+export { gerarPdf } from './render/pdf.ts';
 
 /**
  * Formato do documento auxiliar:
@@ -39,10 +39,10 @@ export { toPdf } from './render/pdf.ts';
  */
 export type FormatoDanfe = 'retrato' | 'paisagem' | 'simplificado' | 'etiqueta' | 'simplificado-tipo2' | 'nfce';
 
-export interface DanfeOptions
-  extends DanfeA4Options,
-    Omit<BobinaOptions, 'largura'>,
-    Omit<SimplificadoOptions, 'largura' | 'epec'> {
+export interface DanfeOpcoes
+  extends DanfeA4Opcoes,
+    Omit<BobinaOpcoes, 'largura'>,
+    Omit<SimplificadoOpcoes, 'largura' | 'epec'> {
   /** Sem ele, vem do XML: modelo 65 é `nfce`; no 55, `tpImp` 2 é paisagem, 3 simplificado, 6 Tipo 2, o resto retrato. */
   readonly formato?: FormatoDanfe;
   /** Largura do papel dos formatos em bobina ou etiqueta, em mm. */
@@ -62,29 +62,29 @@ const POR_TPIMP: Readonly<Record<string, FormatoDanfe>> = {
 };
 
 /** DANFE de NF-e (modelo 55) ou NFC-e (modelo 65) a partir do `nfeProc` (ou do `NFe` em contingência). */
-export function danfe(xml: string, options: DanfeOptions = {}): Doc {
+export function danfe(xml: string, opcoes: DanfeOpcoes = {}): Documento {
   const nota = readNota(xml);
-  const formato = options.formato ?? (nota.mod === '65' ? 'nfce' : (POR_TPIMP[nota.tpImp] ?? 'retrato'));
+  const formato = opcoes.formato ?? (nota.mod === '65' ? 'nfce' : (POR_TPIMP[nota.tpImp] ?? 'retrato'));
   if ((formato === 'nfce') !== (nota.mod === '65')) {
-    throw new DanfeError('formato_incompativel', `formato ${formato} não se aplica ao modelo ${nota.mod}`, {
+    throw new ErroDa('formato_incompativel', `formato ${formato} não se aplica ao modelo ${nota.mod}`, {
       detalhes: { formato, mod: nota.mod },
     });
   }
   // Sem protocolo de autorização, denegada, cancelada pelo cStat ou em contingência: decide a marca e o campo do
   // protocolo (ADR 0006, decisões 14 e 15). O evento de cancelamento, quando passado, prevalece no carimbo.
-  const situacao = situacaoNfe(nota, Boolean(options.epec?.nProt));
-  const cancel = carimbo(situacao, cancelamentoNfe(nota, options.cancelamento));
+  const situacao = situacaoNfe(nota, Boolean(opcoes.epec?.nProt));
+  const cancel = carimbo(situacao, cancelamentoNfe(nota, opcoes.cancelamento));
   switch (formato) {
     case 'retrato':
-      return danfeA4(nota, RETRATO, options, situacao, cancel);
+      return danfeA4(nota, RETRATO, opcoes, situacao, cancel);
     case 'paisagem':
-      return danfeA4(nota, PAISAGEM, options, situacao, cancel);
+      return danfeA4(nota, PAISAGEM, opcoes, situacao, cancel);
     case 'simplificado':
     case 'etiqueta':
-      return simplificado(nota, formato === 'etiqueta', options, situacao, cancel);
+      return simplificado(nota, formato === 'etiqueta', opcoes, situacao, cancel);
     case 'simplificado-tipo2':
-      return bobina(nota, 'tipo2', options, situacao, cancel);
+      return bobina(nota, 'tipo2', opcoes, situacao, cancel);
     default:
-      return bobina(nota, 'nfce', options, situacao, cancel);
+      return bobina(nota, 'nfce', opcoes, situacao, cancel);
   }
 }

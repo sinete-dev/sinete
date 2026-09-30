@@ -23,11 +23,11 @@ const XML_DECL = /^﻿?<\?xml[^?]*\?>\s*/;
 
 /**
  * Recorta o elemento da fonte, acrescentando na tag de abertura só as declarações de namespace que ele usa e que
- * estão em ancestrais fora do recorte. O default entra apenas quando difere de `parentDefaultNs` (o default do
+ * estão em ancestrais fora do recorte. O default entra apenas quando difere de `nsPadraoDoPai` (o default do
  * envelope onde a fatia vai morar).
  */
-export function sliceElement(doc: DocumentoXml, el: ElementoXml, parentDefaultNs: string = NFE_NS): string {
-  const slice = doc.texto.slice(el.inicio, el.fim);
+export function recortarElemento(documento: DocumentoXml, el: ElementoXml, nsPadraoDoPai: string = NFE_NS): string {
+  const slice = documento.texto.slice(el.inicio, el.fim);
   // Só os prefixos usados por algum elemento ou atributo cuja declaração está fora do recorte: um prefixo redeclarado
   // dentro dele não pode ganhar outra declaração na raiz, que mudaria o C14N inclusivo de um irmão assinado.
   //
@@ -52,7 +52,7 @@ export function sliceElement(doc: DocumentoXml, el: ElementoXml, parentDefaultNs
   // O default herdado de fora entra quando algum elemento sem prefixo do recorte (a raiz ou um descendente, inclusive
   // sob uma raiz prefixada) depende dele e ele difere do default do envelope de destino.
   const herdado = inScope.get('') ?? '';
-  if (herdado !== parentDefaultNs && usaDefaultHerdado(el)) extra.push(` xmlns="${herdado}"`);
+  if (herdado !== nsPadraoDoPai && usaDefaultHerdado(el)) extra.push(` xmlns="${herdado}"`);
   for (const p of [...used].sort()) {
     const uri = inScope.get(p);
     if (uri === undefined) throw new ErroRespostaInvalida(`prefixo ${p} sem declaração no recorte de ${el.nome}`);
@@ -87,7 +87,7 @@ export interface DocumentoAssinado {
   readonly id: string;
   /** DigestValue da assinatura (base64). */
   readonly digestValue: string;
-  readonly doc: DocumentoXml;
+  readonly documento: DocumentoXml;
 }
 
 /**
@@ -118,7 +118,7 @@ export function documentoAssinado(xml: string, raiz: string, elemento: string): 
   const digest = sig && descendantText(sig, 'DigestValue');
   if (!id || digest === undefined)
     throw new ErroDeConfiguracao(`${raiz} sem ${elemento} identificado ou sem assinatura`);
-  return { xml: text, id, digestValue: digest, doc };
+  return { xml: text, id, digestValue: digest, documento: doc };
 }
 
 function descendantText(el: ElementoXml, local: string): string | undefined {

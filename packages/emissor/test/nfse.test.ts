@@ -1,5 +1,5 @@
 /**
- * `createNfseEmissor` contra a NFS-e simulada do `@sinete/sefaz-sim` em HTTPS com mTLS, com os bytes gravados no
+ * `criarEmissorNfse` contra a NFS-e simulada do `@sinete/sefaz-sim` em HTTPS com mTLS, com os bytes gravados no
  * adaptador em memória: geração com a DPS gravada, sem resposta (a retomada depois de reiniciar guarda com os mesmos
  * bytes), não chegou, E0014 e divergente, substituição e cancelamento com recuperação pelos eventos da NFS-e.
  */
@@ -7,14 +7,14 @@ import { afterEach, beforeAll, describe, expect, test } from 'bun:test';
 import type { RelogioManual } from '@sinete/core';
 import { ErroDeValidacao, relogioManual } from '@sinete/core';
 import * as danfse from '@sinete/da/nfse';
-import type { NfseSim, SimServer } from '@sinete/sefaz-sim';
-import { createNfseSim, redirectNfseToSim, startSimServer, syntheticPfx } from '@sinete/sefaz-sim';
+import type { NfseSim, ServidorSim } from '@sinete/sefaz-sim';
+import { criarNfseSim, iniciarServidorSim, pfxSintetico, redirecionarNfseParaSim } from '@sinete/sefaz-sim';
 import { criarTransporte, ErroTransporte } from '@sinete/transport';
 import type { Desfecho, TransmissaoStore } from '../src/index.ts';
 import type { BancoMemoria } from '../src/memoria.ts';
-import { createBancoMemoria, createMemoriaStore } from '../src/memoria.ts';
-import type { DesfechoNfse, NfseEmissor, NfseEmissorOptions } from '../src/nfse.ts';
-import { createNfseEmissor } from '../src/nfse.ts';
+import { criarBancoMemoria, criarMemoriaStore } from '../src/memoria.ts';
+import type { DesfechoNfse, EmissorNfse, EmissorNfseOpcoes } from '../src/nfse.ts';
+import { criarEmissorNfse } from '../src/nfse.ts';
 import type { Certs } from './helpers/nfse.ts';
 import { dps, EMISSAO, gerarCerts, MUNICIPIOS, PRESTADOR } from './helpers/nfse.ts';
 
@@ -26,7 +26,7 @@ const fechar: (() => Promise<void>)[] = [];
 
 beforeAll(async () => {
   c = await gerarCerts();
-  pfx = syntheticPfx(c.prestador, SENHA, { chain: [c.ac] });
+  pfx = pfxSintetico(c.prestador, SENHA, { cadeia: [c.ac] });
 }, 60_000);
 
 afterEach(async () => {
@@ -36,44 +36,44 @@ afterEach(async () => {
 interface Cenario {
   readonly clock: RelogioManual;
   readonly sim: NfseSim;
-  readonly server: SimServer;
+  readonly server: ServidorSim;
   readonly banco: BancoMemoria;
   readonly store: TransmissaoStore;
-  readonly emissor: NfseEmissor;
+  readonly emissor: EmissorNfse;
   readonly guardados: { readonly ref: string; readonly desfecho: Desfecho }[];
   readonly caminhos: string[];
-  novoEmissor(): Promise<NfseEmissor>;
+  novoEmissor(): Promise<EmissorNfse>;
 }
 
 /** `depois` roda depois de cada resposta; lançar aqui simula a falha depois do envio. */
-async function cenario(extra: Partial<NfseEmissorOptions> = {}, depois?: (caminho: string) => void): Promise<Cenario> {
+async function cenario(extra: Partial<EmissorNfseOpcoes> = {}, depois?: (caminho: string) => void): Promise<Cenario> {
   const clock = relogioManual(EMISSAO);
-  const sim = createNfseSim({ clock, signer: c.servidor.signer, municipios: MUNICIPIOS });
+  const sim = criarNfseSim({ relogio: clock, assinador: c.servidor.assinador, municipios: MUNICIPIOS });
   const caminhos: string[] = [];
-  const server = await startSimServer(
+  const server = await iniciarServidorSim(
     {
-      handle: (r) => {
-        caminhos.push(`${r.method ?? 'GET'} ${r.path}`);
-        return sim.handle(r);
+      atender: (r) => {
+        caminhos.push(`${r.metodo ?? 'GET'} ${r.caminho}`);
+        return sim.atender(r);
       },
     },
-    { cert: c.servidor.pem, key: c.servidor.keyPem },
+    { certificado: c.servidor.pem, chave: c.servidor.chavePem },
   );
-  const banco = createBancoMemoria();
+  const banco = criarBancoMemoria();
   const guardados: Cenario['guardados'] = [];
-  const emissores: NfseEmissor[] = [];
-  const novoEmissor = async (): Promise<NfseEmissor> => {
-    const e = await createNfseEmissor({
+  const emissores: EmissorNfse[] = [];
+  const novoEmissor = async (): Promise<EmissorNfse> => {
+    const e = await criarEmissorNfse({
       pfx,
       senha: SENHA,
       ambiente: 'homologacao',
-      clock,
-      store: createMemoriaStore({ clock, banco }),
+      relogio: clock,
+      store: criarMemoriaStore({ relogio: clock, banco }),
       aoDecidir: (r, desfecho) => {
         guardados.push({ ref: r.ref, desfecho });
       },
       transporte: ({ politica: _policy, ...o }) => {
-        const real = redirectNfseToSim(criarTransporte({ ...o, acsAdicionais: [c.ac.pem] }), server.baseUrl);
+        const real = redirecionarNfseParaSim(criarTransporte({ ...o, acsAdicionais: [c.ac.pem] }), server.urlBase);
         return {
           capacidades: real.capacidades,
           enviar: async (r) => {
@@ -92,14 +92,14 @@ async function cenario(extra: Partial<NfseEmissorOptions> = {}, depois?: (caminh
   const emissor = await novoEmissor();
   fechar.push(async () => {
     for (const e of emissores) await e.fechar();
-    await server.close();
+    await server.fechar();
   });
   return {
     clock,
     sim,
     server,
     banco,
-    store: createMemoriaStore({ clock, banco }),
+    store: criarMemoriaStore({ relogio: clock, banco }),
     emissor,
     guardados,
     caminhos,
@@ -114,10 +114,10 @@ function gerada(d: Desfecho | undefined): Extract<DesfechoNfse, { tipo: 'autoriz
   return d as Extract<DesfechoNfse, { tipo: 'autorizado' }>;
 }
 
-describe('createNfseEmissor contra a NFS-e simulada, HTTPS com mTLS', () => {
+describe('criarEmissorNfse contra a NFS-e simulada, HTTPS com mTLS', () => {
   test('emitir gera a NFS-e com a DPS gravada; consulta, DANFSe, substituição e cancelamento', async () => {
     // O `@sinete/da/nfse` real, com um espião que guarda o documento e as opções de cada render.
-    const renders: { readonly opcoes: Record<string, unknown>; readonly doc: danfse.Doc }[] = [];
+    const renders: { readonly opcoes: Record<string, unknown>; readonly doc: danfse.Documento }[] = [];
     const s = await cenario({
       da: {
         danfse: (xml: string, o?: object): unknown => {
@@ -125,11 +125,11 @@ describe('createNfseEmissor contra a NFS-e simulada, HTTPS com mTLS', () => {
           renders.push({ opcoes: { ...o }, doc });
           return doc;
         },
-        toPdf: danfse.toPdf,
+        gerarPdf: danfse.gerarPdf,
       },
     });
     const marca = (i: number): string | undefined =>
-      renders[i]?.doc.pages[0]?.ops.find((op) => op.t === 'text' && op.rot !== undefined && op.rot !== 0)?.[
+      renders[i]?.doc.paginas[0]?.ops.find((op) => op.t === 'texto' && op.rotacao !== undefined && op.rotacao !== 0)?.[
         's' as never
       ];
     expect(s.emissor.titular.cnpj).toBe(PRESTADOR);
@@ -144,7 +144,7 @@ describe('createNfseEmissor contra a NFS-e simulada, HTTPS com mTLS', () => {
     const pdf = await s.emissor.pdf(d.proc, { canhoto: false });
     expect(new TextDecoder().decode(pdf.subarray(0, 8))).toBe('%PDF-1.4');
     expect(s.caminhos.length).toBe(antes);
-    expect([renders[0]?.opcoes, renders[0]?.doc.title, marca(0)]).toEqual([
+    expect([renders[0]?.opcoes, renders[0]?.doc.titulo, marca(0)]).toEqual([
       { canhoto: false },
       `DANFSe ${d.protocolo.chaveAcesso}`,
       undefined,
@@ -222,8 +222,8 @@ describe('createNfseEmissor contra a NFS-e simulada, HTTPS com mTLS', () => {
 
   test('processou e não respondeu, nem a consulta: a retomada depois de reiniciar guarda com os mesmos bytes', async () => {
     const s = await cenario({ timeoutMs: 400 });
-    s.sim.injectFault({ kind: 'hang', phase: 'after' }, { rota: 'emitir' });
-    s.sim.injectFault({ kind: 'hang', phase: 'before' }, { rota: 'consultarDps' });
+    s.sim.injetarFalha({ tipo: 'travar', fase: 'depois' }, { rota: 'emitir' });
+    s.sim.injetarFalha({ tipo: 'travar', fase: 'antes' }, { rota: 'consultarDps' });
     const p = await s.emissor.emitir('nfse-3', dps({ nDPS: '3' }));
     expect([p.tipo, p.tipo === 'pendente' && p.motivo]).toEqual(['pendente', 'sem-resposta']);
     const gravado = await s.store.ler('nfse', 'nfse-3');
@@ -236,7 +236,7 @@ describe('createNfseEmissor contra a NFS-e simulada, HTTPS com mTLS', () => {
 
   test('não chegou, e envio cancelado depois de sair: a consulta da DPS decide', async () => {
     const s = await cenario({ timeoutMs: 400 });
-    s.sim.injectFault({ kind: 'hang', phase: 'before' }, { rota: 'emitir' });
+    s.sim.injetarFalha({ tipo: 'travar', fase: 'antes' }, { rota: 'emitir' });
     gerada(await s.emissor.emitir('nfse-4', dps({ nDPS: '4' })));
     expect(emissoes(s)).toBe(2);
 
@@ -270,14 +270,14 @@ describe('createNfseEmissor contra a NFS-e simulada, HTTPS com mTLS', () => {
     const s = await cenario({ timeoutMs: 400 });
     const d = gerada(await s.emissor.emitir('nfse-9', dps({ nDPS: '9' })));
     const chave = d.protocolo.chaveAcesso;
-    s.sim.injectFault({ kind: 'hang', phase: 'before' }, { rota: 'evento' });
+    s.sim.injetarFalha({ tipo: 'travar', fase: 'antes' }, { rota: 'evento' });
     const nada = await s.emissor.cancelar({ chave, cMotivo: '1', xMotivo: 'Erro na emissão da nota de teste' });
     expect([nada.tipo, nada.tipo === 'pendente' && nada.motivo]).toEqual(['pendente', 'sem-resposta']);
-    s.sim.injectFault({ kind: 'hang', phase: 'before' }, { rota: 'evento' });
-    s.sim.injectFault({ kind: 'hang', phase: 'before' }, { rota: 'consultarEventos' });
+    s.sim.injetarFalha({ tipo: 'travar', fase: 'antes' }, { rota: 'evento' });
+    s.sim.injetarFalha({ tipo: 'travar', fase: 'antes' }, { rota: 'consultarEventos' });
     const semConsulta = await s.emissor.cancelar({ chave, cMotivo: '1', xMotivo: 'Erro na emissão da nota de teste' });
     expect(semConsulta.tipo).toBe('pendente');
-    s.sim.injectFault({ kind: 'hang', phase: 'after' }, { rota: 'evento' });
+    s.sim.injetarFalha({ tipo: 'travar', fase: 'depois' }, { rota: 'evento' });
     const r = await s.emissor.cancelar({ chave, cMotivo: '1', xMotivo: 'Erro na emissão da nota de teste' });
     if (r.tipo !== 'registrado') throw new Error(`esperava registrado, veio ${r.tipo}`);
     expect([r.recuperado, r.cStat, r.evento.tpEvento]).toEqual([true, '100', '101101']);
@@ -287,21 +287,21 @@ describe('createNfseEmissor contra a NFS-e simulada, HTTPS com mTLS', () => {
     const s = await cenario({ timeoutMs: 400 });
     const d = gerada(await s.emissor.emitir('nfse-10', dps({ nDPS: '10' })));
     const chave = d.protocolo.chaveAcesso;
-    s.sim.injectFault({ kind: 'hang', phase: 'after' }, { rota: 'evento' });
-    s.sim.injectFault({ kind: 'hang', phase: 'before' }, { rota: 'consultarEventos' });
+    s.sim.injetarFalha({ tipo: 'travar', fase: 'depois' }, { rota: 'evento' });
+    s.sim.injetarFalha({ tipo: 'travar', fase: 'antes' }, { rota: 'consultarEventos' });
     const perdida = await s.emissor.cancelar({ chave, cMotivo: '1', xMotivo: 'Erro na emissão da nota de teste' });
     expect([perdida.tipo, perdida.tipo === 'pendente' && perdida.motivo]).toEqual(['pendente', 'sem-resposta']);
-    expect(s.sim.inspect.eventos(chave).map((e) => e.tpEvento)).toEqual(['101101']);
+    expect(s.sim.inspecao.eventos(chave).map((e) => e.tpEvento)).toEqual(['101101']);
     const denovo = await s.emissor.cancelar({ chave, cMotivo: '1', xMotivo: 'Erro na emissão da nota de teste' });
     if (denovo.tipo !== 'registrado') throw new Error(`esperava registrado, veio ${denovo.tipo}`);
     expect([denovo.recuperado, denovo.bruto?.cStat, denovo.evento.tpEvento]).toEqual([true, 'E0840', '101101']);
-    expect(denovo.procEvento).toBe(s.sim.inspect.eventos(chave)[0]?.xml as string);
-    s.sim.injectFault({ kind: 'hang', phase: 'before' }, { rota: 'consultarEventos' });
+    expect(denovo.procEvento).toBe(s.sim.inspecao.eventos(chave)[0]?.xml as string);
+    s.sim.injetarFalha({ tipo: 'travar', fase: 'antes' }, { rota: 'consultarEventos' });
     const semConsulta = await s.emissor.cancelar({ chave, cMotivo: '1', xMotivo: 'Erro na emissão da nota de teste' });
     expect([semConsulta.tipo, semConsulta.tipo === 'pendente' && semConsulta.bruto?.cStat]).toEqual([
       'pendente',
       'E0840',
     ]);
-    expect(s.sim.inspect.eventos(chave)).toHaveLength(1);
+    expect(s.sim.inspecao.eventos(chave)).toHaveLength(1);
   });
 });

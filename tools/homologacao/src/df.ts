@@ -32,8 +32,8 @@ import { parseArgs } from 'node:util';
 import type { ResultadoSefaz } from '@sinete/core';
 import { contextoDeTempo, ehErroSinete, relogioDoSistema } from '@sinete/core';
 import { conferirAssinatura } from '@sinete/core/xml';
-import type { Icms, NfeClient, NfeInput } from '@sinete/nfe';
-import { buildNfe, createNfeClient, signNfe } from '@sinete/nfe';
+import type { ClienteNfe, DadosNfe, Icms } from '@sinete/nfe';
+import { assinarNfe, criarClienteNfe, montarNfe } from '@sinete/nfe';
 import type { EventoDeAuditoria, PedidoTransporte, RespostaTransporte, Transporte } from '@sinete/transport';
 import { criarTransporte, detectarRuntime, identidadePem, nfeEndpoint } from '@sinete/transport';
 import type { Certificado } from './certificado.ts';
@@ -82,7 +82,7 @@ interface EmitenteArquivo {
   readonly xNome: string;
   readonly IE: string;
   readonly CRT: '1' | '2' | '3' | '4';
-  readonly endereco: NfeInput['emitente']['endereco'];
+  readonly endereco: DadosNfe['emitente']['endereco'];
 }
 const emit = JSON.parse(readFileSync(opt.emitente ?? join(estado, 'emitente.json'), 'utf8')) as EmitenteArquivo;
 if (emit.endereco.UF !== UF) throw new Error('emitente fora do DF');
@@ -163,13 +163,13 @@ function transporte(): Transporte {
   };
 }
 
-function cliente(t: Transporte, contingencia = false): NfeClient {
-  return createNfeClient({
-    transport: t,
-    signer,
+function cliente(t: Transporte, contingencia = false): ClienteNfe {
+  return criarClienteNfe({
+    transporte: t,
+    assinador: signer,
     ambiente: AMBIENTE,
     uf: UF,
-    clock: relogioDoSistema,
+    relogio: relogioDoSistema,
     autor: { CPF },
     ...(contingencia ? { contingencia: 'svc' as const } : {}),
   });
@@ -312,7 +312,7 @@ function cenario(nome: string): { icms: Icms; cBenef?: string; rotulo: string } 
   }
 }
 
-function nota(nome: string, vPag: string): NfeInput {
+function nota(nome: string, vPag: string): DadosNfe {
   const c = cenario(nome);
   return {
     serie: opt.serie as string,
@@ -352,16 +352,16 @@ function nota(nome: string, vPag: string): NfeInput {
 }
 
 async function montar(nome: string, vPag: string) {
-  const r = await buildNfe(nota(nome, vPag), {
+  const r = await montarNfe(nota(nome, vPag), {
     ambiente: AMBIENTE,
-    time: contextoDeTempo({ emissao: relogioDoSistema }),
+    tempo: contextoDeTempo({ emissao: relogioDoSistema }),
     verProc: 'sinete-homologacao',
   });
   if (!r.ok) {
-    for (const i of r.issues) log(`  ${i.caminho}: ${i.code}: ${i.mensagem}`);
+    for (const i of r.ocorrencias) log(`  ${i.caminho}: ${i.code}: ${i.mensagem}`);
     throw new Error('o builder recusou a NF-e');
   }
-  return r.value;
+  return r.valor;
 }
 
 async function emitir(): Promise<void> {
@@ -385,8 +385,8 @@ async function emitir(): Promise<void> {
   const vNF = /<vNF>([^<]+)<\/vNF>/.exec(previa.xml)?.[1];
   if (!vNF) throw new Error('vNF ausente na montagem');
   const b = await montar(nome, vNF);
-  const assinada = await signNfe(b, signer);
-  registrar('local', 'assinatura da NF-e (signNfe) [e-CPF emitente]', `chave ${b.chave}`);
+  const assinada = await assinarNfe(b, signer);
+  registrar('local', 'assinatura da NF-e (assinarNfe) [e-CPF emitente]', `chave ${b.chave}`);
   if (!assinada.startsWith(b.xml.slice(0, b.xml.indexOf('</infNFe>'))))
     throw new Error('assinatura alterou o conteúdo');
   const ver = await conferirAssinatura(assinada, { id: b.id, elemento: 'infNFe' });

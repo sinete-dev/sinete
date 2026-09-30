@@ -1,6 +1,6 @@
 // Verificações do @sinete/ibs-cbs-dados compartilhadas por Node, Deno e Chromium. Devolve a lista de falhas (vazia = ok).
 import { compararDatasets, carregarDataset, ErroDadosIbsCbs, conferirDataset } from '@sinete/ibs-cbs-dados';
-import { DATASET_EMBARCADO, datasetEmbarcado } from '@sinete/ibs-cbs-dados/bundled';
+import { DATASET_EMBARCADO, datasetEmbarcado } from '@sinete/ibs-cbs-dados/embarcado';
 
 export async function runChecks() {
   const failures = [];

@@ -12,7 +12,7 @@ import type { ElementoRaiz } from '@sinete/schemas';
 import { selecionarPl } from '@sinete/schemas';
 import * as v20260209 from '@sinete/schemas/nfse/1.01-20260209';
 import * as v20260727 from '@sinete/schemas/nfse/1.01-20260727';
-import { DanfeError } from '../errors.ts';
+import { ErroDa } from '../errors.ts';
 import type { Rec } from './xml.ts';
 import { decodeAs, parse, str, vista } from './xml.ts';
 
@@ -376,7 +376,7 @@ export function readNfse(xml: string): NfseView {
   const m = modulo(dps);
   const mod = MODULOS[m] ?? v20260209;
   const { value } = decodeAs<Rec>(doc, [mod.NFSeElement as never], 'NFSe');
-  if (!value.infNFSe) throw new DanfeError('campo_ausente', 'NFS-e sem infNFSe');
+  if (!value.infNFSe) throw new ErroDa('campo_ausente', 'NFS-e sem infNFSe');
   return vista('NFS-e', () => view(value, m));
 }
 
@@ -399,7 +399,7 @@ export function readEventoNfse(xml: string, tipos: readonly string[]): EventoNfs
   const ped = rec(rec(rec(rec(value.infEvento).pedRegEvento).infPedReg));
   const tipo = Object.keys(ped).find((k) => /^e\d{6}$/.test(k)) ?? '';
   if (!tipos.includes(tipo)) {
-    throw new DanfeError('evento_incompativel', `evento ${tipo || 'sem tipo'} não é ${tipos.join(' nem ')}`, {
+    throw new ErroDa('evento_incompativel', `evento ${tipo || 'sem tipo'} não é ${tipos.join(' nem ')}`, {
       detalhes: { tipo, esperado: tipos },
     });
   }

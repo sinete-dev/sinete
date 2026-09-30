@@ -35,8 +35,8 @@ import * as m_u_ibs_cbs from 'sinete/ibs-cbs';
 import * as m_p_ibs_cbs from '@sinete/ibs-cbs';
 import * as m_u_ibs_cbs_dados from 'sinete/ibs-cbs-dados';
 import * as m_p_ibs_cbs_dados from '@sinete/ibs-cbs-dados';
-import * as m_u_ibs_cbs_dados_bundled from 'sinete/ibs-cbs-dados/bundled';
-import * as m_p_ibs_cbs_dados_bundled from '@sinete/ibs-cbs-dados/bundled';
+import * as m_u_ibs_cbs_dados_bundled from 'sinete/ibs-cbs-dados/embarcado';
+import * as m_p_ibs_cbs_dados_bundled from '@sinete/ibs-cbs-dados/embarcado';
 import * as m_u_ibs_cbs_aliquotas from 'sinete/ibs-cbs/aliquotas';
 import * as m_p_ibs_cbs_aliquotas from '@sinete/ibs-cbs/aliquotas';
 import * as m_u_ibs_cbs_calcular from 'sinete/ibs-cbs/calcular';
@@ -124,7 +124,7 @@ const PARES = [
   ['emissor/nfse', m_u_emissor_nfse, m_p_emissor_nfse],
   ['ibs-cbs', m_u_ibs_cbs, m_p_ibs_cbs],
   ['ibs-cbs-dados', m_u_ibs_cbs_dados, m_p_ibs_cbs_dados],
-  ['ibs-cbs-dados/bundled', m_u_ibs_cbs_dados_bundled, m_p_ibs_cbs_dados_bundled],
+  ['ibs-cbs-dados/embarcado', m_u_ibs_cbs_dados_bundled, m_p_ibs_cbs_dados_bundled],
   ['ibs-cbs/aliquotas', m_u_ibs_cbs_aliquotas, m_p_ibs_cbs_aliquotas],
   ['ibs-cbs/calcular', m_u_ibs_cbs_calcular, m_p_ibs_cbs_calcular],
   ['ibs-cbs/determinar', m_u_ibs_cbs_determinar, m_p_ibs_cbs_determinar],
@@ -172,6 +172,6 @@ export async function runChecks() {
   // Um uso de ponta a ponta pelo guarda-chuva: IBS/CBS e documento auxiliar.
   const { aliquotasOficiais } = m_u_ibs_cbs_aliquotas;
   if (aliquotasOficiais().nominal('2026-10-10').CBS.valor !== '0.9') failures.push('sinete/ibs-cbs/aliquotas');
-  if (typeof m_u_da_mdfe.damdfe !== 'function' || m_u_da_mdfe.toPdf !== m_u_da.toPdf) failures.push('sinete/da/mdfe');
+  if (typeof m_u_da_mdfe.damdfe !== 'function' || m_u_da_mdfe.gerarPdf !== m_u_da.gerarPdf) failures.push('sinete/da/mdfe');
   return failures;
 }

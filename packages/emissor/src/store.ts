@@ -123,14 +123,14 @@ export interface TransmissaoStore {
   /** Bytes gravados do documento, com ou sem trava. */
   ler(tipo: TipoDocumento, ref: string): Promise<RegistroTransmissao | undefined>;
   /**
-   * Grava os bytes assinados. Só com a trava em vigor (`TravaPerdidaError` sem ela) e só sem bytes já gravados
-   * (`TransmissaoJaGravadaError`); nos dois casos nada é gravado. É aqui que o integrador reserva a numeração, na
+   * Grava os bytes assinados. Só com a trava em vigor (`ErroTravaPerdida` sem ela) e só sem bytes já gravados
+   * (`ErroTransmissaoJaGravada`); nos dois casos nada é gravado. É aqui que o integrador reserva a numeração, na
    * mesma transação.
    */
   gravar(trava: Trava, gravacao: GravacaoTransmissao): Promise<RegistroTransmissao>;
   /**
    * A SEFAZ recusou os bytes de vez: apaga a gravação (e o integrador devolve o número, se reservou). Só com a trava em
-   * vigor (`TravaPerdidaError`).
+   * vigor (`ErroTravaPerdida`).
    */
   descartar(trava: Trava): Promise<void>;
   /**

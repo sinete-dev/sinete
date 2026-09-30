@@ -1,11 +1,11 @@
 // Tipos do pacote publicado, vistos por um consumidor com tsc nodenext (e por deno check).
-import type { CheckStatus, DoctorOptions, DoctorReport } from '@sinete/cli';
-import { runDoctor } from '@sinete/cli';
+import type { SituacaoDaVerificacao, DoctorOpcoes, RelatorioDoDoctor } from '@sinete/cli';
+import { rodarDoctor } from '@sinete/cli';
 
-export async function diagnosticar(pfx: Uint8Array, password: string): Promise<CheckStatus[]> {
-  const options: DoctorOptions = { pfx, password, uf: 'SP', ambiente: 'homologacao' };
-  const report: DoctorReport = await runDoctor(options);
+export async function diagnosticar(pfx: Uint8Array, password: string): Promise<SituacaoDaVerificacao[]> {
+  const options: DoctorOpcoes = { pfx, senha: password, uf: 'SP', ambiente: 'homologacao' };
+  const report: RelatorioDoDoctor = await rodarDoctor(options);
   // @ts-expect-error UF fora do leiaute
-  await runDoctor({ pfx, password, uf: 'XX' });
-  return report.checks.map((c) => c.status);
+  await rodarDoctor({ pfx, senha: password, uf: 'XX' });
+  return report.verificacoes.map((c) => c.situacao);
 }

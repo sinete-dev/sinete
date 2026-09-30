@@ -3,7 +3,7 @@
  * banco. Um adaptador errado produz nota duplicada (duas travas ao mesmo tempo, bytes que somem num reinício, o dono
  * antigo gravando por cima de quem assumiu); a suíte confere cada um desses casos.
  *
- * Não depende de runner de teste: devolve casos com `nome` e `rodar`, que lançam `ContratoVioladoError` quando o
+ * Não depende de runner de teste: devolve casos com `nome` e `rodar`, que lançam `ErroContratoViolado` quando o
  * adaptador falha. No Bun, no Vitest ou no `node:test`:
  *
  * ```ts
@@ -36,10 +36,10 @@ type StoreComContingencia = TransmissaoStore &
   >;
 
 /** O adaptador não cumpriu um item do contrato. `detalhes.caso` diz qual. */
-export class ContratoVioladoError extends ErroSinete<'contrato_violado'> {
+export class ErroContratoViolado extends ErroSinete<'contrato_violado'> {
   constructor(caso: string, message: string) {
     super('contrato_violado', `${caso}: ${message}`, { detalhes: { caso } });
-    this.name = 'ContratoVioladoError';
+    this.name = 'ErroContratoViolado';
   }
 }
 
@@ -51,7 +51,7 @@ export interface AmbienteContrato {
   readonly fechar?: () => Promise<void>;
 }
 
-export interface OpcoesContrato {
+export interface ContratoOpcoes {
   readonly criar: () => AmbienteContrato | Promise<AmbienteContrato>;
   /** Prazo das travas que os casos esperam vencer. Padrão: 1000 ms. */
   readonly prazoCurtoMs?: number;
@@ -83,7 +83,7 @@ const LONGO = 3_600_000;
 const TUDO = { idadeMaximaMs: LONGO, paradaHaMs: 0, intervaloDepoisDoAlertaMs: LONGO, limite: 100 } as const;
 
 /** Casos do contrato, na ordem do mais básico ao mais sutil. */
-export function casosDoContrato(opcoes: OpcoesContrato): readonly CasoContrato[] {
+export function casosDoContrato(opcoes: ContratoOpcoes): readonly CasoContrato[] {
   const P = opcoes.prazoCurtoMs ?? 1000;
   const esperar =
     opcoes.esperar ??
@@ -98,7 +98,7 @@ export function casosDoContrato(opcoes: OpcoesContrato): readonly CasoContrato[]
     async rodar(): Promise<void> {
       const amb = await opcoes.criar();
       const falha = (m: string): never => {
-        throw new ContratoVioladoError(nome, m);
+        throw new ErroContratoViolado(nome, m);
       };
       try {
         await corpo(amb, falha);

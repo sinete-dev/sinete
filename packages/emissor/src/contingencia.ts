@@ -38,7 +38,7 @@ export type MudancaContingencia =
   | { readonly tipo: 'svc-indisponivel'; readonly escopo: EscopoContingencia; readonly motivo: string };
 
 /** Opções da contingência automática. Desligada por padrão. */
-export interface OpcoesContingencia {
+export interface ContingenciaOpcoes {
   /** Liga a contingência automática. */
   readonly automatica: boolean;
   /**
@@ -113,16 +113,16 @@ export interface ContingenciaDoPerfil<Entrada, C> {
    * A entrada com a contingência do escopo: o `tpEmis` da SVC da UF (NF-e) ou 9 (NFC-e), `dhCont` (o `desde`, ou a
    * emissão se ela vier antes) e `xJust`.
    */
-  aplicar(entrada: Entrada, escopo: EscopoContingencia, c: ContingenciaAplicada, ctx: C): Entrada;
+  aplicar(entrada: Entrada, escopo: EscopoContingencia, c: ContingenciaAplicada, contexto: C): Entrada;
   /**
    * A contingência do escopo é a off-line (a nota é gravada sem envio). A off-line é decisão do emitente; a outra, a
    * SVC, só vale com a SVC ativada pela SEFAZ de origem.
    */
   offline(escopo: EscopoContingencia): boolean;
   /** Consulta o status do autorizador normal do escopo. Não lança: sem resposta é `emOperacao: false`. */
-  sondar(escopo: EscopoContingencia, ctx: C): Promise<Sonda>;
+  sondar(escopo: EscopoContingencia, contexto: C): Promise<Sonda>;
   /** Consulta o status na SVC da UF do escopo (só nos escopos que não são off-line). Não lança. */
-  sondarSvc(escopo: EscopoContingencia, ctx: C): Promise<SondaSvc>;
+  sondarSvc(escopo: EscopoContingencia, contexto: C): Promise<SondaSvc>;
   /** O desfecho de um envio em emissão normal é falha do autorizador (sem resposta, serviço paralisado). */
   falha(d: Desfecho): boolean;
   /** O envio à SVC foi recusado porque a SVC não está ativada para a UF (114). */
@@ -258,7 +258,7 @@ export interface Contingencia<Entrada, C> {
  * num documento sem contingência automática, com limites fora da faixa, com o store implementando só parte dos métodos.
  */
 export function criarContingencia<Entrada, C>(deps: {
-  readonly opcoes: OpcoesContingencia | undefined;
+  readonly opcoes: ContingenciaOpcoes | undefined;
   readonly perfil: ContingenciaDoPerfil<Entrada, C> | undefined;
   readonly tipo: TipoDocumento;
   readonly ambiente: string;

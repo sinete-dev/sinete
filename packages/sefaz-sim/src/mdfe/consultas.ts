@@ -14,40 +14,40 @@ import {
   retConsStatServMDFeElement,
 } from '@sinete/schemas/mdfe/servicos/3.00b';
 import { cnpjValido, cpfValido, lerChaveAcesso } from '@sinete/validators';
-import type { RequestContext, Status } from '../context.ts';
+import type { ContextoDoPedido, Status } from '../context.ts';
 import { omitirDigVal } from '../context.ts';
 import { MDFE_NS } from '../services.ts';
 import { documento, text } from '../xmlutil.ts';
 import { CUF_SVRS, dhMdfe, emitenteDaChave, preludeMdfe, raiz, statusMdfe, VERSAO, verAplicMdfe } from './comum.ts';
 
 /** MDFeStatusServico (mdfeStatusServicoMDF). */
-export async function statusServicoMdfe(ctx: RequestContext): Promise<string> {
+export async function statusServicoMdfe(ctx: ContextoDoPedido): Promise<string> {
   const pre = await preludeMdfe(ctx, consStatServMDFeElement);
   const ret = (s: Status): string => {
     const value: TRetConsStatServ = {
       versao: VERSAO,
-      tpAmb: ctx.rt.config.tpAmb,
+      tpAmb: ctx.rt.configuracao.tpAmb,
       verAplic: verAplicMdfe(),
       cStat: s.cStat,
       xMotivo: s.xMotivo,
       cUF: CUF_SVRS as TRetConsStatServ['cUF'],
-      dhRecbto: dhMdfe(ctx, ctx.now),
+      dhRecbto: dhMdfe(ctx, ctx.agora),
       tMed: '1',
     };
     return serializarRaiz(retConsStatServMDFeElement, value);
   };
   if (!pre.ok) return ret(pre.status);
-  if (text(pre.doc.raiz, 'tpAmb') !== ctx.rt.config.tpAmb) return ret(statusMdfe('252'));
+  if (text(pre.doc.raiz, 'tpAmb') !== ctx.rt.configuracao.tpAmb) return ret(statusMdfe('252'));
   return ret(statusMdfe('107'));
 }
 
 /** MDFeConsulta (mdfeConsultaMDF). */
-export async function consultaMdfe(ctx: RequestContext): Promise<string> {
+export async function consultaMdfe(ctx: ContextoDoPedido): Promise<string> {
   const pre = await preludeMdfe(ctx, consSitMDFeElement);
   const ret = (s: Status, prot?: string, eventos: readonly string[] = []): string => {
     const value: TRetConsSitMDFe = {
       versao: VERSAO,
-      tpAmb: ctx.rt.config.tpAmb,
+      tpAmb: ctx.rt.configuracao.tpAmb,
       verAplic: verAplicMdfe(),
       cStat: s.cStat,
       xMotivo: s.xMotivo,
@@ -61,17 +61,17 @@ export async function consultaMdfe(ctx: RequestContext): Promise<string> {
   if (!pre.ok) return ret(pre.status);
   const root = pre.doc.raiz;
   // G01 ambiente; G03 chave (modelo 58, DV, UF, AAMM, emitente).
-  if (text(root, 'tpAmb') !== ctx.rt.config.tpAmb) return ret(statusMdfe('252'));
+  if (text(root, 'tpAmb') !== ctx.rt.configuracao.tpAmb) return ret(statusMdfe('252'));
   const chMDFe = text(root, 'chMDFe') ?? '';
   const c = lerChaveAcesso(chMDFe);
   if (!c.ok || c.valor.mod !== '58') {
     return ret(statusMdfe('236', { Motivo: c.ok ? 'Modelo diferente de 58' : c.erro.mensagem }));
   }
-  const m = ctx.rt.state.mdfes.get(chMDFe);
+  const m = ctx.rt.estado.mdfes.get(chMDFe);
   if (m === undefined) {
     // G04 a G06: a mesma numeração do emitente com outra chave.
     const e = emitenteDaChave(chMDFe);
-    const outra = ctx.rt.state.mdfeByNumero(e.CNPJ ?? e.CPF ?? '', chMDFe.slice(22, 25), chMDFe.slice(25, 34));
+    const outra = ctx.rt.estado.mdfeByNumero(e.CNPJ ?? e.CPF ?? '', chMDFe.slice(22, 25), chMDFe.slice(25, 34));
     if (outra === undefined) return ret(statusMdfe('217'));
     if (outra.cMDF !== chMDFe.slice(35, 43)) return ret(statusMdfe('216'));
     return ret(statusMdfe('600'));
@@ -80,7 +80,7 @@ export async function consultaMdfe(ctx: RequestContext): Promise<string> {
   // O retConsSitMDFe envolve cada documento num elemento de mesmo nome com `versao` e um `xs:any`: "retornar
   // protMDFe (procEventoMDFe) da versão correspondente" (consSitMDFeTiposBasico_v3.00.xsd). Dentro vai o documento
   // inteiro, com o próprio xmlns.
-  const eventos = ctx.rt.state
+  const eventos = ctx.rt.estado
     .eventosDoMdfe(chMDFe)
     .map(
       (e) =>
@@ -95,12 +95,12 @@ export async function consultaMdfe(ctx: RequestContext): Promise<string> {
 }
 
 /** MDFeConsNaoEnc (mdfeConsNaoEnc). */
-export async function consNaoEncMdfe(ctx: RequestContext): Promise<string> {
+export async function consNaoEncMdfe(ctx: ContextoDoPedido): Promise<string> {
   const pre = await preludeMdfe(ctx, consMDFeNaoEncElement);
   const ret = (s: Status, lista: TRetConsMDFeNaoEnc['infMDFe'] = undefined): string => {
     const value: TRetConsMDFeNaoEnc = {
       versao: VERSAO,
-      tpAmb: ctx.rt.config.tpAmb,
+      tpAmb: ctx.rt.configuracao.tpAmb,
       verAplic: verAplicMdfe(),
       cStat: s.cStat,
       xMotivo: s.xMotivo,
@@ -111,7 +111,7 @@ export async function consNaoEncMdfe(ctx: RequestContext): Promise<string> {
   };
   if (!pre.ok) return ret(pre.status);
   const root = pre.doc.raiz;
-  if (text(root, 'tpAmb') !== ctx.rt.config.tpAmb) return ret(statusMdfe('252'));
+  if (text(root, 'tpAmb') !== ctx.rt.configuracao.tpAmb) return ret(statusMdfe('252'));
   const emitente = documento(root);
   if (emitente.CNPJ !== undefined && !cnpjValido(emitente.CNPJ)) return ret(statusMdfe('207'));
   if (emitente.CPF !== undefined && !cpfValido(emitente.CPF)) return ret(statusMdfe('210'));
@@ -123,7 +123,7 @@ export async function consNaoEncMdfe(ctx: RequestContext): Promise<string> {
     }
     if (t.CPF !== undefined && t.CPF !== emitente.CPF) return ret(statusMdfe('202'));
   }
-  const lista = [...ctx.rt.state.mdfes.values()]
+  const lista = [...ctx.rt.estado.mdfes.values()]
     .filter((m) => m.situacao === 'autorizado')
     .filter((m) => (m.emitente.CNPJ ?? m.emitente.CPF) === (emitente.CNPJ ?? emitente.CPF))
     .sort((a, b) => a.dhRecbtoMs - b.dhRecbtoMs)

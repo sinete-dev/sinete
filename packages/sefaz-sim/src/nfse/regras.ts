@@ -1,7 +1,7 @@
 /**
  * Regras de negócio da NFS-e simulada, como dado: cada regra tem o código de erro do Anexo I ou II, a fonte (a linha
  * da planilha oficial, lida do catálogo do `@sinete/rejeicoes/nfse`) e a condição. A lista é trocável por
- * `NfseSimOptions.regras`, e a ordem é a de avaliação: a primeira violada responde.
+ * `NfseSimOpcoes.regras`, e a ordem é a de avaliação: a primeira violada responde.
  *
  * Antes delas, o simulador aplica sempre a recepção (certificado do canal, base64, gzip, declaração UTF-8, prefixo de
  * namespace, schema) e a assinatura, na ordem da aba RN_RECEPCAO_DPS e do nível 1 da aba RN DPS_NFS-e.
@@ -39,11 +39,11 @@ export interface EventoNfseRegistro {
 }
 
 export interface DpsFatos {
-  readonly config: NfseSimConfig;
+  readonly configuracao: NfseSimConfig;
   readonly dps: TCDPS;
   readonly inf: TCInfDPS;
   /** Instante do processamento (ms) e o `dhEmi` lido (ms), no relógio da Sefin simulada. */
-  readonly now: number;
+  readonly agora: number;
   readonly dhEmi: number;
   /** Dia do `dhEmi` em Brasília, `AAAA-MM-DD`. */
   readonly diaEmissao: string;
@@ -59,10 +59,10 @@ export interface DpsFatos {
 }
 
 export interface EventoNfseFatos {
-  readonly config: NfseSimConfig;
+  readonly configuracao: NfseSimConfig;
   readonly pedido: TCPedRegEvt;
   readonly tpEvento: string;
-  readonly now: number;
+  readonly agora: number;
   readonly nfse: NfseRegistro | undefined;
   readonly eventos: readonly EventoNfseRegistro[];
   readonly municipioEmissor: MunicipioSim | undefined;
@@ -132,7 +132,7 @@ const CANCELAMENTOS = new Set(['101101', '105102']);
 /** Regras padrão do simulador, na ordem de avaliação. */
 export const NFSE_REGRAS_PADRAO: NfseSimRegras = {
   dps: [
-    regra<DpsFatos>('E0006', (f) => f.inf.tpAmb !== f.config.tpAmb),
+    regra<DpsFatos>('E0006', (f) => f.inf.tpAmb !== f.configuracao.tpAmb),
     regra<DpsFatos>('E0015', (f) => f.inf.dCompet > f.diaEmissao),
     regra<DpsFatos>('E0037', (f) => !mei(f) && f.municipioEmissor === undefined),
     regra<DpsFatos>(
@@ -167,7 +167,7 @@ export const NFSE_REGRAS_PADRAO: NfseSimRegras = {
     ),
   ],
   evento: [
-    regra<EventoNfseFatos>('E1845', (f) => f.pedido.infPedReg.tpAmb !== f.config.tpAmb),
+    regra<EventoNfseFatos>('E1845', (f) => f.pedido.infPedReg.tpAmb !== f.configuracao.tpAmb),
     regra<EventoNfseFatos>('E1831', (f) => f.nfse === undefined),
     // Autor pela planilha "Tipo Eventos" do Anexo II: cancelamento e análise fiscal são do emitente da NFS-e; o
     // cancelamento por substituição (e105102) é da própria Sefin, registrado na emissão da substituta.
@@ -187,7 +187,7 @@ export const NFSE_REGRAS_PADRAO: NfseSimRegras = {
         f.tpEvento === '101101' &&
         dias !== undefined &&
         f.nfse !== undefined &&
-        f.now - f.nfse.processadaEm > dias * 86_400_000
+        f.agora - f.nfse.processadaEm > dias * 86_400_000
       );
     }),
   ],

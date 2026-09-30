@@ -1,6 +1,6 @@
 /**
  * Modelo de entrada do MDF-e (modelo 58, leiaute 3.00b), modal rodoviário: o que quem emite descreve. O builder
- * (`buildMdfe`) transforma isto no objeto tipado do `@sinete/schemas` (`mdfe/3.00b`), deriva o que o leiaute permite
+ * (`montarMdfe`) transforma isto no objeto tipado do `@sinete/schemas` (`mdfe/3.00b`), deriva o que o leiaute permite
  * derivar (quantidades de documentos, número das parcelas, valor do contrato) e confere as regras do MOC antes de
  * serializar.
  *
@@ -329,7 +329,7 @@ export interface ResponsavelTecnico {
 // MDF-e
 // ---------------------------------------------------------------------------------------------------------------
 
-export interface MdfeInput {
+export interface DadosMdfe {
   readonly tpEmit: TipoEmitente;
   /**
    * Tipo do transportador: só quando o veículo de tração é de terceiro (`rodoviario.tracao.proprietario`); TAC (2) com

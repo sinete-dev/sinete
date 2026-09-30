@@ -7,19 +7,21 @@ import type { Rejeicao } from '../../rejeicoes/src/index.ts';
 import { MARCAS, SITUACAO_MDFE, SITUACAO_NFE } from '../src/data/leiaute.ts';
 import { REGISTRADO_MDFE } from '../src/input/cancelamento-mdfe.ts';
 import { damdfe } from '../src/mdfe.ts';
-import type { Doc } from '../src/model.ts';
+import type { Documento } from '../src/model.ts';
 import type { FormatoDanfe } from '../src/nfe.ts';
 import { danfe } from '../src/nfe.ts';
 import { EPEC } from './cases.ts';
 import type { NfeFx } from './fixtures.ts';
 import { chaveDe, eventoXml, mdfeXml, nfeXml } from './fixtures.ts';
 
-const texts = (doc: Doc): string =>
-  doc.pages.flatMap((p) => p.ops.flatMap((o) => (o.t === 'text' ? [o.s] : []))).join(' ');
+const texts = (doc: Documento): string =>
+  doc.paginas.flatMap((p) => p.ops.flatMap((o) => (o.t === 'texto' ? [o.s] : []))).join(' ');
 /** Textos da marca d'água (girados) de cada página. */
-const marca = (doc: Doc): string[] =>
-  doc.pages.map((p) =>
-    p.ops.flatMap((o) => (o.t === 'text' && o.rot !== undefined && o.rot > 0 && o.rot < 90 ? [o.s] : [])).join(' | '),
+const marca = (doc: Documento): string[] =>
+  doc.paginas.map((p) =>
+    p.ops
+      .flatMap((o) => (o.t === 'texto' && o.rotacao !== undefined && o.rotacao > 0 && o.rotacao < 90 ? [o.s] : []))
+      .join(' | '),
   );
 
 /** Um caso por formato: bobinas e Tipo 2 exigem `infNFeSupl`, que a fixture gera pelo modelo e pelo `tpImp`. */
@@ -31,7 +33,7 @@ const FORMATOS: readonly { formato: FormatoDanfe; fx: Partial<NfeFx> }[] = [
   { formato: 'simplificado-tipo2', fx: { tpImp: '6' } },
   { formato: 'nfce', fx: { mod: '65' } },
 ];
-const render = (fx: Partial<NfeFx>, formato: FormatoDanfe, opts: Parameters<typeof danfe>[1] = {}): Doc => {
+const render = (fx: Partial<NfeFx>, formato: FormatoDanfe, opts: Parameters<typeof danfe>[1] = {}): Documento => {
   const base = FORMATOS.find((f) => f.formato === formato)?.fx ?? {};
   return danfe(nfeXml({ name: 'x', items: 2, ...base, ...fx }), { formato, ...opts });
 };
@@ -52,7 +54,7 @@ describe('sem protocolo de autorização na emissão normal', () => {
   }
   test('marca em todas as folhas do DANFE A4', () => {
     const doc = danfe(nfeXml({ name: 'x', items: 5, xProdLen: 120, infCplLen: 5000, semProt: true }));
-    expect(doc.pages.length).toBeGreaterThan(1);
+    expect(doc.paginas.length).toBeGreaterThan(1);
     for (const m of marca(doc)) expect(m).toContain(MARCAS.semValor);
   });
   test('protocolo com cStat que não é de autorização nem de denegação não vale', () => {
@@ -219,7 +221,7 @@ describe('cancelada pelo cStat do protocolo (MOC 7.0, Anexo I, 4.4.1; Visão Ger
   }
   test('marca em todas as folhas do DANFE A4', () => {
     const doc = danfe(nfeXml({ name: 'x', items: 5, xProdLen: 120, infCplLen: 5000, cStat: '101' }));
-    expect(doc.pages.length).toBeGreaterThan(1);
+    expect(doc.paginas.length).toBeGreaterThan(1);
     for (const m of marca(doc)) expect(m).toBe('CANCELADA');
   });
   test('sem nProt: o cStat basta para o carimbo, e o campo do protocolo fica vazio', () => {
@@ -296,7 +298,7 @@ describe('DAMDFE (MOC MDF-e 3.00a, Anexo II, 2.4 e 2.5)', () => {
   });
   test('cancelado (cStat 101, Visão Geral 3.00b, 6.1.2): "CANCELADO" com o protocolo, sem "SEM VALOR FISCAL"', () => {
     const doc = damdfe(mdfeXml({ name: 'x', cStat: '101', docs: 60 }), { documentos: true });
-    expect(doc.pages.length).toBeGreaterThan(1);
+    expect(doc.paginas.length).toBeGreaterThan(1);
     for (const m of marca(doc)) expect(m).toBe('CANCELADO');
     expect(texts(doc)).toContain('935260000000001 - 01/09/2026 10:56:03');
     expect(texts(doc)).not.toContain(MARCAS.semValor);
