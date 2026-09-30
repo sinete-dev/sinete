@@ -1,32 +1,39 @@
 /**
  * Regras legais fechadas: hipóteses em que a lei decide o cClassTrib pela natureza da operação ou pela condição da parte,
  * sem depender de interpretação do item. Cada uma restringe os candidatos e cita o dispositivo. O texto legal de cada
- * código vem da própria tabela (`Candidate.lc214` e `link`); aqui fica só o vínculo entre o fato e o código.
+ * código vem da própria tabela (`Candidato.lc214` e `url`); aqui fica só o vínculo entre o fato e o código.
  */
-import type { ItemFacts, LegalOutcome, LegalRule, LegalRuleContext, OperationFacts, OperationKind } from './types.ts';
+import type {
+  ContextoRegraLegal,
+  FatosDaOperacao,
+  FatosDoItem,
+  RegraLegal,
+  ResultadoRegraLegal,
+  TipoDeOperacao,
+} from './types.ts';
 
 const LC = 'LC 214/2025';
-const SINCE = { from: '2026-01-01', to: null } as const;
+const SINCE = { inicio: '2026-01-01', fim: null } as const;
 
 /** Id do ator "Produtor rural não contribuinte" na tabela de atores da Calculadora (V0057). */
-export const ACTOR_RURAL_PRODUCER_NON_CONTRIBUTOR = 14;
+export const ATOR_PRODUTOR_RURAL_NAO_CONTRIBUINTE = 14;
 
-function kindOf(facts: OperationFacts, item: ItemFacts): OperationKind {
-  return item.kind ?? facts.kind;
+function kindOf(facts: FatosDaOperacao, item: FatosDoItem): TipoDeOperacao {
+  return item.tipo ?? facts.tipo;
 }
 
-function byKind(id: string, kind: OperationKind, codes: readonly string[], title: string, source: string): LegalRule {
+function byKind(id: string, kind: TipoDeOperacao, codes: readonly string[], title: string, source: string): RegraLegal {
   return {
     id,
-    title,
-    source,
-    validity: SINCE,
-    apply: ({ facts, item }: LegalRuleContext): LegalOutcome =>
-      kindOf(facts, item) === kind ? { kind: 'restrict', codes } : { kind: 'none' },
+    titulo: title,
+    fonte: source,
+    vigencia: SINCE,
+    aplicar: ({ fatos: facts, item }: ContextoRegraLegal): ResultadoRegraLegal =>
+      kindOf(facts, item) === kind ? { tipo: 'restringir', codigos: codes } : { tipo: 'nenhum' },
   };
 }
 
-export const LEGAL_RULES: readonly LegalRule[] = [
+export const REGRAS_LEGAIS: readonly RegraLegal[] = [
   byKind(
     'bonificacao-no-documento',
     'bonificacao',
@@ -57,24 +64,24 @@ export const LEGAL_RULES: readonly LegalRule[] = [
   ),
   {
     id: 'produtor-rural-nao-contribuinte',
-    title: 'fornecimento de produtor rural não contribuinte',
-    source: `${LC}, art. 164`,
-    validity: SINCE,
-    note: 'Vale para a venda: nas outras naturezas (transferência, bonificação, devolução) a regra da natureza decide.',
-    apply: ({ facts, item }: LegalRuleContext): LegalOutcome =>
-      kindOf(facts, item) === 'venda' && facts.supplier?.actors?.includes(ACTOR_RURAL_PRODUCER_NON_CONTRIBUTOR)
-        ? { kind: 'restrict', codes: ['410014'] }
-        : { kind: 'none' },
+    titulo: 'fornecimento de produtor rural não contribuinte',
+    fonte: `${LC}, art. 164`,
+    vigencia: SINCE,
+    nota: 'Vale para a venda: nas outras naturezas (transferência, bonificação, devolução) a regra da natureza decide.',
+    aplicar: ({ fatos: facts, item }: ContextoRegraLegal): ResultadoRegraLegal =>
+      kindOf(facts, item) === 'venda' && facts.fornecedor?.atores?.includes(ATOR_PRODUTOR_RURAL_NAO_CONTRIBUINTE)
+        ? { tipo: 'restringir', codigos: ['410014'] }
+        : { tipo: 'nenhum' },
   },
   {
     id: 'devolucao-espelha-original',
-    title: 'devolução usa a classificação do item no documento original',
-    source: `${LC}, art. 12, § 7º, e art. 17`,
-    validity: SINCE,
-    note: 'A lei fixa a mesma base e a mesma alíquota da operação original; a regra lê isso como o mesmo cClassTrib.',
-    apply: ({ facts, item }: LegalRuleContext): LegalOutcome =>
-      kindOf(facts, item) === 'devolucao' && item.referenced
-        ? { kind: 'restrict', codes: [item.referenced.cClassTrib] }
-        : { kind: 'none' },
+    titulo: 'devolução usa a classificação do item no documento original',
+    fonte: `${LC}, art. 12, § 7º, e art. 17`,
+    vigencia: SINCE,
+    nota: 'A lei fixa a mesma base e a mesma alíquota da operação original; a regra lê isso como o mesmo cClassTrib.',
+    aplicar: ({ fatos: facts, item }: ContextoRegraLegal): ResultadoRegraLegal =>
+      kindOf(facts, item) === 'devolucao' && item.referenciado
+        ? { tipo: 'restringir', codigos: [item.referenciado.cClassTrib] }
+        : { tipo: 'nenhum' },
   },
 ];

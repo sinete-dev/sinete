@@ -2,43 +2,43 @@ import { describe, expect, test } from 'bun:test';
 import { AMBIENTES, UFS } from '@sinete/core';
 import endpointsData from '../src/data/endpoints.json' with { type: 'json' };
 import {
-  allEndpoints,
-  ambienteHosts,
-  DENO_CAPABILITIES,
-  ENDPOINT_DATA,
+  CAPACIDADES_DENO,
+  DADOS_DE_ENDPOINTS,
+  hostsDoAmbiente,
   mdfeEndpoint,
+  motivosNaoSuportado,
   nfceAutorizadorDaUf,
-  nfceConsultaUrls,
   nfceEndpoint,
   nfeAutorizadorDaUf,
   nfeContingenciaDaUf,
   nfeEndpoint,
   nfseEndpoint,
-  tlsProfileForHost,
-  tlsProfiles,
-  unsupportedReasons,
+  perfilTlsDoHost,
+  perfisTls,
+  todosOsEndpoints,
+  urlsConsultaNfce,
 } from '../src/index.ts';
 
 describe('dados de endpoints', () => {
   test('versão e fontes oficiais', () => {
-    expect(ENDPOINT_DATA.endpointsVersion).toMatch(/^\d{4}\.\d{2}\.\d{2}$/);
-    expect(ENDPOINT_DATA.tlsProfilesVersion).toMatch(/^\d{4}\.\d{2}\.\d{2}$/);
-    expect(endpointsData.nfe.producao.source).toStartWith('https://www.nfe.fazenda.gov.br/');
-    expect(endpointsData.nfe.homologacao.source).toStartWith('https://hom.nfe.fazenda.gov.br/');
-    expect(endpointsData.mdfe.source).toBe('https://dfe-portal.svrs.rs.gov.br/Mdfe/Servicos');
-    expect(endpointsData.nfse.source).toStartWith('https://www.gov.br/nfse/');
+    expect(DADOS_DE_ENDPOINTS.versaoDosEndpoints).toMatch(/^\d{4}\.\d{2}\.\d{2}$/);
+    expect(DADOS_DE_ENDPOINTS.versaoDosPerfisTls).toMatch(/^\d{4}\.\d{2}\.\d{2}$/);
+    expect(endpointsData.nfe.producao.fonte).toStartWith('https://www.nfe.fazenda.gov.br/');
+    expect(endpointsData.nfe.homologacao.fonte).toStartWith('https://hom.nfe.fazenda.gov.br/');
+    expect(endpointsData.mdfe.fonte).toBe('https://dfe-portal.svrs.rs.gov.br/Mdfe/Servicos');
+    expect(endpointsData.nfse.fonte).toStartWith('https://www.gov.br/nfse/');
   });
 
   test('toda URL é https e todo host de NF-e, MDF-e e NFS-e tem perfil TLS medido', () => {
     for (const amb of AMBIENTES) {
-      for (const e of allEndpoints(amb)) {
+      for (const e of todosOsEndpoints(amb)) {
         expect(e.url).toStartWith('https://');
         // A sondagem do ADR 0004 não cobriu os hosts só de NFC-e: sem perfil, o transporte não recusa por capacidade.
         if (e.documento !== 'nfce') expect(e.tls?.host).toBe(e.host);
         else if (e.tls !== undefined) expect(e.tls.host).toBe(e.host);
       }
     }
-    expect(tlsProfiles()).toHaveLength(35);
+    expect(perfisTls()).toHaveLength(35);
   });
 
   test('toda UF tem autorizador e contingência nos dois ambientes', () => {
@@ -64,7 +64,7 @@ describe('resolução de NF-e', () => {
       host: 'homologacao.nfe.fazenda.sp.gov.br',
       versao: '4.00',
     });
-    expect(sp.tls?.clientCert).toBe('renegotiation');
+    expect(sp.tls?.certificadoDoCliente).toBe('renegociacao');
   });
 
   test('contingência é por ambiente (PI: SVC-AN em produção, SVC-RS em homologação)', () => {
@@ -97,7 +97,7 @@ describe('resolução de NF-e', () => {
             code: 'servico_nao_oferecido',
             detalhes: expect.objectContaining({
               servico: 'NfeInutilizacao',
-              source: endpointsData.nfe.svcSemServicos.source,
+              fonte: endpointsData.nfe.svcSemServicos.fonte,
             }),
           }),
         );
@@ -158,7 +158,7 @@ describe('MDF-e e NFS-e', () => {
   });
 
   test('hosts de homologação não incluem produção', () => {
-    const hosts = ambienteHosts('homologacao');
+    const hosts = hostsDoAmbiente('homologacao');
     expect(hosts).toContain('hom1.nfe.fazenda.gov.br');
     expect(hosts).toContain('sefin.producaorestrita.nfse.gov.br');
     expect(hosts).not.toContain('nfe.fazenda.sp.gov.br');
@@ -168,8 +168,8 @@ describe('MDF-e e NFS-e', () => {
 
 describe('capacidade do Deno pelos perfis (ADR 0004, decisão 4)', () => {
   test('hosts recusados no Deno são exatamente os que renegociam ou só têm CBC/DHE', () => {
-    const blocked = tlsProfiles()
-      .filter((p) => unsupportedReasons(p, DENO_CAPABILITIES).length > 0)
+    const blocked = perfisTls()
+      .filter((p) => motivosNaoSuportado(p, CAPACIDADES_DENO).length > 0)
       .map((p) => p.host)
       .sort();
     expect(blocked).toEqual(
@@ -191,17 +191,17 @@ describe('capacidade do Deno pelos perfis (ADR 0004, decisão 4)', () => {
         'sefin.nfse.gov.br',
       ].sort(),
     );
-    expect(unsupportedReasons(undefined, DENO_CAPABILITIES)).toEqual([]);
-    expect(unsupportedReasons(tlsProfileForHost('nfe.sefaz.go.gov.br'), DENO_CAPABILITIES)[0]).toContain('DHE');
-    expect(tlsProfileForHost('NFE.SVRS.RS.GOV.BR')?.ecdheAead).toBe(true);
+    expect(motivosNaoSuportado(undefined, CAPACIDADES_DENO)).toEqual([]);
+    expect(motivosNaoSuportado(perfilTlsDoHost('nfe.sefaz.go.gov.br'), CAPACIDADES_DENO)[0]).toContain('DHE');
+    expect(perfilTlsDoHost('NFE.SVRS.RS.GOV.BR')?.ecdheAead).toBe(true);
   });
 });
 
 describe('resolução de NFC-e', () => {
   test('fontes oficiais e data da coleta', () => {
-    expect(endpointsData.nfce.source).toBe('https://dfe-portal.svrs.rs.gov.br/Nfce/Servicos');
-    expect(endpointsData.nfce.sources.MG).toStartWith('https://portalsped.fazenda.mg.gov.br/');
-    expect(endpointsData.nfce.retrievedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(endpointsData.nfce.fonte).toBe('https://dfe-portal.svrs.rs.gov.br/Nfce/Servicos');
+    expect(endpointsData.nfce.fontes.MG).toStartWith('https://portalsped.fazenda.mg.gov.br/');
+    expect(endpointsData.nfce.coletadoEm).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 
   test('toda UF tem autorizador de NFC-e com autorização, recibo, consulta, status, eventos e inutilização', () => {
@@ -230,14 +230,14 @@ describe('resolução de NFC-e', () => {
     expect(sp.host).not.toBe(nfeEndpoint({ ambiente: 'homologacao', uf: 'SP', servico: 'NFeAutorizacao' }).host);
     const mg = nfceEndpoint({ ambiente: 'producao', uf: 'MG', servico: 'RecepcaoEvento' });
     expect(mg).toMatchObject({ autorizador: 'MG', host: 'nfce.fazenda.mg.gov.br' });
-    expect(mg.source).toBe(endpointsData.nfce.sources.MG);
+    expect(mg.fonte).toBe(endpointsData.nfce.fontes.MG);
     expect(nfceAutorizadorDaUf('BA', 'producao')).toBe('SVRS');
     expect(nfceAutorizadorDaUf('CE', 'homologacao')).toBe('SVRS');
     expect(nfceEndpoint({ ambiente: 'producao', uf: 'SC', servico: 'NfeStatusServico' }).host).toBe(
       'nfce.svrs.rs.gov.br',
     );
-    expect(nfceEndpoint({ ambiente: 'producao', autorizador: 'RS', servico: 'NfeStatusServico' }).source).toBe(
-      endpointsData.nfce.source,
+    expect(nfceEndpoint({ ambiente: 'producao', autorizador: 'RS', servico: 'NfeStatusServico' }).fonte).toBe(
+      endpointsData.nfce.fonte,
     );
   });
 
@@ -253,16 +253,16 @@ describe('resolução de NFC-e', () => {
   });
 
   test('QR Code e consulta por chave só onde a tabela de web services os publica', () => {
-    expect(nfceConsultaUrls('MG', 'homologacao')).toEqual({
+    expect(urlsConsultaNfce('MG', 'homologacao')).toEqual({
       qrCode: 'https://portalsped.fazenda.mg.gov.br/portalnfce/sistema/qrcode.xhtml',
       consultaChave: 'https://hportalsped.fazenda.mg.gov.br/portalnfce',
-      source: endpointsData.nfce.consultasSource,
+      fonte: endpointsData.nfce.fonteDasConsultas,
     });
-    expect(nfceConsultaUrls('SP', 'producao')).toBeUndefined();
+    expect(urlsConsultaNfce('SP', 'producao')).toBeUndefined();
   });
 
   test('hosts da NFC-e entram na allowlist do ambiente', () => {
-    expect(ambienteHosts('homologacao')).toContain('homologacao.nfce.fazenda.sp.gov.br');
-    expect(ambienteHosts('producao')).toContain('nfce.svrs.rs.gov.br');
+    expect(hostsDoAmbiente('homologacao')).toContain('homologacao.nfce.fazenda.sp.gov.br');
+    expect(hostsDoAmbiente('producao')).toContain('nfce.svrs.rs.gov.br');
   });
 });

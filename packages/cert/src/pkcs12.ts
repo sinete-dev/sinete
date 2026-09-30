@@ -9,21 +9,21 @@
  */
 
 import forge from 'node-forge';
-import { CertError } from './errors.ts';
+import { ErroCertificado } from './errors.ts';
 
 /** Conteúdo de um PFX já decifrado: chaves em PKCS#8 DER e certificados em DER, na ordem do arquivo. */
-export interface Pkcs12Contents {
-  readonly privateKeys: readonly Uint8Array[];
-  readonly certificates: readonly Uint8Array[];
+export interface ConteudoPkcs12 {
+  readonly chavesPrivadas: readonly Uint8Array[];
+  readonly certificados: readonly Uint8Array[];
 }
 
 /**
- * Quem abre o PFX. Deve lançar `CertError` com `pfx_invalido`, `pfx_senha_incorreta` ou `pfx_nao_suportado`.
+ * Quem abre o PFX. Deve lançar `ErroCertificado` com `pfx_invalido`, `pfx_senha_incorreta` ou `pfx_nao_suportado`.
  * Nunca guarda a senha nem os bytes depois de devolver.
  */
-export interface Pkcs12Reader {
-  readonly name: string;
-  read(pfx: Uint8Array, password: string): Pkcs12Contents | Promise<Pkcs12Contents>;
+export interface LeitorPkcs12 {
+  readonly nome: string;
+  ler(pfx: Uint8Array, senha: string): ConteudoPkcs12 | Promise<ConteudoPkcs12>;
 }
 
 const toBinary = (bytes: Uint8Array): string => {
@@ -39,18 +39,18 @@ const fromBinary = (s: string): Uint8Array => {
   return out;
 };
 
-function classify(e: unknown): CertError {
+function classify(e: unknown): ErroCertificado {
   const msg = e instanceof Error ? e.message : String(e);
   if (/MAC could not be verified|wrong password|Failed to decrypt/i.test(msg)) {
-    return new CertError('pfx_senha_incorreta', 'senha do PFX incorreta', { cause: e });
+    return new ErroCertificado('pfx_senha_incorreta', 'senha do PFX incorreta', { cause: e });
   }
   if (/Unsupported/i.test(msg)) {
-    return new CertError('pfx_nao_suportado', `algoritmo do PFX não suportado pelo leitor: ${msg}`, { cause: e });
+    return new ErroCertificado('pfx_nao_suportado', `algoritmo do PFX não suportado pelo leitor: ${msg}`, { cause: e });
   }
-  return new CertError('pfx_invalido', `PFX ilegível: ${msg}`, { cause: e });
+  return new ErroCertificado('pfx_invalido', `PFX ilegível: ${msg}`, { cause: e });
 }
 
-function readOnce(pfx: Uint8Array, password: string): Pkcs12Contents {
+function readOnce(pfx: Uint8Array, password: string): ConteudoPkcs12 {
   const { asn1, pki, pkcs12 } = forge;
   let p12: forge.pkcs12.Pkcs12Pfx;
   try {
@@ -74,27 +74,27 @@ function readOnce(pfx: Uint8Array, password: string): Pkcs12Contents {
       }
     }
   }
-  return { privateKeys, certificates };
+  return { chavesPrivadas: privateKeys, certificados: certificates };
 }
 
 /**
  * Variante da senha para PFX gerados por ferramentas antigas (OpenSSL 1.0 e afins), que convertiam cada byte UTF-8
  * da senha num caractere BMP em vez de converter o caractere (ADR 0003, pendência). `ç` vira `Ã§`.
  */
-export function legacyPasswordVariant(password: string): string | undefined {
-  if (![...password].some((ch) => ch.charCodeAt(0) > 0x7f)) return undefined;
-  return toBinary(new TextEncoder().encode(password));
+export function senhaNoFormatoLegado(senha: string): string | undefined {
+  if (![...senha].some((ch) => ch.charCodeAt(0) > 0x7f)) return undefined;
+  return toBinary(new TextEncoder().encode(senha));
 }
 
 /** Leitor padrão, com o node-forge. Tenta a senha como veio e, se tiver acento, a variante legada. */
-export const forgePkcs12Reader: Pkcs12Reader = {
-  name: 'node-forge',
-  read(pfx: Uint8Array, password: string): Pkcs12Contents {
+export const leitorPkcs12Forge: LeitorPkcs12 = {
+  nome: 'node-forge',
+  ler(pfx: Uint8Array, password: string): ConteudoPkcs12 {
     try {
       return readOnce(pfx, password);
     } catch (e) {
-      const alt = legacyPasswordVariant(password);
-      if (!(e instanceof CertError) || e.code !== 'pfx_senha_incorreta' || alt === undefined) throw e;
+      const alt = senhaNoFormatoLegado(password);
+      if (!(e instanceof ErroCertificado) || e.code !== 'pfx_senha_incorreta' || alt === undefined) throw e;
       return readOnce(pfx, alt);
     }
   },

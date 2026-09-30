@@ -4,7 +4,7 @@
  */
 import { describe, expect, test } from 'bun:test';
 import { relogioFixo } from '@sinete/core';
-import { decodeXml, selecionarPl, serializeRoot, validateRoot } from '../src/index.ts';
+import { decodificarXml, selecionarPl, serializarRaiz, validarRaiz } from '../src/index.ts';
 import * as n0209 from '../src/nfse/1.01-20260209.ts';
 import * as n0727 from '../src/nfse/1.01-20260727.ts';
 
@@ -34,39 +34,42 @@ function infDps(over: { CNPJ?: string; serie?: string } = {}): n0727.TCInfDPS {
 
 describe('NFS-e Nacional 1.01', () => {
   test('o 20260209 registra a correção do TSSerieDPS e o 20260727 usa o XSD como está', () => {
-    expect(n0209.schema.patches).toHaveLength(1);
-    expect(n0209.schema.patches?.[0]).toMatchObject({
+    expect(n0209.schema.ajustes).toHaveLength(1);
+    expect(n0209.schema.ajustes?.[0]).toMatchObject({
       tipo: 'TSSerieDPS',
       de: '^0{0,4}\\d{1,5}$',
       para: '0{0,4}\\d{1,5}',
     });
-    expect(n0727.schema.patches).toBeUndefined();
+    expect(n0727.schema.ajustes).toBeUndefined();
     expect(n0209.schema.documento).toBe('nfse');
   });
 
   test('a DPS mínima serializa e valida nos dois pacotes, com série sem as âncoras literais', () => {
     for (const m of [n0209, n0727]) {
-      const xml = serializeRoot(m.DPSElement, { versao: '1.01', infDPS: infDps() });
+      const xml = serializarRaiz(m.DPSElement, { versao: '1.01', infDPS: infDps() });
       expect(xml.startsWith(`<DPS xmlns="${NS}" versao="1.01"><infDPS Id="DPS3550308211222333000181`)).toBe(true);
-      expect(validateRoot(m.DPSElement, xml)).toEqual([]);
+      expect(validarRaiz(m.DPSElement, xml)).toEqual([]);
     }
-    const literal = serializeRoot(n0209.DPSElement, { versao: '1.01', infDPS: infDps({ serie: '^1$' }) });
-    expect(validateRoot(n0209.DPSElement, literal).map((i) => i.caminho)).toContain('/DPS/infDPS/serie');
+    const literal = serializarRaiz(n0209.DPSElement, { versao: '1.01', infDPS: infDps({ serie: '^1$' }) });
+    expect(validarRaiz(n0209.DPSElement, literal).map((i) => i.caminho)).toContain('/DPS/infDPS/serie');
   });
 
   test('CNPJ alfanumérico só no 20260727', () => {
     const inf = infDps({ CNPJ: '12ABC34501DE35' });
-    const x27 = serializeRoot(n0727.DPSElement, { versao: '1.01', infDPS: inf });
-    expect(validateRoot(n0727.DPSElement, x27)).toEqual([]);
-    const x09 = serializeRoot(n0209.DPSElement, { versao: '1.01', infDPS: inf });
-    expect(validateRoot(n0209.DPSElement, x09).length).toBeGreaterThan(0);
+    const x27 = serializarRaiz(n0727.DPSElement, { versao: '1.01', infDPS: inf });
+    expect(validarRaiz(n0727.DPSElement, x27)).toEqual([]);
+    const x09 = serializarRaiz(n0209.DPSElement, { versao: '1.01', infDPS: inf });
+    expect(validarRaiz(n0209.DPSElement, x09).length).toBeGreaterThan(0);
   });
 
   test('a Signature fica como XML bruto em $any', () => {
     const sig = '<Signature xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo/></Signature>';
-    const xml = serializeRoot(n0727.DPSElement, { versao: '1.01', infDPS: infDps() }).replace('</DPS>', `${sig}</DPS>`);
-    expect(validateRoot(n0727.DPSElement, xml)).toEqual([]);
-    const { value, issues } = decodeXml(n0727.DPSElement, xml);
+    const xml = serializarRaiz(n0727.DPSElement, { versao: '1.01', infDPS: infDps() }).replace(
+      '</DPS>',
+      `${sig}</DPS>`,
+    );
+    expect(validarRaiz(n0727.DPSElement, xml)).toEqual([]);
+    const { valor: value, ocorrencias: issues } = decodificarXml(n0727.DPSElement, xml);
     expect(issues).toEqual([]);
     expect(value.$any?.[0]).toContain('<SignedInfo');
   });

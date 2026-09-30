@@ -12,12 +12,12 @@ import type { Ocorrencia } from '@sinete/core';
 import { ErroDeValidacao } from '@sinete/core';
 import type { AtributoXml, DocumentoXml, ElementoXml } from '@sinete/core/xml';
 import { elementosFilhos, lerXml } from '@sinete/core/xml';
-import type { ComplexType, ElementParticle, Particle, RootElement, SimpleType } from './desc.ts';
-import { isComplexType, isElementParticle, isWildcard, maxOccurs, minOccurs } from './desc.ts';
-import { compileXsdRegex } from './regex.ts';
+import type { ComplexType, ElementoRaiz, ElementParticle, Particle, SimpleType } from './desc.ts';
+import { ehComplexType, ehElementParticle, ehWildcard, maxOccurs, minOccurs } from './desc.ts';
+import { compilarRegexXsd } from './regex.ts';
 
 /** Códigos das ocorrências do validador. */
-export type ValidationCode =
+export type CodigoValidacao =
   | 'raiz_inesperada'
   | 'modelo_de_conteudo'
   | 'elemento_desconhecido'
@@ -39,8 +39,8 @@ export type ValidationCode =
   | 'unico'
   | 'id_duplicado';
 
-export interface SchemaIssue extends Ocorrencia {
-  readonly code: ValidationCode;
+export interface OcorrenciaSchema extends Ocorrencia {
+  readonly code: CodigoValidacao;
 }
 
 const XSI = 'http://www.w3.org/2001/XMLSchema-instance';
@@ -49,7 +49,7 @@ const reCache = new WeakMap<SimpleType, RegExp[][]>();
 function regexes(t: SimpleType): RegExp[][] {
   let r = reCache.get(t);
   if (!r) {
-    r = (t.p ?? []).map((step) => step.map((s) => compileXsdRegex(s)));
+    r = (t.p ?? []).map((step) => step.map((s) => compilarRegexXsd(s)));
     reCache.set(t, r);
   }
   return r;
@@ -129,7 +129,7 @@ function b64Octets(v: string): number {
 }
 
 /** Compara dois decimais lexicais válidos sem passar por `number` (sem perda de precisão). */
-export function compareDecimal(a: string, b: string): number {
+export function compararDecimal(a: string, b: string): number {
   const parse = (s: string): [number, string, string] => {
     let sign = 1;
     let x = s;
@@ -164,69 +164,69 @@ const NUMERIC = new Set([
   ...Object.keys(INTEGER_RANGES),
 ]);
 
-/** Confere um valor simples contra o tipo. Empilha as ocorrências em `out`. */
-export function checkSimple(t: SimpleType, raw: string, path: string, out: SchemaIssue[]): void {
-  const v = normalize(t, raw);
+/** Confere um valor simples contra o tipo. Empilha as ocorrências em `saida`. */
+export function conferirTipoSimples(t: SimpleType, bruto: string, caminho: string, saida: OcorrenciaSchema[]): void {
+  const v = normalize(t, bruto);
   const name = t.nm ? ` (${t.nm})` : '';
   const lex = Object.hasOwn(LEXICAL, t.b) ? LEXICAL[t.b] : undefined;
   if (lex && !lex.test(v)) {
-    out.push({ caminho: path, code: 'tipo_base', mensagem: `valor fora do espaço léxico de xs:${t.b}${name}` });
+    saida.push({ caminho: caminho, code: 'tipo_base', mensagem: `valor fora do espaço léxico de xs:${t.b}${name}` });
     return;
   }
   if ((t.b === 'date' || t.b === 'dateTime') && !validCalendarDay(v)) {
-    out.push({ caminho: path, code: 'tipo_base', mensagem: `dia inexistente no calendário em xs:${t.b}${name}` });
+    saida.push({ caminho: caminho, code: 'tipo_base', mensagem: `dia inexistente no calendário em xs:${t.b}${name}` });
     return;
   }
   if ((t.b === 'gYear' || t.b === 'gYearMonth') && /^-?0+(?:-|Z|\+|$)/.test(v)) {
-    out.push({ caminho: path, code: 'tipo_base', mensagem: `ano 0000 não existe em xs:${t.b}${name}` });
+    saida.push({ caminho: caminho, code: 'tipo_base', mensagem: `ano 0000 não existe em xs:${t.b}${name}` });
     return;
   }
   const range = Object.hasOwn(INTEGER_RANGES, t.b) ? INTEGER_RANGES[t.b] : undefined;
   if (range && (BigInt(v) < range[0] || BigInt(v) > range[1])) {
-    out.push({ caminho: path, code: 'tipo_base', mensagem: `valor fora do intervalo de xs:${t.b}${name}` });
+    saida.push({ caminho: caminho, code: 'tipo_base', mensagem: `valor fora do intervalo de xs:${t.b}${name}` });
   }
   if (t.e && !t.e.includes(v))
-    out.push({ caminho: path, code: 'enumeracao', mensagem: `valor fora da enumeração${name}` });
+    saida.push({ caminho: caminho, code: 'enumeracao', mensagem: `valor fora da enumeração${name}` });
   // Facetas de tamanho contam caracteres em string, mas octetos em base64Binary e hexBinary (XSD Part 2, 4.3.1).
   if (t.l !== undefined || t.mn !== undefined || t.mx !== undefined) {
     const len = t.b === 'base64Binary' ? b64Octets(v) : t.b === 'hexBinary' ? v.length / 2 : [...v].length;
     if (t.l !== undefined && len !== t.l)
-      out.push({ caminho: path, code: 'tamanho', mensagem: `tamanho deve ser ${t.l}${name}` });
+      saida.push({ caminho: caminho, code: 'tamanho', mensagem: `tamanho deve ser ${t.l}${name}` });
     if (t.mn !== undefined && len < t.mn) {
-      out.push({ caminho: path, code: 'tamanho_minimo', mensagem: `tamanho mínimo ${t.mn}${name}` });
+      saida.push({ caminho: caminho, code: 'tamanho_minimo', mensagem: `tamanho mínimo ${t.mn}${name}` });
     }
     if (t.mx !== undefined && len > t.mx) {
-      out.push({ caminho: path, code: 'tamanho_maximo', mensagem: `tamanho máximo ${t.mx}${name}` });
+      saida.push({ caminho: caminho, code: 'tamanho_maximo', mensagem: `tamanho máximo ${t.mx}${name}` });
     }
   }
   for (const step of regexes(t)) {
     if (!step.some((re) => re.test(v))) {
-      out.push({ caminho: path, code: 'padrao', mensagem: `valor não casa com o pattern${name}` });
+      saida.push({ caminho: caminho, code: 'padrao', mensagem: `valor não casa com o pattern${name}` });
       break;
     }
   }
-  if (CALENDAR.has(t.b)) checkCalendarRange(t, v, path, name, out);
+  if (CALENDAR.has(t.b)) checkCalendarRange(t, v, caminho, name, saida);
   if (NUMERIC.has(t.b)) {
     const [int = '', frac = ''] = v.replace(/^[+-]/, '').split('.');
     const fracDigits = frac.replace(/0+$/, '').length;
     const intDigits = int.replace(/^0+/, '').length;
     if (t.td !== undefined && intDigits + fracDigits > t.td) {
-      out.push({ caminho: path, code: 'digitos_totais', mensagem: `mais de ${t.td} dígitos${name}` });
+      saida.push({ caminho: caminho, code: 'digitos_totais', mensagem: `mais de ${t.td} dígitos${name}` });
     }
     if (t.fd !== undefined && fracDigits > t.fd) {
-      out.push({ caminho: path, code: 'digitos_fracionarios', mensagem: `mais de ${t.fd} casas decimais${name}` });
+      saida.push({ caminho: caminho, code: 'digitos_fracionarios', mensagem: `mais de ${t.fd} casas decimais${name}` });
     }
-    if (t.mi !== undefined && compareDecimal(v, t.mi) < 0) {
-      out.push({ caminho: path, code: 'valor_minimo', mensagem: `valor abaixo de ${t.mi}${name}` });
+    if (t.mi !== undefined && compararDecimal(v, t.mi) < 0) {
+      saida.push({ caminho: caminho, code: 'valor_minimo', mensagem: `valor abaixo de ${t.mi}${name}` });
     }
-    if (t.ma !== undefined && compareDecimal(v, t.ma) > 0) {
-      out.push({ caminho: path, code: 'valor_maximo', mensagem: `valor acima de ${t.ma}${name}` });
+    if (t.ma !== undefined && compararDecimal(v, t.ma) > 0) {
+      saida.push({ caminho: caminho, code: 'valor_maximo', mensagem: `valor acima de ${t.ma}${name}` });
     }
-    if (t.me !== undefined && compareDecimal(v, t.me) <= 0) {
-      out.push({ caminho: path, code: 'valor_minimo', mensagem: `valor deve ser maior que ${t.me}${name}` });
+    if (t.me !== undefined && compararDecimal(v, t.me) <= 0) {
+      saida.push({ caminho: caminho, code: 'valor_minimo', mensagem: `valor deve ser maior que ${t.me}${name}` });
     }
-    if (t.mxe !== undefined && compareDecimal(v, t.mxe) >= 0) {
-      out.push({ caminho: path, code: 'valor_maximo', mensagem: `valor deve ser menor que ${t.mxe}${name}` });
+    if (t.mxe !== undefined && compararDecimal(v, t.mxe) >= 0) {
+      saida.push({ caminho: caminho, code: 'valor_maximo', mensagem: `valor deve ser menor que ${t.mxe}${name}` });
     }
   }
 }
@@ -234,7 +234,7 @@ export function checkSimple(t: SimpleType, raw: string, path: string, out: Schem
 const CALENDAR = new Set(['date', 'dateTime', 'time', 'gYearMonth', 'gYear']);
 
 /** Instante como (segundos inteiros, fração), com o fuso em minutos ou `null` quando o valor não tem fuso. */
-type Instant = { readonly s: bigint; readonly f: string; readonly tz: number | null };
+type Instante = { readonly s: bigint; readonly f: string; readonly tz: number | null };
 
 function daysFromCivil(y: bigint, m: number, d: number): bigint {
   const yy = m <= 2 ? y - 1n : y;
@@ -246,7 +246,7 @@ function daysFromCivil(y: bigint, m: number, d: number): bigint {
 }
 
 /** Ponto inicial do valor na linha do tempo (gYearMonth é o dia 1, time é num dia fixo), como no XSD Part 2, D.3. */
-function instantOf(b: string, v: string): Instant | null {
+function instantOf(b: string, v: string): Instante | null {
   const tzRe = '(Z|[+-]\\d{2}:\\d{2})?$';
   const time = /^(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?/;
   let y = 1972n;
@@ -290,7 +290,7 @@ function instantOf(b: string, v: string): Instant | null {
   return { s, f, tz };
 }
 
-function cmpInstant(a: Instant, b: Instant, shiftB = 0n): number {
+function compararInstantes(a: Instante, b: Instante, shiftB = 0n): number {
   const bs = b.s + shiftB;
   if (a.s !== bs) return a.s < bs ? -1 : 1;
   const n = Math.max(a.f.length, b.f.length);
@@ -303,23 +303,23 @@ function cmpInstant(a: Instant, b: Instant, shiftB = 0n): number {
  * Ordem parcial do XSD: com fuso nos dois (ou em nenhum) a comparação é direta; com fuso em só um, o outro vale por
  * qualquer fuso de -14:00 a +14:00, e se o resultado muda nesse intervalo a comparação é indeterminada (`NaN`).
  */
-export function compareCalendar(b: string, x: string, y: string): number {
+export function compararCalendario(b: string, x: string, y: string): number {
   const a = instantOf(b, x);
   const c = instantOf(b, y);
   if (!a || !c) return Number.NaN;
-  if ((a.tz === null) === (c.tz === null)) return cmpInstant(a, c);
+  if ((a.tz === null) === (c.tz === null)) return compararInstantes(a, c);
   const w = 14n * 3600n;
   const sign = c.tz === null ? 1n : -1n;
-  const lo = cmpInstant(a, c, -w * sign);
-  const hi = cmpInstant(a, c, w * sign);
+  const lo = compararInstantes(a, c, -w * sign);
+  const hi = compararInstantes(a, c, w * sign);
   return lo === hi ? lo : Number.NaN;
 }
 
-function checkCalendarRange(t: SimpleType, v: string, path: string, name: string, out: SchemaIssue[]): void {
+function checkCalendarRange(t: SimpleType, v: string, path: string, name: string, out: OcorrenciaSchema[]): void {
   // Comparação indeterminada (NaN) reprova a faceta: o valor não está provadamente dentro do intervalo.
   const ok = (bound: string | undefined, pass: (c: number) => boolean): boolean => {
     if (bound === undefined) return true;
-    const c = compareCalendar(t.b, v, bound);
+    const c = compararCalendario(t.b, v, bound);
     return !Number.isNaN(c) && pass(c);
   };
   if (!ok(t.mi, (c) => c >= 0))
@@ -335,8 +335,8 @@ function checkCalendarRange(t: SimpleType, v: string, path: string, name: string
 
 function elementMatches(p: Particle, k: ElementoXml | undefined, ownerNs: string): boolean {
   if (!k) return false;
-  if (isWildcard(p)) return true;
-  return isElementParticle(p) && k.local === p.e && k.ns === (p.ns ?? ownerNs);
+  if (ehWildcard(p)) return true;
+  return ehElementParticle(p) && k.local === p.e && k.ns === (p.ns ?? ownerNs);
 }
 
 /** Posições finais alcançáveis casando a partícula `p` a partir de `pos` (conjuntos de posições, sem backtracking). */
@@ -350,7 +350,7 @@ function match(p: Particle, kids: readonly ElementoXml[], pos: number, ownerNs: 
   for (let rep = 1; rep <= max && cur.size > 0; rep++) {
     const next = new Set<number>();
     for (const s of cur) {
-      if (isWildcard(p) || isElementParticle(p)) {
+      if (ehWildcard(p) || ehElementParticle(p)) {
         if (elementMatches(p, kids[s], ownerNs)) next.add(s + 1);
       } else if (p.g === 's') {
         let ps = new Set([s]);
@@ -377,7 +377,7 @@ function match(p: Particle, kids: readonly ElementoXml[], pos: number, ownerNs: 
 }
 
 interface Ctx {
-  readonly out: SchemaIssue[];
+  readonly out: OcorrenciaSchema[];
   readonly ids: Map<string, string>;
 }
 
@@ -388,8 +388,8 @@ function declsOf(ct: ComplexType): Map<string, ElementParticle> {
   if (!m) {
     const d = new Map<string, ElementParticle>();
     const collect = (p: Particle): void => {
-      if (isElementParticle(p)) d.set(p.e, p);
-      else if (!isWildcard(p)) for (const i of p.i) collect(i);
+      if (ehElementParticle(p)) d.set(p.e, p);
+      else if (!ehWildcard(p)) for (const i of p.i) collect(i);
     };
     if (ct.c) collect(ct.c);
     m = d;
@@ -399,8 +399,8 @@ function declsOf(ct: ComplexType): Map<string, ElementParticle> {
 }
 
 function hasWildcard(p: Particle | undefined): boolean {
-  if (p === undefined || isElementParticle(p)) return false;
-  return isWildcard(p) || p.i.some(hasWildcard);
+  if (p === undefined || ehElementParticle(p)) return false;
+  return ehWildcard(p) || p.i.some(hasWildcard);
 }
 
 function textOnly(el: ElementoXml): string {
@@ -422,7 +422,7 @@ function checkAttributes(ct: ComplexType, el: ElementoXml, path: string, ctx: Ct
     if (a.f !== undefined && nv !== normalize(a.t, a.f)) {
       ctx.out.push({ caminho: ap, code: 'atributo_fixo', mensagem: `atributo deve valer ${a.f}` });
     }
-    checkSimple(a.t, v.valor, ap, ctx.out);
+    conferirTipoSimples(a.t, v.valor, ap, ctx.out);
     if (a.t.b === 'ID') {
       const prev = ctx.ids.get(nv);
       if (prev !== undefined)
@@ -458,14 +458,14 @@ function checkUnique(
   ctx: Ctx,
 ): void {
   const kids = elementosFilhos(el);
-  const kidDecls = isComplexType(t) ? declsOf(t) : undefined;
+  const kidDecls = ehComplexType(t) ? declsOf(t) : undefined;
   for (const attr of attrs) {
     const seen = new Set<string>();
     for (const k of kids) {
       const a = k.atributos.find((x) => x.local === attr && x.ns === '');
       if (!a) continue;
       const kt = kidDecls?.get(k.local)?.t;
-      const at = kt && isComplexType(kt) ? kt.a?.find((d) => d.a === attr)?.t : undefined;
+      const at = kt && ehComplexType(kt) ? kt.a?.find((d) => d.a === attr)?.t : undefined;
       const value = at ? normalize(at, a.valor) : a.valor;
       if (seen.has(value)) {
         ctx.out.push({
@@ -479,7 +479,7 @@ function checkUnique(
   }
 }
 
-function validateElement(ct: ComplexType, el: ElementoXml, path: string, ctx: Ctx): void {
+function validarElemento(ct: ComplexType, el: ElementoXml, path: string, ctx: Ctx): void {
   checkAttributes(ct, el, path, ctx);
   if (ct.tx) {
     for (const c of el.filhos) {
@@ -488,7 +488,7 @@ function validateElement(ct: ComplexType, el: ElementoXml, path: string, ctx: Ct
         break;
       }
     }
-    checkSimple(ct.tx, textOnly(el), path, ctx.out);
+    conferirTipoSimples(ct.tx, textOnly(el), path, ctx.out);
     return;
   }
   const kids = elementosFilhos(el);
@@ -523,39 +523,39 @@ function validateElement(ct: ComplexType, el: ElementoXml, path: string, ctx: Ct
     index.set(k.local, n);
     const kp = (counts.get(k.local) ?? 0) > 1 ? `${path}/${k.local}[${n}]` : `${path}/${k.local}`;
     if (decl.u) checkUnique(decl.u, k, decl.t, kp, ctx);
-    if (isComplexType(t)) validateElement(t, k, kp, ctx);
+    if (ehComplexType(t)) validarElemento(t, k, kp, ctx);
     else {
       checkNoAttributes(k, kp, ctx);
       if (elementosFilhos(k).length > 0) {
         ctx.out.push({ caminho: kp, code: 'elemento_em_tipo_simples', mensagem: 'elemento em tipo simples' });
       }
-      checkSimple(t, textOnly(k), kp, ctx.out);
+      conferirTipoSimples(t, textOnly(k), kp, ctx.out);
     }
   }
 }
 
 /** Valida o elemento `el` como o tipo `ct`. Lista vazia = válido. */
-export function validate(ct: ComplexType, el: ElementoXml): SchemaIssue[] {
+export function validar(ct: ComplexType, el: ElementoXml): OcorrenciaSchema[] {
   const ctx: Ctx = { out: [], ids: new Map() };
-  validateElement(ct, el, `/${el.local}`, ctx);
+  validarElemento(ct, el, `/${el.local}`, ctx);
   return ctx.out;
 }
 
 /** Valida um documento (string ou já parseado) pela raiz esperada. Lança `ErroXml` se o XML for malformado. */
-export function validateRoot<T>(root: RootElement<T>, xml: string | DocumentoXml): SchemaIssue[] {
+export function validarRaiz<T>(raiz: ElementoRaiz<T>, xml: string | DocumentoXml): OcorrenciaSchema[] {
   const doc = typeof xml === 'string' ? lerXml(xml) : xml;
-  if (doc.raiz.local !== root.name || doc.raiz.ns !== root.ns) {
+  if (doc.raiz.local !== raiz.nome || doc.raiz.ns !== raiz.ns) {
     return [
-      { caminho: `/${doc.raiz.local}`, code: 'raiz_inesperada', mensagem: `raiz esperada {${root.ns}}${root.name}` },
+      { caminho: `/${doc.raiz.local}`, code: 'raiz_inesperada', mensagem: `raiz esperada {${raiz.ns}}${raiz.nome}` },
     ];
   }
-  return validate(root.type as ComplexType, doc.raiz);
+  return validar(raiz.tipo as ComplexType, doc.raiz);
 }
 
-/** Como `validateRoot`, mas lança `ErroDeValidacao` (`validacao_falhou`) com todas as ocorrências. */
-export function assertValid<T>(root: RootElement<T>, xml: string | DocumentoXml): void {
-  const issues = validateRoot(root, xml);
+/** Como `validarRaiz`, mas lança `ErroDeValidacao` (`validacao_falhou`) com todas as ocorrências. */
+export function exigirValido<T>(raiz: ElementoRaiz<T>, xml: string | DocumentoXml): void {
+  const issues = validarRaiz(raiz, xml);
   if (issues.length > 0) {
-    throw new ErroDeValidacao(`${root.name}: ${issues.length} ocorrência(s) de schema`, issues);
+    throw new ErroDeValidacao(`${raiz.nome}: ${issues.length} ocorrência(s) de schema`, issues);
   }
 }

@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'bun:test';
 import { ErroDeTempoEsgotado } from '@sinete/core';
-import { classifyTransportFailure, http403Error } from '../src/index.ts';
+import { classificarFalhaDeTransporte, erroHttp403 } from '../src/index.ts';
 
 const host = 'hom.exemplo.invalid';
-const c = (err: unknown) => classifyTransportFailure(err, { host });
+const c = (err: unknown) => classificarFalhaDeTransporte(err, { host });
 const e = (code: string | undefined, message: string, cause?: unknown) =>
   Object.assign(new Error(message), code ? { code } : {}, cause ? { cause } : {});
 
@@ -45,7 +45,7 @@ describe('mapa de falhas observadas (ADR 0004, seção 4)', () => {
   ])('%p', (err, code, alert) => {
     const r = c(err);
     expect(r.code).toBe(code);
-    expect(r.detalhes).toMatchObject({ host, alert });
+    expect(r.detalhes).toMatchObject({ host, alerta: alert });
     expect(r.cause).toBe(err);
   });
 
@@ -90,7 +90,7 @@ describe('mapa de falhas observadas (ADR 0004, seção 4)', () => {
   });
 
   test('403', () => {
-    expect(http403Error(host)).toMatchObject({
+    expect(erroHttp403(host)).toMatchObject({
       code: 'certificado_ausente_ou_recusado',
       detalhes: { host, status: 403 },
     });

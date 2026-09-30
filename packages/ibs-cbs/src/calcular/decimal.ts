@@ -215,11 +215,11 @@ export class Decimal {
 }
 
 /** Atalho para `Decimal.parse`. */
-export function dec(text: string): Decimal {
-  return Decimal.parse(text);
+export function dec(texto: string): Decimal {
+  return Decimal.parse(texto);
 }
 
 /** Soma de uma lista (zero para lista vazia). */
-export function sum(values: readonly Decimal[]): Decimal {
-  return values.reduce((a, b) => a.add(b), Decimal.ZERO);
+export function sum(valores: readonly Decimal[]): Decimal {
+  return valores.reduce((a, b) => a.add(b), Decimal.ZERO);
 }

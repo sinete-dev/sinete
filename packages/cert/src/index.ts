@@ -2,38 +2,38 @@
  * `@sinete/cert`: certificado ICP-Brasil do titular.
  *
  * Leitura de PFX em JS (inclusive o legado RC2-40 + 3DES), escolha do certificado do titular, trava de validade,
- * identidade ICP-Brasil (CNPJ, CPF, responsável), cadeia até as raízes ICP-Brasil do bundle versionado, `KeyStore` e
+ * identidade ICP-Brasil (CNPJ, CPF, responsável), cadeia até as raízes ICP-Brasil do bundle versionado, `Certificado` e
  * assinatura A1 via WebCrypto. Pacote puro: roda igual em Node, Bun, Deno e no browser.
  */
 
-export type { IcpBundleCertificate, IcpBundleInfo } from './bundle.ts';
-export { ICP_BRASIL_BUNDLE, icpBrasilCertificates, icpBrasilTlsPem } from './bundle.ts';
-export type { BuildChainOptions, ChainResult, ChainStatus } from './chain.ts';
-export { buildChain, mayIssue, verifyIssuedBy } from './chain.ts';
-export type { CertErrorCode } from './errors.ts';
-export { CertError } from './errors.ts';
-export type { IcpIdentity, IcpPessoa } from './icp.ts';
-export { ICP_OIDS, icpIdentity } from './icp.ts';
-export type { A1KeyStore, KeyStore, OpenPfxOptions, TlsPemMaterial, Validity } from './keystore.ts';
-export { openPfx, validityAt } from './keystore.ts';
-export { base64ToBytes, bytesToBase64, derToPem, pemToDers } from './pem.ts';
-export type { Pkcs12Contents, Pkcs12Reader } from './pkcs12.ts';
-export { forgePkcs12Reader, legacyPasswordVariant } from './pkcs12.ts';
+export type { CertificadoDoBundleIcp, DescricaoBundleIcp } from './bundle.ts';
+export { certificadosIcpBrasil, ICP_BRASIL_BUNDLE, pemTlsIcpBrasil } from './bundle.ts';
+export type { MontarCadeiaOpcoes, ResultadoCadeia, SituacaoCadeia } from './chain.ts';
+export { conferirEmitidoPor, montarCadeia, podeEmitir } from './chain.ts';
+export type { CodigoErroCertificado } from './errors.ts';
+export { ErroCertificado } from './errors.ts';
+export type { IcpPessoa, IdentidadeIcp } from './icp.ts';
+export { ICP_OIDS, identidadeIcp } from './icp.ts';
+export type { AbrirPfxOpcoes, Certificado, CertificadoA1, MaterialTlsPem, Validade } from './keystore.ts';
+export { abrirPfx, validadeEm } from './keystore.ts';
+export { codificarBase64, decodificarBase64, dersDoPem, pemDoDer } from './pem.ts';
+export type { ConteudoPkcs12, LeitorPkcs12 } from './pkcs12.ts';
+export { leitorPkcs12Forge, senhaNoFormatoLegado } from './pkcs12.ts';
 export {
-  createA1Signer,
-  digestInfoOf,
-  digestSignerAsDataSigner,
-  encodeDigestInfo,
-  signBytes,
-  verifyBytes,
+  assinarBytes,
+  codificarDigestInfo,
+  comoAssinadorDeDados,
+  conferirBytes,
+  criarAssinadorA1,
+  digestInfoDe,
 } from './signer.ts';
 export type {
-  CertificateInfo,
-  DistinguishedName,
-  DnAttribute,
+  AtributoDoNome,
+  CertificadoX509,
+  ChavePublicaRsa,
+  NomeDistinto,
   OtherName,
-  OtherPublicKey,
-  RsaPublicKey,
+  OutraChavePublica,
   SubjectAltNames,
 } from './x509.ts';
-export { certificateToPem, fingerprintSha256, namesMatch, parseCertificate } from './x509.ts';
+export { impressaoDigitalSha256, lerCertificado, nomesIguais, pemDoCertificado } from './x509.ts';

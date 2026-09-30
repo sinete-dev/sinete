@@ -2,20 +2,20 @@
  * `@sinete/transport/signer`: cliente do protocolo v1 do helper `sinete-signer` (ADR 0005,
  * `docs/signer-contract/PROTOCOL.md`), que termina o mTLS com uma chave que não está no processo JS.
  *
- * Esta entrada é pura: fala o protocolo sobre qualquer `SignerChannel` (o stdio de um processo filho, um socket Unix,
- * um WebSocket até o navegador). A entrada `node` acrescenta `startSigner`, que sobe o binário, e `connectSigner`, que
+ * Esta entrada é pura: fala o protocolo sobre qualquer `CanalSigner` (o stdio de um processo filho, um socket Unix,
+ * um WebSocket até o navegador). A entrada `node` acrescenta `iniciarSigner`, que sobe o binário, e `conectarSigner`, que
  * conecta no socket Unix do helper em contêiner.
  *
  * Identidades:
- * - `openRemote`: a chave fica com quem chamou, num `TlsSigner` (A1 em `CryptoKey` não exportável, A3 em nuvem de
+ * - `abrirRemoto`: a chave fica com quem chamou, num `AssinadorTls` (A1 em `CryptoKey` não exportável, A3 em nuvem de
  *   PSC, OpenBao Transit). O helper pede `sign` no meio do handshake; este cliente aplica a política do dono da chave
- *   (host, propósito, esquema e, no modo `message`, o transcript) antes de chamar o `TlsSigner`.
- * - `openPkcs11`: token local pelo helper `-p11`. O `documentSigner` assina XML dos DF-e pelo `dfe.sign`, que o
+ *   (host, propósito, esquema e, no modo `message`, o transcript) antes de chamar o `AssinadorTls`.
+ * - `abrirPkcs11`: token local pelo helper `-p11`. O `assinadorDeDocumentos` assina XML dos DF-e pelo `dfe.sign`, que o
  *   helper valida antes de usar a chave do token.
  */
 
-import type { IcpIdentity } from '@sinete/cert';
-import { base64ToBytes, bytesToBase64, encodeDigestInfo, icpIdentity, parseCertificate } from '@sinete/cert';
+import type { IdentidadeIcp } from '@sinete/cert';
+import { codificarBase64, codificarDigestInfo, decodificarBase64, identidadeIcp, lerCertificado } from '@sinete/cert';
 import type {
   Assinador,
   AssinadorDeDados,
@@ -25,32 +25,32 @@ import type {
   Logger,
 } from '@sinete/core';
 import { ErroDeConfiguracao, ErroDeTempoEsgotado, loggerSilencioso } from '@sinete/core';
-import type { HelperFailureData } from './classify.ts';
-import { classifyHelperFailure } from './classify.ts';
-import { PolicyError, SignerError, TransportError } from './errors.ts';
+import type { DadosDaFalhaDoHelper } from './classify.ts';
+import { classificarFalhaDoHelper } from './classify.ts';
+import { ErroPolitica, ErroSigner, ErroTransporte } from './errors.ts';
 import type {
-  ExternalTlsHelper,
-  HelperHttpRequest,
-  TlsIdentity,
-  TlsSignContext,
-  TlsSigner,
-  TransportResponse,
+  AssinadorTls,
+  ContextoAssinaturaTls,
+  HelperTlsExterno,
+  IdentidadeTls,
+  PedidoHttpDoHelper,
+  RespostaTransporte,
 } from './types.ts';
 
 /** Versão do protocolo falada por este cliente (`docs/signer-contract/PROTOCOL_VERSION`). */
-export const SIGNER_PROTOCOL_VERSION = 1;
+export const VERSAO_PROTOCOLO_SIGNER = 1;
 
 /** Um canal de linhas até o helper. Cada linha é um frame JSON, sem o `\n`. */
-export interface SignerChannel {
-  send(line: string): void;
-  onLine(listener: (line: string) => void): void;
+export interface CanalSigner {
+  enviar(linha: string): void;
+  aoReceberLinha(ouvinte: (linha: string) => void): void;
   /** Chamado uma vez quando o canal fecha (processo saiu, socket fechou). */
-  onClose(listener: (reason: string) => void): void;
-  close(): Promise<void>;
+  aoFechar(ouvinte: (motivo: string) => void): void;
+  fechar(): Promise<void>;
 }
 
 /** O que o helper disse no `hello`. */
-export interface SignerHello {
+export interface HelloDoSigner {
   readonly protocol: number;
   readonly helper: string;
   readonly lab: boolean;
@@ -62,81 +62,81 @@ export interface SignerHello {
   readonly dataVersion: string | undefined;
 }
 
-export interface SignerClientOptions {
+export interface ClienteSignerOpcoes {
   /** Nome e versão do cliente, só para o log do helper. */
-  readonly client?: string;
+  readonly cliente?: string;
   /** Prazo dos pedidos de controle (`hello`, `identity.open`, `stats`). Padrão: 60 000 ms (login em token é lento). */
-  readonly controlTimeoutMs?: number;
+  readonly prazoDeControleMs?: number;
   readonly logger?: Logger;
 }
 
-export interface OpenRemoteOptions {
+export interface AbrirRemotoOpcoes {
   /** Nome da identidade no helper. Padrão: `remote-<n>`. */
   readonly id?: string;
-  readonly signer: TlsSigner;
+  readonly assinador: AssinadorTls;
   /**
    * Hosts em que esta chave aceita autenticar: a política do dono da chave, independente da guarda do helper.
-   * Obrigatório; `ambienteHosts('homologacao')` é o ponto de partida.
+   * Obrigatório; `hostsDoAmbiente('homologacao')` é o ponto de partida.
    */
-  readonly allowedHosts: Iterable<string>;
-  /** Prazo para o `TlsSigner` responder, em ms. Padrão: 30 000; máximo 300 000. */
-  readonly signTimeoutMs?: number;
+  readonly hostsPermitidos: Iterable<string>;
+  /** Prazo para o `AssinadorTls` responder, em ms. Padrão: 30 000; máximo 300 000. */
+  readonly prazoDaAssinaturaMs?: number;
   /** PEMs de AC somados à confiança do servidor só desta identidade (AC de teste, proxy corporativo). */
-  readonly additionalCa?: readonly string[];
+  readonly acsAdicionais?: readonly string[];
 }
 
-export interface OpenPkcs11Options {
+export interface AbrirPkcs11Opcoes {
   readonly id?: string;
   /** Caminho absoluto do módulo PKCS#11 do fabricante. */
-  readonly module: string;
+  readonly modulo: string;
   /** Rótulo do token. */
   readonly token: string;
   /** Número de série do token, para desempatar tokens com o mesmo rótulo. */
-  readonly serial?: string;
+  readonly numeroDeSerie?: string;
   /** Rótulo do certificado no token; a chave é a de mesmo `CKA_ID`. */
-  readonly label?: string;
+  readonly rotulo?: string;
   /** `CKA_ID` do par em hexadecimal, no lugar do rótulo. */
-  readonly keyId?: string;
+  readonly idDaChave?: string;
   /** O PIN é pedido na hora de abrir e atravessa só o canal, nunca argv ou env. */
   readonly pin: () => Promise<string>;
   /** Intermediárias em DER que completam a cadeia (o token costuma guardar só o titular). */
-  readonly chain?: readonly Uint8Array[];
-  readonly additionalCa?: readonly string[];
+  readonly cadeia?: readonly Uint8Array[];
+  readonly acsAdicionais?: readonly string[];
 }
 
 /** Uma identidade aberta no helper. */
-export interface SignerIdentity {
+export interface IdentidadeSigner {
   readonly id: string;
   readonly backend: 'remote' | 'pkcs11';
-  /** Para o `createTransport` e para o `@sinete/emissor` (`CertificadoAberto.identidade`). */
-  readonly tlsIdentity: Extract<TlsIdentity, { kind: 'helper' }>;
-  readonly chain: readonly Uint8Array[];
+  /** Para o `criarTransporte` e para o `@sinete/emissor` (`CertificadoAberto.identidade`). */
+  readonly identidadeTls: Extract<IdentidadeTls, { tipo: 'helper' }>;
+  readonly cadeia: readonly Uint8Array[];
   readonly subject: string;
   readonly notAfter: string;
   readonly cnpj: string | undefined;
   readonly cpf: string | undefined;
   /**
    * `AssinadorDeDados` do `@sinete/core` que assina XML dos DF-e com a chave do token, pelo `dfe.sign` (só `pkcs11`). Serve
-   * de `CertificadoAberto.signer` no `@sinete/emissor`. No `remote` é `undefined`: quem tem a chave assina.
+   * de `CertificadoAberto.assinador` no `@sinete/emissor`. No `remote` é `undefined`: quem tem a chave assina.
    */
-  readonly documentSigner: AssinadorDeDados | undefined;
-  resetPool(options?: { readonly dropSessions?: boolean }): Promise<void>;
-  close(): Promise<void>;
+  readonly assinadorDeDocumentos: AssinadorDeDados | undefined;
+  reiniciarPool(opcoes?: { readonly descartarSessoes?: boolean }): Promise<void>;
+  fechar(): Promise<void>;
 }
 
-/** A conexão com o helper. É também o `ExternalTlsHelper` que as identidades usam. */
-export interface SignerConnection extends ExternalTlsHelper {
-  readonly hello: SignerHello;
-  openRemote(options: OpenRemoteOptions): Promise<SignerIdentity>;
-  openPkcs11(options: OpenPkcs11Options): Promise<SignerIdentity>;
+/** A conexão com o helper. É também o `HelperTlsExterno` que as identidades usam. */
+export interface ConexaoSigner extends HelperTlsExterno {
+  readonly hello: HelloDoSigner;
+  abrirRemoto(opcoes: AbrirRemotoOpcoes): Promise<IdentidadeSigner>;
+  abrirPkcs11(opcoes: AbrirPkcs11Opcoes): Promise<IdentidadeSigner>;
   /** Assinaturas feitas por identidade (handshakes e `dfe.sign`). */
-  stats(): Promise<Readonly<Record<string, { readonly signatures: number; readonly backend: string }>>>;
+  estatisticas(): Promise<Readonly<Record<string, { readonly signatures: number; readonly backend: string }>>>;
 }
 
 interface WireError {
   readonly code: string;
   readonly message: string;
-  readonly data?: HelperFailureData;
+  readonly data?: DadosDaFalhaDoHelper;
 }
 
 interface Frame {
@@ -158,14 +158,14 @@ class RemoteError extends Error {
 }
 
 interface RemoteKey {
-  readonly signer: TlsSigner;
+  readonly signer: AssinadorTls;
   readonly allowed: ReadonlySet<string>;
 }
 
 const DEFAULT_CONTROL_TIMEOUT_MS = 60_000;
 
 function b64(bytes: Uint8Array): string {
-  return bytesToBase64(bytes);
+  return codificarBase64(bytes);
 }
 
 /**
@@ -216,20 +216,20 @@ function dnsMatches(pattern: string, host: string): boolean {
  * Lê do transcript TLS 1.2 o SNI do ClientHello e o primeiro certificado da mensagem Certificate do servidor. O
  * transcript é a sequência de mensagens de handshake (tipo, 3 bytes de tamanho, corpo), RFC 5246, seção 7.4.
  */
-export function parseTlsTranscript(transcript: Uint8Array): {
+export function lerTranscricaoTls(transcricao: Uint8Array): {
   readonly sni: string | undefined;
-  readonly serverCertificate: Uint8Array | undefined;
+  readonly certificadoDoServidor: Uint8Array | undefined;
 } {
   const u24 = (o: number): number =>
-    ((transcript[o] ?? 0) << 16) | ((transcript[o + 1] ?? 0) << 8) | (transcript[o + 2] ?? 0);
+    ((transcricao[o] ?? 0) << 16) | ((transcricao[o + 1] ?? 0) << 8) | (transcricao[o + 2] ?? 0);
   const u16 = (b: Uint8Array, o: number): number => ((b[o] ?? 0) << 8) | (b[o + 1] ?? 0);
   let sni: string | undefined;
   let serverCertificate: Uint8Array | undefined;
   let off = 0;
-  while (off + 4 <= transcript.length) {
-    const type = transcript[off];
+  while (off + 4 <= transcricao.length) {
+    const type = transcricao[off];
     const len = u24(off + 1);
-    const body = transcript.subarray(off + 4, off + 4 + len);
+    const body = transcricao.subarray(off + 4, off + 4 + len);
     if (type === 1 && sni === undefined) {
       // ClientHello: versão (2) + random (32) + session_id + cipher_suites + compression + extensões.
       let o = 34;
@@ -254,41 +254,41 @@ export function parseTlsTranscript(transcript: Uint8Array): {
     }
     off += 4 + len;
   }
-  return { sni, serverCertificate };
+  return { sni, certificadoDoServidor: serverCertificate };
 }
 
 /** Converte o erro do helper no erro tipado do sinete. */
-function toSineteError(wire: WireError, host: string | undefined, timeoutMs: number | undefined): Error {
+function paraErroSinete(wire: WireError, host: string | undefined, timeoutMs: number | undefined): Error {
   const where = host ?? 'sinete-signer';
   switch (wire.code) {
     case 'guard':
-      return new PolicyError(
+      return new ErroPolitica(
         `recusado pela guarda do helper: ${wire.message}`,
         host === undefined ? undefined : { host },
       );
     case 'transport':
       if (wire.data?.timeout) {
         return new ErroDeTempoEsgotado(`${where}: sem resposta em ${timeoutMs ?? '?'} ms (helper)`, timeoutMs ?? 0, {
-          detalhes: { host: where, helper: wire.message },
+          detalhes: { host: where, mensagemDoHelper: wire.message },
         });
       }
-      return classifyHelperFailure(wire.data ?? {}, wire.message, where);
+      return classificarFalhaDoHelper(wire.data ?? {}, wire.message, where);
     case 'sign_refused':
-      return new SignerError('assinatura_tls_recusada', `${where}: assinatura do handshake recusada: ${wire.message}`, {
+      return new ErroSigner('assinatura_tls_recusada', `${where}: assinatura do handshake recusada: ${wire.message}`, {
         detalhes: { host: where },
       });
     case 'sign_timeout':
-      return new SignerError('assinatura_tls_expirou', `${where}: quem assina não respondeu: ${wire.message}`, {
+      return new ErroSigner('assinatura_tls_expirou', `${where}: quem assina não respondeu: ${wire.message}`, {
         detalhes: { host: where },
       });
     case 'pkcs11':
-      return new SignerError('pkcs11_falhou', `PKCS#11: ${wire.message}`);
+      return new ErroSigner('pkcs11_falhou', `PKCS#11: ${wire.message}`);
     case 'dfe_refused':
-      return new SignerError('assinatura_documento_recusada', `o helper recusou assinar o documento: ${wire.message}`);
+      return new ErroSigner('assinatura_documento_recusada', `o helper recusou assinar o documento: ${wire.message}`);
     case 'closed':
-      return new SignerError('signer_indisponivel', `o helper fechou o canal: ${wire.message}`);
+      return new ErroSigner('signer_indisponivel', `o helper fechou o canal: ${wire.message}`);
     default:
-      return new SignerError('signer_protocolo', `${wire.code}: ${wire.message}`, { detalhes: { code: wire.code } });
+      return new ErroSigner('signer_protocolo', `${wire.code}: ${wire.message}`, { detalhes: { codigo: wire.code } });
   }
 }
 
@@ -296,12 +296,12 @@ function toSineteError(wire: WireError, host: string | undefined, timeoutMs: num
  * Conecta ao helper por um canal já aberto e faz o `hello`. Recusa helper de outra versão do protocolo
  * (`signer_protocolo`).
  */
-export async function connectSignerChannel(
-  channel: SignerChannel,
-  options: SignerClientOptions = {},
-): Promise<SignerConnection> {
-  const logger = options.logger ?? loggerSilencioso;
-  const controlTimeout = options.controlTimeoutMs ?? DEFAULT_CONTROL_TIMEOUT_MS;
+export async function conectarCanalSigner(
+  canal: CanalSigner,
+  opcoes: ClienteSignerOpcoes = {},
+): Promise<ConexaoSigner> {
+  const logger = opcoes.logger ?? loggerSilencioso;
+  const controlTimeout = opcoes.prazoDeControleMs ?? DEFAULT_CONTROL_TIMEOUT_MS;
   const pending = new Map<string, { resolve: (r: Record<string, unknown>) => void; reject: (e: Error) => void }>();
   const keys = new Map<string, RemoteKey>();
   let next = 1;
@@ -309,7 +309,7 @@ export async function connectSignerChannel(
   let identityCount = 0;
 
   const send = (frame: Record<string, unknown>): void => {
-    channel.send(JSON.stringify({ v: SIGNER_PROTOCOL_VERSION, ...frame }));
+    canal.enviar(JSON.stringify({ v: VERSAO_PROTOCOLO_SIGNER, ...frame }));
   };
   // Resposta a um pedido do helper: com o canal fechado (ou um send que lança), não há a quem responder, e o erro não
   // pode escapar de um answer que ninguém espera.
@@ -322,15 +322,15 @@ export async function connectSignerChannel(
     }
   };
 
-  channel.onClose((reason) => {
+  canal.aoFechar((reason) => {
     closedReason = reason;
     for (const [, p] of pending) {
-      p.reject(new SignerError('signer_indisponivel', `o helper saiu: ${reason}`));
+      p.reject(new ErroSigner('signer_indisponivel', `o helper saiu: ${reason}`));
     }
     pending.clear();
   });
 
-  channel.onLine((line) => {
+  canal.aoReceberLinha((line) => {
     if (line.trim() === '') return;
     let f: Frame;
     try {
@@ -344,7 +344,7 @@ export async function connectSignerChannel(
       logger.warn('sinete-signer: linha que não é frame', { line: line.slice(0, 200) });
       return;
     }
-    if (f.v !== SIGNER_PROTOCOL_VERSION) {
+    if (f.v !== VERSAO_PROTOCOLO_SIGNER) {
       logger.warn('sinete-signer: frame de outra versão', { v: f.v });
       // Resposta de outra versão a um pedido nosso (um helper v2 respondendo ao hello): falha já, com o código certo,
       // em vez de esperar o prazo.
@@ -352,9 +352,9 @@ export async function connectSignerChannel(
       if (p) {
         pending.delete(f.id);
         p.reject(
-          new SignerError(
+          new ErroSigner(
             'signer_protocolo',
-            `o helper respondeu no protocolo ${String(f.v)}; este cliente fala ${SIGNER_PROTOCOL_VERSION}`,
+            `o helper respondeu no protocolo ${String(f.v)}; este cliente fala ${VERSAO_PROTOCOLO_SIGNER}`,
           ),
         );
       }
@@ -379,7 +379,7 @@ export async function connectSignerChannel(
     onLate?: (result: Record<string, unknown>) => void,
   ): Promise<Record<string, unknown>> {
     if (closedReason !== undefined) {
-      return Promise.reject(new SignerError('signer_indisponivel', `o helper saiu: ${closedReason}`));
+      return Promise.reject(new ErroSigner('signer_indisponivel', `o helper saiu: ${closedReason}`));
     }
     const id = `c${next++}`;
     return new Promise((resolve, reject) => {
@@ -394,7 +394,7 @@ export async function connectSignerChannel(
         done();
         // O helper também desiste (método cancel): sem isso ele seguiria o handshake e o envio depois do cancelado.
         if (sent && closedReason === undefined) call('cancel', { id }, controlTimeout).catch(() => {});
-        reject(new TransportError('cancelado', `${method}: cancelado pelo chamador`, { cause: signal?.reason }));
+        reject(new ErroTransporte('cancelado', `${method}: cancelado pelo chamador`, { cause: signal?.reason }));
       };
       pending.set(id, {
         resolve: (r: Record<string, unknown>): void => {
@@ -422,7 +422,7 @@ export async function connectSignerChannel(
         pending.delete(id);
         done();
         reject(
-          new SignerError('signer_indisponivel', `${method}: o canal com o helper recusou a escrita`, { cause: e }),
+          new ErroSigner('signer_indisponivel', `${method}: o canal com o helper recusou a escrita`, { cause: e }),
         );
         return;
       }
@@ -461,40 +461,40 @@ export async function connectSignerChannel(
     if (!key.allowed.has(host)) return refuse(`host fora da política do dono da chave: ${host}`);
     if (p.scheme !== 'rsa_pkcs1_sha256') return refuse(`esquema recusado: ${String(p.scheme)}`);
     if (p.mode !== key.signer.mode) return refuse(`modo ${String(p.mode)} diferente do da chave (${key.signer.mode})`);
-    const context: TlsSignContext = {
+    const context: ContextoAssinaturaTls = {
       host,
-      purpose: 'tls12-client-certificate-verify',
-      connectionId: String(ctx.conn),
+      finalidade: 'tls12-client-certificate-verify',
+      idDaConexao: String(ctx.conn),
       handshake: Number(ctx.handshake),
     };
     let input: Uint8Array;
     if (key.signer.mode === 'digest') {
-      input = base64ToBytes(String(p.digest ?? ''));
+      input = decodificarBase64(String(p.digest ?? ''));
       if (input.length !== 32) return refuse('digest com tamanho diferente de 32 bytes');
     } else {
-      input = base64ToBytes(String(p.message ?? ''));
+      input = decodificarBase64(String(p.message ?? ''));
       const sum = new Uint8Array(await crypto.subtle.digest('SHA-256', input as Uint8Array<ArrayBuffer>));
       if (b64(sum) !== p.messageSha256) return refuse('o hash do transcript não confere');
       // O transcript mostra com quem o handshake está sendo feito: SNI do ClientHello e certificado do servidor.
       // Para IP não há SNI (RFC 6066, seção 3), e o certificado tem de trazer o endereço no iPAddress do SAN.
       // A cadeia não é validada: a assinatura cobre o certificado do transcript e só serve a quem o apresentou
       // (PROTOCOL.md, "Regras para quem assina").
-      const t = parseTlsTranscript(input);
+      const t = lerTranscricaoTls(input);
       const ip = ipLiteral(host);
       if (ip === undefined ? t.sni?.toLowerCase() !== host : t.sni !== undefined)
         return refuse(`SNI do transcript (${t.sni}) não corresponde a ${host}`);
-      if (!t.serverCertificate) return refuse('transcript sem o certificado do servidor');
-      const cert = parseCertificate(t.serverCertificate);
+      if (!t.certificadoDoServidor) return refuse('transcript sem o certificado do servidor');
+      const cert = lerCertificado(t.certificadoDoServidor);
       if (ip !== undefined) {
-        if (!cert.subjectAltNames.ipAddresses.map(unmapIp).includes(ip))
+        if (!cert.subjectAltNames.enderecosIp.map(unmapIp).includes(ip))
           return refuse(`o certificado do servidor não cobre o endereço ${host}`);
       } else {
         const names =
-          cert.subjectAltNames.dnsNames.length > 0 ? cert.subjectAltNames.dnsNames : [cert.subject.commonName ?? ''];
+          cert.subjectAltNames.nomesDns.length > 0 ? cert.subjectAltNames.nomesDns : [cert.subject.commonName ?? ''];
         if (!names.some((n) => dnsMatches(n, host))) return refuse(`o certificado do servidor não cobre ${host}`);
       }
     }
-    return key.signer.sign(input, 'rsa_pkcs1_sha256', context);
+    return key.signer.assinar(input, 'rsa_pkcs1_sha256', context);
   }
 
   const control = (
@@ -503,21 +503,21 @@ export async function connectSignerChannel(
     onLate?: (result: Record<string, unknown>) => void,
   ): Promise<Record<string, unknown>> =>
     call(method, params, controlTimeout, undefined, onLate).catch((e: unknown) => {
-      throw e instanceof RemoteError ? toSineteError(e.wire, undefined, undefined) : e;
+      throw e instanceof RemoteError ? paraErroSinete(e.wire, undefined, undefined) : e;
     });
 
   let helloRaw: Record<string, unknown>;
   try {
     helloRaw = await control('hello', {
-      protocol: SIGNER_PROTOCOL_VERSION,
-      client: options.client ?? '@sinete/transport',
+      protocol: VERSAO_PROTOCOLO_SIGNER,
+      client: opcoes.cliente ?? '@sinete/transport',
     });
   } catch (e) {
     // Sem conexão devolvida, ninguém mais fecharia o canal (socket, WebSocket) nem os listeners dele. O fechamento não
-    // pode prender o erro: quem sobe o canal (startSigner, connectSigner) derruba o que sobrar.
+    // pode prender o erro: quem sobe o canal (iniciarSigner, conectarSigner) derruba o que sobrar.
     let t: ReturnType<typeof setTimeout> | undefined;
     await Promise.race([
-      channel.close().catch(() => {}),
+      canal.fechar().catch(() => {}),
       new Promise<void>((resolve) => {
         t = setTimeout(resolve, 5_000);
       }),
@@ -525,15 +525,15 @@ export async function connectSignerChannel(
     clearTimeout(t);
     throw e;
   }
-  if (helloRaw.protocol !== SIGNER_PROTOCOL_VERSION) {
-    await channel.close();
-    throw new SignerError(
+  if (helloRaw.protocol !== VERSAO_PROTOCOLO_SIGNER) {
+    await canal.fechar();
+    throw new ErroSigner(
       'signer_protocolo',
-      `o helper fala o protocolo ${String(helloRaw.protocol)}; este cliente fala ${SIGNER_PROTOCOL_VERSION}`,
+      `o helper fala o protocolo ${String(helloRaw.protocol)}; este cliente fala ${VERSAO_PROTOCOLO_SIGNER}`,
     );
   }
-  const hello: SignerHello = {
-    protocol: SIGNER_PROTOCOL_VERSION,
+  const hello: HelloDoSigner = {
+    protocol: VERSAO_PROTOCOLO_SIGNER,
     helper: String(helloRaw.helper),
     lab: helloRaw.lab === true,
     ambientes: (helloRaw.ambientes as string[] | undefined) ?? [],
@@ -554,10 +554,10 @@ export async function connectSignerChannel(
       call('identity.close', { identity: id }, controlTimeout).catch(() => {});
     };
 
-  const connection: SignerConnection = {
-    protocolVersion: SIGNER_PROTOCOL_VERSION,
+  const connection: ConexaoSigner = {
+    versaoDoProtocolo: VERSAO_PROTOCOLO_SIGNER,
     hello,
-    async request(identity: string, req: HelperHttpRequest, signal?: AbortSignal): Promise<TransportResponse> {
+    async enviar(identity: string, req: PedidoHttpDoHelper, signal?: AbortSignal): Promise<RespostaTransporte> {
       const host = new URL(req.url).hostname.toLowerCase();
       let r: Record<string, unknown>;
       try {
@@ -566,61 +566,61 @@ export async function connectSignerChannel(
           {
             identity,
             url: req.url,
-            method: req.method,
-            headers: req.headers,
-            body: b64(req.body ?? new Uint8Array()),
+            method: req.metodo,
+            headers: req.cabecalhos,
+            body: b64(req.corpo ?? new Uint8Array()),
             timeoutMs: req.timeoutMs,
           },
           req.timeoutMs + 5_000,
           signal,
         );
       } catch (e) {
-        throw e instanceof RemoteError ? toSineteError(e.wire, host, req.timeoutMs) : e;
+        throw e instanceof RemoteError ? paraErroSinete(e.wire, host, req.timeoutMs) : e;
       }
-      const body = base64ToBytes(String(r.body ?? ''));
+      const body = decodificarBase64(String(r.body ?? ''));
       const tls = (r.tls ?? {}) as { version?: string; cipher?: string; resumed?: boolean[]; signatures?: unknown[] };
       const headers = (r.headers ?? {}) as Record<string, string>;
       return {
         status: Number(r.status),
-        headers,
-        body,
+        cabecalhos: headers,
+        corpo: body,
         tls: {
-          protocol: tls.version,
-          cipher: tls.cipher,
-          resumed: tls.resumed?.[0],
+          protocolo: tls.version,
+          cifra: tls.cipher,
+          retomada: tls.resumed?.[0],
           // O helper monta o certificado a partir da identidade em todo handshake: não há como sair sem ele.
-          clientCertificateLoaded: undefined,
-          signatures: tls.signatures?.length ?? 0,
+          certificadoLocalCarregado: undefined,
+          assinaturas: tls.signatures?.length ?? 0,
         },
-        text: (): string => new TextDecoder().decode(body),
+        texto: (): string => new TextDecoder().decode(body),
       };
     },
 
-    async openRemote(o: OpenRemoteOptions): Promise<SignerIdentity> {
-      const allowed = new Set([...o.allowedHosts].map(hostKey));
+    async abrirRemoto(o: AbrirRemotoOpcoes): Promise<IdentidadeSigner> {
+      const allowed = new Set([...o.hostsPermitidos].map(hostKey));
       if (allowed.size === 0)
-        throw new ErroDeConfiguracao('openRemote: allowedHosts vazio; a chave não autenticaria em nenhum host');
-      const chain = await o.signer.certificateChain();
-      if (chain.length === 0) throw new ErroDeConfiguracao('openRemote: o TlsSigner devolveu cadeia vazia');
+        throw new ErroDeConfiguracao('abrirRemoto: hostsPermitidos vazio; a chave não autenticaria em nenhum host');
+      const chain = await o.assinador.cadeia();
+      if (chain.length === 0) throw new ErroDeConfiguracao('abrirRemoto: o AssinadorTls devolveu cadeia vazia');
       const id = o.id ?? `remote-${++identityCount}`;
       // Id repetido não pode tocar na chave da identidade que já está aberta (nem numa abertura concorrente).
       if (keys.has(id)) {
-        throw new SignerError('signer_protocolo', `identity_exists: a identidade ${id} já está aberta neste canal`, {
-          detalhes: { code: 'identity_exists' },
+        throw new ErroSigner('signer_protocolo', `identity_exists: a identidade ${id} já está aberta neste canal`, {
+          detalhes: { codigo: 'identity_exists' },
         });
       }
       // A chave entra no mapa antes do open: o helper só pede sign depois, mas a ordem evita corrida.
-      keys.set(id, { signer: o.signer, allowed });
+      keys.set(id, { signer: o.assinador, allowed });
       try {
         const r = await control(
           'identity.open',
           {
             id,
             backend: 'remote',
-            mode: o.signer.mode,
+            mode: o.assinador.mode,
             chain: chain.map(b64),
-            ...(o.signTimeoutMs === undefined ? {} : { signTimeoutMs: o.signTimeoutMs }),
-            ...(o.additionalCa === undefined ? {} : { additionalCa: [...o.additionalCa] }),
+            ...(o.prazoDaAssinaturaMs === undefined ? {} : { signTimeoutMs: o.prazoDaAssinaturaMs }),
+            ...(o.acsAdicionais === undefined ? {} : { additionalCa: [...o.acsAdicionais] }),
           },
           closeLate(id),
         );
@@ -631,11 +631,11 @@ export async function connectSignerChannel(
       }
     },
 
-    async openPkcs11(o: OpenPkcs11Options): Promise<SignerIdentity> {
+    async abrirPkcs11(o: AbrirPkcs11Opcoes): Promise<IdentidadeSigner> {
       if (!hello.backends.includes('pkcs11')) {
-        throw new SignerError(
+        throw new ErroSigner(
           'pkcs11_falhou',
-          `o binário ${hello.helper} é o sabor estático, sem PKCS#11; suba o sabor -p11 (startSigner com pkcs11: true)`,
+          `o binário ${hello.helper} é o sabor estático, sem PKCS#11; suba o sabor -p11 (iniciarSigner com pkcs11: true)`,
         );
       }
       const id = o.id ?? `pkcs11-${++identityCount}`;
@@ -644,35 +644,35 @@ export async function connectSignerChannel(
         {
           id,
           backend: 'pkcs11',
-          module: o.module,
+          module: o.modulo,
           token: o.token,
           pin: await o.pin(),
-          ...(o.serial === undefined ? {} : { serial: o.serial }),
-          ...(o.label === undefined ? {} : { label: o.label }),
-          ...(o.keyId === undefined ? {} : { keyId: o.keyId }),
-          ...(o.chain === undefined ? {} : { chain: o.chain.map(b64) }),
-          ...(o.additionalCa === undefined ? {} : { additionalCa: [...o.additionalCa] }),
+          ...(o.numeroDeSerie === undefined ? {} : { serial: o.numeroDeSerie }),
+          ...(o.rotulo === undefined ? {} : { label: o.rotulo }),
+          ...(o.idDaChave === undefined ? {} : { keyId: o.idDaChave }),
+          ...(o.cadeia === undefined ? {} : { chain: o.cadeia.map(b64) }),
+          ...(o.acsAdicionais === undefined ? {} : { additionalCa: [...o.acsAdicionais] }),
         },
         closeLate(id),
       );
       return identity(r, id);
     },
 
-    async stats(): Promise<Readonly<Record<string, { readonly signatures: number; readonly backend: string }>>> {
+    async estatisticas(): Promise<Readonly<Record<string, { readonly signatures: number; readonly backend: string }>>> {
       const r = await control('stats', {});
       return (r.identities ?? {}) as Record<string, { signatures: number; backend: string }>;
     },
 
-    async close(): Promise<void> {
-      await channel.close();
+    async fechar(): Promise<void> {
+      await canal.fechar();
     },
   };
 
-  function identity(r: Record<string, unknown>, dfeId: string | undefined): SignerIdentity {
+  function identity(r: Record<string, unknown>, dfeId: string | undefined): IdentidadeSigner {
     const id = String(r.id);
-    const chain = ((r.chain as string[] | undefined) ?? []).map((c) => base64ToBytes(c));
+    const chain = ((r.chain as string[] | undefined) ?? []).map((c) => decodificarBase64(c));
     const leaf = chain[0];
-    if (!leaf) throw new SignerError('signer_protocolo', 'identity.open sem cadeia na resposta');
+    if (!leaf) throw new ErroSigner('signer_protocolo', 'identity.open sem cadeia na resposta');
     const documentSigner: AssinadorDeDados | undefined =
       dfeId !== undefined && r.dfeSign === true
         ? {
@@ -691,24 +691,24 @@ export async function connectSignerChannel(
                 hash,
                 ...(context === undefined ? {} : { element: b64(context.referenciado) }),
               });
-              return base64ToBytes(String(res.signature));
+              return decodificarBase64(String(res.signature));
             },
           }
         : undefined;
     return {
       id,
       backend: r.backend === 'pkcs11' ? 'pkcs11' : 'remote',
-      tlsIdentity: { kind: 'helper', helper: connection, identity: id },
-      chain,
+      identidadeTls: { tipo: 'helper', helper: connection, identidade: id },
+      cadeia: chain,
       subject: String(r.subject ?? ''),
       notAfter: String(r.notAfter ?? ''),
       cnpj: typeof r.cnpj === 'string' ? r.cnpj : undefined,
       cpf: typeof r.cpf === 'string' ? r.cpf : undefined,
-      documentSigner,
-      async resetPool(o = {}): Promise<void> {
-        await control('pool.reset', { identity: id, dropSessions: o.dropSessions === true });
+      assinadorDeDocumentos: documentSigner,
+      async reiniciarPool(o = {}): Promise<void> {
+        await control('pool.reset', { identity: id, dropSessions: o.descartarSessoes === true });
       },
-      async close(): Promise<void> {
+      async fechar(): Promise<void> {
         keys.delete(id);
         await control('identity.close', { identity: id });
       },
@@ -720,62 +720,63 @@ export async function connectSignerChannel(
 
 /**
  * O certificado aberto que o `@sinete/emissor` aceita no lugar do PFX (`OpcoesEmissor.certificado`): o signer dos
- * documentos, o titular lido da folha e a identidade do mTLS pelo helper. No `pkcs11`, o signer é o `documentSigner`
+ * documentos, o titular lido da folha e a identidade do mTLS pelo helper. No `pkcs11`, o assinador é o `assinadorDeDocumentos`
  * (a chave do token assina pelo `dfe.sign`); no `remote`, passe o signer de quem tem a chave.
  */
 export function certificadoAberto(
-  identity: SignerIdentity,
-  options: { readonly signer?: Assinador } = {},
-): { readonly signer: Assinador; readonly titular: IcpIdentity; readonly identidade: TlsIdentity } {
-  const signer = options.signer ?? identity.documentSigner;
+  identidade: IdentidadeSigner,
+  opcoes: { readonly assinador?: Assinador } = {},
+): { readonly assinador: Assinador; readonly titular: IdentidadeIcp; readonly identidade: IdentidadeTls } {
+  const signer = opcoes.assinador ?? identidade.assinadorDeDocumentos;
   if (signer === undefined) {
     throw new ErroDeConfiguracao(
-      `a identidade ${identity.id} (${identity.backend}) não assina documento pelo helper: passe o signer de quem tem a chave`,
+      `a identidade ${identidade.id} (${identidade.backend}) não assina documento pelo helper: passe o signer de quem tem a chave`,
     );
   }
-  const leaf = identity.chain[0];
-  if (leaf === undefined) throw new ErroDeConfiguracao(`a identidade ${identity.id} está sem cadeia`);
-  return { signer, titular: icpIdentity(parseCertificate(leaf)), identidade: identity.tlsIdentity };
+  const leaf = identidade.cadeia[0];
+  if (leaf === undefined) throw new ErroDeConfiguracao(`a identidade ${identidade.id} está sem cadeia`);
+  return { assinador: signer, titular: identidadeIcp(lerCertificado(leaf)), identidade: identidade.identidadeTls };
 }
 
 /**
- * `TlsSigner` sobre uma `CryptoKey` RSASSA-PKCS1-v1_5 com SHA-256 (não exportável serve), no modo `message`: o
+ * `AssinadorTls` sobre uma `CryptoKey` RSASSA-PKCS1-v1_5 com SHA-256 (não exportável serve), no modo `message`: o
  * helper manda o transcript e a chave assina a mensagem. É o caminho do A1 guardado como `CryptoKey` e da chave no
  * navegador.
  */
-export function cryptoKeyTlsSigner(key: CryptoKey, chain: readonly Uint8Array[]): TlsSigner {
-  const alg = key.algorithm as { name?: string; hash?: { name?: string } };
+export function assinadorTlsDeCryptoKey(chave: CryptoKey, cadeia: readonly Uint8Array[]): AssinadorTls {
+  const alg = chave.algorithm as { name?: string; hash?: { name?: string } };
   if (alg.name !== 'RSASSA-PKCS1-v1_5' || alg.hash?.name !== 'SHA-256') {
-    throw new ErroDeConfiguracao('cryptoKeyTlsSigner: a chave precisa ser RSASSA-PKCS1-v1_5 com SHA-256');
+    throw new ErroDeConfiguracao('assinadorTlsDeCryptoKey: a chave precisa ser RSASSA-PKCS1-v1_5 com SHA-256');
   }
   return {
     mode: 'message',
-    certificateChain: (): Promise<readonly Uint8Array[]> => Promise.resolve(chain),
-    sign: async (input: Uint8Array): Promise<Uint8Array> =>
-      new Uint8Array(await crypto.subtle.sign('RSASSA-PKCS1-v1_5', key, input as Uint8Array<ArrayBuffer>)),
+    cadeia: (): Promise<readonly Uint8Array[]> => Promise.resolve(cadeia),
+    assinar: async (input: Uint8Array): Promise<Uint8Array> =>
+      new Uint8Array(await crypto.subtle.sign('RSASSA-PKCS1-v1_5', chave, input as Uint8Array<ArrayBuffer>)),
   };
 }
 
 /**
- * `TlsSigner` no modo `digest` sobre um `AssinadorDeDigest` do `@sinete/core` (PSC em RAW, OpenBao Transit com
+ * `AssinadorTls` no modo `digest` sobre um `AssinadorDeDigest` do `@sinete/core` (PSC em RAW, OpenBao Transit com
  * `prehashed`, HSM): monta o DigestInfo SHA-256 e pede só o RSA.
  */
-export function digestTlsSigner(signer: AssinadorDeDigest, chain?: readonly Uint8Array[]): TlsSigner {
+export function assinadorTlsDeDigest(assinador: AssinadorDeDigest, cadeia?: readonly Uint8Array[]): AssinadorTls {
   return {
     mode: 'digest',
-    certificateChain: async (): Promise<readonly Uint8Array[]> => chain ?? [await signer.certificadoDer()],
-    sign: (input: Uint8Array): Promise<Uint8Array> => signer.assinarDigestInfo(encodeDigestInfo('SHA-256', input)),
+    cadeia: async (): Promise<readonly Uint8Array[]> => cadeia ?? [await assinador.certificadoDer()],
+    assinar: (input: Uint8Array): Promise<Uint8Array> =>
+      assinador.assinarDigestInfo(codificarDigestInfo('SHA-256', input)),
   };
 }
 
 /** Converte linhas cruas (com `\n`) em linhas de frame, guardando o pedaço incompleto. */
-export function lineSplitter(onLine: (line: string) => void): (chunk: string) => void {
+export function divisorDeLinhas(aoReceberLinha: (linha: string) => void): (pedaco: string) => void {
   let buf = '';
   return (chunk: string): void => {
     buf += chunk;
     let i = buf.indexOf('\n');
     while (i >= 0) {
-      onLine(buf.slice(0, i));
+      aoReceberLinha(buf.slice(0, i));
       buf = buf.slice(i + 1);
       i = buf.indexOf('\n');
     }

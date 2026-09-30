@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { Decimal, dec, fromPercent, money, percent, sum, toPercent } from '../../src/calcular/index.ts';
+import { Decimal, dec, dePercentual, dinheiro, paraPercentual, percentual, sum } from '../../src/calcular/index.ts';
 
 describe('Decimal: leitura e texto', () => {
   test('lê e devolve com a escala original', () => {
@@ -109,26 +109,26 @@ describe('Decimal: arredondamento', () => {
 
 describe('formatação como na Calculadora', () => {
   test('valor com 2 casas HALF_EVEN', () => {
-    expect(money(dec('11.11095'))).toBe('11.11');
-    expect(money(dec('0.005'))).toBe('0.00');
-    expect(money(dec('0.015'))).toBe('0.02');
-    expect(money(dec('7'))).toBe('7.00');
+    expect(dinheiro(dec('11.11095'))).toBe('11.11');
+    expect(dinheiro(dec('0.005'))).toBe('0.00');
+    expect(dinheiro(dec('0.015'))).toBe('0.02');
+    expect(dinheiro(dec('7'))).toBe('7.00');
   });
 
   test('percentual de 2 a 4 casas', () => {
-    expect(percent(dec('0.9'))).toBe('0.90');
-    expect(percent(dec('0.36000000'))).toBe('0.36');
-    expect(percent(dec('0.12345'))).toBe('0.1234');
-    expect(percent(dec('0.12355'))).toBe('0.1236');
-    expect(percent(dec('60'))).toBe('60.00');
-    expect(percent(dec('0'))).toBe('0.00');
-    expect(percent(dec('0.105'))).toBe('0.105');
+    expect(percentual(dec('0.9'))).toBe('0.90');
+    expect(percentual(dec('0.36000000'))).toBe('0.36');
+    expect(percentual(dec('0.12345'))).toBe('0.1234');
+    expect(percentual(dec('0.12355'))).toBe('0.1236');
+    expect(percentual(dec('60'))).toBe('60.00');
+    expect(percentual(dec('0'))).toBe('0.00');
+    expect(percentual(dec('0.105'))).toBe('0.105');
   });
 
   test('fração e percentual', () => {
-    expect(fromPercent(dec('0.9')).toString()).toBe('0.00900000');
-    expect(fromPercent(dec('60')).toString()).toBe('0.60000000');
-    expect(fromPercent(dec('0.123456789')).toString()).toBe('0.00123457');
-    expect(toPercent(dec('0.00900000')).toString()).toBe('0.900000');
+    expect(dePercentual(dec('0.9')).toString()).toBe('0.00900000');
+    expect(dePercentual(dec('60')).toString()).toBe('0.60000000');
+    expect(dePercentual(dec('0.123456789')).toString()).toBe('0.00123457');
+    expect(paraPercentual(dec('0.00900000')).toString()).toBe('0.900000');
   });
 });

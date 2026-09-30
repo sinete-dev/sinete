@@ -9,10 +9,10 @@
  * - nfe/PL_NFeDistDFe_104 (PL_NFeDistDFe_104.zip)
  * - nfe/PL_010d_v1.03 (PL_010d_v1.03.zip)
  */
-import type { ComplexType, RootElement, SchemaModuleInfo, SimpleType } from "../../runtime/desc.ts";
+import type { ComplexType, DescricaoModuloSchema, ElementoRaiz, SimpleType } from "../../runtime/desc.ts";
 
 /** Proveniência deste módulo. */
-export const schema: SchemaModuleInfo = {
+export const schema: DescricaoModuloSchema = {
   "subpath": "nfe/dist-dfe/PL_NFeDistDFe_104",
   "documento": "nfe",
   "pl": "PL_NFeDistDFe_104",
@@ -420,10 +420,10 @@ export const resEvento: ComplexType<resEvento> = { id: "resEvento", ns: "http://
 
 // ---------- elementos raiz ----------
 /** Elemento raiz `distDFeInt` (tipo distDFeInt). */
-export const distDFeIntElement: RootElement<distDFeInt> = { name: "distDFeInt", ns: "http://www.portalfiscal.inf.br/nfe", type: distDFeInt };
+export const distDFeIntElement: ElementoRaiz<distDFeInt> = { nome: "distDFeInt", ns: "http://www.portalfiscal.inf.br/nfe", tipo: distDFeInt };
 /** Elemento raiz `retDistDFeInt` (tipo retDistDFeInt). */
-export const retDistDFeIntElement: RootElement<retDistDFeInt> = { name: "retDistDFeInt", ns: "http://www.portalfiscal.inf.br/nfe", type: retDistDFeInt };
+export const retDistDFeIntElement: ElementoRaiz<retDistDFeInt> = { nome: "retDistDFeInt", ns: "http://www.portalfiscal.inf.br/nfe", tipo: retDistDFeInt };
 /** Elemento raiz `resNFe` (tipo resNFe). */
-export const resNFeElement: RootElement<resNFe> = { name: "resNFe", ns: "http://www.portalfiscal.inf.br/nfe", type: resNFe };
+export const resNFeElement: ElementoRaiz<resNFe> = { nome: "resNFe", ns: "http://www.portalfiscal.inf.br/nfe", tipo: resNFe };
 /** Elemento raiz `resEvento` (tipo resEvento). */
-export const resEventoElement: RootElement<resEvento> = { name: "resEvento", ns: "http://www.portalfiscal.inf.br/nfe", type: resEvento };
+export const resEventoElement: ElementoRaiz<resEvento> = { nome: "resEvento", ns: "http://www.portalfiscal.inf.br/nfe", tipo: resEvento };

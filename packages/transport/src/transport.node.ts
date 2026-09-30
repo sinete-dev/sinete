@@ -3,7 +3,7 @@
  *
  * - HTTP/1.1 sempre (o `node:https` não fala h2; o h2 do undici quebra os hosts que renegociam).
  * - Confiança somada por Agent, sem mexer no processo: `ca` = raízes da runtime (ou a loja do sistema, com
- *   `trust: 'system'`) + conjunto ICP-Brasil do `@sinete/cert` + `additionalCa`. Nada de `NODE_EXTRA_CA_CERTS`,
+ *   `confianca: 'sistema'`) + conjunto ICP-Brasil do `@sinete/cert` + `acsAdicionais`. Nada de `NODE_EXTRA_CA_CERTS`,
  *   `setDefaultCACertificates` ou `rejectUnauthorized: false`, e `rejectUnauthorized: true` fixo no Agent, para que
  *   `NODE_TLS_REJECT_UNAUTHORIZED=0` no processo não desligue a conferência do servidor.
  * - Identidade em PEM na memória (nunca o PFX: o OpenSSL 3 recusa o legado). Renegociação iniciada pelo servidor
@@ -13,29 +13,29 @@
 
 import https from 'node:https';
 import tls from 'node:tls';
-import { icpBrasilTlsPem, pemToDers } from '@sinete/cert';
+import { dersDoPem, pemTlsIcpBrasil } from '@sinete/cert';
 import { ErroDeConfiguracao, ErroDeTempoEsgotado, ErroNaoSuportado } from '@sinete/core';
-import { classifyTransportFailure, http403Error } from './classify.ts';
-import { assertSupported, audited, detectRuntime, makeResponse, prepareRequest, sendViaHelper } from './common.ts';
-import { TransportError } from './errors.ts';
+import { classificarFalhaDeTransporte, erroHttp403 } from './classify.ts';
+import { assertSupported, audited, detectarRuntime, makeResponse, prepareRequest, sendViaHelper } from './common.ts';
+import { ErroTransporte } from './errors.ts';
 import type {
-  Transport,
-  TransportCapabilities,
-  TransportOptions,
-  TransportRequest,
-  TransportResponse,
+  CapacidadesDoTransporte,
+  PedidoTransporte,
+  RespostaTransporte,
+  Transporte,
+  TransporteOpcoes,
 } from './types.ts';
 
-export interface NodeTransportOptions extends TransportOptions {
-  /** `bundled` (padrão): raízes embutidas na runtime; `system`: loja do sistema (proxy corporativo). */
-  readonly trust?: 'bundled' | 'system';
+export interface TransporteNodeOpcoes extends TransporteOpcoes {
+  /** `embarcada` (padrão): raízes embutidas na runtime; `sistema`: loja do sistema (proxy corporativo). */
+  readonly confianca?: 'embarcada' | 'sistema';
   /**
    * Algoritmos de assinatura do handshake (formato OpenSSL, ex.: `RSA+SHA256:RSA+SHA384:RSA+SHA512`). Com isso o
    * TLS fica limitado a 1.2, onde PKCS#1 v1.5 é permitido (ADR 0004, seção 5).
    */
   readonly sigalgs?: string;
   /** Padrão: `true` (pool keep-alive por host). */
-  readonly keepAlive?: boolean;
+  readonly manterConexao?: boolean;
 }
 
 interface LocalCert {
@@ -48,11 +48,11 @@ function sameBytes(a: Uint8Array | undefined, b: Uint8Array | undefined): boolea
   return true;
 }
 
-function trustStore(trust: 'bundled' | 'system'): string[] {
-  if (trust === 'bundled') return [...tls.rootCertificates];
+function trustStore(trust: 'embarcada' | 'sistema'): string[] {
+  if (trust === 'embarcada') return [...tls.rootCertificates];
   const get = (tls as { getCACertificates?: (type: string) => string[] }).getCACertificates;
   if (typeof get !== 'function') {
-    throw new ErroNaoSuportado('trust: "system" precisa de tls.getCACertificates (Node 22.15+ ou 23.5+)');
+    throw new ErroNaoSuportado('confianca: "sistema" precisa de tls.getCACertificates (Node 22.15+ ou 23.5+)');
   }
   return get('system');
 }
@@ -61,44 +61,44 @@ function trustStore(trust: 'bundled' | 'system'): string[] {
  * Confere se o socket carregou o certificado da identidade. `undefined` quando a runtime não expõe o certificado
  * local (o transporte então não afirma nada).
  */
-export function checkLocalCertificate(
+export function conferirCertificadoLocal(
   socket: { getCertificate?: () => LocalCert | null | undefined },
-  expectedLeaf: Uint8Array,
+  folhaEsperada: Uint8Array,
 ): boolean | undefined {
   if (typeof socket.getCertificate !== 'function') return undefined;
   const local = socket.getCertificate();
   if (local === undefined) return undefined;
-  return sameBytes(local?.raw ? new Uint8Array(local.raw) : undefined, expectedLeaf);
+  return sameBytes(local?.raw ? new Uint8Array(local.raw) : undefined, folhaEsperada);
 }
 
 /** Cria o transporte de Node e Bun. */
-export function createNodeTransport(options: NodeTransportOptions): Transport {
-  const rt = detectRuntime();
+export function criarTransporteNode(opcoes: TransporteNodeOpcoes): Transporte {
+  const rt = detectarRuntime();
   const runtime = rt === 'bun' ? 'bun' : 'node';
-  const capabilities: TransportCapabilities = {
+  const capabilities: CapacidadesDoTransporte = {
     runtime,
-    renegotiation: true,
+    renegociacao: true,
     tls12Cbc: true,
     // BoringSSL (Bun) não tem suítes DHE: GO produção fica fora do Bun (achado do laboratório TLS).
     tls12Dhe: runtime === 'node',
-    sigalgsControl: true,
-    clientCertificateCheck: true,
+    controleDeSigalgs: true,
+    conferenciaDoCertificadoLocal: true,
   };
-  const id = options.identity;
+  const id = opcoes.identidade;
   let agent: https.Agent | undefined;
   let expectedLeaf: Uint8Array | undefined;
-  if (id.kind === 'pem') {
-    expectedLeaf = pemToDers(id.certChain)[0];
+  if (id.tipo === 'pem') {
+    expectedLeaf = dersDoPem(id.cadeia)[0];
     if (!expectedLeaf) throw new ErroDeConfiguracao('identidade pem sem certificado');
     agent = new https.Agent({
-      keepAlive: options.keepAlive ?? true,
-      cert: id.certChain,
-      key: id.key,
-      ca: [...trustStore(options.trust ?? 'bundled'), ...icpBrasilTlsPem(), ...(options.additionalCa ?? [])],
+      keepAlive: opcoes.manterConexao ?? true,
+      cert: id.cadeia,
+      key: id.chave,
+      ca: [...trustStore(opcoes.confianca ?? 'embarcada'), ...pemTlsIcpBrasil(), ...(opcoes.acsAdicionais ?? [])],
       // Explícito: sem ele, NODE_TLS_REJECT_UNAUTHORIZED=0 no processo desliga a conferência do servidor também aqui.
       rejectUnauthorized: true,
       minVersion: 'TLSv1.2',
-      ...(options.sigalgs === undefined ? {} : { sigalgs: options.sigalgs, maxVersion: 'TLSv1.2' as const }),
+      ...(opcoes.sigalgs === undefined ? {} : { sigalgs: opcoes.sigalgs, maxVersion: 'TLSv1.2' as const }),
     });
   }
   let closed = false;
@@ -106,13 +106,13 @@ export function createNodeTransport(options: NodeTransportOptions): Transport {
   function sendPem(
     prepared: Awaited<ReturnType<typeof prepareRequest>>,
     signal: AbortSignal | undefined,
-  ): Promise<TransportResponse> {
-    return new Promise<TransportResponse>((resolve, reject) => {
+  ): Promise<RespostaTransporte> {
+    return new Promise<RespostaTransporte>((resolve, reject) => {
       let loaded: boolean | undefined;
-      let tlsInfo: { protocol: string | undefined; cipher: string | undefined; resumed: boolean | undefined } = {
-        protocol: undefined,
-        cipher: undefined,
-        resumed: undefined,
+      let tlsInfo: { protocolo: string | undefined; cifra: string | undefined; retomada: boolean | undefined } = {
+        protocolo: undefined,
+        cifra: undefined,
+        retomada: undefined,
       };
       let settled = false;
       // Prazo total da requisição. O `timeout` do https.request é só de inatividade do socket: um servidor que pinga
@@ -132,11 +132,11 @@ export function createNodeTransport(options: NodeTransportOptions): Transport {
           (res) => {
             const chunks: Uint8Array[] = [];
             res.on('data', (d: Uint8Array) => chunks.push(d));
-            res.on('error', (e) => fail(classifyTransportFailure(e, { host: prepared.host })));
+            res.on('error', (e) => fail(classificarFalhaDeTransporte(e, { host: prepared.host })));
             res.on('end', () => {
               if (settled) return;
               const status = res.statusCode ?? 0;
-              if (status === 403 && options.rejectOn403 !== false) return fail(http403Error(prepared.host));
+              if (status === 403 && opcoes.recusarEm403 !== false) return fail(erroHttp403(prepared.host));
               const size = chunks.reduce((n, c) => n + c.length, 0);
               const body = new Uint8Array(size);
               let o = 0;
@@ -150,26 +150,26 @@ export function createNodeTransport(options: NodeTransportOptions): Transport {
               }
               settled = true;
               clearTimeout(deadline);
-              resolve(makeResponse(status, headers, body, { ...tlsInfo, clientCertificateLoaded: loaded }));
+              resolve(makeResponse(status, headers, body, { ...tlsInfo, certificadoLocalCarregado: loaded }));
             });
           },
         );
       } catch (e) {
         // Identidade inválida (chave que não casa com o certificado, PEM corrompido) estoura aqui, ao criar o contexto.
-        fail(classifyTransportFailure(e, { host: prepared.host }));
+        fail(classificarFalhaDeTransporte(e, { host: prepared.host }));
         return;
       }
       // Lido logo depois do handshake: com `connection: close` o socket já foi destruído quando a resposta termina.
       const verify = (s: tls.TLSSocket): void => {
         tlsInfo = {
-          protocol: s.getProtocol?.() ?? undefined,
-          cipher: s.getCipher?.()?.name,
-          resumed: s.isSessionReused?.() ?? undefined,
+          protocolo: s.getProtocol?.() ?? undefined,
+          cifra: s.getCipher?.()?.name,
+          retomada: s.isSessionReused?.() ?? undefined,
         };
-        loaded = checkLocalCertificate(s as never, expectedLeaf as Uint8Array);
+        loaded = conferirCertificadoLocal(s as never, expectedLeaf as Uint8Array);
         if (loaded === false) {
           req.destroy(
-            new TransportError(
+            new ErroTransporte(
               'certificado_nao_carregado',
               `${prepared.host}: o socket TLS não carregou o certificado da identidade`,
               { detalhes: { host: prepared.host } },
@@ -192,32 +192,32 @@ export function createNodeTransport(options: NodeTransportOptions): Transport {
       req.on('timeout', timedOut);
       deadline = setTimeout(timedOut, prepared.timeoutMs);
       const onAbort = (): void => {
-        req.destroy(new TransportError('cancelado', `${prepared.host}: envio cancelado`, { cause: signal?.reason }));
+        req.destroy(new ErroTransporte('cancelado', `${prepared.host}: envio cancelado`, { cause: signal?.reason }));
       };
       if (signal?.aborted) onAbort();
       signal?.addEventListener('abort', onAbort, { once: true });
       req.on('close', () => signal?.removeEventListener('abort', onAbort));
-      req.on('error', (e) => fail(classifyTransportFailure(e, { host: prepared.host })));
+      req.on('error', (e) => fail(classificarFalhaDeTransporte(e, { host: prepared.host })));
       req.end(prepared.body);
     });
   }
 
   return {
-    capabilities,
-    async send(request: TransportRequest): Promise<TransportResponse> {
+    capacidades: capabilities,
+    async enviar(request: PedidoTransporte): Promise<RespostaTransporte> {
       if (closed) throw new ErroDeConfiguracao('transporte já fechado');
-      const prepared = await prepareRequest(request, options);
-      if (id.kind === 'pem') assertSupported(prepared, capabilities);
-      return audited(runtime, prepared, options, async () => {
-        if (id.kind === 'helper') {
-          const res = await sendViaHelper(options, prepared, request.signal);
-          if (res.status === 403 && options.rejectOn403 !== false) throw http403Error(prepared.host);
+      const prepared = await prepareRequest(request, opcoes);
+      if (id.tipo === 'pem') assertSupported(prepared, capabilities);
+      return audited(runtime, prepared, opcoes, async () => {
+        if (id.tipo === 'helper') {
+          const res = await sendViaHelper(opcoes, prepared, request.signal);
+          if (res.status === 403 && opcoes.recusarEm403 !== false) throw erroHttp403(prepared.host);
           return res;
         }
         return sendPem(prepared, request.signal);
       });
     },
-    async close(): Promise<void> {
+    async fechar(): Promise<void> {
       closed = true;
       agent?.destroy();
     },

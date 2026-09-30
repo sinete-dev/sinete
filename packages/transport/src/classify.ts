@@ -5,11 +5,11 @@
 
 import type { ErroSinete } from '@sinete/core';
 import { ErroDeConfiguracao, ehErroSinete } from '@sinete/core';
-import type { TransportErrorCode } from './errors.ts';
-import { TransportError } from './errors.ts';
+import type { CodigoErroTransporte } from './errors.ts';
+import { ErroTransporte } from './errors.ts';
 
 /** Alerta TLS (RFC 8446, seção 6) para o código do sinete. */
-const ALERTS: Readonly<Record<string, TransportErrorCode>> = {
+const ALERTS: Readonly<Record<string, CodigoErroTransporte>> = {
   HANDSHAKE_FAILURE: 'certificado_nao_apresentado',
   BAD_CERTIFICATE: 'certificado_nao_apresentado',
   CERTIFICATE_REQUIRED: 'certificado_nao_apresentado',
@@ -21,7 +21,7 @@ const ALERTS: Readonly<Record<string, TransportErrorCode>> = {
   ACCESS_DENIED: 'certificado_recusado',
 };
 
-const MESSAGES: Record<TransportErrorCode, string> = {
+const MESSAGES: Record<CodigoErroTransporte, string> = {
   certificado_nao_apresentado: 'o servidor pediu certificado de cliente e não recebeu',
   certificado_recusado: 'o servidor recusou o certificado de cliente',
   certificado_ausente_ou_recusado: 'o servidor recusou a conexão por certificado ausente ou não aceito',
@@ -36,12 +36,12 @@ const MESSAGES: Record<TransportErrorCode, string> = {
 };
 
 /** Hints que acompanham a mensagem, para quem lê o log. */
-const HINTS: Partial<Record<TransportErrorCode, string>> = {
+const HINTS: Partial<Record<CodigoErroTransporte, string>> = {
   certificado_nao_apresentado: 'confira se a identidade TLS foi passada ao transporte',
   certificado_ausente_ou_recusado: 'confira a identidade TLS, a validade do certificado e a AC dele',
   conexao_recusada: 'em MS e MT homologação, reset depois da requisição é falta de certificado',
   cadeia_servidor_nao_confiavel:
-    'o transporte soma o bundle ICP-Brasil do @sinete/cert; proxy corporativo pede trust: "system"',
+    'o transporte soma o bundle ICP-Brasil do @sinete/cert; proxy corporativo pede confianca: "sistema"',
 };
 
 function collectText(err: unknown, depth = 0): string {
@@ -67,7 +67,7 @@ function alertName(text: string): string | undefined {
     .toUpperCase();
 }
 
-function classifyCode(text: string): { code: TransportErrorCode; alert?: string } | { config: string } {
+function classifyCode(text: string): { code: CodigoErroTransporte; alert?: string } | { config: string } {
   if (/KEY_VALUES_MISMATCH|key values mismatch/i.test(text)) {
     return { config: 'certificado e chave da identidade TLS não correspondem' };
   }
@@ -97,24 +97,24 @@ function classifyCode(text: string): { code: TransportErrorCode; alert?: string 
 }
 
 /** Converte a falha de uma runtime num erro tipado do sinete. `ErroSinete` passa direto. */
-export function classifyTransportFailure(err: unknown, context: { readonly host: string }): ErroSinete {
-  if (ehErroSinete(err)) return err;
-  const text = collectText(err);
+export function classificarFalhaDeTransporte(erro: unknown, contexto: { readonly host: string }): ErroSinete {
+  if (ehErroSinete(erro)) return erro;
+  const text = collectText(erro);
   const r = classifyCode(text);
-  if ('config' in r) return new ErroDeConfiguracao(r.config, { cause: err, detalhes: { host: context.host } });
+  if ('config' in r) return new ErroDeConfiguracao(r.config, { cause: erro, detalhes: { host: contexto.host } });
   const hint = HINTS[r.code];
-  const details: Record<string, unknown> = { host: context.host };
-  if (r.alert) details.alert = r.alert.toLowerCase();
-  const sys = (err as { code?: unknown } | null)?.code;
-  if (typeof sys === 'string') details.systemCode = sys;
+  const details: Record<string, unknown> = { host: contexto.host };
+  if (r.alert) details.alerta = r.alert.toLowerCase();
+  const sys = (erro as { code?: unknown } | null)?.code;
+  if (typeof sys === 'string') details.codigoDoSistema = sys;
   // O alerta 40 é ambíguo: a SEFAZ o manda por falta de certificado (MG, ADR 0004), mas ele também sai quando não há
   // cifra ou versão em comum. O código segue o ADR; a mensagem diz as duas coisas.
   const message =
     r.alert === 'HANDSHAKE_FAILURE'
       ? 'o servidor abortou o handshake (handshake_failure): costuma ser certificado de cliente ausente ou não aceito, mas também pode ser cifra ou versão sem acordo'
       : MESSAGES[r.code];
-  return new TransportError(r.code, `${context.host}: ${message}${hint ? ` (${hint})` : ''}`, {
-    cause: err,
+  return new ErroTransporte(r.code, `${contexto.host}: ${message}${hint ? ` (${hint})` : ''}`, {
+    cause: erro,
     detalhes: details,
   });
 }
@@ -136,7 +136,7 @@ const ALERT_NAMES: Readonly<Record<number, string>> = {
 };
 
 /** O `data` de um erro `transport` do helper `sinete-signer` (docs/signer-contract/PROTOCOL.md). */
-export interface HelperFailureData {
+export interface DadosDaFalhaDoHelper {
   readonly stage?: 'dial' | 'handshake' | 'request' | 'response';
   readonly alert?: number;
   readonly x509?: 'unknown_authority' | 'hostname' | 'invalid';
@@ -151,32 +151,32 @@ export interface HelperFailureData {
  * Converte a falha de transporte relatada pelo helper (código `transport` com `data` estruturado) no mesmo erro tipado
  * que o transporte em processo produziria. O prazo estourado fica de fora: quem chama lança `ErroDeTempoEsgotado`.
  */
-export function classifyHelperFailure(data: HelperFailureData, message: string, host: string): TransportError {
-  let code: TransportErrorCode;
+export function classificarFalhaDoHelper(dados: DadosDaFalhaDoHelper, mensagem: string, host: string): ErroTransporte {
+  let code: CodigoErroTransporte;
   let alert: string | undefined;
-  if (data.alert !== undefined) {
-    alert = ALERT_NAMES[data.alert] ?? `ALERT_${data.alert}`;
+  if (dados.alert !== undefined) {
+    alert = ALERT_NAMES[dados.alert] ?? `ALERT_${dados.alert}`;
     code = alert === 'BAD_RECORD_MAC' ? 'certificado_ausente_ou_recusado' : (ALERTS[alert] ?? 'falha_tls');
-  } else if (data.x509 === 'hostname') code = 'nome_servidor_divergente';
-  else if (data.x509 !== undefined) code = 'cadeia_servidor_nao_confiavel';
-  else if (data.reset || (data.refused && data.stage !== 'dial')) code = 'conexao_recusada';
-  else if (data.dns || data.stage === 'dial') code = 'falha_rede';
-  else if (data.notTls || data.stage === 'handshake') code = 'falha_tls';
+  } else if (dados.x509 === 'hostname') code = 'nome_servidor_divergente';
+  else if (dados.x509 !== undefined) code = 'cadeia_servidor_nao_confiavel';
+  else if (dados.reset || (dados.refused && dados.stage !== 'dial')) code = 'conexao_recusada';
+  else if (dados.dns || dados.stage === 'dial') code = 'falha_rede';
+  else if (dados.notTls || dados.stage === 'handshake') code = 'falha_tls';
   else code = 'falha_rede';
   const hint = HINTS[code];
-  const details: Record<string, unknown> = { host, helper: message };
-  if (alert) details.alert = alert.toLowerCase();
-  if (data.stage) details.stage = data.stage;
+  const details: Record<string, unknown> = { host, mensagemDoHelper: mensagem };
+  if (alert) details.alerta = alert.toLowerCase();
+  if (dados.stage) details.etapa = dados.stage;
   const text =
     alert === 'HANDSHAKE_FAILURE'
       ? 'o servidor abortou o handshake (handshake_failure): costuma ser certificado de cliente ausente ou não aceito, mas também pode ser cifra ou versão sem acordo'
       : MESSAGES[code];
-  return new TransportError(code, `${host}: ${text}${hint ? ` (${hint})` : ''}`, { detalhes: details });
+  return new ErroTransporte(code, `${host}: ${text}${hint ? ` (${hint})` : ''}`, { detalhes: details });
 }
 
 /** HTTP 403 do IIS da SEFAZ: certificado ausente ou recusado (o subcódigo 403.7/403.16 só às vezes vem no corpo). */
-export function http403Error(host: string): TransportError {
-  return new TransportError(
+export function erroHttp403(host: string): ErroTransporte {
+  return new ErroTransporte(
     'certificado_ausente_ou_recusado',
     `${host}: HTTP 403, ${MESSAGES.certificado_ausente_ou_recusado} (${HINTS.certificado_ausente_ou_recusado})`,
     { detalhes: { host, status: 403 } },

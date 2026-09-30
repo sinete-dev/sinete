@@ -1,86 +1,86 @@
 /**
  * `@sinete/transport`: transporte mTLS dos DF-e.
  *
- * `Transport` com identidade TLS plugável, endpoints e perfis TLS por host como dados, SOAP 1.2, política de hosts e
- * erros tipados. Esta é a entrada `default` (browser, Deno sem condição `node`, bundlers): `createTransport` só cria o
+ * `Transporte` com identidade TLS plugável, endpoints e perfis TLS por host como dados, SOAP 1.2, política de hosts e
+ * erros tipados. Esta é a entrada `default` (browser, Deno sem condição `node`, bundlers): `criarTransporte` só cria o
  * transporte do Deno. Node e Bun resolvem a entrada `node`, que acrescenta o transporte sobre `node:https`.
  */
 
 import { ErroNaoSuportado } from '@sinete/core';
-import { detectRuntime } from './common.ts';
-import type { DenoTransportOptions } from './deno.ts';
-import { createDenoTransport } from './deno.ts';
-import type { Transport } from './types.ts';
+import { detectarRuntime } from './common.ts';
+import type { TransporteDenoOpcoes } from './deno.ts';
+import { criarTransporteDeno } from './deno.ts';
+import type { Transporte } from './types.ts';
 
-export type { HelperFailureData } from './classify.ts';
-export { classifyHelperFailure, classifyTransportFailure, http403Error } from './classify.ts';
-export { detectRuntime, unsupportedReasons } from './common.ts';
-export type { DenoHttpApi, DenoTransportOptions } from './deno.ts';
-export { createDenoTransport, DENO_CAPABILITIES } from './deno.ts';
+export type { DadosDaFalhaDoHelper } from './classify.ts';
+export { classificarFalhaDeTransporte, classificarFalhaDoHelper, erroHttp403 } from './classify.ts';
+export { detectarRuntime, motivosNaoSuportado } from './common.ts';
+export type { ApiHttpDeno, TransporteDenoOpcoes } from './deno.ts';
+export { CAPACIDADES_DENO, criarTransporteDeno } from './deno.ts';
 export type {
+  BuscaEndpointNfce,
+  BuscaEndpointNfe,
+  DescricaoDadosDeEndpoints,
   DocumentoFiscal,
-  EndpointDataInfo,
-  EndpointRef,
+  EndpointResolvido,
   MdfeServico,
   NfceAutorizador,
-  NfceConsultaUrls,
-  NfceEndpointQuery,
   NfeAutorizador,
-  NfeEndpointQuery,
   NfeServico,
   NfseApi,
-  TlsProfile,
+  PerfilTls,
+  UrlsConsultaNfce,
 } from './endpoints.ts';
 export {
-  allEndpoints,
-  ambienteHosts,
-  ENDPOINT_DATA,
+  DADOS_DE_ENDPOINTS,
+  hostsDoAmbiente,
   mdfeEndpoint,
   nfceAutorizadorDaUf,
-  nfceConsultaUrls,
   nfceEndpoint,
   nfeAutorizadorDaUf,
   nfeContingenciaDaUf,
   nfeEndpoint,
   nfseEndpoint,
-  tlsProfileForHost,
-  tlsProfiles,
+  perfilTlsDoHost,
+  perfisTls,
+  todosOsEndpoints,
+  urlsConsultaNfce,
 } from './endpoints.ts';
-export type { SignerErrorCode, TransportErrorCode } from './errors.ts';
-export { PolicyError, SignerError, TransportError, TransportUnsupportedError } from './errors.ts';
-export { pemIdentity } from './identity.ts';
-export type { AllowlistPolicyOptions } from './policy.ts';
-export { allowlistPolicy, allPolicies } from './policy.ts';
+export type { CodigoErroSigner, CodigoErroTransporte } from './errors.ts';
+export { ErroPolitica, ErroSigner, ErroTransporte, ErroTransporteNaoSuportado } from './errors.ts';
+export { identidadePem } from './identity.ts';
+export type { PoliticaDeHostsPermitidosOpcoes } from './policy.ts';
+export { politicaDeHostsPermitidos, todasAsPoliticas } from './policy.ts';
 export type { SoapFault } from './soap.ts';
-export { SOAP12_NS, soap12ContentType, soap12Envelope, soapBody, soapFault } from './soap.ts';
+export { contentTypeSoap12, envelopeSoap12, lerBodySoap, lerSoapFault, SOAP12_NS } from './soap.ts';
 export type {
-  AuditEvent,
-  ExternalTlsHelper,
-  HelperHttpRequest,
-  HostPolicy,
-  PolicyRequest,
-  TlsIdentity,
-  TlsInfo,
-  TlsSignContext,
-  TlsSigner,
-  Transport,
-  TransportCapabilities,
-  TransportOptions,
-  TransportRequest,
-  TransportResponse,
-  TransportRuntime,
+  AssinadorTls,
+  CapacidadesDoTransporte,
+  ContextoAssinaturaTls,
+  DescricaoTls,
+  EventoDeAuditoria,
+  HelperTlsExterno,
+  IdentidadeTls,
+  PedidoHttpDoHelper,
+  PedidoParaPolitica,
+  PedidoTransporte,
+  PoliticaDeHosts,
+  RespostaTransporte,
+  RuntimeDoTransporte,
+  Transporte,
+  TransporteOpcoes,
 } from './types.ts';
 
-/** Opções aceitas por `createTransport` em qualquer entrada. */
-export type CreateTransportOptions = DenoTransportOptions;
+/** Opções aceitas por `criarTransporte` em qualquer entrada. */
+export type CriarTransporteOpcoes = TransporteDenoOpcoes;
 
 /**
  * Cria o transporte da runtime atual. Nesta entrada só há o do Deno; em outra runtime, lança `ErroNaoSuportado` em vez
  * de cair num `fetch` genérico que ignoraria a identidade TLS.
  */
-export function createTransport(options: CreateTransportOptions): Transport {
-  if (detectRuntime() === 'deno') return createDenoTransport(options);
+export function criarTransporte(opcoes: CriarTransporteOpcoes): Transporte {
+  if (detectarRuntime() === 'deno') return criarTransporteDeno(opcoes);
   throw new ErroNaoSuportado(
-    `sem transporte mTLS para a runtime "${detectRuntime()}" nesta entrada; em Node e Bun o pacote resolve a condição "node"`,
+    `sem transporte mTLS para a runtime "${detectarRuntime()}" nesta entrada; em Node e Bun o pacote resolve a condição "node"`,
   );
 }

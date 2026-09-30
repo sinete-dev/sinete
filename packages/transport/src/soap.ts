@@ -10,23 +10,23 @@ import { ErroDeConfiguracao, ErroRespostaInvalida } from '@sinete/core';
 export const SOAP12_NS = 'http://www.w3.org/2003/05/soap-envelope';
 
 /** Envelope SOAP 1.2 com o corpo (e o cabeçalho, se houver) inseridos como texto, sem tocar neles. */
-export function soap12Envelope(body: string, options: { readonly header?: string } = {}): string {
+export function envelopeSoap12(corpo: string, opcoes: { readonly cabecalho?: string } = {}): string {
   for (const [part, xml] of [
-    ['corpo', body],
-    ['cabeçalho', options.header ?? ''],
+    ['corpo', corpo],
+    ['cabeçalho', opcoes.cabecalho ?? ''],
   ] as const) {
     if (/^\s*<\?xml/.test(xml)) {
       throw new ErroDeConfiguracao(`o ${part} SOAP não pode ter declaração XML; tire-a antes de assinar e envelopar`);
     }
   }
-  const header = options.header === undefined ? '' : `<soap12:Header>${options.header}</soap12:Header>`;
-  return `<?xml version="1.0" encoding="utf-8"?><soap12:Envelope xmlns:soap12="${SOAP12_NS}">${header}<soap12:Body>${body}</soap12:Body></soap12:Envelope>`;
+  const header = opcoes.cabecalho === undefined ? '' : `<soap12:Header>${opcoes.cabecalho}</soap12:Header>`;
+  return `<?xml version="1.0" encoding="utf-8"?><soap12:Envelope xmlns:soap12="${SOAP12_NS}">${header}<soap12:Body>${corpo}</soap12:Body></soap12:Envelope>`;
 }
 
 /** `Content-Type` do SOAP 1.2, com a `action` do WSDL quando houver (`<namespace do WSDL>/<operação>`). */
-export function soap12ContentType(action?: string): string {
-  if (action !== undefined && /["\r\n]/.test(action)) throw new ErroDeConfiguracao('action SOAP inválida');
-  return `application/soap+xml; charset=utf-8${action === undefined ? '' : `; action="${action}"`}`;
+export function contentTypeSoap12(acao?: string): string {
+  if (acao !== undefined && /["\r\n]/.test(acao)) throw new ErroDeConfiguracao('action SOAP inválida');
+  return `application/soap+xml; charset=utf-8${acao === undefined ? '' : `; action="${acao}"`}`;
 }
 
 const BODY_OPEN = /<(?:([\w.-]+):)?Body(?:\s[^>]*)?>/;
@@ -35,7 +35,7 @@ const BODY_OPEN = /<(?:([\w.-]+):)?Body(?:\s[^>]*)?>/;
  * Conteúdo do `Body` da resposta, como fatia da string recebida (sem parse nem reserialização).
  * Lança `ErroRespostaInvalida` se não houver `Body`.
  */
-export function soapBody(envelope: string): string {
+export function lerBodySoap(envelope: string): string {
   const open = BODY_OPEN.exec(envelope);
   if (!open) throw new ErroRespostaInvalida('resposta SOAP sem Body');
   const prefix = open[1] === undefined ? '' : `${open[1]}:`;
@@ -51,7 +51,7 @@ export interface SoapFault {
 }
 
 /** Fault SOAP 1.2 (ou 1.1) da resposta, se houver. */
-export function soapFault(envelope: string): SoapFault | undefined {
+export function lerSoapFault(envelope: string): SoapFault | undefined {
   if (!/<(?:[\w.-]+:)?Fault[\s>]/.test(envelope)) return undefined;
   const text = (tag: string): string | undefined => {
     const m = new RegExp(`<(?:[\\w.-]+:)?${tag}(?:\\s[^>]*)?>([\\s\\S]*?)</(?:[\\w.-]+:)?${tag}>`).exec(envelope);

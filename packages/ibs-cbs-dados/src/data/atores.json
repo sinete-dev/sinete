@@ -1,0 +1,722 @@
+[
+  {
+    "chave": "001",
+    "descricao": "Praça de Pedágio",
+    "grupo": 13,
+    "id": 1,
+    "ordem": 1,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "002",
+    "descricao": "Empresa com projeto habilitado (Lei nº 9.440/1997, art. 11-C)",
+    "grupo": 16,
+    "id": 2,
+    "ordem": 1,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "003",
+    "descricao": "Empresa com projeto habilitado (Lei nº 9.826/1999, arts. 1º a 4º)",
+    "grupo": 16,
+    "id": 3,
+    "ordem": 2,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "004",
+    "descricao": "Agente financeiro do FGTS  (exceto CEF)",
+    "grupo": 7,
+    "id": 4,
+    "ordem": 1,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "005",
+    "descricao": "Estabelecimento bancário (exceto CEF)",
+    "grupo": 7,
+    "id": 5,
+    "ordem": 2,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "006",
+    "descricao": "Instituição financeira",
+    "grupo": 7,
+    "id": 6,
+    "ordem": 3,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "007",
+    "descricao": "Prestadora de plano de assistência funerária",
+    "grupo": 8,
+    "id": 7,
+    "ordem": 1,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "008",
+    "descricao": "Prestadora de plano de assistência à saúde",
+    "grupo": 8,
+    "id": 8,
+    "ordem": 2,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "009",
+    "descricao": "Intermediadora de plano de assistência à saúde",
+    "grupo": 8,
+    "id": 9,
+    "ordem": 3,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "010",
+    "descricao": "Operadora de concursos de prognósticos",
+    "grupo": 8,
+    "id": 10,
+    "ordem": 4,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "011",
+    "descricao": "Prestadora de plano de assistência à saúde de animais domésticos",
+    "grupo": 8,
+    "id": 11,
+    "ordem": 5,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "012",
+    "descricao": "Prestador de serviço de transporte de bens",
+    "grupo": 13,
+    "id": 12,
+    "ordem": 2,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "013",
+    "descricao": "Empresa autorizada a operar em ZPE",
+    "grupo": 14,
+    "id": 13,
+    "ordem": 1,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "014",
+    "descricao": "Produtor rural não contribuinte",
+    "grupo": 3,
+    "id": 14,
+    "ordem": 1,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "015",
+    "descricao": "Transportador autônomo de carga pessoa física não contribuinte",
+    "grupo": 3,
+    "id": 15,
+    "ordem": 2,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "016",
+    "descricao": "Órgão da administração pública direta, autarquia ou fundação pública",
+    "grupo": 5,
+    "id": 16,
+    "ordem": 1,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "017",
+    "descricao": "Entidade de saúde imune ao IBS/CBS com CEBAS e comprovação de prestação ao SUS",
+    "grupo": 6,
+    "id": 17,
+    "ordem": 1,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "018",
+    "descricao": "Taxista (condutor autônomo de passageiros) com autorização, permissão ou concessão",
+    "grupo": 3,
+    "id": 18,
+    "ordem": 3,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "019",
+    "descricao": "Pessoa com deficiência ou transtorno do espectro autista",
+    "grupo": 3,
+    "id": 19,
+    "ordem": 4,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "020",
+    "descricao": "Instituição Científica, Tecnológica e de Inovação (ICT) sem fins lucrativos",
+    "grupo": 17,
+    "id": 20,
+    "ordem": 1,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "021",
+    "descricao": "Fundação de apoio credenciada na forma da lei",
+    "grupo": 17,
+    "id": 21,
+    "ordem": 2,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "022",
+    "descricao": "Contribuinte sujeito ao regime regular do IBS e da CBS",
+    "grupo": 1,
+    "id": 22,
+    "ordem": 1,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "023",
+    "descricao": "Agente operador do FGTS (Caixa Econômica Federal)",
+    "grupo": 7,
+    "id": 23,
+    "ordem": 4,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "024",
+    "descricao": "Seguradora",
+    "grupo": 7,
+    "id": 24,
+    "ordem": 5,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "025",
+    "descricao": "Resseguradora",
+    "grupo": 7,
+    "id": 25,
+    "ordem": 6,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "026",
+    "descricao": "Instituição financeira domiciliada no exterior",
+    "grupo": 7,
+    "id": 26,
+    "ordem": 7,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "027",
+    "descricao": "Sociedade cooperativa",
+    "grupo": 9,
+    "id": 27,
+    "ordem": 1,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "028",
+    "descricao": "Associado da cooperativa",
+    "grupo": 9,
+    "id": 28,
+    "ordem": 2,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "029",
+    "descricao": "Associado da cooperativa sujeito ao regime regular do IBS e da CBS",
+    "grupo": 9,
+    "id": 29,
+    "ordem": 3,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "030",
+    "descricao": "Contribuinte estabelecido fora da ZFM",
+    "grupo": 15,
+    "id": 30,
+    "ordem": 1,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "031",
+    "descricao": "Contribuinte habilitado na ZFM (regime regular ou Simples Nacional)",
+    "grupo": 15,
+    "id": 31,
+    "ordem": 2,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "032",
+    "descricao": "Indústria incentivada habilitada na ZFM",
+    "grupo": 15,
+    "id": 32,
+    "ordem": 3,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "033",
+    "descricao": "Contribuinte estabelecido fora de Área de Livre Comércio (ALC)",
+    "grupo": 15,
+    "id": 33,
+    "ordem": 4,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "034",
+    "descricao": "Contribuinte habilitado em Área de Livre Comércio (ALC) (regime regular ou Simples Nacional)",
+    "grupo": 15,
+    "id": 34,
+    "ordem": 5,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "035",
+    "descricao": "Instituição privada de ensino superior aderente ao Prouni",
+    "grupo": 17,
+    "id": 35,
+    "ordem": 3,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "036",
+    "descricao": "Associação ou clube esportivo filiado ao órgão estadual ou federal responsável pela coordenação dos desportos",
+    "grupo": 17,
+    "id": 36,
+    "ordem": 4,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "037",
+    "descricao": "Sociedade com sócio brasileiro com no mínimo 20% do capital social",
+    "grupo": 17,
+    "id": 37,
+    "ordem": 5,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "038",
+    "descricao": "Agência de turismo",
+    "grupo": 12,
+    "id": 38,
+    "ordem": 1,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "039",
+    "descricao": "Profissional de atividade intelectual submetida a conselho profissional (art. 127)",
+    "grupo": 17,
+    "id": 39,
+    "ordem": 6,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "040",
+    "descricao": "Prestador de transporte público coletivo de passageiros ferroviário e hidroviário (urbano, semiurbano e metropolitano) sob autorização, permissão ou concessão",
+    "grupo": 13,
+    "id": 40,
+    "ordem": 3,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "041",
+    "descricao": "Prestador de transporte público coletivo de passageiros rodoviário e metroviário (urbano, semiurbano e metropolitano) sob autorização, permissão ou concessão",
+    "grupo": 13,
+    "id": 41,
+    "ordem": 4,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "042",
+    "descricao": "União",
+    "grupo": 5,
+    "id": 42,
+    "ordem": 2,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "043",
+    "descricao": "Estado",
+    "grupo": 5,
+    "id": 43,
+    "ordem": 3,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "044",
+    "descricao": "Distrito Federal",
+    "grupo": 5,
+    "id": 44,
+    "ordem": 4,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "045",
+    "descricao": "Município",
+    "grupo": 5,
+    "id": 45,
+    "ordem": 5,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "046",
+    "descricao": "Autarquia",
+    "grupo": 5,
+    "id": 46,
+    "ordem": 6,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "047",
+    "descricao": "Fundação pública",
+    "grupo": 5,
+    "id": 47,
+    "ordem": 7,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "048",
+    "descricao": "Empresa pública prestadora de serviço postal",
+    "grupo": 5,
+    "id": 48,
+    "ordem": 8,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "049",
+    "descricao": "Entidade religiosa ou templo de qualquer culto (inclui organizações assistenciais e beneficentes)",
+    "grupo": 6,
+    "id": 49,
+    "ordem": 2,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "050",
+    "descricao": "Partido político (inclui institutos e fundações)",
+    "grupo": 6,
+    "id": 50,
+    "ordem": 3,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "051",
+    "descricao": "Entidade sindical dos trabalhadores",
+    "grupo": 6,
+    "id": 51,
+    "ordem": 4,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "052",
+    "descricao": "Instituição de educação sem fins lucrativos",
+    "grupo": 6,
+    "id": 52,
+    "ordem": 5,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "053",
+    "descricao": "Instituição de assistência social sem fins lucrativos",
+    "grupo": 6,
+    "id": 53,
+    "ordem": 6,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "054",
+    "descricao": "Condomínio edilício não optante pelo regime regular (condições do art. 26, § 2º, II)",
+    "grupo": 3,
+    "id": 54,
+    "ordem": 5,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "055",
+    "descricao": "Coletor incentivado de resíduos sólidos",
+    "grupo": 3,
+    "id": 55,
+    "ordem": 6,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "056",
+    "descricao": "Pessoa física não contribuinte do IBS e da CBS",
+    "grupo": 3,
+    "id": 56,
+    "ordem": 7,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "057",
+    "descricao": "Microempreendedor Individual (MEI)",
+    "grupo": 2,
+    "id": 57,
+    "ordem": 1,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "058",
+    "descricao": "Fundo garantidor ou executor de políticas públicas previsto em lei",
+    "grupo": 7,
+    "id": 58,
+    "ordem": 8,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "059",
+    "descricao": "Bar ou restaurante",
+    "grupo": 12,
+    "id": 59,
+    "ordem": 2,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "060",
+    "descricao": "Setor elétrico (geração, comercialização, distribuição e transmissão)",
+    "grupo": 11,
+    "id": 60,
+    "ordem": 1,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "061",
+    "descricao": "Fundo de Investimento Imobiliário (FII)",
+    "grupo": 4,
+    "id": 61,
+    "ordem": 1,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "062",
+    "descricao": "Fundo de Investimento nas Cadeias Produtivas do Agronegócio (Fiagro)",
+    "grupo": 4,
+    "id": 62,
+    "ordem": 2,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "063",
+    "descricao": "Fundo de investimento com patrimônio constituído exclusivamente por ativos financeiros permitidos pela CVM",
+    "grupo": 4,
+    "id": 63,
+    "ordem": 3,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "064",
+    "descricao": "Empresa comercial exportadora",
+    "grupo": 14,
+    "id": 64,
+    "ordem": 2,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "065",
+    "descricao": "Operador de loja franca",
+    "grupo": 14,
+    "id": 65,
+    "ordem": 3,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "066",
+    "descricao": "Companhia aérea operadora de aeronaves exclusivamente em tráfego internacional",
+    "grupo": 14,
+    "id": 66,
+    "ordem": 4,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "067",
+    "descricao": "Empresa sediada no exterior (contratante)",
+    "grupo": 14,
+    "id": 67,
+    "ordem": 5,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "068",
+    "descricao": "Beneficiário habilitado do Reporto",
+    "grupo": 14,
+    "id": 68,
+    "ordem": 6,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "069",
+    "descricao": "Beneficiário habilitado do Reidi",
+    "grupo": 14,
+    "id": 69,
+    "ordem": 7,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "070",
+    "descricao": "Beneficiário previamente habilitado do Renaval",
+    "grupo": 14,
+    "id": 70,
+    "ordem": 8,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "071",
+    "descricao": "Beneficiário do Rehidro",
+    "grupo": 14,
+    "id": 71,
+    "ordem": 9,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "072",
+    "descricao": "Indústria habilitada em Área de Livre Comércio (ALC) sujeita ao regime regular do IBS e da CBS",
+    "grupo": 15,
+    "id": 72,
+    "ordem": 6,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "073",
+    "descricao": "Contribuinte do regime regular que promova industrialização destinada à exportação",
+    "grupo": 14,
+    "id": 73,
+    "ordem": 10,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "074",
+    "descricao": "Central petroquímica autorizada pela ANP",
+    "grupo": 10,
+    "id": 74,
+    "ordem": 1,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "075",
+    "descricao": "Unidade de Processamento de Gás Natural",
+    "grupo": 10,
+    "id": 75,
+    "ordem": 2,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "076",
+    "descricao": "Refinaria de petróleo ou suas bases",
+    "grupo": 10,
+    "id": 76,
+    "ordem": 3,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "077",
+    "descricao": "Usina de Álcool",
+    "grupo": 10,
+    "id": 77,
+    "ordem": 4,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "078",
+    "descricao": "Formulador de combustíveis",
+    "grupo": 10,
+    "id": 78,
+    "ordem": 5,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "079",
+    "descricao": "Importador",
+    "grupo": 10,
+    "id": 79,
+    "ordem": 6,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "080",
+    "descricao": "Nanoempreendedor",
+    "grupo": 3,
+    "id": 80,
+    "ordem": 8,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "081",
+    "descricao": "Hotelaria, Parques de Diversão e Parques Temáticos",
+    "grupo": 12,
+    "id": 81,
+    "ordem": 3,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "082",
+    "descricao": "Aviação regional doméstica",
+    "grupo": 13,
+    "id": 82,
+    "ordem": 5,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "083",
+    "descricao": "Associado da cooperativa sujeito ao regime regular",
+    "grupo": 9,
+    "id": 83,
+    "ordem": 4,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "084",
+    "descricao": "Cooperativa Singular",
+    "grupo": 9,
+    "id": 84,
+    "ordem": 5,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "085",
+    "descricao": "Federação ou Confederação de Cooperativas",
+    "grupo": 9,
+    "id": 85,
+    "ordem": 6,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "086",
+    "descricao": "Distribuidor de energia elétrica",
+    "grupo": 11,
+    "id": 86,
+    "ordem": 2,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "087",
+    "descricao": "Administradora de consórcio",
+    "grupo": 7,
+    "id": 87,
+    "ordem": 9,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "088",
+    "descricao": "Distribuidor de combustível",
+    "grupo": 10,
+    "id": 88,
+    "ordem": 7,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "089",
+    "descricao": "Postos de combustível e grandes consumidores",
+    "grupo": 10,
+    "id": 89,
+    "ordem": 8,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "090",
+    "descricao": "Participante do Sistema de Compensação de Energia Elétrica (Lei nº 14.300/2022)",
+    "grupo": 11,
+    "id": 90,
+    "ordem": 3,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  }
+]

@@ -7,25 +7,25 @@
  * por atores também não.
  */
 import type { ContextoDeTempo } from '@sinete/core';
-import type { ClassTribRecord, IbsCbsDataset, TaxContent } from '@sinete/ibs-cbs-dados';
-import { BRASILIA_OFFSET_MINUTES, civilDate } from '@sinete/ibs-cbs-dados';
-import { NT_TABLES } from '../validar/index.ts';
-import { DeterminationError } from './errors.ts';
-import type { Candidate, Exclusion, ItemFacts, OperationFacts, PartyFacts } from './types.ts';
+import type { ConteudoTributario, DatasetIbsCbs, RegistroClassTrib } from '@sinete/ibs-cbs-dados';
+import { DESLOCAMENTO_BRASILIA_MIN, dataCivil } from '@sinete/ibs-cbs-dados';
+import { TABELAS_NT } from '../validar/index.ts';
+import { ErroDeterminacao } from './errors.ts';
+import type { Candidato, Exclusao, FatosDaOperacao, FatosDaParte, FatosDoItem } from './types.ts';
 
-export interface ConstrainOptions {
-  readonly dataset: IbsCbsDataset;
+export interface RestringirOpcoes {
+  readonly dataset: DatasetIbsCbs;
   /** O relógio de fato gerador decide a data das tabelas. */
-  readonly time: ContextoDeTempo;
+  readonly tempo: ContextoDeTempo;
   /** Deslocamento do fuso do emitente em minutos (padrão: Brasília). */
-  readonly utcOffsetMinutes?: number;
+  readonly deslocamentoMin?: number;
 }
 
 /** Candidatos e exclusões de um item, só pelas restrições oficiais. */
-export interface ItemConstraints {
+export interface RestricoesDoItem {
   readonly n: number;
-  readonly candidates: readonly Candidate[];
-  readonly exclusions: readonly Exclusion[];
+  readonly candidatos: readonly Candidato[];
+  readonly exclusoes: readonly Exclusao[];
 }
 
 const NT = 'NT 2025.002 v1.51';
@@ -54,20 +54,20 @@ const ROMAN: readonly string[] = [
 ];
 
 /** Data civil do fato gerador. */
-export function factDate(time: ContextoDeTempo, utcOffsetMinutes: number = BRASILIA_OFFSET_MINUTES): string {
-  return civilDate(time.fatoGerador.agora(), utcOffsetMinutes);
+export function dataDoFato(tempo: ContextoDeTempo, deslocamentoMin: number = DESLOCAMENTO_BRASILIA_MIN): string {
+  return dataCivil(tempo.fatoGerador.agora(), deslocamentoMin);
 }
 
-export function candidateOf(content: TaxContent, ct: ClassTribRecord): Candidate {
-  const treatment = content.treatment(ct);
+export function candidatoDe(conteudo: ConteudoTributario, ct: RegistroClassTrib): Candidato {
+  const treatment = conteudo.tratamento(ct);
   return {
     cst: ct.cst,
-    cClassTrib: ct.code,
-    name: ct.name,
-    description: ct.description,
+    cClassTrib: ct.codigo,
+    nome: ct.nome,
+    descricao: ct.descricao,
     lc214: ct.legal.lc214,
-    link: ct.legal.link,
-    requiresRegular: (treatment?.flags.exigeGrupoTribRegular ?? false) || ct.groups.gTribRegular === 'required',
+    url: ct.legal.url,
+    exigeRegular: (treatment?.indicadores.exigeGrupoTribRegular ?? false) || ct.grupos.gTribRegular === 'obrigatorio',
   };
 }
 
@@ -77,82 +77,82 @@ function annexName(annex: string | null): string {
   return roman ? `Anexo ${roman} da LC 214/2025` : `anexo técnico ${annex} do IT 2025.002`;
 }
 
-function checkFacts(facts: OperationFacts, content: TaxContent): void {
-  if (!facts || !Array.isArray(facts.items)) throw new DeterminationError('fatos_invalidos', 'operação sem itens');
+function checkFacts(facts: FatosDaOperacao, content: ConteudoTributario): void {
+  if (!facts || !Array.isArray(facts.itens)) throw new ErroDeterminacao('fatos_invalidos', 'operação sem itens');
   if (!Number.isInteger(facts.modelo)) {
-    throw new DeterminationError('fatos_invalidos', `modelo inválido: ${String(facts.modelo)}`);
+    throw new ErroDeterminacao('fatos_invalidos', `modelo inválido: ${String(facts.modelo)}`);
   }
   const seen = new Set<number>();
-  for (const it of facts.items) {
+  for (const it of facts.itens) {
     if (!Number.isInteger(it.n) || it.n < 1 || seen.has(it.n)) {
-      throw new DeterminationError('fatos_invalidos', `número de item inválido ou repetido: ${String(it.n)}`, it.n);
+      throw new ErroDeterminacao('fatos_invalidos', `número de item inválido ou repetido: ${String(it.n)}`, it.n);
     }
     seen.add(it.n);
     if (it.ncm !== undefined && !/^\d{1,8}$/.test(it.ncm)) {
-      throw new DeterminationError('fatos_invalidos', `NCM inválido: ${it.ncm}`, it.n);
+      throw new ErroDeterminacao('fatos_invalidos', `NCM inválido: ${it.ncm}`, it.n);
     }
     if (it.nbs !== undefined && !/^\d{1,9}$/.test(it.nbs)) {
-      throw new DeterminationError('fatos_invalidos', `NBS inválida: ${it.nbs}`, it.n);
+      throw new ErroDeterminacao('fatos_invalidos', `NBS inválida: ${it.nbs}`, it.n);
     }
   }
   for (const [role, party] of [
-    ['fornecedor', facts.supplier],
-    ['adquirente', facts.buyer],
+    ['fornecedor', facts.fornecedor],
+    ['adquirente', facts.adquirente],
   ] as const) {
-    for (const id of party?.actors ?? []) {
-      if (!Number.isInteger(id) || !content.actor(id)) {
-        throw new DeterminationError(
+    for (const id of party?.atores ?? []) {
+      if (!Number.isInteger(id) || !content.ator(id)) {
+        throw new ErroDeterminacao(
           'fatos_invalidos',
-          `ator do ${role} inexistente em ${content.asOf}: ${String(id)}`,
+          `ator do ${role} inexistente em ${content.dataDeReferencia}: ${String(id)}`,
         );
       }
     }
   }
   for (const [field, table] of [
-    ['tpNFDebito', NT_TABLES.tpNFDebito],
-    ['tpNFCredito', NT_TABLES.tpNFCredito],
+    ['tpNFDebito', TABELAS_NT.tpNFDebito],
+    ['tpNFCredito', TABELAS_NT.tpNFCredito],
   ] as const) {
     const code = facts[field];
-    if (code !== undefined && !table.some((r) => r.code === code)) {
-      throw new DeterminationError('fatos_invalidos', `${field} inexistente na ${NT}: ${code}`);
+    if (code !== undefined && !table.some((r) => r.codigo === code)) {
+      throw new ErroDeterminacao('fatos_invalidos', `${field} inexistente na ${NT}: ${code}`);
     }
   }
 }
 
 /** Códigos admitidos pelos atores conhecidos da parte, ou `undefined` sem atores (não restringe). */
 function admitted(
-  content: TaxContent,
-  party: PartyFacts | undefined,
-  role: 'supplier' | 'buyer',
+  content: ConteudoTributario,
+  party: FatosDaParte | undefined,
+  role: 'fornecedor' | 'adquirente',
 ): Set<string> | undefined {
-  const actors = party?.actors ?? [];
+  const actors = party?.atores ?? [];
   if (actors.length === 0) return undefined;
-  return new Set(actors.flatMap((id) => content.byActors({ [role]: id })));
+  return new Set(actors.flatMap((id) => content.porAtores({ [role]: id })));
 }
 
-type Excluded = Omit<Exclusion, 'cClassTrib'> | undefined;
-type Check = (ct: ClassTribRecord, item: ItemFacts) => Excluded;
+type Excluded = Omit<Exclusao, 'cClassTrib'> | undefined;
+type Check = (ct: RegistroClassTrib, item: FatosDoItem) => Excluded;
 
-function noteTypeCheck(facts: OperationFacts): Check {
+function noteTypeCheck(facts: FatosDaOperacao): Check {
   if (facts.modelo !== 55 && facts.modelo !== 65) return () => undefined;
-  const debit = NT_TABLES.tpNFDebito.find((r) => r.code === facts.tpNFDebito)?.cClassTrib ?? null;
-  const credit = NT_TABLES.tpNFCredito.find((r) => r.code === facts.tpNFCredito)?.cClassTrib ?? null;
-  return (ct: ClassTribRecord): Excluded => {
-    if (debit !== null && ct.code !== debit) {
+  const debit = TABELAS_NT.tpNFDebito.find((r) => r.codigo === facts.tpNFDebito)?.cClassTrib ?? null;
+  const credit = TABELAS_NT.tpNFCredito.find((r) => r.codigo === facts.tpNFCredito)?.cClassTrib ?? null;
+  return (ct: RegistroClassTrib): Excluded => {
+    if (debit !== null && ct.codigo !== debit) {
       return {
-        reason: 'tipo-de-nota',
-        detail: `tpNFDebito ${facts.tpNFDebito} exige cClassTrib ${debit}`,
-        source: `${NT}, UB14-70`,
+        motivo: 'tipo-de-nota',
+        detalhe: `tpNFDebito ${facts.tpNFDebito} exige cClassTrib ${debit}`,
+        fonte: `${NT}, UB14-70`,
       };
     }
-    if (credit !== null && ct.code !== credit) {
+    if (credit !== null && ct.codigo !== credit) {
       return {
-        reason: 'tipo-de-nota',
-        detail: `tpNFCredito ${facts.tpNFCredito} exige cClassTrib ${credit}`,
-        source: `${NT}, UB14-80`,
+        motivo: 'tipo-de-nota',
+        detalhe: `tpNFCredito ${facts.tpNFCredito} exige cClassTrib ${credit}`,
+        fonte: `${NT}, UB14-80`,
       };
     }
-    const row = NT_TABLES.classTribByNoteType.find((r) => r.cClassTrib === ct.code);
+    const row = TABELAS_NT.classTribPorTipoDeNota.find((r) => r.cClassTrib === ct.codigo);
     if (!row) return undefined;
     const ok =
       (row.tpNFDebito !== null && facts.tpNFDebito === row.tpNFDebito) ||
@@ -163,95 +163,95 @@ function noteTypeCheck(facts: OperationFacts): Check {
       row.tpNFCredito && `tpNFCredito ${row.tpNFCredito}`,
     ];
     return {
-      reason: 'tipo-de-nota',
-      detail: `cClassTrib ${ct.code} só em nota com ${needs.filter(Boolean).join(' ou ')}`,
-      source: `${NT}, UB14-60`,
+      motivo: 'tipo-de-nota',
+      detalhe: `cClassTrib ${ct.codigo} só em nota com ${needs.filter(Boolean).join(' ou ')}`,
+      fonte: `${NT}, UB14-60`,
     };
   };
 }
 
-function checks(facts: OperationFacts, content: TaxContent): readonly Check[] {
-  const data = `@sinete/ibs-cbs-dados ${content.dataset.contentVersion}`;
-  const supplier = admitted(content, facts.supplier, 'supplier');
-  const buyer = admitted(content, facts.buyer, 'buyer');
+function checks(facts: FatosDaOperacao, content: ConteudoTributario): readonly Check[] {
+  const data = `@sinete/ibs-cbs-dados ${content.dataset.versaoDoConteudo}`;
+  const supplier = admitted(content, facts.fornecedor, 'fornecedor');
+  const buyer = admitted(content, facts.adquirente, 'adquirente');
   return [
-    (ct: ClassTribRecord): Excluded =>
-      content.allowedIn(ct, facts.modelo)
+    (ct: RegistroClassTrib): Excluded =>
+      content.permitidoEm(ct, facts.modelo)
         ? undefined
         : {
-            reason: 'dfe',
-            detail: `cClassTrib ${ct.code} não habilitado no modelo ${facts.modelo} em ${content.asOf}`,
-            source: `${data}, vínculo cClassTrib x DF-e`,
+            motivo: 'dfe',
+            detalhe: `cClassTrib ${ct.codigo} não habilitado no modelo ${facts.modelo} em ${content.dataDeReferencia}`,
+            fonte: `${data}, vínculo cClassTrib x DF-e`,
           },
     noteTypeCheck(facts),
-    (ct: ClassTribRecord, item: ItemFacts): Excluded => {
+    (ct: RegistroClassTrib, item: FatosDoItem): Excluded => {
       const onlyNbs = item.nbs !== undefined && item.ncm === undefined;
       const onlyNcm = item.ncm !== undefined && item.nbs === undefined;
-      if ((ct.nomenclature === 'NCM' && onlyNbs) || (ct.nomenclature === 'NBS' && onlyNcm)) {
+      if ((ct.nomenclatura === 'NCM' && onlyNbs) || (ct.nomenclatura === 'NBS' && onlyNcm)) {
         return {
-          reason: 'nomenclatura',
-          detail: `cClassTrib ${ct.code} pede ${ct.nomenclature} e o item só tem ${onlyNbs ? 'NBS' : 'NCM'}`,
-          source: `${data}, nomenclatura do cClassTrib`,
+          motivo: 'nomenclatura',
+          detalhe: `cClassTrib ${ct.codigo} pede ${ct.nomenclatura} e o item só tem ${onlyNbs ? 'NBS' : 'NCM'}`,
+          fonte: `${data}, nomenclatura do cClassTrib`,
         };
       }
       return undefined;
     },
-    (ct: ClassTribRecord, item: ItemFacts): Excluded => {
+    (ct: RegistroClassTrib, item: FatosDoItem): Excluded => {
       for (const kind of ['ncm', 'nbs'] as const) {
         const code = item[kind];
         if (code === undefined) continue;
-        const r = kind === 'ncm' ? content.applicableNcm(ct, code) : content.applicableNbs(ct, code);
-        if (r.result !== 'no') continue;
+        const r = kind === 'ncm' ? content.ncmAplicavel(ct, code) : content.nbsAplicavel(ct, code);
+        if (r.resultado !== 'nao') continue;
         const label = kind.toUpperCase();
         const detail =
-          r.excludedBy.length > 0
-            ? `${label} ${code} está numa exceção (${r.excludedBy.join(', ')}) do cClassTrib ${ct.code}`
-            : `${label} ${code} fora da lista do cClassTrib ${ct.code}`;
-        return { reason: kind, detail, source: `${annexName(ct.annex)}; ${data}, aplicabilidade de ${label}` };
+          r.excluidoPor.length > 0
+            ? `${label} ${code} está numa exceção (${r.excluidoPor.join(', ')}) do cClassTrib ${ct.codigo}`
+            : `${label} ${code} fora da lista do cClassTrib ${ct.codigo}`;
+        return { motivo: kind, detalhe: detail, fonte: `${annexName(ct.anexo)}; ${data}, aplicabilidade de ${label}` };
       }
       return undefined;
     },
-    (ct: ClassTribRecord): Excluded => {
-      const bySupplier = supplier !== undefined && !supplier.has(ct.code);
-      const byBuyer = buyer !== undefined && !buyer.has(ct.code);
+    (ct: RegistroClassTrib): Excluded => {
+      const bySupplier = supplier !== undefined && !supplier.has(ct.codigo);
+      const byBuyer = buyer !== undefined && !buyer.has(ct.codigo);
       if (!bySupplier && !byBuyer) return undefined;
       const roles = [bySupplier && 'fornecedor', byBuyer && 'adquirente'].filter(Boolean).join(' e ');
       return {
-        reason: 'atores',
-        detail: `cClassTrib ${ct.code} tem vínculo de atores que não casa com o ${roles}`,
-        source: `${data}, vínculo cClassTrib x atores`,
+        motivo: 'atores',
+        detalhe: `cClassTrib ${ct.codigo} tem vínculo de atores que não casa com o ${roles}`,
+        fonte: `${data}, vínculo cClassTrib x atores`,
       };
     },
   ];
 }
 
-/** Restrições oficiais na data do fato gerador de `options.time`. */
-export function constrain(facts: OperationFacts, options: ConstrainOptions): readonly ItemConstraints[] {
-  return constrainAt(facts, options.dataset.at(factDate(options.time, options.utcOffsetMinutes)));
+/** Restrições oficiais na data do fato gerador de `opcoes.tempo`. */
+export function restringir(fatos: FatosDaOperacao, opcoes: RestringirOpcoes): readonly RestricoesDoItem[] {
+  return restringirEm(fatos, opcoes.dataset.em(dataDoFato(opcoes.tempo, opcoes.deslocamentoMin)));
 }
 
 /** Restrições oficiais numa visão já fixada numa data. */
-export function constrainAt(facts: OperationFacts, content: TaxContent): readonly ItemConstraints[] {
-  checkFacts(facts, content);
-  const inForce = content.classTribs();
-  const live = new Set(inForce.map((c) => c.code));
-  const expired = new Map<string, ClassTribRecord>();
-  for (const c of content.dataset.tables.classTrib) {
-    if (c.family !== 'CBS_IBS' || live.has(c.code)) continue;
-    const prev = expired.get(c.code);
-    if (!prev || prev.validity.from < c.validity.from) expired.set(c.code, c);
+export function restringirEm(fatos: FatosDaOperacao, conteudo: ConteudoTributario): readonly RestricoesDoItem[] {
+  checkFacts(fatos, conteudo);
+  const inForce = conteudo.classTribs();
+  const live = new Set(inForce.map((c) => c.codigo));
+  const expired = new Map<string, RegistroClassTrib>();
+  for (const c of conteudo.dataset.tabelas.classTrib) {
+    if (c.familia !== 'CBS_IBS' || live.has(c.codigo)) continue;
+    const prev = expired.get(c.codigo);
+    if (!prev || prev.vigencia.inicio < c.vigencia.inicio) expired.set(c.codigo, c);
   }
-  const rules = checks(facts, content);
-  const data = `@sinete/ibs-cbs-dados ${content.dataset.contentVersion}`;
-  return facts.items.map((item) => {
-    const candidates: Candidate[] = [];
-    const exclusions: Exclusion[] = [];
+  const rules = checks(fatos, conteudo);
+  const data = `@sinete/ibs-cbs-dados ${conteudo.dataset.versaoDoConteudo}`;
+  return fatos.itens.map((item) => {
+    const candidates: Candidato[] = [];
+    const exclusions: Exclusao[] = [];
     for (const [code, c] of [...expired].sort(([a], [b]) => a.localeCompare(b))) {
       exclusions.push({
         cClassTrib: code,
-        reason: 'vigencia',
-        detail: `cClassTrib ${code} fora de vigência em ${content.asOf} (${c.validity.from} a ${c.validity.to ?? 'indeterminado'})`,
-        source: `${data}, vigência do cClassTrib`,
+        motivo: 'vigencia',
+        detalhe: `cClassTrib ${code} fora de vigência em ${conteudo.dataDeReferencia} (${c.vigencia.inicio} a ${c.vigencia.fim ?? 'indeterminado'})`,
+        fonte: `${data}, vigência do cClassTrib`,
       });
     }
     for (const ct of inForce) {
@@ -260,9 +260,9 @@ export function constrainAt(facts: OperationFacts, content: TaxContent): readonl
         excluded = check(ct, item);
         if (excluded) break;
       }
-      if (excluded) exclusions.push({ cClassTrib: ct.code, ...excluded });
-      else candidates.push(candidateOf(content, ct));
+      if (excluded) exclusions.push({ cClassTrib: ct.codigo, ...excluded });
+      else candidates.push(candidatoDe(conteudo, ct));
     }
-    return { n: item.n, candidates, exclusions };
+    return { n: item.n, candidatos: candidates, exclusoes: exclusions };
   });
 }

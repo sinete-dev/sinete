@@ -3,7 +3,7 @@
  *
  * Puro e determinístico: mesma operação, mesmos dados, mesmas alíquotas e mesma data dão o mesmo `Roc`. As regras de
  * cálculo vêm do dataset (expressões do tratamento tributário de cada cClassTrib, reduções, alíquotas fixas, redutor e
- * transferência de compras governamentais); as alíquotas nominais vêm do `RateProvider`. A precisão segue a
+ * transferência de compras governamentais); as alíquotas nominais vêm do `ProvedorDeAliquotas`. A precisão segue a
  * Calculadora da RFB: cada expressão é arredondada para 8 casas HALF_EVEN (LC 214/2025, art. 349, § 14) e a saída para
  * 2 casas nos valores e de 2 a 4 casas nos percentuais.
  *
@@ -17,28 +17,29 @@
  */
 import type { ContextoDeTempo } from '@sinete/core';
 import type {
-  ClassTribRecord,
-  CstRecord,
-  IbsCbsDataset,
-  Indicator,
-  TaxContent,
-  TreatmentRecord,
+  ConteudoTributario,
+  DatasetIbsCbs,
+  Indicador,
+  RegistroClassTrib,
+  RegistroCst,
+  RegistroTratamento,
 } from '@sinete/ibs-cbs-dados';
-import { BRASILIA_OFFSET_MINUTES, civilDate } from '@sinete/ibs-cbs-dados';
-import type { RateProvider, RateTributo } from '../aliquotas/index.ts';
-import { RATE_TRIBUTOS, RateUnknownError, requireRate } from '../aliquotas/index.ts';
+import { DESLOCAMENTO_BRASILIA_MIN, dataCivil } from '@sinete/ibs-cbs-dados';
+import type { ProvedorDeAliquotas, TributoDaAliquota } from '../aliquotas/index.ts';
+import { ErroAliquotaDesconhecida, exigirAliquota, TRIBUTOS_DAS_ALIQUOTAS } from '../aliquotas/index.ts';
 import { Decimal, sum } from './decimal.ts';
-import type { ClassificationReason } from './errors.ts';
-import { ClassificationError, UnsupportedRegimeError } from './errors.ts';
-import type { Variables } from './expression.ts';
-import { evaluate, INTERNAL_SCALE } from './expression.ts';
-import { fromPercent, money, percent, toPercent } from './format.ts';
-import type { GovValues } from './govpurchase.ts';
-import { REDISTRIBUTION_FROM, redistribute } from './govpurchase.ts';
+import type { MotivoErroClassificacao } from './errors.ts';
+import { ErroClassificacao, ErroRegimeNaoSuportado } from './errors.ts';
+import type { Variaveis } from './expression.ts';
+import { avaliar, ESCALA_INTERNA } from './expression.ts';
+import { dePercentual, dinheiro, paraPercentual, percentual } from './format.ts';
+import type { ValoresCompraGov } from './govpurchase.ts';
+import { REDISTRIBUICAO_A_PARTIR_DE, redistribuir } from './govpurchase.ts';
 import type {
-  AppliedRate,
-  ClassifiedItem,
-  ClassifiedOperation,
+  AliquotaAplicada,
+  AliquotasInformadas,
+  DataIso,
+  EntradaDoRastro,
   GCredPresOper,
   GCredPresTributo,
   GDevTrib,
@@ -49,21 +50,20 @@ import type {
   GTribRegular,
   IBSCBS,
   IBSCBSTot,
-  InformedRates,
-  IsoDate,
+  ItemClassificado,
+  OperacaoClassificada,
   Roc,
   RocItem,
   TpEnteGov,
-  TraceEntry,
 } from './types.ts';
 
-export interface CalculateOptions {
-  readonly dataset: IbsCbsDataset;
-  readonly rates: RateProvider;
+export interface CalcularOpcoes {
+  readonly dataset: DatasetIbsCbs;
+  readonly aliquotas: ProvedorDeAliquotas;
   /** Relógios da operação: o de fato gerador decide dados e alíquotas. */
-  readonly time: ContextoDeTempo;
+  readonly tempo: ContextoDeTempo;
   /** Deslocamento do fuso do local da operação em minutos (padrão: Brasília, `-180`). */
-  readonly utcOffsetMinutes?: number;
+  readonly deslocamentoMin?: number;
 }
 
 const COMBINED = 'Alíquotas Combinadas (Ad Valorem e Ad Rem)';
@@ -71,9 +71,9 @@ const DECIMAL_PERCENT = /^\d{1,3}(\.\d{1,4})?$/;
 const COMPET = /^\d{4}-(0[1-9]|1[0-2])$/;
 
 interface Resolved {
-  readonly cst: CstRecord;
-  readonly classTrib: ClassTribRecord;
-  readonly treatment: TreatmentRecord;
+  readonly cst: RegistroCst;
+  readonly classTrib: RegistroClassTrib;
+  readonly treatment: RegistroTratamento;
 }
 
 interface GovContext {
@@ -86,18 +86,18 @@ interface GovContext {
 }
 
 interface Ctx {
-  readonly content: TaxContent;
-  readonly date: IsoDate;
-  readonly op: ClassifiedOperation;
-  readonly rates: RateProvider;
+  readonly content: ConteudoTributario;
+  readonly date: DataIso;
+  readonly op: OperacaoClassificada;
+  readonly rates: ProvedorDeAliquotas;
   readonly gov: GovContext | undefined;
-  readonly trace: TraceEntry[];
+  readonly trace: EntradaDoRastro[];
 }
 
 /** Resultado interno de um tributo, em precisão interna. */
 interface TribCalc {
-  readonly t: RateTributo;
-  readonly applied: AppliedRate;
+  readonly t: TributoDaAliquota;
+  readonly applied: AliquotaAplicada;
   readonly divided: boolean;
   readonly aliq: Decimal;
   readonly aliqEfet: Decimal | undefined;
@@ -110,8 +110,8 @@ interface TribCalc {
   readonly vDevTrib: Decimal | undefined;
 }
 
-function fail(reason: ClassificationReason, message: string, item?: number): never {
-  throw new ClassificationError(reason, message, item);
+function fail(reason: MotivoErroClassificacao, message: string, item?: number): never {
+  throw new ErroClassificacao(reason, message, item);
 }
 
 function decimalInput(value: unknown, what: string, item?: number): Decimal {
@@ -129,12 +129,12 @@ function percentInput(value: unknown, what: string, item?: number): Decimal {
   return Decimal.parse(value);
 }
 
-/** Confere presença contra o indicador: `required` exige, `forbidden` veda, `allowed` aceita os dois. */
-function checkGroup(indicator: Indicator | null, present: boolean, group: string, owner: string, item: number): void {
-  if (indicator === 'required' && !present) {
+/** Confere presença contra o indicador: `obrigatorio` exige, `vedado` veda, `permitido` aceita os dois. */
+function checkGroup(indicator: Indicador | null, present: boolean, group: string, owner: string, item: number): void {
+  if (indicator === 'obrigatorio' && !present) {
     fail('grupo_obrigatorio', `${owner} exige o grupo ${group}`, item);
   }
-  if (indicator === 'forbidden' && present) {
+  if (indicator === 'vedado' && present) {
     fail('grupo_vedado', `${owner} não permite o grupo ${group}`, item);
   }
 }
@@ -150,14 +150,14 @@ function resolve(ctx: Ctx, cst: string, code: string, item: number, label: strin
   if (classTrib.cst !== cst) {
     fail('cclasstrib_fora_da_cst', `${label}cClassTrib ${code} pertence à CST ${classTrib.cst}, não à ${cst}`, item);
   }
-  if (!c.allowedIn(classTrib, ctx.op.modelo)) {
+  if (!c.permitidoEm(classTrib, ctx.op.modelo)) {
     fail(
       'nao_habilitado_no_dfe',
       `${label}cClassTrib ${code} não é permitido no modelo ${ctx.op.modelo} em ${ctx.date}`,
       item,
     );
   }
-  const treatment = c.treatment(classTrib);
+  const treatment = c.tratamento(classTrib);
   if (!treatment)
     fail('tratamento_ausente', `${label}cClassTrib ${code} sem tratamento tributário em ${ctx.date}`, item);
   return { cst: cstRec, classTrib, treatment };
@@ -168,25 +168,25 @@ function resolve(ctx: Ctx, cst: string, code: string, item: number, label: strin
  * tratamento do cClassTrib regular, então só ele passa pela checagem de tratamento; o principal responde pela CST.
  */
 function checkSupported(r: Resolved, item: number, label: string): void {
-  const usesOwnTreatment = !r.treatment.flags.exigeGrupoTribRegular;
-  if (r.cst.groups.gIBSCBSMono === 'required' || (usesOwnTreatment && r.treatment.flags.possuiMonofasia)) {
-    throw new UnsupportedRegimeError(
+  const usesOwnTreatment = !r.treatment.indicadores.exigeGrupoTribRegular;
+  if (r.cst.grupos.gIBSCBSMono === 'obrigatorio' || (usesOwnTreatment && r.treatment.indicadores.possuiMonofasia)) {
+    throw new ErroRegimeNaoSuportado(
       'monofasia',
-      `${label}cClassTrib ${r.classTrib.code}: tributação monofásica ainda não é suportada pelo motor`,
+      `${label}cClassTrib ${r.classTrib.codigo}: tributação monofásica ainda não é suportada pelo motor`,
       item,
     );
   }
-  if (r.classTrib.rateKind === COMBINED) {
-    throw new UnsupportedRegimeError(
+  if (r.classTrib.tipoDeAliquota === COMBINED) {
+    throw new ErroRegimeNaoSuportado(
       'aliquotas-combinadas',
-      `${label}cClassTrib ${r.classTrib.code}: alíquotas combinadas (ad valorem e ad rem) ainda não são suportadas`,
+      `${label}cClassTrib ${r.classTrib.codigo}: alíquotas combinadas (ad valorem e ad rem) ainda não são suportadas`,
       item,
     );
   }
-  if (usesOwnTreatment && r.treatment.flags.possuiAjuste && r.cst.groups.gIBSCBS === 'required') {
-    throw new UnsupportedRegimeError(
+  if (usesOwnTreatment && r.treatment.indicadores.possuiAjuste && r.cst.grupos.gIBSCBS === 'obrigatorio') {
+    throw new ErroRegimeNaoSuportado(
       'ajuste',
-      `${label}cClassTrib ${r.classTrib.code}: tratamento com ajuste ("${r.treatment.description}") sem regra de cálculo publicada; a Calculadora também recusa`,
+      `${label}cClassTrib ${r.classTrib.codigo}: tratamento com ajuste ("${r.treatment.descricao}") sem regra de cálculo publicada; a Calculadora também recusa`,
       item,
     );
   }
@@ -196,56 +196,56 @@ interface RateChoice {
   readonly pct: Decimal;
   readonly divided: boolean;
   readonly informed: boolean;
-  readonly applied: AppliedRate;
+  readonly applied: AliquotaAplicada;
 }
 
 function applyRate(
   ctx: Ctx,
-  c: ClassTribRecord,
-  t: RateTributo,
-  informed: InformedRates | undefined,
+  c: RegistroClassTrib,
+  t: TributoDaAliquota,
+  informed: AliquotasInformadas | undefined,
   item: number,
 ): RateChoice {
-  const kind = c.rateKind;
+  const kind = c.tipoDeAliquota;
   if (kind === 'Sem alíquota') {
-    const applied: AppliedRate = { tributo: t, value: '0', status: 'official', origin: 'no-rate' };
+    const applied: AliquotaAplicada = { tributo: t, valor: '0', situacao: 'oficial', origem: 'sem-aliquota' };
     return { pct: Decimal.ZERO, divided: false, informed: false, applied };
   }
   const inf = informed?.[t];
   if (inf !== undefined) {
     const pct = percentInput(inf, `alíquota informada de ${t}`, item);
-    const applied: AppliedRate = {
+    const applied: AliquotaAplicada = {
       tributo: t,
-      value: inf,
-      status: 'user-provided',
-      origin: 'informed',
-      reason: informed?.reason ?? '',
+      valor: inf,
+      situacao: 'informada',
+      origem: 'informada',
+      motivo: informed?.motivo ?? '',
     };
     return { pct, divided: true, informed: true, applied };
   }
   if (kind === 'Uniforme setorial' || kind === 'Fixa') {
-    const fixed = ctx.content.fixedRate(c, t);
+    const fixed = ctx.content.aliquotaFixa(c, t);
     if (fixed === undefined) {
-      throw new RateUnknownError(
+      throw new ErroAliquotaDesconhecida(
         t,
         ctx.date,
-        `cClassTrib ${c.code} (${kind}): sem alíquota de ${t} no dataset em ${ctx.date}; informe-a em informedRates para simular`,
-        { detalhes: { tributo: t, date: ctx.date, cClassTrib: c.code, item } },
+        `cClassTrib ${c.codigo} (${kind}): sem alíquota de ${t} no dataset em ${ctx.date}; informe-a em aliquotasInformadas para simular`,
+        { detalhes: { tributo: t, data: ctx.date, cClassTrib: c.codigo, item } },
       );
     }
-    const applied: AppliedRate = { tributo: t, value: fixed, status: 'official', origin: 'dataset-fixed' };
+    const applied: AliquotaAplicada = { tributo: t, valor: fixed, situacao: 'oficial', origem: 'dataset-fixa' };
     return { pct: Decimal.parse(fixed), divided: true, informed: false, applied };
   }
   const nominal = kind === 'Padrão';
-  const rate = nominal ? ctx.rates.nominal(ctx.date, ctx.op.place)[t] : ctx.rates.reference(ctx.date)[t];
-  const value = requireRate(rate, ctx.date);
-  const applied: AppliedRate = {
+  const rate = nominal ? ctx.rates.nominal(ctx.date, ctx.op.local)[t] : ctx.rates.referencia(ctx.date)[t];
+  const value = exigirAliquota(rate, ctx.date);
+  const applied: AliquotaAplicada = {
     tributo: t,
-    value,
-    status: rate.status,
-    origin: nominal ? 'provider-nominal' : 'provider-reference',
+    valor: value,
+    situacao: rate.situacao,
+    origem: nominal ? 'provedor-nominal' : 'provedor-referencia',
     ...(rate.legal === undefined ? {} : { legal: rate.legal }),
-    ...(rate.reason === undefined ? {} : { reason: rate.reason }),
+    ...(rate.motivo === undefined ? {} : { motivo: rate.motivo }),
   };
   return { pct: Decimal.parse(value), divided: true, informed: false, applied };
 }
@@ -254,35 +254,35 @@ const USES_ALIQUOTA = /\baliquota\b/;
 
 function calcTributo(
   ctx: Ctx,
-  item: ClassifiedItem,
+  item: ItemClassificado,
   calc: Resolved,
-  t: RateTributo,
+  t: TributoDaAliquota,
   base: Decimal,
   quantity: Decimal,
   deferralAllowed: boolean,
 ): TribCalc {
   const n = item.n;
   const { treatment, classTrib } = calc;
-  const expr = treatment.expr;
-  const rate = applyRate(ctx, classTrib, t, item.informedRates, n);
-  const aliqInput = rate.divided ? fromPercent(rate.pct) : rate.pct;
+  const expr = treatment.expressao;
+  const rate = applyRate(ctx, classTrib, t, item.aliquotasInformadas, n);
+  const aliqInput = rate.divided ? dePercentual(rate.pct) : rate.pct;
   const log = (field: string, formula: string, inputs: Record<string, Decimal | undefined>, result: Decimal): void => {
     const shown: Record<string, string> = {};
     for (const [k, v] of Object.entries(inputs)) if (v !== undefined) shown[k] = v.toString();
-    ctx.trace.push({ item: n, tributo: t, field, formula, inputs: shown, result: result.toString() });
+    ctx.trace.push({ item: n, tributo: t, campo: field, formula, entradas: shown, resultado: result.toString() });
   };
 
   let pRed: Decimal | undefined;
-  if (treatment.flags.possuiPercentualReducao) {
-    const red = ctx.content.reduction(classTrib, t);
+  if (treatment.indicadores.possuiPercentualReducao) {
+    const red = ctx.content.reducao(classTrib, t);
     if (red === undefined) {
       fail(
         'dados_incompletos',
-        `cClassTrib ${classTrib.code}: percentual de redução de ${t} ausente em ${ctx.date}`,
+        `cClassTrib ${classTrib.codigo}: percentual de redução de ${t} ausente em ${ctx.date}`,
         n,
       );
     }
-    pRed = fromPercent(Decimal.parse(red));
+    pRed = dePercentual(Decimal.parse(red));
   }
   const redutor = ctx.gov?.pRedutor ?? Decimal.ZERO;
   const common: Record<string, Decimal | undefined> = { quantidade: quantity, percentualReducao: pRed };
@@ -292,7 +292,7 @@ function calcTributo(
     // Alíquota informada prevalece sobre expressão fixa ("0", "2.08/100"), como na Calculadora.
     aliq = aliqInput;
   } else if (expr.aliquota !== null) {
-    aliq = evaluate(expr.aliquota, { ...common, aliquota: aliqInput });
+    aliq = avaliar(expr.aliquota, { ...common, aliquota: aliqInput });
   } else {
     aliq = Decimal.ZERO;
   }
@@ -301,44 +301,44 @@ function calcTributo(
 
   let aliqEfet: Decimal | undefined;
   if (expr.aliquotaEfetiva !== null) {
-    const vars: Variables = { ...common, aliquota: aliq, pRedutorCompraGov: redutor };
-    aliqEfet = emittedRate(evaluate(expr.aliquotaEfetiva, vars), rate.divided);
+    const vars: Variaveis = { ...common, aliquota: aliq, pRedutorCompraGov: redutor };
+    aliqEfet = emittedRate(avaliar(expr.aliquotaEfetiva, vars), rate.divided);
     log('aliquotaEfetiva', expr.aliquotaEfetiva, vars, aliqEfet);
   }
 
-  const baseVars: Variables = { ...common, aliquota: aliq, aliquotaEfetiva: aliqEfet, baseCalculoInformada: base };
-  let bc = evaluate(expr.baseCalculo, baseVars);
+  const baseVars: Variaveis = { ...common, aliquota: aliq, aliquotaEfetiva: aliqEfet, baseCalculoInformada: base };
+  let bc = avaliar(expr.baseCalculo, baseVars);
   if (bc.isNegative()) bc = Decimal.ZERO;
   log('baseCalculo', expr.baseCalculo, { baseCalculoInformada: base }, bc);
 
-  const tribVars: Variables = { ...baseVars, baseCalculo: bc };
-  const calculated = evaluate(expr.tributoCalculado, tribVars);
+  const tribVars: Variaveis = { ...baseVars, baseCalculo: bc };
+  const calculated = avaliar(expr.tributoCalculado, tribVars);
   log('tributoCalculado', expr.tributoCalculado, { baseCalculo: bc, aliquotaEfetiva: aliqEfet }, calculated);
   let devido =
     expr.tributoDevido === null
       ? calculated
-      : evaluate(expr.tributoDevido, { ...tribVars, tributoCalculado: calculated });
+      : avaliar(expr.tributoDevido, { ...tribVars, tributoCalculado: calculated });
 
   let pDif: Decimal | undefined;
   let vDif: Decimal | undefined;
-  const informedDif = item.deferral?.[t];
+  const informedDif = item.diferimento?.[t];
   if (deferralAllowed && informedDif !== undefined) {
-    pDif = fromPercent(percentInput(informedDif, `percentual de diferimento de ${t}`, n));
+    pDif = dePercentual(percentInput(informedDif, `percentual de diferimento de ${t}`, n));
   } else if (deferralAllowed && expr.percentualDiferimento !== null && expr.valorDiferimento !== null) {
-    pDif = evaluate(expr.percentualDiferimento, { ...tribVars, tributoCalculado: calculated });
+    pDif = avaliar(expr.percentualDiferimento, { ...tribVars, tributoCalculado: calculated });
   }
   if (pDif !== undefined) {
-    vDif = calculated.mul(pDif).setScale(INTERNAL_SCALE, 'HALF_EVEN');
+    vDif = calculated.mul(pDif).setScale(ESCALA_INTERNA, 'HALF_EVEN');
     log('valorDiferimento', 'tributoCalculado*percentualDiferimento', { tributoCalculado: calculated, pDif }, vDif);
     devido = devido.sub(vDif);
   }
 
   let pDevTrib: Decimal | undefined;
   let vDevTrib: Decimal | undefined;
-  if (t === 'CBS' && item.taxRefund !== undefined) {
-    pDevTrib = fromPercent(percentInput(item.taxRefund.pDevTrib, 'pDevTrib', n));
+  if (t === 'CBS' && item.devolucaoDeTributo !== undefined) {
+    pDevTrib = dePercentual(percentInput(item.devolucaoDeTributo.pDevTrib, 'pDevTrib', n));
     const efet = aliqEfet ?? aliq;
-    vDevTrib = bc.mul(efet).mul(pDevTrib).setScale(INTERNAL_SCALE, 'HALF_EVEN');
+    vDevTrib = bc.mul(efet).mul(pDevTrib).setScale(ESCALA_INTERNA, 'HALF_EVEN');
     log(
       'valorDevolucao',
       'baseCalculo*aliquotaEfetiva*pDevTrib',
@@ -356,8 +356,8 @@ function calcTributo(
     const rounded = devido
       .add(vDif)
       .add(vDevTrib)
-      .sub(Decimal.parse(money(vDif)))
-      .sub(Decimal.parse(money(vDevTrib)));
+      .sub(Decimal.parse(dinheiro(vDif)))
+      .sub(Decimal.parse(dinheiro(vDevTrib)));
     devido = rounded.isNegative() ? Decimal.ZERO : rounded;
   }
   log('tributoDevido', 'tributoCalculado-vDif-vDevTrib', { tributoCalculado: calculated, vDif, vDevTrib }, devido);
@@ -405,33 +405,33 @@ function emittedRate(x: Decimal, divided: boolean): Decimal {
 }
 
 function pctOut(x: Decimal, divided: boolean): Decimal {
-  return divided ? toPercent(x) : x;
+  return divided ? paraPercentual(x) : x;
 }
 
-interface ItemResult {
+interface ResultadoDoItem {
   readonly roc: RocItem;
-  readonly vDif: Record<RateTributo, Decimal>;
-  readonly vDevTrib: Record<RateTributo, Decimal>;
+  readonly vDif: Record<TributoDaAliquota, Decimal>;
+  readonly vDevTrib: Record<TributoDaAliquota, Decimal>;
   readonly credPres: { ibs: Decimal; ibsCond: Decimal; cbs: Decimal; cbsCond: Decimal };
 }
 
-function calcItem(ctx: Ctx, item: ClassifiedItem): ItemResult {
+function calcItem(ctx: Ctx, item: ItemClassificado): ResultadoDoItem {
   const n = item.n;
   const main = resolve(ctx, item.cst, item.cClassTrib, n, '');
-  if (item.monophase !== undefined) {
-    throw new UnsupportedRegimeError('monofasia', 'tributação monofásica ainda não é suportada pelo motor', n);
+  if (item.monofasia !== undefined) {
+    throw new ErroRegimeNaoSuportado('monofasia', 'tributação monofásica ainda não é suportada pelo motor', n);
   }
-  if (item.selectiveTax !== undefined) {
-    throw new UnsupportedRegimeError('imposto-seletivo', 'Imposto Seletivo ainda não é suportado pelo motor', n);
+  if (item.impostoSeletivo !== undefined) {
+    throw new ErroRegimeNaoSuportado('imposto-seletivo', 'Imposto Seletivo ainda não é suportado pelo motor', n);
   }
   checkSupported(main, n, '');
   const { cst, classTrib, treatment } = main;
-  const owner = `CST ${cst.code}`;
-  const ownerCt = `cClassTrib ${classTrib.code}`;
+  const owner = `CST ${cst.codigo}`;
+  const ownerCt = `cClassTrib ${classTrib.codigo}`;
 
   // Tributação regular (gTribRegular).
-  const needsRegular = treatment.flags.exigeGrupoTribRegular || classTrib.groups.gTribRegular === 'required';
-  const allowsRegular = needsRegular || classTrib.groups.gTribRegular === 'allowed';
+  const needsRegular = treatment.indicadores.exigeGrupoTribRegular || classTrib.grupos.gTribRegular === 'obrigatorio';
+  const allowsRegular = needsRegular || classTrib.grupos.gTribRegular === 'permitido';
   if (needsRegular && item.regular === undefined) {
     fail('tributacao_regular_obrigatoria', `${ownerCt} exige o grupo de tributação regular (gTribRegular)`, n);
   }
@@ -442,42 +442,42 @@ function calcItem(ctx: Ctx, item: ClassifiedItem): ItemResult {
   if (item.regular !== undefined) {
     regular = resolve(ctx, item.regular.cst, item.regular.cClassTrib, n, 'tributação regular: ');
     checkSupported(regular, n, 'tributação regular: ');
-    const rt = regular.treatment.flags;
-    if (rt.exigeGrupoTribRegular || rt.incompativelComSuspensao || regular.cst.groups.gIBSCBS !== 'required') {
+    const rt = regular.treatment.indicadores;
+    if (rt.exigeGrupoTribRegular || rt.incompativelComSuspensao || regular.cst.grupos.gIBSCBS !== 'obrigatorio') {
       fail(
         'tributacao_regular_invalida',
-        `tributação regular: cClassTrib ${regular.classTrib.code} não pode ser a tributação regular de ${classTrib.code}`,
+        `tributação regular: cClassTrib ${regular.classTrib.codigo} não pode ser a tributação regular de ${classTrib.codigo}`,
         n,
       );
     }
   }
 
   // Grupos governados por indicadores.
-  const g = cst.groups;
-  checkGroup(g.gTransfCred, item.creditTransfer !== undefined, 'gTransfCred', owner, n);
-  checkGroup(g.gAjusteCompet, item.competenceAdjustment !== undefined, 'gAjusteCompet', owner, n);
-  checkGroup(g.gCredPresIBSZFM, item.zfmCredit !== undefined, 'gCredPresIBSZFM', owner, n);
-  checkGroup(classTrib.groups.gEstornoCred, item.creditReversal !== undefined, 'gEstornoCred', ownerCt, n);
-  const ownIndicator = classTrib.groups.gCredPresOper === 'required' ? 'allowed' : classTrib.groups.gCredPresOper;
+  const g = cst.grupos;
+  checkGroup(g.gTransfCred, item.transferenciaDeCredito !== undefined, 'gTransfCred', owner, n);
+  checkGroup(g.gAjusteCompet, item.ajusteDeCompetencia !== undefined, 'gAjusteCompet', owner, n);
+  checkGroup(g.gCredPresIBSZFM, item.creditoZfm !== undefined, 'gCredPresIBSZFM', owner, n);
+  checkGroup(classTrib.grupos.gEstornoCred, item.estornoDeCredito !== undefined, 'gEstornoCred', ownerCt, n);
+  const ownIndicator = classTrib.grupos.gCredPresOper === 'obrigatorio' ? 'permitido' : classTrib.grupos.gCredPresOper;
   // Bem móvel usado: a UB120-20 não se aplica, e o crédito presumido vale mesmo com cClassTrib que o veda.
-  const presumedIndicator = item.presumedCredit?.usedMovableGood === true ? 'allowed' : ownIndicator;
-  checkGroup(presumedIndicator, item.presumedCredit !== undefined, 'gCredPresOper', ownerCt, n);
-  if (item.presumedCredit !== undefined && item.zfmCredit !== undefined) {
+  const presumedIndicator = item.creditoPresumido?.bemMovelUsado === true ? 'permitido' : ownIndicator;
+  checkGroup(presumedIndicator, item.creditoPresumido !== undefined, 'gCredPresOper', ownerCt, n);
+  if (item.creditoPresumido !== undefined && item.creditoZfm !== undefined) {
     fail('grupos_exclusivos', 'gCredPresOper e gCredPresIBSZFM são exclusivos (UB119)', n);
   }
-  const hasMain = g.gIBSCBS !== 'forbidden';
-  if (!hasMain && (item.deferral !== undefined || item.taxRefund !== undefined)) {
+  const hasMain = g.gIBSCBS !== 'vedado';
+  if (!hasMain && (item.diferimento !== undefined || item.devolucaoDeTributo !== undefined)) {
     fail('grupo_vedado', `${owner} não tem gIBSCBS: diferimento e devolução não se aplicam`, n);
   }
-  if (g.gDif === 'forbidden' && item.deferral !== undefined) {
+  if (g.gDif === 'vedado' && item.diferimento !== undefined) {
     fail('grupo_vedado', `${owner} não permite o grupo de diferimento (gDif)`, n);
   }
 
-  const out: IBSCBS & Record<string, unknown> = { CST: cst.code, cClassTrib: classTrib.code };
+  const out: IBSCBS & Record<string, unknown> = { CST: cst.codigo, cClassTrib: classTrib.codigo };
   const ibscbs: Record<string, unknown> = out;
-  const applied: AppliedRate[] = [];
-  const vDifs: Record<RateTributo, Decimal> = { CBS: Decimal.ZERO, IBSUF: Decimal.ZERO, IBSMun: Decimal.ZERO };
-  const vDevs: Record<RateTributo, Decimal> = { CBS: Decimal.ZERO, IBSUF: Decimal.ZERO, IBSMun: Decimal.ZERO };
+  const applied: AliquotaAplicada[] = [];
+  const vDifs: Record<TributoDaAliquota, Decimal> = { CBS: Decimal.ZERO, IBSUF: Decimal.ZERO, IBSMun: Decimal.ZERO };
+  const vDevs: Record<TributoDaAliquota, Decimal> = { CBS: Decimal.ZERO, IBSUF: Decimal.ZERO, IBSMun: Decimal.ZERO };
   let vCredIbs = Decimal.ZERO;
   let vCredIbsCond = Decimal.ZERO;
   let vCredCbs = Decimal.ZERO;
@@ -485,15 +485,15 @@ function calcItem(ctx: Ctx, item: ClassifiedItem): ItemResult {
 
   // Crédito presumido (antes do gIBSCBS: o vIBS do item pode abater o crédito, UB54a-10).
   let deductIbs = Decimal.ZERO;
-  if (item.presumedCredit !== undefined) {
-    const pc = item.presumedCredit;
+  if (item.creditoPresumido !== undefined) {
+    const pc = item.creditoPresumido;
     const cp = ctx.content.credPres(pc.cCredPres);
     if (!cp) fail('ccredpres_inexistente', `cCredPres ${pc.cCredPres} inexistente`, n);
     if (!cp.cbs && !cp.ibs) {
       fail('ccredpres_fora_de_vigencia', `cCredPres ${pc.cCredPres} fora de vigência em ${ctx.date}`, n);
     }
     const vbc = decimalInput(pc.vBCCredPres, 'vBCCredPres', n);
-    const group: Record<string, unknown> = { vBCCredPres: money(vbc), cCredPres: pc.cCredPres };
+    const group: Record<string, unknown> = { vBCCredPres: dinheiro(vbc), cCredPres: pc.cCredPres };
     const one = (which: 'ibs' | 'cbs'): Decimal[] | undefined => {
       const input = pc[which];
       const name = which === 'ibs' ? 'gIBSCredPres' : 'gCBSCredPres';
@@ -505,41 +505,41 @@ function calcItem(ctx: Ctx, item: ClassifiedItem): ItemResult {
         );
       }
       // O indicador só obriga o grupo do tributo em que o crédito está vigente na data.
-      const indicator = cp[which] ? cp.record.groups[name] : 'forbidden';
+      const indicator = cp[which] ? cp.registro.grupos[name] : 'vedado';
       checkGroup(indicator, input !== undefined, name, `cCredPres ${pc.cCredPres}`, n);
       if (input === undefined) return undefined;
       const p = percentInput(input.pCredPres, `pCredPres ${which.toUpperCase()}`, n);
-      const v = vbc.mul(fromPercent(p)).setScale(INTERNAL_SCALE, 'HALF_EVEN');
+      const v = vbc.mul(dePercentual(p)).setScale(ESCALA_INTERNA, 'HALF_EVEN');
       ctx.trace.push({
         item: n,
-        field: `vCredPres${which.toUpperCase()}`,
+        campo: `vCredPres${which.toUpperCase()}`,
         formula: 'vBCCredPres*pCredPres/100',
-        inputs: { vBCCredPres: vbc.toString(), pCredPres: p.toString() },
-        result: v.toString(),
+        entradas: { vBCCredPres: vbc.toString(), pCredPres: p.toString() },
+        resultado: v.toString(),
       });
-      const rounded = Decimal.parse(money(v));
-      const tg: GCredPresTributo = input.conditional
-        ? { pCredPres: percent(p), vCredPresCondSus: money(v) }
-        : { pCredPres: percent(p), vCredPres: money(v) };
+      const rounded = Decimal.parse(dinheiro(v));
+      const tg: GCredPresTributo = input.condicional
+        ? { pCredPres: percentual(p), vCredPresCondSus: dinheiro(v) }
+        : { pCredPres: percentual(p), vCredPres: dinheiro(v) };
       group[name] = tg;
-      return input.conditional ? [Decimal.ZERO, rounded] : [rounded, Decimal.ZERO];
+      return input.condicional ? [Decimal.ZERO, rounded] : [rounded, Decimal.ZERO];
     };
     const ibs = one('ibs');
     const cbs = one('cbs');
     if (ibs) [vCredIbs, vCredIbsCond] = [ibs[0] ?? Decimal.ZERO, ibs[1] ?? Decimal.ZERO];
     if (cbs) [vCredCbs, vCredCbsCond] = [cbs[0] ?? Decimal.ZERO, cbs[1] ?? Decimal.ZERO];
-    if (cp.record.deductsFromTax) deductIbs = vCredIbs;
+    if (cp.registro.deduzDoTributo) deductIbs = vCredIbs;
     ibscbs.gCredPresOper = group as unknown as GCredPresOper;
   }
 
   if (hasMain) {
     const calc = regular ?? main;
     const base = decimalInput(item.base, 'base de cálculo (vBC)', n);
-    const quantity = item.quantity === undefined ? Decimal.ONE : decimalInput(item.quantity, 'quantidade', n);
-    const deferralAllowed = g.gDif !== 'forbidden';
-    const results = RATE_TRIBUTOS.map((t) => calcTributo(ctx, item, calc, t, base, quantity, deferralAllowed));
-    const byT = (t: RateTributo): TribCalc => results.find((r) => r.t === t) as TribCalc;
-    if (g.gDif === 'required' && results.some((r) => r.pDif === undefined)) {
+    const quantity = item.quantidade === undefined ? Decimal.ONE : decimalInput(item.quantidade, 'quantidade', n);
+    const deferralAllowed = g.gDif !== 'vedado';
+    const results = TRIBUTOS_DAS_ALIQUOTAS.map((t) => calcTributo(ctx, item, calc, t, base, quantity, deferralAllowed));
+    const byT = (t: TributoDaAliquota): TribCalc => results.find((r) => r.t === t) as TribCalc;
+    if (g.gDif === 'obrigatorio' && results.some((r) => r.pDif === undefined)) {
       fail('grupo_obrigatorio', `${owner} exige o grupo de diferimento (gDif) e o tratamento não define percentual`, n);
     }
     for (const r of results) applied.push(r.applied);
@@ -553,13 +553,15 @@ function calcItem(ctx: Ctx, item: ClassifiedItem): ItemResult {
       );
     }
 
-    const redAllowed = calc.cst.groups.gRed !== 'forbidden';
+    const redAllowed = calc.cst.grupos.gRed !== 'vedado';
     // Na tributação regular o grupo principal sai zerado, mas a CST que exige gRed (UB26-20) ainda pede o grupo com o
     // pRedAliq da tabela do cClassTrib principal (UB27-10); a Calculadora não o emite (divergência no ledger).
-    const regularRed = (t: RateTributo): Decimal | undefined =>
-      regular && cst.groups.gRed === 'required' ? Decimal.parse(ctx.content.reduction(classTrib, t) ?? '0') : undefined;
-    const regularTreat = regular?.treatment.flags.possuiPercentualReducao ?? false;
-    const entes = {} as Record<RateTributo, EnteOut>;
+    const regularRed = (t: TributoDaAliquota): Decimal | undefined =>
+      regular && cst.grupos.gRed === 'obrigatorio'
+        ? Decimal.parse(ctx.content.reducao(classTrib, t) ?? '0')
+        : undefined;
+    const regularTreat = regular?.treatment.indicadores.possuiPercentualReducao ?? false;
+    const entes = {} as Record<TributoDaAliquota, EnteOut>;
     for (const r of results) {
       const withRed = redAllowed && !(regular && !ctx.gov) && r.pRed !== undefined && r.aliqEfet !== undefined;
       let reg: EnteOut['reg'];
@@ -567,7 +569,7 @@ function calcItem(ctx: Ctx, item: ClassifiedItem): ItemResult {
         const efet = regularTreat
           ? emittedRate(r.aliq.mul(Decimal.ONE.sub(r.pRed ?? Decimal.ZERO)), r.divided)
           : r.aliq;
-        const v = r.base.mul(efet).setScale(INTERNAL_SCALE, 'HALF_EVEN');
+        const v = r.base.mul(efet).setScale(ESCALA_INTERNA, 'HALF_EVEN');
         reg = { pAliqEfet: pctOut(efet, r.divided), v };
       }
       entes[r.t] = {
@@ -575,12 +577,12 @@ function calcItem(ctx: Ctx, item: ClassifiedItem): ItemResult {
         v: regular ? Decimal.ZERO : r.devido,
         gRed:
           withRed && r.pRed !== undefined && r.aliqEfet !== undefined
-            ? { pRedAliq: toPercent(r.pRed), pAliqEfet: pctOut(r.aliqEfet, r.divided) }
+            ? { pRedAliq: paraPercentual(r.pRed), pAliqEfet: pctOut(r.aliqEfet, r.divided) }
             : undefined,
-        gDif: r.pDif !== undefined && r.vDif !== undefined ? { pDif: toPercent(r.pDif), vDif: r.vDif } : undefined,
+        gDif: r.pDif !== undefined && r.vDif !== undefined ? { pDif: paraPercentual(r.pDif), vDif: r.vDif } : undefined,
         gDevTrib:
           r.pDevTrib !== undefined && r.vDevTrib !== undefined
-            ? { pDevTrib: toPercent(r.pDevTrib), vDevTrib: r.vDevTrib }
+            ? { pDevTrib: paraPercentual(r.pDevTrib), vDevTrib: r.vDevTrib }
             : undefined,
         reg,
       };
@@ -591,33 +593,35 @@ function calcItem(ctx: Ctx, item: ClassifiedItem): ItemResult {
     let compraGov: GTribCompraGov | undefined;
     if (ctx.gov) {
       const values = Object.fromEntries(
-        results.map((r) => [r.t, { pAliq: toPercent(r.aliqEfet ?? Decimal.ZERO), vTrib: r.devido }]),
-      ) as unknown as GovValues;
+        results.map((r) => [r.t, { pAliq: paraPercentual(r.aliqEfet ?? Decimal.ZERO), vTrib: r.devido }]),
+      ) as unknown as ValoresCompraGov;
       // A parte transferida da CBS (a partir de 2029) dá alíquota com mais de 4 casas: ela sai com a precisão do XML e o
       // valor acompanha na mesma proporção, para `v = vBC x pAliqEfet` fechar com o emitido (UB35-10, UB67-10).
       // A soma das alíquotas não muda com a redistribuição; o resíduo do arredondamento vai para o ente com a maior
       // alíquota, para o total do item continuar igual ao de gTribCompraGov (UB82a-20).
-      const raw = redistribute(values, ctx.gov.tp, ctx.date, ctx.gov.transfer);
-      const ratio = {} as Record<RateTributo, Decimal | undefined>;
-      const eff = {} as Record<RateTributo, GovValues[RateTributo]>;
-      const rounded = {} as Record<RateTributo, Decimal>;
-      for (const t of RATE_TRIBUTOS) {
+      const raw = redistribuir(values, ctx.gov.tp, ctx.date, ctx.gov.transfer);
+      const ratio = {} as Record<TributoDaAliquota, Decimal | undefined>;
+      const eff = {} as Record<TributoDaAliquota, ValoresCompraGov[TributoDaAliquota]>;
+      const rounded = {} as Record<TributoDaAliquota, Decimal>;
+      for (const t of TRIBUTOS_DAS_ALIQUOTAS) {
         const pAliq = raw[t].pAliq;
         rounded[t] = pAliq.scale > 4 ? pAliq.setScale(4, 'HALF_EVEN') : pAliq;
       }
-      const residue = sum(RATE_TRIBUTOS.map((t) => raw[t].pAliq)).sub(sum(RATE_TRIBUTOS.map((t) => rounded[t])));
+      const residue = sum(TRIBUTOS_DAS_ALIQUOTAS.map((t) => raw[t].pAliq)).sub(
+        sum(TRIBUTOS_DAS_ALIQUOTAS.map((t) => rounded[t])),
+      );
       if (!residue.isZero()) {
-        const top = [...RATE_TRIBUTOS].sort((a, b) => rounded[b].cmp(rounded[a]))[0] as RateTributo;
+        const top = [...TRIBUTOS_DAS_ALIQUOTAS].sort((a, b) => rounded[b].cmp(rounded[a]))[0] as TributoDaAliquota;
         rounded[top] = rounded[top].add(residue);
       }
-      for (const t of RATE_TRIBUTOS) {
+      for (const t of TRIBUTOS_DAS_ALIQUOTAS) {
         const { pAliq, vTrib } = raw[t];
         const q = rounded[t];
         const k = q.eq(pAliq) || pAliq.isZero() ? undefined : q.div(pAliq);
         ratio[t] = k;
-        eff[t] = { pAliq: q, vTrib: k ? vTrib.mul(k).setScale(INTERNAL_SCALE, 'HALF_EVEN') : vTrib };
+        eff[t] = { pAliq: q, vTrib: k ? vTrib.mul(k).setScale(ESCALA_INTERNA, 'HALF_EVEN') : vTrib };
       }
-      const redistributes = ctx.date >= REDISTRIBUTION_FROM;
+      const redistributes = ctx.date >= REDISTRIBUICAO_A_PARTIR_DE;
       // Diferimento e devolução acompanham a redistribuição do art. 473: senão o gDif e o gDevTrib ficariam no ente de
       // origem, calculados sobre uma alíquota que ele não tem mais (UB23-10, UB24-10 e análogas). O vDif é linear e
       // se redistribui como o tributo, desde que o percentual seja o mesmo nos três; devolução não tem regra publicada.
@@ -639,15 +643,15 @@ function calcItem(ctx: Ctx, item: ClassifiedItem): ItemResult {
         }
         const difs = Object.fromEntries(
           results.map((r) => [r.t, { pAliq: Decimal.ZERO, vTrib: r.vDif ?? Decimal.ZERO }]),
-        ) as unknown as GovValues;
-        const moved = redistribute(difs, ctx.gov.tp, ctx.date, ctx.gov.transfer);
-        for (const t of RATE_TRIBUTOS) {
+        ) as unknown as ValoresCompraGov;
+        const moved = redistribuir(difs, ctx.gov.tp, ctx.date, ctx.gov.transfer);
+        for (const t of TRIBUTOS_DAS_ALIQUOTAS) {
           const g = entes[t].gDif;
           const k = ratio[t];
-          if (g) g.vDif = k ? moved[t].vTrib.mul(k).setScale(INTERNAL_SCALE, 'HALF_EVEN') : moved[t].vTrib;
+          if (g) g.vDif = k ? moved[t].vTrib.mul(k).setScale(ESCALA_INTERNA, 'HALF_EVEN') : moved[t].vTrib;
         }
       }
-      for (const t of RATE_TRIBUTOS) {
+      for (const t of TRIBUTOS_DAS_ALIQUOTAS) {
         const e = entes[t];
         const target = eff[t];
         if (regular) {
@@ -661,15 +665,15 @@ function calcItem(ctx: Ctx, item: ClassifiedItem): ItemResult {
         ctx.trace.push({
           item: n,
           tributo: t,
-          field: 'compraGovernamental',
+          campo: 'compraGovernamental',
           formula: 'art. 473 da LC 214/2025',
-          inputs: { pAliq: values[t].pAliq.toString(), vTrib: values[t].vTrib.toString() },
-          result: `${target.pAliq.toString()} / ${target.vTrib.toString()}`,
+          entradas: { pAliq: values[t].pAliq.toString(), vTrib: values[t].vTrib.toString() },
+          resultado: `${target.pAliq.toString()} / ${target.vTrib.toString()}`,
         });
       }
       const z = regular !== undefined;
-      const p = (t: RateTributo): string => percent(z ? Decimal.ZERO : values[t].pAliq);
-      const v = (t: RateTributo): string => money(z ? Decimal.ZERO : values[t].vTrib);
+      const p = (t: TributoDaAliquota): string => percentual(z ? Decimal.ZERO : values[t].pAliq);
+      const v = (t: TributoDaAliquota): string => dinheiro(z ? Decimal.ZERO : values[t].vTrib);
       compraGov = {
         pAliqIBSUF: p('IBSUF'),
         vTribIBSUF: v('IBSUF'),
@@ -681,17 +685,17 @@ function calcItem(ctx: Ctx, item: ClassifiedItem): ItemResult {
     }
 
     const fmt = (e: EnteOut): EnteGroups => ({
-      ...(e.gDif ? { gDif: { pDif: percent(e.gDif.pDif), vDif: money(e.gDif.vDif) } } : {}),
+      ...(e.gDif ? { gDif: { pDif: percentual(e.gDif.pDif), vDif: dinheiro(e.gDif.vDif) } } : {}),
       ...(e.gDevTrib
-        ? { gDevTrib: { pDevTrib: percent(e.gDevTrib.pDevTrib), vDevTrib: money(e.gDevTrib.vDevTrib) } }
+        ? { gDevTrib: { pDevTrib: percentual(e.gDevTrib.pDevTrib), vDevTrib: dinheiro(e.gDevTrib.vDevTrib) } }
         : {}),
-      ...(e.gRed ? { gRed: { pRedAliq: percent(e.gRed.pRedAliq), pAliqEfet: percent(e.gRed.pAliqEfet) } } : {}),
+      ...(e.gRed ? { gRed: { pRedAliq: percentual(e.gRed.pRedAliq), pAliqEfet: percentual(e.gRed.pAliqEfet) } } : {}),
     });
     const uf = entes.IBSUF;
     const mun = entes.IBSMun;
     const cbs = entes.CBS;
-    const vIBSUF = money(uf.v);
-    const vIBSMun = money(mun.v);
+    const vIBSUF = dinheiro(uf.v);
+    const vIBSMun = dinheiro(mun.v);
     const vIBS = Decimal.parse(vIBSUF).add(Decimal.parse(vIBSMun)).sub(deductIbs);
     if (vIBS.isNegative()) fail('entrada_invalida', 'crédito presumido deduzido excede o IBS do item (UB54a-10)', n);
     const { gDevTrib: _ufDev, ...ufGroups } = fmt(uf);
@@ -699,58 +703,58 @@ function calcItem(ctx: Ctx, item: ClassifiedItem): ItemResult {
     let tribRegular: GTribRegular | undefined;
     if (regular && uf.reg && mun.reg && cbs.reg) {
       tribRegular = {
-        CSTReg: regular.cst.code,
-        cClassTribReg: regular.classTrib.code,
-        pAliqEfetRegIBSUF: percent(uf.reg.pAliqEfet),
-        vTribRegIBSUF: money(uf.reg.v),
-        pAliqEfetRegIBSMun: percent(mun.reg.pAliqEfet),
-        vTribRegIBSMun: money(mun.reg.v),
-        pAliqEfetRegCBS: percent(cbs.reg.pAliqEfet),
-        vTribRegCBS: money(cbs.reg.v),
+        CSTReg: regular.cst.codigo,
+        cClassTribReg: regular.classTrib.codigo,
+        pAliqEfetRegIBSUF: percentual(uf.reg.pAliqEfet),
+        vTribRegIBSUF: dinheiro(uf.reg.v),
+        pAliqEfetRegIBSMun: percentual(mun.reg.pAliqEfet),
+        vTribRegIBSMun: dinheiro(mun.reg.v),
+        pAliqEfetRegCBS: percentual(cbs.reg.pAliqEfet),
+        vTribRegCBS: dinheiro(cbs.reg.v),
       };
     }
     const gIBSCBS: GIBSCBS = {
-      vBC: money(byT('CBS').base),
-      gIBSUF: { pIBSUF: percent(uf.p), ...ufGroups, vIBSUF },
-      gIBSMun: { pIBSMun: percent(mun.p), ...munGroups, vIBSMun },
-      vIBS: money(vIBS),
-      gCBS: { pCBS: percent(cbs.p), ...fmt(cbs), vCBS: money(cbs.v) },
+      vBC: dinheiro(byT('CBS').base),
+      gIBSUF: { pIBSUF: percentual(uf.p), ...ufGroups, vIBSUF },
+      gIBSMun: { pIBSMun: percentual(mun.p), ...munGroups, vIBSMun },
+      vIBS: dinheiro(vIBS),
+      gCBS: { pCBS: percentual(cbs.p), ...fmt(cbs), vCBS: dinheiro(cbs.v) },
       ...(tribRegular ? { gTribRegular: tribRegular } : {}),
       ...(compraGov ? { gTribCompraGov: compraGov } : {}),
     };
     ibscbs.gIBSCBS = gIBSCBS;
-    for (const t of RATE_TRIBUTOS) {
+    for (const t of TRIBUTOS_DAS_ALIQUOTAS) {
       const e = entes[t];
-      if (e.gDif) vDifs[t] = Decimal.parse(money(e.gDif.vDif));
-      if (e.gDevTrib) vDevs[t] = Decimal.parse(money(e.gDevTrib.vDevTrib));
+      if (e.gDif) vDifs[t] = Decimal.parse(dinheiro(e.gDif.vDif));
+      if (e.gDevTrib) vDevs[t] = Decimal.parse(dinheiro(e.gDevTrib.vDevTrib));
     }
   }
 
-  if (item.creditTransfer !== undefined) {
-    const x = item.creditTransfer;
+  if (item.transferenciaDeCredito !== undefined) {
+    const x = item.transferenciaDeCredito;
     ibscbs.gTransfCred = {
-      vIBS: money(decimalInput(x.vIBS, 'gTransfCred.vIBS', n)),
-      vCBS: money(decimalInput(x.vCBS, 'gTransfCred.vCBS', n)),
+      vIBS: dinheiro(decimalInput(x.vIBS, 'gTransfCred.vIBS', n)),
+      vCBS: dinheiro(decimalInput(x.vCBS, 'gTransfCred.vCBS', n)),
     };
   }
-  if (item.competenceAdjustment !== undefined) {
-    const x = item.competenceAdjustment;
+  if (item.ajusteDeCompetencia !== undefined) {
+    const x = item.ajusteDeCompetencia;
     if (!COMPET.test(x.competApur)) fail('entrada_invalida', `competApur inválido: ${x.competApur}; use AAAA-MM`, n);
     ibscbs.gAjusteCompet = {
       competApur: x.competApur,
-      vIBS: money(decimalInput(x.vIBS, 'gAjusteCompet.vIBS', n)),
-      vCBS: money(decimalInput(x.vCBS, 'gAjusteCompet.vCBS', n)),
+      vIBS: dinheiro(decimalInput(x.vIBS, 'gAjusteCompet.vIBS', n)),
+      vCBS: dinheiro(decimalInput(x.vCBS, 'gAjusteCompet.vCBS', n)),
     };
   }
-  if (item.creditReversal !== undefined) {
-    const x = item.creditReversal;
+  if (item.estornoDeCredito !== undefined) {
+    const x = item.estornoDeCredito;
     ibscbs.gEstornoCred = {
-      vIBSEstCred: money(decimalInput(x.vIBSEstCred, 'gEstornoCred.vIBSEstCred', n)),
-      vCBSEstCred: money(decimalInput(x.vCBSEstCred, 'gEstornoCred.vCBSEstCred', n)),
+      vIBSEstCred: dinheiro(decimalInput(x.vIBSEstCred, 'gEstornoCred.vIBSEstCred', n)),
+      vCBSEstCred: dinheiro(decimalInput(x.vCBSEstCred, 'gEstornoCred.vCBSEstCred', n)),
     };
   }
-  if (item.zfmCredit !== undefined) {
-    const x = item.zfmCredit;
+  if (item.creditoZfm !== undefined) {
+    const x = item.creditoZfm;
     if (!COMPET.test(x.competApur)) fail('entrada_invalida', `competApur inválido: ${x.competApur}; use AAAA-MM`, n);
     if (![0, 1, 2, 3, 4].includes(x.tpCredPresIBSZFM)) {
       fail('entrada_invalida', `tpCredPresIBSZFM inválido: ${x.tpCredPresIBSZFM}`, n);
@@ -758,7 +762,7 @@ function calcItem(ctx: Ctx, item: ClassifiedItem): ItemResult {
     ibscbs.gCredPresIBSZFM = {
       competApur: x.competApur,
       tpCredPresIBSZFM: x.tpCredPresIBSZFM,
-      vCredPresIBSZFM: money(decimalInput(x.vCredPresIBSZFM, 'vCredPresIBSZFM', n)),
+      vCredPresIBSZFM: dinheiro(decimalInput(x.vCredPresIBSZFM, 'vCredPresIBSZFM', n)),
     };
   }
 
@@ -767,8 +771,8 @@ function calcItem(ctx: Ctx, item: ClassifiedItem): ItemResult {
     roc: {
       nItem: n,
       IBSCBS: ordered,
-      rates: applied,
-      simulated: applied.some((a) => a.status !== 'official'),
+      aliquotas: applied,
+      simulado: applied.some((a) => a.situacao !== 'oficial'),
     },
     vDif: vDifs,
     vDevTrib: vDevs,
@@ -793,123 +797,123 @@ function orderIbscbs(x: IBSCBS): IBSCBS {
   return out as unknown as IBSCBS;
 }
 
-function totals(results: readonly ItemResult[]): IBSCBSTot {
+function totals(results: readonly ResultadoDoItem[]): IBSCBSTot {
   const d = (s: string | undefined): Decimal => (s === undefined ? Decimal.ZERO : Decimal.parse(s));
   const main = results.map((r) => r.roc.IBSCBS.gIBSCBS).filter((x): x is GIBSCBS => x !== undefined);
-  const s = (f: (r: ItemResult) => Decimal): string => money(sum(results.map(f)));
+  const s = (f: (r: ResultadoDoItem) => Decimal): string => dinheiro(sum(results.map(f)));
   const reversal = results.map((r) => r.roc.IBSCBS.gEstornoCred).filter((x) => x !== undefined);
   return {
-    vBCIBSCBS: money(sum(main.map((m) => d(m.vBC)))),
+    vBCIBSCBS: dinheiro(sum(main.map((m) => d(m.vBC)))),
     gIBS: {
       gIBSUF: {
         vDif: s((r) => r.vDif.IBSUF),
         vDevTrib: s((r) => r.vDevTrib.IBSUF),
-        vIBSUF: money(sum(main.map((m) => d(m.gIBSUF.vIBSUF)))),
+        vIBSUF: dinheiro(sum(main.map((m) => d(m.gIBSUF.vIBSUF)))),
       },
       gIBSMun: {
         vDif: s((r) => r.vDif.IBSMun),
         vDevTrib: s((r) => r.vDevTrib.IBSMun),
-        vIBSMun: money(sum(main.map((m) => d(m.gIBSMun.vIBSMun)))),
+        vIBSMun: dinheiro(sum(main.map((m) => d(m.gIBSMun.vIBSMun)))),
       },
-      vIBS: money(sum(main.map((m) => d(m.vIBS)))),
+      vIBS: dinheiro(sum(main.map((m) => d(m.vIBS)))),
       vCredPres: s((r) => r.credPres.ibs),
       vCredPresCondSus: s((r) => r.credPres.ibsCond),
     },
     gCBS: {
       vDif: s((r) => r.vDif.CBS),
       vDevTrib: s((r) => r.vDevTrib.CBS),
-      vCBS: money(sum(main.map((m) => d(m.gCBS.vCBS)))),
+      vCBS: dinheiro(sum(main.map((m) => d(m.gCBS.vCBS)))),
       vCredPres: s((r) => r.credPres.cbs),
       vCredPresCondSus: s((r) => r.credPres.cbsCond),
     },
     ...(reversal.length > 0
       ? {
           gEstornoCred: {
-            vIBSEstCred: money(sum(reversal.map((x) => d(x.vIBSEstCred)))),
-            vCBSEstCred: money(sum(reversal.map((x) => d(x.vCBSEstCred)))),
+            vIBSEstCred: dinheiro(sum(reversal.map((x) => d(x.vIBSEstCred)))),
+            vCBSEstCred: dinheiro(sum(reversal.map((x) => d(x.vCBSEstCred)))),
           },
         }
       : {}),
   };
 }
 
-function checkOperation(op: ClassifiedOperation): void {
-  if (!op || typeof op !== 'object' || !Array.isArray(op.items)) fail('entrada_invalida', 'operação sem itens');
-  if (op.items.length === 0) fail('entrada_invalida', 'operação sem itens');
+function checkOperation(op: OperacaoClassificada): void {
+  if (!op || typeof op !== 'object' || !Array.isArray(op.itens)) fail('entrada_invalida', 'operação sem itens');
+  if (op.itens.length === 0) fail('entrada_invalida', 'operação sem itens');
   if (!Number.isInteger(op.modelo)) fail('entrada_invalida', `modelo de DF-e inválido: ${String(op.modelo)}`);
-  if (!op.place || typeof op.place.uf !== 'string' || !/^\d{7}$/.test(String(op.place.cMun))) {
+  if (!op.local || typeof op.local.uf !== 'string' || !/^\d{7}$/.test(String(op.local.cMun))) {
     fail('entrada_invalida', 'local da operação inválido: informe uf e cMun (IBGE, 7 dígitos)');
   }
   const seen = new Set<number>();
-  for (const it of op.items) {
+  for (const it of op.itens) {
     if (!Number.isInteger(it.n) || it.n < 1) fail('entrada_invalida', `número de item inválido: ${String(it.n)}`);
     if (seen.has(it.n)) fail('entrada_invalida', `item ${it.n} repetido`, it.n);
     seen.add(it.n);
     if (
-      it.informedRates !== undefined &&
-      (typeof it.informedRates.reason !== 'string' || !it.informedRates.reason.trim())
+      it.aliquotasInformadas !== undefined &&
+      (typeof it.aliquotasInformadas.motivo !== 'string' || !it.aliquotasInformadas.motivo.trim())
     ) {
-      fail('entrada_invalida', 'alíquotas informadas exigem o motivo (informedRates.reason)', it.n);
+      fail('entrada_invalida', 'alíquotas informadas exigem o motivo (aliquotasInformadas.motivo)', it.n);
     }
   }
-  const gov = op.governmentPurchase;
+  const gov = op.compraGovernamental;
   if (gov !== undefined && ![1, 2, 3, 4, 5, 6].includes(gov.tpEnteGov)) {
     fail('entrada_invalida', `tpEnteGov inválido: ${String(gov.tpEnteGov)}`);
   }
 }
 
-/** Calcula IBS e CBS da operação. Lança `ClassificationError`, `UnsupportedRegimeError` ou `RateUnknownError`. */
-export function calculate(op: ClassifiedOperation, options: CalculateOptions): Roc {
-  const date = civilDate(options.time.fatoGerador.agora(), options.utcOffsetMinutes ?? BRASILIA_OFFSET_MINUTES);
-  return calculateAt(op, { dataset: options.dataset, rates: options.rates, date });
+/** Calcula IBS e CBS da operação. Lança `ErroClassificacao`, `ErroRegimeNaoSuportado` ou `ErroAliquotaDesconhecida`. */
+export function calcular(op: OperacaoClassificada, opcoes: CalcularOpcoes): Roc {
+  const date = dataCivil(opcoes.tempo.fatoGerador.agora(), opcoes.deslocamentoMin ?? DESLOCAMENTO_BRASILIA_MIN);
+  return calcularEm(op, { dataset: opcoes.dataset, aliquotas: opcoes.aliquotas, data: date });
 }
 
 /**
  * Variante com a data civil do fato gerador já resolvida (`AAAA-MM-DD`): para reprocessamento e para o oráculo, que
  * trabalham com a data que a Calculadora recebe.
  */
-export function calculateAt(
-  op: ClassifiedOperation,
-  options: { readonly dataset: IbsCbsDataset; readonly rates: RateProvider; readonly date: IsoDate },
+export function calcularEm(
+  op: OperacaoClassificada,
+  opcoes: { readonly dataset: DatasetIbsCbs; readonly aliquotas: ProvedorDeAliquotas; readonly data: DataIso },
 ): Roc {
   checkOperation(op);
-  const content = options.dataset.at(options.date);
-  const date = content.asOf;
+  const content = opcoes.dataset.em(opcoes.data);
+  const date = content.dataDeReferencia;
   let gov: GovContext | undefined;
-  if (op.governmentPurchase !== undefined) {
-    const red = content.govPurchaseReducer();
-    const transfer = content.cbsTransferPercent();
+  if (op.compraGovernamental !== undefined) {
+    const red = content.redutorCompraGov();
+    const transfer = content.percentualTransferenciaCbs();
     if (red === undefined || transfer === undefined) {
       fail('dados_incompletos', `redutor ou transferência de compras governamentais ausente no dataset em ${date}`);
     }
     gov = {
-      tp: op.governmentPurchase.tpEnteGov,
-      tpOperGov: op.governmentPurchase.tpOperGov,
+      tp: op.compraGovernamental.tpEnteGov,
+      tpOperGov: op.compraGovernamental.tpOperGov,
       pRedutor: Decimal.parse(red),
-      transfer: fromPercent(Decimal.parse(transfer)),
+      transfer: dePercentual(Decimal.parse(transfer)),
     };
   }
-  const ctx: Ctx = { content, date, op, rates: options.rates, gov, trace: [] };
-  const results = [...op.items].sort((a, b) => a.n - b.n).map((it) => calcItem(ctx, it));
+  const ctx: Ctx = { content, date, op, rates: opcoes.aliquotas, gov, trace: [] };
+  const results = [...op.itens].sort((a, b) => a.n - b.n).map((it) => calcItem(ctx, it));
   const items = results.map((r) => r.roc);
   return {
-    asOf: date,
+    dataDeReferencia: date,
     ...(gov
       ? {
           oper: {
             gCompraGov: {
               tpEnteGov: gov.tp,
-              pRedutor: percent(gov.pRedutor),
+              pRedutor: percentual(gov.pRedutor),
               ...(gov.tpOperGov === undefined ? {} : { tpOperGov: gov.tpOperGov }),
             },
           },
         }
       : {}),
-    items,
+    itens: items,
     total: { IBSCBSTot: totals(results) },
-    simulated: items.some((i) => i.simulated),
-    contentVersion: options.dataset.contentVersion,
-    ratesId: options.rates.id,
-    trace: ctx.trace,
+    simulado: items.some((i) => i.simulado),
+    versaoDoConteudo: opcoes.dataset.versaoDoConteudo,
+    idDasAliquotas: opcoes.aliquotas.id,
+    rastro: ctx.trace,
   };
 }

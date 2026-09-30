@@ -2,37 +2,37 @@ import { describe, expect, test } from 'bun:test';
 import { createPrivateKey, X509Certificate } from 'node:crypto';
 import { relogioFixo } from '@sinete/core';
 import forge from 'node-forge';
-import type { Pkcs12Reader } from '../src/index.ts';
+import type { LeitorPkcs12 } from '../src/index.ts';
 import {
-  CertError,
-  forgePkcs12Reader,
-  legacyPasswordVariant,
-  openPfx,
-  parseCertificate,
-  pemToDers,
+  abrirPfx,
+  dersDoPem,
+  ErroCertificado,
+  leitorPkcs12Forge,
+  lerCertificado,
+  senhaNoFormatoLegado,
 } from '../src/index.ts';
 import { fixture, SENHA, SENHA_ACENTUADA } from './helpers.ts';
 
 const clock = relogioFixo('2026-09-25T12:00:00Z');
 
-describe('openPfx: perfis de cifra', () => {
+describe('abrirPfx: perfis de cifra', () => {
   test.each([
     ['ecnpj-legacy.pfx', SENHA, 'RC2-40 + 3DES (-legacy)'],
     ['ecnpj-3des-cadeia.pfx', SENHA, '3DES + 3DES com cadeia'],
     ['ecnpj-aes.pfx', SENHA, 'PBES2 AES-256, MAC SHA-256'],
     ['ecpf-legacy-acentuada.pfx', SENHA_ACENTUADA, 'legado com senha acentuada'],
   ])('%s (%s)', async (file, password) => {
-    const ks = await openPfx(fixture(file), { password, clock });
-    expect(ks.kind).toBe('a1');
-    expect(ks.validity).toBe('valido');
-    const signer = await ks.signer();
+    const ks = await abrirPfx(fixture(file), { senha: password, relogio: clock });
+    expect(ks.tipo).toBe('a1');
+    expect(ks.validade).toBe('valido');
+    const signer = await ks.assinador();
     const data = new TextEncoder().encode('<SignedInfo>x</SignedInfo>');
     const sig = await signer.assinar(data, 'SHA-1');
     const ok = await crypto.subtle.verify(
       'RSASSA-PKCS1-v1_5',
       await crypto.subtle.importKey(
         'spki',
-        ks.certificate.spki as Uint8Array<ArrayBuffer>,
+        ks.certificado.spki as Uint8Array<ArrayBuffer>,
         { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-1' },
         false,
         ['verify'],
@@ -41,38 +41,38 @@ describe('openPfx: perfis de cifra', () => {
       data,
     );
     expect(ok).toBe(true);
-    expect(await signer.certificadoDer()).toEqual(ks.certificate.der);
+    expect(await signer.certificadoDer()).toEqual(ks.certificado.der);
   });
 
   test('RC2-128 vira pfx_nao_suportado', async () => {
-    await expect(openPfx(fixture('ecnpj-rc2-128.pfx'), { password: SENHA, clock })).rejects.toMatchObject({
+    await expect(abrirPfx(fixture('ecnpj-rc2-128.pfx'), { senha: SENHA, relogio: clock })).rejects.toMatchObject({
       code: 'pfx_nao_suportado',
     });
   });
 
   test('senha errada vira pfx_senha_incorreta, sem a senha na mensagem', async () => {
-    const e = await openPfx(fixture('ecnpj-legacy.pfx'), { password: 'errada', clock }).catch((x: unknown) => x);
-    expect(e).toBeInstanceOf(CertError);
-    expect((e as CertError).code).toBe('pfx_senha_incorreta');
+    const e = await abrirPfx(fixture('ecnpj-legacy.pfx'), { senha: 'errada', relogio: clock }).catch((x: unknown) => x);
+    expect(e).toBeInstanceOf(ErroCertificado);
+    expect((e as ErroCertificado).code).toBe('pfx_senha_incorreta');
     expect(JSON.stringify(e)).not.toContain('errada');
   });
 
   test('senha acentuada errada também tenta a variante e falha tipada', async () => {
-    await expect(openPfx(fixture('ecnpj-legacy.pfx'), { password: 'Senhá', clock })).rejects.toMatchObject({
+    await expect(abrirPfx(fixture('ecnpj-legacy.pfx'), { senha: 'Senhá', relogio: clock })).rejects.toMatchObject({
       code: 'pfx_senha_incorreta',
     });
   });
 
   test('arquivo que não é PFX vira pfx_invalido', async () => {
     await expect(
-      openPfx(new TextEncoder().encode('isto não é um PFX'), { password: SENHA, clock }),
+      abrirPfx(new TextEncoder().encode('isto não é um PFX'), { senha: SENHA, relogio: clock }),
     ).rejects.toMatchObject({
       code: 'pfx_invalido',
     });
   });
 
   test('PFX sem chave', async () => {
-    await expect(openPfx(fixture('sem-chave.pfx'), { password: SENHA, clock })).rejects.toMatchObject({
+    await expect(abrirPfx(fixture('sem-chave.pfx'), { senha: SENHA, relogio: clock })).rejects.toMatchObject({
       code: 'pfx_sem_chave',
     });
   });
@@ -81,39 +81,39 @@ describe('openPfx: perfis de cifra', () => {
     const pfx = fixture('ecnpj-legacy.pfx');
     const padded = new Uint8Array(pfx.length + 1);
     padded.set(pfx);
-    const ks = await openPfx(padded, { password: SENHA, clock });
-    expect(ks.identity.cnpj).toBe('11222333000181');
+    const ks = await abrirPfx(padded, { senha: SENHA, relogio: clock });
+    expect(ks.identidade.cnpj).toBe('11222333000181');
   });
 });
 
 describe('escolha do titular', () => {
   test('entre duas folhas da mesma chave, fica a de validade mais longa', async () => {
-    const ks = await openPfx(fixture('ecnpj-multi.pfx'), { password: SENHA, clock });
-    expect(ks.certificate.notAfterIso).toBe('2028-06-01T00:00:00Z');
+    const ks = await abrirPfx(fixture('ecnpj-multi.pfx'), { senha: SENHA, relogio: clock });
+    expect(ks.certificado.notAfterIso).toBe('2028-06-01T00:00:00Z');
     // a folha antiga não vira intermediária
-    expect(ks.extraCertificates.map((c) => c.subject.commonName)).toEqual(['AC SINTETICA SINETE v1']);
+    expect(ks.certificadosExtras.map((c) => c.subject.commonName)).toEqual(['AC SINTETICA SINETE v1']);
   });
 
   test('certificado sem chave correspondente', async () => {
-    const reader: Pkcs12Reader = {
-      name: 'teste',
-      read: async () => {
-        const real = forgePkcs12Reader.read(fixture('ecnpj-3des-cadeia.pfx'), SENHA);
-        const other = forgePkcs12Reader.read(fixture('ecpf-legacy-acentuada.pfx'), SENHA_ACENTUADA);
-        return { privateKeys: (await other).privateKeys, certificates: (await real).certificates };
+    const reader: LeitorPkcs12 = {
+      nome: 'teste',
+      ler: async () => {
+        const real = leitorPkcs12Forge.ler(fixture('ecnpj-3des-cadeia.pfx'), SENHA);
+        const other = leitorPkcs12Forge.ler(fixture('ecpf-legacy-acentuada.pfx'), SENHA_ACENTUADA);
+        return { chavesPrivadas: (await other).chavesPrivadas, certificados: (await real).certificados };
       },
     };
-    await expect(openPfx(new Uint8Array(), { password: SENHA, clock, reader })).rejects.toMatchObject({
+    await expect(abrirPfx(new Uint8Array(), { senha: SENHA, relogio: clock, leitor: reader })).rejects.toMatchObject({
       code: 'pfx_sem_certificado_da_chave',
     });
   });
 
   test('chave que não é RSA', async () => {
-    const reader: Pkcs12Reader = {
-      name: 'teste',
-      read: () => ({ privateKeys: [Uint8Array.of(0x30, 0x03, 0x02, 0x01, 0x00)], certificates: [] }),
+    const reader: LeitorPkcs12 = {
+      nome: 'teste',
+      ler: () => ({ chavesPrivadas: [Uint8Array.of(0x30, 0x03, 0x02, 0x01, 0x00)], certificados: [] }),
     };
-    await expect(openPfx(new Uint8Array(), { password: SENHA, clock, reader })).rejects.toMatchObject({
+    await expect(abrirPfx(new Uint8Array(), { senha: SENHA, relogio: clock, leitor: reader })).rejects.toMatchObject({
       code: 'algoritmo_nao_suportado',
     });
   });
@@ -121,43 +121,43 @@ describe('escolha do titular', () => {
 
 describe('trava de validade', () => {
   test('vencido é recusado com detalhes públicos', async () => {
-    const e = (await openPfx(fixture('ecnpj-legacy.pfx'), {
-      password: SENHA,
-      clock: relogioFixo('2027-01-01T00:00:01Z'),
-    }).catch((x: unknown) => x)) as CertError;
+    const e = (await abrirPfx(fixture('ecnpj-legacy.pfx'), {
+      senha: SENHA,
+      relogio: relogioFixo('2027-01-01T00:00:01Z'),
+    }).catch((x: unknown) => x)) as ErroCertificado;
     expect(e.code).toBe('certificado_expirado');
     expect(e.detalhes).toMatchObject({ notAfter: '2027-01-01T00:00:00Z' });
   });
 
   test('ainda não válido é recusado', async () => {
     await expect(
-      openPfx(fixture('ecnpj-legacy.pfx'), { password: SENHA, clock: relogioFixo('2025-12-31T23:59:59Z') }),
+      abrirPfx(fixture('ecnpj-legacy.pfx'), { senha: SENHA, relogio: relogioFixo('2025-12-31T23:59:59Z') }),
     ).rejects.toMatchObject({ code: 'certificado_ainda_nao_valido' });
   });
 
-  test('allowExpired abre e marca a validade', async () => {
-    const ks = await openPfx(fixture('ecnpj-legacy.pfx'), {
-      password: SENHA,
-      clock: relogioFixo('2030-01-01T00:00:00Z'),
-      allowExpired: true,
+  test('aceitarVencido abre e marca a validade', async () => {
+    const ks = await abrirPfx(fixture('ecnpj-legacy.pfx'), {
+      senha: SENHA,
+      relogio: relogioFixo('2030-01-01T00:00:00Z'),
+      aceitarVencido: true,
     });
-    expect(ks.validity).toBe('expirado');
-    const early = await openPfx(fixture('ecnpj-legacy.pfx'), {
-      password: SENHA,
-      clock: relogioFixo('2020-01-01T00:00:00Z'),
-      allowExpired: true,
+    expect(ks.validade).toBe('expirado');
+    const early = await abrirPfx(fixture('ecnpj-legacy.pfx'), {
+      senha: SENHA,
+      relogio: relogioFixo('2020-01-01T00:00:00Z'),
+      aceitarVencido: true,
     });
-    expect(early.validity).toBe('ainda_nao_valido');
+    expect(early.validade).toBe('ainda_nao_valido');
   });
 });
 
 describe('material TLS', () => {
   test('cadeia do cliente sem raiz e chave PKCS#8 que o runtime aceita', async () => {
-    const ks = await openPfx(fixture('ecnpj-3des-cadeia.pfx'), { password: SENHA, clock });
-    const { certChain, key } = ks.tlsPem();
-    const ders = pemToDers(certChain);
+    const ks = await abrirPfx(fixture('ecnpj-3des-cadeia.pfx'), { senha: SENHA, relogio: clock });
+    const { cadeia: certChain, chave: key } = ks.tlsPem();
+    const ders = dersDoPem(certChain);
     expect(ders).toHaveLength(2);
-    expect(ders[0]).toEqual(ks.certificate.der);
+    expect(ders[0]).toEqual(ks.certificado.der);
     expect(new X509Certificate(ders[1] as Uint8Array).subject).toContain('AC SINTETICA SINETE v1');
     const k = createPrivateKey(key);
     expect(k.asymmetricKeyType).toBe('rsa');
@@ -165,15 +165,15 @@ describe('material TLS', () => {
   });
 
   test('cadeia explícita começa sempre pelo titular', async () => {
-    const ks = await openPfx(fixture('ecnpj-3des-cadeia.pfx'), { password: SENHA, clock });
-    const inter = ks.extraCertificates.filter((c) => !c.selfIssued);
-    const { certChain } = ks.tlsPem({ chain: inter });
-    expect(pemToDers(certChain)[0]).toEqual(ks.certificate.der);
-    expect(pemToDers(certChain)).toHaveLength(2);
+    const ks = await abrirPfx(fixture('ecnpj-3des-cadeia.pfx'), { senha: SENHA, relogio: clock });
+    const inter = ks.certificadosExtras.filter((c) => !c.selfIssued);
+    const { cadeia: certChain } = ks.tlsPem({ cadeia: inter });
+    expect(dersDoPem(certChain)[0]).toEqual(ks.certificado.der);
+    expect(dersDoPem(certChain)).toHaveLength(2);
   });
 
   test('troca de chave da AC: auto-emitido assinado pela chave velha segue no TLS, raiz não', async () => {
-    const ks = await openPfx(fixture('ecnpj-3des-cadeia.pfx'), { password: SENHA, clock });
+    const ks = await abrirPfx(fixture('ecnpj-3des-cadeia.pfx'), { senha: SENHA, relogio: clock });
     const pki = forge.pki;
     const velha = pki.rsa.generateKeyPair({ bits: 1024, e: 0x10001 });
     const nova = pki.rsa.generateKeyPair({ bits: 1024, e: 0x10001 });
@@ -192,7 +192,7 @@ describe('material TLS', () => {
         { name: 'authorityKeyIdentifier', keyIdentifier: ski(signer.publicKey) },
       ]);
       c.sign(signer.privateKey, forge.md.sha256.create());
-      return parseCertificate(
+      return lerCertificado(
         Uint8Array.from(forge.asn1.toDer(pki.certificateToAsn1(c)).getBytes(), (ch) => ch.charCodeAt(0)),
       );
     };
@@ -201,29 +201,29 @@ describe('material TLS', () => {
     expect(raiz.authorityKeyId).toBe(raiz.subjectKeyId as string);
     expect(rolagem.authorityKeyId).not.toBe(rolagem.subjectKeyId);
     expect(rolagem.selfIssued && raiz.selfIssued).toBe(true);
-    const ders = pemToDers(ks.tlsPem({ chain: [ks.certificate, rolagem, raiz] }).certChain);
-    expect(ders).toEqual([ks.certificate.der, rolagem.der]);
+    const ders = dersDoPem(ks.tlsPem({ cadeia: [ks.certificado, rolagem, raiz] }).cadeia);
+    expect(ders).toEqual([ks.certificado.der, rolagem.der]);
   });
 });
 
 describe('senha em ferramenta antiga (Latin-1 byte a byte)', () => {
   test('variante só existe com caractere fora do ASCII', () => {
-    expect(legacyPasswordVariant('abc123')).toBeUndefined();
-    expect(legacyPasswordVariant('ç')).toBe('Ã§');
+    expect(senhaNoFormatoLegado('abc123')).toBeUndefined();
+    expect(senhaNoFormatoLegado('ç')).toBe('Ã§');
   });
 
   test('PFX cifrado com a senha mutilada abre com a senha certa', async () => {
     // Gera um PFX 3DES com a senha como o OpenSSL 1.0 a veria (bytes UTF-8 lidos como Latin-1).
-    const src = await openPfx(fixture('ecnpj-aes.pfx'), { password: SENHA, clock });
-    const { key, certChain } = src.tlsPem();
+    const src = await abrirPfx(fixture('ecnpj-aes.pfx'), { senha: SENHA, relogio: clock });
+    const { chave: key, cadeia: certChain } = src.tlsPem();
     const p12 = forge.pkcs12.toPkcs12Asn1(
       forge.pki.privateKeyFromPem(key),
       [forge.pki.certificateFromPem(certChain)],
-      legacyPasswordVariant('Maçã') as string,
+      senhaNoFormatoLegado('Maçã') as string,
       { algorithm: '3des' },
     );
     const bytes = Uint8Array.from(forge.asn1.toDer(p12).getBytes(), (c) => c.charCodeAt(0));
-    const ks = await openPfx(bytes, { password: 'Maçã', clock });
-    expect(ks.certificate.der).toEqual(src.certificate.der);
+    const ks = await abrirPfx(bytes, { senha: 'Maçã', relogio: clock });
+    expect(ks.certificado.der).toEqual(src.certificado.der);
   });
 });

@@ -8,10 +8,10 @@
  * Fontes (conteúdo oficial, sha256 em tools/xsd-codegen/xsd/<pacote>/SOURCE.md):
  * - mdfe/PL_MDFe_300b_NT012025_1.05 (PL_MDFe_300b_NT012025_1.04.zip)
  */
-import type { ComplexType, RootElement, SchemaModuleInfo, SimpleType } from "../../runtime/desc.ts";
+import type { ComplexType, DescricaoModuloSchema, ElementoRaiz, SimpleType } from "../../runtime/desc.ts";
 
 /** Proveniência deste módulo. */
-export const schema: SchemaModuleInfo = {
+export const schema: DescricaoModuloSchema = {
   "subpath": "mdfe/servicos/3.00b",
   "documento": "mdfe",
   "pl": "PL_MDFe_300b_NT012025_1.05",
@@ -345,14 +345,14 @@ export const TRetConsMDFeNaoEnc: ComplexType<TRetConsMDFeNaoEnc> = { id: "TRetCo
 
 // ---------- elementos raiz ----------
 /** Elemento raiz `consStatServMDFe` (tipo TConsStatServ). */
-export const consStatServMDFeElement: RootElement<TConsStatServ> = { name: "consStatServMDFe", ns: "http://www.portalfiscal.inf.br/mdfe", type: TConsStatServ };
+export const consStatServMDFeElement: ElementoRaiz<TConsStatServ> = { nome: "consStatServMDFe", ns: "http://www.portalfiscal.inf.br/mdfe", tipo: TConsStatServ };
 /** Elemento raiz `retConsStatServMDFe` (tipo TRetConsStatServ). */
-export const retConsStatServMDFeElement: RootElement<TRetConsStatServ> = { name: "retConsStatServMDFe", ns: "http://www.portalfiscal.inf.br/mdfe", type: TRetConsStatServ };
+export const retConsStatServMDFeElement: ElementoRaiz<TRetConsStatServ> = { nome: "retConsStatServMDFe", ns: "http://www.portalfiscal.inf.br/mdfe", tipo: TRetConsStatServ };
 /** Elemento raiz `consSitMDFe` (tipo TConsSitMDFe). */
-export const consSitMDFeElement: RootElement<TConsSitMDFe> = { name: "consSitMDFe", ns: "http://www.portalfiscal.inf.br/mdfe", type: TConsSitMDFe };
+export const consSitMDFeElement: ElementoRaiz<TConsSitMDFe> = { nome: "consSitMDFe", ns: "http://www.portalfiscal.inf.br/mdfe", tipo: TConsSitMDFe };
 /** Elemento raiz `retConsSitMDFe` (tipo TRetConsSitMDFe). */
-export const retConsSitMDFeElement: RootElement<TRetConsSitMDFe> = { name: "retConsSitMDFe", ns: "http://www.portalfiscal.inf.br/mdfe", type: TRetConsSitMDFe };
+export const retConsSitMDFeElement: ElementoRaiz<TRetConsSitMDFe> = { nome: "retConsSitMDFe", ns: "http://www.portalfiscal.inf.br/mdfe", tipo: TRetConsSitMDFe };
 /** Elemento raiz `consMDFeNaoEnc` (tipo TConsMDFeNaoEnc). */
-export const consMDFeNaoEncElement: RootElement<TConsMDFeNaoEnc> = { name: "consMDFeNaoEnc", ns: "http://www.portalfiscal.inf.br/mdfe", type: TConsMDFeNaoEnc };
+export const consMDFeNaoEncElement: ElementoRaiz<TConsMDFeNaoEnc> = { nome: "consMDFeNaoEnc", ns: "http://www.portalfiscal.inf.br/mdfe", tipo: TConsMDFeNaoEnc };
 /** Elemento raiz `retConsMDFeNaoEnc` (tipo TRetConsMDFeNaoEnc). */
-export const retConsMDFeNaoEncElement: RootElement<TRetConsMDFeNaoEnc> = { name: "retConsMDFeNaoEnc", ns: "http://www.portalfiscal.inf.br/mdfe", type: TRetConsMDFeNaoEnc };
+export const retConsMDFeNaoEncElement: ElementoRaiz<TRetConsMDFeNaoEnc> = { nome: "retConsMDFeNaoEnc", ns: "http://www.portalfiscal.inf.br/mdfe", tipo: TRetConsMDFeNaoEnc };

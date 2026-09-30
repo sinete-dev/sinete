@@ -1,0 +1,1182 @@
+[
+  {
+    "cClassTrib": "200028",
+    "chave": "CBS_IBS:200028:2026-01-01:122011:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200028:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "IX/35",
+    "prefixo": "122011",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200028",
+    "chave": "CBS_IBS:200028:2026-01-01:122012000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200028:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "II/1",
+    "prefixo": "122012000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200028",
+    "chave": "CBS_IBS:200028:2026-01-01:122013000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200028:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "II/2",
+    "prefixo": "122013000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200028",
+    "chave": "CBS_IBS:200028:2026-01-01:122020000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200028:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "II/3",
+    "prefixo": "122020000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200028",
+    "chave": "CBS_IBS:200028:2026-01-01:12203:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200028:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "II/4",
+    "prefixo": "12203",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200028",
+    "chave": "CBS_IBS:200028:2026-01-01:12204:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200028:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "II/5",
+    "prefixo": "12204",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200028",
+    "chave": "CBS_IBS:200028:2026-01-01:122051300:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200028:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "II/6",
+    "prefixo": "122051300",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200028",
+    "chave": "CBS_IBS:200028:2026-01-01:122051300:2026-01-01#2",
+    "chaveClassTrib": "CBS_IBS:200028:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "II/7",
+    "prefixo": "122051300",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200029",
+    "chave": "CBS_IBS:200029:2026-01-01:123011100:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200029:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "II/8",
+    "prefixo": "123011100",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200029",
+    "chave": "CBS_IBS:200029:2026-01-01:123011200:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200029:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "III/1",
+    "prefixo": "123011200",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200029",
+    "chave": "CBS_IBS:200029:2026-01-01:123011300:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200029:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "III/2",
+    "prefixo": "123011300",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200029",
+    "chave": "CBS_IBS:200029:2026-01-01:123011400:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200029:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "III/3",
+    "prefixo": "123011400",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200029",
+    "chave": "CBS_IBS:200029:2026-01-01:123011500:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200029:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "III/4",
+    "prefixo": "123011500",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200029",
+    "chave": "CBS_IBS:200029:2026-01-01:123011900:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200029:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "III/5",
+    "prefixo": "123011900",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200029",
+    "chave": "CBS_IBS:200029:2026-01-01:123012100:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200029:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "III/6",
+    "prefixo": "123012100",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200029",
+    "chave": "CBS_IBS:200029:2026-01-01:123012200:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200029:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "III/7",
+    "prefixo": "123012200",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200029",
+    "chave": "CBS_IBS:200029:2026-01-01:123012300:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200029:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "III/8",
+    "prefixo": "123012300",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200029",
+    "chave": "CBS_IBS:200029:2026-01-01:123019100:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200029:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "III/9",
+    "prefixo": "123019100",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200029",
+    "chave": "CBS_IBS:200029:2026-01-01:123019200:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200029:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "III/10",
+    "prefixo": "123019200",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200029",
+    "chave": "CBS_IBS:200029:2026-01-01:123019300:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200029:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "III/11",
+    "prefixo": "123019300",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200029",
+    "chave": "CBS_IBS:200029:2026-01-01:123019400:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200029:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "III/12",
+    "prefixo": "123019400",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200029",
+    "chave": "CBS_IBS:200029:2026-01-01:123019500:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200029:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "III/13",
+    "prefixo": "123019500",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200029",
+    "chave": "CBS_IBS:200029:2026-01-01:123019600:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200029:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "III/14",
+    "prefixo": "123019600",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200029",
+    "chave": "CBS_IBS:200029:2026-01-01:123019700:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200029:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "III/15",
+    "prefixo": "123019700",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200029",
+    "chave": "CBS_IBS:200029:2026-01-01:123019800:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200029:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "III/16",
+    "prefixo": "123019800",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200029",
+    "chave": "CBS_IBS:200029:2026-01-01:123019900:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200029:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "123019900",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200029",
+    "chave": "CBS_IBS:200029:2026-01-01:12302:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200029:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "IX/28",
+    "prefixo": "12302",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200029",
+    "chave": "CBS_IBS:200029:2026-01-01:126030000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200029:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "IX/31",
+    "prefixo": "126030000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200038",
+    "chave": "CBS_IBS:200038:2026-01-01:111051000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200038:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/9",
+    "prefixo": "111051000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200038",
+    "chave": "CBS_IBS:200038:2026-01-01:111091000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200038:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/10",
+    "prefixo": "111091000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200038",
+    "chave": "CBS_IBS:200038:2026-01-01:114031000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200038:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/4",
+    "prefixo": "114031000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200038",
+    "chave": "CBS_IBS:200038:2026-01-01:114032900:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200038:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/7",
+    "prefixo": "114032900",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200038",
+    "chave": "CBS_IBS:200038:2026-01-01:114044100:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200038:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/8",
+    "prefixo": "114044100",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200038",
+    "chave": "CBS_IBS:200038:2026-01-01:114052100:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200038:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/1",
+    "prefixo": "114052100",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200038",
+    "chave": "CBS_IBS:200038:2026-01-01:114052200:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200038:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/1",
+    "prefixo": "114052200",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200038",
+    "chave": "CBS_IBS:200038:2026-01-01:114052200:2026-01-01#2",
+    "chaveClassTrib": "CBS_IBS:200038:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/3",
+    "prefixo": "114052200",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200038",
+    "chave": "CBS_IBS:200038:2026-01-01:114059000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200038:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/1",
+    "prefixo": "114059000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200038",
+    "chave": "CBS_IBS:200038:2026-01-01:114109000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200038:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "IX/32",
+    "prefixo": "114109000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200038",
+    "chave": "CBS_IBS:200038:2026-01-01:114109000:2026-01-01#2",
+    "chaveClassTrib": "CBS_IBS:200038:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "IX/33",
+    "prefixo": "114109000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200038",
+    "chave": "CBS_IBS:200038:2026-01-01:114109000:2026-01-01#3",
+    "chaveClassTrib": "CBS_IBS:200038:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/2",
+    "prefixo": "114109000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200038",
+    "chave": "CBS_IBS:200038:2026-01-01:119011000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200038:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/5",
+    "prefixo": "119011000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200038",
+    "chave": "CBS_IBS:200038:2026-01-01:119011000:2026-01-01#2",
+    "chaveClassTrib": "CBS_IBS:200038:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/6",
+    "prefixo": "119011000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:101057000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "101057000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:111031000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/13",
+    "prefixo": "111031000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:111033100:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/14",
+    "prefixo": "111033100",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:111033200:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/15",
+    "prefixo": "111033200",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:111033400:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/16",
+    "prefixo": "111033400",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:111033500:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/17",
+    "prefixo": "111033500",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:1110336:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/18",
+    "prefixo": "1110336",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:111034200:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "111034200",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:111034:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/19",
+    "prefixo": "111034",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:11103:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/12",
+    "prefixo": "11103",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:111061000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/20",
+    "prefixo": "111061000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:111063100:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/21",
+    "prefixo": "111063100",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:111063200:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/22",
+    "prefixo": "111063200",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:111063400:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/23",
+    "prefixo": "111063400",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:111063500:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/24",
+    "prefixo": "111063500",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:1110636:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/25",
+    "prefixo": "1110636",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:111064200:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "111064200",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:111064:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/26",
+    "prefixo": "111064",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:11106:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "11106",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:111071000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/27",
+    "prefixo": "111071000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:111073100:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/28",
+    "prefixo": "111073100",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:111073200:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/29",
+    "prefixo": "111073200",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:111074000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/30",
+    "prefixo": "111074000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:117041000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/31",
+    "prefixo": "117041000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:117042000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/32",
+    "prefixo": "117042000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:118053200:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "XI/1.14",
+    "prefixo": "118053200",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:118066:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/33",
+    "prefixo": "118066",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:125011100:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/34",
+    "prefixo": "125011100",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:125011200:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/35",
+    "prefixo": "125011200",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:125012100:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/36",
+    "prefixo": "125012100",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:125012200:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/37",
+    "prefixo": "125012200",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:125013100:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/38",
+    "prefixo": "125013100",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:125013200:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/39",
+    "prefixo": "125013200",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:125013300:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/40",
+    "prefixo": "125013300",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:125013400:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/41",
+    "prefixo": "125013400",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:125013500:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/46",
+    "prefixo": "125013500",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:125013600:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/47",
+    "prefixo": "125013600",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:125013700:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/48",
+    "prefixo": "125013700",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:125015000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/55",
+    "prefixo": "125015000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:125019000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/56",
+    "prefixo": "125019000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:125021000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "X/57",
+    "prefixo": "125021000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:125022000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "XI/1.1",
+    "prefixo": "125022000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:125023000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "125023000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:125029000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "125029000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:125031000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "XI/1.2",
+    "prefixo": "125031000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:125032000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "XI/1.3",
+    "prefixo": "125032000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200039",
+    "chave": "CBS_IBS:200039:2026-01-01:125041100:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200039:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": "XI/1.13",
+    "prefixo": "125041100",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200043",
+    "chave": "CBS_IBS:200043:2026-01-01:115012000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200043:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "115012000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200043",
+    "chave": "CBS_IBS:200043:2026-01-01:115029000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200043:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "115029000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200043",
+    "chave": "CBS_IBS:200043:2026-01-01:115100000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200043:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "115100000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200043",
+    "chave": "CBS_IBS:200043:2026-01-01:120013500:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200043:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "120013500",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200043",
+    "chave": "CBS_IBS:200043:2026-01-01:120018300:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200043:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "120018300",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200044",
+    "chave": "CBS_IBS:200044:2026-01-01:115012000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200044:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "115012000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200044",
+    "chave": "CBS_IBS:200044:2026-01-01:115029000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200044:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "115029000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200044",
+    "chave": "CBS_IBS:200044:2026-01-01:115100000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200044:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "115100000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200044",
+    "chave": "CBS_IBS:200044:2026-01-01:120013500:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200044:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "120013500",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "200044",
+    "chave": "CBS_IBS:200044:2026-01-01:120018300:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200044:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "120018300",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "515001",
+    "chave": "CBS_IBS:515001:2026-01-01:111051000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:515001:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "111051000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "515001",
+    "chave": "CBS_IBS:515001:2026-01-01:111091000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:515001:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "111091000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "515001",
+    "chave": "CBS_IBS:515001:2026-01-01:114031000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:515001:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "114031000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "515001",
+    "chave": "CBS_IBS:515001:2026-01-01:114032900:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:515001:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "114032900",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "515001",
+    "chave": "CBS_IBS:515001:2026-01-01:114044100:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:515001:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "114044100",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "515001",
+    "chave": "CBS_IBS:515001:2026-01-01:114052100:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:515001:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "114052100",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "515001",
+    "chave": "CBS_IBS:515001:2026-01-01:114052200:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:515001:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "114052200",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "515001",
+    "chave": "CBS_IBS:515001:2026-01-01:114052200:2026-01-01#2",
+    "chaveClassTrib": "CBS_IBS:515001:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "114052200",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "515001",
+    "chave": "CBS_IBS:515001:2026-01-01:114059000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:515001:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "114059000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "515001",
+    "chave": "CBS_IBS:515001:2026-01-01:114109000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:515001:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "114109000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "515001",
+    "chave": "CBS_IBS:515001:2026-01-01:114109000:2026-01-01#2",
+    "chaveClassTrib": "CBS_IBS:515001:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "114109000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "515001",
+    "chave": "CBS_IBS:515001:2026-01-01:114109000:2026-01-01#3",
+    "chaveClassTrib": "CBS_IBS:515001:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "114109000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "515001",
+    "chave": "CBS_IBS:515001:2026-01-01:119011000:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:515001:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "119011000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "515001",
+    "chave": "CBS_IBS:515001:2026-01-01:119011000:2026-01-01#2",
+    "chaveClassTrib": "CBS_IBS:515001:2026-01-01",
+    "excecoes": [],
+    "familia": "CBS_IBS",
+    "itemDoAnexo": null,
+    "prefixo": "119011000",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "cClassTrib": "000001",
+    "chave": "IS:000001:2027-01-01:125080000:2027-01-01",
+    "chaveClassTrib": "IS:000001:2027-01-01",
+    "excecoes": [],
+    "familia": "IS",
+    "itemDoAnexo": null,
+    "prefixo": "125080000",
+    "vigencia": { "fim": null, "inicio": "2027-01-01" }
+  },
+  {
+    "cClassTrib": "000002",
+    "chave": "IS:000002:2027-01-01:125080000:2027-01-01",
+    "chaveClassTrib": "IS:000002:2027-01-01",
+    "excecoes": [],
+    "familia": "IS",
+    "itemDoAnexo": null,
+    "prefixo": "125080000",
+    "vigencia": { "fim": null, "inicio": "2027-01-01" }
+  },
+  {
+    "cClassTrib": "000009",
+    "chave": "IS:000009:2027-01-01:125080000:2027-01-01",
+    "chaveClassTrib": "IS:000009:2027-01-01",
+    "excecoes": [],
+    "familia": "IS",
+    "itemDoAnexo": null,
+    "prefixo": "125080000",
+    "vigencia": { "fim": null, "inicio": "2027-01-01" }
+  },
+  {
+    "cClassTrib": "100001",
+    "chave": "IS:100001:2027-01-01:125080000:2027-01-01",
+    "chaveClassTrib": "IS:100001:2027-01-01",
+    "excecoes": [],
+    "familia": "IS",
+    "itemDoAnexo": null,
+    "prefixo": "125080000",
+    "vigencia": { "fim": null, "inicio": "2027-01-01" }
+  },
+  {
+    "cClassTrib": "200007",
+    "chave": "IS:200007:2027-01-01:125080000:2027-01-01",
+    "chaveClassTrib": "IS:200007:2027-01-01",
+    "excecoes": [],
+    "familia": "IS",
+    "itemDoAnexo": null,
+    "prefixo": "125080000",
+    "vigencia": { "fim": null, "inicio": "2027-01-01" }
+  }
+]

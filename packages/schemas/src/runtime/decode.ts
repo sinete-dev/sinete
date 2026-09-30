@@ -4,18 +4,18 @@
  *
  * Tolerante de propósito (ADR 0002, decisão 4): documento recebido de terceiros não aborta. Elemento ou atributo
  * desconhecido, whitespace entre tags, texto solto e namespace errado viram ocorrências com o caminho, e o resto do
- * documento é lido. A validação estrita é do `validate`. Nunca reserialize um documento recebido: guarde a string
+ * documento é lido. A validação estrita é do `validar`. Nunca reserialize um documento recebido: guarde a string
  * original, que é a que a assinatura cobre.
  */
 
 import type { Ocorrencia } from '@sinete/core';
 import type { DocumentoXml, ElementoXml } from '@sinete/core/xml';
 import { descendentes, escaparAtributoC14n, namespacesEmEscopo } from '@sinete/core/xml';
-import type { ComplexType, ElementParticle, Particle, RootElement } from './desc.ts';
-import { isComplexType, isElementParticle, isWildcard, maxOccurs } from './desc.ts';
+import type { ComplexType, ElementoRaiz, ElementParticle, Particle } from './desc.ts';
+import { ehComplexType, ehElementParticle, ehWildcard, maxOccurs } from './desc.ts';
 
 /** Códigos das ocorrências do decoder. */
-export type DecodeIssueCode =
+export type CodigoOcorrenciaDecodificacao =
   | 'elemento_desconhecido'
   | 'atributo_desconhecido'
   | 'whitespace_descartado'
@@ -24,13 +24,13 @@ export type DecodeIssueCode =
   | 'namespace_divergente'
   | 'raiz_inesperada';
 
-export interface DecodeIssue extends Ocorrencia {
-  readonly code: DecodeIssueCode;
+export interface OcorrenciaDecodificacao extends Ocorrencia {
+  readonly code: CodigoOcorrenciaDecodificacao;
 }
 
-export interface Decoded<T> {
-  readonly value: T;
-  readonly issues: readonly DecodeIssue[];
+export interface Decodificado<T> {
+  readonly valor: T;
+  readonly ocorrencias: readonly OcorrenciaDecodificacao[];
 }
 
 interface ElInfo {
@@ -52,8 +52,8 @@ function infoOf(ct: ComplexType): CtInfo {
   const els = new Map<string, ElInfo>();
   let wildcard = false;
   const walk = (p: Particle, rep: boolean): void => {
-    if (isWildcard(p)) wildcard = true;
-    else if (isElementParticle(p)) {
+    if (ehWildcard(p)) wildcard = true;
+    else if (ehElementParticle(p)) {
       // Nome repetido com o mesmo tipo em ramos diferentes (IPI no choice do imposto) é uma propriedade só.
       const prev = els.get(p.e);
       els.set(p.e, { p, arr: rep || maxOccurs(p) > 1 || (prev?.arr ?? false) });
@@ -66,24 +66,30 @@ function infoOf(ct: ComplexType): CtInfo {
 }
 
 /** Decodifica o elemento `el` como o tipo `ct`. Nunca lança por causa do conteúdo. */
-export function decode<T>(ct: ComplexType<T>, el: ElementoXml, source?: string): Decoded<T> {
-  const issues: DecodeIssue[] = [];
-  const value = decodeCT(ct as ComplexType, el, issues, `/${el.local}`, source) as T;
-  return { value, issues };
+export function decodificar<T>(ct: ComplexType<T>, el: ElementoXml, texto?: string): Decodificado<T> {
+  const issues: OcorrenciaDecodificacao[] = [];
+  const value = decodificarComplexType(ct as ComplexType, el, issues, `/${el.local}`, texto) as T;
+  return { valor: value, ocorrencias: issues };
 }
 
 /** Decodifica um documento parseado pela raiz esperada. Raiz com outro nome ou namespace vira ocorrência. */
-export function decodeRoot<T>(root: RootElement<T>, doc: DocumentoXml): Decoded<T> {
-  const issues: DecodeIssue[] = [];
-  if (doc.raiz.local !== root.name || doc.raiz.ns !== root.ns) {
+export function decodificarRaiz<T>(raiz: ElementoRaiz<T>, documento: DocumentoXml): Decodificado<T> {
+  const issues: OcorrenciaDecodificacao[] = [];
+  if (documento.raiz.local !== raiz.nome || documento.raiz.ns !== raiz.ns) {
     issues.push({
-      caminho: `/${doc.raiz.local}`,
+      caminho: `/${documento.raiz.local}`,
       code: 'raiz_inesperada',
-      mensagem: `raiz esperada {${root.ns}}${root.name}`,
+      mensagem: `raiz esperada {${raiz.ns}}${raiz.nome}`,
     });
   }
-  const value = decodeCT(root.type as ComplexType, doc.raiz, issues, `/${doc.raiz.local}`, doc.texto) as T;
-  return { value, issues };
+  const value = decodificarComplexType(
+    raiz.tipo as ComplexType,
+    documento.raiz,
+    issues,
+    `/${documento.raiz.local}`,
+    documento.texto,
+  ) as T;
+  return { valor: value, ocorrencias: issues };
 }
 
 function pushTo(o: Record<string, unknown>, key: string, v: unknown): void {
@@ -131,10 +137,10 @@ function pushAttr(o: Record<string, unknown>, name: string, value: string): void
   o.$attrs = cur;
 }
 
-function decodeCT(
+function decodificarComplexType(
   ct: ComplexType,
   el: ElementoXml,
-  issues: DecodeIssue[],
+  issues: OcorrenciaDecodificacao[],
   path: string,
   source: string | undefined,
 ): Record<string, unknown> {
@@ -192,14 +198,16 @@ function decodeCT(
     if (c.ns !== (ei.p.ns ?? ct.ns)) {
       issues.push({ caminho: cp, code: 'namespace_divergente', mensagem: `namespace esperado ${ei.p.ns ?? ct.ns}` });
     }
-    const v = isComplexType(ei.p.t) ? decodeCT(ei.p.t, c, issues, cp, source) : decodeSimple(c, issues, cp);
+    const v = ehComplexType(ei.p.t)
+      ? decodificarComplexType(ei.p.t, c, issues, cp, source)
+      : decodificarSimpleType(c, issues, cp);
     if (ei.arr) pushTo(o, c.local, v);
     else o[c.local] = v;
   }
   return o;
 }
 
-function decodeSimple(el: ElementoXml, issues: DecodeIssue[], path: string): string {
+function decodificarSimpleType(el: ElementoXml, issues: OcorrenciaDecodificacao[], path: string): string {
   for (const a of el.atributos) {
     issues.push({ caminho: `${path}/@${a.nome}`, code: 'atributo_desconhecido', mensagem: 'atributo fora do schema' });
   }

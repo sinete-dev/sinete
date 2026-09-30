@@ -11,10 +11,10 @@
  * - 2.16.76.1.3.5 (e-CPF): título de eleitor; 2.16.76.1.3.6 e 2.16.76.1.3.7: CEI de PF e de PJ (ignorados aqui).
  *
  * Campo não informado vem com zeros. Sem os OIDs (certificado fora da ICP-Brasil ou emitido com defeito), cai no
- * padrão `NOME:DOCUMENTO` do CN, e `source` diz de onde veio.
+ * padrão `NOME:DOCUMENTO` do CN, e `origem` diz de onde veio.
  */
 
-import type { CertificateInfo } from './x509.ts';
+import type { CertificadoX509 } from './x509.ts';
 
 export const ICP_OIDS = {
   pessoaFisicaTitular: '2.16.76.1.3.1',
@@ -34,7 +34,7 @@ export interface IcpPessoa {
   readonly nome: string | undefined;
 }
 
-export interface IcpIdentity {
+export interface IdentidadeIcp {
   /** `e-CNPJ` quando há CNPJ, `e-CPF` quando há só CPF, `desconhecido` quando nenhum dos dois aparece. */
   readonly tipo: 'e-CNPJ' | 'e-CPF' | 'desconhecido';
   readonly cnpj: string | undefined;
@@ -44,7 +44,7 @@ export interface IcpIdentity {
   /** Nome do titular sem o sufixo `:DOCUMENTO` do CN. */
   readonly nome: string | undefined;
   /** `san` quando veio dos `otherName` da ICP-Brasil, `cn` quando só do CN. */
-  readonly source: 'san' | 'cn' | 'nenhuma';
+  readonly origem: 'san' | 'cn' | 'nenhuma';
 }
 
 /**
@@ -67,7 +67,7 @@ function parsePessoa(value: string, nome: string | undefined): IcpPessoa | undef
 }
 
 /** Extrai CNPJ, CPF e responsável de um certificado ICP-Brasil. Nunca lança: sem dados, `tipo` é `desconhecido`. */
-export function icpIdentity(cert: CertificateInfo): IcpIdentity {
+export function identidadeIcp(cert: CertificadoX509): IdentidadeIcp {
   const other = new Map(cert.subjectAltNames.otherNames.map((o) => [o.oid, o.value]));
   const cn = cert.subject.commonName;
   const cnMatch = cn ? /^(.*?):(\d{11}|[A-Za-z0-9]{12}\d{2})$/.exec(cn.trim()) : null;
@@ -84,16 +84,16 @@ export function icpIdentity(cert: CertificateInfo): IcpIdentity {
       cpf: undefined,
       pessoa: resp === undefined ? undefined : parsePessoa(resp, nomeResp),
       nome,
-      source: 'san',
+      origem: 'san',
     };
   }
   const titular = other.get(ICP_OIDS.pessoaFisicaTitular);
   const pessoa = titular === undefined ? undefined : parsePessoa(titular, nome);
-  if (pessoa) return { tipo: 'e-CPF', cnpj: undefined, cpf: pessoa.cpf, pessoa, nome, source: 'san' };
+  if (pessoa) return { tipo: 'e-CPF', cnpj: undefined, cpf: pessoa.cpf, pessoa, nome, origem: 'san' };
 
   const doc = cnMatch?.[2];
   if (doc?.length === 14)
-    return { tipo: 'e-CNPJ', cnpj: doc.toUpperCase(), cpf: undefined, pessoa: undefined, nome, source: 'cn' };
-  if (doc?.length === 11) return { tipo: 'e-CPF', cnpj: undefined, cpf: doc, pessoa: undefined, nome, source: 'cn' };
-  return { tipo: 'desconhecido', cnpj: undefined, cpf: undefined, pessoa: undefined, nome, source: 'nenhuma' };
+    return { tipo: 'e-CNPJ', cnpj: doc.toUpperCase(), cpf: undefined, pessoa: undefined, nome, origem: 'cn' };
+  if (doc?.length === 11) return { tipo: 'e-CPF', cnpj: undefined, cpf: doc, pessoa: undefined, nome, origem: 'cn' };
+  return { tipo: 'desconhecido', cnpj: undefined, cpf: undefined, pessoa: undefined, nome, origem: 'nenhuma' };
 }

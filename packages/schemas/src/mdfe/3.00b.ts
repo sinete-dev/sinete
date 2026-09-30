@@ -8,10 +8,10 @@
  * Fontes (conteúdo oficial, sha256 em tools/xsd-codegen/xsd/<pacote>/SOURCE.md):
  * - mdfe/PL_MDFe_300b_NT012025_1.05 (PL_MDFe_300b_NT012025_1.04.zip)
  */
-import type { ComplexType, RootElement, SchemaModuleInfo, SimpleType } from "../runtime/desc.ts";
+import type { ComplexType, DescricaoModuloSchema, ElementoRaiz, SimpleType } from "../runtime/desc.ts";
 
 /** Proveniência deste módulo. */
-export const schema: SchemaModuleInfo = {
+export const schema: DescricaoModuloSchema = {
   "subpath": "mdfe/3.00b",
   "documento": "mdfe",
   "pl": "PL_MDFe_300b_NT012025_1.05",
@@ -2663,8 +2663,8 @@ export const TRetMDFe: ComplexType<TRetMDFe> = { id: "TRetMDFe", ns: "http://www
 
 // ---------- elementos raiz ----------
 /** Elemento raiz `mdfeProc` (tipo mdfeProc). */
-export const mdfeProcElement: RootElement<mdfeProc> = { name: "mdfeProc", ns: "http://www.portalfiscal.inf.br/mdfe", type: mdfeProc };
+export const mdfeProcElement: ElementoRaiz<mdfeProc> = { nome: "mdfeProc", ns: "http://www.portalfiscal.inf.br/mdfe", tipo: mdfeProc };
 /** Elemento raiz `MDFe` (tipo TMDFe). */
-export const MDFeElement: RootElement<TMDFe> = { name: "MDFe", ns: "http://www.portalfiscal.inf.br/mdfe", type: TMDFe };
+export const MDFeElement: ElementoRaiz<TMDFe> = { nome: "MDFe", ns: "http://www.portalfiscal.inf.br/mdfe", tipo: TMDFe };
 /** Elemento raiz `retMDFe` (tipo TRetMDFe). */
-export const retMDFeElement: RootElement<TRetMDFe> = { name: "retMDFe", ns: "http://www.portalfiscal.inf.br/mdfe", type: TRetMDFe };
+export const retMDFeElement: ElementoRaiz<TRetMDFe> = { nome: "retMDFe", ns: "http://www.portalfiscal.inf.br/mdfe", tipo: TRetMDFe };

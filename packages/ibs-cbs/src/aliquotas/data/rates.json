@@ -1,139 +1,139 @@
 {
-  "dataVersion": "2026.09",
-  "knownAt": "2026-09-03",
-  "reference": [
+  "conhecidoEm": "2026-09-03",
+  "fontes": [
     {
-      "legal": "LC 214/2025, art. 346",
-      "rate": "0.9",
-      "sources": ["calculadora-offline-V0057", "it-2026.002-v1.00-aliquotas-cbs", "lc214-2025"],
-      "status": "official",
-      "tributo": "CBS",
-      "validity": {
-        "from": "2026-01-01",
-        "to": "2026-12-31"
-      }
-    },
-    {
-      "legal": "LC 214/2025, art. 343",
-      "rate": "0.1",
-      "sources": ["calculadora-offline-V0057", "lc214-2025", "it-2025.002-v1.60"],
-      "status": "official",
-      "tributo": "IBSUF",
-      "validity": {
-        "from": "2026-01-01",
-        "to": "2026-12-31"
-      }
-    },
-    {
-      "legal": "LC 214/2025, art. 343 (em 2026 só há a alíquota estadual)",
-      "rate": "0",
-      "sources": ["calculadora-offline-V0057", "lc214-2025", "it-2025.002-v1.60"],
-      "status": "official",
-      "tributo": "IBSMun",
-      "validity": {
-        "from": "2026-01-01",
-        "to": "2026-12-31"
-      }
-    },
-    {
-      "legal": "LC 214/2025, art. 347: alíquota de referência fixada pelo Senado (art. 14, I, e §§ 2º e 3º) reduzida em 0,1 ponto percentual",
-      "note": "Aguarda a resolução do Senado Federal; o IT 2026.002 publica 'aguarda legislação' para 2027.",
-      "rate": null,
-      "sources": ["lc214-2025", "it-2026.002-v1.00-aliquotas-cbs"],
-      "status": "unknown",
-      "tributo": "CBS",
-      "validity": {
-        "from": "2027-01-01",
-        "to": "2028-12-31"
-      }
-    },
-    {
-      "legal": "LC 214/2025, art. 344",
-      "rate": "0.05",
-      "sources": ["lc214-2025", "it-2025.002-v1.60"],
-      "status": "official",
-      "tributo": "IBSUF",
-      "validity": {
-        "from": "2027-01-01",
-        "to": "2028-12-31"
-      }
-    },
-    {
-      "legal": "LC 214/2025, art. 344",
-      "rate": "0.05",
-      "sources": ["lc214-2025", "it-2025.002-v1.60"],
-      "status": "official",
-      "tributo": "IBSMun",
-      "validity": {
-        "from": "2027-01-01",
-        "to": "2028-12-31"
-      }
-    },
-    {
-      "legal": "LC 214/2025, arts. 14 e 18: alíquota de referência fixada por resolução do Senado Federal",
-      "note": "Aguarda publicação.",
-      "rate": null,
-      "sources": ["lc214-2025", "it-2025.002-v1.60"],
-      "status": "unknown",
-      "tributo": "CBS",
-      "validity": {
-        "from": "2029-01-01",
-        "to": null
-      }
-    },
-    {
-      "legal": "LC 214/2025, arts. 14 e 18: alíquota própria por lei do Estado ou, na falta, a de referência",
-      "note": "Aguarda publicação.",
-      "rate": null,
-      "sources": ["lc214-2025", "it-2025.002-v1.60"],
-      "status": "unknown",
-      "tributo": "IBSUF",
-      "validity": {
-        "from": "2029-01-01",
-        "to": null
-      }
-    },
-    {
-      "legal": "LC 214/2025, arts. 14 e 18: alíquota própria por lei do Município ou, na falta, a de referência",
-      "note": "Aguarda publicação.",
-      "rate": null,
-      "sources": ["lc214-2025", "it-2025.002-v1.60"],
-      "status": "unknown",
-      "tributo": "IBSMun",
-      "validity": {
-        "from": "2029-01-01",
-        "to": null
-      }
-    }
-  ],
-  "schemaVersion": 1,
-  "sources": [
-    {
-      "date": "2026-09-03",
+      "data": "2026-09-03",
       "id": "calculadora-offline-V0057",
       "sha256": "f451c3902621f02f3a63da29cd63d1e8e0f0456cce44425f1e22c89c079cb68e",
-      "title": "Calculadora de Tributos da Reforma Tributária do Consumo (RFB), módulo offline",
+      "titulo": "Calculadora de Tributos da Reforma Tributária do Consumo (RFB), módulo offline",
       "url": "https://obs-13820-calcpr-apr.obsv3.br-df-1.hcs.serpro.gov.br/calculadora.zip",
-      "version": "V0057"
+      "versao": "V0057"
     },
     {
       "id": "it-2025.002-v1.60",
-      "title": "IT 2025.002 v1.60, item 05 (Alíquotas padrão do IBS e da CBS)",
+      "titulo": "IT 2025.002 v1.60, item 05 (Alíquotas padrão do IBS e da CBS)",
       "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=jxTMMQeEVM8="
     },
     {
-      "date": "2026-05-12",
+      "data": "2026-05-12",
       "id": "it-2026.002-v1.00-aliquotas-cbs",
       "sha256": "33f17aa3322de841c7cb7bd469a2785d34cea34fadd0571e18bd8f7c88872f3b",
-      "title": "IT 2026.002 v1.00: Tabela de Alíquotas da CBS",
+      "titulo": "IT 2026.002 v1.00: Tabela de Alíquotas da CBS",
       "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=LRksVAMl7nQ=",
-      "version": "v1.00"
+      "versao": "v1.00"
     },
     {
       "id": "lc214-2025",
-      "title": "Lei Complementar nº 214, de 16 de janeiro de 2025",
+      "titulo": "Lei Complementar nº 214, de 16 de janeiro de 2025",
       "url": "https://www.planalto.gov.br/ccivil_03/leis/lcp/lcp214.htm"
     }
   ],
-  "standard": []
+  "padrao": [],
+  "referencia": [
+    {
+      "aliquota": "0.9",
+      "fontes": ["calculadora-offline-V0057", "it-2026.002-v1.00-aliquotas-cbs", "lc214-2025"],
+      "legal": "LC 214/2025, art. 346",
+      "situacao": "oficial",
+      "tributo": "CBS",
+      "vigencia": {
+        "fim": "2026-12-31",
+        "inicio": "2026-01-01"
+      }
+    },
+    {
+      "aliquota": "0.1",
+      "fontes": ["calculadora-offline-V0057", "lc214-2025", "it-2025.002-v1.60"],
+      "legal": "LC 214/2025, art. 343",
+      "situacao": "oficial",
+      "tributo": "IBSUF",
+      "vigencia": {
+        "fim": "2026-12-31",
+        "inicio": "2026-01-01"
+      }
+    },
+    {
+      "aliquota": "0",
+      "fontes": ["calculadora-offline-V0057", "lc214-2025", "it-2025.002-v1.60"],
+      "legal": "LC 214/2025, art. 343 (em 2026 só há a alíquota estadual)",
+      "situacao": "oficial",
+      "tributo": "IBSMun",
+      "vigencia": {
+        "fim": "2026-12-31",
+        "inicio": "2026-01-01"
+      }
+    },
+    {
+      "aliquota": null,
+      "fontes": ["lc214-2025", "it-2026.002-v1.00-aliquotas-cbs"],
+      "legal": "LC 214/2025, art. 347: alíquota de referência fixada pelo Senado (art. 14, I, e §§ 2º e 3º) reduzida em 0,1 ponto percentual",
+      "nota": "Aguarda a resolução do Senado Federal; o IT 2026.002 publica 'aguarda legislação' para 2027.",
+      "situacao": "desconhecida",
+      "tributo": "CBS",
+      "vigencia": {
+        "fim": "2028-12-31",
+        "inicio": "2027-01-01"
+      }
+    },
+    {
+      "aliquota": "0.05",
+      "fontes": ["lc214-2025", "it-2025.002-v1.60"],
+      "legal": "LC 214/2025, art. 344",
+      "situacao": "oficial",
+      "tributo": "IBSUF",
+      "vigencia": {
+        "fim": "2028-12-31",
+        "inicio": "2027-01-01"
+      }
+    },
+    {
+      "aliquota": "0.05",
+      "fontes": ["lc214-2025", "it-2025.002-v1.60"],
+      "legal": "LC 214/2025, art. 344",
+      "situacao": "oficial",
+      "tributo": "IBSMun",
+      "vigencia": {
+        "fim": "2028-12-31",
+        "inicio": "2027-01-01"
+      }
+    },
+    {
+      "aliquota": null,
+      "fontes": ["lc214-2025", "it-2025.002-v1.60"],
+      "legal": "LC 214/2025, arts. 14 e 18: alíquota de referência fixada por resolução do Senado Federal",
+      "nota": "Aguarda publicação.",
+      "situacao": "desconhecida",
+      "tributo": "CBS",
+      "vigencia": {
+        "fim": null,
+        "inicio": "2029-01-01"
+      }
+    },
+    {
+      "aliquota": null,
+      "fontes": ["lc214-2025", "it-2025.002-v1.60"],
+      "legal": "LC 214/2025, arts. 14 e 18: alíquota própria por lei do Estado ou, na falta, a de referência",
+      "nota": "Aguarda publicação.",
+      "situacao": "desconhecida",
+      "tributo": "IBSUF",
+      "vigencia": {
+        "fim": null,
+        "inicio": "2029-01-01"
+      }
+    },
+    {
+      "aliquota": null,
+      "fontes": ["lc214-2025", "it-2025.002-v1.60"],
+      "legal": "LC 214/2025, arts. 14 e 18: alíquota própria por lei do Município ou, na falta, a de referência",
+      "nota": "Aguarda publicação.",
+      "situacao": "desconhecida",
+      "tributo": "IBSMun",
+      "vigencia": {
+        "fim": null,
+        "inicio": "2029-01-01"
+      }
+    }
+  ],
+  "versaoDoFormato": 2,
+  "versaoDosDados": "2026.09"
 }

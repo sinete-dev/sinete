@@ -1,205 +1,225 @@
 /**
- * Provedores de alíquota. `officialRates` responde pela tabela versionada (fonte e vigência em cada linha);
- * `withOverrides` sobrepõe alíquotas informadas pelo usuário, que saem com estado `user-provided` e o motivo.
- * `requireRate` é a fronteira: devolve o valor ou lança `RateUnknownError`, nunca um default.
+ * Provedores de alíquota. `aliquotasOficiais` responde pela tabela versionada (fonte e vigência em cada linha);
+ * `comAliquotasInformadas` sobrepõe alíquotas informadas pelo usuário, que saem com estado `informada` e o motivo.
+ * `exigirAliquota` é a fronteira: devolve o valor ou lança `ErroAliquotaDesconhecida`, nunca um default.
  */
 import { ErroDeConfiguracao } from '@sinete/core';
 import table from './data/rates.json' with { type: 'json' };
-import { RatesDataError, RateUnknownError } from './errors.ts';
+import { ErroAliquotaDesconhecida, ErroDadosDeAliquotas } from './errors.ts';
 import type {
-  IsoDate,
-  NominalRates,
-  Place,
-  Rate,
-  RateOverride,
-  RateProvider,
-  RatesTable,
-  RateTributo,
-  ReferenceRateRecord,
-  StandardRateRecord,
-  Validity,
+  Aliquota,
+  AliquotaInformada,
+  AliquotasNominais,
+  DataIso,
+  Local,
+  ProvedorDeAliquotas,
+  RegistroAliquotaDeReferencia,
+  RegistroAliquotaPadrao,
+  TabelaDeAliquotas,
+  TributoDaAliquota,
+  Vigencia,
 } from './types.ts';
-import { RATE_TRIBUTOS } from './types.ts';
+import { TRIBUTOS_DAS_ALIQUOTAS } from './types.ts';
 
 /** Formato de tabela que este código lê. */
-export const RATES_SCHEMA_VERSION = 1;
+export const VERSAO_DO_FORMATO_DAS_ALIQUOTAS = 2;
 
 /** A tabela embarcada nesta versão do pacote. */
-export const RATES_TABLE: RatesTable = table as unknown as RatesTable;
+export const TABELA_ALIQUOTAS: TabelaDeAliquotas = table as unknown as TabelaDeAliquotas;
 
 const ISO_DATE = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
 const DECIMAL = /^\d{1,3}(\.\d{1,4})?$/;
 
-function checkDate(date: IsoDate): IsoDate {
+function checkDate(date: DataIso): DataIso {
   if (typeof date !== 'string' || !ISO_DATE.test(date)) {
-    throw new ErroDeConfiguracao(`data inválida: ${JSON.stringify(date)}; use AAAA-MM-DD`, { detalhes: { date } });
+    throw new ErroDeConfiguracao(`data inválida: ${JSON.stringify(date)}; use AAAA-MM-DD`, {
+      detalhes: { data: date },
+    });
   }
   return date;
 }
 
-const inForce = (v: Validity, d: IsoDate): boolean => v.from <= d && (v.to === null || v.to >= d);
-const overlaps = (a: Validity, b: Validity): boolean =>
-  a.from <= (b.to ?? '9999-12-31') && b.from <= (a.to ?? '9999-12-31');
+const inForce = (v: Vigencia, d: DataIso): boolean => v.inicio <= d && (v.fim === null || v.fim >= d);
+const overlaps = (a: Vigencia, b: Vigencia): boolean =>
+  a.inicio <= (b.fim ?? '9999-12-31') && b.inicio <= (a.fim ?? '9999-12-31');
 
 function checkPercent(value: unknown, where: string): void {
   if (typeof value !== 'string' || !DECIMAL.test(value) || Number(value) > 100) {
-    throw new RatesDataError(`${where}: alíquota fora do formato (percentual de 0 a 100, até 4 casas): ${value}`);
+    throw new ErroDadosDeAliquotas(`${where}: alíquota fora do formato (percentual de 0 a 100, até 4 casas): ${value}`);
   }
 }
 
-function validateTable(t: RatesTable): void {
-  if (t.schemaVersion !== RATES_SCHEMA_VERSION) {
-    throw new RatesDataError(`schemaVersion ${t.schemaVersion} não suportado; este código lê ${RATES_SCHEMA_VERSION}`);
-  }
-  const ids = new Set(t.sources.map((s) => s.id));
-  const check = (r: ReferenceRateRecord | StandardRateRecord, where: string): void => {
-    if (!ISO_DATE.test(r.validity.from) || (r.validity.to !== null && !ISO_DATE.test(r.validity.to))) {
-      throw new RatesDataError(`${where}: vigência inválida`);
-    }
-    for (const s of r.sources) if (!ids.has(s)) throw new RatesDataError(`${where}: fonte ${s} inexistente`);
-  };
-  t.reference.forEach((r, i) => {
-    const where = `reference[${i}] ${r.tributo} ${r.validity.from}`;
-    check(r, where);
-    if (r.status === 'official') checkPercent(r.rate, where);
-    else if (r.rate !== null) throw new RatesDataError(`${where}: alíquota desconhecida com valor`);
-    const clash = t.reference.find((o, j) => j !== i && o.tributo === r.tributo && overlaps(o.validity, r.validity));
-    if (clash) throw new RatesDataError(`${where}: vigência sobreposta a ${clash.tributo} ${clash.validity.from}`);
-  });
-  t.standard.forEach((r, i) => {
-    const where = `standard[${i}] ${r.tributo} ${r.ente} ${r.validity.from}`;
-    check(r, where);
-    checkPercent(r.rate, where);
-    const clash = t.standard.find(
-      (o, j) => j !== i && o.tributo === r.tributo && o.ente === r.ente && overlaps(o.validity, r.validity),
+function validateTable(t: TabelaDeAliquotas): void {
+  if (t.versaoDoFormato !== VERSAO_DO_FORMATO_DAS_ALIQUOTAS) {
+    throw new ErroDadosDeAliquotas(
+      `versaoDoFormato ${t.versaoDoFormato} não suportado; este código lê ${VERSAO_DO_FORMATO_DAS_ALIQUOTAS}`,
     );
-    if (clash) throw new RatesDataError(`${where}: vigência sobreposta`);
+  }
+  const ids = new Set(t.fontes.map((s) => s.id));
+  const check = (r: RegistroAliquotaDeReferencia | RegistroAliquotaPadrao, where: string): void => {
+    if (!ISO_DATE.test(r.vigencia.inicio) || (r.vigencia.fim !== null && !ISO_DATE.test(r.vigencia.fim))) {
+      throw new ErroDadosDeAliquotas(`${where}: vigência inválida`);
+    }
+    for (const s of r.fontes) if (!ids.has(s)) throw new ErroDadosDeAliquotas(`${where}: fonte ${s} inexistente`);
+  };
+  t.referencia.forEach((r, i) => {
+    const where = `referencia[${i}] ${r.tributo} ${r.vigencia.inicio}`;
+    check(r, where);
+    if (r.situacao === 'oficial') checkPercent(r.aliquota, where);
+    else if (r.aliquota !== null) throw new ErroDadosDeAliquotas(`${where}: alíquota desconhecida com valor`);
+    const clash = t.referencia.find((o, j) => j !== i && o.tributo === r.tributo && overlaps(o.vigencia, r.vigencia));
+    if (clash)
+      throw new ErroDadosDeAliquotas(`${where}: vigência sobreposta a ${clash.tributo} ${clash.vigencia.inicio}`);
+  });
+  t.padrao.forEach((r, i) => {
+    const where = `padrao[${i}] ${r.tributo} ${r.ente} ${r.vigencia.inicio}`;
+    check(r, where);
+    checkPercent(r.aliquota, where);
+    const clash = t.padrao.find(
+      (o, j) => j !== i && o.tributo === r.tributo && o.ente === r.ente && overlaps(o.vigencia, r.vigencia),
+    );
+    if (clash) throw new ErroDadosDeAliquotas(`${where}: vigência sobreposta`);
   });
 }
 
-function unknownRate(tributo: RateTributo, note: string): Rate {
-  return { tributo, status: 'unknown', value: null, sources: [], note };
+function unknownRate(tributo: TributoDaAliquota, note: string): Aliquota {
+  return { tributo, situacao: 'desconhecida', valor: null, fontes: [], nota: note };
 }
 
-function fromReference(r: ReferenceRateRecord): Rate {
+function fromReference(r: RegistroAliquotaDeReferencia): Aliquota {
   return {
     tributo: r.tributo,
-    status: r.status,
-    value: r.rate,
+    situacao: r.situacao,
+    valor: r.aliquota,
     legal: r.legal,
-    sources: r.sources,
-    validity: r.validity,
-    ...(r.note === undefined ? {} : { note: r.note }),
+    fontes: r.fontes,
+    vigencia: r.vigencia,
+    ...(r.nota === undefined ? {} : { nota: r.nota }),
   };
 }
 
 /** Provedor da tabela oficial (a embarcada, por padrão). */
-export function officialRates(t: RatesTable = RATES_TABLE): RateProvider {
+export function aliquotasOficiais(t: TabelaDeAliquotas = TABELA_ALIQUOTAS): ProvedorDeAliquotas {
   validateTable(t);
-  const reference = (tributo: RateTributo, d: IsoDate): Rate => {
-    const r = t.reference.find((x) => x.tributo === tributo && inForce(x.validity, d));
+  const reference = (tributo: TributoDaAliquota, d: DataIso): Aliquota => {
+    const r = t.referencia.find((x) => x.tributo === tributo && inForce(x.vigencia, d));
     return r
       ? fromReference(r)
       : unknownRate(tributo, `sem alíquota de ${tributo} na tabela para ${d} (antes de 2026 não há IBS/CBS)`);
   };
-  const standard = (tributo: RateTributo, d: IsoDate, place: Place | undefined): Rate => {
+  const standard = (tributo: TributoDaAliquota, d: DataIso, place: Local | undefined): Aliquota => {
     if (place && tributo !== 'CBS') {
       const ente = tributo === 'IBSUF' ? place.uf : place.cMun;
-      const s = t.standard.find((x) => x.tributo === tributo && x.ente === ente && inForce(x.validity, d));
+      const s = t.padrao.find((x) => x.tributo === tributo && x.ente === ente && inForce(x.vigencia, d));
       if (s)
-        return { tributo, status: 'official', value: s.rate, legal: s.legal, sources: s.sources, validity: s.validity };
+        return {
+          tributo,
+          situacao: 'oficial',
+          valor: s.aliquota,
+          legal: s.legal,
+          fontes: s.fontes,
+          vigencia: s.vigencia,
+        };
     }
     // Sem lei própria do ente, vale a alíquota de referência (LC 214/2025, art. 18).
     return reference(tributo, d);
   };
-  const all = (f: (t: RateTributo) => Rate): NominalRates => ({
+  const all = (f: (t: TributoDaAliquota) => Aliquota): AliquotasNominais => ({
     CBS: f('CBS'),
     IBSUF: f('IBSUF'),
     IBSMun: f('IBSMun'),
   });
   return {
-    id: `oficial ${t.dataVersion}`,
-    nominal: (date: IsoDate, place?: Place): NominalRates => {
+    id: `oficial ${t.versaoDosDados}`,
+    nominal: (date: DataIso, place?: Local): AliquotasNominais => {
       const d = checkDate(date);
       return all((tr) => standard(tr, d, place));
     },
-    reference: (date: IsoDate): NominalRates => {
+    referencia: (date: DataIso): AliquotasNominais => {
       const d = checkDate(date);
       return all((tr) => reference(tr, d));
     },
   };
 }
 
-function validateOverride(o: RateOverride, i: number): void {
+function validateOverride(o: AliquotaInformada, i: number): void {
   const where = `override[${i}]`;
-  if (!RATE_TRIBUTOS.includes(o.tributo))
+  if (!TRIBUTOS_DAS_ALIQUOTAS.includes(o.tributo))
     throw new ErroDeConfiguracao(`${where}: tributo inválido: ${String(o.tributo)}`);
-  if (typeof o.value !== 'string' || !DECIMAL.test(o.value) || Number(o.value) > 100) {
+  if (typeof o.valor !== 'string' || !DECIMAL.test(o.valor) || Number(o.valor) > 100) {
     throw new ErroDeConfiguracao(
-      `${where}: alíquota inválida (percentual de 0 a 100, até 4 casas): ${String(o.value)}`,
+      `${where}: alíquota inválida (percentual de 0 a 100, até 4 casas): ${String(o.valor)}`,
     );
   }
-  if (typeof o.reason !== 'string' || o.reason.trim() === '') {
+  if (typeof o.motivo !== 'string' || o.motivo.trim() === '') {
     throw new ErroDeConfiguracao(`${where}: informe o motivo da alíquota informada (reason)`);
   }
-  if (o.validity) {
-    checkDate(o.validity.from);
-    if (o.validity.to !== null) checkDate(o.validity.to);
+  if (o.vigencia) {
+    checkDate(o.vigencia.inicio);
+    if (o.vigencia.fim !== null) checkDate(o.vigencia.fim);
   }
 }
 
 /**
  * Sobrepõe alíquotas informadas pelo usuário. A primeira sobreposição que casar (tributo, vigência, local, tipo)
- * vence; as demais alíquotas continuam vindo de `base`. O resultado sai `user-provided`, com o motivo.
+ * vence; as demais alíquotas continuam vindo de `base`. O resultado sai `informada`, com o motivo.
  */
-export function withOverrides(base: RateProvider, overrides: readonly RateOverride[]): RateProvider {
-  overrides.forEach(validateOverride);
-  const apply = (rates: NominalRates, d: IsoDate, kind: 'nominal' | 'reference', place?: Place): NominalRates => {
-    const pick = (tributo: RateTributo): Rate => {
-      const o = overrides.find(
+export function comAliquotasInformadas(
+  base: ProvedorDeAliquotas,
+  informadas: readonly AliquotaInformada[],
+): ProvedorDeAliquotas {
+  informadas.forEach(validateOverride);
+  const apply = (
+    rates: AliquotasNominais,
+    d: DataIso,
+    kind: 'nominal' | 'referencia',
+    place?: Local,
+  ): AliquotasNominais => {
+    const pick = (tributo: TributoDaAliquota): Aliquota => {
+      const o = informadas.find(
         (x) =>
           x.tributo === tributo &&
-          (x.applies ?? 'both') !== (kind === 'nominal' ? 'reference' : 'nominal') &&
-          (!x.validity || inForce(x.validity, d)) &&
-          (!x.place ||
+          (x.aplicaA ?? 'ambas') !== (kind === 'nominal' ? 'referencia' : 'nominal') &&
+          (!x.vigencia || inForce(x.vigencia, d)) &&
+          (!x.local ||
             (place !== undefined &&
-              (x.place.uf === undefined || x.place.uf === place.uf) &&
-              (x.place.cMun === undefined || x.place.cMun === place.cMun))),
+              (x.local.uf === undefined || x.local.uf === place.uf) &&
+              (x.local.cMun === undefined || x.local.cMun === place.cMun))),
       );
       if (!o) return rates[tributo];
       return {
         tributo,
-        status: 'user-provided',
-        value: o.value,
-        sources: o.source ? ['user', o.source] : ['user'],
-        reason: o.reason,
-        ...(o.validity ? { validity: o.validity } : {}),
+        situacao: 'informada',
+        valor: o.valor,
+        fontes: o.fonte ? ['usuario', o.fonte] : ['usuario'],
+        motivo: o.motivo,
+        ...(o.vigencia ? { vigencia: o.vigencia } : {}),
       };
     };
     return { CBS: pick('CBS'), IBSUF: pick('IBSUF'), IBSMun: pick('IBSMun') };
   };
   return {
-    id: `${base.id} + ${overrides.length} informada(s)`,
-    nominal: (date: IsoDate, place?: Place): NominalRates =>
+    id: `${base.id} + ${informadas.length} informada(s)`,
+    nominal: (date: DataIso, place?: Local): AliquotasNominais =>
       apply(base.nominal(date, place), checkDate(date), 'nominal', place),
-    reference: (date: IsoDate): NominalRates => apply(base.reference(date), checkDate(date), 'reference'),
+    referencia: (date: DataIso): AliquotasNominais => apply(base.referencia(date), checkDate(date), 'referencia'),
   };
 }
 
-/** Valor da alíquota, ou `RateUnknownError` quando ela ainda não existe. */
-export function requireRate(rate: Rate, date: IsoDate): string {
-  if (rate.value === null || rate.status === 'unknown') {
-    throw new RateUnknownError(
-      rate.tributo,
-      date,
-      `alíquota de ${rate.tributo} desconhecida em ${date}${rate.note ? `: ${rate.note}` : ''}; informe-a com withOverrides para simular`,
-      { detalhes: { tributo: rate.tributo, date, legal: rate.legal } },
+/** Valor da alíquota, ou `ErroAliquotaDesconhecida` quando ela ainda não existe. */
+export function exigirAliquota(aliquota: Aliquota, data: DataIso): string {
+  if (aliquota.valor === null || aliquota.situacao === 'desconhecida') {
+    throw new ErroAliquotaDesconhecida(
+      aliquota.tributo,
+      data,
+      `alíquota de ${aliquota.tributo} desconhecida em ${data}${aliquota.nota ? `: ${aliquota.nota}` : ''}; informe-a com comAliquotasInformadas para simular`,
+      { detalhes: { tributo: aliquota.tributo, data, legal: aliquota.legal } },
     );
   }
-  return rate.value;
+  return aliquota.valor;
 }
 
 /** Alguma das alíquotas não é oficial: o cálculo feito com elas é simulação. */
-export function isSimulated(rates: NominalRates): boolean {
-  return RATE_TRIBUTOS.some((t) => rates[t].status !== 'official');
+export function ehSimulada(aliquotas: AliquotasNominais): boolean {
+  return TRIBUTOS_DAS_ALIQUOTAS.some((t) => aliquotas[t].situacao !== 'oficial');
 }

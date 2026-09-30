@@ -1,5 +1,5 @@
 /**
- * Avaliador das expressões de cálculo do dataset (`TRATAMENTO_TRIBUTARIO` da Calculadora, `treatments` do `@sinete/ibs-cbs-dados`).
+ * Avaliador das expressões de cálculo do dataset (`TRATAMENTO_TRIBUTARIO` da Calculadora, `tratamentos` do `@sinete/ibs-cbs-dados`).
  *
  * As regras de cálculo são dados: `aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)`,
  * `baseCalculo*aliquotaEfetiva`, `tributoCalculado*1.00`. Este módulo só aceita a gramática que as tabelas usam
@@ -12,10 +12,10 @@
  * - identificador fora da lista é erro, nunca zero: expressão desconhecida é mudança de dado que precisa de revisão.
  */
 import { Decimal } from './decimal.ts';
-import { ExpressionError } from './errors.ts';
+import { ErroExpressao } from './errors.ts';
 
 /** Variáveis que as expressões oficiais podem citar (`VariavelExpressao` da Calculadora). */
-export const EXPRESSION_VARIABLES: readonly string[] = [
+export const VARIAVEIS_DAS_EXPRESSOES: readonly string[] = [
   'aliquota',
   'aliquotaEfetiva',
   'baseCalculo',
@@ -40,9 +40,9 @@ export const EXPRESSION_VARIABLES: readonly string[] = [
 ];
 
 /** Escala interna de todo resultado de expressão (`ArredondamentoUtils.PRECISAO_INTERNA`). */
-export const INTERNAL_SCALE = 8;
+export const ESCALA_INTERNA = 8;
 
-export type Variables = Readonly<Record<string, Decimal | undefined>>;
+export type Variaveis = Readonly<Record<string, Decimal | undefined>>;
 
 type Token = { kind: 'num'; value: string } | { kind: 'id'; value: string } | { kind: 'op'; value: string };
 
@@ -54,7 +54,7 @@ function tokenize(expr: string): Token[] {
     if (/^\s*$/.test(expr.slice(pos))) break;
     re.lastIndex = pos;
     const m = re.exec(expr);
-    if (!m) throw new ExpressionError(expr, `caractere inesperado na posição ${pos}`);
+    if (!m) throw new ErroExpressao(expr, `caractere inesperado na posição ${pos}`);
     pos = re.lastIndex;
     if (m[1] !== undefined) out.push({ kind: 'num', value: m[1] });
     else if (m[2] !== undefined) out.push({ kind: 'id', value: m[2] });
@@ -64,44 +64,45 @@ function tokenize(expr: string): Token[] {
 }
 
 /** Confere que a expressão só usa a gramática e as variáveis conhecidas; devolve as variáveis citadas. */
-export function checkExpression(expr: string): readonly string[] {
-  const toks = tokenize(expr);
+export function conferirExpressao(expressao: string): readonly string[] {
+  const toks = tokenize(expressao);
   const ids = toks.filter((t) => t.kind === 'id').map((t) => t.value);
   for (const id of ids) {
-    if (!EXPRESSION_VARIABLES.includes(id)) throw new ExpressionError(expr, `variável desconhecida: ${id}`);
+    if (!VARIAVEIS_DAS_EXPRESSOES.includes(id)) throw new ErroExpressao(expressao, `variável desconhecida: ${id}`);
   }
   // Uma avaliação valida a sintaxe; cada variável recebe um valor distinto, para `x/(1-y)` não virar divisão por zero.
-  evaluate(expr, Object.fromEntries(ids.map((id, i) => [id, Decimal.of(BigInt(113 + 7 * i), 3)])));
+  avaliar(expressao, Object.fromEntries(ids.map((id, i) => [id, Decimal.of(BigInt(113 + 7 * i), 3)])));
   return [...new Set(ids)];
 }
 
-export function evaluate(expr: string, vars: Variables): Decimal {
-  const trimmed = expr.trim();
-  if (EXPRESSION_VARIABLES.includes(trimmed)) return vars[trimmed] ?? Decimal.ZERO;
+export function avaliar(expressao: string, variaveis: Variaveis): Decimal {
+  const trimmed = expressao.trim();
+  if (VARIAVEIS_DAS_EXPRESSOES.includes(trimmed)) return variaveis[trimmed] ?? Decimal.ZERO;
   const toks = tokenize(trimmed);
   let i = 0;
   const peek = (): Token | undefined => toks[i];
   const next = (): Token => {
     const t = toks[i++];
-    if (!t) throw new ExpressionError(expr, 'fim inesperado');
+    if (!t) throw new ErroExpressao(expressao, 'fim inesperado');
     return t;
   };
   const primary = (): Decimal => {
     const t = next();
     if (t.kind === 'num') return Decimal.parse(t.value);
     if (t.kind === 'id') {
-      if (!EXPRESSION_VARIABLES.includes(t.value)) throw new ExpressionError(expr, `variável desconhecida: ${t.value}`);
-      return vars[t.value] ?? Decimal.ZERO;
+      if (!VARIAVEIS_DAS_EXPRESSOES.includes(t.value))
+        throw new ErroExpressao(expressao, `variável desconhecida: ${t.value}`);
+      return variaveis[t.value] ?? Decimal.ZERO;
     }
     if (t.value === '(') {
       const v = additive();
       const close = next();
-      if (close.value !== ')') throw new ExpressionError(expr, 'parêntese sem fechar');
+      if (close.value !== ')') throw new ErroExpressao(expressao, 'parêntese sem fechar');
       return v;
     }
     if (t.value === '-') return primary().neg();
     if (t.value === '+') return primary();
-    throw new ExpressionError(expr, `operador inesperado: ${t.value}`);
+    throw new ErroExpressao(expressao, `operador inesperado: ${t.value}`);
   };
   const multiplicative = (): Decimal => {
     let v = primary();
@@ -109,7 +110,7 @@ export function evaluate(expr: string, vars: Variables): Decimal {
       next();
       const r = primary();
       if (t.value === '*') v = v.mul(r);
-      else if (r.isZero()) throw new ExpressionError(expr, 'divisão por zero');
+      else if (r.isZero()) throw new ErroExpressao(expressao, 'divisão por zero');
       else v = v.div(r);
     }
     return v;
@@ -124,6 +125,6 @@ export function evaluate(expr: string, vars: Variables): Decimal {
     return v;
   };
   const result = additive();
-  if (i !== toks.length) throw new ExpressionError(expr, `sobra na posição do token ${i}`);
-  return result.setScale(INTERNAL_SCALE, 'HALF_EVEN');
+  if (i !== toks.length) throw new ErroExpressao(expressao, `sobra na posição do token ${i}`);
+  return result.setScale(ESCALA_INTERNA, 'HALF_EVEN');
 }

@@ -1,30 +1,35 @@
 import { describe, expect, test } from 'bun:test';
 import { contextoDeTempo, relogioFixo } from '@sinete/core';
-import type { TaxContent } from '@sinete/ibs-cbs-dados';
-import { loadDataset } from '@sinete/ibs-cbs-dados';
-import { BUNDLED_DATASET } from '@sinete/ibs-cbs-dados/bundled';
-import { officialRates } from '../../src/aliquotas/index.ts';
-import { calculateAt } from '../../src/calcular/index.ts';
-import type { DeterminationReason, ItemConstraints, OperationFacts, Resolver } from '../../src/determinar/index.ts';
+import type { ConteudoTributario } from '@sinete/ibs-cbs-dados';
+import { carregarDataset } from '@sinete/ibs-cbs-dados';
+import { DATASET_EMBARCADO } from '@sinete/ibs-cbs-dados/bundled';
+import { aliquotasOficiais } from '../../src/aliquotas/index.ts';
+import { calcularEm } from '../../src/calcular/index.ts';
+import type {
+  FatosDaOperacao,
+  MotivoErroDeterminacao,
+  Resolvedor,
+  RestricoesDoItem,
+} from '../../src/determinar/index.ts';
 import {
-  ACTOR_RURAL_PRODUCER_NON_CONTRIBUTOR,
-  askUser,
-  constrain,
-  constrainAt,
-  DeterminationError,
-  determine,
-  determineAt,
-  factDate,
-  fromProfile,
-  LEGAL_RULES,
-  questionId,
-  toClassified,
-  uniqueCandidate,
+  ATOR_PRODUTOR_RURAL_NAO_CONTRIBUINTE,
+  candidatoUnico,
+  dataDoFato,
+  determinar,
+  determinarEm,
+  doPerfil,
+  ErroDeterminacao,
+  idDaPergunta,
+  paraClassificado,
+  perguntarAoUsuario,
+  REGRAS_LEGAIS,
+  restringir,
+  restringirEm,
 } from '../../src/determinar/index.ts';
 
-const dataset = loadDataset(BUNDLED_DATASET);
+const dataset = carregarDataset(DATASET_EMBARCADO);
 const DATE = '2026-10-10';
-const content: TaxContent = dataset.at(DATE);
+const content: ConteudoTributario = dataset.em(DATE);
 const clock = relogioFixo('2026-10-10T15:00:00-03:00');
 const time = contextoDeTempo({ emissao: clock });
 
@@ -32,61 +37,61 @@ const time = contextoDeTempo({ emissao: clock });
 const RICE = '10063021';
 const NBS_SERVICE = '110011100';
 
-function op(partial: Partial<OperationFacts> = {}): OperationFacts {
-  return { modelo: 55, kind: 'venda', items: [{ n: 1 }], ...partial };
+function op(partial: Partial<FatosDaOperacao> = {}): FatosDaOperacao {
+  return { modelo: 55, tipo: 'venda', itens: [{ n: 1 }], ...partial };
 }
 
-function one(facts: OperationFacts): ItemConstraints {
-  return constrainAt(facts, content)[0] as ItemConstraints;
+function one(facts: FatosDaOperacao): RestricoesDoItem {
+  return restringirEm(facts, content)[0] as RestricoesDoItem;
 }
 
-function codes(c: ItemConstraints): string[] {
-  return c.candidates.map((x) => x.cClassTrib);
+function codes(c: RestricoesDoItem): string[] {
+  return c.candidatos.map((x) => x.cClassTrib);
 }
 
-function reasonOf(c: ItemConstraints, code: string): string | undefined {
-  return c.exclusions.find((e) => e.cClassTrib === code)?.reason;
+function reasonOf(c: RestricoesDoItem, code: string): string | undefined {
+  return c.exclusoes.find((e) => e.cClassTrib === code)?.motivo;
 }
 
-function fails(fn: () => unknown, reason: DeterminationReason): void {
+function fails(fn: () => unknown, reason: MotivoErroDeterminacao): void {
   try {
     fn();
   } catch (e) {
-    expect(e).toBeInstanceOf(DeterminationError);
-    expect((e as DeterminationError).reason).toBe(reason);
-    expect((e as DeterminationError).code).toBe('ibscbs_determinacao_invalida');
+    expect(e).toBeInstanceOf(ErroDeterminacao);
+    expect((e as ErroDeterminacao).motivo).toBe(reason);
+    expect((e as ErroDeterminacao).code).toBe('ibscbs_determinacao_invalida');
     return;
   }
-  throw new Error('esperava DeterminationError');
+  throw new Error('esperava ErroDeterminacao');
 }
 
-async function rejects(p: Promise<unknown>, reason: DeterminationReason): Promise<void> {
+async function rejects(p: Promise<unknown>, reason: MotivoErroDeterminacao): Promise<void> {
   const e = await p.then(
     () => undefined,
     (x: unknown) => x,
   );
-  expect(e).toBeInstanceOf(DeterminationError);
-  expect((e as DeterminationError).reason).toBe(reason);
+  expect(e).toBeInstanceOf(ErroDeterminacao);
+  expect((e as ErroDeterminacao).motivo).toBe(reason);
 }
 
-describe('constrain: restrições oficiais com o motivo de cada exclusão', () => {
+describe('restringir: restrições oficiais com o motivo de cada exclusão', () => {
   test('todo cClassTrib do IBS/CBS sai como candidato ou como exclusão, uma vez só', () => {
-    const c = one(op({ items: [{ n: 1, ncm: RICE }] }));
-    const seen = [...codes(c), ...c.exclusions.map((e) => e.cClassTrib)];
-    const all = new Set(dataset.tables.classTrib.filter((x) => x.family === 'CBS_IBS').map((x) => x.code));
+    const c = one(op({ itens: [{ n: 1, ncm: RICE }] }));
+    const seen = [...codes(c), ...c.exclusoes.map((e) => e.cClassTrib)];
+    const all = new Set(dataset.tabelas.classTrib.filter((x) => x.familia === 'CBS_IBS').map((x) => x.codigo));
     expect(new Set(seen).size).toBe(seen.length);
     expect(new Set(seen)).toEqual(all);
-    for (const e of c.exclusions) {
-      expect(e.detail.length).toBeGreaterThan(0);
-      expect(e.source.length).toBeGreaterThan(0);
+    for (const e of c.exclusoes) {
+      expect(e.detalhe.length).toBeGreaterThan(0);
+      expect(e.fonte.length).toBeGreaterThan(0);
     }
   });
 
   test('vigência: código que existe mas não vale na data', () => {
     const c = one(op());
-    const expired = c.exclusions.filter((e) => e.reason === 'vigencia');
+    const expired = c.exclusoes.filter((e) => e.motivo === 'vigencia');
     expect(expired.map((e) => e.cClassTrib)).toEqual(['220001', '220002', '220003']);
-    expect(expired[0]?.detail).toContain('fora de vigência em 2026-10-10');
+    expect(expired[0]?.detalhe).toContain('fora de vigência em 2026-10-10');
   });
 
   test('DF-e: código não habilitado no modelo', () => {
@@ -95,285 +100,311 @@ describe('constrain: restrições oficiais com o motivo de cada exclusão', () =
   });
 
   test('NCM do Anexo I: 200003 fica, 200034 (Anexo VII) sai com o anexo na fonte', () => {
-    const c = one(op({ items: [{ n: 1, ncm: RICE }] }));
+    const c = one(op({ itens: [{ n: 1, ncm: RICE }] }));
     expect(codes(c)).toContain('200003');
     expect(codes(c)).toContain('000001');
-    const e = c.exclusions.find((x) => x.cClassTrib === '200034');
-    expect(e?.reason).toBe('ncm');
-    expect(e?.source).toContain('Anexo VII da LC 214/2025');
+    const e = c.exclusoes.find((x) => x.cClassTrib === '200034');
+    expect(e?.motivo).toBe('ncm');
+    expect(e?.fonte).toContain('Anexo VII da LC 214/2025');
   });
 
   test('NCM numa exceção do anexo diz qual exceção', () => {
-    const c = one(op({ items: [{ n: 1, ncm: '03061100' }] }));
-    const e = c.exclusions.find((x) => x.cClassTrib === '200034');
-    expect(e?.reason).toBe('ncm');
-    expect(e?.detail).toContain('exceção');
+    const c = one(op({ itens: [{ n: 1, ncm: '03061100' }] }));
+    const e = c.exclusoes.find((x) => x.cClassTrib === '200034');
+    expect(e?.motivo).toBe('ncm');
+    expect(e?.detalhe).toContain('exceção');
   });
 
   test('NCM incompleto não exclui pelo anexo', () => {
-    expect(codes(one(op({ items: [{ n: 1, ncm: '1006' }] })))).toContain('200034');
+    expect(codes(one(op({ itens: [{ n: 1, ncm: '1006' }] })))).toContain('200034');
   });
 
   test('nomenclatura: item só com NBS não fica com código que pede NCM, e o contrário', () => {
-    const service = one(op({ items: [{ n: 1, nbs: NBS_SERVICE }] }));
+    const service = one(op({ itens: [{ n: 1, nbs: NBS_SERVICE }] }));
     expect(reasonOf(service, '410002')).toBe('nomenclatura');
     expect(reasonOf(service, '200038')).toBe('nbs');
-    const goods = one(op({ items: [{ n: 1, ncm: RICE }] }));
+    const goods = one(op({ itens: [{ n: 1, ncm: RICE }] }));
     expect(reasonOf(goods, '410027')).toBe('nomenclatura');
   });
 
   test('atores: vínculo do fornecedor e do adquirente', () => {
-    const rural = one(op({ supplier: { actors: [ACTOR_RURAL_PRODUCER_NON_CONTRIBUTOR] } }));
+    const rural = one(op({ fornecedor: { atores: [ATOR_PRODUTOR_RURAL_NAO_CONTRIBUINTE] } }));
     expect(codes(rural)).toContain('410014');
-    const regular = one(op({ supplier: { actors: [22] } }));
+    const regular = one(op({ fornecedor: { atores: [22] } }));
     expect(reasonOf(regular, '410014')).toBe('atores');
-    expect(regular.exclusions.find((e) => e.cClassTrib === '410014')?.detail).toContain('fornecedor');
-    const buyer = one(op({ buyer: { actors: [22] } }));
-    expect(buyer.exclusions.find((e) => e.cClassTrib === '200002')?.detail).toContain('adquirente');
-    expect(codes(one(op({ supplier: { actors: [] } })))).toContain('410014');
+    expect(regular.exclusoes.find((e) => e.cClassTrib === '410014')?.detalhe).toContain('fornecedor');
+    const buyer = one(op({ adquirente: { atores: [22] } }));
+    expect(buyer.exclusoes.find((e) => e.cClassTrib === '200002')?.detalhe).toContain('adquirente');
+    expect(codes(one(op({ fornecedor: { atores: [] } })))).toContain('410014');
   });
 
   test('tipo de nota: o tipo exige o código e o código exige o tipo (UB14-60/70/80)', () => {
     expect(codes(one(op({ tpNFDebito: '01' })))).toEqual(['800002']);
-    expect(one(op({ tpNFDebito: '01' })).exclusions.find((e) => e.cClassTrib === '000001')?.source).toContain(
-      'UB14-70',
-    );
+    expect(one(op({ tpNFDebito: '01' })).exclusoes.find((e) => e.cClassTrib === '000001')?.fonte).toContain('UB14-70');
     expect(codes(one(op({ tpNFCredito: '02' })))).toEqual(['810001']);
     const normal = one(op());
     expect(reasonOf(normal, '800002')).toBe('tipo-de-nota');
-    expect(normal.exclusions.find((e) => e.cClassTrib === '800002')?.source).toContain('UB14-60');
+    expect(normal.exclusoes.find((e) => e.cClassTrib === '800002')?.fonte).toContain('UB14-60');
     expect(codes(one(op({ tpNFDebito: '05' })))).toContain('800001');
     // Fora da NF-e e da NFC-e a NT não vale.
-    expect(one(op({ modelo: 57 })).exclusions.some((e) => e.reason === 'tipo-de-nota')).toBe(false);
+    expect(one(op({ modelo: 57 })).exclusoes.some((e) => e.motivo === 'tipo-de-nota')).toBe(false);
   });
 
-  test('constrain lê a data do relógio de fato gerador', () => {
+  test('restringir lê a data do relógio de fato gerador', () => {
     const early = contextoDeTempo({ emissao: clock, fatoGerador: relogioFixo('2026-01-01T03:00:00Z') });
-    expect(factDate(early)).toBe('2026-01-01');
-    expect(factDate(time)).toBe(DATE);
-    expect(constrain(op(), { dataset, time })).toEqual(constrainAt(op(), content));
+    expect(dataDoFato(early)).toBe('2026-01-01');
+    expect(dataDoFato(time)).toBe(DATE);
+    expect(restringir(op(), { dataset, tempo: time })).toEqual(restringirEm(op(), content));
   });
 
   test('fatos inválidos', () => {
-    fails(() => constrainAt({ modelo: 55, kind: 'venda' } as unknown as OperationFacts, content), 'fatos_invalidos');
-    fails(() => constrainAt(op({ modelo: 5.5 }), content), 'fatos_invalidos');
-    fails(() => constrainAt(op({ items: [{ n: 1 }, { n: 1 }] }), content), 'fatos_invalidos');
-    fails(() => constrainAt(op({ items: [{ n: 0 }] }), content), 'fatos_invalidos');
-    fails(() => constrainAt(op({ items: [{ n: 1, ncm: '1006.30' }] }), content), 'fatos_invalidos');
-    fails(() => constrainAt(op({ items: [{ n: 1, nbs: 'x' }] }), content), 'fatos_invalidos');
-    fails(() => constrainAt(op({ buyer: { actors: [99999] } }), content), 'fatos_invalidos');
-    fails(() => constrainAt(op({ tpNFCredito: '99' }), content), 'fatos_invalidos');
+    fails(() => restringirEm({ modelo: 55, tipo: 'venda' } as unknown as FatosDaOperacao, content), 'fatos_invalidos');
+    fails(() => restringirEm(op({ modelo: 5.5 }), content), 'fatos_invalidos');
+    fails(() => restringirEm(op({ itens: [{ n: 1 }, { n: 1 }] }), content), 'fatos_invalidos');
+    fails(() => restringirEm(op({ itens: [{ n: 0 }] }), content), 'fatos_invalidos');
+    fails(() => restringirEm(op({ itens: [{ n: 1, ncm: '1006.30' }] }), content), 'fatos_invalidos');
+    fails(() => restringirEm(op({ itens: [{ n: 1, nbs: 'x' }] }), content), 'fatos_invalidos');
+    fails(() => restringirEm(op({ adquirente: { atores: [99999] } }), content), 'fatos_invalidos');
+    fails(() => restringirEm(op({ tpNFCredito: '99' }), content), 'fatos_invalidos');
   });
 });
 
 describe('regras legais', () => {
   test('cada regra tem fonte, vigência e id único', () => {
-    const ids = LEGAL_RULES.map((r) => r.id);
+    const ids = REGRAS_LEGAIS.map((r) => r.id);
     expect(new Set(ids).size).toBe(ids.length);
-    for (const r of LEGAL_RULES) {
-      expect(r.source).toMatch(/^LC 214\/2025, art/);
-      expect(r.validity.from).toBe('2026-01-01');
+    for (const r of REGRAS_LEGAIS) {
+      expect(r.fonte).toMatch(/^LC 214\/2025, art/);
+      expect(r.vigencia.inicio).toBe('2026-01-01');
     }
   });
 
   test('o ator do produtor rural não contribuinte é o da tabela', () => {
-    expect(content.actor(ACTOR_RURAL_PRODUCER_NON_CONTRIBUTOR)?.description).toBe('Produtor rural não contribuinte');
+    expect(content.ator(ATOR_PRODUTOR_RURAL_NAO_CONTRIBUINTE)?.descricao).toBe('Produtor rural não contribuinte');
   });
 
-  const cases: [string, Partial<OperationFacts>, string][] = [
-    ['bonificacao-no-documento', { kind: 'bonificacao' }, '410001'],
-    ['transferencia-mesmo-contribuinte', { kind: 'transferencia' }, '410002'],
-    ['doacao-sem-contraprestacao', { kind: 'doacao' }, '410003'],
-    ['exportacao-imune', { kind: 'exportacao' }, '410004'],
-    ['produtor-rural-nao-contribuinte', { supplier: { actors: [ACTOR_RURAL_PRODUCER_NON_CONTRIBUTOR] } }, '410014'],
+  const cases: [string, Partial<FatosDaOperacao>, string][] = [
+    ['bonificacao-no-documento', { tipo: 'bonificacao' }, '410001'],
+    ['transferencia-mesmo-contribuinte', { tipo: 'transferencia' }, '410002'],
+    ['doacao-sem-contraprestacao', { tipo: 'doacao' }, '410003'],
+    ['exportacao-imune', { tipo: 'exportacao' }, '410004'],
+    ['produtor-rural-nao-contribuinte', { fornecedor: { atores: [ATOR_PRODUTOR_RURAL_NAO_CONTRIBUINTE] } }, '410014'],
   ];
   for (const [rule, facts, code] of cases) {
     test(`${rule} decide ${code} com proveniência de regra`, async () => {
-      const det = await determineAt(op({ ...facts, items: [{ n: 1, ncm: RICE }] }), content, { clock });
-      const item = det.items[0];
-      expect(item?.decided?.candidate.cClassTrib).toBe(code);
-      expect(item?.decided?.provenance).toMatchObject({
-        by: 'rule',
-        name: rule,
-        at: '2026-10-10T18:00:00.000Z',
-        contentVersion: dataset.contentVersion,
-        asOf: DATE,
+      const det = await determinarEm(op({ ...facts, itens: [{ n: 1, ncm: RICE }] }), content, { relogio: clock });
+      const item = det.itens[0];
+      expect(item?.decidido?.candidato.cClassTrib).toBe(code);
+      expect(item?.decidido?.procedencia).toMatchObject({
+        por: 'regra',
+        nome: rule,
+        em: '2026-10-10T18:00:00.000Z',
+        versaoDoConteudo: dataset.versaoDoConteudo,
+        dataDeReferencia: DATE,
       });
-      expect(item?.decided?.provenance.source).toContain('LC 214/2025');
-      expect(item?.exclusions.some((e) => e.reason === 'regra-legal')).toBe(true);
-      expect(det.complete).toBe(true);
+      expect(item?.decidido?.procedencia.fonte).toContain('LC 214/2025');
+      expect(item?.exclusoes.some((e) => e.motivo === 'regra-legal')).toBe(true);
+      expect(det.completa).toBe(true);
     });
   }
 
   test('exportação de serviço fica entre 410004 e 410027 e pergunta', async () => {
-    const det = await determineAt(op({ kind: 'exportacao', items: [{ n: 1, nbs: NBS_SERVICE }] }), content, { clock });
-    expect(det.items[0]?.candidates.map((c) => c.cClassTrib)).toEqual(['410004', '410027']);
-    expect(det.items[0]?.pending?.[0]?.options.map((o) => o.cClassTrib)).toEqual(['410004', '410027']);
-    expect(det.complete).toBe(false);
+    const det = await determinarEm(op({ tipo: 'exportacao', itens: [{ n: 1, nbs: NBS_SERVICE }] }), content, {
+      relogio: clock,
+    });
+    expect(det.itens[0]?.candidatos.map((c) => c.cClassTrib)).toEqual(['410004', '410027']);
+    expect(det.itens[0]?.pendente?.[0]?.opcoes.map((o) => o.cClassTrib)).toEqual(['410004', '410027']);
+    expect(det.completa).toBe(false);
   });
 
   test('natureza por item sobrepõe a da operação; devolução espelha o original', async () => {
-    const det = await determineAt(
+    const det = await determinarEm(
       op({
-        items: [
-          { n: 1, ncm: RICE, kind: 'bonificacao' },
-          { n: 2, ncm: RICE, kind: 'devolucao', referenced: { cst: '200', cClassTrib: '200003' } },
-          { n: 3, ncm: RICE, kind: 'devolucao' },
+        itens: [
+          { n: 1, ncm: RICE, tipo: 'bonificacao' },
+          { n: 2, ncm: RICE, tipo: 'devolucao', referenciado: { cst: '200', cClassTrib: '200003' } },
+          { n: 3, ncm: RICE, tipo: 'devolucao' },
         ],
       }),
       content,
-      { clock },
+      { relogio: clock },
     );
-    expect(det.items[0]?.decided?.candidate.cClassTrib).toBe('410001');
-    expect(det.items[1]?.decided?.provenance.name).toBe('devolucao-espelha-original');
-    expect(det.items[1]?.decided?.candidate.cClassTrib).toBe('200003');
-    expect(det.items[2]?.rules).toEqual([]);
-    expect(det.items[2]?.pending).toHaveLength(1);
+    expect(det.itens[0]?.decidido?.candidato.cClassTrib).toBe('410001');
+    expect(det.itens[1]?.decidido?.procedencia.nome).toBe('devolucao-espelha-original');
+    expect(det.itens[1]?.decidido?.candidato.cClassTrib).toBe('200003');
+    expect(det.itens[2]?.regras).toEqual([]);
+    expect(det.itens[2]?.pendente).toHaveLength(1);
   });
 
   test('regra que pede código já excluído marca conflito e deixa o item sem candidato', async () => {
-    const det = await determineAt(
-      op({ modelo: 65, items: [{ n: 1, kind: 'devolucao', referenced: { cst: '000', cClassTrib: '000002' } }] }),
+    const det = await determinarEm(
+      op({ modelo: 65, itens: [{ n: 1, tipo: 'devolucao', referenciado: { cst: '000', cClassTrib: '000002' } }] }),
       content,
-      { clock },
+      { relogio: clock },
     );
-    const item = det.items[0];
-    expect(item?.rules[0]).toMatchObject({ rule: 'devolucao-espelha-original', conflict: true });
-    expect(item?.candidates).toEqual([]);
-    expect(item?.decided).toBeUndefined();
-    expect(item?.pending).toBeUndefined();
-    expect(det.complete).toBe(false);
+    const item = det.itens[0];
+    expect(item?.regras[0]).toMatchObject({ regra: 'devolucao-espelha-original', conflito: true });
+    expect(item?.candidatos).toEqual([]);
+    expect(item?.decidido).toBeUndefined();
+    expect(item?.pendente).toBeUndefined();
+    expect(det.completa).toBe(false);
   });
 
   test('regra fora de vigência não se aplica', async () => {
-    const rules = [{ ...(LEGAL_RULES[1] as (typeof LEGAL_RULES)[number]), validity: { from: '2030-01-01', to: null } }];
-    const det = await determineAt(op({ kind: 'transferencia', items: [{ n: 1, ncm: RICE }] }), content, {
-      clock,
-      rules,
+    const rules = [
+      { ...(REGRAS_LEGAIS[1] as (typeof REGRAS_LEGAIS)[number]), vigencia: { inicio: '2030-01-01', fim: null } },
+    ];
+    const det = await determinarEm(op({ tipo: 'transferencia', itens: [{ n: 1, ncm: RICE }] }), content, {
+      relogio: clock,
+      regras: rules,
     });
-    expect(det.items[0]?.rules).toEqual([]);
+    expect(det.itens[0]?.regras).toEqual([]);
   });
 });
 
-describe('determine: respostas e resolvedores', () => {
-  const facts = op({ items: [{ n: 1, ncm: RICE, description: 'arroz' }] });
+describe('determinar: respostas e resolvedores', () => {
+  const facts = op({ itens: [{ n: 1, ncm: RICE, descricao: 'arroz' }] });
 
-  test('sem decisão, askUser pergunta entre os candidatos', async () => {
-    const det = await determine(facts, { dataset, time });
-    const q = det.items[0]?.pending?.[0];
-    expect(q?.id).toBe(questionId(1));
-    expect(q?.text).toContain('arroz');
-    expect(q?.options.map((o) => o.cClassTrib)).toEqual(det.items[0]?.candidates.map((c) => c.cClassTrib) ?? []);
-    expect(det.complete).toBe(false);
-    expect(det.contentVersion).toBe(dataset.contentVersion);
-    expect(det.asOf).toBe(DATE);
+  test('sem decisão, perguntarAoUsuario pergunta entre os candidatos', async () => {
+    const det = await determinar(facts, { dataset, tempo: time });
+    const q = det.itens[0]?.pendente?.[0];
+    expect(q?.id).toBe(idDaPergunta(1));
+    expect(q?.texto).toContain('arroz');
+    expect(q?.opcoes.map((o) => o.cClassTrib)).toEqual(det.itens[0]?.candidatos.map((c) => c.cClassTrib) ?? []);
+    expect(det.completa).toBe(false);
+    expect(det.versaoDoConteudo).toBe(dataset.versaoDoConteudo);
+    expect(det.dataDeReferencia).toBe(DATE);
   });
 
   test('a resposta do usuário decide, com proveniência de usuário', async () => {
-    const det = await determine(facts, { dataset, time, answers: { [questionId(1)]: '200003' } });
-    expect(det.items[0]?.decided?.candidate).toMatchObject({
+    const det = await determinar(facts, { dataset, tempo: time, respostas: { [idDaPergunta(1)]: '200003' } });
+    expect(det.itens[0]?.decidido?.candidato).toMatchObject({
       cst: '200',
       cClassTrib: '200003',
-      requiresRegular: false,
+      exigeRegular: false,
     });
-    expect(det.items[0]?.decided?.provenance).toMatchObject({ by: 'user', name: 'cClassTrib:1' });
+    expect(det.itens[0]?.decidido?.procedencia).toMatchObject({ por: 'usuario', nome: 'cClassTrib:1' });
     await rejects(
-      determine(facts, { dataset, time, answers: { [questionId(1)]: '200034' } }),
+      determinar(facts, { dataset, tempo: time, respostas: { [idDaPergunta(1)]: '200034' } }),
       'resposta_fora_dos_candidatos',
     );
   });
 
   test('o cadastro do item decide enquanto o código seguir entre os candidatos', async () => {
-    const withProfile = op({ items: [{ n: 1, ncm: RICE, profile: { cClassTrib: '200003', decidedBy: 'contadora' } }] });
-    const det = await determineAt(withProfile, content, { clock });
-    expect(det.items[0]?.decided?.provenance).toMatchObject({
-      by: 'resolver',
-      name: 'item-profile',
-      confidence: 1,
-      evidence: { decidedBy: 'contadora' },
+    const withProfile = op({
+      itens: [{ n: 1, ncm: RICE, perfil: { cClassTrib: '200003', decididoPor: 'contadora' } }],
     });
-    const noAuthor = op({ items: [{ n: 1, ncm: RICE, profile: { cClassTrib: '200003' } }] });
-    expect((await determineAt(noAuthor, content, { clock })).items[0]?.decided?.provenance.evidence).toEqual({
-      decidedBy: null,
+    const det = await determinarEm(withProfile, content, { relogio: clock });
+    expect(det.itens[0]?.decidido?.procedencia).toMatchObject({
+      por: 'resolvedor',
+      nome: 'item-profile',
+      confianca: 1,
+      evidencia: { decididoPor: 'contadora' },
     });
-    const stale = op({ items: [{ n: 1, ncm: RICE, profile: { cClassTrib: '200034' } }] });
-    expect((await determineAt(stale, content, { clock })).items[0]?.pending).toHaveLength(1);
+    const noAuthor = op({ itens: [{ n: 1, ncm: RICE, perfil: { cClassTrib: '200003' } }] });
+    expect(
+      (await determinarEm(noAuthor, content, { relogio: clock })).itens[0]?.decidido?.procedencia.evidencia,
+    ).toEqual({
+      decididoPor: null,
+    });
+    const stale = op({ itens: [{ n: 1, ncm: RICE, perfil: { cClassTrib: '200034' } }] });
+    expect((await determinarEm(stale, content, { relogio: clock })).itens[0]?.pendente).toHaveLength(1);
   });
 
-  test('uniqueCandidate decide quando sobra um só; askUser se abstém sem candidato', async () => {
+  test('candidatoUnico decide quando sobra um só; perguntarAoUsuario se abstém sem candidato', async () => {
     const single = op({ tpNFDebito: '01' });
-    const det = await determineAt(single, content, { clock, resolvers: [uniqueCandidate()] });
-    expect(det.items[0]?.decided?.provenance.name).toBe('unique-candidate');
-    const none = await determineAt(facts, content, { clock, resolvers: [uniqueCandidate(), askUser()], rules: [] });
-    expect(none.items[0]?.pending).toHaveLength(1);
-    const empty = await askUser().resolve({ facts, item: { n: 1 }, candidates: [], content, answers: {} });
-    expect(empty).toEqual({ kind: 'abstain' });
-    const abstain = await determineAt(facts, content, { clock, resolvers: [fromProfile()] });
-    expect(abstain.items[0]?.decided).toBeUndefined();
-    expect(abstain.items[0]?.pending).toBeUndefined();
+    const det = await determinarEm(single, content, { relogio: clock, resolvedores: [candidatoUnico()] });
+    expect(det.itens[0]?.decidido?.procedencia.nome).toBe('unique-candidate');
+    const none = await determinarEm(facts, content, {
+      relogio: clock,
+      resolvedores: [candidatoUnico(), perguntarAoUsuario()],
+      regras: [],
+    });
+    expect(none.itens[0]?.pendente).toHaveLength(1);
+    const empty = await perguntarAoUsuario().resolver({
+      fatos: facts,
+      item: { n: 1 },
+      candidatos: [],
+      conteudo: content,
+      respostas: {},
+    });
+    expect(empty).toEqual({ tipo: 'abster' });
+    const abstain = await determinarEm(facts, content, { relogio: clock, resolvedores: [doPerfil()] });
+    expect(abstain.itens[0]?.decidido).toBeUndefined();
+    expect(abstain.itens[0]?.pendente).toBeUndefined();
   });
 
   test('resolvedor plugável recebe os candidatos e o sinal; não sai dos candidatos', async () => {
     let seen = 0;
-    const ai: Resolver = {
-      name: 'ia',
-      resolve: async (ctx, signal) => {
-        seen = ctx.candidates.length;
+    const ai: Resolvedor = {
+      nome: 'ia',
+      resolver: async (ctx, signal) => {
+        seen = ctx.candidatos.length;
         expect(signal).toBeDefined();
-        return { kind: 'decided', cClassTrib: '200003', confidence: 0.8, evidence: { model: 'x' } };
+        return { tipo: 'decidido', cClassTrib: '200003', confianca: 0.8, evidencia: { model: 'x' } };
       },
     };
     const controller = new AbortController();
-    const det = await determineAt(facts, content, { clock, resolvers: [ai], signal: controller.signal });
+    const det = await determinarEm(facts, content, { relogio: clock, resolvedores: [ai], signal: controller.signal });
     expect(seen).toBeGreaterThan(1);
-    expect(det.items[0]?.decided?.provenance).toMatchObject({ by: 'resolver', name: 'ia', confidence: 0.8 });
-    const noEvidence: Resolver = {
-      name: 'sem-evidencia',
-      resolve: async () => ({ kind: 'decided', cClassTrib: '200003', confidence: 1 }),
+    expect(det.itens[0]?.decidido?.procedencia).toMatchObject({ por: 'resolvedor', nome: 'ia', confianca: 0.8 });
+    const noEvidence: Resolvedor = {
+      nome: 'sem-evidencia',
+      resolver: async () => ({ tipo: 'decidido', cClassTrib: '200003', confianca: 1 }),
     };
-    const plain = await determineAt(facts, content, { clock, resolvers: [noEvidence] });
-    expect(plain.items[0]?.decided?.provenance).not.toHaveProperty('evidence');
+    const plain = await determinarEm(facts, content, { relogio: clock, resolvedores: [noEvidence] });
+    expect(plain.itens[0]?.decidido?.procedencia).not.toHaveProperty('evidence');
 
-    const outside: Resolver = {
-      name: 'fora',
-      resolve: async () => ({ kind: 'decided', cClassTrib: '200034', confidence: 1 }),
+    const outside: Resolvedor = {
+      nome: 'fora',
+      resolver: async () => ({ tipo: 'decidido', cClassTrib: '200034', confianca: 1 }),
     };
-    await rejects(determineAt(facts, content, { clock, resolvers: [outside] }), 'resolvedor_fora_dos_candidatos');
-    const badConfidence: Resolver = {
-      name: 'confianca',
-      resolve: async () => ({ kind: 'decided', cClassTrib: '200003', confidence: 2 }),
+    await rejects(
+      determinarEm(facts, content, { relogio: clock, resolvedores: [outside] }),
+      'resolvedor_fora_dos_candidatos',
+    );
+    const badConfidence: Resolvedor = {
+      nome: 'confianca',
+      resolver: async () => ({ tipo: 'decidido', cClassTrib: '200003', confianca: 2 }),
     };
-    await rejects(determineAt(facts, content, { clock, resolvers: [badConfidence] }), 'resolvedor_invalido');
+    await rejects(
+      determinarEm(facts, content, { relogio: clock, resolvedores: [badConfidence] }),
+      'resolvedor_invalido',
+    );
   });
 
   test('pergunta com id próprio do resolvedor recebe a resposta em answers[id]', async () => {
     let seenAnswers: Readonly<Record<string, string>> | undefined;
-    const review: Resolver = {
-      name: 'revisao',
-      resolve: async (ctx) => {
-        seenAnswers = ctx.answers;
+    const review: Resolvedor = {
+      nome: 'revisao',
+      resolver: async (ctx) => {
+        seenAnswers = ctx.respostas;
         return {
-          kind: 'ask',
-          questions: [
+          tipo: 'perguntar',
+          perguntas: [
             {
               id: `review:${ctx.item.n}`,
               item: ctx.item.n,
-              text: 'confirme',
-              options: ctx.candidates.map((c) => ({ label: c.cClassTrib, cClassTrib: c.cClassTrib })),
+              texto: 'confirme',
+              opcoes: ctx.candidatos.map((c) => ({ rotulo: c.cClassTrib, cClassTrib: c.cClassTrib })),
             },
           ],
         };
       },
     };
-    const pending = await determineAt(facts, content, { clock, resolvers: [review] });
-    expect(pending.items[0]?.pending?.[0]?.id).toBe('review:1');
-    const det = await determineAt(facts, content, { clock, resolvers: [review], answers: { 'review:1': '200003' } });
+    const pending = await determinarEm(facts, content, { relogio: clock, resolvedores: [review] });
+    expect(pending.itens[0]?.pendente?.[0]?.id).toBe('review:1');
+    const det = await determinarEm(facts, content, {
+      relogio: clock,
+      resolvedores: [review],
+      respostas: { 'review:1': '200003' },
+    });
     expect(seenAnswers).toEqual({ 'review:1': '200003' });
-    expect(det.items[0]?.decided?.candidate.cClassTrib).toBe('200003');
-    expect(det.items[0]?.decided?.provenance).toMatchObject({ by: 'user', name: 'review:1' });
-    expect(det.items[0]?.pending).toBeUndefined();
+    expect(det.itens[0]?.decidido?.candidato.cClassTrib).toBe('200003');
+    expect(det.itens[0]?.decidido?.procedencia).toMatchObject({ por: 'usuario', nome: 'review:1' });
+    expect(det.itens[0]?.pendente).toBeUndefined();
     await rejects(
-      determineAt(facts, content, { clock, resolvers: [review], answers: { 'review:1': '200034' } }),
+      determinarEm(facts, content, { relogio: clock, resolvedores: [review], respostas: { 'review:1': '200034' } }),
       'resposta_fora_dos_candidatos',
     );
   });
@@ -381,29 +412,31 @@ describe('determine: respostas e resolvedores', () => {
   test('sinal abortado interrompe antes do resolvedor', async () => {
     const controller = new AbortController();
     controller.abort(new Error('cancelado'));
-    const out = await determineAt(facts, content, { clock, signal: controller.signal }).catch((e: unknown) => e);
+    const out = await determinarEm(facts, content, { relogio: clock, signal: controller.signal }).catch(
+      (e: unknown) => e,
+    );
     expect((out as Error).message).toBe('cancelado');
   });
 });
 
-describe('toClassified', () => {
+describe('paraClassificado', () => {
   test('monta a entrada do motor e calcula', async () => {
-    const det = await determineAt(op({ kind: 'venda', items: [{ n: 1, ncm: RICE }] }), content, {
-      clock,
-      answers: { [questionId(1)]: '000001' },
+    const det = await determinarEm(op({ tipo: 'venda', itens: [{ n: 1, ncm: RICE }] }), content, {
+      relogio: clock,
+      respostas: { [idDaPergunta(1)]: '000001' },
     });
-    const classified = toClassified(det, { modelo: 55, place: { uf: 'SP', cMun: '3550308' } }, () => ({
+    const classified = paraClassificado(det, { modelo: 55, local: { uf: 'SP', cMun: '3550308' } }, () => ({
       base: '100.00',
     }));
-    expect(classified.items[0]).toEqual({ n: 1, cst: '000', cClassTrib: '000001', base: '100.00' });
-    const roc = calculateAt(classified, { dataset, rates: officialRates(), date: DATE });
-    expect(roc.items[0]?.IBSCBS.gIBSCBS?.gCBS.vCBS).toBe('0.90');
+    expect(classified.itens[0]).toEqual({ n: 1, cst: '000', cClassTrib: '000001', base: '100.00' });
+    const roc = calcularEm(classified, { dataset, aliquotas: aliquotasOficiais(), data: DATE });
+    expect(roc.itens[0]?.IBSCBS.gIBSCBS?.gCBS.vCBS).toBe('0.90');
   });
 
   test('falha com item sem decisão', async () => {
-    const det = await determineAt(op({ items: [{ n: 1, ncm: RICE }] }), content, { clock });
+    const det = await determinarEm(op({ itens: [{ n: 1, ncm: RICE }] }), content, { relogio: clock });
     fails(
-      () => toClassified(det, { modelo: 55, place: { uf: 'SP', cMun: '3550308' } }, () => ({ base: '1' })),
+      () => paraClassificado(det, { modelo: 55, local: { uf: 'SP', cMun: '3550308' } }, () => ({ base: '1' })),
       'determinacao_incompleta',
     );
   });
@@ -411,7 +444,7 @@ describe('toClassified', () => {
 
 describe('fonte da exclusão por NBS', () => {
   test('cita o anexo da LC 214/2025 que não cobre a NBS', () => {
-    const c = one(op({ items: [{ n: 1, nbs: NBS_SERVICE }] }));
-    expect(c.exclusions.find((e) => e.cClassTrib === '200038')?.source).toStartWith('Anexo IX da LC 214/2025;');
+    const c = one(op({ itens: [{ n: 1, nbs: NBS_SERVICE }] }));
+    expect(c.exclusoes.find((e) => e.cClassTrib === '200038')?.fonte).toStartWith('Anexo IX da LC 214/2025;');
   });
 });

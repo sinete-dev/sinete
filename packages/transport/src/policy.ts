@@ -1,24 +1,24 @@
 /**
  * Política de hosts: a guarda do spike S2 (`spikes/s2-tls/real/guard.ts`) generalizada. Roda antes de qualquer
- * socket e recusa com `PolicyError`. O app monta a própria (a allowlist de homologação, por exemplo) e o transporte
+ * socket e recusa com `ErroPolitica`. O app monta a própria (a allowlist de homologação, por exemplo) e o transporte
  * aplica em todo envio.
  */
 
 import type { TpAmb } from '@sinete/core';
-import { PolicyError } from './errors.ts';
-import type { HostPolicy, PolicyRequest } from './types.ts';
+import { ErroPolitica } from './errors.ts';
+import type { PedidoParaPolitica, PoliticaDeHosts } from './types.ts';
 
-export interface AllowlistPolicyOptions {
+export interface PoliticaDeHostsPermitidosOpcoes {
   /** Hosts aceitos, comparados sem diferenciar maiúsculas. Nada fora da lista passa. */
   readonly hosts: Iterable<string>;
   /** Portas aceitas. Padrão: só a 443. */
-  readonly ports?: readonly number[];
+  readonly portas?: readonly number[];
   /**
    * Exige que todo `<tpAmb>` do corpo tenha este valor (ex.: `'2'` para só homologação) e recusa corpo sem `tpAmb`
-   * quando `requireTpAmbInBody` for `true`.
+   * quando `exigirTpAmbNoCorpo` for `true`.
    */
   readonly tpAmb?: TpAmb;
-  readonly requireTpAmbInBody?: boolean;
+  readonly exigirTpAmbNoCorpo?: boolean;
 }
 
 /**
@@ -41,37 +41,37 @@ function bodyText(body: Uint8Array | string | undefined): string | undefined {
 }
 
 /** Allowlist fechada de hosts, portas e, opcionalmente, do `tpAmb` do corpo. */
-export function allowlistPolicy(options: AllowlistPolicyOptions): HostPolicy {
-  const hosts = new Set([...options.hosts].map((h) => h.toLowerCase()));
-  const ports = options.ports ?? [443];
+export function politicaDeHostsPermitidos(opcoes: PoliticaDeHostsPermitidosOpcoes): PoliticaDeHosts {
+  const hosts = new Set([...opcoes.hosts].map((h) => h.toLowerCase()));
+  const ports = opcoes.portas ?? [443];
   return {
-    check(req: PolicyRequest): void {
+    conferir(req: PedidoParaPolitica): void {
       const port = req.url.port === '' ? 443 : Number(req.url.port);
-      if (!ports.includes(port)) throw new PolicyError(`porta não permitida: ${port}`, { port });
+      if (!ports.includes(port)) throw new ErroPolitica(`porta não permitida: ${port}`, { port });
       const host = req.url.hostname.toLowerCase();
-      if (!hosts.has(host)) throw new PolicyError(`host fora da allowlist: ${host}`, { host });
-      if (options.tpAmb === undefined) return;
-      const text = bodyText(req.body);
+      if (!hosts.has(host)) throw new ErroPolitica(`host fora da allowlist: ${host}`, { host });
+      if (opcoes.tpAmb === undefined) return;
+      const text = bodyText(req.corpo);
       const found = text === undefined ? [] : [...inspectable(text).matchAll(TPAMB)].map((m) => (m[1] ?? '').trim());
-      const wrong = found.filter((v) => v !== options.tpAmb);
+      const wrong = found.filter((v) => v !== opcoes.tpAmb);
       if (wrong.length > 0) {
-        throw new PolicyError(`tpAmb diferente de ${options.tpAmb} no corpo: ${wrong.join(',')}`, {
+        throw new ErroPolitica(`tpAmb diferente de ${opcoes.tpAmb} no corpo: ${wrong.join(',')}`, {
           host,
           tpAmb: wrong,
         });
       }
-      if (options.requireTpAmbInBody === true && req.method === 'POST' && found.length === 0) {
-        throw new PolicyError('corpo sem tpAmb e a política exige', { host });
+      if (opcoes.exigirTpAmbNoCorpo === true && req.metodo === 'POST' && found.length === 0) {
+        throw new ErroPolitica('corpo sem tpAmb e a política exige', { host });
       }
     },
   };
 }
 
 /** Todas as políticas precisam aceitar, na ordem. */
-export function allPolicies(...policies: readonly HostPolicy[]): HostPolicy {
+export function todasAsPoliticas(...politicas: readonly PoliticaDeHosts[]): PoliticaDeHosts {
   return {
-    async check(req: PolicyRequest): Promise<void> {
-      for (const p of policies) await p.check(req);
+    async conferir(req: PedidoParaPolitica): Promise<void> {
+      for (const p of politicas) await p.conferir(req);
     },
   };
 }

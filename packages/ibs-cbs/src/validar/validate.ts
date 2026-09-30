@@ -6,86 +6,97 @@
  */
 import type { ContextoDeTempo } from '@sinete/core';
 import { ErroDeConfiguracao } from '@sinete/core';
-import type { IbsCbsDataset } from '@sinete/ibs-cbs-dados';
-import { BRASILIA_OFFSET_MINUTES, civilDate } from '@sinete/ibs-cbs-dados';
-import type { RateProvider } from '../aliquotas/index.ts';
+import type { DatasetIbsCbs } from '@sinete/ibs-cbs-dados';
+import { DESLOCAMENTO_BRASILIA_MIN, dataCivil } from '@sinete/ibs-cbs-dados';
+import type { ProvedorDeAliquotas } from '../aliquotas/index.ts';
 import type { Roc } from '../calcular/index.ts';
-import type { Rule, RuleContext } from './rules.ts';
-import { RULES } from './rules.ts';
-import type { Ambiente, RuleMeta, RulesDocument, ValidationReport, Violation } from './types.ts';
+import type { ContextoDaRegra, Regra } from './rules.ts';
+import { REGRAS } from './rules.ts';
+import type { Ambiente, DescricaoDaRegra, DocumentoDasRegras, RelatorioDeValidacao, Violacao } from './types.ts';
 
-export interface ValidateOptions {
-  readonly dataset: IbsCbsDataset;
-  readonly time: ContextoDeTempo;
+export interface ValidarOpcoes {
+  readonly dataset: DatasetIbsCbs;
+  readonly tempo: ContextoDeTempo;
   readonly ambiente: Ambiente;
   /** Deslocamento do fuso do emitente em minutos (padrão: Brasília). */
-  readonly utcOffsetMinutes?: number;
+  readonly deslocamentoMin?: number;
   /** Alíquotas vigentes, para a UB56-20 (a partir de 2027). */
-  readonly rates?: RateProvider;
+  readonly aliquotas?: ProvedorDeAliquotas;
   /** Avalia todas as regras, inclusive as ainda não implantadas na data de emissão (para se antecipar). */
-  readonly ignoreActivation?: boolean;
-  /** Regras avaliadas; padrão: `RULES`. */
-  readonly rules?: readonly Rule[];
+  readonly ignorarAtivacao?: boolean;
+  /** Regras avaliadas; padrão: `REGRAS`. */
+  readonly regras?: readonly Regra[];
 }
 
 /** A regra está implantada para o documento na data de emissão e no ambiente. */
-export function isActive(rule: RuleMeta, doc: RulesDocument, ambiente: Ambiente, emission: string): boolean {
-  if (!rule.modelos.includes(doc.modelo)) return false;
-  const window = rule.activation.find((a) => a.crt === undefined || a.crt.includes(doc.crt));
-  return window !== undefined && window[ambiente] <= emission;
+export function ativa(
+  regra: DescricaoDaRegra,
+  documento: DocumentoDasRegras,
+  ambiente: Ambiente,
+  emissao: string,
+): boolean {
+  if (!regra.modelos.includes(documento.modelo)) return false;
+  const window = regra.ativacao.find((a) => a.crt === undefined || a.crt.includes(documento.crt));
+  return window !== undefined && window[ambiente] <= emissao;
 }
 
-export function validate(doc: RulesDocument, options: ValidateOptions): ValidationReport {
-  if (!doc || !Array.isArray(doc.items)) throw new ErroDeConfiguracao('documento sem itens');
-  if (options.ambiente !== 'producao' && options.ambiente !== 'homologacao') {
-    throw new ErroDeConfiguracao(`ambiente inválido: ${String(options.ambiente)}`);
+export function validar(documento: DocumentoDasRegras, opcoes: ValidarOpcoes): RelatorioDeValidacao {
+  if (!documento || !Array.isArray(documento.itens)) throw new ErroDeConfiguracao('documento sem itens');
+  if (opcoes.ambiente !== 'producao' && opcoes.ambiente !== 'homologacao') {
+    throw new ErroDeConfiguracao(`ambiente inválido: ${String(opcoes.ambiente)}`);
   }
-  const offset = options.utcOffsetMinutes ?? BRASILIA_OFFSET_MINUTES;
-  const emission = civilDate(options.time.emissao.agora(), offset);
-  const factDate = civilDate(options.time.fatoGerador.agora(), offset);
-  const ctx: RuleContext = {
-    doc,
-    content: options.dataset.at(factDate),
-    emission,
-    ...(options.rates ? { rates: options.rates } : {}),
+  const offset = opcoes.deslocamentoMin ?? DESLOCAMENTO_BRASILIA_MIN;
+  const emission = dataCivil(opcoes.tempo.emissao.agora(), offset);
+  const factDate = dataCivil(opcoes.tempo.fatoGerador.agora(), offset);
+  const ctx: ContextoDaRegra = {
+    documento: documento,
+    conteudo: opcoes.dataset.em(factDate),
+    emissao: emission,
+    ...(opcoes.aliquotas ? { aliquotas: opcoes.aliquotas } : {}),
   };
-  const violations: Violation[] = [];
+  const violations: Violacao[] = [];
   const evaluated: string[] = [];
   const inactive: string[] = [];
-  for (const rule of options.rules ?? RULES) {
-    const active = options.ignoreActivation
-      ? rule.modelos.includes(doc.modelo)
-      : isActive(rule, doc, options.ambiente, emission);
+  for (const rule of opcoes.regras ?? REGRAS) {
+    const active = opcoes.ignorarAtivacao
+      ? rule.modelos.includes(documento.modelo)
+      : ativa(rule, documento, opcoes.ambiente, emission);
     if (!active) {
       inactive.push(rule.id);
       continue;
     }
     evaluated.push(rule.id);
-    rule.check(ctx, (item, message) =>
+    rule.conferir(ctx, (item, message) =>
       violations.push({
-        rule: rule.id,
+        regra: rule.id,
         cStat: rule.cStat,
         ...(item === undefined ? {} : { item }),
         message,
-        source: rule.source,
+        fonte: rule.fonte,
       }),
     );
   }
-  return { violations, evaluated, inactive, emissionDate: emission, factDate };
+  return {
+    violacoes: violations,
+    avaliadas: evaluated,
+    inativas: inactive,
+    dataDaEmissao: emission,
+    dataDoFato: factDate,
+  };
 }
 
-/** Documento para `validate` a partir do `Roc` do motor, com os campos de identificação que o `Roc` não tem. */
-export function documentFromRoc(
+/** Documento para `validar` a partir do `Roc` do motor, com os campos de identificação que o `Roc` não tem. */
+export function documentoDoRoc(
   roc: Roc,
-  ident: Omit<RulesDocument, 'items' | 'IBSCBSTot' | 'gCompraGov'> & {
-    readonly items?: readonly Omit<RulesDocument['items'][number], 'IBSCBS'>[];
+  identificacao: Omit<DocumentoDasRegras, 'itens' | 'IBSCBSTot' | 'gCompraGov'> & {
+    readonly itens?: readonly Omit<DocumentoDasRegras['itens'][number], 'IBSCBS'>[];
   },
-): RulesDocument {
-  const { items: extra, ...rest } = ident;
+): DocumentoDasRegras {
+  const { itens: extra, ...rest } = identificacao;
   return {
     ...rest,
     ...(roc.oper ? { gCompraGov: roc.oper.gCompraGov } : {}),
-    items: roc.items.map((it) => ({ ...extra?.find((x) => x.nItem === it.nItem), nItem: it.nItem, IBSCBS: it.IBSCBS })),
+    itens: roc.itens.map((it) => ({ ...extra?.find((x) => x.nItem === it.nItem), nItem: it.nItem, IBSCBS: it.IBSCBS })),
     IBSCBSTot: roc.total.IBSCBSTot,
   };
 }

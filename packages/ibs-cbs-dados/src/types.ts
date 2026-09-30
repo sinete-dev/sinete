@@ -1,25 +1,25 @@
 /**
- * Schema do dataset do `@sinete/ibs-cbs-dados` (versão `DATA_SCHEMA_VERSION`).
+ * Schema do dataset do `@sinete/ibs-cbs-dados` (versão `VERSAO_DO_FORMATO_DOS_DADOS`).
  *
- * Todo registro é fato normativo extraído de fonte oficial fixada por hash (`manifest.sources`), com vigência explícita
- * no tempo do fato gerador. Datas são `AAAA-MM-DD` e as vigências são fechadas nas duas pontas (`from <= data <= to`),
+ * Todo registro é fato normativo extraído de fonte oficial fixada por hash (`manifesto.fontes`), com vigência explícita
+ * no tempo do fato gerador. Datas são `AAAA-MM-DD` e as vigências são fechadas nas duas pontas (`inicio <= data <= fim`),
  * como nas consultas da Calculadora. Decimais vêm como texto, nunca como `number`.
  */
 
 /** Data civil `AAAA-MM-DD`. */
-export type IsoDate = string;
+export type DataIso = string;
 
 /** Decimal em texto (`'0.9'`, `'60'`, `'0.05'`). */
 export type Dec = string;
 
-/** Intervalo de vigência, fechado nas duas pontas; `to: null` é vigência aberta. */
-export interface Validity {
-  readonly from: IsoDate;
-  readonly to: IsoDate | null;
+/** Intervalo de vigência, fechado nas duas pontas; `fim: null` é vigência aberta. */
+export interface Vigencia {
+  readonly inicio: DataIso;
+  readonly fim: DataIso | null;
 }
 
 /** Família da tabela: CST e cClassTrib do IBS/CBS ou do Imposto Seletivo (os códigos se repetem entre famílias). */
-export type Family = 'CBS_IBS' | 'IS';
+export type Familia = 'CBS_IBS' | 'IS';
 
 /** Tributo como a Calculadora o identifica. */
 export type Tributo = 'CBS' | 'IBSUF' | 'IBSMun' | 'IS';
@@ -28,37 +28,37 @@ export type Tributo = 'CBS' | 'IBSUF' | 'IBSMun' | 'IS';
  * Indicador de grupo do leiaute. Na CST, 1 é "exige" e 0 é "não é permitido" (legenda do IT 2025.002); no
  * `ind_gCredPresOper`, 1 é "permite, sem exigir" (NT 2025.002, UB120, observação 2).
  */
-export type Indicator = 'required' | 'allowed' | 'forbidden';
+export type Indicador = 'obrigatorio' | 'permitido' | 'vedado';
 
-/** Fonte de onde veio um registro, pelo id em `manifest.sources`. */
-export type SourceId = string;
+/** Fonte de onde veio um registro, pelo id em `manifesto.fontes`. */
+export type IdDaFonte = string;
 
-export interface CstGroups {
-  readonly gIBSCBS: Indicator;
-  readonly gIBSCBSMono: Indicator;
-  readonly gRed: Indicator;
-  readonly gDif: Indicator;
-  readonly gTransfCred: Indicator;
-  readonly gCredPresIBSZFM: Indicator;
-  readonly gAjusteCompet: Indicator;
+export interface GruposCst {
+  readonly gIBSCBS: Indicador;
+  readonly gIBSCBSMono: Indicador;
+  readonly gRed: Indicador;
+  readonly gDif: Indicador;
+  readonly gTransfCred: Indicador;
+  readonly gCredPresIBSZFM: Indicador;
+  readonly gAjusteCompet: Indicador;
   /** `ind_RedutorBC`, só no IT (a Calculadora não tem a coluna); `null` quando o IT não traz a CST. */
-  readonly redutorBC: Indicator | null;
+  readonly redutorBC: Indicador | null;
 }
 
-export interface CstRecord {
+export interface RegistroCst {
   /** Chave estável: `família:código:início da vigência`. */
-  readonly key: string;
-  readonly family: Family;
-  readonly code: string;
-  readonly description: string;
+  readonly chave: string;
+  readonly familia: Familia;
+  readonly codigo: string;
+  readonly descricao: string;
   readonly tributos: readonly Tributo[];
-  readonly groups: CstGroups;
-  readonly validity: Validity;
-  readonly sources: readonly SourceId[];
+  readonly grupos: GruposCst;
+  readonly vigencia: Vigencia;
+  readonly fontes: readonly IdDaFonte[];
 }
 
 /** Tipo de alíquota exatamente como publicado. */
-export type RateKind =
+export type TipoDeAliquota =
   | 'Padrão'
   | 'Uniforme setorial'
   | 'Uniforme nacional (referência)'
@@ -67,104 +67,104 @@ export type RateKind =
   | 'Alíquotas Combinadas (Ad Valorem e Ad Rem)';
 
 /** Nomenclatura que o cClassTrib exige para o item. */
-export type Nomenclature = 'NCM' | 'NBS' | 'NBS ou NCM' | 'CIB' | 'CIB ou NCM' | 'Não possui';
+export type Nomenclatura = 'NCM' | 'NBS' | 'NBS ou NCM' | 'CIB' | 'CIB ou NCM' | 'Não possui';
 
-export interface ClassTribGroups {
+export interface GruposClassTrib {
   /** `ind_gTribRegular` (IT); a Calculadora expressa o mesmo pela flag do tratamento. */
-  readonly gTribRegular: Indicator | null;
-  readonly gCredPresOper: Indicator;
-  readonly gMonoPadrao: Indicator;
-  readonly gMonoReten: Indicator;
-  readonly gMonoRet: Indicator;
-  readonly gMonoDif: Indicator;
+  readonly gTribRegular: Indicador | null;
+  readonly gCredPresOper: Indicador;
+  readonly gMonoPadrao: Indicador;
+  readonly gMonoReten: Indicador;
+  readonly gMonoRet: Indicador;
+  readonly gMonoDif: Indicador;
   /** `ind_gpBioDiferenca` (IT v1.60); `null` quando o IT não traz o código. */
-  readonly gpBioDiferenca: Indicator | null;
-  readonly gEstornoCred: Indicator;
+  readonly gpBioDiferenca: Indicador | null;
+  readonly gEstornoCred: Indicador;
 }
 
-export interface ClassTribCredit {
+export interface CreditoClassTrib {
   /** Adquirente pode apropriar crédito de CBS. */
-  readonly buyerCbs: boolean;
-  readonly buyerIbs: boolean;
-  readonly presumedSupplier: boolean;
-  readonly presumedBuyer: boolean;
+  readonly adquirenteCbs: boolean;
+  readonly adquirenteIbs: boolean;
+  readonly presumidoFornecedor: boolean;
+  readonly presumidoAdquirente: boolean;
   /** Efeito sobre o crédito da operação antecedente. */
-  readonly priorOperation: 'Manutenção' | 'Anulação' | null;
+  readonly operacaoAnterior: 'Manutenção' | 'Anulação' | null;
 }
 
-export interface ByTributo {
+export interface PorTributo {
   readonly tributo: Tributo;
-  readonly validity: Validity;
+  readonly vigencia: Vigencia;
 }
 
-export interface ReductionRecord extends ByTributo {
+export interface RegistroReducao extends PorTributo {
   /** Percentual de redução da alíquota (`60` = 60%). */
   readonly pRed: Dec;
 }
 
-export interface FixedRateRecord extends ByTributo {
+export interface RegistroAliquotaFixa extends PorTributo {
   /** Alíquota fixa em percentual. */
-  readonly rate: Dec;
+  readonly aliquota: Dec;
 }
 
-export interface DfeLink {
+export interface VinculoDfe {
   /** Sigla da Calculadora (`NF-e`, `NFC-e`, `NFS-e`...). */
   readonly sigla: string;
   /** Modelo do documento (`55`, `65`, `91`...). */
   readonly modelo: number;
-  readonly validity: Validity;
+  readonly vigencia: Vigencia;
 }
 
-export interface LegalBasis {
+export interface BaseLegal {
   /** Referência curta (`Art. 137`). */
-  readonly short: string;
-  readonly text: string;
+  readonly resumo: string;
+  readonly texto: string;
   /** Norma (`LC 214/2025`). */
-  readonly reference: string;
-  readonly validity: Validity;
+  readonly referencia: string;
+  readonly vigencia: Vigencia;
 }
 
-export interface ClassTribLegal {
+export interface BaseLegalClassTrib {
   /** Dispositivo da LC 214/2025 citado no IT (`Art. 125`). */
   readonly lc214: string | null;
-  readonly link: string | null;
+  readonly url: string | null;
   /** Fundamentação legal da Calculadora, com vigência. */
-  readonly basis: readonly LegalBasis[];
+  readonly fundamento: readonly BaseLegal[];
 }
 
-export interface TreatmentLink {
-  readonly treatment: number;
-  readonly validity: Validity;
+export interface VinculoTratamento {
+  readonly tratamento: number;
+  readonly vigencia: Vigencia;
 }
 
-export interface ClassTribRecord {
-  readonly key: string;
-  readonly family: Family;
-  readonly code: string;
+export interface RegistroClassTrib {
+  readonly chave: string;
+  readonly familia: Familia;
+  readonly codigo: string;
   readonly cst: string;
   /** Nome curto do IT; `null` quando o código não está no IT. */
-  readonly name: string | null;
-  readonly description: string;
-  readonly rateKind: RateKind;
-  readonly nomenclature: Nomenclature | null;
-  readonly annex: string | null;
+  readonly nome: string | null;
+  readonly descricao: string;
+  readonly tipoDeAliquota: TipoDeAliquota;
+  readonly nomenclatura: Nomenclatura | null;
+  readonly anexo: string | null;
   /** `tpRBSN` (IT v1.60): tipo de receita bruta do Simples Nacional. */
   readonly tpRBSN: number;
-  readonly credit: ClassTribCredit;
-  readonly groups: ClassTribGroups;
-  readonly treatments: readonly TreatmentLink[];
-  readonly reductions: readonly ReductionRecord[];
-  readonly fixedRates: readonly FixedRateRecord[];
-  readonly dfe: readonly DfeLink[];
-  readonly legal: ClassTribLegal;
+  readonly credito: CreditoClassTrib;
+  readonly grupos: GruposClassTrib;
+  readonly tratamentos: readonly VinculoTratamento[];
+  readonly reducoes: readonly RegistroReducao[];
+  readonly aliquotasFixas: readonly RegistroAliquotaFixa[];
+  readonly dfe: readonly VinculoDfe[];
+  readonly legal: BaseLegalClassTrib;
   /** Modelo de memória de cálculo da Calculadora. */
   readonly memoriaTemplate: string;
-  readonly validity: Validity;
-  readonly updatedAt: IsoDate | null;
-  readonly sources: readonly SourceId[];
+  readonly vigencia: Vigencia;
+  readonly atualizadoEm: DataIso | null;
+  readonly fontes: readonly IdDaFonte[];
 }
 
-export interface TreatmentExpressions {
+export interface ExpressoesDoTratamento {
   readonly aliquota: string | null;
   readonly aliquotaEfetiva: string | null;
   readonly baseCalculo: string;
@@ -174,7 +174,7 @@ export interface TreatmentExpressions {
   readonly valorDiferimento: string | null;
 }
 
-export interface TreatmentFlags {
+export interface IndicadoresDoTratamento {
   readonly incompativelComSuspensao: boolean;
   /** `TRTR_IN_EXIGE_GRUPO_DESONERACAO`: exige o grupo de tributação regular. */
   readonly exigeGrupoTribRegular: boolean;
@@ -185,22 +185,22 @@ export interface TreatmentFlags {
 }
 
 /** Tratamento tributário da Calculadora: as regras de cálculo como expressões aritméticas. */
-export interface TreatmentRecord {
-  readonly key: string;
+export interface RegistroTratamento {
+  readonly chave: string;
   readonly id: number;
-  readonly description: string;
-  readonly expr: TreatmentExpressions;
-  readonly flags: TreatmentFlags;
-  readonly validity: Validity;
+  readonly descricao: string;
+  readonly expressao: ExpressoesDoTratamento;
+  readonly indicadores: IndicadoresDoTratamento;
+  readonly vigencia: Vigencia;
 }
 
-export interface CredPresGroups {
-  readonly gCBSCredPres: Indicator;
-  readonly gIBSCredPres: Indicator;
+export interface GruposCredPres {
+  readonly gCBSCredPres: Indicador;
+  readonly gIBSCredPres: Indicador;
 }
 
 /** Orientação de alíquota do IT: texto quando não é um número, decimal em texto quando é. */
-export interface CredPresRates {
+export interface AliquotasCredPres {
   readonly cbs: string | null;
   readonly ibs: string | null;
   readonly pAliqCredPresCBS: string | null;
@@ -208,180 +208,180 @@ export interface CredPresRates {
   readonly pRedTransicaoIBS: string | null;
 }
 
-export interface CredPresCalculation {
+export interface CalculoCredPres {
   readonly pAliq: string | null;
   readonly base: string | null;
   readonly formula: string | null;
-  readonly impediment: string | null;
+  readonly impedimento: string | null;
 }
 
 /** Código de classificação do crédito presumido (`cCredPres`, IT 2025.002, tabela 04). */
-export interface CredPresRecord {
-  readonly key: string;
-  readonly code: number;
-  readonly description: string;
+export interface RegistroCredPres {
+  readonly chave: string;
+  readonly codigo: number;
+  readonly descricao: string;
   /** Texto do dispositivo da LC 214/2025. */
   readonly legal: string;
-  readonly viaDocument: boolean;
-  readonly viaEvent: boolean;
+  readonly viaDocumento: boolean;
+  readonly viaEvento: boolean;
   /** `ind_DeduzCredPres`: o crédito é abatido do tributo do item (`vIBS`, UB54a-10). */
-  readonly deductsFromTax: boolean;
-  readonly groups: CredPresGroups;
-  readonly rates: CredPresRates;
+  readonly deduzDoTributo: boolean;
+  readonly grupos: GruposCredPres;
+  readonly aliquotas: AliquotasCredPres;
   /** Orientação sobre o cClassTrib da nota referenciada. */
-  readonly referencedClassTrib: string | null;
-  readonly validity: { readonly cbs: Validity | null; readonly ibs: Validity | null };
-  readonly calculation: CredPresCalculation;
-  readonly sources: readonly SourceId[];
+  readonly classTribReferenciado: string | null;
+  readonly vigencia: { readonly cbs: Vigencia | null; readonly ibs: Vigencia | null };
+  readonly calculo: CalculoCredPres;
+  readonly fontes: readonly IdDaFonte[];
 }
 
-export interface PrefixException {
-  readonly prefix: string;
-  readonly validity: Validity;
+export interface ExcecaoDePrefixo {
+  readonly prefixo: string;
+  readonly vigencia: Vigencia;
 }
 
 /** Vínculo de NCM ou NBS (por prefixo) com um cClassTrib, com as exceções do anexo. */
-export interface ApplicabilityRecord {
-  readonly key: string;
+export interface RegistroAplicabilidade {
+  readonly chave: string;
   /** Chave do cClassTrib vinculado (`família:código:início`). */
-  readonly classTribKey: string;
-  readonly family: Family;
+  readonly chaveClassTrib: string;
+  readonly familia: Familia;
   readonly cClassTrib: string;
-  readonly prefix: string;
+  readonly prefixo: string;
   /** Item do anexo (`I/1`), quando houver. */
-  readonly annexItem: string | null;
-  readonly validity: Validity;
-  readonly exceptions: readonly PrefixException[];
+  readonly itemDoAnexo: string | null;
+  readonly vigencia: Vigencia;
+  readonly excecoes: readonly ExcecaoDePrefixo[];
 }
 
 /** Item de anexo da LC 214/2025 citado pelos vínculos de NCM e NBS. */
-export interface AnnexRecord {
-  readonly key: string;
-  readonly annex: string;
+export interface RegistroAnexo {
+  readonly chave: string;
+  readonly anexo: string;
   readonly item: string | null;
-  readonly description: string | null;
-  readonly text: string | null;
-  readonly validity: Validity;
+  readonly descricao: string | null;
+  readonly texto: string | null;
+  readonly vigencia: Vigencia;
 }
 
 /** NFS-e: vínculo NBS x cClassTrib x indicador de operação (cIndOp) x item da LC 116. */
-export interface NfseNbsRecord {
-  readonly key: string;
+export interface RegistroNfseNbs {
+  readonly chave: string;
   readonly nbs: string;
-  readonly classTribKey: string;
+  readonly chaveClassTrib: string;
   readonly cClassTrib: string;
   readonly itemLc116: string;
   readonly cIndOp: string;
   readonly onerosa: boolean;
   readonly adquirenteExterior: boolean;
-  readonly validity: Validity;
+  readonly vigencia: Vigencia;
 }
 
-export interface ActorGroupRecord {
-  readonly key: string;
+export interface RegistroGrupoDeAtores {
+  readonly chave: string;
   readonly id: number;
-  readonly description: string;
-  readonly order: number;
-  readonly validity: Validity;
+  readonly descricao: string;
+  readonly ordem: number;
+  readonly vigencia: Vigencia;
 }
 
-export interface ActorRecord {
-  readonly key: string;
+export interface RegistroAtor {
+  readonly chave: string;
   readonly id: number;
-  readonly group: number;
-  readonly description: string;
-  readonly order: number;
-  readonly validity: Validity;
+  readonly grupo: number;
+  readonly descricao: string;
+  readonly ordem: number;
+  readonly vigencia: Vigencia;
 }
 
-export type ActorRole = 'Fornecedor' | 'Adquirente';
+export type PapelDoAtor = 'Fornecedor' | 'Adquirente';
 
-export interface ActorClassTribRecord {
-  readonly key: string;
-  readonly actor: number;
-  readonly role: ActorRole;
-  readonly classTribKey: string;
+export interface RegistroAtorClassTrib {
+  readonly chave: string;
+  readonly ator: number;
+  readonly papel: PapelDoAtor;
+  readonly chaveClassTrib: string;
   readonly cClassTrib: string;
-  readonly validity: Validity;
+  readonly vigencia: Vigencia;
 }
 
-export interface DfeTypeRecord {
-  readonly key: string;
+export interface RegistroTipoDfe {
+  readonly chave: string;
   readonly sigla: string;
   readonly modelo: number;
-  readonly description: string;
-  readonly validity: Validity;
+  readonly descricao: string;
+  readonly vigencia: Vigencia;
 }
 
 /** Redutor de compras governamentais (LC 214/2025, arts. 370 e 472), em percentual. */
-export interface GovPurchaseReducerRecord {
-  readonly key: string;
+export interface RegistroRedutorCompraGov {
+  readonly chave: string;
   readonly pRedutor: Dec;
-  readonly validity: Validity;
+  readonly vigencia: Vigencia;
 }
 
 /** Percentual da CBS transferido ao ente contratante na compra governamental (art. 473, com a transição). */
-export interface CbsTransferRecord {
-  readonly key: string;
-  readonly percent: Dec;
-  readonly validity: Validity;
+export interface RegistroTransferenciaCbs {
+  readonly chave: string;
+  readonly percentual: Dec;
+  readonly vigencia: Vigencia;
 }
 
-export interface DatasetTables {
-  readonly cst: readonly CstRecord[];
-  readonly classTrib: readonly ClassTribRecord[];
-  readonly treatments: readonly TreatmentRecord[];
-  readonly credPres: readonly CredPresRecord[];
-  readonly ncmApplicability: readonly ApplicabilityRecord[];
-  readonly nbsApplicability: readonly ApplicabilityRecord[];
-  readonly annexes: readonly AnnexRecord[];
-  readonly nfseNbs: readonly NfseNbsRecord[];
-  readonly actorGroups: readonly ActorGroupRecord[];
-  readonly actors: readonly ActorRecord[];
-  readonly actorClassTrib: readonly ActorClassTribRecord[];
-  readonly dfeTypes: readonly DfeTypeRecord[];
-  readonly govPurchaseReducer: readonly GovPurchaseReducerRecord[];
-  readonly cbsTransfer: readonly CbsTransferRecord[];
+export interface TabelasDoDataset {
+  readonly cst: readonly RegistroCst[];
+  readonly classTrib: readonly RegistroClassTrib[];
+  readonly tratamentos: readonly RegistroTratamento[];
+  readonly credPres: readonly RegistroCredPres[];
+  readonly aplicabilidadeNcm: readonly RegistroAplicabilidade[];
+  readonly aplicabilidadeNbs: readonly RegistroAplicabilidade[];
+  readonly anexos: readonly RegistroAnexo[];
+  readonly nfseNbs: readonly RegistroNfseNbs[];
+  readonly gruposDeAtores: readonly RegistroGrupoDeAtores[];
+  readonly atores: readonly RegistroAtor[];
+  readonly atorClassTrib: readonly RegistroAtorClassTrib[];
+  readonly tiposDfe: readonly RegistroTipoDfe[];
+  readonly redutorCompraGov: readonly RegistroRedutorCompraGov[];
+  readonly transferenciaCbs: readonly RegistroTransferenciaCbs[];
 }
 
-export type TableName = keyof DatasetTables;
+export type NomeDaTabela = keyof TabelasDoDataset;
 
 /** Artefato oficial de onde o dataset foi extraído. */
-export interface DataSource {
-  readonly id: SourceId;
-  readonly kind: 'CALCULADORA_OFFLINE' | 'IT' | 'NT' | 'LEI';
-  readonly title: string;
+export interface FonteDoDataset {
+  readonly id: IdDaFonte;
+  readonly tipo: 'CALCULADORA_OFFLINE' | 'IT' | 'NT' | 'LEI';
+  readonly titulo: string;
   /** Versão oficial (`V0057`, `v1.60`). */
-  readonly version: string;
+  readonly versao: string;
   /** Data da versão oficial. */
-  readonly date: IsoDate;
+  readonly data: DataIso;
   readonly url: string;
   readonly sha256: string;
   /** Hashes adicionais que fixam o artefato (camada do rootfs, arquivo interno). */
   readonly pins?: Readonly<Record<string, string>>;
-  readonly notes?: string;
+  readonly notas?: string;
 }
 
-export interface TableManifest {
-  readonly name: TableName;
-  readonly records: number;
+export interface ManifestoDaTabela {
+  readonly nome: NomeDaTabela;
+  readonly registros: number;
   readonly sha256: string;
 }
 
-export interface DatasetManifest {
-  readonly dataSchemaVersion: number;
+export interface ManifestoDoDataset {
+  readonly versaoDoFormato: number;
   /** Mês da base oficial mais recente dentro do dataset, `AAAA.MM` (a versão do pacote é `AAAA.M.patch`). */
-  readonly dataVersion: string;
+  readonly versaoDosDados: string;
   /** Data de conhecimento: a data da versão oficial mais recente, não a da coleta (determinismo). */
-  readonly knownAt: IsoDate;
-  readonly sources: readonly DataSource[];
-  readonly tables: readonly TableManifest[];
+  readonly conhecidoEm: DataIso;
+  readonly fontes: readonly FonteDoDataset[];
+  readonly tabelas: readonly ManifestoDaTabela[];
   /** sha256 das linhas `sha256  nome` das tabelas, em ordem; identifica o conteúdo. */
-  readonly datasetSha256: string;
+  readonly sha256DoDataset: string;
 }
 
 /** O dataset serializado: o que o pacote embarca e o que se carrega em runtime de outra origem. */
-export interface DatasetBundle {
-  readonly manifest: DatasetManifest;
-  readonly tables: DatasetTables;
+export interface BundleDoDataset {
+  readonly manifesto: ManifestoDoDataset;
+  readonly tabelas: TabelasDoDataset;
 }

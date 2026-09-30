@@ -1,0 +1,6570 @@
+[
+  {
+    "anexo": "I",
+    "chave": "I/10@2026-01-01",
+    "descricao": "descrição",
+    "item": "10",
+    "texto": "Farinha de mandioca classificada no código 1106.20.00 da NCM/SH e tapioca e seus sucedâneos do código 1903.00.00 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "I",
+    "chave": "I/11@2026-01-01",
+    "descricao": "descrição",
+    "item": "11",
+    "texto": "Farinha, grumos e sêmolas, de milho, dos códigos 1102.20.00 e 1103.13.00 da NCM",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "I",
+    "chave": "I/12@2026-01-01",
+    "descricao": "descrição",
+    "item": "12",
+    "texto": "Grãos de milho classificados no código 1104.19.00 e do código 1104.23.00 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "I",
+    "chave": "I/13@2026-01-01",
+    "descricao": "descrição",
+    "item": "13",
+    "texto": "Farinha de trigo do código 1101.00.10 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "I",
+    "chave": "I/14@2026-01-01",
+    "descricao": "descrição",
+    "item": "14",
+    "texto": "Açúcar classificado nos códigos 1701.14.00 e 1701.99.00 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "I",
+    "chave": "I/15@2026-01-01",
+    "descricao": "descrição",
+    "item": "15",
+    "texto": "Massas alimentícias da subposição 1902.1 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "I",
+    "chave": "I/16@2026-01-01",
+    "descricao": "descrição",
+    "item": "16",
+    "texto": "Pão comumente denominado pão francês, de formato cilíndrico e alongado, com miolo branco creme e macio, e casca dourada e crocante, elaborado a partir da mistura ou pré-mistura de farinha de trigo, fermento biológico, água, sal, açúcar, aditivos alimentares e produtos de fortificação de farinhas, em conformidade com a legislação vigente, classificado no código 1905.90.90 da NCM/SH e a pré-mistura ou massa, para preparação do pão comumente denominado pão francês, dos códigos 1901.20.10 e 1901.20.90 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "I",
+    "chave": "I/17@2026-01-01",
+    "descricao": "descrição",
+    "item": "17",
+    "texto": "Grãos de aveia dos códigos 1104.12.00 e 1104.22.00 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "I",
+    "chave": "I/18@2026-01-01",
+    "descricao": "descrição",
+    "item": "18",
+    "texto": "Farinha de aveia classificada no código 1102.90.00 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "I",
+    "chave": "I/19@2026-01-01",
+    "descricao": "descrição",
+    "item": "19",
+    "texto": "Carnes bovina, suína, ovina, caprina e de aves e produtos de origem animal (excetofoiesgras)dos seguintes códigos, subposições e posições da NCM/SH: a) 02.01, 02.02, 0206.10.00, 0206.2 e 0210.20.00; b) 02.03, 0206.30.00, 0206.4, 0209.10 e 0210.1; c) 02.04 e 0210.99.20, carne caprina classificada no código 0210.99.90 e miudezas comestíveis de ovinos e caprinos classificadas nos códigos 0206.80.00 e 0206.90.00; d) 02.07, 0209.90.00 e 0210.99.1, exceto os produtos dos códigos 0207.43.00 e 0207.53.00",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "I",
+    "chave": "I/1@2026-01-01",
+    "descricao": "descrição",
+    "item": "1",
+    "texto": "Arroz das subposições 1006.20 e 1006.30 e do código 1006.40.00 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "I",
+    "chave": "I/20@2026-01-01",
+    "descricao": "descrição",
+    "item": "20",
+    "texto": "Peixes e carnes de peixes (exceto salmonídeos, atuns, bacalhaus, hadoque, saithe e ovas e outros subprodutos) dos seguintes códigos, subposições e posições da NCM/SH: a) 03.02; exceto os produtos das subposições e dos códigos 0302.1, 0302.3, 0302.51.00, 0302.52.00, 0302.53.00 e 0302.9 da NCM/SH; b) 03.03; exceto os produtos das subposições e dos códigos 0303.1, 0303.4, 0303.63.00, 0303.64.00, 0303.65.00 e 0303.9 da NCM/SH; c) 03.04; exceto os salmonídeos, atuns, bacalhaus, hadoque e saithe classificados nas subposições 0304.4, 0304.5, 0304.7, 0304.8 e 0304.9 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "I",
+    "chave": "I/21@2026-01-01",
+    "descricao": "descrição",
+    "item": "21",
+    "texto": "Queijos tipo mozarela, minas, prato, queijo de coalho, ricota, requeijão, queijo provolone, queijo parmesão, queijo fresco não maturado e queijo do reino classificados nos códigos 0406.10.10, 0406.10.90, 0406.20.00, 0406.90.10, 0406.90.20 e 0406.90.30 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "I",
+    "chave": "I/22@2026-01-01",
+    "descricao": "descrição",
+    "item": "22",
+    "texto": "Sal em conformidade com os requisitos da legislação específica relativos ao teor de iodo enquadrado nos limites próprios para consumo humano classificado nos códigos 2501.00.20 e 2501.00.90 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "I",
+    "chave": "I/23@2026-01-01",
+    "descricao": "descrição",
+    "item": "23",
+    "texto": "Mate da posição 09.03 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "I",
+    "chave": "I/24@2026-01-01",
+    "descricao": "descrição",
+    "item": "24",
+    "texto": "Farinha com baixo teor de proteína para pessoas com aminoacidopatias, acidemias e defeitos do ciclo da uréia da NCM 1901.90.90",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "I",
+    "chave": "I/25@2026-01-01",
+    "descricao": "descrição",
+    "item": "25",
+    "texto": "Massas com baixo teor de proteína para pessoas com aminoacidopatias, acidemias e defeitos do ciclo da uréia da NCM 1902.19.00",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "I",
+    "chave": "I/26@2026-01-01",
+    "descricao": "descrição",
+    "item": "26",
+    "texto": "Fórmulas Dietoterápicas para Erros Inatos do Metabolismo da NCM 2106.9090",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "I",
+    "chave": "I/2@2026-01-01",
+    "descricao": "descrição",
+    "item": "2",
+    "texto": "Leite, em conformidade com os requisitos da legislação específica relativos ao consumo direto pela população, classificado nos códigos 0401.10.10, 0401.10.90, 0401.20.10, 0401.20.90, 0401.40.10 e 0401.50.10 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "I",
+    "chave": "I/3@2026-01-01",
+    "descricao": "descrição",
+    "item": "3",
+    "texto": "Leite em pó, em conformidade com os requisitos da legislação específica, classificado nos códigos 0402.10.10, 0402.10.90, 0402.21.10, 0402.21.20, 0402.29.10 e 0402.29.20 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "I",
+    "chave": "I/4@2026-01-01",
+    "descricao": "descrição",
+    "item": "4",
+    "texto": "Fórmulas infantis, em conformidade com os requisitos da legislação específica, classificadas nos códigos 1901.10.10, 1901.10.90 e 2106.90.90 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "I",
+    "chave": "I/5@2026-01-01",
+    "descricao": "descrição",
+    "item": "5",
+    "texto": "Manteiga do código 0405.10.00 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "I",
+    "chave": "I/6@2026-01-01",
+    "descricao": "descrição",
+    "item": "6",
+    "texto": "Margarina do código 1517.10.00 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "I",
+    "chave": "I/7@2026-01-01",
+    "descricao": "descrição",
+    "item": "7",
+    "texto": "Feijões dos códigos 0713.33.19, 0713.33.29, 0713.33.99 e 0713.35.90 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "I",
+    "chave": "I/8@2026-01-01",
+    "descricao": "descrição",
+    "item": "8",
+    "texto": "Café da posição 09.01 e da subposição 2101.1, ambos da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "I",
+    "chave": "I/9@2026-01-01",
+    "descricao": "descrição",
+    "item": "9",
+    "texto": "Óleo de babaçu do código 1513.21.20 da NCM/SH, em conformidade com os requisitos da legislação específica relativos ao consumo como alimento",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "II",
+    "chave": "II/1@2026-01-01",
+    "descricao": "descrição",
+    "item": "1",
+    "texto": "Ensino Infantil, inclusive creche e pré-escola",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "II",
+    "chave": "II/2@2026-01-01",
+    "descricao": "descrição",
+    "item": "2",
+    "texto": "Ensino Fundamental",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "II",
+    "chave": "II/3@2026-01-01",
+    "descricao": "descrição",
+    "item": "3",
+    "texto": "Ensino Médio",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "II",
+    "chave": "II/4@2026-01-01",
+    "descricao": "descrição",
+    "item": "4",
+    "texto": "Ensino Técnico de Nível Médio",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "II",
+    "chave": "II/5@2026-01-01",
+    "descricao": "descrição",
+    "item": "5",
+    "texto": "Ensino para jovens e adultos destinado àqueles que não tiveram acesso ou continuidade de estudos no ensino fundamental e médio na idade própria",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "II",
+    "chave": "II/6@2026-01-01",
+    "descricao": "descrição",
+    "item": "6",
+    "texto": "Ensino Superior, compreendidos os cursos e programas de graduação, pós-graduação, de extensão e cursos sequenciais",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "II",
+    "chave": "II/7@2026-01-01",
+    "descricao": "descrição",
+    "item": "7",
+    "texto": "Ensino de sistemas linguísticos de natureza visomotora e de escrita tátil",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "II",
+    "chave": "II/8@2026-01-01",
+    "descricao": "descrição",
+    "item": "8",
+    "texto": "Ensino de línguas nativas de povos originários",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "III",
+    "chave": "III/10@2026-01-01",
+    "descricao": "descrição",
+    "item": "10",
+    "texto": "Serviços de enfermagem",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "III",
+    "chave": "III/11@2026-01-01",
+    "descricao": "descrição",
+    "item": "11",
+    "texto": "Serviços de fisioterapia",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "III",
+    "chave": "III/12@2026-01-01",
+    "descricao": "descrição",
+    "item": "12",
+    "texto": "Serviços laboratoriais",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "III",
+    "chave": "III/13@2026-01-01",
+    "descricao": "descrição",
+    "item": "13",
+    "texto": "Serviços de diagnóstico por imagem",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "III",
+    "chave": "III/14@2026-01-01",
+    "descricao": "descrição",
+    "item": "14",
+    "texto": "Serviços de bancos de material biológico humano",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "III",
+    "chave": "III/15@2026-01-01",
+    "descricao": "descrição",
+    "item": "15",
+    "texto": "Serviços de ambulância",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "III",
+    "chave": "III/16@2026-01-01",
+    "descricao": "descrição",
+    "item": "16",
+    "texto": "Serviços de assistência ao parto e pós-parto",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "III",
+    "chave": "III/17@2026-01-01",
+    "descricao": "descrição",
+    "item": "17",
+    "texto": "Serviços de psicologia",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "III",
+    "chave": "III/1@2026-01-01",
+    "descricao": "descrição",
+    "item": "1",
+    "texto": "Serviços cirúrgicos",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "III",
+    "chave": "III/27@2026-01-01",
+    "descricao": "descrição",
+    "item": "27",
+    "texto": "Serviços de cuidado e assistência a idosos e pessoas com deficiência em unidades de acolhimento",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "III",
+    "chave": "III/2@2026-01-01",
+    "descricao": "descrição",
+    "item": "2",
+    "texto": "Serviços ginecológicos e obstétricos",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "III",
+    "chave": "III/30@2026-01-01",
+    "descricao": "descrição",
+    "item": "30",
+    "texto": "Serviços funerários, de cremação e de embalsamamento",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "III",
+    "chave": "III/3@2026-01-01",
+    "descricao": "descrição",
+    "item": "3",
+    "texto": "Serviços psiquiátricos",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "III",
+    "chave": "III/4@2026-01-01",
+    "descricao": "descrição",
+    "item": "4",
+    "texto": "Serviços prestados em Unidades de Terapia Intensiva",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "III",
+    "chave": "III/5@2026-01-01",
+    "descricao": "descrição",
+    "item": "5",
+    "texto": "Serviços de atendimento de urgência",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "III",
+    "chave": "III/6@2026-01-01",
+    "descricao": "descrição",
+    "item": "6",
+    "texto": "Serviços hospitalares não classificados em subposições anteriores",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "III",
+    "chave": "III/7@2026-01-01",
+    "descricao": "descrição",
+    "item": "7",
+    "texto": "Serviços de clínica médica",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "III",
+    "chave": "III/8@2026-01-01",
+    "descricao": "descrição",
+    "item": "8",
+    "texto": "Serviços médicos especializados",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "III",
+    "chave": "III/9@2026-01-01",
+    "descricao": "descrição",
+    "item": "9",
+    "texto": "Serviços odontológicos",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/100@2026-01-01",
+    "descricao": "descrição",
+    "item": "100",
+    "texto": "Guia de troca para angioplastia",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/101@2026-01-01",
+    "descricao": "descrição",
+    "item": "101",
+    "texto": "Introdutor para cateter com e sem válvula",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/102@2026-01-01",
+    "descricao": "descrição",
+    "item": "102",
+    "texto": "Kitcânula",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/103@2026-01-01",
+    "descricao": "descrição",
+    "item": "103",
+    "texto": "Dreno para sucção",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/104@2026-01-01",
+    "descricao": "descrição",
+    "item": "104",
+    "texto": "Sistema de drenagem mediastinal",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/105@2026-01-01",
+    "descricao": "descrição",
+    "item": "105",
+    "texto": "Conjunto descartável de balão intra-aórtico",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/10@2026-01-01",
+    "descricao": "descrição",
+    "item": "10",
+    "texto": "Conjunto para autotransfusão",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/11@2026-01-01",
+    "descricao": "descrição",
+    "item": "11",
+    "texto": "Conjunto para hidrocefalia de baixo perfil",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/12@2026-01-01",
+    "descricao": "descrição",
+    "item": "12",
+    "texto": "Conjunto para hidrocefaliastandard",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/13@2026-01-01",
+    "descricao": "descrição",
+    "item": "13",
+    "texto": "Eletrodo endocárdico definitivo",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/14@2026-01-01",
+    "descricao": "descrição",
+    "item": "14",
+    "texto": "Eletrodo epicárdico definitivo",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/15@2026-01-01",
+    "descricao": "descrição",
+    "item": "15",
+    "texto": "Eletrodo para marcapasso temporário endocárdico",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/16@2026-01-01",
+    "descricao": "descrição",
+    "item": "16",
+    "texto": "Eletrodo para marcapasso temporário epicárdico",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/17@2026-01-01",
+    "descricao": "descrição",
+    "item": "17",
+    "texto": "Espaçador de tendão",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/18@2026-01-01",
+    "descricao": "descrição",
+    "item": "18",
+    "texto": "Filmes especiais para raios-X sensibilizados em ambas as faces",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/19@2026-01-01",
+    "descricao": "descrição",
+    "item": "19",
+    "texto": "Filmes especiais para raios-X sensibilizados em uma face",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/1@2026-01-01",
+    "descricao": "descrição",
+    "item": "1",
+    "texto": "Bolsa para drenagem",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/20@2026-01-01",
+    "descricao": "descrição",
+    "item": "20",
+    "texto": "Filtro de linha arterial e venoso",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/21@2026-01-01",
+    "descricao": "descrição",
+    "item": "21",
+    "texto": "Filtro de sangue arterial e venoso para recirculação",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/22@2026-01-01",
+    "descricao": "descrição",
+    "item": "22",
+    "texto": "Filtro para cardioplegia",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/23@2026-01-01",
+    "descricao": "descrição",
+    "item": "23",
+    "texto": "Categutes esterilizados, materiais esterilizados semelhantes para suturas cirúrgicas (incluídos os fios absorvíveis esterilizados para cirurgia ou odontologia) e adesivos esterilizados para tecidos orgânicos, utilizados em cirurgia para fechar ferimentos; laminárias esterilizadas; hemostáticos absorvíveis esterilizados para cirurgia ou odontologia; barreiras antiaderentes esterilizadas para cirurgia ou odontologia, absorvíveis ou não",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/24@2026-01-01",
+    "descricao": "descrição",
+    "item": "24",
+    "texto": "Hemoconcentrador para circulação extracorpórea",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/25@2026-01-01",
+    "descricao": "descrição",
+    "item": "25",
+    "texto": "Hemodialisador capilar",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/26@2026-01-01",
+    "descricao": "descrição",
+    "item": "26",
+    "texto": "Marcapasso cardíaco câmara dupla",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/27@2026-01-01",
+    "descricao": "descrição",
+    "item": "27",
+    "texto": "Marcapasso cardíaco multiprogramável com telemetria",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/28@2026-01-01",
+    "descricao": "descrição",
+    "item": "28",
+    "texto": "Outras chapas e filmes para raios-X",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/29@2026-01-01",
+    "descricao": "descrição",
+    "item": "29",
+    "texto": "Oxigenador de bolha com tubos para circulação extracorpórea",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/2@2026-01-01",
+    "descricao": "descrição",
+    "item": "2",
+    "texto": "Sistema para drenagem com conjunto intermediário para medição contínua da diurese",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/30@2026-01-01",
+    "descricao": "descrição",
+    "item": "30",
+    "texto": "Oxigenador de membrana com tubos para circulação extracorpórea",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/31@2026-01-01",
+    "descricao": "descrição",
+    "item": "31",
+    "texto": "Reservatório de cardiotomia",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/32@2026-01-01",
+    "descricao": "descrição",
+    "item": "32",
+    "texto": "Reservatório para cardioplegia com tubo sem filtro",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/33@2026-01-01",
+    "descricao": "descrição",
+    "item": "33",
+    "texto": "Rins artificiais",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/34@2026-01-01",
+    "descricao": "descrição",
+    "item": "34",
+    "texto": "Shuntlombo-peritonal",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/35@2026-01-01",
+    "descricao": "descrição",
+    "item": "35",
+    "texto": "Substituto temporário de pele (biológica/sintética) (por cm2)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/36@2026-01-01",
+    "descricao": "descrição",
+    "item": "36",
+    "texto": "Tela inorgânica",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/37@2026-01-01",
+    "descricao": "descrição",
+    "item": "37",
+    "texto": "Válvula para hidrocefalia",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/38@2026-01-01",
+    "descricao": "descrição",
+    "item": "38",
+    "texto": "Válvula para tratamento de ascite",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/39@2026-01-01",
+    "descricao": "descrição",
+    "item": "39",
+    "texto": "Fonte de irídio 192",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/3@2026-01-01",
+    "descricao": "descrição",
+    "item": "3",
+    "texto": "Chapas e filmes para raios-X, sensibilizados em uma face",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/40@2026-01-01",
+    "descricao": "descrição",
+    "item": "40",
+    "texto": "Stentvascular",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/41@2026-01-01",
+    "descricao": "descrição",
+    "item": "41",
+    "texto": "Reprocessador de filtros utilizados em hemodiálise",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/42@2026-01-01",
+    "descricao": "descrição",
+    "item": "42",
+    "texto": "Implantes osseointegráveis, na forma de parafuso, e seus componentes manufaturados, tais como tampas de proteção, montadores, conjuntos, pilares (cicatrizador, conector, de transferência ou temporário), cilindros, seus acessórios, destinados a sustentar, amparar, acoplar ou fixar próteses dentárias",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/43@2026-01-01",
+    "descricao": "descrição",
+    "item": "43",
+    "texto": "Cardiodesfibrilador implantável",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/44@2026-01-01",
+    "descricao": "descrição",
+    "item": "44",
+    "texto": "Espiral para embolização",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/45@2026-01-01",
+    "descricao": "descrição",
+    "item": "45",
+    "texto": "Imunoglobulina anti-Rh",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/46@2026-01-01",
+    "descricao": "descrição",
+    "item": "46",
+    "texto": "Outras imunoglobulinas séricas",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/47@2026-01-01",
+    "descricao": "descrição",
+    "item": "47",
+    "texto": "Concentrado de fator VIII",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/48@2026-01-01",
+    "descricao": "descrição",
+    "item": "48",
+    "texto": "Outras frações do sangue, exceto as preparadas como medicamentos, as imunoglobulinas séricas, o concentrado de fator VIII e a soroalbumina sob a forma de gel para preparação de reagentes de diagnóstico",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/49@2026-01-01",
+    "descricao": "descrição",
+    "item": "49",
+    "texto": "Reagentes de diagnóstico ou de laboratório em qualquer suporte e reagentes de diagnóstico ou de laboratório preparados, mesmo em um suporte, mesmo apresentados sob a forma de estojos, exceto os da posição 30.06; materiais de referência certificados",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/4@2026-01-01",
+    "descricao": "descrição",
+    "item": "4",
+    "texto": "Cimentos para reconstituição óssea",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/50@2026-01-01",
+    "descricao": "descrição",
+    "item": "50",
+    "texto": "Reagentes de diagnóstico concebidos para serem administrados ao paciente, à base de somatoliberina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/51@2026-01-01",
+    "descricao": "descrição",
+    "item": "51",
+    "texto": "Produtos para obturação dentária, exceto cimentos",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/52@2026-01-01",
+    "descricao": "descrição",
+    "item": "52",
+    "texto": "Preparações em gel, concebidas para uso em medicina humana ou veterinária como lubrificante para certas partes do corpo em intervenções cirúrgicas ou exames médicos ou como agente de ligação entre o corpo e os instrumentos médicos",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/53@2026-01-01",
+    "descricao": "descrição",
+    "item": "53",
+    "texto": "Bolsas para uso em colostomia, ileostomia e urostomia",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/54@2026-01-01",
+    "descricao": "descrição",
+    "item": "54",
+    "texto": "Equipamentos identificáveis para ostomia, exceto bolsas para uso em colostomia, ileostomia e urostomia",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/55@2026-01-01",
+    "descricao": "descrição",
+    "item": "55",
+    "texto": "Bolsas para uso em medicina (hemodiálise e usos semelhantes)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/56@2026-01-01",
+    "descricao": "descrição",
+    "item": "56",
+    "texto": "Artigos exclusivamente de laboratório de análises clínicas",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/57@2026-01-01",
+    "descricao": "descrição",
+    "item": "57",
+    "texto": "Acessórios de plástico do tipo utilizado em linhas de sangue para hemodiálise, tais como: obturadores, incluídos os reguláveis (clamps), clipes e similares",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/58@2026-01-01",
+    "descricao": "descrição",
+    "item": "58",
+    "texto": "Luvas cirúrgicas e luvas de procedimento",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/59@2026-01-01",
+    "descricao": "descrição",
+    "item": "59",
+    "texto": "Seringas, mesmo com agulhas",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/5@2026-01-01",
+    "descricao": "descrição",
+    "item": "5",
+    "texto": "Substitutos de enxerto ósseo",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/60@2026-01-01",
+    "descricao": "descrição",
+    "item": "60",
+    "texto": "Agulhas tubulares de metal e agulhas para suturas",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/61@2026-01-01",
+    "descricao": "descrição",
+    "item": "61",
+    "texto": "Agulhas, exceto as de metal e as para suturas",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/62@2026-01-01",
+    "descricao": "descrição",
+    "item": "62",
+    "texto": "Sondas, cateteres e cânulas, individualmente ou em conjunto",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/63@2026-01-01",
+    "descricao": "descrição",
+    "item": "63",
+    "texto": "Lancetas para vacinação e cautérios",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/64@2026-01-01",
+    "descricao": "descrição",
+    "item": "64",
+    "texto": "Instrumentos semelhantes a seringas, a agulhas, a cateteres e a cânulas",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/65@2026-01-01",
+    "descricao": "descrição",
+    "item": "65",
+    "texto": "Brocas para odontologia",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/66@2026-01-01",
+    "descricao": "descrição",
+    "item": "66",
+    "texto": "Limas",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/67@2026-01-01",
+    "descricao": "descrição",
+    "item": "67",
+    "texto": "Grampos e clipes, seus aplicadores e extratores",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/68@2026-01-01",
+    "descricao": "descrição",
+    "item": "68",
+    "texto": "Outros instrumentos e aparelhos para medicina, cirurgia e odontologia, excluídas seringas e agulhas, das posições 9018.31 e 9018.32",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/69@2026-01-01",
+    "descricao": "descrição",
+    "item": "69",
+    "texto": "Mesas de operação e para exames, camas hospitalares e de uso clínico",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/6@2026-01-01",
+    "descricao": "descrição",
+    "item": "6",
+    "texto": "Coletor para unidade de drenagem externa",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/70@2026-01-01",
+    "descricao": "descrição",
+    "item": "70",
+    "texto": "Fotocoagulador alaser",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/71@2026-01-01",
+    "descricao": "descrição",
+    "item": "71",
+    "texto": "Bisturi elétrico",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/72@2026-01-01",
+    "descricao": "descrição",
+    "item": "72",
+    "texto": "Aparelho de anestesia com monitor multiparâmetros",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/73@2026-01-01",
+    "descricao": "descrição",
+    "item": "73",
+    "texto": "Autoclave",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/74@2026-01-01",
+    "descricao": "descrição",
+    "item": "74",
+    "texto": "Retinógrafo",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/75@2026-01-01",
+    "descricao": "descrição",
+    "item": "75",
+    "texto": "Meios de cultura",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/76@2026-01-01",
+    "descricao": "descrição",
+    "item": "76",
+    "texto": "Termocicladores utilizados em diagnóstico e na pesquisa científica",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/77@2026-01-01",
+    "descricao": "descrição",
+    "item": "77",
+    "texto": "Partes e peças de termocicladores",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/78@2026-01-01",
+    "descricao": "descrição",
+    "item": "78",
+    "texto": "Pipetadores laboratoriais para diagnóstico e pesquisa científica",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/79@2026-01-01",
+    "descricao": "descrição",
+    "item": "79",
+    "texto": "Cromatógrafo de fase líquida",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/7@2026-01-01",
+    "descricao": "descrição",
+    "item": "7",
+    "texto": "Conector completo com tampa",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/80@2026-01-01",
+    "descricao": "descrição",
+    "item": "80",
+    "texto": "Sequenciadores automáticos de ADN mediante eletroforese capilar",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/81@2026-01-01",
+    "descricao": "descrição",
+    "item": "81",
+    "texto": "Aparelhos de eletroforese para diagnóstico e pesquisa científica",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/82@2026-01-01",
+    "descricao": "descrição",
+    "item": "82",
+    "texto": "Analisadores por espectrofotometria para diagnóstico e pesquisa científica",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/83@2026-01-01",
+    "descricao": "descrição",
+    "item": "83",
+    "texto": "Analisadores por fotometria para diagnóstico e pesquisa científica",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/84@2026-01-01",
+    "descricao": "descrição",
+    "item": "84",
+    "texto": "Citômetro de fluxo",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/85@2026-01-01",
+    "descricao": "descrição",
+    "item": "85",
+    "texto": "Analisadores por radiações ópticas para diagnóstico e pesquisa científica",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/86@2026-01-01",
+    "descricao": "descrição",
+    "item": "86",
+    "texto": "Outros analisadores para diagnóstico e pesquisa científica",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/87@2026-01-01",
+    "descricao": "descrição",
+    "item": "87",
+    "texto": "Espectrômetro de massa",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/88@2026-01-01",
+    "descricao": "descrição",
+    "item": "88",
+    "texto": "Outros analisadores para diagnóstico",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/89@2026-01-01",
+    "descricao": "descrição",
+    "item": "89",
+    "texto": "Micrótomo",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/8@2026-01-01",
+    "descricao": "descrição",
+    "item": "8",
+    "texto": "Conector em Y",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/90@2026-01-01",
+    "descricao": "descrição",
+    "item": "90",
+    "texto": "Partes e peças de equipamentos analisadores laboratoriais",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/91@2026-01-01",
+    "descricao": "descrição",
+    "item": "91",
+    "texto": "Preservativo",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/92@2026-01-01",
+    "descricao": "descrição",
+    "item": "92",
+    "texto": "Dispositivo intrauterino (DIU)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/93@2026-01-01",
+    "descricao": "descrição",
+    "item": "93",
+    "texto": "Substância para conservação de órgãos e tecidos",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/94@2026-01-01",
+    "descricao": "descrição",
+    "item": "94",
+    "texto": "Introdutor de punção para implante de eletrodo endocárdico",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/95@2026-01-01",
+    "descricao": "descrição",
+    "item": "95",
+    "texto": "Enxerto tubular de politetrafluoretileno - PTFE (por cm2)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/96@2026-01-01",
+    "descricao": "descrição",
+    "item": "96",
+    "texto": "Enxerto arterial e venoso tubular inorgânico",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/97@2026-01-01",
+    "descricao": "descrição",
+    "item": "97",
+    "texto": "Botão para crânio",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/98@2026-01-01",
+    "descricao": "descrição",
+    "item": "98",
+    "texto": "Guia metálico para introdução de cateter duplo lumen",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/99@2026-01-01",
+    "descricao": "descrição",
+    "item": "99",
+    "texto": "Dilatador para implante de cateter duplo lumen",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IV",
+    "chave": "IV/9@2026-01-01",
+    "descricao": "descrição",
+    "item": "9",
+    "texto": "Conjuntos de troca e concentrados polieletrolíticos para diálise",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/10@2026-01-01",
+    "descricao": "descrição",
+    "item": "10",
+    "texto": "Semente genética, semente básica, semente nativa in natura, semente certificada de primeira geração (C1), semente certificada de segunda geração (C2), semente não certificada de primeira geração (S1), semente não certificada de segunda geração (S2) e sementes de cultivar local, tradicional ou crioula; em conformidade com as definições e demais requisitos da legislação específica",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/11@2026-01-01",
+    "descricao": "descrição",
+    "item": "11",
+    "texto": "Mudas de plantas e demais materiais propagativos de plantas e fungos, inclusive plantas e fungos nativos de espécies florestais; em conformidade com as definições e demais requisitos da legislação específica",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/12@2026-01-01",
+    "descricao": "descrição",
+    "item": "12",
+    "texto": "Vacinas, soros e medicamentos, de uso veterinário, exceto de animais domésticos",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/13@2026-01-01",
+    "descricao": "descrição",
+    "item": "13",
+    "texto": "Aves de um dia, exceto as ornamentais",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/14@2026-01-01",
+    "descricao": "descrição",
+    "item": "14",
+    "texto": "Embriões e sêmen, congelado ou resfriado",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/15@2026-01-01",
+    "descricao": "descrição",
+    "item": "15",
+    "texto": "Reprodutores de raça pura, inclusive matrizes de animais puros de origem com registro genealógico; em conformidade com as definições e demais requisitos da legislação específica",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/16@2026-01-01",
+    "descricao": "descrição",
+    "item": "16",
+    "texto": "Ovos fertilizados",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/17@2026-01-01",
+    "descricao": "descrição",
+    "item": "17",
+    "texto": "Girinos e alevinos",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/18@2026-01-01",
+    "descricao": "descrição",
+    "item": "18",
+    "texto": "Rações para animais, concentrados, suplementos, aditivos, premix ou núcleo, exceto para animais domésticos",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/19@2026-01-01",
+    "descricao": "descrição",
+    "item": "19",
+    "texto": "Sementes e cereais, mesmo triturados, em grãos esmagados ou trabalhados de outro modo; todos destinados diretamente à fabricação de ração para animais ou diretamente à alimentação animal, exceto de animais domésticos",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/1@2026-01-01",
+    "descricao": "descrição",
+    "item": "1",
+    "texto": "Biofertilizantes, em conformidade com as definições e demais requisitos da legislação específica",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/20@2026-01-01",
+    "descricao": "descrição",
+    "item": "20",
+    "texto": "Farelos e tortas de produtos vegetais e demais resíduos e desperdícios das indústrias alimentares; todos destinados diretamente à fabricação de ração para animais ou diretamente à alimentação animal, exceto de animais domésticos",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/21@2026-01-01",
+    "descricao": "descrição",
+    "item": "21",
+    "texto": "Alho em pó, sal mineralizado, farinhas de peixe, de ostra, de carne, de osso, de pena, de sangue e de víscera, calcário calcítico, gorduras e óleos animais, resíduos de óleo e de gordura de origem animal ou vegetal descartados por empresas do ramo alimentício, e DL-Metionina e seus análogos; todos destinados diretamente à fabricação de ração para animais ou diretamente à alimentação animal, exceto de animais domésticos",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/22@2026-01-01",
+    "descricao": "descrição",
+    "item": "22",
+    "texto": "Serviços agronômicos",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/23@2026-01-01",
+    "descricao": "descrição",
+    "item": "23",
+    "texto": "Serviços de técnico agrícola, agropecuário ou em agroecologia",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/24@2026-01-01",
+    "descricao": "descrição",
+    "item": "24",
+    "texto": "Serviços veterinários para produção animal",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/25@2026-01-01",
+    "descricao": "descrição",
+    "item": "25",
+    "texto": "Serviços de zootecnistas",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/26@2026-01-01",
+    "descricao": "descrição",
+    "item": "26",
+    "texto": "Serviços de inseminação e fertilização de animais de criação",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/27@2026-01-01",
+    "descricao": "descrição",
+    "item": "27",
+    "texto": "Serviços de engenharia florestal",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/28@2026-01-01",
+    "descricao": "descrição",
+    "item": "28",
+    "texto": "Serviços de pulverização e controle de pragas",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/29@2026-01-01",
+    "descricao": "descrição",
+    "item": "29",
+    "texto": "Serviços de semeadura, adubação, inclusive mistura de adubos, reparação de solo, plantio e colheita",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/2@2026-01-01",
+    "descricao": "descrição",
+    "item": "2",
+    "texto": "Fertilizantes (adubos), em conformidade com as definições e demais requisitos da legislação específica",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/30@2026-01-01",
+    "descricao": "descrição",
+    "item": "30",
+    "texto": "Serviços de projetos para irrigação e fertirrigação",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/31@2026-01-01",
+    "descricao": "descrição",
+    "item": "31",
+    "texto": "Serviços de análise laboratorial de solos, sementes e outros materiais propagativos, fitossanitários, água de produção, bromatologia e sanidade animal",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/32@2026-01-01",
+    "descricao": "descrição",
+    "item": "32",
+    "texto": "Licenciamento de direitos sobre cultivares",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/33@2026-01-01",
+    "descricao": "descrição",
+    "item": "33",
+    "texto": "Cessão definitiva de direitos sobre cultivares",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/35@2026-01-01",
+    "descricao": "descrição",
+    "item": "35",
+    "texto": "Vinhaça",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/3@2026-01-01",
+    "descricao": "descrição",
+    "item": "3",
+    "texto": "Corretivos de solo (inclusive condicionadores), remineralizadores e substratos para plantas; em conformidade com as definições e demais requisitos da legislação específica",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/4@2026-01-01",
+    "descricao": "descrição",
+    "item": "4",
+    "texto": "Inoculantes, meios de cultura e outros microorganismos para uso agrícola; em conformidade com as definições e demais requisitos da legislação específica",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/5@2026-01-01",
+    "descricao": "descrição",
+    "item": "5",
+    "texto": "Bioestimulantes e bioinsumos para controle fitossanitário, em conformidade com as definições e demais requisitos da legislação específica",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/6@2026-01-01",
+    "descricao": "descrição",
+    "item": "6",
+    "texto": "Inseticidas, fungicidas, formicidas, herbicidas, parasiticidas, germicidas, acaricidas, nematicidas, raticidas, desfolhantes, dessecantes, espalhantes adesivos, estimuladores e inibidores de crescimento (reguladores); todos destinados diretamente ao uso agropecuário ou destinados diretamente à fabricação de defensivo agropecuário; em conformidade com as definições e demais requisitos da legislação específica",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/7@2026-01-01",
+    "descricao": "descrição",
+    "item": "7",
+    "texto": "Calcário, casca de coco triturada, turfa; tortas, bagaços e demais resíduos e desperdícios vegetais das indústrias alimentares; cascas, serragens e demais resíduos e desperdícios de madeira; resíduos da indústria de celulose (dregs e grits), ossos, borra de carnaúba, cinzas, resíduos agroindustriais orgânicos, DL-Metionina e seus análogos, vermiculita e argilas expandidas, palhas e cascas de produtos vegetais, fibra de coco e outras fibras vegetais, silicatos de potássio ou de magnésio, resinas e oleorresinas naturais, sucos e extratos vegetais, aminoácidos e microrganismos mortos, óleos essenciais, argilas e terras, carvão vegetal e pastas mecânicas de madeira; todos destinados diretamente à fabricação de biofertilizantes, fertilizantes, corretivos de solo (inclusive condicionadores), remineralizadores, substratos para plantas, bioestimulantes ou biodefensivos para controle fitossanitário ou utilizados diretamente como biofertilizantes, fertilizantes, corretivos de solo (inclusive condicionadores), remineralizadores, substratos para plantas, bioestimulantes ou biodefensivos para controle fitossanitário; em conformidade com as definições e demais requisitos da legislação específica",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/8@2026-01-01",
+    "descricao": "descrição",
+    "item": "8",
+    "texto": "Ácido nítrico, ácido sulfúrico, ácido fosfórico, fosfatos de cálcio naturais, enxofre, ácido clorídrico, ácido fosforoso, ácido acético, hidróxido de sódio e carbonato dissódico; todos destinados diretamente à fabricação de fertilizantes",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "IX",
+    "chave": "IX/9@2026-01-01",
+    "descricao": "descrição",
+    "item": "9",
+    "texto": "Enzimas preparadas para decomposição de matéria orgânica animal e vegetal",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "V",
+    "chave": "V/1.11@2026-01-01",
+    "descricao": "descrição",
+    "item": "1.11",
+    "texto": "Plataforma de elevação para cadeira de rodas, manual, eletro-hidráulica ou eletromecânica",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "V",
+    "chave": "V/1.12@2026-01-01",
+    "descricao": "descrição",
+    "item": "1.12",
+    "texto": "Rampa para cadeira de rodas, suas partes e acessórios",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "V",
+    "chave": "V/1.13@2026-01-01",
+    "descricao": "descrição",
+    "item": "1.13",
+    "texto": "Guincho para transportar cadeira de rodas",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "V",
+    "chave": "V/1.1@2026-01-01",
+    "descricao": "descrição",
+    "item": "1.1",
+    "texto": "Comando de embreagem manual, suas partes e acessórios",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "V",
+    "chave": "V/1.2@2026-01-01",
+    "descricao": "descrição",
+    "item": "1.2",
+    "texto": "Comando de freio manual, suas partes e acessórios",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "V",
+    "chave": "V/1.3@2026-01-01",
+    "descricao": "descrição",
+    "item": "1.3",
+    "texto": "Comando de acelerador manual, suas partes e acessórios",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "V",
+    "chave": "V/1.4@2026-01-01",
+    "descricao": "descrição",
+    "item": "1.4",
+    "texto": "Inversão do pedal do acelerador, suas partes e acessórios",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "V",
+    "chave": "V/1.5@2026-01-01",
+    "descricao": "descrição",
+    "item": "1.5",
+    "texto": "Prolongamento de pedais, suas partes e acessórios",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "V",
+    "chave": "V/1.6@2026-01-01",
+    "descricao": "descrição",
+    "item": "1.6",
+    "texto": "Empunhadura, suas partes e acessórios",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "V",
+    "chave": "V/1.7@2026-01-01",
+    "descricao": "descrição",
+    "item": "1.7",
+    "texto": "Servo acionadores de volante, suas partes e acessórios",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "V",
+    "chave": "V/1.8@2026-01-01",
+    "descricao": "descrição",
+    "item": "1.8",
+    "texto": "Deslocamento de comandos do painel, suas partes e acessórios",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "V",
+    "chave": "V/1.9@2026-01-01",
+    "descricao": "descrição",
+    "item": "1.9",
+    "texto": "Plataforma giratória para deslocamento giratório do assento de veículo, suas partes e acessórios",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "V",
+    "chave": "V/2.1@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.1",
+    "texto": "Bengala inteiriça, dobrável ou telescópica, com ponteira de náilon",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "V",
+    "chave": "V/2.2@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.2",
+    "texto": "Relógio embraille,com sintetizador de voz e mostrador ampliado",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "V",
+    "chave": "V/2.3@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.3",
+    "texto": "Termômetro digital com sistema de voz",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "V",
+    "chave": "V/2.4@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.4",
+    "texto": "Calculadora digital com sistema de voz, com verbalização dos ajustes de minutos e horas, tanto no modo horário, como no modo alarme, e comunicação por voz dos dígitos de cálculo e resultados",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "V",
+    "chave": "V/2.5@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.5",
+    "texto": "Agenda eletrônica com teclado embraille,com ou sem sintetizador de voz",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "V",
+    "chave": "V/2.6@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.6",
+    "texto": "Reglete para escrita embraille",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "V",
+    "chave": "V/2.7@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.7",
+    "texto": "Displaybraillee teclado emBraillepara uso em microcomputador, com sistema interativo para introdução e leitura de dados por meio de tabelas de caracteresBraille",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "V",
+    "chave": "V/2.8@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.8",
+    "texto": "Máquina de escrever para escrita embraille,manual ou elétrica, com teclado de datilografia comum ou na formaçãoBraille",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "V",
+    "chave": "V/2.9@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.9",
+    "texto": "Impressora de caracteres embraillepara uso com microcomputadores, com sistema de folha solta ou dois lados da folha, com ou sem sistema de comando de voz ou sistema acústico",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "V",
+    "chave": "V/3.1@2026-01-01",
+    "descricao": "descrição",
+    "item": "3.1",
+    "texto": "Aparelho telefônico com teclado alfanumérico e visor luminoso, com ou sem impressora embutida, que permite converter sinais transmitidos por sistema telefônico em caracteres e símbolos",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "V",
+    "chave": "V/3.2@2026-01-01",
+    "descricao": "descrição",
+    "item": "3.2",
+    "texto": "Relógio despertador vibratório e/ou luminoso",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "V",
+    "chave": "V/3.3@2026-01-01",
+    "descricao": "descrição",
+    "item": "3.3",
+    "texto": "Unidades de entrada de dados tipomousecontroláveis pelo movimento dos olhos para deficientes",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/10@2026-01-01",
+    "descricao": "descrição",
+    "item": "10",
+    "texto": "Ácido cítrico",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/11@2026-01-01",
+    "descricao": "descrição",
+    "item": "11",
+    "texto": "Ácido fólico",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/12@2026-01-01",
+    "descricao": "descrição",
+    "item": "12",
+    "texto": "Ácido glutâmico",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/13@2026-01-01",
+    "descricao": "descrição",
+    "item": "13",
+    "texto": "Ácido málico",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/14@2026-01-01",
+    "descricao": "descrição",
+    "item": "14",
+    "texto": "Ácido selenioso",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/15@2026-01-01",
+    "descricao": "descrição",
+    "item": "15",
+    "texto": "Água para injeção",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/16@2026-01-01",
+    "descricao": "descrição",
+    "item": "16",
+    "texto": "Alanilglutamina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/17@2026-01-01",
+    "descricao": "descrição",
+    "item": "17",
+    "texto": "Alanina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/18@2026-01-01",
+    "descricao": "descrição",
+    "item": "18",
+    "texto": "Albumina humana",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/19@2026-01-01",
+    "descricao": "descrição",
+    "item": "19",
+    "texto": "Arginina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/1@2026-01-01",
+    "descricao": "descrição",
+    "item": "1",
+    "texto": "Acetato de dextroalfatocoferol",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/20@2026-01-01",
+    "descricao": "descrição",
+    "item": "20",
+    "texto": "Asparagina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/21@2026-01-01",
+    "descricao": "descrição",
+    "item": "21",
+    "texto": "Bicarbonato de sódio",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/22@2026-01-01",
+    "descricao": "descrição",
+    "item": "22",
+    "texto": "Biotina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/23@2026-01-01",
+    "descricao": "descrição",
+    "item": "23",
+    "texto": "Cianocobalamina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/24@2026-01-01",
+    "descricao": "descrição",
+    "item": "24",
+    "texto": "Cistina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/25@2026-01-01",
+    "descricao": "descrição",
+    "item": "25",
+    "texto": "Cloreto crômico",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/26@2026-01-01",
+    "descricao": "descrição",
+    "item": "26",
+    "texto": "Cloreto de cálcio",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/27@2026-01-01",
+    "descricao": "descrição",
+    "item": "27",
+    "texto": "Cloreto de magnésio",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/28@2026-01-01",
+    "descricao": "descrição",
+    "item": "28",
+    "texto": "Cloreto de manganês",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/29@2026-01-01",
+    "descricao": "descrição",
+    "item": "29",
+    "texto": "Cloreto de potássio",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/2@2026-01-01",
+    "descricao": "descrição",
+    "item": "2",
+    "texto": "Acetato de lisina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/30@2026-01-01",
+    "descricao": "descrição",
+    "item": "30",
+    "texto": "Cloreto de sódio",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/31@2026-01-01",
+    "descricao": "descrição",
+    "item": "31",
+    "texto": "Cloreto de zinco",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/32@2026-01-01",
+    "descricao": "descrição",
+    "item": "32",
+    "texto": "Cloridrato de piridoxina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/33@2026-01-01",
+    "descricao": "descrição",
+    "item": "33",
+    "texto": "Cloridrato de tiamina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/34@2026-01-01",
+    "descricao": "descrição",
+    "item": "34",
+    "texto": "Cocarboxilase",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/35@2026-01-01",
+    "descricao": "descrição",
+    "item": "35",
+    "texto": "Colecalciferol",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/36@2026-01-01",
+    "descricao": "descrição",
+    "item": "36",
+    "texto": "Ergocalciferol",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/37@2026-01-01",
+    "descricao": "descrição",
+    "item": "37",
+    "texto": "Fenilalanina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/38@2026-01-01",
+    "descricao": "descrição",
+    "item": "38",
+    "texto": "Fitomenadiona",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/39@2026-01-01",
+    "descricao": "descrição",
+    "item": "39",
+    "texto": "Fórmula para dieta isenta de fenilalanina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/3@2026-01-01",
+    "descricao": "descrição",
+    "item": "3",
+    "texto": "Acetato de potássio",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/40@2026-01-01",
+    "descricao": "descrição",
+    "item": "40",
+    "texto": "Fórmula para dieta isenta demetionina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/41@2026-01-01",
+    "descricao": "descrição",
+    "item": "41",
+    "texto": "Fórmula para dieta isenta de lisina e pobre de triptofano",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/42@2026-01-01",
+    "descricao": "descrição",
+    "item": "42",
+    "texto": "Fórmula para dieta isenta de leucina, de isoleucina ou de valina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/43@2026-01-01",
+    "descricao": "descrição",
+    "item": "43",
+    "texto": "Fórmula para dieta isenta de fenilalanina e de metionina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/44@2026-01-01",
+    "descricao": "descrição",
+    "item": "44",
+    "texto": "Fórmula para dieta isenta de aminoácidos não essenciais",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/45@2026-01-01",
+    "descricao": "descrição",
+    "item": "45",
+    "texto": "Fórmula para dieta isenta de metionina, de treonina, de valina e restrita de isoleucina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/46@2026-01-01",
+    "descricao": "descrição",
+    "item": "46",
+    "texto": "Fórmula para dieta cetogênica, na proporção de 4 g de gordura para cada 1 g de carboidratos e proteínas",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/47@2026-01-01",
+    "descricao": "descrição",
+    "item": "47",
+    "texto": "Fórmula hiperlipídica, para suplementação de triglicerídios de cadeia média ou triheptanoína",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/48@2026-01-01",
+    "descricao": "descrição",
+    "item": "48",
+    "texto": "Preparação líquida, de quatro partes de trioleato de glicerol de ácido para uma parte de trierucato de glicerol",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/49@2026-01-01",
+    "descricao": "descrição",
+    "item": "49",
+    "texto": "Fosfato de potássio dibásico",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/4@2026-01-01",
+    "descricao": "descrição",
+    "item": "4",
+    "texto": "Acetato de sódio",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/50@2026-01-01",
+    "descricao": "descrição",
+    "item": "50",
+    "texto": "Fosfato de potássio monobásico",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/51@2026-01-01",
+    "descricao": "descrição",
+    "item": "51",
+    "texto": "Fosfato de sódio monobásico",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/52@2026-01-01",
+    "descricao": "descrição",
+    "item": "52",
+    "texto": "Fosfato de tiamina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/53@2026-01-01",
+    "descricao": "descrição",
+    "item": "53",
+    "texto": "Fosfato sódico de riboflavina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/54@2026-01-01",
+    "descricao": "descrição",
+    "item": "54",
+    "texto": "Frutose",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/55@2026-01-01",
+    "descricao": "descrição",
+    "item": "55",
+    "texto": "Glicerofosfato de sódio",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/56@2026-01-01",
+    "descricao": "descrição",
+    "item": "56",
+    "texto": "Glicina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/57@2026-01-01",
+    "descricao": "descrição",
+    "item": "57",
+    "texto": "Gliconato de cálcio",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/58@2026-01-01",
+    "descricao": "descrição",
+    "item": "58",
+    "texto": "Glicose",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/59@2026-01-01",
+    "descricao": "descrição",
+    "item": "59",
+    "texto": "Histidina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/5@2026-01-01",
+    "descricao": "descrição",
+    "item": "5",
+    "texto": "Acetato de zinco",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/60@2026-01-01",
+    "descricao": "descrição",
+    "item": "60",
+    "texto": "Icodextrina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/61@2026-01-01",
+    "descricao": "descrição",
+    "item": "61",
+    "texto": "Iodeto de potássio",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/62@2026-01-01",
+    "descricao": "descrição",
+    "item": "62",
+    "texto": "Isoleucina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/63@2026-01-01",
+    "descricao": "descrição",
+    "item": "63",
+    "texto": "Lecitina de ovo",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/64@2026-01-01",
+    "descricao": "descrição",
+    "item": "64",
+    "texto": "Leucina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/65@2026-01-01",
+    "descricao": "descrição",
+    "item": "65",
+    "texto": "Levovalina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/66@2026-01-01",
+    "descricao": "descrição",
+    "item": "66",
+    "texto": "Lisina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/67@2026-01-01",
+    "descricao": "descrição",
+    "item": "67",
+    "texto": "Metionina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/68@2026-01-01",
+    "descricao": "descrição",
+    "item": "68",
+    "texto": "Nicotinamida",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/69@2026-01-01",
+    "descricao": "descrição",
+    "item": "69",
+    "texto": "Palmitato de retinol",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/6@2026-01-01",
+    "descricao": "descrição",
+    "item": "6",
+    "texto": "Acetiltirosina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/70@2026-01-01",
+    "descricao": "descrição",
+    "item": "70",
+    "texto": "Prolina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/71@2026-01-01",
+    "descricao": "descrição",
+    "item": "71",
+    "texto": "Riboflavina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/72@2026-01-01",
+    "descricao": "descrição",
+    "item": "72",
+    "texto": "Selenito de sódio",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/73@2026-01-01",
+    "descricao": "descrição",
+    "item": "73",
+    "texto": "Serina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/74@2026-01-01",
+    "descricao": "descrição",
+    "item": "74",
+    "texto": "Sorbitol",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/75@2026-01-01",
+    "descricao": "descrição",
+    "item": "75",
+    "texto": "Sulfato de magnésio",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/76@2026-01-01",
+    "descricao": "descrição",
+    "item": "76",
+    "texto": "Sulfato de zinco",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/77@2026-01-01",
+    "descricao": "descrição",
+    "item": "77",
+    "texto": "Taurina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/78@2026-01-01",
+    "descricao": "descrição",
+    "item": "78",
+    "texto": "Tirosina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/79@2026-01-01",
+    "descricao": "descrição",
+    "item": "79",
+    "texto": "Tocoferol",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/7@2026-01-01",
+    "descricao": "descrição",
+    "item": "7",
+    "texto": "Ácido acético",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/80@2026-01-01",
+    "descricao": "descrição",
+    "item": "80",
+    "texto": "Treonina",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/81@2026-01-01",
+    "descricao": "descrição",
+    "item": "81",
+    "texto": "Triglicerídeos de cadeia média",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/8@2026-01-01",
+    "descricao": "descrição",
+    "item": "8",
+    "texto": "Ácido ascórbico",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VI",
+    "chave": "VI/9@2026-01-01",
+    "descricao": "descrição",
+    "item": "9",
+    "texto": "Ácido aspártico",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VII",
+    "chave": "VII/10@2026-01-01",
+    "descricao": "descrição",
+    "item": "10",
+    "texto": "Sucos naturais de fruta ou de produtos hortícolas sem adição de açúcar ou de outros edulcorantes e sem conservantes classificados na posição 20.09 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VII",
+    "chave": "VII/11@2026-01-01",
+    "descricao": "descrição",
+    "item": "11",
+    "texto": "Polpas de frutas ou de produtos hortícolas sem adição de açúcar ou de outros edulcorantes e sem conservantes classificadas na posição 20.08 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VII",
+    "chave": "VII/12@2026-01-01",
+    "descricao": "descrição",
+    "item": "12",
+    "texto": "Pão de Forma do código 1905.90.10 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VII",
+    "chave": "VII/13@2026-01-01",
+    "descricao": "descrição",
+    "item": "13",
+    "texto": "Extrato de tomate classificado no código 2002.90.00 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VII",
+    "chave": "VII/14@2026-01-01",
+    "descricao": "descrição",
+    "item": "14",
+    "texto": "Frutas, produtos hortícolas e demais produtos vegetais, sem adição de açúcar ou de outros edulcorantes, classificados nos capítulos 7 e 8 da NCM/SH, ressalvados as frutas de casca rija não regionais e os produtos relacionados nos Anexos I e XV e excetuadas as posições 07.11, 08.12 e 0814.00.00",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VII",
+    "chave": "VII/15@2026-01-01",
+    "descricao": "descrição",
+    "item": "15",
+    "texto": "Cereais do capítulo 10 e sementes e frutos oleaginosos classificados no capítulo 12, ambos da NCM/SH, ressalvados os produtos relacionados no Anexo I",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VII",
+    "chave": "VII/16@2026-01-01",
+    "descricao": "descrição",
+    "item": "16",
+    "texto": "Produtos hortícolas, mesmo misturados entre si, apenas pré-cozidos ou cozidos em água ou vapor, sem adição de sal ou de quaisquer outros produtos e substâncias, classificados nas posições 20.04 e 20.05 e no código 2002.10.00 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VII",
+    "chave": "VII/17@2026-01-01",
+    "descricao": "descrição",
+    "item": "17",
+    "texto": "Fruta de casca rija regional, amendoins e outras sementes, mesmo misturados entre si, apenas torrados ou cozidos, sem adição de sal ou de quaisquer outros produtos e substâncias, classificados na subposição 2008.1 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VII",
+    "chave": "VII/1@2026-01-01",
+    "descricao": "descrição",
+    "item": "1",
+    "texto": "Crustáceos (exceto lagostas e lagostim) e moluscos dos seguintes códigos e subposições da NCM/SH: a) 0306.1 e 0306.3, exceto os produtos da subposição 0306.11 e dos códigos 0306.15.00, 0306.31.00, 0306.34.00, 0306.39.10; e b) 0307.31.00, 0307.32.00, 0307.42.00, 0307.43, 0307.51.00, 0307.52.00, 0307.91.00 e 0307.92.00",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VII",
+    "chave": "VII/2@2026-01-01",
+    "descricao": "descrição",
+    "item": "2",
+    "texto": "Leite fermentado, bebidas e compostos lácteos, em conformidade com os requisitos da legislação específica, classificados nos códigos 0403.20.00, 0403.90.00 e 2202.99.00 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VII",
+    "chave": "VII/3@2026-01-01",
+    "descricao": "descrição",
+    "item": "3",
+    "texto": "Mel natural do código 0409.00.00 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VII",
+    "chave": "VII/4@2026-01-01",
+    "descricao": "descrição",
+    "item": "4",
+    "texto": "Farinha das posições 1101.00, 11.02, 11.05, 11.06 e 12.08 da NCM/SH; ressalvados os produtos relacionados no Anexo I",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VII",
+    "chave": "VII/5@2026-01-01",
+    "descricao": "descrição",
+    "item": "5",
+    "texto": "Grumos e sêmolas de cereais dos códigos 1103.11.00 e 1103.19.00 da NCM/SH; ressalvados os produtos relacionados no Anexo I",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VII",
+    "chave": "VII/6@2026-01-01",
+    "descricao": "descrição",
+    "item": "6",
+    "texto": "Grãos de cereais das subposições 1104.1 e 1104.2 da NCM/SH; ressalvados os produtos relacionados no Anexo I",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VII",
+    "chave": "VII/7@2026-01-01",
+    "descricao": "descrição",
+    "item": "7",
+    "texto": "Amido de milho do código 1108.12.00 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VII",
+    "chave": "VII/8@2026-01-01",
+    "descricao": "descrição",
+    "item": "8",
+    "texto": "Óleos de soja, de milho, canola e demais óleos vegetais, em conformidade com os requisitos da legislação específica relativos ao consumo como alimento, classificados na subposição 1507.90 e nas posições 15.08, 15.11, 15.12, 15.13, 15.14 e 15.15 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VII",
+    "chave": "VII/9@2026-01-01",
+    "descricao": "descrição",
+    "item": "9",
+    "texto": "Massas alimentícias dos códigos 1902.20.00 e 1902.30.00 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VIII",
+    "chave": "VIII/1@2026-01-01",
+    "descricao": "descrição",
+    "item": "1",
+    "texto": "Sabões de toucador classificados no código 3401.11.90 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VIII",
+    "chave": "VIII/2@2026-01-01",
+    "descricao": "descrição",
+    "item": "2",
+    "texto": "Dentifrícios do código 3306.10.00 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VIII",
+    "chave": "VIII/3@2026-01-01",
+    "descricao": "descrição",
+    "item": "3",
+    "texto": "Escovas de dentes do código 9603.21.00 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VIII",
+    "chave": "VIII/4@2026-01-01",
+    "descricao": "descrição",
+    "item": "4",
+    "texto": "Papel higiênico do código 4818.10.00 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VIII",
+    "chave": "VIII/5@2026-01-01",
+    "descricao": "descrição",
+    "item": "5",
+    "texto": "Água sanitária classificada no código 3808.94.19 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VIII",
+    "chave": "VIII/6@2026-01-01",
+    "descricao": "descrição",
+    "item": "6",
+    "texto": "Sabões em barra classificados no código 3401.19.00 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "VIII",
+    "chave": "VIII/7@2026-01-01",
+    "descricao": "descrição",
+    "item": "7",
+    "texto": "Fraldas e artigos higiênicos semelhantes, de qualquer matéria classificadas no código 9619.00.00 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/10@2026-01-01",
+    "descricao": "descrição",
+    "item": "10",
+    "texto": "Cessão temporária de direitos de autor de obras cinematográficas",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/11@2026-01-01",
+    "descricao": "descrição",
+    "item": "11",
+    "texto": "Cessão temporária de direitos de autor de obras jornalísticas",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/12@2026-01-01",
+    "descricao": "descrição",
+    "item": "12",
+    "texto": "Cessão temporária de direitos conexos de artistas intérpretes ou executantes em obras audiovisuais",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/13@2026-01-01",
+    "descricao": "descrição",
+    "item": "13",
+    "texto": "Cessão temporária de direitos conexos de produtores de obras audiovisuais",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/14@2026-01-01",
+    "descricao": "descrição",
+    "item": "14",
+    "texto": "Cessão temporária de direitos de obras audiovisuais destinadas à televisão",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/15@2026-01-01",
+    "descricao": "descrição",
+    "item": "15",
+    "texto": "Cessão temporária de direitos de obras musicais e fonogramas",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/16@2026-01-01",
+    "descricao": "descrição",
+    "item": "16",
+    "texto": "Cessão definitiva de direitos de obras literárias",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/17@2026-01-01",
+    "descricao": "descrição",
+    "item": "17",
+    "texto": "Cessão definitiva de direitos de obras cinematográficas",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/18@2026-01-01",
+    "descricao": "descrição",
+    "item": "18",
+    "texto": "Cessão definitiva de direitos de obras jornalísticas",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/19@2026-01-01",
+    "descricao": "descrição",
+    "item": "19",
+    "texto": "Cessão definitiva de direitos de obras musicais e fonogramas",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/1@2026-01-01",
+    "descricao": "descrição",
+    "item": "1",
+    "texto": "Licenciamento de direitos de autor e de direitos conexos",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/20@2026-01-01",
+    "descricao": "descrição",
+    "item": "20",
+    "texto": "Serviços de agências de notícias para jornais e periódicos",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/21@2026-01-01",
+    "descricao": "descrição",
+    "item": "21",
+    "texto": "Serviços de agências de notícias para mídia audiovisual",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/22@2026-01-01",
+    "descricao": "descrição",
+    "item": "22",
+    "texto": "Serviços de assistência e organização de convenções, feiras de negócios, exposições e outros eventos",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/23@2026-01-01",
+    "descricao": "descrição",
+    "item": "23",
+    "texto": "Serviços de gravação de som em estúdio destinados diretamente às produções nacionais artísticas, culturais e audiovisuais",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/24@2026-01-01",
+    "descricao": "descrição",
+    "item": "24",
+    "texto": "Serviços de gravação de som ao vivo destinados diretamente às produções nacionais artísticas, culturais e audiovisuais",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/25@2026-01-01",
+    "descricao": "descrição",
+    "item": "25",
+    "texto": "Serviços de produção de programas de televisão, videoteipes e filmes",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/26@2026-01-01",
+    "descricao": "descrição",
+    "item": "26",
+    "texto": "Serviços de produção de programas de rádio",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/27@2026-01-01",
+    "descricao": "descrição",
+    "item": "27",
+    "texto": "Serviços de edição de obras audiovisuais destinados diretamente às produções nacionais artísticas, culturais e audiovisuais",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/28@2026-01-01",
+    "descricao": "descrição",
+    "item": "28",
+    "texto": "Serviços de duplicação e transferência de obras audiovisuais destinados diretamente às produções nacionais artísticas, culturais e audiovisuais",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/29@2026-01-01",
+    "descricao": "descrição",
+    "item": "29",
+    "texto": "Serviços de correção de cor e restauração digital de obras audiovisuais destinados diretamente às produções nacionais artísticas, culturais e audiovisuais",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/2@2026-01-01",
+    "descricao": "descrição",
+    "item": "2",
+    "texto": "Licenciamento de direitos de obras literárias",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/30@2026-01-01",
+    "descricao": "descrição",
+    "item": "30",
+    "texto": "Serviços de efeitos visuais em obras audiovisuais destinados diretamente às produções nacionais artísticas, culturais e audiovisuais",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/31@2026-01-01",
+    "descricao": "descrição",
+    "item": "31",
+    "texto": "Serviços de animação destinados diretamente às produções nacionais artísticas, culturais e audiovisuais",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/32@2026-01-01",
+    "descricao": "descrição",
+    "item": "32",
+    "texto": "Serviços de legendas, títulos e dublagem em obras audiovisuais destinados diretamente às produções nacionais artísticas, culturais e audiovisuais",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/33@2026-01-01",
+    "descricao": "descrição",
+    "item": "33",
+    "texto": "Serviços de projeto e edição de som em obras audiovisuais destinados diretamente às produções nacionais artísticas, culturais e audiovisuais",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/34@2026-01-01",
+    "descricao": "descrição",
+    "item": "34",
+    "texto": "Serviços de projeção de filmes",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/35@2026-01-01",
+    "descricao": "descrição",
+    "item": "35",
+    "texto": "Serviços de produção audiovisual, de apoio e relacionados não classificados em subposições anteriores",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/36@2026-01-01",
+    "descricao": "descrição",
+    "item": "36",
+    "texto": "Serviços de organização e promoção de atuações artísticas ao vivo",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/37@2026-01-01",
+    "descricao": "descrição",
+    "item": "37",
+    "texto": "Serviços de produção e apresentação de atuações artísticas ao vivo,inclusive os ingressos relativos a estes serviços",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/38@2026-01-01",
+    "descricao": "descrição",
+    "item": "38",
+    "texto": "Serviços de atuação artística",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/39@2026-01-01",
+    "descricao": "descrição",
+    "item": "39",
+    "texto": "Serviços de autores, compositores, escultores, pintores e outros artistas, exceto os de atuação artística",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/3@2026-01-01",
+    "descricao": "descrição",
+    "item": "3",
+    "texto": "Licenciamento de direitos de autor de obras cinematográficas",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/40@2026-01-01",
+    "descricao": "descrição",
+    "item": "40",
+    "texto": "Serviços de museus, inclusive serviços relativos a mostras e coleções de arte",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/41@2026-01-01",
+    "descricao": "descrição",
+    "item": "41",
+    "texto": "Serviços de reservas de ingressos para eventos de produções nacionais artísticas, culturais e audiovisuais",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/42@2026-01-01",
+    "descricao": "descrição",
+    "item": "42",
+    "texto": "Fotografias artísticas originais",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/43@2026-01-01",
+    "descricao": "descrição",
+    "item": "43",
+    "texto": "Quadros, pinturas e desenhos, artísticos originais",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/44@2026-01-01",
+    "descricao": "descrição",
+    "item": "44",
+    "texto": "Gravuras, estampas e litografias, artísticas originais",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/45@2026-01-01",
+    "descricao": "descrição",
+    "item": "45",
+    "texto": "Produções originais de arte estatutária ou de escultura",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/46@2026-01-01",
+    "descricao": "descrição",
+    "item": "46",
+    "texto": "Licenciamento de direitos conexos de artistas intérpretes ou executantes",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/47@2026-01-01",
+    "descricao": "descrição",
+    "item": "47",
+    "texto": "Cessão temporária de direitos de autor e de direitos conexos",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/48@2026-01-01",
+    "descricao": "descrição",
+    "item": "48",
+    "texto": "Cessão temporária de direitos conexos de artistas intérpretes ou executantes",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/4@2026-01-01",
+    "descricao": "descrição",
+    "item": "4",
+    "texto": "Licenciamento de direitos de autor de obras jornalísticas",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/55@2026-01-01",
+    "descricao": "descrição",
+    "item": "55",
+    "texto": "Serviços de sonorização, iluminação, figurino, videografia e cenografia para atuações artísticas ao vivo, destinados às produções de que trata o art. 139 desta Lei Complementar",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/56@2026-01-01",
+    "descricao": "descrição",
+    "item": "56",
+    "texto": "Serviços de locação, montagem e desmontagem de palcos, destinados às produções de que trata o art. 139 desta Lei Complementar",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/57@2026-01-01",
+    "descricao": "descrição",
+    "item": "57",
+    "texto": "Serviços de apresentação e promoção de atuações artísticas, inclusive gestão de espaços destinados a apresentações de exposições de artes cênicas, espetáculos e demais produções de que trata o art. 139 desta Lei Complementar",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/5@2026-01-01",
+    "descricao": "descrição",
+    "item": "5",
+    "texto": "Licenciamento de direitos conexos de artistas intérpretes ou executantes em obras audiovisuais",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/6@2026-01-01",
+    "descricao": "descrição",
+    "item": "6",
+    "texto": "Licenciamento de direitos conexos de produtores de obras audiovisuais",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/7@2026-01-01",
+    "descricao": "descrição",
+    "item": "7",
+    "texto": "Licenciamento de direitos de obras audiovisuais destinadas à televisão",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/8@2026-01-01",
+    "descricao": "descrição",
+    "item": "8",
+    "texto": "Licenciamento de direitos de obras musicais e fonogramas",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "X",
+    "chave": "X/9@2026-01-01",
+    "descricao": "descrição",
+    "item": "9",
+    "texto": "Cessão temporária de direitos de obras literárias",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/1.13@2026-01-01",
+    "descricao": "descrição",
+    "item": "1.13",
+    "texto": "Serviços de manutenção e reparação de veículos militares para uso pela segurança nacional",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/1.14@2026-01-01",
+    "descricao": "descrição",
+    "item": "1.14",
+    "texto": "Serviços de manutenção e reparação de equipamentos militares para uso pela segurança nacional",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/1.1@2026-01-01",
+    "descricao": "descrição",
+    "item": "1.1",
+    "texto": "Segurança em Tecnologia da Informação (TI)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/1.2@2026-01-01",
+    "descricao": "descrição",
+    "item": "1.2",
+    "texto": "Serviços de projeto e desenvolvimento de aplicativos e programas em Tecnologia da Informação (TI) não classificados em subposições anteriores",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/1.3@2026-01-01",
+    "descricao": "descrição",
+    "item": "1.3",
+    "texto": "Serviços de Tecnologia da Informação (TI) não classificados em subposições anteriores",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/2.10@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.10",
+    "texto": "Rações operacionais",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/2.11@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.11",
+    "texto": "Minas marítimas",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/2.12@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.12",
+    "texto": "Cartuchos de munição naval e de artilharia e seus componentes (projétil, estojo, estopilha, espoleta, traçador, pólvora e alto-explosivo), de calibre igual ou superior a 40 mm de diâmetro interno de tubo da arma",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/2.13@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.13",
+    "texto": "Bombas, torpedos, minas, mísseis, foguetes e seus componentes",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/2.14@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.14",
+    "texto": "Aeronaves, inclusive Veículo Aéreo Não Tripulado (VANT) para uso pela segurança nacional e também suas partes e peças",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/2.15@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.15",
+    "texto": "Veículos espaciais para uso pela segurança nacional",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/2.16@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.16",
+    "texto": "Paraquedas para uso pela segurança nacional",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/2.17@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.17",
+    "texto": "Aparelhos e dispositivos para lançamento e aterrissagem de veículos aéreos e espaciais para uso pela segurança nacional",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/2.18@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.18",
+    "texto": "Simuladores de voo e similares para uso pela segurança nacional",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/2.19@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.19",
+    "texto": "Equipamentos de apoio no solo para uso pela segurança nacional",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/2.1@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.1",
+    "texto": "Viatura operacional militar e também suas partes e peças",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/2.20@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.20",
+    "texto": "Equipamentos de auxílio à comunicação, navegação e controle de tráfego aéreo para uso pela segurança nacional",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/2.21@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.21",
+    "texto": "Embarcações construídas no País suas peças, partes e componentes utilizados no reparo, conserto e reconstrução de embarcações",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/2.22@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.22",
+    "texto": "Dispositivos destinados a prover a segurança da informação do tipo Prevenção de Intrusão (IPS)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/2.23@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.23",
+    "texto": "Dispositivos destinados a prover a segurança da informação do tipo de Detecção de Intrusão (IDS)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/2.24@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.24",
+    "texto": "Dispositivos de Autenticação (tokens, leitores biométricos) que garantam a segurança da informação/cibernética",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/2.25@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.25",
+    "texto": "Equipamentos para criptografia para a segurança da informação/cibernética",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/2.26@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.26",
+    "texto": "Firewalls para a segurança da informação/cibernética",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/2.27@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.27",
+    "texto": "Switches e roteadores seguros para a segurança da informação/cibernética",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/2.28@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.28",
+    "texto": "Dispositivos de comunicação criptografada para a segurança da informação/cibernética",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/2.29@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.29",
+    "texto": "Unidades de armazenamento criptografadas para a segurança da informação/cibernética",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/2.2@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.2",
+    "texto": "Carro blindado e carro de combate, terrestre ou anfíbio, sobre lagartas ou rodas, com ou sem armamento e também suas partes e peças",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/2.30@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.30",
+    "texto": "Servidores de armazenamento seguro para a segurança da informação/cibernética",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/2.3@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.3",
+    "texto": "Outros veículos de qualquer tipo, para uso pelos órgãos de Segurança Pública e das Forças Armadas, com especificação própria dos Órgãos Militares e de Segurança Pública e também suas partes e peças",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/2.4@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.4",
+    "texto": "Simuladores de veículos militares",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/2.5@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.5",
+    "texto": "Tratores de baixa ou de alta velocidades, para uso pelos órgãos de Segurança Pública e das Forças Armadas, sobre lagartas ou rodas, destinados às unidades de engenharia ou de artilharia, para obras ou para rebocar equipamentos pesados e também suas partes e peças",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/2.6@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.6",
+    "texto": "Radares para uso militar",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/2.7@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.7",
+    "texto": "Foguetes para uso militar",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/2.8@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.8",
+    "texto": "Explosivos de emprego militar",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XI",
+    "chave": "XI/2.9@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.9",
+    "texto": "Optrônicos",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XII",
+    "chave": "XII/1.1@2026-01-01",
+    "descricao": "descrição",
+    "item": "1.1",
+    "texto": "Eletrocardiógrafos",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XII",
+    "chave": "XII/1.2@2026-01-01",
+    "descricao": "descrição",
+    "item": "1.2",
+    "texto": "Eletroencefalógrafos",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XII",
+    "chave": "XII/1.3@2026-01-01",
+    "descricao": "descrição",
+    "item": "1.3",
+    "texto": "Aparelhos de eletrodiagnóstico, exceto os produtos classificados nos códigos 9018.11.00, 9018.12.10, 9018.12.90, 9018.13.00, 9018.14.10, 9018.14.20, 9018.14.90, 9018.19.10 e 9018.19.20",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XII",
+    "chave": "XII/10@2026-01-01",
+    "descricao": "descrição",
+    "item": "10",
+    "texto": "Aparelho de gamaterapia",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XII",
+    "chave": "XII/11@2026-01-01",
+    "descricao": "descrição",
+    "item": "11",
+    "texto": "Aparelhos que utilizem radiações alfa, beta, gama ou outras radiações ionizantes, para usos médicos, cirúrgicos, odontológicos ou veterinários, incluídos os aparelhos de radiofotografia ou de radioterapia, exceto os produtos classificados nos códigos 9022.21.10 e 9022.21.20",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XII",
+    "chave": "XII/12@2026-01-01",
+    "descricao": "descrição",
+    "item": "12",
+    "texto": "Densímetros, areômetros, pesa-líquidos e instrumentos flutuantes semelhantes, termômetros, pirômetros, barômetros, higrômetros e psicômetros, registradores ou não, mesmo combinados entre si",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XII",
+    "chave": "XII/13@2026-01-01",
+    "descricao": "descrição",
+    "item": "13",
+    "texto": "Respirador",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XII",
+    "chave": "XII/14@2026-01-01",
+    "descricao": "descrição",
+    "item": "14",
+    "texto": "Monitor multiparâmetros",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XII",
+    "chave": "XII/15@2026-01-01",
+    "descricao": "descrição",
+    "item": "15",
+    "texto": "Bomba de infusão",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XII",
+    "chave": "XII/16@2026-01-01",
+    "descricao": "descrição",
+    "item": "16",
+    "texto": "Aparelhos de diagnóstico por visualização de ressonância magnética",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XII",
+    "chave": "XII/17@2026-01-01",
+    "descricao": "descrição",
+    "item": "17",
+    "texto": "Aparelhos de ultrassom",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XII",
+    "chave": "XII/2@2026-01-01",
+    "descricao": "descrição",
+    "item": "2",
+    "texto": "Aparelhos de raios ultravioleta ou infravermelhos",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XII",
+    "chave": "XII/3@2026-01-01",
+    "descricao": "descrição",
+    "item": "3",
+    "texto": "Artigos e aparelhos ortopédicos",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XII",
+    "chave": "XII/4@2026-01-01",
+    "descricao": "descrição",
+    "item": "4",
+    "texto": "Artigos e aparelhos para fraturas",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XII",
+    "chave": "XII/5@2026-01-01",
+    "descricao": "descrição",
+    "item": "5",
+    "texto": "Artigos e aparelhos de prótese, exceto os dentários e os produtos classificados nos códigos 9021.39.91 e 9021.39.99",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XII",
+    "chave": "XII/6@2026-01-01",
+    "descricao": "descrição",
+    "item": "6",
+    "texto": "Tomógrafo computadorizado",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XII",
+    "chave": "XII/7@2026-01-01",
+    "descricao": "descrição",
+    "item": "7",
+    "texto": "Aparelhos de raio X, móveis, exceto os produtos classificados no código 9022.19.91",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XII",
+    "chave": "XII/8@2026-01-01",
+    "descricao": "descrição",
+    "item": "8",
+    "texto": "Aparelho de radiocobalto (bomba de cobalto)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XII",
+    "chave": "XII/9@2026-01-01",
+    "descricao": "descrição",
+    "item": "9",
+    "texto": "Aparelho de crioterapia",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIII",
+    "chave": "XIII/1@2026-01-01",
+    "descricao": "descrição",
+    "item": "1",
+    "texto": "Barra de apoio para pessoa com deficiência física",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIII",
+    "chave": "XIII/2.1@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.1",
+    "texto": "Cadeira de rodas e outros veículos para deficientes, sem mecanismo de propulsão",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIII",
+    "chave": "XIII/2.2@2026-01-01",
+    "descricao": "descrição",
+    "item": "2.2",
+    "texto": "Cadeiras de rodas com motor ou outro mecanismo de propulsão e outros veículos para pessoas com incapacidade, mesmo com motor ou outro mecanismo de propulsão",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIII",
+    "chave": "XIII/3@2026-01-01",
+    "descricao": "descrição",
+    "item": "3",
+    "texto": "Partes e acessórios destinados exclusivamente a aplicação em cadeiras de rodas ou em outros veículos para deficientes",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIII",
+    "chave": "XIII/4@2026-01-01",
+    "descricao": "descrição",
+    "item": "4",
+    "texto": "Aparelhos para facilitar a audição dos surdos, exceto partes e acessórios",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIII",
+    "chave": "XIII/5@2026-01-01",
+    "descricao": "descrição",
+    "item": "5",
+    "texto": "Partes e acessórios de aparelhos para facilitar a audição dos surdos",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIII",
+    "chave": "XIII/6@2026-01-01",
+    "descricao": "descrição",
+    "item": "6",
+    "texto": "Implantes cocleares",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/100@2026-01-01",
+    "descricao": "descrição",
+    "item": "100",
+    "texto": "CLORIDRATO DE ERLOTINIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/101@2026-01-01",
+    "descricao": "descrição",
+    "item": "101",
+    "texto": "CLORIDRATO DE FINGOLIMODE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/102@2026-01-01",
+    "descricao": "descrição",
+    "item": "102",
+    "texto": "CLORIDRATO DE GENCITABINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/103@2026-01-01",
+    "descricao": "descrição",
+    "item": "103",
+    "texto": "CLORIDRATO DE GRANISSETRONA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/104@2026-01-01",
+    "descricao": "descrição",
+    "item": "104",
+    "texto": "CLORIDRATO DE IDARRUBICINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/105@2026-01-01",
+    "descricao": "descrição",
+    "item": "105",
+    "texto": "CLORIDRATO DE IRINOTECANO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/106@2026-01-01",
+    "descricao": "descrição",
+    "item": "106",
+    "texto": "CLORIDRATO DE IRINOTECANO TRI-HIDRATADO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/107@2026-01-01",
+    "descricao": "descrição",
+    "item": "107",
+    "texto": "CLORIDRATO DE METOCLOPRAMIDA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/108@2026-01-01",
+    "descricao": "descrição",
+    "item": "108",
+    "texto": "CLORIDRATO DE MITOXANTRONA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/109@2026-01-01",
+    "descricao": "descrição",
+    "item": "109",
+    "texto": "CLORIDRATO DE PALONOSETRONA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/10@2026-01-01",
+    "descricao": "descrição",
+    "item": "10",
+    "texto": "ACETATO DE MEGESTROL",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/110@2026-01-01",
+    "descricao": "descrição",
+    "item": "110",
+    "texto": "CLORIDRATO DE PAZOPANIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/111@2026-01-01",
+    "descricao": "descrição",
+    "item": "111",
+    "texto": "CLORIDRATO DE PIRIDOXINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/112@2026-01-01",
+    "descricao": "descrição",
+    "item": "112",
+    "texto": "CLORIDRATO DE PONATINIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/113@2026-01-01",
+    "descricao": "descrição",
+    "item": "113",
+    "texto": "CLORIDRATO DE TOPOTECANA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/114@2026-01-01",
+    "descricao": "descrição",
+    "item": "114",
+    "texto": "CLORIDRATO DE ZIPRASIDONA MONOIDRATADO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/115@2026-01-01",
+    "descricao": "descrição",
+    "item": "115",
+    "texto": "COMPLEXOPROTROMBÍNICOPARCIALMENTE ATIVADO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/116@2026-01-01",
+    "descricao": "descrição",
+    "item": "116",
+    "texto": "CRIZOTINIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/117@2026-01-01",
+    "descricao": "descrição",
+    "item": "117",
+    "texto": "DACARBAZINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/118@2026-01-01",
+    "descricao": "descrição",
+    "item": "118",
+    "texto": "DAPAGLIFLOZINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/119@2026-01-01",
+    "descricao": "descrição",
+    "item": "119",
+    "texto": "DARATUMUMABE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/11@2026-01-01",
+    "descricao": "descrição",
+    "item": "11",
+    "texto": "ACETATO DE OCTREOTIDA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/120@2026-01-01",
+    "descricao": "descrição",
+    "item": "120",
+    "texto": "DAROLUTAMIDA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/121@2026-01-01",
+    "descricao": "descrição",
+    "item": "121",
+    "texto": "DASATINIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/122@2026-01-01",
+    "descricao": "descrição",
+    "item": "122",
+    "texto": "DECITABINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/123@2026-01-01",
+    "descricao": "descrição",
+    "item": "123",
+    "texto": "DEFERASIROX",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/124@2026-01-01",
+    "descricao": "descrição",
+    "item": "124",
+    "texto": "DENOSUMABE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/125@2026-01-01",
+    "descricao": "descrição",
+    "item": "125",
+    "texto": "DEXAMETASONA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/126@2026-01-01",
+    "descricao": "descrição",
+    "item": "126",
+    "texto": "DIASPARTATO DE PASIREOTIDA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/127@2026-01-01",
+    "descricao": "descrição",
+    "item": "127",
+    "texto": "DIAZEPAM",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/128@2026-01-01",
+    "descricao": "descrição",
+    "item": "128",
+    "texto": "DICLORIDRATO DE DACLATASVIR",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/129@2026-01-01",
+    "descricao": "descrição",
+    "item": "129",
+    "texto": "DICLORIDRATO DE PRAMIPEXOL MONOIDRATADO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/12@2026-01-01",
+    "descricao": "descrição",
+    "item": "12",
+    "texto": "ACETATO DE TRIPTORRELINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/130@2026-01-01",
+    "descricao": "descrição",
+    "item": "130",
+    "texto": "DICLORIDRATO DE QUININA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/131@2026-01-01",
+    "descricao": "descrição",
+    "item": "131",
+    "texto": "DICLORIDRATO DE SAPROPTERINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/132@2026-01-01",
+    "descricao": "descrição",
+    "item": "132",
+    "texto": "DIDANOSINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/133@2026-01-01",
+    "descricao": "descrição",
+    "item": "133",
+    "texto": "DIETILESTILBESTROL",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/134@2026-01-01",
+    "descricao": "descrição",
+    "item": "134",
+    "texto": "DIFOSFATO DE CLOROQUINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/135@2026-01-01",
+    "descricao": "descrição",
+    "item": "135",
+    "texto": "DIMALEATO DE AFATINIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/136@2026-01-01",
+    "descricao": "descrição",
+    "item": "136",
+    "texto": "DIMETILSULFÓXIDO DE TRAMETINIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/137@2026-01-01",
+    "descricao": "descrição",
+    "item": "137",
+    "texto": "DITARTARATO DE VINORELBINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/138@2026-01-01",
+    "descricao": "descrição",
+    "item": "138",
+    "texto": "DOCETAXEL",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/139@2026-01-01",
+    "descricao": "descrição",
+    "item": "139",
+    "texto": "DOCETAXEL TRI-HIDRATADO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/13@2026-01-01",
+    "descricao": "descrição",
+    "item": "13",
+    "texto": "ACETATO DESMOPRESSINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/140@2026-01-01",
+    "descricao": "descrição",
+    "item": "140",
+    "texto": "DOLUTEGRAVIR SÓDICO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/141@2026-01-01",
+    "descricao": "descrição",
+    "item": "141",
+    "texto": "DOXICICLINA MONOIDRATADA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/142@2026-01-01",
+    "descricao": "descrição",
+    "item": "142",
+    "texto": "DURVALUMABE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/143@2026-01-01",
+    "descricao": "descrição",
+    "item": "143",
+    "texto": "ECULIZUMABE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/144@2026-01-01",
+    "descricao": "descrição",
+    "item": "144",
+    "texto": "EFAVIRENZ",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/145@2026-01-01",
+    "descricao": "descrição",
+    "item": "145",
+    "texto": "ELEXACAFTOR",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/146@2026-01-01",
+    "descricao": "descrição",
+    "item": "146",
+    "texto": "ELOTUZUMABE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/147@2026-01-01",
+    "descricao": "descrição",
+    "item": "147",
+    "texto": "ELTROMBOPAGUE OLAMINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/148@2026-01-01",
+    "descricao": "descrição",
+    "item": "148",
+    "texto": "EMBONATO DE TRIPTORRELINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/149@2026-01-01",
+    "descricao": "descrição",
+    "item": "149",
+    "texto": "EMICIZUMABE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/14@2026-01-01",
+    "descricao": "descrição",
+    "item": "14",
+    "texto": "ÁCIDO FOLÍNICO (FÓLICO)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/150@2026-01-01",
+    "descricao": "descrição",
+    "item": "150",
+    "texto": "EMTRICITABINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/151@2026-01-01",
+    "descricao": "descrição",
+    "item": "151",
+    "texto": "ENANTATO DE NORETISTERONA + VALERATO DE ESTRADIOL",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/152@2026-01-01",
+    "descricao": "descrição",
+    "item": "152",
+    "texto": "ENFLURANO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/153@2026-01-01",
+    "descricao": "descrição",
+    "item": "153",
+    "texto": "ENFUVIRTIDA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/154@2026-01-01",
+    "descricao": "descrição",
+    "item": "154",
+    "texto": "ENTRICITABINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/155@2026-01-01",
+    "descricao": "descrição",
+    "item": "155",
+    "texto": "ENTRICITABINA + FUMARATO TENOFOVIRDESOPROXILA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/156@2026-01-01",
+    "descricao": "descrição",
+    "item": "156",
+    "texto": "ENZALUTAMIDA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/157@2026-01-01",
+    "descricao": "descrição",
+    "item": "157",
+    "texto": "ERDAFITINIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/158@2026-01-01",
+    "descricao": "descrição",
+    "item": "158",
+    "texto": "ESILATO DE NINTEDANIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/159@2026-01-01",
+    "descricao": "descrição",
+    "item": "159",
+    "texto": "ESPIRONOLACTONA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/15@2026-01-01",
+    "descricao": "descrição",
+    "item": "15",
+    "texto": "ÁCIDO TRANEXÂMICO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/160@2026-01-01",
+    "descricao": "descrição",
+    "item": "160",
+    "texto": "ESTAVUDINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/161@2026-01-01",
+    "descricao": "descrição",
+    "item": "161",
+    "texto": "ETINILESTRADIOL + LEVONORGESTREL",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/162@2026-01-01",
+    "descricao": "descrição",
+    "item": "162",
+    "texto": "ETOMIDATO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/163@2026-01-01",
+    "descricao": "descrição",
+    "item": "163",
+    "texto": "ETOPOSIDEO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/164@2026-01-01",
+    "descricao": "descrição",
+    "item": "164",
+    "texto": "ETRAVIRINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/165@2026-01-01",
+    "descricao": "descrição",
+    "item": "165",
+    "texto": "EVEROLIMO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/166@2026-01-01",
+    "descricao": "descrição",
+    "item": "166",
+    "texto": "EXEMESTANO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/167@2026-01-01",
+    "descricao": "descrição",
+    "item": "167",
+    "texto": "FATOR IX DE COAGULAÇÃO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/168@2026-01-01",
+    "descricao": "descrição",
+    "item": "168",
+    "texto": "FATOR VII DE COAGULAÇÃO ATIVADO RECOMBINANTE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/169@2026-01-01",
+    "descricao": "descrição",
+    "item": "169",
+    "texto": "FATOR VIII DE COAGULAÇÃO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/16@2026-01-01",
+    "descricao": "descrição",
+    "item": "16",
+    "texto": "ÁCIDOZOLEDRÔNICO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/170@2026-01-01",
+    "descricao": "descrição",
+    "item": "170",
+    "texto": "FATOR VIII DE COAGULAÇÃO CONTENDO FATOR DE VON WILLEBRAND",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/171@2026-01-01",
+    "descricao": "descrição",
+    "item": "171",
+    "texto": "FATOR VIII DE COAGULAÇÃO RECOMBINANTE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/172@2026-01-01",
+    "descricao": "descrição",
+    "item": "172",
+    "texto": "FENTANILA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/173@2026-01-01",
+    "descricao": "descrição",
+    "item": "173",
+    "texto": "FILGRASTIM",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/174@2026-01-01",
+    "descricao": "descrição",
+    "item": "174",
+    "texto": "FLUORURACILA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/175@2026-01-01",
+    "descricao": "descrição",
+    "item": "175",
+    "texto": "FOLINATO DE CÁLCIO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/176@2026-01-01",
+    "descricao": "descrição",
+    "item": "176",
+    "texto": "FOSAMPRENAVIR CÁLCICO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/177@2026-01-01",
+    "descricao": "descrição",
+    "item": "177",
+    "texto": "FOSFATO DE FLUDARABINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/178@2026-01-01",
+    "descricao": "descrição",
+    "item": "178",
+    "texto": "FOSFATO DE OSELTAMIVIR",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/179@2026-01-01",
+    "descricao": "descrição",
+    "item": "179",
+    "texto": "FOSFATO DE RUXOLITINIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/17@2026-01-01",
+    "descricao": "descrição",
+    "item": "17",
+    "texto": "ACITRETINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/180@2026-01-01",
+    "descricao": "descrição",
+    "item": "180",
+    "texto": "FOSFATO DE SITAGLIPTINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/181@2026-01-01",
+    "descricao": "descrição",
+    "item": "181",
+    "texto": "FOTEMUSTINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/182@2026-01-01",
+    "descricao": "descrição",
+    "item": "182",
+    "texto": "FULVESTRANTO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/183@2026-01-01",
+    "descricao": "descrição",
+    "item": "183",
+    "texto": "FUMARATO DE DIMETILA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/184@2026-01-01",
+    "descricao": "descrição",
+    "item": "184",
+    "texto": "FUMARATO DE TENOFOVIR DESOPROXILA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/185@2026-01-01",
+    "descricao": "descrição",
+    "item": "185",
+    "texto": "FUROSEMIDA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/186@2026-01-01",
+    "descricao": "descrição",
+    "item": "186",
+    "texto": "GALSULFASE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/187@2026-01-01",
+    "descricao": "descrição",
+    "item": "187",
+    "texto": "GANCICLOVIR SÓDICO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/188@2026-01-01",
+    "descricao": "descrição",
+    "item": "188",
+    "texto": "GEFITINIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/189@2026-01-01",
+    "descricao": "descrição",
+    "item": "189",
+    "texto": "GLICOSE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/18@2026-01-01",
+    "descricao": "descrição",
+    "item": "18",
+    "texto": "AFLIBERCEPTE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/190@2026-01-01",
+    "descricao": "descrição",
+    "item": "190",
+    "texto": "GOLIMUMABE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/191@2026-01-01",
+    "descricao": "descrição",
+    "item": "191",
+    "texto": "GOSSERRELINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/192@2026-01-01",
+    "descricao": "descrição",
+    "item": "192",
+    "texto": "GRANISETRON",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/193@2026-01-01",
+    "descricao": "descrição",
+    "item": "193",
+    "texto": "HALOPERIDOL",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/194@2026-01-01",
+    "descricao": "descrição",
+    "item": "194",
+    "texto": "HIDROXIUREIA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/195@2026-01-01",
+    "descricao": "descrição",
+    "item": "195",
+    "texto": "HIPOCLORITO DE SÓDIO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/196@2026-01-01",
+    "descricao": "descrição",
+    "item": "196",
+    "texto": "IBANDRONATOSÓDIO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/197@2026-01-01",
+    "descricao": "descrição",
+    "item": "197",
+    "texto": "IBRUTINIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/198@2026-01-01",
+    "descricao": "descrição",
+    "item": "198",
+    "texto": "IDARRUBICINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/199@2026-01-01",
+    "descricao": "descrição",
+    "item": "199",
+    "texto": "IDURSULFASE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/19@2026-01-01",
+    "descricao": "descrição",
+    "item": "19",
+    "texto": "ALBINTERFERONA ALFA-2B",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/1@2026-01-01",
+    "descricao": "descrição",
+    "item": "1",
+    "texto": "ABACAVIR",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/200@2026-01-01",
+    "descricao": "descrição",
+    "item": "200",
+    "texto": "IFOSFAMIDA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/201@2026-01-01",
+    "descricao": "descrição",
+    "item": "201",
+    "texto": "IMUNOGLOBULINAANTIRRÁBICA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/202@2026-01-01",
+    "descricao": "descrição",
+    "item": "202",
+    "texto": "IMUNOGLOBULINAANTITETÂNICA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/203@2026-01-01",
+    "descricao": "descrição",
+    "item": "203",
+    "texto": "IMUNOGLOBULINA HUMANA ANTI-HEPATITE B",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/204@2026-01-01",
+    "descricao": "descrição",
+    "item": "204",
+    "texto": "INSULINA GLARGINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/205@2026-01-01",
+    "descricao": "descrição",
+    "item": "205",
+    "texto": "INSULINA HUMANA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/206@2026-01-01",
+    "descricao": "descrição",
+    "item": "206",
+    "texto": "INTERFERON ALFA-2A E INTERFERON ALFA-2B",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/207@2026-01-01",
+    "descricao": "descrição",
+    "item": "207",
+    "texto": "IOPAMIDOL",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/208@2026-01-01",
+    "descricao": "descrição",
+    "item": "208",
+    "texto": "IPILIMUMABE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/209@2026-01-01",
+    "descricao": "descrição",
+    "item": "209",
+    "texto": "ISETIONATO DE PENTAMIDINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/20@2026-01-01",
+    "descricao": "descrição",
+    "item": "20",
+    "texto": "ALBUMINA HUMANA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/210@2026-01-01",
+    "descricao": "descrição",
+    "item": "210",
+    "texto": "ISOFLURANO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/211@2026-01-01",
+    "descricao": "descrição",
+    "item": "211",
+    "texto": "ISOTRETINOÍNA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/212@2026-01-01",
+    "descricao": "descrição",
+    "item": "212",
+    "texto": "IVACAFTOR",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/213@2026-01-01",
+    "descricao": "descrição",
+    "item": "213",
+    "texto": "LAMIVUDINA + ZIDOVUDINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/214@2026-01-01",
+    "descricao": "descrição",
+    "item": "214",
+    "texto": "LETROZOL",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/215@2026-01-01",
+    "descricao": "descrição",
+    "item": "215",
+    "texto": "LEVETIRACETAM",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/216@2026-01-01",
+    "descricao": "descrição",
+    "item": "216",
+    "texto": "LIDOCAÍNA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/217@2026-01-01",
+    "descricao": "descrição",
+    "item": "217",
+    "texto": "LINEZOLIDA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/218@2026-01-01",
+    "descricao": "descrição",
+    "item": "218",
+    "texto": "LIPEGFILGRASTIM",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/219@2026-01-01",
+    "descricao": "descrição",
+    "item": "219",
+    "texto": "LOPINAVIR + RITONAVIR",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/21@2026-01-01",
+    "descricao": "descrição",
+    "item": "21",
+    "texto": "ALENDRONATO DE SÓDIO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/220@2026-01-01",
+    "descricao": "descrição",
+    "item": "220",
+    "texto": "LOSARTANA POTÁSSICA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/221@2026-01-01",
+    "descricao": "descrição",
+    "item": "221",
+    "texto": "LUMACAFTOR",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/222@2026-01-01",
+    "descricao": "descrição",
+    "item": "222",
+    "texto": "MALEATO DE ACALABRUTINIBE MONOIDRATADO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/223@2026-01-01",
+    "descricao": "descrição",
+    "item": "223",
+    "texto": "MALEATO DE SUNITINIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/224@2026-01-01",
+    "descricao": "descrição",
+    "item": "224",
+    "texto": "MALEATO DE TIMOLOL",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/225@2026-01-01",
+    "descricao": "descrição",
+    "item": "225",
+    "texto": "MARAVIROQUE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/226@2026-01-01",
+    "descricao": "descrição",
+    "item": "226",
+    "texto": "MEPOLIZUMABE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/227@2026-01-01",
+    "descricao": "descrição",
+    "item": "227",
+    "texto": "MERCAPTOPURINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/228@2026-01-01",
+    "descricao": "descrição",
+    "item": "228",
+    "texto": "MESILATO DE DABRAFENIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/229@2026-01-01",
+    "descricao": "descrição",
+    "item": "229",
+    "texto": "MESILATO DE DESFERROXAMINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/22@2026-01-01",
+    "descricao": "descrição",
+    "item": "22",
+    "texto": "ALENTUZUMABE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/230@2026-01-01",
+    "descricao": "descrição",
+    "item": "230",
+    "texto": "MESILATO DE IMATINIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/231@2026-01-01",
+    "descricao": "descrição",
+    "item": "231",
+    "texto": "MESILATO DE NELFINAVIR",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/232@2026-01-01",
+    "descricao": "descrição",
+    "item": "232",
+    "texto": "MESILATO DE OSIMERTINIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/233@2026-01-01",
+    "descricao": "descrição",
+    "item": "233",
+    "texto": "MESILATO DE RASAGILINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/234@2026-01-01",
+    "descricao": "descrição",
+    "item": "234",
+    "texto": "MESNA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/235@2026-01-01",
+    "descricao": "descrição",
+    "item": "235",
+    "texto": "METILPREDNISOLONA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/236@2026-01-01",
+    "descricao": "descrição",
+    "item": "236",
+    "texto": "METOTREXATO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/237@2026-01-01",
+    "descricao": "descrição",
+    "item": "237",
+    "texto": "METOTREXATO DESÓDIO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/238@2026-01-01",
+    "descricao": "descrição",
+    "item": "238",
+    "texto": "MICOFENOLATO DE MOFETILA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/239@2026-01-01",
+    "descricao": "descrição",
+    "item": "239",
+    "texto": "MICOFENOLATO DESÓDIO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/23@2026-01-01",
+    "descricao": "descrição",
+    "item": "23",
+    "texto": "ALFA-ALGLICOSIDASE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/240@2026-01-01",
+    "descricao": "descrição",
+    "item": "240",
+    "texto": "MIDAZOLAM",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/241@2026-01-01",
+    "descricao": "descrição",
+    "item": "241",
+    "texto": "MIDOSTAURINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/242@2026-01-01",
+    "descricao": "descrição",
+    "item": "242",
+    "texto": "MIFAMURTIDA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/243@2026-01-01",
+    "descricao": "descrição",
+    "item": "243",
+    "texto": "MITOMICINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/244@2026-01-01",
+    "descricao": "descrição",
+    "item": "244",
+    "texto": "MITOTANO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/245@2026-01-01",
+    "descricao": "descrição",
+    "item": "245",
+    "texto": "NEVIRAPINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/246@2026-01-01",
+    "descricao": "descrição",
+    "item": "246",
+    "texto": "NILOTINIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/247@2026-01-01",
+    "descricao": "descrição",
+    "item": "247",
+    "texto": "NITRENDIPINO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/248@2026-01-01",
+    "descricao": "descrição",
+    "item": "248",
+    "texto": "NIVOLUMABE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/249@2026-01-01",
+    "descricao": "descrição",
+    "item": "249",
+    "texto": "NUSINERSENA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/24@2026-01-01",
+    "descricao": "descrição",
+    "item": "24",
+    "texto": "ALFAELOSULFASE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/250@2026-01-01",
+    "descricao": "descrição",
+    "item": "250",
+    "texto": "OCRELIZUMABE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/251@2026-01-01",
+    "descricao": "descrição",
+    "item": "251",
+    "texto": "OCTREOTIDA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/252@2026-01-01",
+    "descricao": "descrição",
+    "item": "252",
+    "texto": "OLAPARIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/253@2026-01-01",
+    "descricao": "descrição",
+    "item": "253",
+    "texto": "OLARATUMABE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/254@2026-01-01",
+    "descricao": "descrição",
+    "item": "254",
+    "texto": "ONASEMNOGENO ABEPARVOVEQUE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/255@2026-01-01",
+    "descricao": "descrição",
+    "item": "255",
+    "texto": "OXALIPLATINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/256@2026-01-01",
+    "descricao": "descrição",
+    "item": "256",
+    "texto": "PACLITAXEL",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/257@2026-01-01",
+    "descricao": "descrição",
+    "item": "257",
+    "texto": "PALBOCICLIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/258@2026-01-01",
+    "descricao": "descrição",
+    "item": "258",
+    "texto": "PAMIDRONATO DISSÓDICO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/259@2026-01-01",
+    "descricao": "descrição",
+    "item": "259",
+    "texto": "PAMOATO DE PASIREOTIDA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/25@2026-01-01",
+    "descricao": "descrição",
+    "item": "25",
+    "texto": "ALFAEPOETINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/260@2026-01-01",
+    "descricao": "descrição",
+    "item": "260",
+    "texto": "PANCREATINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/261@2026-01-01",
+    "descricao": "descrição",
+    "item": "261",
+    "texto": "PANITUMUMABE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/262@2026-01-01",
+    "descricao": "descrição",
+    "item": "262",
+    "texto": "PEG INTERFERON ALFA-2B",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/263@2026-01-01",
+    "descricao": "descrição",
+    "item": "263",
+    "texto": "PEG INTERFERON ALFA-2A",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/264@2026-01-01",
+    "descricao": "descrição",
+    "item": "264",
+    "texto": "PEGASPARGASE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/265@2026-01-01",
+    "descricao": "descrição",
+    "item": "265",
+    "texto": "PEGFILGRASTIM",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/266@2026-01-01",
+    "descricao": "descrição",
+    "item": "266",
+    "texto": "PEMETREXEDE DISSÓDICO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/267@2026-01-01",
+    "descricao": "descrição",
+    "item": "267",
+    "texto": "PEMETREXEDE DISSÓDICO HEMIPENTAIDRATADO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/268@2026-01-01",
+    "descricao": "descrição",
+    "item": "268",
+    "texto": "PEMETREXEDE DISSÓDICO HEPTAIDRATADO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/269@2026-01-01",
+    "descricao": "descrição",
+    "item": "269",
+    "texto": "PERTUZUMABE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/26@2026-01-01",
+    "descricao": "descrição",
+    "item": "26",
+    "texto": "ALFAINTERFERONA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/270@2026-01-01",
+    "descricao": "descrição",
+    "item": "270",
+    "texto": "PIOGLITAZONA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/271@2026-01-01",
+    "descricao": "descrição",
+    "item": "271",
+    "texto": "PIRAZINAMIDA + RIFAMPICINA + CLORIDRATO DE ETAMBUTOL + ISONIAZIDA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/272@2026-01-01",
+    "descricao": "descrição",
+    "item": "272",
+    "texto": "PLERIXAFOR",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/273@2026-01-01",
+    "descricao": "descrição",
+    "item": "273",
+    "texto": "PRAZIQUANTEL",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/274@2026-01-01",
+    "descricao": "descrição",
+    "item": "274",
+    "texto": "PREDNISOLONA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/275@2026-01-01",
+    "descricao": "descrição",
+    "item": "275",
+    "texto": "PREGABALINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/276@2026-01-01",
+    "descricao": "descrição",
+    "item": "276",
+    "texto": "PROPOFOL",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/277@2026-01-01",
+    "descricao": "descrição",
+    "item": "277",
+    "texto": "QUININA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/278@2026-01-01",
+    "descricao": "descrição",
+    "item": "278",
+    "texto": "RABEPRAZOLSÓDICO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/279@2026-01-01",
+    "descricao": "descrição",
+    "item": "279",
+    "texto": "RALTEGRAVIR",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/27@2026-01-01",
+    "descricao": "descrição",
+    "item": "27",
+    "texto": "ALFAPEGINTERFERONA 2A",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/280@2026-01-01",
+    "descricao": "descrição",
+    "item": "280",
+    "texto": "RAMUCIRUMABE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/281@2026-01-01",
+    "descricao": "descrição",
+    "item": "281",
+    "texto": "RASBURICASE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/282@2026-01-01",
+    "descricao": "descrição",
+    "item": "282",
+    "texto": "REGORAFENIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/283@2026-01-01",
+    "descricao": "descrição",
+    "item": "283",
+    "texto": "RIBAVIRINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/284@2026-01-01",
+    "descricao": "descrição",
+    "item": "284",
+    "texto": "RIFAMPICINA + ISONIAZIDA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/285@2026-01-01",
+    "descricao": "descrição",
+    "item": "285",
+    "texto": "RILUZOL",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/286@2026-01-01",
+    "descricao": "descrição",
+    "item": "286",
+    "texto": "RISANQUIZUMABE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/287@2026-01-01",
+    "descricao": "descrição",
+    "item": "287",
+    "texto": "RISDIPLAM",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/288@2026-01-01",
+    "descricao": "descrição",
+    "item": "288",
+    "texto": "RISPERIDONA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/289@2026-01-01",
+    "descricao": "descrição",
+    "item": "289",
+    "texto": "RITONAVIR",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/28@2026-01-01",
+    "descricao": "descrição",
+    "item": "28",
+    "texto": "ALFAPEGINTERFERONA 2B",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/290@2026-01-01",
+    "descricao": "descrição",
+    "item": "290",
+    "texto": "RITUXIMABE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/291@2026-01-01",
+    "descricao": "descrição",
+    "item": "291",
+    "texto": "SACUBITRIL VALSARTANA SÓDICA HIDRATADA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/292@2026-01-01",
+    "descricao": "descrição",
+    "item": "292",
+    "texto": "SAQUINAVIR",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/293@2026-01-01",
+    "descricao": "descrição",
+    "item": "293",
+    "texto": "SAXAGLIPTINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/294@2026-01-01",
+    "descricao": "descrição",
+    "item": "294",
+    "texto": "SECUQUINUMABE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/295@2026-01-01",
+    "descricao": "descrição",
+    "item": "295",
+    "texto": "SELEXIPAGUE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/296@2026-01-01",
+    "descricao": "descrição",
+    "item": "296",
+    "texto": "SINVASTATINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/297@2026-01-01",
+    "descricao": "descrição",
+    "item": "297",
+    "texto": "SOFOSBUVIR",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/298@2026-01-01",
+    "descricao": "descrição",
+    "item": "298",
+    "texto": "SOMATROPINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/299@2026-01-01",
+    "descricao": "descrição",
+    "item": "299",
+    "texto": "SORO ANTIARACNÍDICO (LOXOSCELES, PHONEUTRIA E TITYUS)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/29@2026-01-01",
+    "descricao": "descrição",
+    "item": "29",
+    "texto": "ALFATIROTROPINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/2@2026-01-01",
+    "descricao": "descrição",
+    "item": "2",
+    "texto": "ABEMACICLIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/300@2026-01-01",
+    "descricao": "descrição",
+    "item": "300",
+    "texto": "SORO ANTIBOTRÓPICO (PENTAVALENTE)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/301@2026-01-01",
+    "descricao": "descrição",
+    "item": "301",
+    "texto": "SORO ANTIBOTRÓPICO (PENTAVALENTE) E ANTICROTÁLICO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/302@2026-01-01",
+    "descricao": "descrição",
+    "item": "302",
+    "texto": "SORO ANTIBOTRÓPICO (PENTAVALENTE) E ANTILAQUÉTICO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/303@2026-01-01",
+    "descricao": "descrição",
+    "item": "303",
+    "texto": "SORO ANTIBOTULÍNICO AB (BIVALENTE)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/304@2026-01-01",
+    "descricao": "descrição",
+    "item": "304",
+    "texto": "SORO ANTICROTÁLICO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/305@2026-01-01",
+    "descricao": "descrição",
+    "item": "305",
+    "texto": "SORO ANTIDIFTÉRICO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/306@2026-01-01",
+    "descricao": "descrição",
+    "item": "306",
+    "texto": "SORO ANTIELAPÍDICO (BIVALENTE)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/307@2026-01-01",
+    "descricao": "descrição",
+    "item": "307",
+    "texto": "SORO ANTIESCORPIÔNICO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/308@2026-01-01",
+    "descricao": "descrição",
+    "item": "308",
+    "texto": "SORO ANTILONÔMICO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/309@2026-01-01",
+    "descricao": "descrição",
+    "item": "309",
+    "texto": "SORO ANTILOXOSCÉLICO (TRIVALENTE)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/30@2026-01-01",
+    "descricao": "descrição",
+    "item": "30",
+    "texto": "ALFAVESTRONIDASE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/310@2026-01-01",
+    "descricao": "descrição",
+    "item": "310",
+    "texto": "SORO ANTIRRÁBICO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/311@2026-01-01",
+    "descricao": "descrição",
+    "item": "311",
+    "texto": "SORO ANTITETÂNICO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/312@2026-01-01",
+    "descricao": "descrição",
+    "item": "312",
+    "texto": "SUCCINATO DE METOPROLOL",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/313@2026-01-01",
+    "descricao": "descrição",
+    "item": "313",
+    "texto": "SUCCINATO DE RIBOCICLIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/314@2026-01-01",
+    "descricao": "descrição",
+    "item": "314",
+    "texto": "SUCCINATOSÓDICODE HIDROCORTISONA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/315@2026-01-01",
+    "descricao": "descrição",
+    "item": "315",
+    "texto": "SULFADIAZINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/316@2026-01-01",
+    "descricao": "descrição",
+    "item": "316",
+    "texto": "SULFAMETOXAZOL + TRIMETROPINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/317@2026-01-01",
+    "descricao": "descrição",
+    "item": "317",
+    "texto": "SULFATO DE ABACAVIR",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/318@2026-01-01",
+    "descricao": "descrição",
+    "item": "318",
+    "texto": "SULFATO DE ATAZANAVIR",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/319@2026-01-01",
+    "descricao": "descrição",
+    "item": "319",
+    "texto": "SULFATO DE BLEOMICINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/31@2026-01-01",
+    "descricao": "descrição",
+    "item": "31",
+    "texto": "ALPELISIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/320@2026-01-01",
+    "descricao": "descrição",
+    "item": "320",
+    "texto": "SULFATO DE INDINAVIR",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/321@2026-01-01",
+    "descricao": "descrição",
+    "item": "321",
+    "texto": "SULFATO DE LAROTRECTINIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/322@2026-01-01",
+    "descricao": "descrição",
+    "item": "322",
+    "texto": "SULFATO DE MORFINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/323@2026-01-01",
+    "descricao": "descrição",
+    "item": "323",
+    "texto": "SULFATO DE MORFINA PENTAIDRATADO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/324@2026-01-01",
+    "descricao": "descrição",
+    "item": "324",
+    "texto": "SULFATO DE QUININA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/325@2026-01-01",
+    "descricao": "descrição",
+    "item": "325",
+    "texto": "SULFATO DE VINCRISTINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/326@2026-01-01",
+    "descricao": "descrição",
+    "item": "326",
+    "texto": "TACROLIMO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/327@2026-01-01",
+    "descricao": "descrição",
+    "item": "327",
+    "texto": "TAFAMIDIS MEGLUMINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/328@2026-01-01",
+    "descricao": "descrição",
+    "item": "328",
+    "texto": "TAMOXIFENO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/329@2026-01-01",
+    "descricao": "descrição",
+    "item": "329",
+    "texto": "TARTARATO DE VARENICLINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/32@2026-01-01",
+    "descricao": "descrição",
+    "item": "32",
+    "texto": "ALTEPLASE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/330@2026-01-01",
+    "descricao": "descrição",
+    "item": "330",
+    "texto": "TARTARATO DE VINORELBINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/331@2026-01-01",
+    "descricao": "descrição",
+    "item": "331",
+    "texto": "TEMOZOLOMIDA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/332@2026-01-01",
+    "descricao": "descrição",
+    "item": "332",
+    "texto": "TENECTEPLASE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/333@2026-01-01",
+    "descricao": "descrição",
+    "item": "333",
+    "texto": "TENIPOSIDEO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/334@2026-01-01",
+    "descricao": "descrição",
+    "item": "334",
+    "texto": "TENOFOVIR",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/335@2026-01-01",
+    "descricao": "descrição",
+    "item": "335",
+    "texto": "TENSIROLIMO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/336@2026-01-01",
+    "descricao": "descrição",
+    "item": "336",
+    "texto": "TERIFLUNOMIDA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/337@2026-01-01",
+    "descricao": "descrição",
+    "item": "337",
+    "texto": "TERIZIDONA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/338@2026-01-01",
+    "descricao": "descrição",
+    "item": "338",
+    "texto": "TETRACICLINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/339@2026-01-01",
+    "descricao": "descrição",
+    "item": "339",
+    "texto": "TEZACAFTOR",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/33@2026-01-01",
+    "descricao": "descrição",
+    "item": "33",
+    "texto": "AMBRISENTANA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/340@2026-01-01",
+    "descricao": "descrição",
+    "item": "340",
+    "texto": "TIOGUANINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/341@2026-01-01",
+    "descricao": "descrição",
+    "item": "341",
+    "texto": "TIPRANAVIR",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/342@2026-01-01",
+    "descricao": "descrição",
+    "item": "342",
+    "texto": "TOCILIZUMABE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/343@2026-01-01",
+    "descricao": "descrição",
+    "item": "343",
+    "texto": "TOSILATO DE SORAFENIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/344@2026-01-01",
+    "descricao": "descrição",
+    "item": "344",
+    "texto": "TRASTUZUMABE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/345@2026-01-01",
+    "descricao": "descrição",
+    "item": "345",
+    "texto": "TRIÓXIDO DE ARSÊNIO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/346@2026-01-01",
+    "descricao": "descrição",
+    "item": "346",
+    "texto": "TRIPTORRELINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/347@2026-01-01",
+    "descricao": "descrição",
+    "item": "347",
+    "texto": "UPADACITINIBE HEMI-HIDRATADO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/348@2026-01-01",
+    "descricao": "descrição",
+    "item": "348",
+    "texto": "VANCOMICINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/349@2026-01-01",
+    "descricao": "descrição",
+    "item": "349",
+    "texto": "VANDETANIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/34@2026-01-01",
+    "descricao": "descrição",
+    "item": "34",
+    "texto": "AMIFOSTINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/350@2026-01-01",
+    "descricao": "descrição",
+    "item": "350",
+    "texto": "VEDOLIZUMABE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/351@2026-01-01",
+    "descricao": "descrição",
+    "item": "351",
+    "texto": "VIMBLASTINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/352@2026-01-01",
+    "descricao": "descrição",
+    "item": "352",
+    "texto": "VINCRISTINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/353@2026-01-01",
+    "descricao": "descrição",
+    "item": "353",
+    "texto": "VINFLUNINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/354@2026-01-01",
+    "descricao": "descrição",
+    "item": "354",
+    "texto": "VINORELBINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/355@2026-01-01",
+    "descricao": "descrição",
+    "item": "355",
+    "texto": "ZIAGENAVIR",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/356@2026-01-01",
+    "descricao": "descrição",
+    "item": "356",
+    "texto": "ZIDOVUDINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/357@2026-01-01",
+    "descricao": "descrição",
+    "item": "357",
+    "texto": "VACINA ADSORVIDA DIFTERIA E TÉTANO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/358@2026-01-01",
+    "descricao": "descrição",
+    "item": "358",
+    "texto": "VACINA ADSORVIDA DIFTERIA, TÉTANO E PERTUSSIS",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/359@2026-01-01",
+    "descricao": "descrição",
+    "item": "359",
+    "texto": "VACINA ADSORVIDA DIFTERIA, TÉTANO E PERTUSSIS (ACELULAR)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/35@2026-01-01",
+    "descricao": "descrição",
+    "item": "35",
+    "texto": "ANASTROZOL",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/360@2026-01-01",
+    "descricao": "descrição",
+    "item": "360",
+    "texto": "VACINA ADSORVIDA DIFTERIA, TÉTANO, PERTUSSIS, HEPATITE B (RECOMBINANTE) E HAEMOPHILUS INFLUENZAE B (CONJUGADA)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/361@2026-01-01",
+    "descricao": "descrição",
+    "item": "361",
+    "texto": "VACINA ADSORVIDA HEPATITE A (INATIVADA)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/362@2026-01-01",
+    "descricao": "descrição",
+    "item": "362",
+    "texto": "VACINA BCG",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/363@2026-01-01",
+    "descricao": "descrição",
+    "item": "363",
+    "texto": "VACINA CÓLERA (INATIVADA)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/364@2026-01-01",
+    "descricao": "descrição",
+    "item": "364",
+    "texto": "VACINA COVID-19",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/365@2026-01-01",
+    "descricao": "descrição",
+    "item": "365",
+    "texto": "VACINA DENGUE 1, 2, 3 E 4",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/366@2026-01-01",
+    "descricao": "descrição",
+    "item": "366",
+    "texto": "VACINA FEBRE AMARELA (ATENUADA)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/367@2026-01-01",
+    "descricao": "descrição",
+    "item": "367",
+    "texto": "VACINA FEBRE TIFÓIDE (POLISSACARÍDICA)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/368@2026-01-01",
+    "descricao": "descrição",
+    "item": "368",
+    "texto": "VACINA HAEMOPHILUS INFLUENZAE B (CONJUGADA)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/369@2026-01-01",
+    "descricao": "descrição",
+    "item": "369",
+    "texto": "VACINA HEPATITE B (RECOMBINANTE)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/36@2026-01-01",
+    "descricao": "descrição",
+    "item": "36",
+    "texto": "ANFOTERICINA B",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/370@2026-01-01",
+    "descricao": "descrição",
+    "item": "370",
+    "texto": "VACINA INFLUENZA TRIVALENTE (FRAGMENTADA, INATIVADA)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/371@2026-01-01",
+    "descricao": "descrição",
+    "item": "371",
+    "texto": "VACINA MENINGOCÓCICA ACWY (CONJUGADA)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/372@2026-01-01",
+    "descricao": "descrição",
+    "item": "372",
+    "texto": "VACINA MENINGOCÓCICA C (CONJUGADA)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/373@2026-01-01",
+    "descricao": "descrição",
+    "item": "373",
+    "texto": "VACINA PAPILOMAVÍRUS HUMANO 6, 11, 16 E 18 (RECOMBINANTE)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/374@2026-01-01",
+    "descricao": "descrição",
+    "item": "374",
+    "texto": "VACINA PNEUMOCÓCICA 10-VALENTE (CONJUGADA)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/375@2026-01-01",
+    "descricao": "descrição",
+    "item": "375",
+    "texto": "VACINA PNEUMOCÓCICA 13-VALENTE (CONJUGADA)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/376@2026-01-01",
+    "descricao": "descrição",
+    "item": "376",
+    "texto": "VACINA PNEUMOCÓCICA 23-VALENTE (POLISSACARÍDICA)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/377@2026-01-01",
+    "descricao": "descrição",
+    "item": "377",
+    "texto": "VACINA POLIOMIELITE 1 E 3 (ATENUADA)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/378@2026-01-01",
+    "descricao": "descrição",
+    "item": "378",
+    "texto": "VACINA POLIOMIELITE 1, 2 E 3 (INATIVADA)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/379@2026-01-01",
+    "descricao": "descrição",
+    "item": "379",
+    "texto": "VACINA RAIVA (INATIVADA)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/37@2026-01-01",
+    "descricao": "descrição",
+    "item": "37",
+    "texto": "ANFOTERICINA B EM LIPOSSOMAS",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/380@2026-01-01",
+    "descricao": "descrição",
+    "item": "380",
+    "texto": "VACINA ROTAVÍRUS HUMANO G1P 8 (ATENUADA)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/381@2026-01-01",
+    "descricao": "descrição",
+    "item": "381",
+    "texto": "VACINA SARAMPO, CAXUMBA, RUBÉOLA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/382@2026-01-01",
+    "descricao": "descrição",
+    "item": "382",
+    "texto": "VACINA SARAMPO, CAXUMBA, RUBÉOLA E VARICELA (ATENUADA)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/383@2026-01-01",
+    "descricao": "descrição",
+    "item": "383",
+    "texto": "VACINA VARICELA (ATENUADA)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/38@2026-01-01",
+    "descricao": "descrição",
+    "item": "38",
+    "texto": "ANTIMONIAL PENTAVALENTE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/39@2026-01-01",
+    "descricao": "descrição",
+    "item": "39",
+    "texto": "APALUTAMIDA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/3@2026-01-01",
+    "descricao": "descrição",
+    "item": "3",
+    "texto": "ACALABRUTINIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/40@2026-01-01",
+    "descricao": "descrição",
+    "item": "40",
+    "texto": "APREPITANTO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/41@2026-01-01",
+    "descricao": "descrição",
+    "item": "41",
+    "texto": "ARTEMÉTER",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/42@2026-01-01",
+    "descricao": "descrição",
+    "item": "42",
+    "texto": "ARTEMÉTER + LUMEFANTRINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/43@2026-01-01",
+    "descricao": "descrição",
+    "item": "43",
+    "texto": "ARTESUNATO + CLORIDRATO MEFLOQUINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/44@2026-01-01",
+    "descricao": "descrição",
+    "item": "44",
+    "texto": "ARTESUNATO DESÓDIO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/45@2026-01-01",
+    "descricao": "descrição",
+    "item": "45",
+    "texto": "ASPARAGINASE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/46@2026-01-01",
+    "descricao": "descrição",
+    "item": "46",
+    "texto": "ATENOLOL",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/47@2026-01-01",
+    "descricao": "descrição",
+    "item": "47",
+    "texto": "ATEZOLIZUMABE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/48@2026-01-01",
+    "descricao": "descrição",
+    "item": "48",
+    "texto": "AVELUMABE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/49@2026-01-01",
+    "descricao": "descrição",
+    "item": "49",
+    "texto": "AXITINIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/4@2026-01-01",
+    "descricao": "descrição",
+    "item": "4",
+    "texto": "ACEPONATO DE METILPREDNISOLONA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/50@2026-01-01",
+    "descricao": "descrição",
+    "item": "50",
+    "texto": "AZACITIDINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/51@2026-01-01",
+    "descricao": "descrição",
+    "item": "51",
+    "texto": "AZATIOPRINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/52@2026-01-01",
+    "descricao": "descrição",
+    "item": "52",
+    "texto": "BARICITINIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/53@2026-01-01",
+    "descricao": "descrição",
+    "item": "53",
+    "texto": "BENZONIDAZOL",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/54@2026-01-01",
+    "descricao": "descrição",
+    "item": "54",
+    "texto": "BESILATO DE ANLODIPINO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/55@2026-01-01",
+    "descricao": "descrição",
+    "item": "55",
+    "texto": "BETAEPOETINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/56@2026-01-01",
+    "descricao": "descrição",
+    "item": "56",
+    "texto": "BEVACIZUMABE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/57@2026-01-01",
+    "descricao": "descrição",
+    "item": "57",
+    "texto": "BICALUTAMIDA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/58@2026-01-01",
+    "descricao": "descrição",
+    "item": "58",
+    "texto": "BIOTINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/59@2026-01-01",
+    "descricao": "descrição",
+    "item": "59",
+    "texto": "BLINATUMOMABE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/5@2026-01-01",
+    "descricao": "descrição",
+    "item": "5",
+    "texto": "ACETATO DE ABIRATERONA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/60@2026-01-01",
+    "descricao": "descrição",
+    "item": "60",
+    "texto": "BORTEZOMIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/61@2026-01-01",
+    "descricao": "descrição",
+    "item": "61",
+    "texto": "BRENTUXIMABE VEDOTINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/62@2026-01-01",
+    "descricao": "descrição",
+    "item": "62",
+    "texto": "BRIGATINIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/63@2026-01-01",
+    "descricao": "descrição",
+    "item": "63",
+    "texto": "BROMETO DEIPRATRÓPIO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/64@2026-01-01",
+    "descricao": "descrição",
+    "item": "64",
+    "texto": "BUDESONIDA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/65@2026-01-01",
+    "descricao": "descrição",
+    "item": "65",
+    "texto": "BUROSUMABE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/66@2026-01-01",
+    "descricao": "descrição",
+    "item": "66",
+    "texto": "BUSSULFANO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/67@2026-01-01",
+    "descricao": "descrição",
+    "item": "67",
+    "texto": "CABAZITAXEL",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/68@2026-01-01",
+    "descricao": "descrição",
+    "item": "68",
+    "texto": "CAPECITABINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/69@2026-01-01",
+    "descricao": "descrição",
+    "item": "69",
+    "texto": "CARBIDOPA + LEVODOPA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/6@2026-01-01",
+    "descricao": "descrição",
+    "item": "6",
+    "texto": "ACETATO DE CIPROTERONA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/70@2026-01-01",
+    "descricao": "descrição",
+    "item": "70",
+    "texto": "CARBOPLATINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/71@2026-01-01",
+    "descricao": "descrição",
+    "item": "71",
+    "texto": "CARFILZOMIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/72@2026-01-01",
+    "descricao": "descrição",
+    "item": "72",
+    "texto": "CARMUSTINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/73@2026-01-01",
+    "descricao": "descrição",
+    "item": "73",
+    "texto": "CEFALOTINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/74@2026-01-01",
+    "descricao": "descrição",
+    "item": "74",
+    "texto": "CEFOXITINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/75@2026-01-01",
+    "descricao": "descrição",
+    "item": "75",
+    "texto": "CEFTAZIDIMA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/76@2026-01-01",
+    "descricao": "descrição",
+    "item": "76",
+    "texto": "CELECOXIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/77@2026-01-01",
+    "descricao": "descrição",
+    "item": "77",
+    "texto": "CETUXIMABE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/78@2026-01-01",
+    "descricao": "descrição",
+    "item": "78",
+    "texto": "CICLOFOSFAMIDA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/79@2026-01-01",
+    "descricao": "descrição",
+    "item": "79",
+    "texto": "CILASTATINA SÓDICA + IMIPENEM",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/7@2026-01-01",
+    "descricao": "descrição",
+    "item": "7",
+    "texto": "ACETATO DE DEGARELIX",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/80@2026-01-01",
+    "descricao": "descrição",
+    "item": "80",
+    "texto": "CISPLATINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/81@2026-01-01",
+    "descricao": "descrição",
+    "item": "81",
+    "texto": "CITARABINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/82@2026-01-01",
+    "descricao": "descrição",
+    "item": "82",
+    "texto": "CITRATO DE IXAZOMIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/84@2026-01-01",
+    "descricao": "descrição",
+    "item": "84",
+    "texto": "CITRATO DE TAMOXIFENO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/85@2026-01-01",
+    "descricao": "descrição",
+    "item": "85",
+    "texto": "CLADRIBINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/86@2026-01-01",
+    "descricao": "descrição",
+    "item": "86",
+    "texto": "CLODRONATODISSÓDICO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/87@2026-01-01",
+    "descricao": "descrição",
+    "item": "87",
+    "texto": "CLOFAZIMINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/88@2026-01-01",
+    "descricao": "descrição",
+    "item": "88",
+    "texto": "CLORAMBUCILA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/89@2026-01-01",
+    "descricao": "descrição",
+    "item": "89",
+    "texto": "CLORETO DE RÁDIO (223 RA)",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/8@2026-01-01",
+    "descricao": "descrição",
+    "item": "8",
+    "texto": "ACETATO DE GOSSERRELINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/90@2026-01-01",
+    "descricao": "descrição",
+    "item": "90",
+    "texto": "CLORETO DE SÓDIO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/91@2026-01-01",
+    "descricao": "descrição",
+    "item": "91",
+    "texto": "CLORETO DESUXAMETÔNIO",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/92@2026-01-01",
+    "descricao": "descrição",
+    "item": "92",
+    "texto": "CLORIDRATO DE ALECTINIBE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/93@2026-01-01",
+    "descricao": "descrição",
+    "item": "93",
+    "texto": "CLORIDRATO DE ALFENTANILA MONOIDRATADA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/94@2026-01-01",
+    "descricao": "descrição",
+    "item": "94",
+    "texto": "CLORIDRATO DE AMINOLEVULINATO DE METILA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/95@2026-01-01",
+    "descricao": "descrição",
+    "item": "95",
+    "texto": "CLORIDRATO DE CINACALCETE",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/96@2026-01-01",
+    "descricao": "descrição",
+    "item": "96",
+    "texto": "CLORIDRATO DE DAUNORRUBICINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/97@2026-01-01",
+    "descricao": "descrição",
+    "item": "97",
+    "texto": "CLORIDRATO DE DOBUTAMINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/98@2026-01-01",
+    "descricao": "descrição",
+    "item": "98",
+    "texto": "CLORIDRATO DE DOXORRUBICINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/99@2026-01-01",
+    "descricao": "descrição",
+    "item": "99",
+    "texto": "CLORIDRATO DE EPIRRUBICINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XIV",
+    "chave": "XIV/9@2026-01-01",
+    "descricao": "descrição",
+    "item": "9",
+    "texto": "ACETATO DE LEUPRORRELINA",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XV",
+    "chave": "XV/1@2026-01-01",
+    "descricao": "descrição",
+    "item": "1",
+    "texto": "Ovos da subposição 0407.2 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XV",
+    "chave": "XV/2@2026-01-01",
+    "descricao": "descrição",
+    "item": "2",
+    "texto": "Produtos hortícolas das posições 07.01, 07.02.00.00, 07.03, 07.04, 07.05, 07.06, 0707.00.00, 07.08, 07.09 e 07.10, exceto os cogumelos e trufas classificados na subposição 0709.5 e no código 0710.80.00 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XV",
+    "chave": "XV/3@2026-01-01",
+    "descricao": "descrição",
+    "item": "3",
+    "texto": "Frutas frescas ou refrigeradas e frutas congeladas sem adição de açúcar ou de outros edulcorantes classificadas nas posições 08.03, 08.04, 08.05, 08.06, 08.07, 08.08, 08.09, 08.10 e 08.11 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XV",
+    "chave": "XV/4@2026-01-01",
+    "descricao": "descrição",
+    "item": "4",
+    "texto": "Plantas e produtos de floricultura relativos à horticultura e cultivados para fins alimentares, ornamentais ou medicinais classificados no Capítulo 6 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XV",
+    "chave": "XV/5@2026-01-01",
+    "descricao": "descrição",
+    "item": "5",
+    "texto": "Raízes e tubérculos da posição 07.14 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "anexo": "XV",
+    "chave": "XV/6@2026-01-01",
+    "descricao": "descrição",
+    "item": "6",
+    "texto": "Cocos da subposição 0801.1 da NCM/SH",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  }
+]

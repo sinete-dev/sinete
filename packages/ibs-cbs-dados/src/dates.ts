@@ -4,14 +4,14 @@
  */
 import type { Relogio } from '@sinete/core';
 import { ErroDeConfiguracao, formatarDataHoraComFuso } from '@sinete/core';
-import type { IsoDate, Validity } from './types.ts';
+import type { DataIso, Vigencia } from './types.ts';
 
 const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 /** Confere o formato e a existência da data (`2026-02-30` é inválida). */
-export function isIsoDate(value: unknown): value is IsoDate {
-  if (typeof value !== 'string') return false;
-  const m = ISO_DATE.exec(value);
+export function ehDataIso(valor: unknown): valor is DataIso {
+  if (typeof valor !== 'string') return false;
+  const m = ISO_DATE.exec(valor);
   if (!m) return false;
   const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
   if (mo < 1 || mo > 12 || d < 1) return false;
@@ -20,28 +20,30 @@ export function isIsoDate(value: unknown): value is IsoDate {
 }
 
 /** Valida e devolve a data, ou lança `ErroDeConfiguracao`. */
-export function requireIsoDate(value: unknown, what = 'data'): IsoDate {
-  if (!isIsoDate(value)) {
-    throw new ErroDeConfiguracao(`${what} inválida: ${JSON.stringify(value)}; use AAAA-MM-DD`, { detalhes: { value } });
+export function exigirDataIso(valor: unknown, oQue = 'data'): DataIso {
+  if (!ehDataIso(valor)) {
+    throw new ErroDeConfiguracao(`${oQue} inválida: ${JSON.stringify(valor)}; use AAAA-MM-DD`, {
+      detalhes: { valor },
+    });
   }
-  return value;
+  return valor;
 }
 
 /** Vigência fechada nas duas pontas, como nas consultas da Calculadora (`inicio <= data <= fim`). */
-export function inForce(validity: Validity, date: IsoDate): boolean {
-  return validity.from <= date && (validity.to === null || validity.to >= date);
+export function vigente(vigencia: Vigencia, data: DataIso): boolean {
+  return vigencia.inicio <= data && (vigencia.fim === null || vigencia.fim >= data);
 }
 
 /** Deslocamento padrão: horário de Brasília (UTC-3, sem horário de verão desde 2019). */
-export const BRASILIA_OFFSET_MINUTES = -180;
+export const DESLOCAMENTO_BRASILIA_MIN = -180;
 
 /**
  * Data civil de um instante no deslocamento informado. O deslocamento depende do local da operação (UTC-4 no Amazonas
  * e em Rondônia, UTC-5 no Acre), então vem do chamador; o padrão é Brasília.
  */
-export function civilDate(
-  instant: ReturnType<Relogio['agora']>,
-  offsetMinutes: number = BRASILIA_OFFSET_MINUTES,
-): IsoDate {
-  return formatarDataHoraComFuso(instant, offsetMinutes).slice(0, 10);
+export function dataCivil(
+  instante: ReturnType<Relogio['agora']>,
+  deslocamentoMin: number = DESLOCAMENTO_BRASILIA_MIN,
+): DataIso {
+  return formatarDataHoraComFuso(instante, deslocamentoMin).slice(0, 10);
 }

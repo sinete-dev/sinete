@@ -3,18 +3,18 @@
 /**
  * GERADO por tools/xsd-codegen a partir de NFSe_v1.01_20260209. Não edite: rode `bun run --cwd tools/xsd-codegen gen`.
  *
- * NFS-e Nacional, leiaute 1.01 (esquemas XSD de 09/02/2026, Documentação Atual de produção): DPS, NFSe, pedRegEvento e evento. O TSSerieDPS oficial tem as âncoras ^ e $ literais; a geração usa o pattern corrigido (schema.patches).
+ * NFS-e Nacional, leiaute 1.01 (esquemas XSD de 09/02/2026, Documentação Atual de produção): DPS, NFSe, pedRegEvento e evento. O TSSerieDPS oficial tem as âncoras ^ e $ literais; a geração usa o pattern corrigido (schema.ajustes).
  *
  * Fontes (conteúdo oficial, sha256 em tools/xsd-codegen/xsd/<pacote>/SOURCE.md):
  * - nfse/NFSe_v1.01_20260209 (nfse-esquemas_xsd-v1-01-20260209.zip)
  *
- * Correções sobre o XSD oficial (schema.patches):
+ * Correções sobre o XSD oficial (schema.ajustes):
  * - TSSerieDPS: pattern `^0{0,4}\d{1,5}$` gerado como `0{0,4}\d{1,5}`
  */
-import type { ComplexType, RootElement, SchemaModuleInfo, SimpleType } from "../runtime/desc.ts";
+import type { ComplexType, DescricaoModuloSchema, ElementoRaiz, SimpleType } from "../runtime/desc.ts";
 
 /** Proveniência deste módulo. */
-export const schema: SchemaModuleInfo = {
+export const schema: DescricaoModuloSchema = {
   "subpath": "nfse/1.01-20260209",
   "documento": "nfse",
   "pl": "NFSe_v1.01_20260209",
@@ -26,7 +26,7 @@ export const schema: SchemaModuleInfo = {
       "url": "https://www.gov.br/nfse/pt-br/biblioteca/documentacao-tecnica/documentacao-atual/nfse-esquemas_xsd-v1-01-20260209.zip"
     }
   ],
-  "patches": [
+  "ajustes": [
     {
       "tipo": "TSSerieDPS",
       "de": "^0{0,4}\\d{1,5}$",
@@ -3353,10 +3353,10 @@ export const TCEvento: ComplexType<TCEvento> = { id: "TCEvento", ns: "http://www
 
 // ---------- elementos raiz ----------
 /** Elemento raiz `DPS` (tipo TCDPS). */
-export const DPSElement: RootElement<TCDPS> = { name: "DPS", ns: "http://www.sped.fazenda.gov.br/nfse", type: TCDPS };
+export const DPSElement: ElementoRaiz<TCDPS> = { nome: "DPS", ns: "http://www.sped.fazenda.gov.br/nfse", tipo: TCDPS };
 /** Elemento raiz `NFSe` (tipo TCNFSe). */
-export const NFSeElement: RootElement<TCNFSe> = { name: "NFSe", ns: "http://www.sped.fazenda.gov.br/nfse", type: TCNFSe };
+export const NFSeElement: ElementoRaiz<TCNFSe> = { nome: "NFSe", ns: "http://www.sped.fazenda.gov.br/nfse", tipo: TCNFSe };
 /** Elemento raiz `pedRegEvento` (tipo TCPedRegEvt). */
-export const pedRegEventoElement: RootElement<TCPedRegEvt> = { name: "pedRegEvento", ns: "http://www.sped.fazenda.gov.br/nfse", type: TCPedRegEvt };
+export const pedRegEventoElement: ElementoRaiz<TCPedRegEvt> = { nome: "pedRegEvento", ns: "http://www.sped.fazenda.gov.br/nfse", tipo: TCPedRegEvt };
 /** Elemento raiz `evento` (tipo TCEvento). */
-export const eventoElement: RootElement<TCEvento> = { name: "evento", ns: "http://www.sped.fazenda.gov.br/nfse", type: TCEvento };
+export const eventoElement: ElementoRaiz<TCEvento> = { nome: "evento", ns: "http://www.sped.fazenda.gov.br/nfse", tipo: TCEvento };

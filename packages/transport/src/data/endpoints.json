@@ -1,17 +1,17 @@
 {
   "$comment": "Gerado por tools/transport-data/build.ts endpoints; não edite à mão.",
-  "schemaVersion": 1,
-  "version": "2026.09.26",
+  "versaoDoFormato": 2,
+  "versao": "2026.09.26",
   "nfe": {
     "versao": "4.00",
     "svcSemServicos": {
       "servicos": ["NfeInutilizacao"],
-      "source": "NT 2013.007 v1.03 (SVC), item 04.5: \"O Serviço de Inutilização (Web Service: NFeInutilizacao) não será oferecido pela SVC\""
+      "fonte": "NT 2013.007 v1.03 (SVC), item 04.5: \"O Serviço de Inutilização (Web Service: NFeInutilizacao) não será oferecido pela SVC\""
     },
     "producao": {
-      "source": "https://www.nfe.fazenda.gov.br/portal/webServices.aspx?tipoConteudo=OUC/YVNWZfo=",
-      "retrievedAt": "2026-09-25",
-      "ufMap": {
+      "fonte": "https://www.nfe.fazenda.gov.br/portal/webServices.aspx?tipoConteudo=OUC/YVNWZfo=",
+      "coletadoEm": "2026-09-25",
+      "mapaDeUfs": {
         "SVAN": ["MA"],
         "SVRS": ["AC", "AL", "AP", "CE", "DF", "ES", "PA", "PB", "PI", "RJ", "RN", "RO", "RR", "SC", "SE", "TO"],
         "SVRS_consultaCadastro": ["AC", "ES", "RN", "PB", "SC"],
@@ -38,7 +38,7 @@
         ],
         "SVC-RS": ["AM", "BA", "GO", "MA", "MS", "MT", "PE", "PR"]
       },
-      "authorizers": {
+      "autorizadores": {
         "AM": {
           "NfeInutilizacao": {
             "versao": "4.00",
@@ -452,9 +452,9 @@
       }
     },
     "homologacao": {
-      "source": "https://hom.nfe.fazenda.gov.br/PORTAL/webServices.aspx?tipoConteudo=OUC/YVNWZfo=",
-      "retrievedAt": "2026-09-25",
-      "ufMap": {
+      "fonte": "https://hom.nfe.fazenda.gov.br/PORTAL/webServices.aspx?tipoConteudo=OUC/YVNWZfo=",
+      "coletadoEm": "2026-09-25",
+      "mapaDeUfs": {
         "SVAN": ["MA"],
         "SVRS": ["AC", "AL", "AP", "CE", "DF", "ES", "PA", "PB", "PI", "RJ", "RN", "RO", "RR", "SC", "SE", "TO"],
         "SVRS_consultaCadastro": ["AC", "ES", "RN", "PB", "SC"],
@@ -480,7 +480,7 @@
         ],
         "SVC-RS": ["AM", "BA", "GO", "MA", "MS", "MT", "PE", "PI", "PR"]
       },
-      "authorizers": {
+      "autorizadores": {
         "AM": {
           "NfeInutilizacao": {
             "versao": "4.00",
@@ -897,8 +897,8 @@
   "mdfe": {
     "versao": "3.00",
     "autorizador": "SVRS",
-    "source": "https://dfe-portal.svrs.rs.gov.br/Mdfe/Servicos",
-    "retrievedAt": "2026-09-25",
+    "fonte": "https://dfe-portal.svrs.rs.gov.br/Mdfe/Servicos",
+    "coletadoEm": "2026-09-25",
     "producao": {
       "MDFeRecepcaoEvento": {
         "versao": "3.00",
@@ -954,15 +954,15 @@
   },
   "nfce": {
     "versao": "4.00",
-    "source": "https://dfe-portal.svrs.rs.gov.br/Nfce/Servicos",
-    "sources": {
+    "fonte": "https://dfe-portal.svrs.rs.gov.br/Nfce/Servicos",
+    "fontes": {
       "MG": "https://portalsped.fazenda.mg.gov.br/spedmg/nfce/web-services/"
     },
-    "retrievedAt": "2026-09-26",
-    "ufMapRule": "UF sem autorizador próprio na relação da SVRS nem na da SEF/MG autoriza a NFC-e na SVRS",
-    "consultasSource": "https://portalsped.fazenda.mg.gov.br/spedmg/nfce/web-services/",
+    "coletadoEm": "2026-09-26",
+    "regraDoMapaDeUfs": "UF sem autorizador próprio na relação da SVRS nem na da SEF/MG autoriza a NFC-e na SVRS",
+    "fonteDasConsultas": "https://portalsped.fazenda.mg.gov.br/spedmg/nfce/web-services/",
     "producao": {
-      "ufMap": {
+      "mapaDeUfs": {
         "SVRS": [
           "AC",
           "AL",
@@ -985,7 +985,7 @@
           "TO"
         ]
       },
-      "authorizers": {
+      "autorizadores": {
         "AM": {
           "NFeAutorizacao": {
             "versao": "4.00",
@@ -1241,7 +1241,7 @@
       }
     },
     "homologacao": {
-      "ufMap": {
+      "mapaDeUfs": {
         "SVRS": [
           "AC",
           "AL",
@@ -1264,7 +1264,7 @@
           "TO"
         ]
       },
-      "authorizers": {
+      "autorizadores": {
         "AM": {
           "NFeAutorizacao": {
             "versao": "4.00",
@@ -1521,9 +1521,9 @@
     }
   },
   "nfse": {
-    "source": "https://www.gov.br/nfse/pt-br/biblioteca/documentacao-tecnica/apis-prod-restrita-e-producao",
-    "sourceUpdatedAt": "2026-08-20",
-    "retrievedAt": "2026-09-25",
+    "fonte": "https://www.gov.br/nfse/pt-br/biblioteca/documentacao-tecnica/apis-prod-restrita-e-producao",
+    "fonteAtualizadaEm": "2026-08-20",
+    "coletadoEm": "2026-09-25",
     "producaoRestrita": {
       "sefin": "https://sefin.producaorestrita.nfse.gov.br/API/SefinNacional",
       "adn": "https://adn.producaorestrita.nfse.gov.br",

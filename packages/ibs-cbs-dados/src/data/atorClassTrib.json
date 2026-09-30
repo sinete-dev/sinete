@@ -1,0 +1,1170 @@
+[
+  {
+    "ator": 1,
+    "cClassTrib": "000002",
+    "chave": "001:Fornecedor:CBS_IBS:000002:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:000002:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 1,
+    "cClassTrib": "820006",
+    "chave": "001:Fornecedor:CBS_IBS:820006:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:820006:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 2,
+    "cClassTrib": "000003",
+    "chave": "002:Fornecedor:CBS_IBS:000003:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:000003:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 3,
+    "cClassTrib": "000004",
+    "chave": "003:Fornecedor:CBS_IBS:000004:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:000004:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 4,
+    "cClassTrib": "010001",
+    "chave": "004:Fornecedor:CBS_IBS:010001:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:010001:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 5,
+    "cClassTrib": "010001",
+    "chave": "005:Fornecedor:CBS_IBS:010001:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:010001:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 6,
+    "cClassTrib": "010002",
+    "chave": "006:Fornecedor:CBS_IBS:010002:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:010002:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 6,
+    "cClassTrib": "820007",
+    "chave": "006:Fornecedor:CBS_IBS:820007:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:820007:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 7,
+    "cClassTrib": "011001",
+    "chave": "007:Fornecedor:CBS_IBS:011001:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:011001:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 7,
+    "cClassTrib": "820002",
+    "chave": "007:Fornecedor:CBS_IBS:820002:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:820002:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 8,
+    "cClassTrib": "011002",
+    "chave": "008:Fornecedor:CBS_IBS:011002:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:011002:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 8,
+    "cClassTrib": "820001",
+    "chave": "008:Fornecedor:CBS_IBS:820001:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:820001:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 9,
+    "cClassTrib": "011003",
+    "chave": "009:Fornecedor:CBS_IBS:011003:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:011003:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 10,
+    "cClassTrib": "011004",
+    "chave": "010:Fornecedor:CBS_IBS:011004:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:011004:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 10,
+    "cClassTrib": "820004",
+    "chave": "010:Fornecedor:CBS_IBS:820004:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:820004:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 11,
+    "cClassTrib": "011005",
+    "chave": "011:Fornecedor:CBS_IBS:011005:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:011005:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 11,
+    "cClassTrib": "820003",
+    "chave": "011:Fornecedor:CBS_IBS:820003:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:820003:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 12,
+    "cClassTrib": "200001",
+    "chave": "012:Fornecedor:CBS_IBS:200001:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200001:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 13,
+    "cClassTrib": "200001",
+    "chave": "013:Adquirente:CBS_IBS:200001:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200001:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 13,
+    "cClassTrib": "550014",
+    "chave": "013:Adquirente:CBS_IBS:550014:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:550014:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 14,
+    "cClassTrib": "200002",
+    "chave": "014:Adquirente:CBS_IBS:200002:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200002:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 14,
+    "cClassTrib": "410014",
+    "chave": "014:Fornecedor:CBS_IBS:410014:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410014:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 15,
+    "cClassTrib": "200002",
+    "chave": "015:Adquirente:CBS_IBS:200002:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200002:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 15,
+    "cClassTrib": "410015",
+    "chave": "015:Fornecedor:CBS_IBS:410015:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410015:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 16,
+    "cClassTrib": "200005",
+    "chave": "016:Adquirente:CBS_IBS:200005:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200005:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 16,
+    "cClassTrib": "200008",
+    "chave": "016:Adquirente:CBS_IBS:200008:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200008:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 16,
+    "cClassTrib": "200010",
+    "chave": "016:Adquirente:CBS_IBS:200010:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200010:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 16,
+    "cClassTrib": "200011",
+    "chave": "016:Adquirente:CBS_IBS:200011:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200011:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 16,
+    "cClassTrib": "200016",
+    "chave": "016:Adquirente:CBS_IBS:200016:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200016:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 16,
+    "cClassTrib": "200040",
+    "chave": "016:Adquirente:CBS_IBS:200040:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200040:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 16,
+    "cClassTrib": "200043",
+    "chave": "016:Adquirente:CBS_IBS:200043:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200043:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 17,
+    "cClassTrib": "200005",
+    "chave": "017:Adquirente:CBS_IBS:200005:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200005:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 17,
+    "cClassTrib": "200008",
+    "chave": "017:Adquirente:CBS_IBS:200008:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200008:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 17,
+    "cClassTrib": "200010",
+    "chave": "017:Adquirente:CBS_IBS:200010:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200010:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 17,
+    "cClassTrib": "200011",
+    "chave": "017:Adquirente:CBS_IBS:200011:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200011:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 18,
+    "cClassTrib": "200015",
+    "chave": "018:Adquirente:CBS_IBS:200015:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200015:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 19,
+    "cClassTrib": "200015",
+    "chave": "019:Adquirente:CBS_IBS:200015:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200015:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 20,
+    "cClassTrib": "200016",
+    "chave": "020:Fornecedor:CBS_IBS:200016:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200016:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 21,
+    "cClassTrib": "200016",
+    "chave": "021:Fornecedor:CBS_IBS:200016:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200016:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 22,
+    "cClassTrib": "200016",
+    "chave": "022:Adquirente:CBS_IBS:200016:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200016:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 22,
+    "cClassTrib": "200019",
+    "chave": "022:Adquirente:CBS_IBS:200019:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200019:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 22,
+    "cClassTrib": "410015",
+    "chave": "022:Adquirente:CBS_IBS:410015:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410015:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 22,
+    "cClassTrib": "410016",
+    "chave": "022:Adquirente:CBS_IBS:410016:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410016:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 22,
+    "cClassTrib": "410017",
+    "chave": "022:Adquirente:CBS_IBS:410017:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410017:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 22,
+    "cClassTrib": "410030",
+    "chave": "022:Adquirente:CBS_IBS:410030:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410030:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 22,
+    "cClassTrib": "550018",
+    "chave": "022:Adquirente:CBS_IBS:550018:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:550018:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 23,
+    "cClassTrib": "200017",
+    "chave": "023:Fornecedor:CBS_IBS:200017:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200017:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 24,
+    "cClassTrib": "200018",
+    "chave": "024:Fornecedor:CBS_IBS:200018:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200018:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 25,
+    "cClassTrib": "200018",
+    "chave": "025:Adquirente:CBS_IBS:200018:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200018:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 25,
+    "cClassTrib": "200018",
+    "chave": "025:Fornecedor:CBS_IBS:200018:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200018:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 26,
+    "cClassTrib": "200019",
+    "chave": "026:Fornecedor:CBS_IBS:200019:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200019:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 27,
+    "cClassTrib": "200020",
+    "chave": "027:Adquirente:CBS_IBS:200020:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200020:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 27,
+    "cClassTrib": "200020",
+    "chave": "027:Fornecedor:CBS_IBS:200020:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200020:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 27,
+    "cClassTrib": "200054",
+    "chave": "027:Fornecedor:CBS_IBS:200054:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200054:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 28,
+    "cClassTrib": "200054",
+    "chave": "028:Adquirente:CBS_IBS:200054:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200054:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 28,
+    "cClassTrib": "200020",
+    "chave": "028:Fornecedor:CBS_IBS:200020:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200020:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 29,
+    "cClassTrib": "200020",
+    "chave": "029:Adquirente:CBS_IBS:200020:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200020:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 30,
+    "cClassTrib": "200022",
+    "chave": "030:Fornecedor:CBS_IBS:200022:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200022:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 31,
+    "cClassTrib": "200022",
+    "chave": "031:Adquirente:CBS_IBS:200022:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200022:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 32,
+    "cClassTrib": "200023",
+    "chave": "032:Adquirente:CBS_IBS:200023:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200023:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 32,
+    "cClassTrib": "550019",
+    "chave": "032:Adquirente:CBS_IBS:550019:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:550019:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 32,
+    "cClassTrib": "200023",
+    "chave": "032:Fornecedor:CBS_IBS:200023:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200023:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 32,
+    "cClassTrib": "810001",
+    "chave": "032:Fornecedor:CBS_IBS:810001:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:810001:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 33,
+    "cClassTrib": "200024",
+    "chave": "033:Fornecedor:CBS_IBS:200024:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200024:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 34,
+    "cClassTrib": "200024",
+    "chave": "034:Adquirente:CBS_IBS:200024:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200024:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 35,
+    "cClassTrib": "200025",
+    "chave": "035:Fornecedor:CBS_IBS:200025:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200025:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 36,
+    "cClassTrib": "200042",
+    "chave": "036:Fornecedor:CBS_IBS:200042:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200042:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 37,
+    "cClassTrib": "200044",
+    "chave": "037:Fornecedor:CBS_IBS:200044:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200044:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 38,
+    "cClassTrib": "200051",
+    "chave": "038:Fornecedor:CBS_IBS:200051:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200051:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 39,
+    "cClassTrib": "200052",
+    "chave": "039:Fornecedor:CBS_IBS:200052:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200052:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 40,
+    "cClassTrib": "200021",
+    "chave": "040:Fornecedor:CBS_IBS:200021:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200021:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 41,
+    "cClassTrib": "400001",
+    "chave": "041:Fornecedor:CBS_IBS:400001:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:400001:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 41,
+    "cClassTrib": "400002",
+    "chave": "041:Fornecedor:CBS_IBS:400002:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:400002:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 42,
+    "cClassTrib": "410005",
+    "chave": "042:Fornecedor:CBS_IBS:410005:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410005:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 43,
+    "cClassTrib": "410005",
+    "chave": "043:Fornecedor:CBS_IBS:410005:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410005:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 44,
+    "cClassTrib": "410005",
+    "chave": "044:Fornecedor:CBS_IBS:410005:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410005:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 45,
+    "cClassTrib": "410005",
+    "chave": "045:Fornecedor:CBS_IBS:410005:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410005:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 46,
+    "cClassTrib": "410005",
+    "chave": "046:Fornecedor:CBS_IBS:410005:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410005:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 47,
+    "cClassTrib": "410005",
+    "chave": "047:Fornecedor:CBS_IBS:410005:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410005:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 48,
+    "cClassTrib": "410005",
+    "chave": "048:Fornecedor:CBS_IBS:410005:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410005:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 49,
+    "cClassTrib": "410006",
+    "chave": "049:Fornecedor:CBS_IBS:410006:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410006:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 50,
+    "cClassTrib": "410007",
+    "chave": "050:Fornecedor:CBS_IBS:410007:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410007:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 51,
+    "cClassTrib": "410007",
+    "chave": "051:Fornecedor:CBS_IBS:410007:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410007:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 52,
+    "cClassTrib": "410007",
+    "chave": "052:Fornecedor:CBS_IBS:410007:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410007:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 53,
+    "cClassTrib": "410007",
+    "chave": "053:Fornecedor:CBS_IBS:410007:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410007:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 54,
+    "cClassTrib": "410012",
+    "chave": "054:Fornecedor:CBS_IBS:410012:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410012:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 55,
+    "cClassTrib": "410016",
+    "chave": "055:Fornecedor:CBS_IBS:410016:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410016:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 56,
+    "cClassTrib": "410017",
+    "chave": "056:Fornecedor:CBS_IBS:410017:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410017:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 56,
+    "cClassTrib": "410028",
+    "chave": "056:Fornecedor:CBS_IBS:410028:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410028:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 57,
+    "cClassTrib": "410015",
+    "chave": "057:Fornecedor:CBS_IBS:410015:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410015:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 57,
+    "cClassTrib": "410017",
+    "chave": "057:Fornecedor:CBS_IBS:410017:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410017:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 58,
+    "cClassTrib": "410018",
+    "chave": "058:Fornecedor:CBS_IBS:410018:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410018:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 59,
+    "cClassTrib": "200047",
+    "chave": "059:Fornecedor:CBS_IBS:200047:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200047:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 59,
+    "cClassTrib": "410019",
+    "chave": "059:Fornecedor:CBS_IBS:410019:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410019:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 59,
+    "cClassTrib": "410020",
+    "chave": "059:Fornecedor:CBS_IBS:410020:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410020:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 60,
+    "cClassTrib": "510001",
+    "chave": "060:Adquirente:CBS_IBS:510001:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:510001:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 60,
+    "cClassTrib": "510001",
+    "chave": "060:Fornecedor:CBS_IBS:510001:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:510001:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 61,
+    "cClassTrib": "410033",
+    "chave": "061:Fornecedor:CBS_IBS:410033:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410033:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 62,
+    "cClassTrib": "410033",
+    "chave": "062:Fornecedor:CBS_IBS:410033:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410033:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 63,
+    "cClassTrib": "410034",
+    "chave": "063:Fornecedor:CBS_IBS:410034:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410034:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 64,
+    "cClassTrib": "550001",
+    "chave": "064:Adquirente:CBS_IBS:550001:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:550001:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 65,
+    "cClassTrib": "550004",
+    "chave": "065:Adquirente:CBS_IBS:550004:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:550004:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 66,
+    "cClassTrib": "550005",
+    "chave": "066:Adquirente:CBS_IBS:550005:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:550005:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 67,
+    "cClassTrib": "550013",
+    "chave": "067:Adquirente:CBS_IBS:550013:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:550013:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 68,
+    "cClassTrib": "550015",
+    "chave": "068:Adquirente:CBS_IBS:550015:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:550015:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 69,
+    "cClassTrib": "550016",
+    "chave": "069:Adquirente:CBS_IBS:550016:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:550016:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 70,
+    "cClassTrib": "550017",
+    "chave": "070:Adquirente:CBS_IBS:550017:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:550017:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 70,
+    "cClassTrib": "550024",
+    "chave": "070:Adquirente:CBS_IBS:550024:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:550024:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 70,
+    "cClassTrib": "550025",
+    "chave": "070:Adquirente:CBS_IBS:550025:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:550025:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 71,
+    "cClassTrib": "550022",
+    "chave": "071:Adquirente:CBS_IBS:550022:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:550022:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 72,
+    "cClassTrib": "550020",
+    "chave": "072:Adquirente:CBS_IBS:550020:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:550020:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 73,
+    "cClassTrib": "550021",
+    "chave": "073:Adquirente:CBS_IBS:550021:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:550021:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 74,
+    "cClassTrib": "550023",
+    "chave": "074:Adquirente:CBS_IBS:550023:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:550023:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 74,
+    "cClassTrib": "620002",
+    "chave": "074:Fornecedor:CBS_IBS:620002:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:620002:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 74,
+    "cClassTrib": "620003",
+    "chave": "074:Fornecedor:CBS_IBS:620003:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:620003:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 75,
+    "cClassTrib": "550023",
+    "chave": "075:Fornecedor:CBS_IBS:550023:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:550023:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 76,
+    "cClassTrib": "550023",
+    "chave": "076:Fornecedor:CBS_IBS:550023:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:550023:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 76,
+    "cClassTrib": "620002",
+    "chave": "076:Fornecedor:CBS_IBS:620002:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:620002:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 76,
+    "cClassTrib": "620003",
+    "chave": "076:Fornecedor:CBS_IBS:620003:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:620003:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 76,
+    "cClassTrib": "620006",
+    "chave": "076:Fornecedor:CBS_IBS:620006:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:620006:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 77,
+    "cClassTrib": "620001",
+    "chave": "077:Fornecedor:CBS_IBS:620001:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:620001:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 78,
+    "cClassTrib": "620002",
+    "chave": "078:Fornecedor:CBS_IBS:620002:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:620002:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 78,
+    "cClassTrib": "620003",
+    "chave": "078:Fornecedor:CBS_IBS:620003:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:620003:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 78,
+    "cClassTrib": "620006",
+    "chave": "078:Fornecedor:CBS_IBS:620006:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:620006:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 80,
+    "cClassTrib": "410035",
+    "chave": "080:Fornecedor:CBS_IBS:410035:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410035:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 81,
+    "cClassTrib": "200048",
+    "chave": "081:Fornecedor:CBS_IBS:200048:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200048:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 82,
+    "cClassTrib": "200050",
+    "chave": "082:Fornecedor:CBS_IBS:200050:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:200050:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 83,
+    "cClassTrib": "800002",
+    "chave": "083:Fornecedor:CBS_IBS:800002:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:800002:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 84,
+    "cClassTrib": "800002",
+    "chave": "084:Adquirente:CBS_IBS:800002:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:800002:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 84,
+    "cClassTrib": "800002",
+    "chave": "084:Fornecedor:CBS_IBS:800002:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:800002:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 85,
+    "cClassTrib": "800002",
+    "chave": "085:Adquirente:CBS_IBS:800002:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:800002:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 86,
+    "cClassTrib": "410021",
+    "chave": "086:Fornecedor:CBS_IBS:410021:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410021:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 86,
+    "cClassTrib": "830001",
+    "chave": "086:Fornecedor:CBS_IBS:830001:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:830001:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 87,
+    "cClassTrib": "410024",
+    "chave": "087:Fornecedor:CBS_IBS:410024:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410024:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 87,
+    "cClassTrib": "410025",
+    "chave": "087:Fornecedor:CBS_IBS:410025:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:410025:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 88,
+    "cClassTrib": "620001",
+    "chave": "088:Adquirente:CBS_IBS:620001:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:620001:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 88,
+    "cClassTrib": "620002",
+    "chave": "088:Adquirente:CBS_IBS:620002:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:620002:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 88,
+    "cClassTrib": "620003",
+    "chave": "088:Adquirente:CBS_IBS:620003:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:620003:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 88,
+    "cClassTrib": "620006",
+    "chave": "088:Adquirente:CBS_IBS:620006:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:620006:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 88,
+    "cClassTrib": "620004",
+    "chave": "088:Fornecedor:CBS_IBS:620004:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:620004:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 88,
+    "cClassTrib": "620005",
+    "chave": "088:Fornecedor:CBS_IBS:620005:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:620005:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 88,
+    "cClassTrib": "620006",
+    "chave": "088:Fornecedor:CBS_IBS:620006:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:620006:2026-01-01",
+    "papel": "Fornecedor",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 89,
+    "cClassTrib": "620004",
+    "chave": "089:Adquirente:CBS_IBS:620004:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:620004:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 89,
+    "cClassTrib": "620005",
+    "chave": "089:Adquirente:CBS_IBS:620005:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:620005:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 89,
+    "cClassTrib": "620006",
+    "chave": "089:Adquirente:CBS_IBS:620006:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:620006:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "ator": 90,
+    "cClassTrib": "830001",
+    "chave": "090:Adquirente:CBS_IBS:830001:2026-01-01:2026-01-01",
+    "chaveClassTrib": "CBS_IBS:830001:2026-01-01",
+    "papel": "Adquirente",
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  }
+]

@@ -10,11 +10,11 @@
 
 import { ErroNaoSuportado } from '@sinete/core';
 
-/** Construção de regex do XSD que o tradutor não implementa: `nao_suportado`, com o `pattern` em `detalhes`. */
-export class XsdRegexError extends ErroNaoSuportado {
-  constructor(message: string, pattern?: string) {
-    super(`regex do XSD: ${message}`, pattern === undefined ? undefined : { detalhes: { pattern } });
-    this.name = 'XsdRegexError';
+/** Construção de regex do XSD que o tradutor não implementa: `nao_suportado`, com o `padrao` em `detalhes`. */
+export class ErroRegexXsd extends ErroNaoSuportado {
+  constructor(message: string, padrao?: string) {
+    super(`regex do XSD: ${message}`, padrao === undefined ? undefined : { detalhes: { padrao } });
+    this.name = 'ErroRegexXsd';
   }
 }
 
@@ -48,7 +48,7 @@ function splitNegatedEscapes(src: string, start: number): { readonly out: string
       const n = body[i + 1] as string;
       const neg = NEGATED_IN_CLASS[n];
       if (neg !== undefined) {
-        if (body.startsWith('^')) throw new XsdRegexError(`\\${n} dentro de classe negada`, src);
+        if (body.startsWith('^')) throw new ErroRegexXsd(`\\${n} dentro de classe negada`, src);
         if (!alts.includes(neg)) alts.push(neg);
       } else rest += `\\${n}`;
       i++;
@@ -62,8 +62,8 @@ function splitNegatedEscapes(src: string, start: number): { readonly out: string
   return { out: `(?:${parts.join('|')})`, end };
 }
 
-export function xsdRegexToJs(src: string): string {
-  return `^(?:${translate(src)})$`;
+export function regexXsdParaJs(padrao: string): string {
+  return `^(?:${translate(padrao)})$`;
 }
 
 function translate(src: string): string {
@@ -78,14 +78,14 @@ function translate(src: string): string {
           out += '\\p{Nd}';
           break;
         case 'D':
-          if (inClass) throw new XsdRegexError('\\D dentro de classe', src);
+          if (inClass) throw new ErroRegexXsd('\\D dentro de classe', src);
           out += '\\P{Nd}';
           break;
         case 's':
           out += inClass ? ' \\t\\n\\r' : '[ \\t\\n\\r]';
           break;
         case 'S':
-          if (inClass) throw new XsdRegexError('\\S dentro de classe', src);
+          if (inClass) throw new ErroRegexXsd('\\S dentro de classe', src);
           out += '[^ \\t\\n\\r]';
           break;
         case 'i':
@@ -94,13 +94,13 @@ function translate(src: string): string {
         case 'C':
         case 'w':
         case 'W':
-          throw new XsdRegexError(`escape \\${n} do XSD não implementado`, src);
+          throw new ErroRegexXsd(`escape \\${n} do XSD não implementado`, src);
         case 'p':
         case 'P': {
           const e = src.indexOf('}', i);
           const name = src.slice(i + 2, e);
-          if (src[i + 1] !== '{' || e === -1) throw new XsdRegexError('\\p sem chaves', src);
-          if (name.startsWith('Is')) throw new XsdRegexError(`bloco ${name} não implementado`, src);
+          if (src[i + 1] !== '{' || e === -1) throw new ErroRegexXsd('\\p sem chaves', src);
+          if (name.startsWith('Is')) throw new ErroRegexXsd(`bloco ${name} não implementado`, src);
           out += `\\${n}{${name}}`;
           i = e;
           break;
@@ -109,14 +109,14 @@ function translate(src: string): string {
           out += inClass ? '\\-' : '-';
           break;
         case undefined:
-          throw new XsdRegexError('barra invertida no fim do pattern', src);
+          throw new ErroRegexXsd('barra invertida no fim do pattern', src);
         default:
           out += `\\${n}`;
       }
       continue;
     }
     if (c === '[') {
-      if (inClass && src[i - 1] === '-') throw new XsdRegexError('subtração de classe não implementada', src);
+      if (inClass && src[i - 1] === '-') throw new ErroRegexXsd('subtração de classe não implementada', src);
       if (!inClass) {
         const split = splitNegatedEscapes(src, i);
         if (split !== undefined) {
@@ -137,6 +137,6 @@ function translate(src: string): string {
 }
 
 /** Compila um pattern do XSD. */
-export function compileXsdRegex(src: string): RegExp {
-  return new RegExp(xsdRegexToJs(src), 'u');
+export function compilarRegexXsd(padrao: string): RegExp {
+  return new RegExp(regexXsdParaJs(padrao), 'u');
 }

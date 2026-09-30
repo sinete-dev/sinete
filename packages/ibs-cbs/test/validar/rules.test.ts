@@ -1,17 +1,17 @@
 import { describe, expect, test } from 'bun:test';
 import type { ContextoDeTempo } from '@sinete/core';
 import { contextoDeTempo, ErroDeConfiguracao, relogioFixo } from '@sinete/core';
-import { loadDataset } from '@sinete/ibs-cbs-dados';
-import { BUNDLED_DATASET } from '@sinete/ibs-cbs-dados/bundled';
+import { carregarDataset } from '@sinete/ibs-cbs-dados';
+import { DATASET_EMBARCADO } from '@sinete/ibs-cbs-dados/bundled';
 import { REJEICOES } from '@sinete/rejeicoes';
-import { officialRates, withOverrides } from '../../src/aliquotas/index.ts';
-import type { ClassifiedItem, IBSCBS } from '../../src/calcular/index.ts';
-import { calculateAt } from '../../src/calcular/index.ts';
-import type { RulesDocument, RulesItem } from '../../src/validar/index.ts';
-import { documentFromRoc, isActive, NOT_IMPLEMENTED, NT_TABLES, RULES, validate } from '../../src/validar/index.ts';
+import { aliquotasOficiais, comAliquotasInformadas } from '../../src/aliquotas/index.ts';
+import type { IBSCBS, ItemClassificado } from '../../src/calcular/index.ts';
+import { calcularEm } from '../../src/calcular/index.ts';
+import type { DocumentoDasRegras, ItemDasRegras } from '../../src/validar/index.ts';
+import { ativa, documentoDoRoc, NAO_IMPLEMENTADAS, REGRAS, TABELAS_NT, validar } from '../../src/validar/index.ts';
 
-const dataset = loadDataset(BUNDLED_DATASET);
-const rates = officialRates();
+const dataset = carregarDataset(DATASET_EMBARCADO);
+const rates = aliquotasOficiais();
 const place = { uf: 'RS', cMun: '4314902' };
 
 function time(emission: string, fact = emission): ContextoDeTempo {
@@ -23,80 +23,89 @@ function time(emission: string, fact = emission): ContextoDeTempo {
 
 /** Documento válido a partir do motor. */
 function docOf(
-  items: ClassifiedItem[],
-  opts: { date?: string; modelo?: 55 | 65; gov?: 1 | 2 | 4; ident?: Partial<RulesDocument> } = {},
-): RulesDocument {
+  items: ItemClassificado[],
+  opts: { date?: string; modelo?: 55 | 65; gov?: 1 | 2 | 4; ident?: Partial<DocumentoDasRegras> } = {},
+): DocumentoDasRegras {
   const date = opts.date ?? '2026-10-10';
-  const roc = calculateAt(
-    { modelo: opts.modelo ?? 55, place, items, ...(opts.gov ? { governmentPurchase: { tpEnteGov: opts.gov } } : {}) },
-    { dataset, rates, date },
+  const roc = calcularEm(
+    {
+      modelo: opts.modelo ?? 55,
+      local: place,
+      itens: items,
+      ...(opts.gov ? { compraGovernamental: { tpEnteGov: opts.gov } } : {}),
+    },
+    { dataset, aliquotas: rates, data: date },
   );
-  return documentFromRoc(roc, { modelo: opts.modelo ?? 55, crt: 3, finNFe: 1, ...opts.ident });
+  return documentoDoRoc(roc, { modelo: opts.modelo ?? 55, crt: 3, finNFe: 1, ...opts.ident });
 }
 
-function run(doc: RulesDocument, date = '2026-10-10', extra: Partial<Parameters<typeof validate>[1]> = {}): string[] {
-  const report = validate(doc, { dataset, time: time(date), ambiente: 'producao', ignoreActivation: true, ...extra });
-  return [...new Set(report.violations.map((v) => v.rule))].sort();
+function run(
+  doc: DocumentoDasRegras,
+  date = '2026-10-10',
+  extra: Partial<Parameters<typeof validar>[1]> = {},
+): string[] {
+  const report = validar(doc, { dataset, tempo: time(date), ambiente: 'producao', ignorarAtivacao: true, ...extra });
+  return [...new Set(report.violacoes.map((v) => v.regra))].sort();
 }
 
 /** Troca o IBSCBS do item 1. */
-function patch(doc: RulesDocument, fn: (ib: IBSCBS) => IBSCBS, item = 0): RulesDocument {
+function patch(doc: DocumentoDasRegras, fn: (ib: IBSCBS) => IBSCBS, item = 0): DocumentoDasRegras {
   return {
     ...doc,
-    items: doc.items.map((it, i) => (i === item && it.IBSCBS ? { ...it, IBSCBS: fn(it.IBSCBS) } : it)),
+    itens: doc.itens.map((it, i) => (i === item && it.IBSCBS ? { ...it, IBSCBS: fn(it.IBSCBS) } : it)),
   };
 }
 
-const full: ClassifiedItem = { n: 1, cst: '000', cClassTrib: '000001', base: '1000.00' };
+const full: ItemClassificado = { n: 1, cst: '000', cClassTrib: '000001', base: '1000.00' };
 
 describe('catálogo de regras', () => {
   test('ids únicos, cStat conferido no @sinete/rejeicoes e fonte citada', () => {
-    const ids = RULES.map((r) => r.id);
+    const ids = REGRAS.map((r) => r.id);
     expect(new Set(ids).size).toBe(ids.length);
     expect(ids.length).toBeGreaterThan(90);
     const byCode = new Map(REJEICOES.map((r) => [r.codigo, r]));
-    for (const r of RULES) {
+    for (const r of REGRAS) {
       const rej = byCode.get(r.cStat);
       expect(rej, `${r.id} cStat ${r.cStat}`).toBeDefined();
       expect(
         rej?.regras.some((x) => x.id === r.id),
         `${r.id} não está na regra do cStat ${r.cStat}`,
       ).toBe(true);
-      expect(r.source).toBe(`NT 2025.002 v1.51, ${r.id}`);
-      for (const a of r.activation) expect(a.homologacao <= a.producao).toBe(true);
+      expect(r.fonte).toBe(`NT 2025.002 v1.51, ${r.id}`);
+      for (const a of r.ativacao) expect(a.homologacao <= a.producao).toBe(true);
       for (const m of r.modelos) expect(rej?.modelos).toContain(String(m) as '55');
     }
-    expect(NOT_IMPLEMENTED.length).toBeGreaterThan(5);
-    for (const n of NOT_IMPLEMENTED) expect(ids).not.toContain(n.id);
-    expect(NT_TABLES.source.sha256).toMatch(/^[0-9a-f]{64}$/);
+    expect(NAO_IMPLEMENTADAS.length).toBeGreaterThan(5);
+    for (const n of NAO_IMPLEMENTADAS) expect(ids).not.toContain(n.id);
+    expect(TABELAS_NT.fonte.sha256).toMatch(/^[0-9a-f]{64}$/);
   });
 
   test('implantação por ambiente, data de emissão, modelo e CRT', () => {
     const doc = docOf([full]);
-    const ub12 = RULES.find((r) => r.id === 'UB12-10');
-    const ub62 = RULES.find((r) => r.id === 'UB62-10');
-    const ub18 = RULES.find((r) => r.id === 'UB18-10');
+    const ub12 = REGRAS.find((r) => r.id === 'UB12-10');
+    const ub62 = REGRAS.find((r) => r.id === 'UB62-10');
+    const ub18 = REGRAS.find((r) => r.id === 'UB18-10');
     if (!ub12 || !ub62 || !ub18) throw new Error('regras ausentes');
-    expect(isActive(ub12, doc, 'producao', '2026-08-02')).toBe(false);
-    expect(isActive(ub12, doc, 'producao', '2026-08-03')).toBe(true);
-    expect(isActive(ub12, doc, 'homologacao', '2026-07-01')).toBe(true);
-    expect(isActive(ub12, { ...doc, crt: 1 }, 'producao', '2026-12-31')).toBe(false);
-    expect(isActive(ub12, { ...doc, crt: 1 }, 'producao', '2027-01-04')).toBe(true);
-    expect(isActive(ub62, doc, 'producao', '2027-01-01')).toBe(false);
-    expect(isActive(ub18, doc, 'producao', '2026-10-04')).toBe(false);
-    expect(isActive(ub18, doc, 'producao', '2026-10-05')).toBe(true);
-    const r = validate(doc, { dataset, time: time('2026-09-01'), ambiente: 'producao' });
-    expect(r.inactive).toContain('UB18-10');
-    expect(r.evaluated).toContain('UB35-10');
-    expect(r.emissionDate).toBe('2026-09-01');
-    expect(r.factDate).toBe('2026-09-01');
+    expect(ativa(ub12, doc, 'producao', '2026-08-02')).toBe(false);
+    expect(ativa(ub12, doc, 'producao', '2026-08-03')).toBe(true);
+    expect(ativa(ub12, doc, 'homologacao', '2026-07-01')).toBe(true);
+    expect(ativa(ub12, { ...doc, crt: 1 }, 'producao', '2026-12-31')).toBe(false);
+    expect(ativa(ub12, { ...doc, crt: 1 }, 'producao', '2027-01-04')).toBe(true);
+    expect(ativa(ub62, doc, 'producao', '2027-01-01')).toBe(false);
+    expect(ativa(ub18, doc, 'producao', '2026-10-04')).toBe(false);
+    expect(ativa(ub18, doc, 'producao', '2026-10-05')).toBe(true);
+    const r = validar(doc, { dataset, tempo: time('2026-09-01'), ambiente: 'producao' });
+    expect(r.inativas).toContain('UB18-10');
+    expect(r.avaliadas).toContain('UB35-10');
+    expect(r.dataDaEmissao).toBe('2026-09-01');
+    expect(r.dataDoFato).toBe('2026-09-01');
   });
 
   test('entrada inválida é ErroDeConfiguracao', () => {
     expect(() =>
-      validate(null as unknown as RulesDocument, { dataset, time: time('2026-10-10'), ambiente: 'producao' }),
+      validar(null as unknown as DocumentoDasRegras, { dataset, tempo: time('2026-10-10'), ambiente: 'producao' }),
     ).toThrow(ErroDeConfiguracao);
-    expect(() => validate(docOf([full]), { dataset, time: time('2026-10-10'), ambiente: 'x' as 'producao' })).toThrow(
+    expect(() => validar(docOf([full]), { dataset, tempo: time('2026-10-10'), ambiente: 'x' as 'producao' })).toThrow(
       ErroDeConfiguracao,
     );
   });
@@ -110,76 +119,87 @@ describe('documentos válidos passam', () => {
       { n: 3, cst: '515', cClassTrib: '515001', base: '100.05' },
       { n: 4, cst: '550', cClassTrib: '550001', base: '10.00', regular: { cst: '000', cClassTrib: '000001' } },
       { n: 5, cst: '410', cClassTrib: '410001', base: '5.00' },
-      { n: 6, cst: '000', cClassTrib: '000001', base: '100.00', taxRefund: { pDevTrib: '20' } },
+      { n: 6, cst: '000', cClassTrib: '000001', base: '100.00', devolucaoDeTributo: { pDevTrib: '20' } },
     ]);
-    const r = validate(doc, { dataset, time: time('2026-10-10'), ambiente: 'producao' });
-    expect(r.violations).toEqual([]);
-    expect(r.evaluated.length).toBeGreaterThan(80);
+    const r = validar(doc, { dataset, tempo: time('2026-10-10'), ambiente: 'producao' });
+    expect(r.violacoes).toEqual([]);
+    expect(r.avaliadas.length).toBeGreaterThan(80);
   });
 
   test('compra governamental em 2026 e a UB56-20 com alíquota informada em 2027', () => {
     expect(run(docOf([full], { gov: 2 }))).toEqual([]);
-    const provider = withOverrides(rates, [{ tributo: 'CBS', value: '8.8', reason: 'teste' }]);
+    const provider = comAliquotasInformadas(rates, [{ tributo: 'CBS', valor: '8.8', motivo: 'teste' }]);
     const doc2027 = docOf(
-      [{ ...full, informedRates: { CBS: '8.8', IBSUF: '0.05', IBSMun: '0.05', reason: 'teste' } }],
+      [{ ...full, aliquotasInformadas: { CBS: '8.8', IBSUF: '0.05', IBSMun: '0.05', motivo: 'teste' } }],
       {
         date: '2027-02-02',
       },
     );
-    expect(run(doc2027, '2027-02-02', { rates: provider })).toEqual([]);
+    expect(run(doc2027, '2027-02-02', { aliquotas: provider })).toEqual([]);
     expect(
-      run(doc2027, '2027-02-02', { rates: withOverrides(rates, [{ tributo: 'CBS', value: '9', reason: 'x' }]) }),
+      run(doc2027, '2027-02-02', {
+        aliquotas: comAliquotasInformadas(rates, [{ tributo: 'CBS', valor: '9', motivo: 'x' }]),
+      }),
     ).toEqual(['UB56-20']);
     expect(run(doc2027, '2027-02-02')).toEqual([]);
     // A UB56-20 é regra do ano de emissão: fato gerador em 2026 e emissão em 2027 confere a alíquota de 2027.
-    const nine = withOverrides(rates, [
-      { tributo: 'CBS', value: '9', reason: 'x', validity: { from: '2027-01-01', to: null } },
+    const nine = comAliquotasInformadas(rates, [
+      { tributo: 'CBS', valor: '9', motivo: 'x', vigencia: { inicio: '2027-01-01', fim: null } },
     ]);
-    const crossing = (d: RulesDocument): string[] =>
+    const crossing = (d: DocumentoDasRegras): string[] =>
       [
         ...new Set(
-          validate(d, {
+          validar(d, {
             dataset,
-            time: time('2027-01-04', '2026-12-31'),
+            tempo: time('2027-01-04', '2026-12-31'),
             ambiente: 'producao',
-            ignoreActivation: true,
-            rates: nine,
-          }).violations.map((v) => v.rule),
+            ignorarAtivacao: true,
+            aliquotas: nine,
+          }).violacoes.map((v) => v.regra),
         ),
       ].filter((r) => r === 'UB56-20');
     expect(crossing(doc2027)).toEqual(['UB56-20']);
-    const doc9 = docOf([{ ...full, informedRates: { CBS: '9', IBSUF: '0.05', IBSMun: '0.05', reason: 'teste' } }], {
-      date: '2027-02-02',
-    });
+    const doc9 = docOf(
+      [{ ...full, aliquotasInformadas: { CBS: '9', IBSUF: '0.05', IBSMun: '0.05', motivo: 'teste' } }],
+      {
+        date: '2027-02-02',
+      },
+    );
     expect(crossing(doc9)).toEqual([]);
   });
 
   test('crédito presumido, estorno, transferência, ajuste e ZFM na nota certa', () => {
-    const allowed = dataset.tables.classTrib.find(
-      (c) => c.family === 'CBS_IBS' && c.groups.gCredPresOper === 'allowed',
+    const allowed = dataset.tabelas.classTrib.find(
+      (c) => c.familia === 'CBS_IBS' && c.grupos.gCredPresOper === 'permitido',
     );
     if (!allowed) throw new Error('dataset sem crédito presumido');
-    const rates2027 = { CBS: '8.8', IBSUF: '0.05', IBSMun: '0.05', reason: 'teste' };
+    const rates2027 = { CBS: '8.8', IBSUF: '0.05', IBSMun: '0.05', motivo: 'teste' };
     const cred = docOf(
       [
         {
           n: 1,
           cst: allowed.cst,
-          cClassTrib: allowed.code,
+          cClassTrib: allowed.codigo,
           base: '10000.00',
-          informedRates: rates2027,
-          presumedCredit: { cCredPres: 11, vBCCredPres: '1000.00', ibs: { pCredPres: '0.1' } },
+          aliquotasInformadas: rates2027,
+          creditoPresumido: { cCredPres: 11, vBCCredPres: '1000.00', ibs: { pCredPres: '0.1' } },
         },
       ],
       { date: '2027-03-03' },
     );
     expect(run(cred, '2027-03-03')).toEqual([]);
     const reversal = docOf([
-      { n: 1, cst: '410', cClassTrib: '410026', base: '1.00', creditReversal: { vIBSEstCred: '1', vCBSEstCred: '2' } },
+      {
+        n: 1,
+        cst: '410',
+        cClassTrib: '410026',
+        base: '1.00',
+        estornoDeCredito: { vIBSEstCred: '1', vCBSEstCred: '2' },
+      },
     ]);
     expect(run(reversal)).toEqual([]);
     const transfer = docOf(
-      [{ n: 1, cst: '800', cClassTrib: '800001', base: '0', creditTransfer: { vIBS: '1', vCBS: '2' } }],
+      [{ n: 1, cst: '800', cClassTrib: '800001', base: '0', transferenciaDeCredito: { vIBS: '1', vCBS: '2' } }],
       {
         ident: { finNFe: 6, tpNFDebito: '05' },
       },
@@ -192,7 +212,7 @@ describe('documentos válidos passam', () => {
           cst: '810',
           cClassTrib: '810001',
           base: '0',
-          zfmCredit: { competApur: '2026-09', tpCredPresIBSZFM: 1, vCredPresIBSZFM: '10' },
+          creditoZfm: { competApur: '2026-09', tpCredPresIBSZFM: 1, vCredPresIBSZFM: '10' },
         },
       ],
       { ident: { finNFe: 5, tpNFCredito: '02' } },
@@ -205,11 +225,11 @@ describe('violações', () => {
   const doc = docOf([full]);
 
   test('UB12-10 e exceções', () => {
-    const missing: RulesDocument = { ...doc, items: [...doc.items, { nItem: 2 }] };
+    const missing: DocumentoDasRegras = { ...doc, itens: [...doc.itens, { nItem: 2 }] };
     expect(run(missing)).toEqual(['UB12-10']);
-    expect(run({ ...missing, items: [...doc.items, { nItem: 2, monophasicFuel: true }] })).toEqual([]);
-    expect(run({ ...missing, finNFe: 4, referencedEmission: '2026-12-01' })).toEqual([]);
-    expect(run({ ...missing, finNFe: 4, referencedEmission: '2027-01-01' })).toContain('UB12-10');
+    expect(run({ ...missing, itens: [...doc.itens, { nItem: 2, combustivelMonofasico: true }] })).toEqual([]);
+    expect(run({ ...missing, finNFe: 4, emissaoReferenciada: '2026-12-01' })).toEqual([]);
+    expect(run({ ...missing, finNFe: 4, emissaoReferenciada: '2027-01-01' })).toContain('UB12-10');
   });
 
   test('CST, cClassTrib e modelo', () => {
@@ -226,12 +246,12 @@ describe('violações', () => {
     expect(run(noMain)).toContain('UB13-30');
     expect(run({ ...noMain, tpNFDebito: '07' })).not.toContain('UB13-30');
     const immune = docOf([{ n: 1, cst: '410', cClassTrib: '410001', base: '1' }]);
-    const main = doc.items[0]?.IBSCBS?.gIBSCBS;
+    const main = doc.itens[0]?.IBSCBS?.gIBSCBS;
     if (!main) throw new Error('sem gIBSCBS');
     expect(run(patch(immune, (ib) => ({ ...ib, gIBSCBS: main })))).toContain('UB13-20');
     expect(run(patch(doc, (ib) => ({ ...ib, gTransfCred: { vIBS: '1.00', vCBS: '1.00' } })))).toContain('UB13-44');
     const transfer = docOf([
-      { n: 1, cst: '800', cClassTrib: '800001', base: '0', creditTransfer: { vIBS: '0', vCBS: '0' } },
+      { n: 1, cst: '800', cClassTrib: '800001', base: '0', transferenciaDeCredito: { vIBS: '0', vCBS: '0' } },
     ]);
     expect(run(patch(transfer, ({ gTransfCred: _t, ...rest }) => rest))).toContain('UB13-45');
     expect(run(transfer)).toEqual(expect.arrayContaining(['UB106-30', 'UB106-31', 'UB106-40', 'UB14-60']));
@@ -257,7 +277,7 @@ describe('violações', () => {
         },
       };
     });
-    const ub = (d: RulesDocument, date?: string): string[] => run(d, date).filter((x) => x.startsWith('UB'));
+    const ub = (d: DocumentoDasRegras, date?: string): string[] => run(d, date).filter((x) => x.startsWith('UB'));
     expect(ub(wrong)).toEqual(['UB18-10', 'UB37-10', 'UB56-10']);
     expect(ub({ ...wrong, finNFe: 4 })).toEqual([]);
     expect(ub({ ...wrong, tpNFCredito: '04' })).toEqual([]);
@@ -276,12 +296,12 @@ describe('violações', () => {
     const zero = patch(doc, (ib) =>
       ib.gIBSCBS ? { ...ib, gIBSCBS: { ...ib.gIBSCBS, gCBS: { pCBS: '0.00', vCBS: '0.00' } } } : ib,
     );
-    const zfm = { ...zero, emitMun: '1302603', destMun: '1303569' };
-    const withNcm = (ncm: string): RulesDocument => ({ ...zfm, items: zfm.items.map((i) => ({ ...i, ncm })) });
+    const zfm = { ...zero, munEmitente: '1302603', munDestinatario: '1303569' };
+    const withNcm = (ncm: string): DocumentoDasRegras => ({ ...zfm, itens: zfm.itens.map((i) => ({ ...i, ncm })) });
     expect(run(withNcm('84713012'))).not.toContain('UB56-10');
     expect(run(withNcm('93011000'))).toContain('UB56-10');
     expect(run(withNcm('33030010'))).not.toContain('UB56-10');
-    expect(run({ ...withNcm('84713012'), destMun: '4314902' })).toContain('UB56-10');
+    expect(run({ ...withNcm('84713012'), munDestinatario: '4314902' })).toContain('UB56-10');
     expect(run(zero)).toContain('UB56-10');
   });
 
@@ -389,7 +409,7 @@ describe('violações', () => {
 
   test('compra governamental a partir de 2027: a fórmula da NT não tem a redistribuição do art. 473', () => {
     const doc2027 = docOf(
-      [{ ...full, informedRates: { CBS: '8.8', IBSUF: '0.05', IBSMun: '0.05', reason: 'teste' } }],
+      [{ ...full, aliquotasInformadas: { CBS: '8.8', IBSUF: '0.05', IBSMun: '0.05', motivo: 'teste' } }],
       {
         date: '2027-02-02',
         gov: 1,
@@ -399,7 +419,7 @@ describe('violações', () => {
   });
 
   test('devolução de tributos', () => {
-    const dev = docOf([{ ...full, taxRefund: { pDevTrib: '20' } }]);
+    const dev = docOf([{ ...full, devolucaoDeTributo: { pDevTrib: '20' } }]);
     const badDev = patch(dev, (ib) =>
       ib.gIBSCBS
         ? {
@@ -416,7 +436,7 @@ describe('violações', () => {
       return { ...ib, gIBSCBS: { ...g, gIBSUF: { ...g.gIBSUF, ...dev0 }, gIBSMun: { ...g.gIBSMun, ...dev0 } } };
     });
     expect(run(ibsDev)).toEqual(['UB24-10', 'UB43-10']);
-    const nfce = docOf([{ ...full, taxRefund: { pDevTrib: '20' } }], { modelo: 65 });
+    const nfce = docOf([{ ...full, devolucaoDeTributo: { pDevTrib: '20' } }], { modelo: 65 });
     expect(run(nfce)).toContain('UB62-10');
   });
 
@@ -435,7 +455,7 @@ describe('violações', () => {
       return { ...ib, gIBSCBS: rest };
     });
     expect(run(noReg)).toContain('UB68-10');
-    const reg = regular.items[0]?.IBSCBS?.gIBSCBS?.gTribRegular;
+    const reg = regular.itens[0]?.IBSCBS?.gIBSCBS?.gTribRegular;
     if (!reg) throw new Error('sem gTribRegular');
     const withReg = patch(doc, (ib) => (ib.gIBSCBS ? { ...ib, gIBSCBS: { ...ib.gIBSCBS, gTribRegular: reg } } : ib));
     expect(run(withReg)).toContain('UB68-11');
@@ -469,7 +489,7 @@ describe('violações', () => {
       return { ...ib, gIBSCBS: rest };
     });
     expect(run(noCg)).toContain('UB82a-10');
-    const cg = gov.items[0]?.IBSCBS?.gIBSCBS?.gTribCompraGov;
+    const cg = gov.itens[0]?.IBSCBS?.gIBSCBS?.gTribCompraGov;
     if (!cg) throw new Error('sem gTribCompraGov');
     expect(
       run(
@@ -489,15 +509,15 @@ describe('violações', () => {
         cst: '811',
         cClassTrib: '811001',
         base: '0',
-        competenceAdjustment: { competApur: '2026-01', vIBS: '0', vCBS: '0' },
+        ajusteDeCompetencia: { competApur: '2026-01', vIBS: '0', vCBS: '0' },
       },
     ]);
     expect(run(adj)).toContain('UB112-30');
     expect(run(patch(adj, ({ gAjusteCompet: _a, ...rest }) => rest))).toContain('UB112-20');
-    const aj = adj.items[0]?.IBSCBS?.gAjusteCompet;
+    const aj = adj.itens[0]?.IBSCBS?.gAjusteCompet;
     expect(run(patch(doc, (ib) => ({ ...ib, ...(aj ? { gAjusteCompet: aj } : {}) })))).toContain('UB112-10');
     const rev = docOf([
-      { n: 1, cst: '410', cClassTrib: '410026', base: '1', creditReversal: { vIBSEstCred: '0', vCBSEstCred: '0' } },
+      { n: 1, cst: '410', cClassTrib: '410026', base: '1', estornoDeCredito: { vIBSEstCred: '0', vCBSEstCred: '0' } },
     ]);
     expect(run(rev)).toContain('UB116-30');
     expect(run({ ...rev, tpNFDebito: '07' })).not.toContain('UB116-30');
@@ -511,15 +531,15 @@ describe('violações', () => {
   test('crédito presumido', () => {
     const withCred = (
       cp: NonNullable<IBSCBS['gCredPresOper']>,
-      it: Partial<RulesItem> = {},
+      it: Partial<ItemDasRegras> = {},
       d = doc,
-    ): RulesDocument => ({
+    ): DocumentoDasRegras => ({
       ...d,
-      items: d.items.map((i) => (i.IBSCBS ? { ...i, ...it, IBSCBS: { ...i.IBSCBS, gCredPresOper: cp } } : i)),
+      itens: d.itens.map((i) => (i.IBSCBS ? { ...i, ...it, IBSCBS: { ...i.IBSCBS, gCredPresOper: cp } } : i)),
     });
     const cp = { vBCCredPres: '100.00', cCredPres: 4, gIBSCredPres: { pCredPres: '1.00', vCredPres: '1.00' } };
     expect(run(withCred(cp), '2027-02-02')).toEqual(expect.arrayContaining(['UB120-20', 'UB127-20']));
-    expect(run(withCred(cp, { usedMovableGood: true }), '2027-02-02')).not.toContain('UB120-20');
+    expect(run(withCred(cp, { bemMovelUsado: true }), '2027-02-02')).not.toContain('UB120-20');
     expect(run(withCred({ ...cp, cCredPres: 99 }))).toContain('UB122-10');
     expect(
       run(withCred({ vBCCredPres: '1', cCredPres: 5, gIBSCredPres: { pCredPres: '1', vCredPres: '1' } }), '2027-02-02'),
@@ -562,14 +582,14 @@ describe('violações', () => {
           cst: '810',
           cClassTrib: '810001',
           base: '0',
-          zfmCredit: { competApur: '2026-12', tpCredPresIBSZFM: 1, vCredPresIBSZFM: '1' },
+          creditoZfm: { competApur: '2026-12', tpCredPresIBSZFM: 1, vCredPresIBSZFM: '1' },
         },
         {
           n: 2,
           cst: '810',
           cClassTrib: '810001',
           base: '0',
-          zfmCredit: { competApur: '2026-01', tpCredPresIBSZFM: 1, vCredPresIBSZFM: '1' },
+          creditoZfm: { competApur: '2026-01', tpCredPresIBSZFM: 1, vCredPresIBSZFM: '1' },
         },
       ],
       { ident: { finNFe: 5 } },
@@ -578,7 +598,7 @@ describe('violações', () => {
     expect(run(patch({ ...zfm, tpNFCredito: '02' }, ({ gCredPresIBSZFM: _z, ...rest }) => rest))).toEqual(
       expect.arrayContaining(['UB131-30', 'UB131-50']),
     );
-    const z = zfm.items[0]?.IBSCBS?.gCredPresIBSZFM;
+    const z = zfm.itens[0]?.IBSCBS?.gCredPresIBSZFM;
     expect(run(patch(doc, (ib) => ({ ...ib, ...(z ? { gCredPresIBSZFM: z } : {}) })))).toContain('UB131-20');
     const nfce = docOf([full], { modelo: 65 });
     expect(run(patch(nfce, (ib) => ({ ...ib, ...(z ? { gCredPresIBSZFM: z } : {}) })))).toContain('UB131-10');
@@ -587,9 +607,9 @@ describe('violações', () => {
   test('totais', () => {
     const tot = doc.IBSCBSTot;
     if (!tot) throw new Error('sem total');
-    expect(run({ ...doc, IBSCBSTot: undefined } as unknown as RulesDocument)).toContain('W34-20');
-    expect(run({ ...doc, items: [{ nItem: 1 }] })).toEqual(expect.arrayContaining(['W34-10', 'UB12-10']));
-    const wrong: RulesDocument = {
+    expect(run({ ...doc, IBSCBSTot: undefined } as unknown as DocumentoDasRegras)).toContain('W34-20');
+    expect(run({ ...doc, itens: [{ nItem: 1 }] })).toEqual(expect.arrayContaining(['W34-10', 'UB12-10']));
+    const wrong: DocumentoDasRegras = {
       ...doc,
       IBSCBSTot: {
         vBCIBSCBS: '1.00',

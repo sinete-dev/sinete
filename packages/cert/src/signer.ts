@@ -1,18 +1,18 @@
 /**
  * Quem assina, nos dois modos do contrato do `@sinete/core` (ADR 0003, decisão 2).
  *
- * - `createA1Signer`: A1 em memória, modo `dados`, via WebCrypto (RSASSA-PKCS1-v1_5 com SHA-1 ou SHA-256). A chave é
+ * - `criarAssinadorA1`: A1 em memória, modo `dados`, via WebCrypto (RSASSA-PKCS1-v1_5 com SHA-1 ou SHA-256). A chave é
  *   importada como não exportável; depois de importada, só a `CryptoKey` fica no signer.
- * - `digestSignerAsDataSigner`: adaptador que faz um `AssinadorDeDigest` (A3 via PKCS#11, A3 em nuvem, HSM, OpenBao) servir
+ * - `comoAssinadorDeDados`: adaptador que faz um `AssinadorDeDigest` (A3 via PKCS#11, A3 em nuvem, HSM, OpenBao) servir
  *   onde se espera um `AssinadorDeDados`: calcula o hash com WebCrypto, monta o DigestInfo e pede só o RSA ao signer.
- * - `signBytes`: assina com qualquer `Assinador`, escolhendo o caminho pelo `tipo`.
+ * - `assinarBytes`: assina com qualquer `Assinador`, escolhendo o caminho pelo `tipo`.
  */
 
 import type { Assinador, AssinadorDeDados, AssinadorDeDigest, HashDaAssinatura } from '@sinete/core';
 import { concatBytes } from './der.ts';
-import { CertError } from './errors.ts';
-import type { CertificateInfo } from './x509.ts';
-import { parseCertificate } from './x509.ts';
+import { ErroCertificado } from './errors.ts';
+import type { CertificadoX509 } from './x509.ts';
+import { lerCertificado } from './x509.ts';
 
 /** Prefixos DER do DigestInfo (RFC 8017, seção 9.2, nota 1). */
 const fromHex = (hex: string): Uint8Array => Uint8Array.from(hex.match(/../g) ?? [], (h) => Number.parseInt(h, 16));
@@ -27,68 +27,72 @@ const DIGEST_LENGTH: Readonly<Record<HashDaAssinatura, number>> = { 'SHA-1': 20,
 const ab = (b: Uint8Array): Uint8Array<ArrayBuffer> => b as Uint8Array<ArrayBuffer>;
 
 /** DigestInfo DER (`AlgorithmIdentifier` + hash) de um hash já calculado. */
-export function encodeDigestInfo(hash: HashDaAssinatura, digest: Uint8Array): Uint8Array {
+export function codificarDigestInfo(hash: HashDaAssinatura, digest: Uint8Array): Uint8Array {
   const prefix = DIGEST_INFO_PREFIX[hash];
-  if (!prefix) throw new CertError('algoritmo_nao_suportado', `hash não suportado: ${String(hash)}`);
+  if (!prefix) throw new ErroCertificado('algoritmo_nao_suportado', `hash não suportado: ${String(hash)}`);
   if (digest.length !== DIGEST_LENGTH[hash]) {
-    throw new CertError('algoritmo_nao_suportado', `hash ${hash} com ${digest.length} bytes`);
+    throw new ErroCertificado('algoritmo_nao_suportado', `hash ${hash} com ${digest.length} bytes`);
   }
   return concatBytes(prefix, digest);
 }
 
 /** Calcula o hash dos bytes e devolve o DigestInfo DER, que é o que um `AssinadorDeDigest` assina. */
-export async function digestInfoOf(data: Uint8Array, hash: HashDaAssinatura): Promise<Uint8Array> {
-  const digest = new Uint8Array(await crypto.subtle.digest(hash, ab(data)));
-  return encodeDigestInfo(hash, digest);
+export async function digestInfoDe(dados: Uint8Array, hash: HashDaAssinatura): Promise<Uint8Array> {
+  const digest = new Uint8Array(await crypto.subtle.digest(hash, ab(dados)));
+  return codificarDigestInfo(hash, digest);
 }
 
 /** Adaptador: um `AssinadorDeDigest` com a interface de `AssinadorDeDados`. A assinatura sai idêntica à do modo `dados`. */
-export function digestSignerAsDataSigner(signer: AssinadorDeDigest): AssinadorDeDados {
+export function comoAssinadorDeDados(assinador: AssinadorDeDigest): AssinadorDeDados {
   return {
     tipo: 'dados',
-    certificadoDer: (): Promise<Uint8Array> => signer.certificadoDer(),
+    certificadoDer: (): Promise<Uint8Array> => assinador.certificadoDer(),
     assinar: async (data: Uint8Array, hash: HashDaAssinatura): Promise<Uint8Array> =>
-      signer.assinarDigestInfo(await digestInfoOf(data, hash)),
+      assinador.assinarDigestInfo(await digestInfoDe(data, hash)),
   };
 }
 
 /** Assina os bytes com qualquer `Assinador` (RSASSA-PKCS1-v1_5). */
-export async function signBytes(signer: Assinador, data: Uint8Array, hash: HashDaAssinatura): Promise<Uint8Array> {
-  if (signer.tipo === 'dados') return signer.assinar(data, hash);
-  return signer.assinarDigestInfo(await digestInfoOf(data, hash));
+export async function assinarBytes(
+  assinador: Assinador,
+  dados: Uint8Array,
+  hash: HashDaAssinatura,
+): Promise<Uint8Array> {
+  if (assinador.tipo === 'dados') return assinador.assinar(dados, hash);
+  return assinador.assinarDigestInfo(await digestInfoDe(dados, hash));
 }
 
 /** Confere uma assinatura RSASSA-PKCS1-v1_5 com a chave pública do certificado. */
-export async function verifyBytes(
-  cert: CertificateInfo | Uint8Array,
-  data: Uint8Array,
-  signature: Uint8Array,
+export async function conferirBytes(
+  cert: CertificadoX509 | Uint8Array,
+  dados: Uint8Array,
+  assinatura: Uint8Array,
   hash: HashDaAssinatura,
 ): Promise<boolean> {
-  const info = cert instanceof Uint8Array ? parseCertificate(cert) : cert;
-  if (info.publicKey.algorithm !== 'RSA') {
-    throw new CertError('algoritmo_nao_suportado', 'só chaves RSA são suportadas');
+  const info = cert instanceof Uint8Array ? lerCertificado(cert) : cert;
+  if (info.chavePublica.algoritmo !== 'RSA') {
+    throw new ErroCertificado('algoritmo_nao_suportado', 'só chaves RSA são suportadas');
   }
   const alg = { name: 'RSASSA-PKCS1-v1_5', hash };
   const key = await crypto.subtle.importKey('spki', ab(info.spki), alg, false, ['verify']);
-  return crypto.subtle.verify(alg.name, key, ab(signature), ab(data));
+  return crypto.subtle.verify(alg.name, key, ab(assinatura), ab(dados));
 }
 
 /**
- * Assinador A1 em memória, modo `dados`. Recebe a chave em PKCS#8 DER (como sai do `openPfx`) e o certificado da folha.
+ * Assinador A1 em memória, modo `dados`. Recebe a chave em PKCS#8 DER (como sai do `abrirPfx`) e o certificado da folha.
  * A importação acontece uma vez por hash; a `CryptoKey` não é exportável.
  */
-export async function createA1Signer(pkcs8: Uint8Array, certificateDer: Uint8Array): Promise<AssinadorDeDados> {
-  const cert = parseCertificate(certificateDer);
-  if (cert.publicKey.algorithm !== 'RSA') {
-    throw new CertError('algoritmo_nao_suportado', 'o A1 precisa de chave RSA (PKCS#1 v1.5)');
+export async function criarAssinadorA1(pkcs8: Uint8Array, certificadoDer: Uint8Array): Promise<AssinadorDeDados> {
+  const cert = lerCertificado(certificadoDer);
+  if (cert.chavePublica.algoritmo !== 'RSA') {
+    throw new ErroCertificado('algoritmo_nao_suportado', 'o A1 precisa de chave RSA (PKCS#1 v1.5)');
   }
   const keys = new Map<HashDaAssinatura, Promise<CryptoKey>>();
   const keyFor = (hash: HashDaAssinatura): Promise<CryptoKey> => {
     let k = keys.get(hash);
     if (!k) {
       if (!(hash in DIGEST_INFO_PREFIX)) {
-        return Promise.reject(new CertError('algoritmo_nao_suportado', `hash não suportado: ${String(hash)}`));
+        return Promise.reject(new ErroCertificado('algoritmo_nao_suportado', `hash não suportado: ${String(hash)}`));
       }
       k = crypto.subtle.importKey('pkcs8', ab(pkcs8), { name: 'RSASSA-PKCS1-v1_5', hash }, false, ['sign']);
       keys.set(hash, k);
@@ -99,7 +103,7 @@ export async function createA1Signer(pkcs8: Uint8Array, certificateDer: Uint8Arr
   try {
     await keyFor('SHA-1');
   } catch (cause) {
-    throw new CertError('algoritmo_nao_suportado', 'chave privada não importável como RSA PKCS#8', { cause });
+    throw new ErroCertificado('algoritmo_nao_suportado', 'chave privada não importável como RSA PKCS#8', { cause });
   }
   const der = cert.der.slice();
   return {

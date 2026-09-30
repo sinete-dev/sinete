@@ -1,0 +1,8 @@
+[
+  { "chave": "2026-01-01", "percentual": "0", "vigencia": { "fim": "2028-12-31", "inicio": "2026-01-01" } },
+  { "chave": "2029-01-01", "percentual": "10", "vigencia": { "fim": "2029-12-31", "inicio": "2029-01-01" } },
+  { "chave": "2030-01-01", "percentual": "20", "vigencia": { "fim": "2030-12-31", "inicio": "2030-01-01" } },
+  { "chave": "2031-01-01", "percentual": "30", "vigencia": { "fim": "2031-12-31", "inicio": "2031-01-01" } },
+  { "chave": "2032-01-01", "percentual": "40", "vigencia": { "fim": "2032-12-31", "inicio": "2032-01-01" } },
+  { "chave": "2033-01-01", "percentual": "100", "vigencia": { "fim": null, "inicio": "2033-01-01" } }
+]

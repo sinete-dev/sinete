@@ -8,10 +8,10 @@
  * Fontes (conteúdo oficial, sha256 em tools/xsd-codegen/xsd/<pacote>/SOURCE.md):
  * - nfe/PL_010f_v1.04 (PL_010f_v1.04.zip)
  */
-import type { ComplexType, RootElement, SchemaModuleInfo, SimpleType } from "../runtime/desc.ts";
+import type { ComplexType, DescricaoModuloSchema, ElementoRaiz, SimpleType } from "../runtime/desc.ts";
 
 /** Proveniência deste módulo. */
-export const schema: SchemaModuleInfo = {
+export const schema: DescricaoModuloSchema = {
   "subpath": "nfe/PL_010f",
   "documento": "nfe",
   "pl": "PL_010f_v1.04",
@@ -7324,14 +7324,14 @@ export const TRetConsReciNFe: ComplexType<TRetConsReciNFe> = { id: "TRetConsReci
 
 // ---------- elementos raiz ----------
 /** Elemento raiz `NFe` (tipo TNFe). */
-export const NFeElement: RootElement<TNFe> = { name: "NFe", ns: "http://www.portalfiscal.inf.br/nfe", type: TNFe };
+export const NFeElement: ElementoRaiz<TNFe> = { nome: "NFe", ns: "http://www.portalfiscal.inf.br/nfe", tipo: TNFe };
 /** Elemento raiz `nfeProc` (tipo TNfeProc). */
-export const nfeProcElement: RootElement<TNfeProc> = { name: "nfeProc", ns: "http://www.portalfiscal.inf.br/nfe", type: TNfeProc };
+export const nfeProcElement: ElementoRaiz<TNfeProc> = { nome: "nfeProc", ns: "http://www.portalfiscal.inf.br/nfe", tipo: TNfeProc };
 /** Elemento raiz `enviNFe` (tipo TEnviNFe). */
-export const enviNFeElement: RootElement<TEnviNFe> = { name: "enviNFe", ns: "http://www.portalfiscal.inf.br/nfe", type: TEnviNFe };
+export const enviNFeElement: ElementoRaiz<TEnviNFe> = { nome: "enviNFe", ns: "http://www.portalfiscal.inf.br/nfe", tipo: TEnviNFe };
 /** Elemento raiz `retEnviNFe` (tipo TRetEnviNFe). */
-export const retEnviNFeElement: RootElement<TRetEnviNFe> = { name: "retEnviNFe", ns: "http://www.portalfiscal.inf.br/nfe", type: TRetEnviNFe };
+export const retEnviNFeElement: ElementoRaiz<TRetEnviNFe> = { nome: "retEnviNFe", ns: "http://www.portalfiscal.inf.br/nfe", tipo: TRetEnviNFe };
 /** Elemento raiz `consReciNFe` (tipo TConsReciNFe). */
-export const consReciNFeElement: RootElement<TConsReciNFe> = { name: "consReciNFe", ns: "http://www.portalfiscal.inf.br/nfe", type: TConsReciNFe };
+export const consReciNFeElement: ElementoRaiz<TConsReciNFe> = { nome: "consReciNFe", ns: "http://www.portalfiscal.inf.br/nfe", tipo: TConsReciNFe };
 /** Elemento raiz `retConsReciNFe` (tipo TRetConsReciNFe). */
-export const retConsReciNFeElement: RootElement<TRetConsReciNFe> = { name: "retConsReciNFe", ns: "http://www.portalfiscal.inf.br/nfe", type: TRetConsReciNFe };
+export const retConsReciNFeElement: ElementoRaiz<TRetConsReciNFe> = { nome: "retConsReciNFe", ns: "http://www.portalfiscal.inf.br/nfe", tipo: TRetConsReciNFe };

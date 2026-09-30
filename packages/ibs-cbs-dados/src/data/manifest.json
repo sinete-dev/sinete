@@ -1,14 +1,10 @@
 {
-  "dataSchemaVersion": 1,
-  "dataVersion": "2026.09",
-  "datasetSha256": "2ec26a84383c37a148f8ca708bd25d11b3c0720976c976007bf9ccf429dd73c3",
-  "knownAt": "2026-09-03",
-  "sources": [
+  "conhecidoEm": "2026-09-03",
+  "fontes": [
     {
-      "date": "2026-09-03",
+      "data": "2026-09-03",
       "id": "calculadora-offline-V0057",
-      "kind": "CALCULADORA_OFFLINE",
-      "notes": "Remoção de alíquotas da monofasia.",
+      "notas": "Remoção de alíquotas da monofasia.",
       "pins": {
         "calculadora.tar.gz": "419d7918bbcedcbcecaf02795d10e263200037b2dce7d46edbcf3abd3c7c751a",
         "calculadora/calculadora/db/calculadora-pro.db": "9a9143b12b38d02fb73630f89ea2b6c215508edc2bc3ac8d15f68c81ac12175d",
@@ -17,99 +13,103 @@
         "versaoApp": "demanda-5451861-cofis-43411-delete-aliquotas-ficticias"
       },
       "sha256": "f451c3902621f02f3a63da29cd63d1e8e0f0456cce44425f1e22c89c079cb68e",
-      "title": "Calculadora de Tributos da Reforma Tributária do Consumo (RFB), módulo offline",
+      "tipo": "CALCULADORA_OFFLINE",
+      "titulo": "Calculadora de Tributos da Reforma Tributária do Consumo (RFB), módulo offline",
       "url": "https://obs-13820-calcpr-apr.obsv3.br-df-1.hcs.serpro.gov.br/calculadora.zip",
-      "version": "V0057"
+      "versao": "V0057"
     },
     {
-      "date": "2026-06-22",
+      "data": "2026-06-22",
       "id": "it-2025.002-v1.60-cclasstrib",
-      "kind": "IT",
       "sha256": "1448cb63a41bdb67ea30b4e11f4dc200d9568542c6b9335b6cff87a4fd664654",
-      "title": "IT 2025.002 v1.60: Tabela de Classificação Tributária do IBS e CBS (CST e cClassTrib)",
+      "tipo": "IT",
+      "titulo": "IT 2025.002 v1.60: Tabela de Classificação Tributária do IBS e CBS (CST e cClassTrib)",
       "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=D5b4Ov84WDg=",
-      "version": "v1.60"
+      "versao": "v1.60"
     },
     {
-      "date": "2026-06-22",
+      "data": "2026-06-22",
       "id": "it-2025.002-v1.60-ccredpres",
-      "kind": "IT",
       "sha256": "65f2461398b6c361921201f68621e9d351d8497ce1d47b15a1cd8e1a08caec52",
-      "title": "IT 2025.002 v1.60: Tabela de Código de Crédito Presumido do IBS e CBS (cCredPres)",
+      "tipo": "IT",
+      "titulo": "IT 2025.002 v1.60: Tabela de Código de Crédito Presumido do IBS e CBS (cCredPres)",
       "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=TpJZSmm9U1c=",
-      "version": "v1.60"
+      "versao": "v1.60"
     }
   ],
-  "tables": [
+  "sha256DoDataset": "89497764bc766dda96a71dd4bdbe17157b9c838687f3a11f1ce3dd56d5d18d05",
+  "tabelas": [
     {
-      "name": "cst",
-      "records": 25,
-      "sha256": "e89109dc218cf39307461709e900b6217ef8911beb45d044aba863f8995f6b3e"
+      "nome": "cst",
+      "registros": 25,
+      "sha256": "7649b45cdcbd244319790c002fd76ddcc2f24c494905747775f13338a6bec787"
     },
     {
-      "name": "classTrib",
-      "records": 193,
-      "sha256": "9a92c9f632ef1586c6924cc5e9e9fa0ec2a3e0cff461076f365324c2cf5dd040"
+      "nome": "classTrib",
+      "registros": 193,
+      "sha256": "7dc635ffd36056eb2c897c487d209810851b27d97c7785aa16904942f2b7bdf4"
     },
     {
-      "name": "treatments",
-      "records": 43,
-      "sha256": "ab316f031c299656db52721ba4e72f8d180d913cb2dbc4db6ae2866129980677"
+      "nome": "tratamentos",
+      "registros": 43,
+      "sha256": "7efe1782942398e7643d77c482da55bd83fdc831bca30a4208afc69ac8735bfd"
     },
     {
-      "name": "credPres",
-      "records": 13,
-      "sha256": "ed599f93725532c7ac9e821cd151260fa7f89f6be5b284203606deec1e4b4d76"
+      "nome": "credPres",
+      "registros": 13,
+      "sha256": "142e4a9a251fddc4df138590aa7be88772c986ab91f2d6cb06e91d317ad4c6eb"
     },
     {
-      "name": "ncmApplicability",
-      "records": 1372,
-      "sha256": "178e67e1780659b36ccac319ccbf6bf8b9d140311d6532753ef76ae74d23476d"
+      "nome": "aplicabilidadeNcm",
+      "registros": 1372,
+      "sha256": "af1a46961c66607904007df5a7309b73ec8c37f03fd5cd598cda3a4a04cae0db"
     },
     {
-      "name": "nbsApplicability",
-      "records": 118,
-      "sha256": "16dec62f1a3a0c7c27fafb09e7945e5543b3df833c22fde1d5110ed84e888f3d"
+      "nome": "aplicabilidadeNbs",
+      "registros": 118,
+      "sha256": "3150e43e44938c3b9d7bd725f5ff73d947850ac7b1d8886fa39f177d61b02685"
     },
     {
-      "name": "annexes",
-      "records": 821,
-      "sha256": "d42800782e7de3810aa0cdb6d13f2a64498b1712a84915a7a5e23dbee3021878"
+      "nome": "anexos",
+      "registros": 821,
+      "sha256": "42e1ccd065d1bbc343d3d6b2971750f7e066f74374feb6fdeb89cc9cf026c717"
     },
     {
-      "name": "nfseNbs",
-      "records": 3196,
-      "sha256": "246f94077c0adcb0d65cb8818e5475291208b8c5eb07ebc549223f288b1970a7"
+      "nome": "nfseNbs",
+      "registros": 3196,
+      "sha256": "34eefdc734359c69608e348d0c8e2804d34e472e86fb703fa5f702473e627985"
     },
     {
-      "name": "actorGroups",
-      "records": 17,
-      "sha256": "67f2504d56065bb949faba08b82ed7281f1ee5790f5d43b227564427bf3cb376"
+      "nome": "gruposDeAtores",
+      "registros": 17,
+      "sha256": "fba656056ca429deb8dbc1741241281fc278697cb9190d9522232b54926a16cd"
     },
     {
-      "name": "actors",
-      "records": 90,
-      "sha256": "5932d17a13b45179b211071d76adaa9e7390d80bf8ec0462d148e85d0361cdf2"
+      "nome": "atores",
+      "registros": 90,
+      "sha256": "f6099b30a969e8dd817f41b7de4801ec4c542336d707836e12943a55828491c0"
     },
     {
-      "name": "actorClassTrib",
-      "records": 146,
-      "sha256": "7a238e12018bd1457e1010858cbec9fed1f0a93cf312133bb546f806d3a32ebb"
+      "nome": "atorClassTrib",
+      "registros": 146,
+      "sha256": "6a6e18ac598d2111c884390bc268d475485f3300425b62fd445847a4d7faa62a"
     },
     {
-      "name": "dfeTypes",
-      "records": 18,
-      "sha256": "fd5967e8774e1281f55c61d1bb91d9ad2187242febf4a0552bdeef2d233b6878"
+      "nome": "tiposDfe",
+      "registros": 18,
+      "sha256": "32acd07054b0a15afdcc592658b386812da772788a6257a01a7eb1fd673fe5c1"
     },
     {
-      "name": "govPurchaseReducer",
-      "records": 1,
-      "sha256": "83d4a49d34735e626fa8068d1d6b922ff3a86613b10ed5e6b0b4f08061cf581f"
+      "nome": "redutorCompraGov",
+      "registros": 1,
+      "sha256": "26f63dc68ba2fe381acb2abef707115482418cb456af96c690a17b3d4323de3c"
     },
     {
-      "name": "cbsTransfer",
-      "records": 6,
-      "sha256": "3fa2109d5c2c85c7fd7291bd320675174edccbf29d0e9512572157495f436954"
+      "nome": "transferenciaCbs",
+      "registros": 6,
+      "sha256": "8d7d80840d6049b9d186d1695680a79dc46dd4198fd81b3978bb5b88668a347c"
     }
-  ]
+  ],
+  "versaoDoFormato": 2,
+  "versaoDosDados": "2026.09"
 }
