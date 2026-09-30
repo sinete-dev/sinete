@@ -1,6 +1,6 @@
 # `certificado_ausente_ou_recusado`: recusa do certificado sem distinguir ausência de recusa
 
-O servidor recusou a conexão ou a requisição sem indicar se faltou o certificado ou se ele não foi aceito. O transporte usa esse código para respostas HTTP 403, como as do servidor IIS, e para a falha `bad record mac`, observada no Ambiente de Dados Nacional (ADN) em TLS 1.3, o protocolo de segurança da conexão. O erro é uma instância de `TransportError` (`@sinete/transport`), que estende `ErroSinete`, com `code: 'certificado_ausente_ou_recusado'`. Identifique-o pelo `code`, usando `ehErroSinete(e, 'certificado_ausente_ou_recusado')` de `@sinete/core`, nunca pela mensagem. A conversão de HTTP 403 nesse erro é habilitada por padrão e pode ser desativada com `rejectOn403: false` nas opções do transporte.
+O servidor recusou a conexão ou a requisição sem indicar se faltou o certificado ou se ele não foi aceito. O transporte usa esse código para respostas HTTP 403, como as do servidor IIS, e para a falha `bad record mac`, observada no Ambiente de Dados Nacional (ADN) em TLS 1.3, o protocolo de segurança da conexão. O erro é uma instância de `ErroTransporte` (`@sinete/transport`), que estende `ErroSinete`, com `code: 'certificado_ausente_ou_recusado'`. Identifique-o pelo `code`, usando `ehErroSinete(e, 'certificado_ausente_ou_recusado')` de `@sinete/core`, nunca pela mensagem. A conversão de HTTP 403 nesse erro é habilitada por padrão e pode ser desativada com `recusarEm403: false` nas opções do transporte.
 
 ## Causa
 

@@ -1,6 +1,6 @@
 # `pfx_senha_incorreta`: a senha não abriu o PFX
 
-O leitor não conseguiu verificar o MAC, código de autenticação que protege a integridade do arquivo, ou decifrar o conteúdo com a senha informada. O PFX é um arquivo no formato PKCS#12 que pode conter o certificado e sua chave privada. O erro é uma instância de `CertError` (`@sinete/cert`), que herda de `ErroSinete`, com `code: 'pfx_senha_incorreta'`. Identifique o erro pelo `code`, usando `ehErroSinete(e, 'pfx_senha_incorreta')` de `@sinete/core`, nunca pela mensagem.
+O leitor não conseguiu verificar o MAC, código de autenticação que protege a integridade do arquivo, ou decifrar o conteúdo com a senha informada. O PFX é um arquivo no formato PKCS#12 que pode conter o certificado e sua chave privada. O erro é uma instância de `ErroCertificado` (`@sinete/cert`), que herda de `ErroSinete`, com `code: 'pfx_senha_incorreta'`. Identifique o erro pelo `code`, usando `ehErroSinete(e, 'pfx_senha_incorreta')` de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 

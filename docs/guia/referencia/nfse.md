@@ -24,7 +24,7 @@ Entrada do domínio (`DpsInput`), montagem validada no XSD vigente (`buildDps`, 
 - `idDps`: Id da DPS (`DPS` + 42 posições). `idDps(p: IdDpsPartes): string`
 - `idPedidoEvento`: Id do pedido de registro de evento: `PRE` + chave + código do evento. `idPedidoEvento(chave: string, tpEvento: string): string`
 - `inscricaoId`: Tipo de inscrição (1 CPF, 2 CNPJ) e inscrição com 14 posições, como entram no Id da DPS e na chave. `inscricaoId(doc: InscricaoFederal): { readonly tpInsc: '1' | '2'; readonly inscricao: string; }`
-- `leiauteVigente`: O pacote de esquemas vigente no ambiente e no dia do relógio (fuso de Brasília). `leiauteVigente(ambiente: Ambiente, relogio: Relogio): { readonly vigencia: VigenciaEntry; readonly leiaute: LeiauteNfse; }`
+- `leiauteVigente`: O pacote de esquemas vigente no ambiente e no dia do relógio (fuso de Brasília). `leiauteVigente(ambiente: Ambiente, relogio: Relogio): { readonly vigencia: EntradaDeVigencia; readonly leiaute: LeiauteNfse; }`
 - `parseChaveNfse`: Lê a chave de 50 posições. Lança `ErroDeConfiguracao` se a estrutura não bate; o DV não é conferido (ver o topo). `parseChaveNfse(chave: string): ChaveNfse`
 - `resolverEnvioSemResposta`: Depois de um envio sem resposta (timeout, conexão caída), descobre se a DPS gerou NFS-e: consulta pelo Id da DPS e, achando a chave, lê a NFS-e. `resolverEnvioSemResposta(client: NfseClient, dpsAssinada: string): Promise<ResolucaoEnvio>`
 - `signDps`: Assina a DPS (enveloped, `Reference` para o `infDPS`). A string devolvida é a que vai para a Sefin e para o banco. `signDps(dps: DpsMontada, signer: Assinador): Promise<string>`

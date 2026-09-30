@@ -13,9 +13,9 @@ const ac = await syntheticCertificate({ clock, role: 'ac' });
 const emitente = await syntheticCertificate({ clock, role: 'titular', cnpj: '11222333000181', issuer: ac });
 const sim = createSefazSim({ clock, uf: 'SP' });
 
-// Em processo: o mesmo Transport que o pacote do documento recebe em produção.
+// Em processo: o mesmo Transporte que o pacote do documento recebe em produção.
 const transport = simTransport(sim, { clientCertificate: emitente.der });
-await transport.send({ url: sim.url(SIM_BASE_URL, 'NFeAutorizacao'), headers, body });
+await transport.enviar({ url: sim.url(SIM_BASE_URL, 'NFeAutorizacao'), cabecalhos: headers, corpo: body });
 
 // Cenário: a SEFAZ processa e a resposta não chega; o reenvio responde 204 com o recibo original.
 sim.injectFault({ kind: 'hang', phase: 'after' }, { servico: 'NFeAutorizacao' });
@@ -24,12 +24,12 @@ sim.injectFault({ kind: 'hang', phase: 'after' }, { servico: 'NFeAutorizacao' })
 ```ts
 // Por HTTPS, com o transporte real (entrada node).
 import { startSefazSimServer } from '@sinete/sefaz-sim';
-import { createNodeTransport } from '@sinete/transport';
+import { criarTransporteNode } from '@sinete/transport';
 
 const servidor = await syntheticCertificate({ clock, role: 'servidor', issuer: ac });
 const server = await startSefazSimServer(sim, { cert: servidor.pem, key: servidor.keyPem });
-const t = createNodeTransport({ identity: emitente.tlsIdentity, additionalCa: [ac.pem] });
-await t.send({ url: server.url('NfeConsultaProtocolo'), headers, body });
+const t = criarTransporteNode({ identidade: emitente.tlsIdentity, acsAdicionais: [ac.pem] });
+await t.enviar({ url: server.url('NfeConsultaProtocolo'), cabecalhos: headers, corpo: body });
 await server.close();
 ```
 
@@ -54,7 +54,7 @@ const nfe = await createNfeEmissor({
   pfx: syntheticPfx(emitente, 'senha', { chain: [ac] }), senha: 'senha', ambiente: 'homologacao', clock,
   store: createMemoriaStore({ clock }),
   aoDecidir: (registro, desfecho) => decididas.set(registro.ref, desfecho),
-  transporte: ({ policy, ...o }) => redirectToSim(createNodeTransport({ ...o, additionalCa: [ac.pem] }), server.baseUrl),
+  transporte: ({ politica: policy, ...o }) => redirectToSim(criarTransporteNode({ ...o, acsAdicionais: [ac.pem] }), server.baseUrl),
 });
 ```
 
@@ -134,7 +134,7 @@ Fora do simulador: cadastro de emitente e de municípios (405, 406, 408), bases 
 | `setProtocoloSemDigVal('denegacao' \| 'todos', onde)` | Protocolo sem `digVal` (opcional no leiaute): só nas denegações da NF-e ou também nas autorizações da NF-e e do MDF-e; `onde` é `autorizacao`, `consulta` ou `ambos` (padrão). `undefined` volta ao normal |
 | `respostaSincrona: 'aceita' \| 'recusa' \| 'assincrona'`, `cadastro`, `prazoCancelamentoHoras`, `intervaloConsumoIndevidoMs`, `tamanhoMaximo` | Opções de `createSefazSim` |
 
-O alvo (`{ servico, autorizador, times }`) restringe a falha; `times: Infinity` mantém até `clearFaults()`. No `simTransport`, queda vira `TransportError('conexao_recusada')` e falta de resposta vira `ErroDeTempoEsgotado`, como no transporte real; no servidor HTTPS a queda destrói o socket e a falta de resposta deixa o socket aberto.
+O alvo (`{ servico, autorizador, times }`) restringe a falha; `times: Infinity` mantém até `clearFaults()`. No `simTransport`, queda vira `ErroTransporte('conexao_recusada')` e falta de resposta vira `ErroDeTempoEsgotado`, como no transporte real; no servidor HTTPS a queda destrói o socket e a falta de resposta deixa o socket aberto.
 
 ## Números determinísticos
 
@@ -176,7 +176,7 @@ const sim = createNfseSim({
   municipios: [{ cMun: '3550308', nome: 'São Paulo', servicos: [{ codigo: '01.01.01', aliquotas: [{ aliquota: '2.00', inicio: '2026-01-01' }] }] }],
 });
 const server = await startSimServer(sim, { cert: servidor.pem, key: servidor.keyPem });
-const transport = redirectNfseToSim(createTransport({ identity: prestador.tlsIdentity, additionalCa: [ac.pem] }), server.baseUrl);
+const transport = redirectNfseToSim(criarTransporte({ identidade: prestador.tlsIdentity, acsAdicionais: [ac.pem] }), server.baseUrl);
 ```
 
 - **Rotas.** `POST /sefin/nfse`, `GET /sefin/nfse/{chave}`, `GET /sefin/dps/{id}`, `POST /sefin/nfse/{chave}/eventos`, `GET /sefin/nfse/{chave}/eventos/{tipo}/{seq}` (como a Sefin real em 28/09/2026: 405 sem o tipo, 404 com a página HTML do IIS sem a sequência, 200 com `eventos[].arquivoXml` em base64 do gzip em base64 e 404 com `{}` sem o evento), `GET /parametrizacao/{cMun}/...` (convênio, alíquota, histórico, regimes especiais, retenções, benefício). O DANFSe do ADN não é simulado: a API de geração foi suspensa em 03/08/2026 (NT SE/CGNFS-e 008/2026), e o DANFSe sai do `@sinete/da/nfse`. Respostas no formato observado na produção restrita: sucesso em JSON com o documento em gzip e base64, rejeição em HTTP 400 com `{"erros":[{"Codigo","Descricao","Complemento"}]}` e as mensagens oficiais do `@sinete/rejeicoes/nfse`.
@@ -191,4 +191,4 @@ const transport = redirectNfseToSim(createTransport({ identity: prestador.tlsIde
 
 ## Servidor HTTPS
 
-HTTP/1.1 mínimo sobre `node:tls` (`Content-Length`, `chunked`, keep-alive, sem pipelining), porque o servidor HTTP do Bun 1.4.2 não expõe o certificado do cliente. O servidor pede o certificado de cliente sem recusar no handshake (`rejectUnauthorized: false` do lado do servidor), para que o próprio simulador decida entre 403, 280, 281 e 282. Isso não afrouxa o cliente: o `@sinete/transport` continua verificando o servidor pela `additionalCa`.
+HTTP/1.1 mínimo sobre `node:tls` (`Content-Length`, `chunked`, keep-alive, sem pipelining), porque o servidor HTTP do Bun 1.4.2 não expõe o certificado do cliente. O servidor pede o certificado de cliente sem recusar no handshake (`rejectUnauthorized: false` do lado do servidor), para que o próprio simulador decida entre 403, 280, 281 e 282. Isso não afrouxa o cliente: o `@sinete/transport` continua verificando o servidor pela `acsAdicionais`.

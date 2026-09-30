@@ -1,6 +1,6 @@
 # `serializacao_invalida`: o valor não serializa no tipo do XSD
 
-O serializador canônico do `@sinete/schemas` recebeu um valor incompatível com a estrutura esperada pelo XSD, o arquivo que define os tipos e a estrutura do XML. Ele lança `SerializeError`, exportado por `@sinete/schemas`, que é um `ErroSinete` com `code: 'serializacao_invalida'`. A mensagem começa pelo caminho do campo, também disponível em `path`. Identifique o erro pelo `code`, usando `ehErroSinete(e, 'serializacao_invalida')` de `@sinete/core`, nunca pela mensagem.
+O serializador canônico do `@sinete/schemas` recebeu um valor incompatível com a estrutura esperada pelo XSD, o arquivo que define os tipos e a estrutura do XML. Ele lança `ErroSerializacao`, exportado por `@sinete/schemas`, que é um `ErroSinete` com `code: 'serializacao_invalida'`. A mensagem começa pelo caminho do campo, também disponível em `caminho`. Identifique o erro pelo `code`, usando `ehErroSinete(e, 'serializacao_invalida')` de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 

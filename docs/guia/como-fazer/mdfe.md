@@ -85,7 +85,7 @@ Com a SEFAZ fora do ar, o MDF-e pode ser emitido em contingência off-line, para
 
 - **Remontar depois de uma queda.** Enquanto os bytes assinados estiverem gravados no `store`, `emitir('viagem-7', ...)` retoma a emissão com eles. Preserve a mesma referência da viagem. Montar novamente pode gerar outro `cMDF`, o código numérico que compõe a chave de acesso, e produzir outra chave para o mesmo número de MDF-e.
 - **Esquecer de encerrar.** Um MDF-e aberto pode bloquear novas autorizações, inclusive a viagem de volta. Inclua o encerramento no fluxo de chegada e consulte periodicamente os documentos não encerrados.
-- **`tpAmb` trocado.** O campo `tpAmb` identifica o ambiente de autorização, produção ou homologação. O MDF-e é enviado comprimido, e a política de hosts do transporte não consegue examinar esse campo dentro dele. Por isso, o cliente confere o `tpAmb` contra o ambiente configurado antes do envio e, se houver divergência, lança `PolicyError` (`politica_recusou`).
+- **`tpAmb` trocado.** O campo `tpAmb` identifica o ambiente de autorização, produção ou homologação. O MDF-e é enviado comprimido, e a política de hosts do transporte não consegue examinar esse campo dentro dele. Por isso, o cliente confere o `tpAmb` contra o ambiente configurado antes do envio e, se houver divergência, lança `ErroPolitica` (`politica_recusou`).
 
 ## Veja também
 

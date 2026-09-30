@@ -11,7 +11,7 @@ Não é pacote npm: é especificação de protocolo, sem código para publicar, 
 
 ## Quem testa contra o contrato
 
-- `packages/transport/test/signer-contract.test.ts` valida todo frame das fixtures contra o schema, reproduz as conversas contra o cliente TS e roda os casos de `guard.json` contra a `allowlistPolicy`.
+- `packages/transport/test/signer-contract.test.ts` valida todo frame das fixtures contra o schema, reproduz as conversas contra o cliente TS e roda os casos de `guard.json` contra a `politicaDeHostsPermitidos`.
 - `helpers/signer-tls/internal/server/contract_test.go` reproduz as conversas contra o helper (hello, erros, ciclo de vida) e confere que os resultados dele passam pelo mesmo formato; `internal/policy/policy_test.go` roda os casos de `guard.json` contra a guarda do helper.
 
 Mudou o protocolo: atualize `PROTOCOL.md`, o schema e as fixtures na mesma PR, e suba `PROTOCOL_VERSION` se a mudança for incompatível.

@@ -1,6 +1,6 @@
 # `pfx_sem_chave`: o PFX não tem chave privada
 
-O arquivo PKCS#12 (`.pfx` ou `.p12`, formato que pode reunir certificados e chaves privadas) foi aberto, mas não contém nenhuma chave privada. A função `openPfx` de `@sinete/cert` lança um `CertError`, que é um `ErroSinete` com `code: 'pfx_sem_chave'`. Trate o erro pelo `code`, usando `ehErroSinete(e, 'pfx_sem_chave')` de `@sinete/core`, nunca pela mensagem.
+O arquivo PKCS#12 (`.pfx` ou `.p12`, formato que pode reunir certificados e chaves privadas) foi aberto, mas não contém nenhuma chave privada. A função `abrirPfx` de `@sinete/cert` lança um `ErroCertificado`, que é um `ErroSinete` com `code: 'pfx_sem_chave'`. Trate o erro pelo `code`, usando `ehErroSinete(e, 'pfx_sem_chave')` de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 
@@ -14,4 +14,4 @@ Um certificado A3, em token, cartão ou nuvem de um prestador de serviço de con
 
 ## Armadilha
 
-Um arquivo `.cer` ou `.p7b` enviado pela AC contém certificados públicos, sem a chave privada necessária para assinar. Ele pode conter o certificado público de um A1, mas não basta para usá-lo no sinete. Para abrir um A1 com `openPfx`, use um `.pfx` ou `.p12` protegido por senha que contenha o certificado e sua chave privada. A extensão e a senha, sozinhas, não garantem que a chave esteja no arquivo.
+Um arquivo `.cer` ou `.p7b` enviado pela AC contém certificados públicos, sem a chave privada necessária para assinar. Ele pode conter o certificado público de um A1, mas não basta para usá-lo no sinete. Para abrir um A1 com `abrirPfx`, use um `.pfx` ou `.p12` protegido por senha que contenha o certificado e sua chave privada. A extensão e a senha, sozinhas, não garantem que a chave esteja no arquivo.

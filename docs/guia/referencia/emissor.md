@@ -10,8 +10,8 @@ A raiz tem o que é comum aos documentos e não importa nenhum pacote de documen
 
 ### Funções
 
-- `abrirCertificado`: Abre o PFX (fora da validade, `CertError`) e devolve o certificado aberto. Os bytes não ficam guardados. `abrirCertificado(cert: CertificadoA1, opcoes?: OpcoesAbrirCertificado): Promise<CertificadoAberto>`
-- `createEmissor`: Abre o PFX (ou usa o certificado aberto) e devolve o emissor. Nada vai à rede até a primeira operação que precisa dela; o certificado fora da validade é recusado aqui (`CertError`). `createEmissor<Entrada, Cliente, P, B>(perfil: PerfilDocumento<Entrada, Cliente, P, B>, opcoes: OpcoesEmissor<P, B>): Promise<Emissor<Entrada, Cliente, P, B>>`
+- `abrirCertificado`: Abre o PFX (fora da validade, `ErroCertificado`) e devolve o certificado aberto. Os bytes não ficam guardados. `abrirCertificado(cert: CertificadoA1, opcoes?: OpcoesAbrirCertificado): Promise<CertificadoAberto>`
+- `createEmissor`: Abre o PFX (ou usa o certificado aberto) e devolve o emissor. Nada vai à rede até a primeira operação que precisa dela; o certificado fora da validade é recusado aqui (`ErroCertificado`). `createEmissor<Entrada, Cliente, P, B>(perfil: PerfilDocumento<Entrada, Cliente, P, B>, opcoes: OpcoesEmissor<P, B>): Promise<Emissor<Entrada, Cliente, P, B>>`
 - `createPoolDeEmissores`: Cria o pool. `E` é qualquer emissor do pacote (ou qualquer coisa com `fechar`); `C`, o certificado que `criar` recebe (padrão: `CertificadoA1`). `createPoolDeEmissores<E extends { fechar(): Promise<void>; }, C = CertificadoA1>(opcoes: OpcoesPool<E, C>): PoolDeEmissores<E, C>`
 - `destinoDosBytes`: Política dos bytes (ADR 0010, decisão 3): decidido (autorizado ou denegado) grava o documento e conclui; já guardado conclui; pendente e divergente mantêm; recusado descarta, menos quando o `cStat` está entre os indefinidos do documento (`indefinido`, da tabela de cada perfil), que mantêm. `destinoDosBytes(d: Desfecho, indefinido: (cStat: string) => boolean): DestinoDosBytes`
 - `retomarPendentes`: Roda uma execução da retomada automática e devolve o resumo. `retomarPendentes(opcoes: OpcoesRetomada): Promise<ResumoRetomada>`
@@ -27,7 +27,7 @@ A raiz tem o que é comum aos documentos e não importa nenhum pacote de documen
 ### Interfaces
 
 - `CertificadoA1`: Certificado A1 como arquivo e senha. Membros: `pfx`, `senha`.
-- `CertificadoAberto`: Certificado já aberto: o signer dos documentos, o titular e a identidade do mTLS. Membros: `signer`, `titular`, `identidade`.
+- `CertificadoAberto`: Certificado já aberto: o signer dos documentos, o titular e a identidade do mTLS. Membros: `assinador`, `titular`, `identidade`.
 - `ContextoEmissor`: O que o perfil recebe do emissor: certificado aberto, relógio e o transporte do certificado. Membros: `ambiente`, `clock`, `signer`, `titular`, `logger`, `timeoutMs`, `transporte()`.
 - `ContingenciaAplicada`: O que entra na nota em contingência. Membros: `desde`, `xJust`.
 - `ContingenciaDoPerfil`: O que o perfil de um documento com contingência automática oferece ao emissor. Hoje, só o da NF-e (55 e 65). `C` é o contexto do emissor; o módulo não depende dele. Membros: `escopo()`, `dosBytes()`, `aplicar()`, `offline()`, `sondar()`, `sondarSvc()`, `falha()`, `svcDesativada()`.
@@ -102,7 +102,7 @@ O envio espera o recibo quando a SEFAZ responde 103 (mesmo no envio síncrono), 
 
 ### Funções
 
-- `createNfeEmissor`: Abre o PFX e devolve o emissor de NF-e. Nada vai à rede até a primeira operação que precisa dela; o certificado fora da validade é recusado aqui (`CertError`). `createNfeEmissor(opcoes: NfeEmissorOptions): Promise<NfeEmissor>`
+- `createNfeEmissor`: Abre o PFX e devolve o emissor de NF-e. Nada vai à rede até a primeira operação que precisa dela; o certificado fora da validade é recusado aqui (`ErroCertificado`). `createNfeEmissor(opcoes: NfeEmissorOptions): Promise<NfeEmissor>`
 - `perfilNfe`: Perfil da NF-e para o `createEmissor` da raiz. `perfilNfe(opcoes?: OpcoesPerfilNfe): PerfilDocumento<EntradaNfe, NfeClient, ProtocoloNfe, BrutoNfe>`
 
 ### Interfaces
@@ -132,7 +132,7 @@ Mesma política da NF-e, com as diferenças do protocolo: a recepção é síncr
 
 ### Funções
 
-- `createMdfeEmissor`: Abre o PFX e devolve o emissor de MDF-e. Nada vai à rede até a primeira operação que precisa dela; o certificado fora da validade é recusado aqui (`CertError`). `createMdfeEmissor(opcoes: MdfeEmissorOptions): Promise<MdfeEmissor>`
+- `createMdfeEmissor`: Abre o PFX e devolve o emissor de MDF-e. Nada vai à rede até a primeira operação que precisa dela; o certificado fora da validade é recusado aqui (`ErroCertificado`). `createMdfeEmissor(opcoes: MdfeEmissorOptions): Promise<MdfeEmissor>`
 - `perfilMdfe`: Perfil do MDF-e para o `createEmissor` da raiz. `perfilMdfe(opcoes?: OpcoesPerfilMdfe): PerfilDocumento<EntradaMdfe, MdfeClient, ProtocoloMdfe, BrutoMdfe>`
 
 ### Interfaces
@@ -162,7 +162,7 @@ Diferenças que vêm do protocolo: a chave da NFS-e só existe depois da geraç�
 
 ### Funções
 
-- `createNfseEmissor`: Abre o PFX e devolve o emissor da NFS-e. Nada vai à rede até a primeira operação que precisa dela; o certificado fora da validade é recusado aqui (`CertError`). `createNfseEmissor(opcoes: NfseEmissorOptions): Promise<NfseEmissor>`
+- `createNfseEmissor`: Abre o PFX e devolve o emissor da NFS-e. Nada vai à rede até a primeira operação que precisa dela; o certificado fora da validade é recusado aqui (`ErroCertificado`). `createNfseEmissor(opcoes: NfseEmissorOptions): Promise<NfseEmissor>`
 - `perfilNfse`: Perfil da NFS-e para o `createEmissor` da raiz. `perfilNfse(opcoes?: OpcoesPerfilNfse): PerfilDocumento<DpsInput, NfseClient, NfseGerada, BrutoNfse>`
 
 ### Interfaces

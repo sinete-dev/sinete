@@ -10,7 +10,7 @@ Também ocorre ao pedir inutilização de numeração de NF-e (Nota Fiscal Eletr
 
 A consulta de cadastro da NF-e de uma UF atendida pela SVRS (Sefaz Virtual do Rio Grande do Sul) segue para a SVRS quando se usa o autorizador normal da UF, mesmo que ela não apareça na relação específica de consulta de cadastro. Se a SVRS não atender aquela UF, a rejeição vem na resposta do serviço.
 
-`detalhes` traz `autorizador`, `servico`, `ambiente`, `uf` quando informada e `source`, que identifica a fonte oficial consultada. Para a inutilização na SVC, `source` indica a nota técnica que estabelece a restrição.
+`detalhes` traz `autorizador`, `servico`, `ambiente`, `uf` quando informada e `fonte`, que identifica a fonte oficial consultada. Para a inutilização na SVC, `fonte` indica a nota técnica que estabelece a restrição.
 
 ## Correção
 

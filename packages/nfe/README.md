@@ -102,13 +102,13 @@ interface IbsCbsCalculator {
 - **Base.** O motor recebe a base já apurada, e a composição dela (NT 2025.002, UB16-10) ainda é "implementação futura, aguardando orientação normativa". A calculadora usa o `vBC` da classificação do item ou a função `base` das opções; sem as duas, o item vira ocorrência `ibscbs_base_ausente`, nunca uma base presumida.
 - **Local da operação.** `cMunFGIBS` (campo B12a), senão o destino (entrega, depois destinatário; LC 214/2025, art. 11), senão o emitente. Destino no exterior cai no emitente. Exportado como `localDaOperacao`.
 - **Datas.** O fato gerador escolhe dados e alíquotas; a emissão escolhe as regras da NT implantadas no ambiente (`IbsCbsNotaRequest.emissao`).
-- **Erros como ocorrências.** `ClassificationError`, `UnsupportedRegimeError` e `RateUnknownError` viram `Ocorrencia` no caminho do item (`itens[n].impostos.ibsCbs`), e cada violação das regras do `@sinete/ibs-cbs/validar`, `ibscbs_regra_nt` com a regra, a rejeição e a fonte. O `buildNfe` devolve `{ ok: false, issues }`. Outros erros propagam.
+- **Erros como ocorrências.** `ErroClassificacao`, `ErroRegimeNaoSuportado` e `ErroAliquotaDesconhecida` viram `Ocorrencia` no caminho do item (`itens[n].impostos.ibsCbs`), e cada violação das regras do `@sinete/ibs-cbs/validar`, `ibscbs_regra_nt` com a regra, a rejeição e a fonte. O `buildNfe` devolve `{ ok: false, issues }`. Outros erros propagam.
 - **Não suportado aqui.** Crédito presumido (`cCredPres`) pede percentuais por tributo que a porta não traz: informe o grupo pronto (`ibsCbs.grupo`). Diferimento e devolução também não têm campo na classificação da porta.
 
 | Opção do `ibsCbsCalculator` | Padrão | |
 |---|---|---|
-| `dataset` | o embarcado, importado sob demanda | um bundle verificado em runtime (`verifyDataset`), ou `bundledDataset()` já carregado |
-| `rates` | `officialRates()` | um provedor com alíquotas informadas |
+| `dataset` | o embarcado, importado sob demanda | um bundle verificado em runtime (`conferirDataset`), ou `datasetEmbarcado()` já carregado |
+| `rates` | `aliquotasOficiais()` | um provedor com alíquotas informadas |
 | `base(item, nota)` | nenhum | base do item sem `vBC`, texto com até 2 casas |
 | `regras` | as implantadas | `false` desliga; `{ rules, ignoreActivation }` troca a lista ou antecipa as futuras |
 | `utcOffsetMinutes` | -180 | fuso para a data civil do fato gerador |
@@ -117,14 +117,14 @@ interface IbsCbsCalculator {
 
 ## Serviços (`createNfeClient`)
 
-`NfeClient` fala SOAP 1.2 sobre qualquer `Transport` do `@sinete/transport`, com endpoints por UF e ambiente vindos dele. Cada operação devolve um `ResultadoSefaz` do core, com a rejeição enriquecida pelo `@sinete/rejeicoes`; o mapa de cStat é dado (`src/data/cstat.json`).
+`NfeClient` fala SOAP 1.2 sobre qualquer `Transporte` do `@sinete/transport`, com endpoints por UF e ambiente vindos dele. Cada operação devolve um `ResultadoSefaz` do core, com a rejeição enriquecida pelo `@sinete/rejeicoes`; o mapa de cStat é dado (`src/data/cstat.json`).
 
 - `statusServico`, `autorizar` (síncrona por padrão; assíncrona devolve `pendente` com o recibo), `consultarRecibo` e `aguardarRecibo` (política de espera com teto e `AbortSignal`), `consultar` (consulta protocolo pela chave; com a NF-e assinada, confere o `digVal` e monta o `nfeProc`).
 - Eventos: `cancelar`, `cartaCorrecao` (sequência informada), `manifestar` (sempre no Ambiente Nacional, cOrgao 91), `cancelarPorSubstituicao` (só NFC-e; `detEvento` do e110112 oficial, gerado no `@sinete/schemas`).
 - `inutilizar` (Id com os zeros do leiaute; só emitente CNPJ: pela NT 2018.001 v1.10, item 6.1, a inutilização não se aplica ao emitente pessoa física, e a série 910 a 969 é recusada antes do envio, como a SEFAZ faz com 266), `consultarCadastro`, `distribuicaoDFe` (distNSU, consNSU, consChNFe; descompacta o docZip com o `DecompressionStream` da plataforma).
 - Autorizador: `autorizar` vai à UF do documento; `autorizar`, `consultar`, `cancelar` e o recibo consultado com a nota seguem o tpEmis da chave (6 SVC-AN, 7 SVC-RS), seja qual for a contingência de agora, porque o SVC só consulta e cancela a nota que ele autorizou (NT 2013.007); a CC-e vai sempre à UF. `uf` e `contingencia: 'svc'` nas opções valem só para o que não parte de um documento (status, inutilização, recibo sem a nota, distribuição); sem `uf`, esses serviços lançam `ErroDeConfiguracao`. `autorizadorContingencia(uf, ambiente)` diz qual SVC e qual tpEmis a UF usa.
 - NFC-e (modelo 65, pela chave ou pelo `mod`): endpoints da tabela da NFC-e do `@sinete/transport` (`nfceEndpoint`), que em várias UFs é outro host; `NfeClientOptions.nfceEndpoint` sobrepõe. A NFC-e não tem SVC: com o cliente em contingência, ela continua indo ao autorizador normal.
-- Cancelamento: todo método que vai à rede aceita `signal` (`OpcoesEnvio`) no último parâmetro de opções. Em `statusServico`, `autorizar`, `consultarRecibo`, `aguardarRecibo` e `distribuicaoDFe`, ele fica no mesmo objeto das outras opções; nos demais, é um `opcoes?: OpcoesEnvio` a mais no fim. Abortar rejeita com `TransportError` de `code: 'cancelado'` (com o transporte do `@sinete/transport`), e um pedido que já saiu pode ter sido processado: confirme por consulta antes de repetir.
+- Cancelamento: todo método que vai à rede aceita `signal` (`OpcoesEnvio`) no último parâmetro de opções. Em `statusServico`, `autorizar`, `consultarRecibo`, `aguardarRecibo` e `distribuicaoDFe`, ele fica no mesmo objeto das outras opções; nos demais, é um `opcoes?: OpcoesEnvio` a mais no fim. Abortar rejeita com `ErroTransporte` de `code: 'cancelado'` (com o transporte do `@sinete/transport`), e um pedido que já saiu pode ter sido processado: confirme por consulta antes de repetir.
 - `nfeProc`, `procEventoNFe` e `procInutNFe` são montados por splice: o documento assinado entra byte a byte, nunca reserializado. O `nfeProc` só é montado quando chave e `digVal` do protocolo conferem com a NF-e assinada.
 
 ### Envio sem resposta
@@ -143,7 +143,7 @@ Quem guardou só o `nfeProc` tira dele a NF-e assinada com `nfeAssinadaDoProc(xm
 
 ## Ponta a ponta contra a SEFAZ simulada
 
-`test/e2e/sefaz-sim.test.ts` sobe o `@sinete/sefaz-sim` em HTTPS com mTLS (AC, e-CNPJ e certificado do servidor gerados na hora) e usa o `createTransport` real. O cliente resolve os endpoints pelos dados do transporte, como em produção; o `redirectToSim` do simulador troca só a URL. Cobre status, autorização síncrona e assíncrona com recibo, envio sem resposta resolvido pelo `resolverEnvioSemResposta` (timeout, 204, 539 e 217), CC-e com sequência, cancelamento, manifestação no AN, distribuição ao destinatário, inutilização, consulta cadastro, contingência SVC-AN, transmissor terceiro e a rejeição 213 enriquecida pelo `@sinete/rejeicoes`. Roda no `bun run check`.
+`test/e2e/sefaz-sim.test.ts` sobe o `@sinete/sefaz-sim` em HTTPS com mTLS (AC, e-CNPJ e certificado do servidor gerados na hora) e usa o `criarTransporte` real. O cliente resolve os endpoints pelos dados do transporte, como em produção; o `redirectToSim` do simulador troca só a URL. Cobre status, autorização síncrona e assíncrona com recibo, envio sem resposta resolvido pelo `resolverEnvioSemResposta` (timeout, 204, 539 e 217), CC-e com sequência, cancelamento, manifestação no AN, distribuição ao destinatário, inutilização, consulta cadastro, contingência SVC-AN, transmissor terceiro e a rejeição 213 enriquecida pelo `@sinete/rejeicoes`. Roda no `bun run check`.
 
 ## Checagem local contra o corpus
 

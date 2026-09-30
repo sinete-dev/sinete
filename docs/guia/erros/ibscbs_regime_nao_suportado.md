@@ -1,6 +1,6 @@
 # `ibscbs_regime_nao_suportado`: o motor ainda não calcula este regime
 
-A classificação ou os dados do item pedem um regime que o motor do IBS (Imposto sobre Bens e Serviços) e da CBS (Contribuição sobre Bens e Serviços) ainda não calcula. O campo `detalhes.regime` informa qual. O motor lança `UnsupportedRegimeError` (`@sinete/ibs-cbs`), um `ErroSinete` com `code: 'ibscbs_regime_nao_suportado'`. Identifique o erro pelo `code`, usando `ehErroSinete(e, 'ibscbs_regime_nao_suportado')` de `@sinete/core`, nunca pela mensagem.
+A classificação ou os dados do item pedem um regime que o motor do IBS (Imposto sobre Bens e Serviços) e da CBS (Contribuição sobre Bens e Serviços) ainda não calcula. O campo `detalhes.regime` informa qual. O motor lança `ErroRegimeNaoSuportado` (`@sinete/ibs-cbs`), um `ErroSinete` com `code: 'ibscbs_regime_nao_suportado'`. Identifique o erro pelo `code`, usando `ehErroSinete(e, 'ibscbs_regime_nao_suportado')` de `@sinete/core`, nunca pela mensagem.
 
 Na calculadora padrão de NF-e (Nota Fiscal Eletrônica), esse erro é convertido em uma ocorrência de validação do item, com o mesmo `code`.
 

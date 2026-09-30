@@ -46,7 +46,7 @@ A entrada (`DpsInput`) usa nomes em português nos grupos (`prestador`, `tomador
 
 ## Serviços (`createNfseClient`)
 
-REST com JSON sobre qualquer `Transport` do `@sinete/transport`; as bases (Sefin, ADN, parametrização) vêm do `nfseEndpoint` dos dados de endpoints. Os documentos viajam em gzip e base64 (`gzipBase64` e `gunzipBase64`, com `CompressionStream` da plataforma).
+REST com JSON sobre qualquer `Transporte` do `@sinete/transport`; as bases (Sefin, ADN, parametrização) vêm do `nfseEndpoint` dos dados de endpoints. Os documentos viajam em gzip e base64 (`gzipBase64` e `gunzipBase64`, com `CompressionStream` da plataforma).
 
 | Operação | Caminho | Origem |
 |---|---|---|
@@ -76,7 +76,7 @@ Grave a DPS assinada antes de enviar e nunca monte outra DPS para o mesmo númer
 
 ### mTLS com o certificado do emitente
 
-A Sefin autoriza pelo certificado do canal TLS e exige a DPS assinada pelo emitente (E0718 com outro titular). Sem procuração nem transmissor terceiro, o canal de outro contribuinte recebe 403 (registrado na pesquisa de certificados, sem código no Anexo I), e o simulador faz o mesmo. O sinete não usa transmissor terceiro na NFS-e: o `Transport` precisa apresentar o mesmo e-CNPJ ou e-CPF que assina a DPS e os pedidos de evento. A Sefin é IIS com renegociação TLS 1.2 (ADR 0004), então o Deno não chega nela; Node e Bun chegam.
+A Sefin autoriza pelo certificado do canal TLS e exige a DPS assinada pelo emitente (E0718 com outro titular). Sem procuração nem transmissor terceiro, o canal de outro contribuinte recebe 403 (registrado na pesquisa de certificados, sem código no Anexo I), e o simulador faz o mesmo. O sinete não usa transmissor terceiro na NFS-e: o `Transporte` precisa apresentar o mesmo e-CNPJ ou e-CPF que assina a DPS e os pedidos de evento. A Sefin é IIS com renegociação TLS 1.2 (ADR 0004), então o Deno não chega nela; Node e Bun chegam.
 
 ## Chave de acesso
 
@@ -84,7 +84,7 @@ A Sefin autoriza pelo certificado do canal TLS e exige a DPS assinada pelo emite
 
 ## Ponta a ponta contra a NFS-e simulada
 
-`test/e2e.test.ts` sobe o `@sinete/sefaz-sim` com a NFS-e simulada em HTTPS com mTLS (AC, certificado do prestador e do servidor gerados na hora) e usa o `createTransport` real; o `redirectNfseToSim` troca só a base de cada API. Cobre emissão, IBS/CBS, rejeição municipal (E0312) com o catálogo, substituição com o e105102 registrado pela Sefin, cancelamento e o repetido (E0840), consulta de eventos no formato da Sefin real, análise fiscal, consultas, parametrização com cache, envio sem resposta, certificado do canal recusado e DPS sem a declaração. Roda no `bun run check`.
+`test/e2e.test.ts` sobe o `@sinete/sefaz-sim` com a NFS-e simulada em HTTPS com mTLS (AC, certificado do prestador e do servidor gerados na hora) e usa o `criarTransporte` real; o `redirectNfseToSim` troca só a base de cada API. Cobre emissão, IBS/CBS, rejeição municipal (E0312) com o catálogo, substituição com o e105102 registrado pela Sefin, cancelamento e o repetido (E0840), consulta de eventos no formato da Sefin real, análise fiscal, consultas, parametrização com cache, envio sem resposta, certificado do canal recusado e DPS sem a declaração. Roda no `bun run check`.
 
 ## Lacunas conhecidas
 

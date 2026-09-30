@@ -1,5 +1,5 @@
 {
-  "description": "Casos da guarda de hosts. O helper (policy.Guard) e o @sinete/transport (allowlistPolicy com ambienteHosts, mais as travas fixas do envio) têm de dar o mesmo veredito em cada um. ambientes vazio quer dizer laboratório (só loopback) no helper; no transporte, a allowlist com 127.0.0.1 e localhost em qualquer porta.",
+  "description": "Casos da guarda de hosts. O helper (policy.Guard) e o @sinete/transport (politicaDeHostsPermitidos com hostsDoAmbiente, mais as travas fixas do envio) têm de dar o mesmo veredito em cada um. ambientes vazio quer dizer laboratório (só loopback) no helper; no transporte, a allowlist com 127.0.0.1 e localhost em qualquer porta.",
   "cases": [
     {
       "name": "status SP homologação com tpAmb 2",

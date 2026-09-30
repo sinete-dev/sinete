@@ -1,6 +1,6 @@
 # `pfx_nao_suportado`: o PFX usa uma cifra que o leitor não implementa
 
-O arquivo PFX (PKCS#12, que reúne a chave privada e os certificados) usa um algoritmo que o leitor do sinete não implementa. O erro é um `CertError` de `@sinete/cert`, derivado de `ErroSinete`, com `code: 'pfx_nao_suportado'`. Identifique-o pelo `code`, nunca pela mensagem: use `ehErroSinete(e, 'pfx_nao_suportado')`, com `ehErroSinete` importado de `@sinete/core`.
+O arquivo PFX (PKCS#12, que reúne a chave privada e os certificados) usa um algoritmo que o leitor do sinete não implementa. O erro é um `ErroCertificado` de `@sinete/cert`, derivado de `ErroSinete`, com `code: 'pfx_nao_suportado'`. Identifique-o pelo `code`, nunca pela mensagem: use `ehErroSinete(e, 'pfx_nao_suportado')`, com `ehErroSinete` importado de `@sinete/core`.
 
 ## Causa
 
