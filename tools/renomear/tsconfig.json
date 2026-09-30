@@ -1,0 +1,9 @@
+{
+  // Ferramenta do repo: roda no Bun.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["bun"],
+    "isolatedDeclarations": false
+  },
+  "include": ["*.ts"]
+}
