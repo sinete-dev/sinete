@@ -72,6 +72,7 @@ describe('regex do XSD para JS', () => {
       '\\pL',
     ]) {
       expect(() => xsdRegexToJs(p)).toThrow(XsdRegexError);
+      expect(() => xsdRegexToJs(p)).toThrow(expect.objectContaining({ code: 'nao_suportado' }));
     }
   });
 });
