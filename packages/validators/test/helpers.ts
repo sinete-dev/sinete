@@ -1,7 +1,7 @@
 import { expect } from 'bun:test';
 import { ErroDeValidacao, ehErroSinete } from '@sinete/core';
 
-/** Captura o erro lançado e confere que é `ValidationError` do core com a ocorrência de código estável. */
+/** Captura o erro lançado e confere que é `ErroDeValidacao` do core com a ocorrência de código estável. */
 export function expectValidationError(fn: () => unknown, code: string): void {
   let caught: unknown;
   try {

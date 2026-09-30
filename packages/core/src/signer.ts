@@ -1,7 +1,7 @@
 /**
  * Contrato de quem assina. O core nunca vê a chave: entrega bytes e recebe bytes (ADR 0003).
  *
- * - `data`: recebe os bytes a assinar (o SignedInfo canonicalizado) e faz hash + RSA PKCS#1 v1.5 (WebCrypto, CKM_SHA1_RSA_PKCS).
+ * - `dados`: recebe os bytes a assinar (o SignedInfo canonicalizado) e faz hash + RSA PKCS#1 v1.5 (WebCrypto, CKM_SHA1_RSA_PKCS).
  * - `digest`: recebe só o DigestInfo DER (prefixo do algoritmo + hash) e faz RSA puro (CKM_RSA_PKCS em PKCS#11, A3 em nuvem, HSM, OpenBao).
  *
  * O algoritmo de hash é o do leiaute (SHA-1 nos DF-e atuais) e é escolhido por quem monta a assinatura, não pelo signer.

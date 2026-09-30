@@ -25,12 +25,12 @@
     },
     "209": {
       "causaProvavel": "A IE do emitente não tem o tamanho, a composição ou o dígito verificador da UF do emitente.",
-      "comoCorrigir": "Valide com parseIe(ie, uf) do @sinete/validators e confira a UF. A SEFAZ despreza zeros não significativos à esquerda antes de conferir o dígito.",
+      "comoCorrigir": "Valide com lerIe(ie, uf) do @sinete/validators e confira a UF. A SEFAZ despreza zeros não significativos à esquerda antes de conferir o dígito.",
       "referencia": "MOC 7.0 Anexo I, RV C17-20 e nota (*2) (NT 2018.001)"
     },
     "210": {
       "causaProvavel": "A IE do destinatário não tem o tamanho, a composição ou o dígito verificador da UF do destinatário.",
-      "comoCorrigir": "Valide com parseIe(ie, ufDest) e confira se a UF do endereço do destinatário é a da inscrição. Contribuinte isento usa indIEDest=2 sem a tag IE.",
+      "comoCorrigir": "Valide com lerIe(ie, ufDest) e confira se a UF do endereço do destinatário é a da inscrição. Contribuinte isento usa indIEDest=2 sem a tag IE.",
       "referencia": "MOC 7.0 Anexo I, RV E17-50 e nota (*2)"
     },
     "213": {
@@ -90,7 +90,7 @@
     },
     "236": {
       "causaProvavel": "O dígito verificador da chave de acesso não confere com as 43 posições anteriores: chave montada à mão ou DV calculado sobre outra composição.",
-      "comoCorrigir": "Recalcule o DV pelo módulo 11 (chaveAcessoCheckDigit do @sinete/validators). Com CNPJ alfanumérico, cada caractere vale o código ASCII menos 48.",
+      "comoCorrigir": "Recalcule o DV pelo módulo 11 (calcularDvChaveAcesso do @sinete/validators). Com CNPJ alfanumérico, cada caractere vale o código ASCII menos 48.",
       "referencia": "MOC 7.0 Visão Geral, item 2.2.6.2; NT Conjunta 2025.001, item 5"
     },
     "244": {

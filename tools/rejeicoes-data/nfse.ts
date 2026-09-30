@@ -21,6 +21,8 @@ import path from 'node:path';
 import { $ } from 'bun';
 import type { ElementoXml } from '../../packages/core/src/xml/index.ts';
 import { atributoDe, descendentes, elementosFilhos, lerXml, textoDe } from '../../packages/core/src/xml/index.ts';
+import type { DescricaoTabelaRejeicoes } from '../../packages/rejeicoes/src/index.ts';
+import type { NfseErro, NfseErroRegra } from '../../packages/rejeicoes/src/nfse.ts';
 
 type Nivel = '1' | '2' | '3';
 type Categoria =
@@ -44,20 +46,10 @@ type Doc = {
   sha256: string;
   sheets: string[];
 };
-type Regra = { doc: Doc['id']; aba: string; linha: string; caminho?: string; nivel?: Nivel; regra: string };
+// Regra e entrada com os tipos do pacote: um membro renomeado no `@sinete/rejeicoes` quebra a compilação aqui.
+type Regra = NfseErroRegra;
 type Curated = { categoria?: Categoria; causaProvavel?: string; comoCorrigir?: string; referencia?: string };
-type Entry = {
-  code: string;
-  mensagem: string;
-  mensagens?: string[];
-  nivel?: Nivel;
-  regras: Regra[];
-  categoria: Categoria;
-  fonte: string;
-  causaProvavel?: string;
-  comoCorrigir?: string;
-  referencia?: string;
-};
+type Entry = NfseErro;
 
 const here = import.meta.dir;
 const root = path.resolve(here, '../..');
@@ -197,7 +189,7 @@ for (const d of sources.documents) {
       if (efeito !== 'Rej.') oddEffects.push(`${d.id} ${aba} #${get('A')} ${codes.join(',')}: efeito "${efeito}"`);
       const nivel = get('J');
       const regra: Regra = {
-        doc: d.id,
+        documento: d.id,
         aba,
         linha: get('A'),
         ...(recepcao || caminho === undefined ? {} : { caminho }),
@@ -227,7 +219,7 @@ function categoria(fs: readonly Found[], nivel: Nivel | undefined): Categoria {
   if (/já (existe|foi)|duplicid|em duplicidade/i.test(msgs)) return 'duplicidade';
   if (nivel === '3') return 'parametrizacao-municipal';
   if (regras.some((r) => /IBSCBS|gIBS|gCBS/.test(r.caminho ?? ''))) return 'reforma';
-  if (regras.every((r) => r.doc === 'anexo-ii')) return 'evento';
+  if (regras.every((r) => r.documento === 'anexo-ii')) return 'evento';
   if (/schema|esquema/i.test(msgs)) return 'schema';
   if (/cadastr/i.test(msgs)) return 'cadastro';
   return 'regra-negocio';
@@ -242,13 +234,13 @@ for (const code of [...byCode.keys()].sort()) {
   const first = fs[0]?.regra as Regra;
   const cur = curadoria.entradas[code];
   const e: Entry = {
-    code,
+    codigo: code,
     mensagem: mensagens[0] ?? '',
     ...(mensagens.length > 1 ? { mensagens } : {}),
     ...(nivel === undefined ? {} : { nivel }),
     regras: fs.map((f) => f.regra),
     categoria: cur?.categoria ?? categoria(fs, nivel),
-    fonte: `${docById.get(first.doc)?.citation}, aba ${first.aba}`,
+    fonte: `${docById.get(first.documento)?.citation}, aba ${first.aba}`,
   };
   if (cur?.causaProvavel !== undefined) {
     if (cur.comoCorrigir === undefined || cur.referencia === undefined) {
@@ -265,20 +257,20 @@ if (unknown.length > 0) {
   process.exit(1);
 }
 
-const data = {
-  schemaVersion: 1,
-  version: sources.retrievedAt.replaceAll('-', '.'),
-  generatedBy: 'tools/rejeicoes-data/nfse.ts',
-  sources: sources.documents.map((d) => ({
+const data: DescricaoTabelaRejeicoes & { geradoPor: string; notas: string; erros: readonly NfseErro[] } = {
+  versaoDoFormato: 1,
+  versao: sources.retrievedAt.replaceAll('-', '.'),
+  geradoPor: 'tools/rejeicoes-data/nfse.ts',
+  fontes: sources.documents.map((d) => ({
     id: d.id,
-    title: d.title,
+    titulo: d.title,
     versao: d.versao,
-    citation: d.citation,
+    citacao: d.citation,
     url: d.url,
     sha256: d.sha256,
-    retrievedAt: sources.retrievedAt,
+    coletadoEm: sources.retrievedAt,
   })),
-  notes:
+  notas:
     'União dos códigos de erro das abas de regras de negócio do Anexo I (RN_RECEPCAO_DPS e RN DPS_NFS-e) e do Anexo II (RN EVENTO_PED.REG.EVENTO) do leiaute da NFS-e Nacional. Mensagem oficial com espaços normalizados; `mensagens` quando o mesmo código aparece com textos diferentes. `nivel` é o menor nível entre as regras (1 leiaute, 2 geral, 3 parametrização municipal). `categoria` é heurística sobre aba, caminho, nível e mensagem, com correções na curadoria. `causaProvavel` e `comoCorrigir` só onde houve curadoria, com a regra citada em `referencia`. Três regras do Anexo I (E0675, E0676, E0677) trazem "Obrig." na coluna de efeito; tratadas como rejeição, como as demais.',
   erros: result,
 };
@@ -291,7 +283,7 @@ const json = await $`${biome} format --stdin-file-path=${out} < ${new Response(`
 
 const counts = new Map<string, number>();
 for (const e of result) counts.set(e.categoria, (counts.get(e.categoria) ?? 0) + 1);
-const perDoc = (id: string): number => new Set(found.filter((f) => f.regra.doc === id).map((f) => f.code)).size;
+const perDoc = (id: string): number => new Set(found.filter((f) => f.regra.documento === id).map((f) => f.code)).size;
 console.log(
   `${result.length} códigos (Anexo I ${perDoc('anexo-i')}, Anexo II ${perDoc('anexo-ii')}, ${found.length} regras); categorias: ${[
     ...counts,

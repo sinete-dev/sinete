@@ -1,7 +1,7 @@
 {
   "versaoDoFormato": 1,
   "versao": "2026.09.26",
-  "generatedBy": "tools/rejeicoes-data/nfse.ts",
+  "geradoPor": "tools/rejeicoes-data/nfse.ts",
   "fontes": [
     {
       "id": "anexo-i",
@@ -22,7 +22,7 @@
       "coletadoEm": "2026-09-26"
     }
   ],
-  "notes": "União dos códigos de erro das abas de regras de negócio do Anexo I (RN_RECEPCAO_DPS e RN DPS_NFS-e) e do Anexo II (RN EVENTO_PED.REG.EVENTO) do leiaute da NFS-e Nacional. Mensagem oficial com espaços normalizados; `mensagens` quando o mesmo código aparece com textos diferentes. `nivel` é o menor nível entre as regras (1 leiaute, 2 geral, 3 parametrização municipal). `categoria` é heurística sobre aba, caminho, nível e mensagem, com correções na curadoria. `causaProvavel` e `comoCorrigir` só onde houve curadoria, com a regra citada em `referencia`. Três regras do Anexo I (E0675, E0676, E0677) trazem \"Obrig.\" na coluna de efeito; tratadas como rejeição, como as demais.",
+  "notas": "União dos códigos de erro das abas de regras de negócio do Anexo I (RN_RECEPCAO_DPS e RN DPS_NFS-e) e do Anexo II (RN EVENTO_PED.REG.EVENTO) do leiaute da NFS-e Nacional. Mensagem oficial com espaços normalizados; `mensagens` quando o mesmo código aparece com textos diferentes. `nivel` é o menor nível entre as regras (1 leiaute, 2 geral, 3 parametrização municipal). `categoria` é heurística sobre aba, caminho, nível e mensagem, com correções na curadoria. `causaProvavel` e `comoCorrigir` só onde houve curadoria, com a regra citada em `referencia`. Três regras do Anexo I (E0675, E0676, E0677) trazem \"Obrig.\" na coluna de efeito; tratadas como rejeição, como as demais.",
   "erros": [
     {
       "codigo": "E0001",

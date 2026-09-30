@@ -30,7 +30,7 @@ describe('tabela de UFs', () => {
       expect(s.url).toStartWith('https://');
       expect(s.coletadoEm).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     }
-    expect(Object.keys(table).sort()).toEqual(['notes', 'schemaVersion', 'sources', 'ufs', 'version']);
+    expect(Object.keys(table).sort()).toEqual(['fontes', 'notas', 'ufs', 'versao', 'versaoDoFormato']);
   });
 });
 

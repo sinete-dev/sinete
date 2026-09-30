@@ -33,11 +33,11 @@ export interface FaixaIe {
 export interface CalculoDvIe {
   /** Posição do dígito na inscrição normalizada. */
   readonly posicao: number;
-  /** Posições que entram na soma; padrão: `0` a `weights.length - 1`. */
+  /** Posições que entram na soma; padrão: `0` a `pesos.length - 1`. */
   readonly posicoesSomadas?: readonly number[];
   readonly pesos: readonly number[];
   readonly modulo: number;
-  /** `complement`: módulo menos o resto; `remainder`: o próprio resto. */
+  /** `complemento`: módulo menos o resto; `resto`: o próprio resto. */
   readonly resultado: 'complemento' | 'resto';
   /** Troca o resultado pelo dígito aceito; lista aceita qualquer um deles. */
   readonly troca?: Readonly<Record<string, number | readonly number[]>>;
@@ -70,7 +70,7 @@ export interface DescricaoTabelaIe {
   readonly fontes: readonly FonteDeDados[];
 }
 
-/** Metadados da tabela de regras de IE: versão e fontes gerais. As fontes por UF estão em `ieRule(uf).sources`. */
+/** Metadados da tabela de regras de IE: versão e fontes gerais. As fontes por UF estão em `regraIe(uf).fontes`. */
 export const TABELA_IE: DescricaoTabelaIe = {
   versaoDoFormato: table.versaoDoFormato,
   versao: table.versao,
@@ -105,13 +105,13 @@ export type InscricaoEstadual =
 export interface LerIeOpcoes extends LerOpcoes {
   /** Aceita o literal `ISENTO` (qualquer caixa). Padrão: `true`. */
   readonly aceitarIsento?: boolean;
-  /** Aceita formatos anteriores ao vigente (`legacy` na tabela). Padrão: `true`. */
+  /** Aceita formatos anteriores ao vigente (`legado` na tabela). Padrão: `true`. */
   readonly aceitarLegado?: boolean;
 }
 
 /** Verdadeiro se o texto é o literal `ISENTO`, ignorando caixa e espaços nas pontas. */
-export function ieIsenta(input: string): boolean {
-  return input.trim().toUpperCase() === IE_ISENTO;
+export function ieIsenta(entrada: string): boolean {
+  return entrada.trim().toUpperCase() === IE_ISENTO;
 }
 
 function pick(map: Readonly<Record<string, number | readonly number[]>> | undefined, v: number): readonly number[] {
@@ -120,13 +120,13 @@ function pick(map: Readonly<Record<string, number | readonly number[]>> | undefi
   return typeof m === 'number' ? [m] : m;
 }
 
-/** Dígitos aceitos na posição `check.at` de `value` (as demais posições do cálculo já preenchidas). */
-export function calcularDvIe(value: string, check: CalculoDvIe): readonly number[] {
-  const over = check.posicoesSomadas ?? check.pesos.map((_, i) => i);
-  let add = check.acrescimo ?? 0;
-  let map = check.troca;
-  for (const r of check.faixas ?? []) {
-    const n = Number(value.slice(r.posicoes[0], r.posicoes[1]));
+/** Dígitos aceitos na posição `calculo.posicao` de `valor` (as demais posições do cálculo já preenchidas). */
+export function calcularDvIe(valor: string, calculo: CalculoDvIe): readonly number[] {
+  const over = calculo.posicoesSomadas ?? calculo.pesos.map((_, i) => i);
+  let add = calculo.acrescimo ?? 0;
+  let map = calculo.troca;
+  for (const r of calculo.faixas ?? []) {
+    const n = Number(valor.slice(r.posicoes[0], r.posicoes[1]));
     if (n >= r.minimo && n <= r.maximo) {
       add = r.acrescimo ?? add;
       map = r.troca ?? map;
@@ -135,12 +135,12 @@ export function calcularDvIe(value: string, check: CalculoDvIe): readonly number
   }
   let sum = add;
   for (let i = 0; i < over.length; i++) {
-    const p = charValue(value[over[i] ?? 0] ?? '0') * (check.pesos[i] ?? 0);
-    sum += check.somarAlgarismos ? Math.floor(p / 10) + (p % 10) : p;
+    const p = charValue(valor[over[i] ?? 0] ?? '0') * (calculo.pesos[i] ?? 0);
+    sum += calculo.somarAlgarismos ? Math.floor(p / 10) + (p % 10) : p;
   }
-  sum *= check.multiplicador ?? 1;
-  const r = sum % check.modulo;
-  return pick(map, check.resultado === 'complemento' ? check.modulo - r : r);
+  sum *= calculo.multiplicador ?? 1;
+  const r = sum % calculo.modulo;
+  return pick(map, calculo.resultado === 'complemento' ? calculo.modulo - r : r);
 }
 
 function checksPass(value: string, variant: VarianteIe): boolean {
@@ -159,9 +159,9 @@ function fit(value: string, length: number): string | undefined {
  * Preenche os dígitos verificadores de uma inscrição, na ordem da tabela (útil para gerar massa de teste).
  * `base` tem o tamanho da variante; o que estiver nas posições dos DV é sobrescrito.
  */
-export function completarIe(base: string, uf: Uf, variantId?: string): string {
+export function completarIe(base: string, uf: Uf, idDaVariante?: string): string {
   if (!ehUf(uf)) throwInvalid('IE', 'ie_uf_invalida', `UF desconhecida: ${String(uf)}`);
-  const variant = regraIe(uf).variantes.find((v) => variantId === undefined || v.id === variantId);
+  const variant = regraIe(uf).variantes.find((v) => idDaVariante === undefined || v.id === idDaVariante);
   if (!variant || base.length !== variant.tamanho) {
     throwInvalid('IE', 'ie_base_invalida', `Base fora do tamanho da variante (${uf})`);
   }
@@ -174,15 +174,15 @@ export function completarIe(base: string, uf: Uf, variantId?: string): string {
  * Valida e normaliza a inscrição estadual para a UF. Aceita máscara (ponto, hífen, barra, espaço), minúsculas e zeros
  * à esquerda a mais ou a menos.
  */
-export function lerIe(input: string, uf: Uf, options: LerIeOpcoes = {}): Resultado<InscricaoEstadual, Ocorrencia> {
-  const path = options.caminho ?? 'IE';
+export function lerIe(entrada: string, uf: Uf, opcoes: LerIeOpcoes = {}): Resultado<InscricaoEstadual, Ocorrencia> {
+  const path = opcoes.caminho ?? 'IE';
   if (!ehUf(uf)) return falha(issue(path, 'ie_uf_invalida', `UF desconhecida: ${String(uf)}`));
-  if (ieIsenta(input)) {
-    return options.aceitarIsento === false
+  if (ieIsenta(entrada)) {
+    return opcoes.aceitarIsento === false
       ? falha(issue(path, 'ie_isento_nao_permitido', 'ISENTO não é aceito neste campo'))
       : ok({ tipo: 'isento', valor: IE_ISENTO });
   }
-  const value = stripMask(input.trim()).toUpperCase();
+  const value = stripMask(entrada.trim()).toUpperCase();
   if (value === '' || !/^P?\d+$/.test(value)) {
     return falha(
       issue(path, 'ie_caractere_invalido', 'Inscrição estadual só tem algarismos (ou P no produtor rural de SP)'),
@@ -191,7 +191,7 @@ export function lerIe(input: string, uf: Uf, options: LerIeOpcoes = {}): Resulta
   // Só zeros é IE ausente, não número (MOC 7.0 Anexo I, RV C17-10, rejeição 229). Sem esta trava o ajuste de zeros
   // à esquerda levaria '0' ao tamanho da UF e o DV de uma sequência de zeros é 0 em quase todas.
   if (/^P?0+$/.test(value)) return falha(issue(path, 'ie_zerada', 'Inscrição estadual só com zeros'));
-  const variants = regraIe(uf).variantes.filter((v) => options.aceitarLegado !== false || !v.legado);
+  const variants = regraIe(uf).variantes.filter((v) => opcoes.aceitarLegado !== false || !v.legado);
   // Tamanho exato primeiro; o ajuste de zeros só entra se nenhuma variante do mesmo tamanho servir.
   const ordered = [
     ...variants.filter((v) => v.tamanho === value.length),
@@ -227,12 +227,12 @@ export function lerIe(input: string, uf: Uf, options: LerIeOpcoes = {}): Resulta
   return falha(issue(path, code, message));
 }
 
-export function ieValida(input: string, uf: Uf, options?: LerIeOpcoes): boolean {
-  return lerIe(input, uf, options).ok;
+export function ieValida(entrada: string, uf: Uf, opcoes?: LerIeOpcoes): boolean {
+  return lerIe(entrada, uf, opcoes).ok;
 }
 
 /** Formata com a máscara da UF se a inscrição for válida; senão devolve a entrada sem mudança. */
-export function formatarIe(input: string, uf: Uf): string {
-  const r = lerIe(input, uf);
-  return r.ok ? (r.valor.tipo === 'isento' ? IE_ISENTO : r.valor.formatada) : input;
+export function formatarIe(entrada: string, uf: Uf): string {
+  const r = lerIe(entrada, uf);
+  return r.ok ? (r.valor.tipo === 'isento' ? IE_ISENTO : r.valor.formatada) : entrada;
 }

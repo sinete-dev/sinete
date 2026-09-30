@@ -7,7 +7,7 @@ import { expectValidationError } from './helpers.ts';
 
 /**
  * Exemplos oficiais: cada número abaixo aparece como inscrição válida no roteiro da UF (Sintegra, Cad_Estados/cad_XX,
- * e as páginas extras registradas em `sources` do ie.json). Onde o roteiro não traz exemplo, a UF fica só com os testes
+ * e as páginas extras registradas em `fontes` do ie.json). Onde o roteiro não traz exemplo, a UF fica só com os testes
  * de propriedade.
  */
 const OFFICIAL_VALID: Record<string, readonly string[]> = {

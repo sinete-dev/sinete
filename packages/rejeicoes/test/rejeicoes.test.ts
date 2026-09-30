@@ -104,7 +104,7 @@ describe('catálogo', () => {
       expect(s.url).toStartWith('https://www.nfe.fazenda.gov.br/');
       expect(s.sha256).toMatch(/^[0-9a-f]{64}$/);
     }
-    expect(table.generatedBy).toBe('tools/rejeicoes-data/build.ts');
+    expect(table.geradoPor).toBe('tools/rejeicoes-data/build.ts');
   });
 });
 
@@ -116,7 +116,7 @@ describe('consulta e enriquecimento', () => {
     expect(rejeicaoPorCodigo('9999')).toBeUndefined();
   });
 
-  test('rejectionHint só com curadoria', () => {
+  test('dicaRejeicao só com curadoria', () => {
     expect(dicaRejeicao('204')).toEqual({
       causaProvavel: rejeicaoPorCodigo('204')?.causaProvavel ?? '',
       comoCorrigir: rejeicaoPorCodigo('204')?.comoCorrigir ?? '',
@@ -127,7 +127,7 @@ describe('consulta e enriquecimento', () => {
     expect(dicaRejeicao('100')).toBeUndefined();
   });
 
-  test('enrichRejected preenche o hint sem sobrescrever', () => {
+  test('completarRecusado preenche o hint sem sobrescrever', () => {
     const r = criarRecusado({ cStat: '297', xMotivo: 'Rejeição: Assinatura difere do calculado' });
     const e = completarRecusado(r);
     expect(e.dica?.fonte).toBe('MOC 7.0 Anexo I, RV F02');
@@ -138,7 +138,7 @@ describe('consulta e enriquecimento', () => {
     expect(completarRecusado(unknown)).toBe(unknown);
   });
 
-  test('enrichOutcome só mexe no rejected', () => {
+  test('completarResultado só mexe no recusado', () => {
     const a = criarAutorizado({ cStat: '100', xMotivo: 'Autorizado o uso da NF-e' }, { nProt: '1' });
     expect(completarResultado(a)).toBe(a);
     const p = criarPendente({ cStat: '105', xMotivo: 'Lote em processamento' });

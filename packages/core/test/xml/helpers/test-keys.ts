@@ -2,7 +2,7 @@
  * Chave e certificado sintéticos gerados em tempo de teste, só com WebCrypto. Nada disso é commitado: cada execução
  * gera um par RSA-2048 novo e um certificado autoassinado mínimo (CN "sinete teste sintetico") para o KeyInfo.
  *
- * Também traz um signer no modo `digest` com RSA cru em BigInt, para provar que os dois modos do contrato `Signer`
+ * Também traz um signer no modo `digest` com RSA cru em BigInt, para provar que os dois modos do contrato `Assinador`
  * produzem a mesma assinatura.
  */
 import type { AssinadorDeDados, AssinadorDeDigest } from '../../../src/index.ts';

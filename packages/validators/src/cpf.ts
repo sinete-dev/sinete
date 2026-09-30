@@ -28,9 +28,9 @@ export interface LerOpcoes {
 }
 
 /** Valida e normaliza um CPF (aceita máscara); devolve só os 11 algarismos. */
-export function lerCpf(input: string, options: LerOpcoes = {}): Resultado<string, Ocorrencia> {
-  const path = options.caminho ?? 'CPF';
-  const value = stripMask(input.trim());
+export function lerCpf(entrada: string, opcoes: LerOpcoes = {}): Resultado<string, Ocorrencia> {
+  const path = opcoes.caminho ?? 'CPF';
+  const value = stripMask(entrada.trim());
   if (!/^\d*$/.test(value)) return falha(issue(path, 'cpf_caractere_invalido', 'CPF só tem algarismos'));
   if (value.length !== 11) return falha(issue(path, 'cpf_tamanho_invalido', 'CPF tem 11 algarismos'));
   if (allSame(value)) return falha(issue(path, 'cpf_digitos_repetidos', 'CPF com todos os algarismos iguais'));
@@ -40,11 +40,11 @@ export function lerCpf(input: string, options: LerOpcoes = {}): Resultado<string
   return ok(value);
 }
 
-export function cpfValido(input: string): boolean {
-  return lerCpf(input).ok;
+export function cpfValido(entrada: string): boolean {
+  return lerCpf(entrada).ok;
 }
 
-/** `000.000.000-00`. Não valida: formate só o que já passou por `parseCpf`. */
-export function formatarCpf(value: string): string {
-  return applyMask(stripMask(value), '###.###.###-##');
+/** `000.000.000-00`. Não valida: formate só o que já passou por `lerCpf`. */
+export function formatarCpf(valor: string): string {
+  return applyMask(stripMask(valor), '###.###.###-##');
 }

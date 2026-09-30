@@ -97,7 +97,7 @@ describe('dicas', () => {
     expect(dicaRejeicaoNfse('E9999')).toBeUndefined();
   });
 
-  test('enrichNfseRejected', () => {
+  test('completarRecusadoNfse', () => {
     const r = completarRecusadoNfse(criarRecusado({ cStat: 'E0312', xMotivo: 'O código de tributação nacional...' }));
     expect(r.dica?.fonte).toContain('linha 317');
     const sem = criarRecusado({ cStat: 'E1570', xMotivo: 'x' });

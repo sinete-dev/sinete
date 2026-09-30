@@ -1,8 +1,8 @@
 /**
  * Logger estruturado e injetável.
  *
- * O padrão é não logar nada (`noopLogger`). A aplicação liga o próprio logger (pino, console, OpenTelemetry) por um
- * adaptador de poucas linhas. Mensagem curta e estável; o contexto vai em `fields`.
+ * O padrão é não logar nada (`loggerSilencioso`). A aplicação liga o próprio logger (pino, console, OpenTelemetry) por um
+ * adaptador de poucas linhas. Mensagem curta e estável; o contexto vai em `campos`.
  *
  * Nunca passe ao logger chave privada, PIN, certificado em PFX ou PEM, nem o XML inteiro de um documento (tem CPF,
  * endereço e valores). Identifique o documento pela chave de acesso.

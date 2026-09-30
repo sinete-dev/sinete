@@ -61,7 +61,7 @@ export interface ChaveAcesso {
   readonly documento: string;
   readonly serie: string;
   readonly nNF: string;
-  /** Leiaute usado na leitura: `2.00` (padrão) ou `1.10` quando pedido em `options.layout`. */
+  /** Leiaute usado na leitura: `2.00` (padrão) ou `1.10` quando pedido em `opcoes.leiaute`. */
   readonly leiaute: '2.00' | '1.10';
   /** Ausente no leiaute 1.10. */
   readonly tpEmis?: string;
@@ -89,17 +89,17 @@ export interface PartesChaveAcesso {
 }
 
 /** Monta a chave com o DV a partir das partes, completando zeros à esquerda. Não valida o emitente. */
-export function montarChaveAcesso(parts: PartesChaveAcesso): string {
-  const emitente = stripMask(parts.emitente).toUpperCase().padStart(14, '0');
+export function montarChaveAcesso(partes: PartesChaveAcesso): string {
+  const emitente = stripMask(partes.emitente).toUpperCase().padStart(14, '0');
   const base = [
-    parts.cUF.padStart(2, '0'),
-    parts.aamm,
+    partes.cUF.padStart(2, '0'),
+    partes.aamm,
     emitente,
-    parts.mod.padStart(2, '0'),
-    String(parts.serie).padStart(3, '0'),
-    String(parts.nNF).padStart(9, '0'),
-    String(parts.tpEmis),
-    String(parts.cNF).padStart(8, '0'),
+    partes.mod.padStart(2, '0'),
+    String(partes.serie).padStart(3, '0'),
+    String(partes.nNF).padStart(9, '0'),
+    String(partes.tpEmis),
+    String(partes.cNF).padStart(8, '0'),
   ].join('');
   return base + calcularDvChaveAcesso(base);
 }
@@ -133,10 +133,10 @@ const NAO_SUPORTADOS: ReadonlyMap<string, string> = new Map(
  * Valida e decompõe a chave de acesso (aceita espaços, como no DANFE, e minúsculas). Cada componente é conferido
  * contra o domínio do leiaute, com a regra de origem em `data/chave.json`.
  */
-export function lerChaveAcesso(input: string, options: LerChaveAcessoOpcoes = {}): Resultado<ChaveAcesso, Ocorrencia> {
-  const path = options.caminho ?? 'chNFe';
+export function lerChaveAcesso(entrada: string, opcoes: LerChaveAcessoOpcoes = {}): Resultado<ChaveAcesso, Ocorrencia> {
+  const path = opcoes.caminho ?? 'chNFe';
   const fail = (code: string, message: string): Resultado<ChaveAcesso, Ocorrencia> => falha(issue(path, code, message));
-  const chave = stripMask(input.trim()).toUpperCase();
+  const chave = stripMask(entrada.trim()).toUpperCase();
   if (!/^[A-Z0-9]*$/.test(chave)) return fail('chave_caractere_invalido', 'Chave de acesso só tem letras e algarismos');
   if (chave.length !== 44) return fail('chave_tamanho_invalido', 'Chave de acesso tem 44 posições');
   if (!CHAVE_FORMAT.test(chave)) {
@@ -156,7 +156,7 @@ export function lerChaveAcesso(input: string, options: LerChaveAcessoOpcoes = {}
   const mes = Number(aamm.slice(2));
   if (mes < 1 || mes > 12) return fail('chave_mes_invalido', 'Mês da chave de acesso fora de 01 a 12');
   const ano = 2000 + aa;
-  if (aa < rules.anoMinimo.aa || (options.relogio !== undefined && ano > options.relogio.agora().getUTCFullYear())) {
+  if (aa < rules.anoMinimo.aa || (opcoes.relogio !== undefined && ano > opcoes.relogio.agora().getUTCFullYear())) {
     return fail('chave_ano_invalido', 'Ano da chave de acesso anterior a 2006 ou posterior ao ano corrente');
   }
   // mod: B06 e modelos dos demais DF-e com a mesma composição de chave; RV BA02-34 (679)
@@ -176,7 +176,7 @@ export function lerChaveAcesso(input: string, options: LerChaveAcessoOpcoes = {}
   if (/^0+$/.test(nNF)) return fail('chave_numero_invalido', 'Número do documento zerado na chave de acesso');
   // tpEmis e cNF dependem do leiaute escolhido: 1.10 não tem tpEmis e usa cNF de 9 posições
   const tpEmisRaw = chave.slice(34, 35);
-  const layout = options.leiaute ?? '2.00';
+  const layout = opcoes.leiaute ?? '2.00';
   if (layout === '2.00' && !rules.tpEmis.valores.includes(tpEmisRaw)) {
     return fail('chave_tpemis_invalido', `Forma de emissão ${tpEmisRaw} fora do domínio do tpEmis`);
   }
@@ -187,7 +187,7 @@ export function lerChaveAcesso(input: string, options: LerChaveAcessoOpcoes = {}
   const cpf = emitente.startsWith('000') ? lerCpf(emitente.slice(3)) : undefined;
   const nSerie = Number(serie);
   const serieRule = rules.serieNfe.aplicaAosModelos.includes(mod);
-  if (options.conferirEmitente !== false) {
+  if (opcoes.conferirEmitente !== false) {
     const wantsCnpj = serieRule && inRange(nSerie, rules.serieNfe.cnpj);
     const wantsCpf = serieRule && inRange(nSerie, rules.serieNfe.cpf);
     const okEmit = wantsCnpj ? cnpj.ok : wantsCpf ? cpf?.ok === true : cnpj.ok || cpf?.ok === true;
@@ -205,7 +205,7 @@ export function lerChaveAcesso(input: string, options: LerChaveAcessoOpcoes = {}
       );
     }
   }
-  if (options.emissao === true && serieRule) {
+  if (opcoes.emissao === true && serieRule) {
     const e = rules.emissao;
     if (!inRange(nSerie, e.seriesPermitidas))
       return fail('chave_serie_invalida', `Série ${serie} fora das faixas de 000 a 969`);
@@ -246,14 +246,14 @@ export function lerChaveAcesso(input: string, options: LerChaveAcessoOpcoes = {}
   });
 }
 
-export function chaveAcessoValida(input: string, options?: LerChaveAcessoOpcoes): boolean {
-  return lerChaveAcesso(input, options).ok;
+export function chaveAcessoValida(entrada: string, opcoes?: LerChaveAcessoOpcoes): boolean {
+  return lerChaveAcesso(entrada, opcoes).ok;
 }
 
 /** Chave em 11 blocos de 4, como no DANFE. Não valida. */
-export function formatarChaveAcesso(value: string): string {
+export function formatarChaveAcesso(valor: string): string {
   return (
-    stripMask(value)
+    stripMask(valor)
       .toUpperCase()
       .match(/.{1,4}/g)
       ?.join(' ') ?? ''

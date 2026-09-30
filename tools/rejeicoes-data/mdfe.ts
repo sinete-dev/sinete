@@ -7,7 +7,7 @@
  * 4.4.2 da NF-e: o catálogo é a união das regras de validação do Anexo I (grupo F), da Visão Geral (grupos A a K e
  * consumo indevido) e das NT posteriores ao MOC 3.00b. Cada linha `<regra> ... Obrig.|Facult. <código> Rej. Rejeição:
  * <mensagem>` dá o id da regra e a mensagem, reconstituída pela posição da coluna da mensagem (como no builder da
- * NF-e). Quando o código aparece em mais de uma regra com texto diferente, todas as mensagens ficam em `messages`.
+ * NF-e). Quando o código aparece em mais de uma regra com texto diferente, todas as mensagens ficam em `mensagens`.
  *
  * Uso:
  *   bun tools/rejeicoes-data/mdfe.ts --pdf-dir <dir com os PDFs> [--check]
@@ -16,6 +16,8 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { $ } from 'bun';
+import type { DescricaoTabelaRejeicoes } from '../../packages/rejeicoes/src/index.ts';
+import type { RejeicaoMdfe } from '../../packages/rejeicoes/src/mdfe.ts';
 
 type Doc = {
   id: string;
@@ -69,7 +71,7 @@ const curadoria = (await Bun.file(path.join(here, 'curadoria-mdfe.json')).json()
   sanityAllow?: Record<string, string>;
   /**
    * Códigos citados nas regras sem a mensagem na mesma célula (a regra de consumo indevido só dá o código 678): a
-   * mensagem vem do texto do mesmo documento, citado em `source`.
+   * mensagem vem do texto do mesmo documento, citado em `fonte`.
    */
   mensagens?: Record<string, { message: string; source: string; rule: string; doc: string }>;
 };
@@ -280,19 +282,20 @@ if (unknownCurated.length > 0) {
   process.exit(1);
 }
 
-const result = [...entries.values()]
+// A saída tem o tipo do pacote: um membro renomeado no `@sinete/rejeicoes` quebra a compilação aqui, e não o JSON.
+const result: RejeicaoMdfe[] = [...entries.values()]
   .sort((a, b) => Number(a.code) - Number(b.code))
-  .map((e) => {
+  .map((e): RejeicaoMdfe => {
     const c = curadoria.entries[e.code] ?? {};
     return {
-      code: e.code,
-      effect: 'rejeicao' as const,
-      message: e.message,
-      ...(e.messages ? { messages: e.messages } : {}),
+      codigo: e.code,
+      efeito: 'rejeicao',
+      mensagem: e.message,
+      ...(e.messages ? { mensagens: e.messages } : {}),
       modelos: ['58'],
-      source: e.source,
-      rules: e.rules,
-      category: c.category ?? categorize(e.message),
+      fonte: e.source,
+      regras: e.rules.map((r) => ({ documento: r.doc, id: r.id })),
+      categoria: c.category ?? categorize(e.message),
       ...(c.causaProvavel ? { causaProvavel: c.causaProvavel } : {}),
       ...(c.comoCorrigir ? { comoCorrigir: c.comoCorrigir } : {}),
       ...(c.referencia ? { referencia: c.referencia } : {}),
@@ -322,21 +325,21 @@ if (suspects.length > 0) {
   process.exit(1);
 }
 
-const data = {
-  schemaVersion: 1,
-  version: sources.retrievedAt.replaceAll('-', '.'),
-  generatedBy: 'tools/rejeicoes-data/mdfe.ts',
-  sources: sources.documents.map((d) => ({
+const data: DescricaoTabelaRejeicoes & { geradoPor: string; notas: string; rejeicoes: readonly RejeicaoMdfe[] } = {
+  versaoDoFormato: 1,
+  versao: sources.retrievedAt.replaceAll('-', '.'),
+  geradoPor: 'tools/rejeicoes-data/mdfe.ts',
+  fontes: sources.documents.map((d) => ({
     id: d.id,
-    title: d.title,
+    titulo: d.title,
     versao: d.versao,
-    citation: d.citation,
+    citacao: d.citation,
     url: d.url,
     sha256: d.sha256,
-    retrievedAt: sources.retrievedAt,
+    coletadoEm: sources.retrievedAt,
   })),
-  notes:
-    'MDF-e (modelo 58): união das regras de validação do MOC 3.00b (Anexo I, grupo F; Visão Geral, grupos A a K e consumo indevido) e das NT 2024.001, 2024.002, 2025.001 e 2026.001. O MDF-e não tem tabela consolidada de rejeições; código que aparece em regras com textos diferentes traz todos em `messages`. Mensagem oficial sem ajuste. Os códigos colidem com os da NF-e com outro significado: use este catálogo só para MDF-e.',
+  notas:
+    'MDF-e (modelo 58): união das regras de validação do MOC 3.00b (Anexo I, grupo F; Visão Geral, grupos A a K e consumo indevido) e das NT 2024.001, 2024.002, 2025.001 e 2026.001. O MDF-e não tem tabela consolidada de rejeições; código que aparece em regras com textos diferentes traz todos em `mensagens`. Mensagem oficial sem ajuste. Os códigos colidem com os da NF-e com outro significado: use este catálogo só para MDF-e.',
   rejeicoes: result,
 };
 const biome = path.join(root, 'node_modules/.bin/biome');
@@ -346,7 +349,7 @@ const json = await $`${biome} format --stdin-file-path=${out} < ${new Response(`
   .text();
 
 const counts = new Map<string, number>();
-for (const e of result) counts.set(e.category, (counts.get(e.category) ?? 0) + 1);
+for (const e of result) counts.set(e.categoria, (counts.get(e.categoria) ?? 0) + 1);
 console.log(
   `${result.length} códigos do MDF-e; categorias: ${[...counts].map(([k, v]) => `${k}=${v}`).join(' ')}; com curadoria: ${
     result.filter((e) => 'causaProvavel' in e).length

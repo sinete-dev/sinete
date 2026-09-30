@@ -24,7 +24,7 @@ function parseError(xml: string): ErroXml {
   throw new Error(`deveria recusar: ${xml}`);
 }
 
-describe('parseXml: estrutura e offsets', () => {
+describe('lerXml: estrutura e offsets', () => {
   test('guarda offsets de abertura, conteúdo e fechamento', () => {
     const src = `<?xml version="1.0" encoding="UTF-8"?><NFe xmlns="${NFE}"><infNFe Id="NFe1" versao="4.00"><a>x</a><b/></infNFe></NFe>`;
     const doc = lerXml(src);
@@ -62,7 +62,7 @@ describe('parseXml: estrutura e offsets', () => {
     expect(textoDe(lerXml('<a>\u{1F600}</a>').raiz)).toBe('\u{1F600}');
   });
 
-  test('profundidade: 256 níveis passam, 257 são XmlError (limite do libxml2)', () => {
+  test('profundidade: 256 níveis passam, 257 são ErroXml (limite do libxml2)', () => {
     const nest = (n: number): string => '<r>'.repeat(n) + '</r>'.repeat(n);
     expect(descendentes(lerXml(nest(256)).raiz).next().value?.local).toBe('r');
     expect(() => lerXml(nest(257))).toThrow(ErroXml);
@@ -111,16 +111,16 @@ describe('parseXml: estrutura e offsets', () => {
     expect(doc.ids.get('x')?.length).toBe(2);
   });
 
-  test('erro é XmlError com code e offset', () => {
+  test('erro é ErroXml com code e posição', () => {
     const e = parseError('<r>a & b</r>');
     expect(e.code).toBe('xml_malformado');
     expect(e.posicao).toBe(5);
     expect(ehErroSinete(e, 'xml_malformado')).toBe(true);
-    expect(e.detalhes).toEqual({ offset: 5 });
+    expect(e.detalhes).toEqual({ posicao: 5 });
   });
 });
 
-describe('parseXml: recusa XML malformado', () => {
+describe('lerXml: recusa XML malformado', () => {
   const cases: [string, string][] = [
     ["'&' solto", '<r>M&M</r>'],
     ["'&' solto em atributo", '<r a="M&M"/>'],

@@ -4,7 +4,7 @@
  * O catálogo vive em `data/nfse-erros.json`, gerado por `tools/rejeicoes-data/nfse.ts` a partir das planilhas oficiais
  * do Anexo I (DPS e NFS-e) e do Anexo II (pedido de registro de evento e evento) do leiaute do Sistema Nacional NFS-e,
  * com sha256 conferido, mais a curadoria manual de causa provável e correção. Na NFS-e o código de erro faz o papel do
- * `cStat`: a Sefin responde com uma lista de erros (`Codigo`, `Descricao`), e o desfecho `rejected` do core traz o
+ * `cStat`: a Sefin responde com uma lista de erros (`Codigo`, `Descricao`), e o desfecho `recusado` do core traz o
  * código no `cStat`.
  */
 
@@ -40,7 +40,7 @@ export const NFSE_ERRO_CATEGORIAS: readonly NfseErroCategoria[] = [
 
 /** Regra de negócio da planilha em que o código aparece. */
 export interface NfseErroRegra {
-  /** Documento de origem em `NFSE_ERROS_TABLE.sources`. */
+  /** Documento de origem em `TABELA_ERROS_NFSE.fontes`. */
   readonly documento: 'anexo-i' | 'anexo-ii';
   /** Aba da planilha (`RN DPS_NFS-e`, `RN_RECEPCAO_DPS`, `RN EVENTO_PED.REG.EVENTO`). */
   readonly aba: string;
@@ -93,23 +93,23 @@ export const NFSE_ERROS: readonly NfseErro[] = table.erros as readonly NfseErro[
 const byCode: ReadonlyMap<string, NfseErro> = new Map(NFSE_ERROS.map((e) => [e.codigo, e]));
 
 /** Entrada do catálogo para o código (`'E0312'`), ou `undefined` se não está catalogado. */
-export function nfseErroPorCodigo(code: string): NfseErro | undefined {
-  return byCode.get(code.trim().toUpperCase());
+export function nfseErroPorCodigo(codigo: string): NfseErro | undefined {
+  return byCode.get(codigo.trim().toUpperCase());
 }
 
-/** `RejectionHint` do core para o código, quando há curadoria de causa e correção. */
-export function dicaRejeicaoNfse(code: string): DicaRejeicao | undefined {
-  const e = nfseErroPorCodigo(code);
+/** `DicaRejeicao` do core para o código, quando há curadoria de causa e correção. */
+export function dicaRejeicaoNfse(codigo: string): DicaRejeicao | undefined {
+  const e = nfseErroPorCodigo(codigo);
   if (!e?.causaProvavel || !e.comoCorrigir) return undefined;
   return { causaProvavel: e.causaProvavel, comoCorrigir: e.comoCorrigir, fonte: e.referencia ?? e.fonte };
 }
 
 /**
- * Preenche o `hint` de um desfecho `rejected` da NFS-e a partir do catálogo. Não sobrescreve um `hint` já presente e
+ * Preenche a `dica` de um desfecho `recusado` da NFS-e a partir do catálogo. Não sobrescreve uma `dica` já presente e
  * devolve o mesmo objeto quando não há o que acrescentar.
  */
-export function completarRecusadoNfse(outcome: Recusado): Recusado {
-  if (outcome.dica !== undefined) return outcome;
-  const hint = dicaRejeicaoNfse(outcome.cStat);
-  return hint === undefined ? outcome : { ...outcome, dica: hint };
+export function completarRecusadoNfse(desfecho: Recusado): Recusado {
+  if (desfecho.dica !== undefined) return desfecho;
+  const dica = dicaRejeicaoNfse(desfecho.cStat);
+  return dica === undefined ? desfecho : { ...desfecho, dica };
 }

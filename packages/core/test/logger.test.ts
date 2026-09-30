@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { loggerEmMemoria, loggerSilencioso } from '../src/index.ts';
 
-describe('noopLogger', () => {
+describe('loggerSilencioso', () => {
   test('aceita tudo e não faz nada', () => {
     expect(() => {
       loggerSilencioso.debug('a');
@@ -13,7 +13,7 @@ describe('noopLogger', () => {
   });
 });
 
-describe('memoryLogger', () => {
+describe('loggerEmMemoria', () => {
   test('guarda nível, mensagem e campos, com bindings dos filhos', () => {
     const log = loggerEmMemoria();
     log.info('inicio');

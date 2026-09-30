@@ -1,7 +1,7 @@
 {
   "versaoDoFormato": 1,
   "versao": "2026.09.28",
-  "generatedBy": "tools/rejeicoes-data/build.ts",
+  "geradoPor": "tools/rejeicoes-data/build.ts",
   "fontes": [
     {
       "id": "moc70-anexo1",
@@ -49,7 +49,7 @@
       "coletadoEm": "2026-09-28"
     }
   ],
-  "notes": "União da tabela 4.4.2/4.4.3 do Anexo I com os códigos das regras de validação do Anexo I e da NT 2025.002, os códigos de outras NT listados em `adicionais` da curadoria (regra conferida no PDF) e os códigos novos das tabelas de mensagens da NT 2025.001 e da NT 2023.002 (NFC-e). Mensagem oficial sem ajuste (placeholders como [nItem: 999] mantidos). `modelos` vem das regras; sem regra localizada, 55 e 65. `category` é heurística sobre a mensagem, com correções manuais na curadoria. `causaProvavel` e `comoCorrigir` só onde houve curadoria, com a regra citada em `referencia`.",
+  "notas": "União da tabela 4.4.2/4.4.3 do Anexo I com os códigos das regras de validação do Anexo I e da NT 2025.002, os códigos de outras NT listados em `adicionais` da curadoria (regra conferida no PDF) e os códigos novos das tabelas de mensagens da NT 2025.001 e da NT 2023.002 (NFC-e). Mensagem oficial sem ajuste (placeholders como [nItem: 999] mantidos). `modelos` vem das regras; sem regra localizada, 55 e 65. `categoria` é heurística sobre a mensagem, com correções manuais na curadoria. `causaProvavel` e `comoCorrigir` só onde houve curadoria, com a regra citada em `referencia`.",
   "rejeicoes": [
     {
       "codigo": "108",
@@ -218,7 +218,7 @@
       ],
       "categoria": "cadastro",
       "causaProvavel": "A IE do emitente não tem o tamanho, a composição ou o dígito verificador da UF do emitente.",
-      "comoCorrigir": "Valide com parseIe(ie, uf) do @sinete/validators e confira a UF. A SEFAZ despreza zeros não significativos à esquerda antes de conferir o dígito.",
+      "comoCorrigir": "Valide com lerIe(ie, uf) do @sinete/validators e confira a UF. A SEFAZ despreza zeros não significativos à esquerda antes de conferir o dígito.",
       "referencia": "MOC 7.0 Anexo I, RV C17-20 e nota (*2) (NT 2018.001)"
     },
     {
@@ -235,7 +235,7 @@
       ],
       "categoria": "cadastro",
       "causaProvavel": "A IE do destinatário não tem o tamanho, a composição ou o dígito verificador da UF do destinatário.",
-      "comoCorrigir": "Valide com parseIe(ie, ufDest) e confira se a UF do endereço do destinatário é a da inscrição. Contribuinte isento usa indIEDest=2 sem a tag IE.",
+      "comoCorrigir": "Valide com lerIe(ie, ufDest) e confira se a UF do endereço do destinatário é a da inscrição. Contribuinte isento usa indIEDest=2 sem a tag IE.",
       "referencia": "MOC 7.0 Anexo I, RV E17-50 e nota (*2)"
     },
     {
@@ -580,7 +580,7 @@
       "regras": [],
       "categoria": "regra-negocio",
       "causaProvavel": "O dígito verificador da chave de acesso não confere com as 43 posições anteriores: chave montada à mão ou DV calculado sobre outra composição.",
-      "comoCorrigir": "Recalcule o DV pelo módulo 11 (chaveAcessoCheckDigit do @sinete/validators). Com CNPJ alfanumérico, cada caractere vale o código ASCII menos 48.",
+      "comoCorrigir": "Recalcule o DV pelo módulo 11 (calcularDvChaveAcesso do @sinete/validators). Com CNPJ alfanumérico, cada caractere vale o código ASCII menos 48.",
       "referencia": "MOC 7.0 Visão Geral, item 2.2.6.2; NT Conjunta 2025.001, item 5"
     },
     {

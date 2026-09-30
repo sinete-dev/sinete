@@ -47,7 +47,7 @@ export interface ElementoXml {
   readonly inicio: number;
   /** Offset logo depois do `>` da tag de abertura. */
   readonly fimDaAbertura: number;
-  /** Offset do `<` da tag de fechamento; igual a `end` quando a tag é autofechada. */
+  /** Offset do `<` da tag de fechamento; igual a `fim` quando a tag é autofechada. */
   readonly fimDoConteudo: number;
   /** Offset logo depois do `>` da tag de fechamento (ou da tag autofechada). */
   readonly fim: number;
@@ -100,7 +100,7 @@ const XML_DECL =
 /**
  * Profundidade máxima de elementos, a mesma do libxml2 sem XML_PARSE_HUGE. DF-e não passa de uns 12 níveis; o limite
  * existe para que C14N, verificação e o decoder, que percorrem a árvore por recursão, nunca estourem a pilha com
- * documento hostil (falham aqui com `XmlError`, que o verificador devolve como falha).
+ * documento hostil (falham aqui com `ErroXml`, que o verificador devolve como falha).
  */
 const MAX_DEPTH = 256;
 const PREDEFINED: Readonly<Record<string, string>> = { lt: '<', gt: '>', amp: '&', quot: '"', apos: "'" };
@@ -183,17 +183,17 @@ function splitQName(q: string, offset: number): [string, string] {
 }
 
 /**
- * Lê `source` como XML 1.0 bem formado com namespaces. A string não é alterada e fica em `document.source`.
- * Lança `XmlError` (`xml_malformado`) com o offset do problema.
+ * Lê `texto` como XML 1.0 bem formado com namespaces. A string não é alterada e fica em `documento.texto`.
+ * Lança `ErroXml` (`xml_malformado`) com o offset do problema.
  */
-export function lerXml(source: string): DocumentoXml {
-  const bad = invalidCharAt(source);
+export function lerXml(texto: string): DocumentoXml {
+  const bad = invalidCharAt(texto);
   if (bad !== -1) throw new ErroXml('caractere proibido pelo XML 1.0', bad);
 
-  const n = source.length;
-  let i = source.charCodeAt(0) === 0xfeff ? 1 : 0;
-  if (source.startsWith('<?xml', i) && isWs(source.charCodeAt(i + 5))) {
-    const decl = XML_DECL.exec(source.slice(i));
+  const n = texto.length;
+  let i = texto.charCodeAt(0) === 0xfeff ? 1 : 0;
+  if (texto.startsWith('<?xml', i) && isWs(texto.charCodeAt(i + 5))) {
+    const decl = XML_DECL.exec(texto.slice(i));
     if (!decl) throw new ErroXml('declaração XML malformada', i);
     i += decl[0].length;
   }
@@ -231,45 +231,45 @@ export function lerXml(source: string): DocumentoXml {
 
   const readName = (at: number): string => {
     NAME_RE.lastIndex = at;
-    const m = NAME_RE.exec(source);
+    const m = NAME_RE.exec(texto);
     if (!m) throw new ErroXml('nome XML inválido', at);
     return m[0];
   };
 
   while (i < n) {
-    const lt = source.indexOf('<', i);
+    const lt = texto.indexOf('<', i);
     const textEnd = lt === -1 ? n : lt;
     if (textEnd > i) {
-      const raw = source.slice(i, textEnd);
+      const raw = texto.slice(i, textEnd);
       if (cur) {
         const cdataEnd = raw.indexOf(']]>');
         if (cdataEnd !== -1) throw new ErroXml("']]>' não pode aparecer em texto", i + cdataEnd);
         pushText(decodeReferences(normalizeEol(raw), i), i, textEnd);
       } else {
         for (let k = i; k < textEnd; k++) {
-          if (!isWs(source.charCodeAt(k))) throw new ErroXml('texto fora do elemento raiz', k);
+          if (!isWs(texto.charCodeAt(k))) throw new ErroXml('texto fora do elemento raiz', k);
         }
       }
     }
     if (lt === -1) break;
-    const c1 = source.charCodeAt(lt + 1);
+    const c1 = texto.charCodeAt(lt + 1);
 
     if (c1 === 0x3f /* ? */) {
-      const e = source.indexOf('?>', lt + 2);
+      const e = texto.indexOf('?>', lt + 2);
       if (e === -1) throw new ErroXml('instrução de processamento sem fechamento', lt);
       const target = readName(lt + 2);
       if (target.toLowerCase() === 'xml') throw new ErroXml('declaração XML fora do início do documento', lt);
       if (target.includes(':')) throw new ErroXml(`alvo de instrução com ':' : ${target}`, lt);
       const after = lt + 2 + target.length;
-      if (after < e && !isWs(source.charCodeAt(after)))
+      if (after < e && !isWs(texto.charCodeAt(after)))
         throw new ErroXml('instrução de processamento malformada', after);
       let d = after;
-      while (d < e && isWs(source.charCodeAt(d))) d++;
+      while (d < e && isWs(texto.charCodeAt(d))) d++;
       if (cur)
         cur.filhos.push({
           tipo: 'instrucao',
           alvo: target,
-          dados: normalizeEol(source.slice(d, e)),
+          dados: normalizeEol(texto.slice(d, e)),
           inicio: lt,
           fim: e + 2,
         });
@@ -278,32 +278,32 @@ export function lerXml(source: string): DocumentoXml {
     }
 
     if (c1 === 0x21 /* ! */) {
-      if (source.startsWith('<!--', lt)) {
-        const e = source.indexOf('--', lt + 4);
-        if (e === -1 || source.charCodeAt(e + 2) !== 0x3e) {
+      if (texto.startsWith('<!--', lt)) {
+        const e = texto.indexOf('--', lt + 4);
+        if (e === -1 || texto.charCodeAt(e + 2) !== 0x3e) {
           throw new ErroXml("comentário sem fechamento ou com '--' no meio", e === -1 ? lt : e);
         }
         i = e + 3;
         continue;
       }
-      if (source.startsWith('<![CDATA[', lt)) {
+      if (texto.startsWith('<![CDATA[', lt)) {
         if (!cur) throw new ErroXml('CDATA fora do elemento raiz', lt);
-        const e = source.indexOf(']]>', lt + 9);
+        const e = texto.indexOf(']]>', lt + 9);
         if (e === -1) throw new ErroXml('CDATA sem fechamento', lt);
-        pushText(normalizeEol(source.slice(lt + 9, e)), lt, e + 3);
+        pushText(normalizeEol(texto.slice(lt + 9, e)), lt, e + 3);
         i = e + 3;
         continue;
       }
-      if (source.startsWith('<!DOCTYPE', lt)) throw new ErroXml('DTD (DOCTYPE) não é suportado', lt);
+      if (texto.startsWith('<!DOCTYPE', lt)) throw new ErroXml('DTD (DOCTYPE) não é suportado', lt);
       throw new ErroXml('declaração de marcação não suportada', lt);
     }
 
     if (c1 === 0x2f /* / */) {
-      const e = source.indexOf('>', lt + 2);
+      const e = texto.indexOf('>', lt + 2);
       if (e === -1) throw new ErroXml('tag de fechamento sem >', lt);
       const name = readName(lt + 2);
       for (let k = lt + 2 + name.length; k < e; k++) {
-        if (!isWs(source.charCodeAt(k))) throw new ErroXml('tag de fechamento malformada', k);
+        if (!isWs(texto.charCodeAt(k))) throw new ErroXml('tag de fechamento malformada', k);
       }
       if (!cur || cur.nome !== name) {
         throw new ErroXml(`tag de fechamento </${name}> não corresponde à aberta`, lt);
@@ -327,15 +327,15 @@ export function lerXml(source: string): DocumentoXml {
     let selfClosing = false;
     for (;;) {
       const wsStart = j;
-      while (j < n && isWs(source.charCodeAt(j))) j++;
+      while (j < n && isWs(texto.charCodeAt(j))) j++;
       if (j >= n) throw new ErroXml('tag de abertura sem >', lt);
-      const c = source.charCodeAt(j);
+      const c = texto.charCodeAt(j);
       if (c === 0x3e /* > */) {
         j++;
         break;
       }
       if (c === 0x2f /* / */) {
-        if (source.charCodeAt(j + 1) !== 0x3e) throw new ErroXml("'/' solto na tag", j);
+        if (texto.charCodeAt(j + 1) !== 0x3e) throw new ErroXml("'/' solto na tag", j);
         selfClosing = true;
         j += 2;
         break;
@@ -344,15 +344,15 @@ export function lerXml(source: string): DocumentoXml {
       const attrAt = j;
       const an = readName(j);
       j += an.length;
-      while (j < n && isWs(source.charCodeAt(j))) j++;
-      if (source.charCodeAt(j) !== 0x3d /* = */) throw new ErroXml(`atributo ${an} sem '='`, j);
+      while (j < n && isWs(texto.charCodeAt(j))) j++;
+      if (texto.charCodeAt(j) !== 0x3d /* = */) throw new ErroXml(`atributo ${an} sem '='`, j);
       j++;
-      while (j < n && isWs(source.charCodeAt(j))) j++;
-      const q = source[j];
+      while (j < n && isWs(texto.charCodeAt(j))) j++;
+      const q = texto[j];
       if (q !== '"' && q !== "'") throw new ErroXml(`valor do atributo ${an} sem aspas`, j);
-      const qe = source.indexOf(q, j + 1);
+      const qe = texto.indexOf(q, j + 1);
       if (qe === -1) throw new ErroXml(`valor do atributo ${an} sem aspas de fechamento`, j);
-      const raw = source.slice(j + 1, qe);
+      const raw = texto.slice(j + 1, qe);
       const ltIn = raw.indexOf('<');
       if (ltIn !== -1) throw new ErroXml(`'<' no valor do atributo ${an}`, j + 1 + ltIn);
       // XML 1.0 3.3.3: fim de linha normalizado, whitespace literal vira espaço, depois as referências.
@@ -425,7 +425,7 @@ export function lerXml(source: string): DocumentoXml {
 
   if (!root) throw new ErroXml('documento sem elemento raiz', n);
   if (cur) throw new ErroXml(`elemento <${cur.nome}> não fechado`, cur.inicio);
-  return { texto: source, raiz: root, ids };
+  return { texto, raiz: root, ids };
 }
 
 /** Filhos que são elementos, na ordem do documento. */

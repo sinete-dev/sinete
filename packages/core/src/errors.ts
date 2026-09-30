@@ -1,12 +1,12 @@
 /**
  * Erros tipados do sinete (princípio 7).
  *
- * Todo erro lançado por um pacote `@sinete/*` é um `SineteError` com um `code` estável: snake_case, em português,
+ * Todo erro lançado por um pacote `@sinete/*` é um `ErroSinete` com um `code` estável: snake_case, em português,
  * sem acento. O `code` faz parte da API pública; renomear um código é mudança incompatível (major). A mensagem é
  * para gente e pode mudar a qualquer versão, então nunca decida nada pela mensagem.
  *
- * Rejeição da SEFAZ não é erro: é um `SefazOutcome` (ver `result.ts`). Erro é o que impede de obter uma resposta
- * (configuração, validação local, transporte, resposta malformada) ou o `unwrapAuthorized` de um resultado não
+ * Rejeição da SEFAZ não é erro: é um `ResultadoSefaz` (ver `result.ts`). Erro é o que impede de obter uma resposta
+ * (configuração, validação local, transporte, resposta malformada) ou o `exigirAutorizado` de um resultado não
  * autorizado.
  */
 
@@ -30,7 +30,7 @@ export interface ErroSerializado {
   readonly name: string;
   readonly code: string;
   readonly message: string;
-  /** Página do código na documentação embarcada (veja `SineteError.docs`). */
+  /** Página do código na documentação embarcada (veja `ErroSinete.pagina`). */
   readonly pagina?: string;
   readonly detalhes?: DetalhesDoErro;
   readonly cause?: ErroSerializado | { readonly name: string; readonly message: string } | string;
@@ -88,13 +88,13 @@ export class ErroSinete<C extends string = string> extends Error {
 }
 
 /**
- * Confere se `value` é um `SineteError`, inclusive vindo de outra cópia do pacote. Com `code`, confere também o
+ * Confere se `valor` é um `ErroSinete`, inclusive vindo de outra cópia do pacote. Com `code`, confere também o
  * código.
  */
-export function ehErroSinete(value: unknown, code?: string): value is ErroSinete {
-  if (typeof value !== 'object' || value === null) return false;
-  if ((value as { [SINETE_ERROR]?: unknown })[SINETE_ERROR] !== true) return false;
-  return code === undefined || (value as { code?: unknown }).code === code;
+export function ehErroSinete(valor: unknown, code?: string): valor is ErroSinete {
+  if (typeof valor !== 'object' || valor === null) return false;
+  if ((valor as { [SINETE_ERROR]?: unknown })[SINETE_ERROR] !== true) return false;
+  return code === undefined || (valor as { code?: unknown }).code === code;
 }
 
 /** Configuração inválida passada pelo chamador (opção ausente, valor fora do domínio, data inválida). */
@@ -108,9 +108,9 @@ export class ErroDeConfiguracao extends ErroSinete<'config_invalida'> {
 /**
  * De onde vem uma ocorrência (ADR 0011):
  * - `entrada`: conferência feita sobre a entrada do domínio (`NfeInput`, `MdfeInput`, `DpsInput`), antes de montar o
- *   documento. O `path` é um caminho da entrada (`emitente.IE`, `itens[0].produto.NCM`) e corrigir o valor ali resolve.
+ *   documento. O `caminho` é um caminho da entrada (`emitente.IE`, `itens[0].produto.NCM`) e corrigir o valor ali resolve.
  * - `montagem`: conferência feita sobre o que o sinete produziu a partir da entrada: o XML contra o XSD e o PL, a chave
- *   gerada, o grupo IBS/CBS devolvido pela calculadora e as regras da NT sobre ele. O `path` é do documento montado
+ *   gerada, o grupo IBS/CBS devolvido pela calculadora e as regras da NT sobre ele. O `caminho` é do documento montado
  *   (`/infNFe/ide/natOp`, `infNFe.det[0].prod.xProd`) ou o item da entrada a que o resultado pertence. A causa pode
  *   ainda ser um valor da entrada (um texto longo copiado como veio), mas o sinete não sabe qual.
  */
@@ -134,14 +134,14 @@ export interface Ocorrencia {
 export class ErroDeValidacao extends ErroSinete<'validacao_falhou'> {
   readonly ocorrencias: readonly Ocorrencia[];
 
-  constructor(message: string, issues: readonly Ocorrencia[], options?: ErroSineteOpcoes) {
+  constructor(message: string, ocorrencias: readonly Ocorrencia[], options?: ErroSineteOpcoes) {
     super('validacao_falhou', message, options);
     this.name = 'ErroDeValidacao';
-    this.ocorrencias = issues;
+    this.ocorrencias = ocorrencias;
   }
 
   override toJSON(): ErroSerializado {
-    return { ...super.toJSON(), detalhes: { ...this.detalhes, issues: this.ocorrencias } };
+    return { ...super.toJSON(), detalhes: { ...this.detalhes, ocorrencias: this.ocorrencias } };
   }
 }
 
@@ -156,7 +156,7 @@ export class ErroNaoSuportado extends ErroSinete<'nao_suportado'> {
 /**
  * O autorizador não oferece o serviço pedido para a UF ou o ambiente, segundo a tabela oficial de web services (ex.: a
  * Distribuição DF-e da NFC-e, um serviço que o autorizador pedido não tem naquele ambiente). É um fato dos dados,
- * não um erro de configuração: repetir falha igual, e o integrador decide o que fazer sem o serviço. `details` traz
+ * não um erro de configuração: repetir falha igual, e o integrador decide o que fazer sem o serviço. `detalhes` traz
  * `autorizador`, `servico`, `ambiente` e, quando houver, `uf` e a `source` da tabela.
  */
 export class ErroServicoNaoOferecido extends ErroSinete<'servico_nao_oferecido'> {
@@ -195,10 +195,10 @@ export type CodigoErroCore =
   | 'resposta_invalida'
   | CodigoErroSefaz;
 
-/** Códigos do `SefazError`, um por desfecho não autorizado. */
+/** Códigos do `ErroSefaz`, um por desfecho não autorizado. */
 export type CodigoErroSefaz = 'sefaz_rejeitou' | 'sefaz_denegou' | 'sefaz_pendente';
 
-/** Lançado por `unwrapAuthorized` quando o desfecho não é autorização. Carrega `cStat` e `xMotivo` oficiais. */
+/** Lançado por `exigirAutorizado` quando o desfecho não é autorização. Carrega `cStat` e `xMotivo` oficiais. */
 export class ErroSefaz extends ErroSinete<CodigoErroSefaz> {
   readonly cStat: string;
   readonly xMotivo: string;

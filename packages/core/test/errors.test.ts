@@ -10,19 +10,19 @@ import {
   ehErroSinete,
 } from '../src/index.ts';
 
-describe('SineteError', () => {
+describe('ErroSinete', () => {
   test('carrega code, mensagem, detalhes e cause', () => {
     const cause = new TypeError('socket fechado');
     const e = new ErroSinete('algo_falhou', 'falhou', { cause, detalhes: { host: 'x' } });
     expect(e).toBeInstanceOf(Error);
-    expect(e.name).toBe('SineteError');
+    expect(e.name).toBe('ErroSinete');
     expect(e.code).toBe('algo_falhou');
     expect(e.message).toBe('falhou');
     expect(e.cause).toBe(cause);
     expect(e.detalhes).toEqual({ host: 'x' });
     expect(e.stack).toContain('falhou');
     expect(e.pagina).toBe('erros/algo_falhou.md');
-    expect(Object.keys(e)).toContain('docs');
+    expect(Object.keys(e)).toContain('pagina');
   });
 
   test('sem cause não define a propriedade', () => {
@@ -36,15 +36,15 @@ describe('SineteError', () => {
     expect('cause' in e).toBe(true);
   });
 
-  test('toJSON serializa cause de SineteError, Error e valor qualquer', () => {
+  test('toJSON serializa cause de ErroSinete, Error e valor qualquer', () => {
     const inner = new ErroDeConfiguracao('opção ausente', { detalhes: { opcao: 'uf' } });
     expect(new ErroSinete('a', 'b', { cause: inner }).toJSON()).toEqual({
-      name: 'SineteError',
+      name: 'ErroSinete',
       code: 'a',
       message: 'b',
       pagina: 'erros/a.md',
       cause: {
-        name: 'ConfigError',
+        name: 'ErroDeConfiguracao',
         code: 'config_invalida',
         message: 'opção ausente',
         pagina: 'erros/config_invalida.md',
@@ -57,22 +57,22 @@ describe('SineteError', () => {
     });
     expect(new ErroSinete('a', 'b', { cause: 42 }).toJSON().cause).toBe('42');
     expect(JSON.parse(JSON.stringify(new ErroSinete('a', 'b')))).toEqual({
-      name: 'SineteError',
+      name: 'ErroSinete',
       code: 'a',
       message: 'b',
-      docs: 'erros/a.md',
+      pagina: 'erros/a.md',
     });
   });
 });
 
 describe('subclasses com código estável', () => {
   const cases: [ErroSinete, string, string][] = [
-    [new ErroDeConfiguracao('m'), 'ConfigError', 'config_invalida'],
-    [new ErroDeValidacao('m', []), 'ValidationError', 'validacao_falhou'],
-    [new ErroNaoSuportado('m'), 'UnsupportedError', 'nao_suportado'],
-    [new ErroDeTempoEsgotado('m', 1000), 'TimeoutError', 'tempo_esgotado'],
-    [new ErroRespostaInvalida('m'), 'ProtocolError', 'resposta_invalida'],
-    [new ErroSefaz('sefaz_rejeitou', '539', 'Duplicidade'), 'SefazError', 'sefaz_rejeitou'],
+    [new ErroDeConfiguracao('m'), 'ErroDeConfiguracao', 'config_invalida'],
+    [new ErroDeValidacao('m', []), 'ErroDeValidacao', 'validacao_falhou'],
+    [new ErroNaoSuportado('m'), 'ErroNaoSuportado', 'nao_suportado'],
+    [new ErroDeTempoEsgotado('m', 1000), 'ErroDeTempoEsgotado', 'tempo_esgotado'],
+    [new ErroRespostaInvalida('m'), 'ErroRespostaInvalida', 'resposta_invalida'],
+    [new ErroSefaz('sefaz_rejeitou', '539', 'Duplicidade'), 'ErroSefaz', 'sefaz_rejeitou'],
   ];
   for (const [e, name, code] of cases) {
     test(`${name} -> ${code}`, () => {
@@ -83,21 +83,21 @@ describe('subclasses com código estável', () => {
     });
   }
 
-  test('ValidationError guarda todas as ocorrências e as serializa', () => {
-    const issues = [
+  test('ErroDeValidacao guarda todas as ocorrências e as serializa', () => {
+    const ocorrencias = [
       { caminho: 'emit.CNPJ', code: 'cnpj_invalido', mensagem: 'dígito verificador' },
       { caminho: 'dest.IE', code: 'ie_invalida', mensagem: 'formato' },
     ];
-    const e = new ErroDeValidacao('2 ocorrências', issues, { detalhes: { doc: 'nfe' } });
-    expect(e.ocorrencias).toEqual(issues);
-    expect(e.toJSON().detalhes).toEqual({ doc: 'nfe', issues });
+    const e = new ErroDeValidacao('2 ocorrências', ocorrencias, { detalhes: { doc: 'nfe' } });
+    expect(e.ocorrencias).toEqual(ocorrencias);
+    expect(e.toJSON().detalhes).toEqual({ doc: 'nfe', ocorrencias });
   });
 
-  test('TimeoutError guarda o prazo', () => {
+  test('ErroDeTempoEsgotado guarda o prazo', () => {
     expect(new ErroDeTempoEsgotado('m', 30_000).timeoutMs).toBe(30_000);
   });
 
-  test('SefazError monta a mensagem com cStat oficial e serializa cStat e xMotivo', () => {
+  test('ErroSefaz monta a mensagem com cStat oficial e serializa cStat e xMotivo', () => {
     const e = new ErroSefaz('sefaz_denegou', '302', 'Uso Denegado');
     expect(e.message).toBe('SEFAZ 302: Uso Denegado');
     expect(e.cStat).toBe('302');
@@ -105,7 +105,7 @@ describe('subclasses com código estável', () => {
   });
 });
 
-describe('isSineteError', () => {
+describe('ehErroSinete', () => {
   test('recusa o que não é erro do sinete', () => {
     expect(ehErroSinete(new Error('x'))).toBe(false);
     expect(ehErroSinete(null)).toBe(false);

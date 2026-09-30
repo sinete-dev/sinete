@@ -1,7 +1,7 @@
 {
   "versaoDoFormato": 1,
   "versao": "2026.09.26",
-  "generatedBy": "tools/rejeicoes-data/mdfe.ts",
+  "geradoPor": "tools/rejeicoes-data/mdfe.ts",
   "fontes": [
     {
       "id": "moc300b-anexo1",
@@ -58,7 +58,7 @@
       "coletadoEm": "2026-09-26"
     }
   ],
-  "notes": "MDF-e (modelo 58): união das regras de validação do MOC 3.00b (Anexo I, grupo F; Visão Geral, grupos A a K e consumo indevido) e das NT 2024.001, 2024.002, 2025.001 e 2026.001. O MDF-e não tem tabela consolidada de rejeições; código que aparece em regras com textos diferentes traz todos em `messages`. Mensagem oficial sem ajuste. Os códigos colidem com os da NF-e com outro significado: use este catálogo só para MDF-e.",
+  "notas": "MDF-e (modelo 58): união das regras de validação do MOC 3.00b (Anexo I, grupo F; Visão Geral, grupos A a K e consumo indevido) e das NT 2024.001, 2024.002, 2025.001 e 2026.001. O MDF-e não tem tabela consolidada de rejeições; código que aparece em regras com textos diferentes traz todos em `mensagens`. Mensagem oficial sem ajuste. Os códigos colidem com os da NF-e com outro significado: use este catálogo só para MDF-e.",
   "rejeicoes": [
     {
       "codigo": "108",

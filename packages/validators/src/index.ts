@@ -1,9 +1,9 @@
 /**
  * `@sinete/validators`: CPF, CNPJ (numérico e alfanumérico), CAEPF, chave de acesso e inscrição estadual das 27 UFs.
  *
- * Funções puras, sem API de runtime. Cada documento tem `parseX` (devolve `Result` com o valor normalizado ou uma
- * `ValidationIssue` de código estável), `isValidX` e `formatX`; os códigos das ocorrências compõem o
- * `ValidationError` do `@sinete/core`.
+ * Funções puras, sem API de runtime. Cada documento tem `lerX` (devolve `Resultado` com o valor normalizado ou uma
+ * `Ocorrencia` de código estável), a conferência booleana (`cpfValido`, `ieValida`...) e `formatarX`; os códigos das
+ * ocorrências compõem o `ErroDeValidacao` do `@sinete/core`.
  */
 
 export { caepfValido, calcularDvCaepf, formatarCaepf, lerCaepf } from './caepf.ts';
