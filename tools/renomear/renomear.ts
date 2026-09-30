@@ -381,6 +381,7 @@ function membrosDoTipo(no: ts.Node | undefined, nome: string, vistos: Set<ts.Nod
   if (no === undefined || vistos.has(no)) return [];
   vistos.add(no);
   const checker = programa().getTypeChecker();
+  if (ts.isClassDeclaration(no) && nome === 'constructor') return no.members.filter(ts.isConstructorDeclaration);
   if (ts.isTypeLiteralNode(no) || ts.isInterfaceDeclaration(no) || ts.isClassDeclaration(no)) {
     const lista = no.members as ts.NodeArray<ts.TypeElement | ts.ClassElement>;
     return lista.filter((m) => m.name !== undefined && nomeDe(m.name) === nome);
@@ -400,6 +401,24 @@ function membrosDoTipo(no: ts.Node | undefined, nome: string, vistos: Set<ts.Nod
       .flatMap((d) => membrosDoTipo(ts.isTypeAliasDeclaration(d) ? d.type : d, nome, vistos));
   }
   return [];
+}
+
+/**
+ * A assinatura que um segmento de parâmetro atravessa: a própria declaração de função, ou o tipo de função de uma
+ * propriedade ou parâmetro (`onLine(listener: (line: string) => void)`), ou a arrow function que inicializa uma variável.
+ */
+function funcaoDe(d: ts.Node): ts.SignatureDeclaration | undefined {
+  if (ts.isFunctionLike(d)) return d;
+  if (ts.isParameter(d) || ts.isPropertySignature(d) || ts.isPropertyDeclaration(d) || ts.isVariableDeclaration(d)) {
+    let t = d.type;
+    while (t !== undefined && ts.isParenthesizedTypeNode(t)) t = t.type;
+    if (t !== undefined && ts.isFunctionTypeNode(t)) return t;
+    if (t === undefined && ts.isVariableDeclaration(d) && d.initializer !== undefined) {
+      const i = d.initializer;
+      if (ts.isArrowFunction(i) || ts.isFunctionExpression(i)) return i;
+    }
+  }
+  return undefined;
 }
 
 function nomeDe(n: ts.PropertyName | ts.BindingName): string | undefined {
@@ -425,12 +444,13 @@ function nosDoSimbolo(arquivo: string, tipo: string | readonly string[] | undefi
       const proximos: ts.Node[] = [];
       for (const d of atuais) {
         // `@retorno` desce no tipo de retorno anotado (`ok(): { ok: true; value: T }`).
-        if (segmento === '@retorno' && ts.isFunctionLike(d)) {
-          if (d.type !== undefined) proximos.push(d.type);
+        const f = funcaoDe(d);
+        if (segmento === '@retorno' && f !== undefined) {
+          if (f.type !== undefined) proximos.push(f.type);
           continue;
         }
-        if (ts.isFunctionDeclaration(d) || ts.isMethodDeclaration(d) || ts.isMethodSignature(d)) {
-          const p = d.parameters.find((x) => nomeDe(x.name) === segmento);
+        if (f !== undefined) {
+          const p = f.parameters.find((x) => nomeDe(x.name) === segmento);
           if (p) {
             proximos.push(p);
             continue;
@@ -713,6 +733,20 @@ for (const e of mapa.simbolos ?? []) {
   try {
     nos = nosDoSimbolo(e.arquivo, e.tipo, e.nome);
   } catch (err) {
+    // Membro herdado ou sobrescrito (`A1KeyStore.kind` sobre `KeyStore.kind`): o serviço renomeia a família inteira de
+    // uma vez, e a entrada seguinte da mesma família acha o nome novo no lugar do antigo.
+    const jaFeito = (() => {
+      if (e.tipo === undefined) return false;
+      try {
+        return nosDoSimbolo(e.arquivo, e.tipo, [...e.nome.split('.').slice(0, -1), e.novo].join('.')).length > 0;
+      } catch {
+        return false;
+      }
+    })();
+    if (jaFeito) {
+      relatorio.push(`| ${rotulo} | ${e.novo} | já renomeado pela família do membro | | |`);
+      continue;
+    }
     falhas.push(`símbolo ${rotulo}: ${(err as Error).message}`);
     continue;
   }
