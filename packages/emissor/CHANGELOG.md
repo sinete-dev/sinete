@@ -1,5 +1,122 @@
 # @sinete/emissor
 
+## 0.2.0
+
+### Minor Changes
+
+- 2a46db6: Acompanham a fase 2 do ADR 0015 (`@sinete/cert`, `@sinete/transport`, runtime do `@sinete/schemas`, `@sinete/ibs-cbs-dados` e `@sinete/ibs-cbs` com nomes em português). Os tipos desses pacotes que estes recebem e devolvem mudam, e o código de quem os usa muda junto; a tabela completa está nos changesets de cada pacote da fase. Nomes destes pacotes que também mudam:
+  
+  | Onde aparece | Antigo | Novo |
+  |---|---|---|
+  | `CertificadoAberto` (`@sinete/emissor`) | `signer` | `assinador` |
+  | `syntheticCertificate(...).tlsIdentity` (`@sinete/sefaz-sim`) | `{ kind: 'pem', certChain, key }` | `{ tipo: 'pem', cadeia, chave }`, a forma da `IdentidadeTls` |
+  | `simTransport` (`@sinete/sefaz-sim`) | `runtime: 'custom'` | `runtime: 'personalizada'` |
+- ae8ab90: Acompanham a fase 1 do ADR 0015 (`@sinete/core`, `@sinete/validators` e `@sinete/rejeicoes` com nomes em português). Nenhum nome próprio destes pacotes muda nesta fase, mas os tipos do core que eles recebem e devolvem mudam, e o código de quem os usa muda junto. Os mais visíveis:
+  
+  | Onde aparece | Antigo | Novo |
+  |---|---|---|
+  | desfecho dos clientes (`ResultadoSefaz`, antes `SefazOutcome`) | `status: 'authorized' \| 'rejected' \| 'denied' \| 'pending'` | `tipo: 'autorizado' \| 'recusado' \| 'denegado' \| 'pendente'` |
+  | desfecho autorizado ou denegado | `value` | `valor` |
+  | desfecho recusado | `hint` (`probableCause`, `suggestedFix`, `source`) | `dica` (`causaProvavel`, `comoCorrigir`, `fonte`) |
+  | desfecho pendente | `ref`, `retryAfterMs` | `referencia`, `aguardarMs` |
+  | erros (`ErroSinete`, antes `SineteError`) | `details`, `docs` | `detalhes`, `pagina` |
+  | ocorrências (`Ocorrencia`, antes `ValidationIssue`) | `path`, `message` | `caminho`, `mensagem` |
+  | `ErroDeValidacao` (antes `ValidationError`) | `issues` | `ocorrencias` |
+  | assinador (`Assinador`, antes `Signer`) | `kind: 'data' \| 'digest'`, `sign`, `signDigestInfo`, `certificateDer` | `tipo: 'dados' \| 'digest'`, `assinar`, `assinarDigestInfo`, `certificadoDer` |
+  | relógio (`Relogio`, antes `Clock`) | `now()` | `agora()` |
+  | resultado local (`Resultado`, antes `Result`) | `value`, `error` | `valor`, `erro` |
+  
+  A tabela completa de cada pacote da fase está nos changesets do `@sinete/core`, do `@sinete/validators` e do `@sinete/rejeicoes`.
+- 84080ad: Nomes da API pública em português (ADR 0015, fase 3). Sem aliases: quem usa a 0.1.x troca os nomes ao atualizar.
+  
+  Mudanças de comportamento:
+  
+  - `cartaCorrecao` (NF-e) e `encerrar` (MDF-e) devolvem um `DesfechoEvento` (`DesfechoCartaCorrecaoNfe`, `DesfechoEncerramentoMdfe`), como o `cancelar`, em vez do `ResultadoEvento` cru do cliente. Sem resposta, ou com a duplicidade de evento (573 ou 580 na NF-e, 631 no MDF-e), o emissor consulta a chave: a CC-e da mesma sequência e com o mesmo texto, ou o encerramento no mesmo município, volta como `registrado` com `recuperado: true`; outra correção na sequência, ou encerramento em outro município, volta como `recusado`; sem o evento na consulta depois de um pedido sem resposta, `pendente`. Quem testava `tipo === 'autorizado'` e lia `valor.procEventoNFe` passa a testar `tipo === 'registrado'` e ler `procEvento`.
+  - As opções do PDF são tipadas: `PdfNfeOpcoes`, `PdfMdfeOpcoes` e `PdfNfseOpcoes` espelham `DanfeOpcoes`, `DamdfeOpcoes` e `DanfseOpcoes` do `@sinete/da` sem exigir o pacote para compilar (um teste de tipos confere que continuam iguais). `pdfCancelado` e `pdfPorChave` não aceitam a opção da marca, que vem do evento. Antes eram `object`.
+  - O `eventoRecusado` de um cancelamento repassa a `dica` do catálogo, que se perdia.
+  - O `name` das classes de erro passa a ser o nome delas em português (`ErroTravaPerdida`, `ErroTransmissaoEmAndamento`, `ErroTransmissaoJaGravada`, `ErroRecusaRepetida`, `ErroContratoViolado`).
+  - `cliente` das opções dos emissores omite `transporte`, `assinador` e `relogio` (antes o `Omit` citava os nomes antigos e não omitia nada).
+  
+  Nomes exportados:
+  
+  | Antigo | Novo |
+  |---|---|
+  | `OpcoesAbrirCertificado` | `AbrirCertificadoOpcoes` |
+  | `OpcoesContingencia` | `ContingenciaOpcoes` |
+  | `ContratoVioladoError` | `ErroContratoViolado` |
+  | `OpcoesContrato` | `ContratoOpcoes` |
+  | `createEmissor` | `criarEmissor` |
+  | `OpcoesEmissor` | `EmissorOpcoes` |
+  | `OpcoesEmitir` | `EmitirOpcoes` |
+  | `OpcoesGuarda` | `GuardaOpcoes` |
+  | `OpcoesRecusaRepetida` | `RecusaRepetidaOpcoes` |
+  | `OpcoesRetomar` | `RetomarOpcoes` |
+  | `OpcoesTrava` | `TravaOpcoes` |
+  | `EmissorErrorCode` | `CodigoErroEmissor` |
+  | `RecusaRepetidaError` | `ErroRecusaRepetida` |
+  | `TransmissaoEmAndamentoError` | `ErroTransmissaoEmAndamento` |
+  | `TransmissaoJaGravadaError` | `ErroTransmissaoJaGravada` |
+  | `TravaPerdidaError` | `ErroTravaPerdida` |
+  | `createMdfeEmissor` | `criarEmissorMdfe` |
+  | `MdfeEmissorOptions` | `EmissorMdfeOpcoes` |
+  | `MdfeEmissor` | `EmissorMdfe` |
+  | `OpcoesPerfilMdfe` | `PerfilMdfeOpcoes` |
+  | `createNfeEmissor` | `criarEmissorNfe` |
+  | `NfeEmissorOptions` | `EmissorNfeOpcoes` |
+  | `NfeEmissor` | `EmissorNfe` |
+  | `OpcoesPerfilNfe` | `PerfilNfeOpcoes` |
+  | `createNfseEmissor` | `criarEmissorNfse` |
+  | `NfseEmissorOptions` | `EmissorNfseOpcoes` |
+  | `NfseEmissor` | `EmissorNfse` |
+  | `OpcoesPerfilNfse` | `PerfilNfseOpcoes` |
+  | `createBancoMemoria` | `criarBancoMemoria` |
+  | `createMemoriaStore` | `criarMemoriaStore` |
+  | `OpcoesMemoria` | `MemoriaOpcoes` |
+  | `OpcoesPool` | `PoolOpcoes` |
+  | `createPoolDeEmissores` | `criarPoolDeEmissores` |
+  | `OpcoesRetomada` | `RetomadaOpcoes` |
+  
+  Membros e parâmetros com nome:
+  
+  | Tipo | Antigo | Novo |
+  |---|---|---|
+  | `ContingenciaDoPerfil` | `aplicar.ctx` | `aplicar.contexto` |
+  | `ContingenciaDoPerfil` | `sondar.ctx` | `sondar.contexto` |
+  | `ContingenciaDoPerfil` | `sondarSvc.ctx` | `sondarSvc.contexto` |
+  | `PerfilDocumento` | `criarCliente.ctx` | `criarCliente.contexto` |
+  | `PerfilDocumento` | `assinar.ctx` | `assinar.contexto` |
+  | `ErroRecusaRepetida`, `ErroTransmissaoEmAndamento`, `ErroTransmissaoJaGravada`, `ErroTravaPerdida` | `constructor.options` | `constructor.opcoes` |
+  | `PoolOpcoes` | `criar.cert` | `criar.certificado` |
+  | `PoolOpcoes` | `chave.cert` | `chave.certificado` |
+  | `PoolDeEmissores` | `usar.cert` | `usar.certificado` |
+  | `ModuloDanfe`, `ModuloDamdfe`, `ModuloDanfse` | `toPdf.doc` | `gerarPdf.documento` |
+  | `AbrirCertificadoOpcoes`, `ContextoEmissor`, `EmissorOpcoes`, `PoolOpcoes`, `RetomadaOpcoes`, `MemoriaOpcoes` | `clock` | `relogio` |
+  | `abrirCertificado` | `cert` | `certificado` |
+  | `DesfechoEvento`, `DesfechoRecusado` | `hint` | `dica` |
+  | `ContextoEmissor` | `signer` | `assinador` |
+  | `PoolOpcoes` | `ttlMs` | `validadeMs` |
+  | `ModuloDanfe`, `ModuloDamdfe`, `ModuloDanfse` | `toPdf` | `gerarPdf` |
+
+### Patch Changes
+
+- Updated dependencies [2bd9b9a]
+- Updated dependencies [2a46db6]
+- Updated dependencies [ae8ab90]
+- Updated dependencies [84080ad]
+- Updated dependencies [2a46db6]
+- Updated dependencies [ae8ab90]
+- Updated dependencies [84080ad]
+- Updated dependencies [84080ad]
+- Updated dependencies [84080ad]
+- Updated dependencies [2a46db6]
+  - @sinete/nfe@0.2.0
+  - @sinete/mdfe@0.2.0
+  - @sinete/cert@0.2.0
+  - @sinete/core@0.2.0
+  - @sinete/da@0.2.0
+  - @sinete/nfse@0.2.0
+  - @sinete/transport@0.2.0
+
 ## 0.1.0
 
 ### Minor Changes

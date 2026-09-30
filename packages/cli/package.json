@@ -1,6 +1,6 @@
 {
   "name": "@sinete/cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "CLI do sinete: sinete doctor confere certificado A1, cadeia ICP-Brasil, relógio e o handshake TLS com um endpoint",
   "keywords": [
     "nfe",

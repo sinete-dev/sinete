@@ -1,5 +1,135 @@
 # @sinete/nfe
 
+## 0.2.0
+
+### Minor Changes
+
+- 2bd9b9a: `NfeClient` e `MdfeClient` aceitam `signal` em todo método que vai à rede, no padrão do `NfseClient`. Na NF-e, `consultar`, `cancelar`, `cancelarPorSubstituicao`, `cartaCorrecao`, `manifestar`, `inutilizar` e `consultarCadastro` ganham `opcoes?: OpcoesEnvio` no fim, e `statusServico` (`StatusServicoOpcoes`) e `distribuicaoDFe` recebem o `signal` no objeto de opções que já tinham. No MDF-e, `statusServico`, `consultar`, `consultarNaoEncerrados` e os eventos ganham `opcoes?: OpcoesEnvio`, e `AutorizarOpcoes` passa a ser o mesmo tipo. Os dois pacotes exportam `OpcoesEnvio`. A mudança é compatível: o parâmetro novo é opcional.
+- 2a46db6: Acompanham a fase 2 do ADR 0015 (`@sinete/cert`, `@sinete/transport`, runtime do `@sinete/schemas`, `@sinete/ibs-cbs-dados` e `@sinete/ibs-cbs` com nomes em português). Os tipos desses pacotes que estes recebem e devolvem mudam, e o código de quem os usa muda junto; a tabela completa está nos changesets de cada pacote da fase. Nomes destes pacotes que também mudam:
+  
+  | Onde aparece | Antigo | Novo |
+  |---|---|---|
+  | `CertificadoAberto` (`@sinete/emissor`) | `signer` | `assinador` |
+  | `syntheticCertificate(...).tlsIdentity` (`@sinete/sefaz-sim`) | `{ kind: 'pem', certChain, key }` | `{ tipo: 'pem', cadeia, chave }`, a forma da `IdentidadeTls` |
+  | `simTransport` (`@sinete/sefaz-sim`) | `runtime: 'custom'` | `runtime: 'personalizada'` |
+- ae8ab90: Acompanham a fase 1 do ADR 0015 (`@sinete/core`, `@sinete/validators` e `@sinete/rejeicoes` com nomes em português). Nenhum nome próprio destes pacotes muda nesta fase, mas os tipos do core que eles recebem e devolvem mudam, e o código de quem os usa muda junto. Os mais visíveis:
+  
+  | Onde aparece | Antigo | Novo |
+  |---|---|---|
+  | desfecho dos clientes (`ResultadoSefaz`, antes `SefazOutcome`) | `status: 'authorized' \| 'rejected' \| 'denied' \| 'pending'` | `tipo: 'autorizado' \| 'recusado' \| 'denegado' \| 'pendente'` |
+  | desfecho autorizado ou denegado | `value` | `valor` |
+  | desfecho recusado | `hint` (`probableCause`, `suggestedFix`, `source`) | `dica` (`causaProvavel`, `comoCorrigir`, `fonte`) |
+  | desfecho pendente | `ref`, `retryAfterMs` | `referencia`, `aguardarMs` |
+  | erros (`ErroSinete`, antes `SineteError`) | `details`, `docs` | `detalhes`, `pagina` |
+  | ocorrências (`Ocorrencia`, antes `ValidationIssue`) | `path`, `message` | `caminho`, `mensagem` |
+  | `ErroDeValidacao` (antes `ValidationError`) | `issues` | `ocorrencias` |
+  | assinador (`Assinador`, antes `Signer`) | `kind: 'data' \| 'digest'`, `sign`, `signDigestInfo`, `certificateDer` | `tipo: 'dados' \| 'digest'`, `assinar`, `assinarDigestInfo`, `certificadoDer` |
+  | relógio (`Relogio`, antes `Clock`) | `now()` | `agora()` |
+  | resultado local (`Resultado`, antes `Result`) | `value`, `error` | `valor`, `erro` |
+  
+  A tabela completa de cada pacote da fase está nos changesets do `@sinete/core`, do `@sinete/validators` e do `@sinete/rejeicoes`.
+- 84080ad: Nomes da API pública em português (ADR 0015, fase 3). Sem aliases: quem usa a 0.1.x troca os nomes ao atualizar.
+  
+  Mudanças de comportamento:
+  
+  - `recuperarEventoRegistrado(cliente, chave, tpEvento, nSeqEvento?)` aceita a sequência: com ela, devolve só o evento dessa sequência (a CC-e de um `nSeqEvento`); sem ela, continua o de maior sequência.
+  - `DetalhePagamento.card` fica `card`: é o nome do grupo no leiaute (ADR 0015, exceção 1).
+  - O `Decimal` próprio do pacote fica em inglês, como o do `@sinete/ibs-cbs` (ADR 0015, exceção 3).
+  
+  Nomes exportados:
+  
+  | Antigo | Novo |
+  |---|---|
+  | `BuildNfeOptions` | `MontarNfeOpcoes` |
+  | `BuildNfeResult` | `ResultadoMontagemNfe` |
+  | `BuiltNfe` | `NfeMontada` |
+  | `buildNfe` | `montarNfe` |
+  | `signNfe` | `assinarNfe` |
+  | `DecimalFormat` | `FormatoDecimal` |
+  | `formatDecimal` | `formatarDecimal` |
+  | `formatProblem` | `problemaDeFormato` |
+  | `NfeIssueCode` | `CodigoOcorrenciaNfe` |
+  | `NFE_ISSUE_CODES` | `CODIGOS_OCORRENCIA_NFE` |
+  | `NfeInput` | `DadosNfe` |
+  | `IbsCbsCalculator` | `CalculadoraIbsCbs` |
+  | `IbsCbsItemRequest` | `PedidoIbsCbsItem` |
+  | `IbsCbsNotaRequest` | `PedidoIbsCbsNota` |
+  | `IbsCbsResponse` | `RespostaIbsCbs` |
+  | `IbsCbsCalculatorOptions` | `CalculadoraIbsCbsOpcoes` |
+  | `ibsCbsCalculator` | `calculadoraIbsCbs` |
+  | `AutorizacaoOutcome` | `ResultadoAutorizacao` |
+  | `ConsultaOutcome` | `ResultadoConsulta` |
+  | `EventoOutcome` | `ResultadoEvento` |
+  | `InutilizacaoOutcome` | `ResultadoInutilizacao` |
+  | `NfeClient` | `ClienteNfe` |
+  | `NfeClientOptions` | `ClienteNfeOpcoes` |
+  | `OpcoesEnvio` | `EnvioOpcoes` |
+  | `Sleep` | `Espera` |
+  | `createNfeClient` | `criarClienteNfe` |
+  | `gunzipBase64` | `descomprimirGzipBase64` |
+  | `sliceElement` | `recortarElemento` |
+  | `formatDh` | `formatarDh` |
+  | `offsetDaUf` | `deslocamentoDaUf` |
+  
+  Membros e parâmetros com nome:
+  
+  | Tipo | Antigo | Novo |
+  |---|---|---|
+  | `CalculadoraIbsCbs` | `calcular.request` | `calcular.pedido` |
+  | `CalculadoraIbsCbsOpcoes` | `regras.rules` | `regras.regras` |
+  | `CalculadoraIbsCbsOpcoes` | `regras.ignoreActivation` | `regras.ignorarAtivacao` |
+  | `MontarNfeOpcoes` | `time` | `tempo` |
+  | `MontarNfeOpcoes`, `ClienteNfeOpcoes`, `formatarDh` | `offsetMinutes` | `deslocamentoMin` |
+  | `MontarNfeOpcoes` | `random` | `aleatorio` |
+  | `ResultadoMontagemNfe`, `formatarDecimal`, `problemaDeFormato` | `value` | `valor` |
+  | `ResultadoMontagemNfe`, `RespostaIbsCbs` | `issues` | `ocorrencias` |
+  | `assinaturaQrCode`, `comQrCode`, `assinarNfe` | `built` | `nota` |
+  | `assinaturaQrCode`, `assinarNfe`, `ClienteNfeOpcoes` | `signer` | `assinador` |
+  | `montarNfe` | `input` | `entrada` |
+  | `montarNfe`, `calculadoraIbsCbs`, `ClienteNfe` | `options` | `opcoes` |
+  | `dec` | `input` | `valor` |
+  | `sum` | `values` | `valores` |
+  | `FormatoDecimal` | `name` | `nome` |
+  | `FormatoDecimal` | `minBelowOne` | `minimoAbaixoDeUm` |
+  | `FormatoDecimal` | `nonZero` | `naoNulo` |
+  | `FormatoDecimal` | `intDigits` | `digitosInteiros` |
+  | `formatarDecimal`, `problemaDeFormato` | `format` | `formato` |
+  | `formatarDecimal` | `mode` | `modo` |
+  | `rotuloDoCaminho` | `path` | `caminho` |
+  | `CalculadoraIbsCbsOpcoes` | `rates` | `aliquotas` |
+  | `CalculadoraIbsCbsOpcoes` | `utcOffsetMinutes` | `deslocamentoMin` |
+  | `ClienteNfeOpcoes` | `transport` | `transporte` |
+  | `ClienteNfeOpcoes` | `clock` | `relogio` |
+  | `ClienteNfeOpcoes` | `sleep` | `esperar` |
+  | `ClienteNfeOpcoes` | `nfceEndpoint` | `endpointNfce` |
+  | `criarClienteNfe` | `options` | `opcoesDoCliente` |
+  | `DocumentoAssinado`, `recortarElemento` | `doc` | `documento` |
+  | `recortarElemento` | `parentDefaultNs` | `nsPadraoDoPai` |
+  | `recuperarEventoRegistrado`, `resolverEnvioSemResposta` | `client` | `cliente` |
+  | `ResolucaoEnvio` | `outcome` | `resultado` |
+  | `formatarDh` | `date` | `data` |
+
+### Patch Changes
+
+- Updated dependencies [4a3d258]
+- Updated dependencies [ae8ab90]
+- Updated dependencies [ae8ab90]
+- Updated dependencies [84080ad]
+- Updated dependencies [2a46db6]
+- Updated dependencies [2a46db6]
+- Updated dependencies [ae8ab90]
+- Updated dependencies [2a46db6]
+- Updated dependencies [2a46db6]
+- Updated dependencies [ae8ab90]
+- Updated dependencies [d824983]
+  - @sinete/validators@0.2.0
+  - @sinete/core@0.2.0
+  - @sinete/transport@0.2.0
+  - @sinete/schemas@0.2.0
+  - @sinete/ibs-cbs-dados@2026.10.0
+  - @sinete/ibs-cbs@0.2.0
+  - @sinete/rejeicoes@0.2.0
+
 ## 0.1.0
 
 ### Minor Changes

@@ -1,5 +1,100 @@
 # @sinete/cli
 
+## 0.2.0
+
+### Minor Changes
+
+- 84080ad: Nomes da API pública em português (ADR 0015, fase 3). Sem aliases: quem usa a 0.1.x troca os nomes ao atualizar.
+  
+  Mudanças de comportamento:
+  
+  - Flags do `doctor`: `--allow-expired` → `--aceitar-vencido` e `--ca` → `--ac`. Os comandos `doctor` e `agents-md` ficam (nome próprio).
+  - Saída JSON do `doctor`: `checks` → `verificacoes`, `status` → `situacao`, `message` → `mensagem`, `details` → `detalhes`, e as chaves dos detalhes em português (`diasRestantes`, `cadeia`, `situacao`, `vencidos`, `desvioSegundos`, `fonte`, `protocolo`, `cifra`, `certificadoDoCliente`, `statusHttp`). `notBefore` e `notAfter` ficam, como na RFC 5280.
+  
+  Nomes exportados:
+  
+  | Antigo | Novo |
+  |---|---|
+  | `upsertBloco` | `aplicarBloco` |
+  | `upsertSkill` | `aplicarSkill` |
+  | `CheckStatus` | `SituacaoDaVerificacao` |
+  | `DoctorCheck` | `VerificacaoDoDoctor` |
+  | `DoctorOptions` | `DoctorOpcoes` |
+  | `DoctorReport` | `RelatorioDoDoctor` |
+  | `formatCnpj` | `formatarCnpj` |
+  | `maskCpf` | `mascararCpf` |
+  | `maskCpfs` | `mascararCpfs` |
+  | `parseHttpDate` | `lerDataHttp` |
+  | `runDoctor` | `rodarDoctor` |
+  | `openKeyStore` | `abrirCertificado` |
+  | `CliIo` | `EntradaSaidaCli` |
+  | `formatReport` | `formatarRelatorio` |
+  
+  Membros e parâmetros com nome:
+  
+  | Tipo | Antigo | Novo |
+  |---|---|---|
+  | `EntradaSaidaCli` | `out.line` | `saida.linha` |
+  | `EntradaSaidaCli` | `err.line` | `erro.linha` |
+  | `EntradaSaidaCli` | `promptPassword.question` | `pedirSenha.pergunta` |
+  | `EntradaSaidaCli` | `readFile.path` | `lerArquivo.caminho` |
+  | `EntradaSaidaCli` | `writeFile.path` | `gravarArquivo.caminho` |
+  | `EntradaSaidaCli` | `writeFile.text` | `gravarArquivo.texto` |
+  | `EntradaSaidaCli` | `doctor.options` | `doctor.opcoes` |
+  | `VerificacaoDoDoctor` | `status` | `situacao` |
+  | `VerificacaoDoDoctor` | `message` | `mensagem` |
+  | `VerificacaoDoDoctor` | `details` | `detalhes` |
+  | `DoctorOpcoes` | `password` | `senha` |
+  | `DoctorOpcoes` | `extraChainPem` | `cadeiaAdicionalPem` |
+  | `DoctorOpcoes` | `extraCaPem` | `acsAdicionaisPem` |
+  | `DoctorOpcoes` | `allowExpired` | `aceitarVencido` |
+  | `DoctorOpcoes` | `status` | `consultarStatus` |
+  | `DoctorOpcoes` | `clockUrl` | `urlDoRelogio` |
+  | `DoctorOpcoes` | `clock` | `relogio` |
+  | `RelatorioDoDoctor` | `checks` | `verificacoes` |
+  | `mascararCpfs` | `text` | `texto` |
+  | `lerDataHttp` | `value` | `valor` |
+  | `rodarDoctor` | `options` | `opcoes` |
+  | `EntradaSaidaCli` | `out` | `saida` |
+  | `EntradaSaidaCli` | `err` | `erro` |
+  | `EntradaSaidaCli` | `promptPassword` | `pedirSenha` |
+  | `EntradaSaidaCli` | `readFile` | `lerArquivo` |
+  | `EntradaSaidaCli` | `writeFile` | `gravarArquivo` |
+  | `formatarRelatorio` | `report` | `relatorio` |
+- 2a46db6: Acompanham a fase 2 do ADR 0015 (`@sinete/cert`, `@sinete/transport`, runtime do `@sinete/schemas`, `@sinete/ibs-cbs-dados` e `@sinete/ibs-cbs` com nomes em português). Os tipos desses pacotes que estes recebem e devolvem mudam, e o código de quem os usa muda junto; a tabela completa está nos changesets de cada pacote da fase. Nomes destes pacotes que também mudam:
+  
+  | Onde aparece | Antigo | Novo |
+  |---|---|---|
+  | `CertificadoAberto` (`@sinete/emissor`) | `signer` | `assinador` |
+  | `syntheticCertificate(...).tlsIdentity` (`@sinete/sefaz-sim`) | `{ kind: 'pem', certChain, key }` | `{ tipo: 'pem', cadeia, chave }`, a forma da `IdentidadeTls` |
+  | `simTransport` (`@sinete/sefaz-sim`) | `runtime: 'custom'` | `runtime: 'personalizada'` |
+- ae8ab90: Acompanham a fase 1 do ADR 0015 (`@sinete/core`, `@sinete/validators` e `@sinete/rejeicoes` com nomes em português). Nenhum nome próprio destes pacotes muda nesta fase, mas os tipos do core que eles recebem e devolvem mudam, e o código de quem os usa muda junto. Os mais visíveis:
+  
+  | Onde aparece | Antigo | Novo |
+  |---|---|---|
+  | desfecho dos clientes (`ResultadoSefaz`, antes `SefazOutcome`) | `status: 'authorized' \| 'rejected' \| 'denied' \| 'pending'` | `tipo: 'autorizado' \| 'recusado' \| 'denegado' \| 'pendente'` |
+  | desfecho autorizado ou denegado | `value` | `valor` |
+  | desfecho recusado | `hint` (`probableCause`, `suggestedFix`, `source`) | `dica` (`causaProvavel`, `comoCorrigir`, `fonte`) |
+  | desfecho pendente | `ref`, `retryAfterMs` | `referencia`, `aguardarMs` |
+  | erros (`ErroSinete`, antes `SineteError`) | `details`, `docs` | `detalhes`, `pagina` |
+  | ocorrências (`Ocorrencia`, antes `ValidationIssue`) | `path`, `message` | `caminho`, `mensagem` |
+  | `ErroDeValidacao` (antes `ValidationError`) | `issues` | `ocorrencias` |
+  | assinador (`Assinador`, antes `Signer`) | `kind: 'data' \| 'digest'`, `sign`, `signDigestInfo`, `certificateDer` | `tipo: 'dados' \| 'digest'`, `assinar`, `assinarDigestInfo`, `certificadoDer` |
+  | relógio (`Relogio`, antes `Clock`) | `now()` | `agora()` |
+  | resultado local (`Resultado`, antes `Result`) | `value`, `error` | `valor`, `erro` |
+  
+  A tabela completa de cada pacote da fase está nos changesets do `@sinete/core`, do `@sinete/validators` e do `@sinete/rejeicoes`.
+
+### Patch Changes
+
+- Updated dependencies [2a46db6]
+- Updated dependencies [ae8ab90]
+- Updated dependencies [ae8ab90]
+- Updated dependencies [2a46db6]
+  - @sinete/cert@0.2.0
+  - @sinete/core@0.2.0
+  - @sinete/transport@0.2.0
+
 ## 0.1.0
 
 ### Minor Changes
