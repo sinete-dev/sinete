@@ -14,6 +14,7 @@ Os casos incluem:
 - Usar `trust: 'system'` no transporte em processo quando a runtime não oferece `tls.getCACertificates`, necessário para carregar os certificados de confiança do sistema.
 - Executar uma operação de compressão ou descompressão sem `CompressionStream` ou `DecompressionStream`, respectivamente, na runtime.
 - Selecionar uma vigência que aponta para um módulo de leiaute que o pacote instalado não conhece.
+- Traduzir para o JavaScript uma expressão regular de XSD com uma construção que o `@sinete/schemas` não implementa (`XsdRegexError`, com o `pattern` em `details`), por exemplo ao gerar os tipos de um pacote de schemas novo.
 
 Certificados A3 e chaves não exportáveis já são suportados pelo helper nativo `sinete-signer`, disponível pelo pacote npm `@sinete/signer`, com cliente em `@sinete/transport/signer`. A identidade TLS usada pelo transporte nesse caso é `kind: 'helper'`; `external` e `pkcs11` não são variantes atuais de `TlsIdentity`.
 

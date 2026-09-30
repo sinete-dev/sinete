@@ -34,7 +34,7 @@ Os módulos de cada documento e pacote de liberação ficam em subpaths (`@sinet
 
 - `SerializeError` (estende `SineteError<'serializacao_invalida'>`): O objeto não tem a forma do tipo gerado (campo simples que não é string, grupo repetido desalinhado). Membros: `path`.
 - `VigenciaError` (estende `SineteError<'pl_sem_vigencia'>`): Nenhum pacote de liberação da tabela de vigências cobre a data e o ambiente pedidos.
-- `XsdRegexError` (estende `Error`): Tradução de expressão regular do XSD (XML Schema Part 2, apêndice F) para RegExp do JavaScript com flag `u`.
+- `XsdRegexError` (estende `UnsupportedError`): Construção de regex do XSD que o tradutor não implementa: `nao_suportado`, com o `pattern` em `details`.
 
 ### Interfaces
 
