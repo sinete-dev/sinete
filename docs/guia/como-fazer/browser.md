@@ -29,14 +29,14 @@ Quando o A1 do emitente não pode sair da máquina dele, o browser abre o PFX, m
 No browser:
 
 ```ts
-import { openPfx } from 'sinete/cert';
+import { abrirPfx } from 'sinete/cert';
 import { relogioDoSistema, contextoDeTempo } from 'sinete/core';
 import { buildNfe, signNfe } from 'sinete/nfe';
 
-const ks = await openPfx(new Uint8Array(await arquivoPfx.arrayBuffer()), { password: senha, clock: relogioDoSistema });
+const ks = await abrirPfx(new Uint8Array(await arquivoPfx.arrayBuffer()), { senha: senha, relogio: relogioDoSistema });
 const r = await buildNfe(nota, { ambiente: 'homologacao', time: contextoDeTempo({ emissao: relogioDoSistema }) });
 if (r.ok) {
-  const assinada = await signNfe(r.value, await ks.signer());
+  const assinada = await signNfe(r.value, await ks.assinador());
   await fetch(`/api/pedidos/${pedido.id}/nfe-assinada`, {
     method: 'POST',
     headers: { 'content-type': 'application/xml; charset=utf-8' },

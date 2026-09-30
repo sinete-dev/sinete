@@ -11,7 +11,7 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `assinaturaQrCode`: Assinatura dos parâmetros do QR Code da NFC-e em contingência off-line com a versão 3 (RSA-SHA1 em Base64, com o certificado que assina a nota; Manual do DANFE NFC-e 6.0, 4.4.2). `undefined` quando o QR Code não leva assinatura (NF-e, emissão normal, versão 2). `assinaturaQrCode(built: BuiltNfe, signer: Assinador): Promise<string | undefined>`
 - `autorizadorContingencia`: Autorizador SVC da UF e o `tpEmis` que a NF-e emitida nele leva (6 SVC-AN, 7 SVC-RS; MOC 7.0, B22). `autorizadorContingencia(uf: Uf, ambiente: Ambiente): { readonly autorizador: 'SVC-AN' | 'SVC-RS'; readonly tpEmis: '6' | '7'; }`
 - `buildNfe`: Monta, calcula e valida. Nunca lança por dado do chamador: devolve as ocorrências. `buildNfe(input: NfeInput, options: BuildNfeOptions): Promise<BuildNfeResult>`
-- `carregarDatasetEmbarcado`: O dataset embarcado no `@sinete/ibs-cbs-dados`, importado sob demanda (`import()` dinâmico) e carregado uma vez por processo. É o que a calculadora padrão usa quando `dataset` não é informado; chamar antes só adianta a carga. Se o import falhar, a próxima chamada tenta de novo. `carregarDatasetEmbarcado(): Promise<IbsCbsDataset>`
+- `carregarDatasetEmbarcado`: O dataset embarcado no `@sinete/ibs-cbs-dados`, importado sob demanda (`import()` dinâmico) e carregado uma vez por processo. É o que a calculadora padrão usa quando `dataset` não é informado; chamar antes só adianta a carga. Se o import falhar, a próxima chamada tenta de novo. `carregarDatasetEmbarcado(): Promise<DatasetIbsCbs>`
 - `chaveDaDuplicidade`: Chave de acesso que a SEFAZ informa no `xMotivo` da rejeição 539 (`[chNFe:...]`), se houver. `chaveDaDuplicidade(xMotivo: string): string | undefined`
 - `comQrCode`: A NFC-e montada com o `infNFeSupl` (QR Code e `urlChave`) inserido por splice antes do fechamento de `NFe`, pronta para a assinatura. `comQrCode(built: BuiltNfe, assinatura?: string): string`
 - `conferirEmitenteDoCertificado`: Confere o emitente com o titular do certificado que assina a NF-e (MOC 7.0 Anexo I, grupo F): `conferirEmitenteDoCertificado(nfe: NfeInput, titular: { readonly cnpj?: string | undefined; readonly cpf?: string | undefined; }): readonly Ocorrencia[]`
@@ -25,7 +25,7 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `gunzipBase64`: Base64 de um gzip para o texto UTF-8 de dentro. `gunzipBase64(b64: string): Promise<string>`
 - `hashCsrt`: `hashCSRT`: Base64(SHA-1(CSRT + chave de acesso)) (NT 2018.005, campo ZD09). `hashCsrt(csrt: string, chave: string): Promise<string>`
 - `ibsCbsCalculator`: Cria a calculadora de IBS/CBS sobre o motor do sinete. `ibsCbsCalculator(options?: IbsCbsCalculatorOptions): IbsCbsCalculator`
-- `localDaOperacao`: Local da operação para as alíquotas próprias de UF e município: o `cMunFGIBS` informado (campo B12a da NT 2025.002, município de ocorrência do fato gerador do IBS/CBS), senão o destino da mercadoria (entrega ou destinatário, pela LC 214/2025, art. 11, o local da entrega), senão o emitente. `localDaOperacao(nota: IbsCbsNotaRequest): OperationPlace`
+- `localDaOperacao`: Local da operação para as alíquotas próprias de UF e município: o `cMunFGIBS` informado (campo B12a da NT 2025.002, município de ocorrência do fato gerador do IBS/CBS), senão o destino da mercadoria (entrega ou destinatário, pela LC 214/2025, art. 11, o local da entrega), senão o emitente. `localDaOperacao(nota: IbsCbsNotaRequest): LocalDaOperacao`
 - `nfeAssinadaDoProc`: NF-e assinada de dentro de um `nfeProc` (ou a própria NF-e assinada), como fatia do texto e sem a declaração XML, pronta para `consultar`, `resolverEnvioSemResposta` e a retomada, que recusam raiz sem `xmlns` próprio. `nfeAssinadaDoProc(xml: string): string`
 - `offsetDaUf`: Deslocamento do horário legal da UF em minutos (`-180` para Brasília). `offsetDaUf(uf: Uf): number`
 - `recuperarEventoRegistrado`: Consulta a chave e devolve o evento `tpEvento` que a SEFAZ registrou para ela (o de maior `nSeqEvento`, quando há vários, como na CC-e). `recuperarEventoRegistrado(client: NfeClient, chave: string, tpEvento: string): Promise<RecuperacaoEvento>`
@@ -183,81 +183,81 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 
 `@sinete/nfe/ibs-cbs`: tudo o que quem emite NF-e precisa do IBS/CBS, sem importar `@sinete/ibs-cbs` nem `@sinete/ibs-cbs-dados` diretamente.
 
-Reexporta o motor inteiro (`@sinete/ibs-cbs`: alíquotas, cálculo, regras da NT 2025.002 e determinação de CST e cClassTrib) e o leitor do dataset (`@sinete/ibs-cbs-dados`: `loadDataset`, `verifyDataset`, diff, tipos). O dataset embarcado não entra aqui, para não ir para o bundle de quem não o usa: `carregarDatasetEmbarcado()`, na raiz do `@sinete/nfe`, o importa sob demanda. `Dec`, `IsoDate` e `Validity` vêm do motor (os de `Dec` e `IsoDate` são os mesmos; a `Validity` dos dados, com os campos do dataset, fica acessível pelos tipos que a usam).
+Reexporta o motor inteiro (`@sinete/ibs-cbs`: alíquotas, cálculo, regras da NT 2025.002 e determinação de CST e cClassTrib) e o leitor do dataset (`@sinete/ibs-cbs-dados`: `carregarDataset`, `conferirDataset`, diff, tipos). O dataset embarcado não entra aqui, para não ir para o bundle de quem não o usa: `carregarDatasetEmbarcado()`, na raiz do `@sinete/nfe`, o importa sob demanda. `Dec`, `DataIso` e `Vigencia` vêm do motor (os de `Dec` e `DataIso` são os mesmos; a `Vigencia` dos dados, com os campos do dataset, fica acessível pelos tipos que a usam).
 
 Reexporta tudo de `@sinete/ibs-cbs` (veja a referência dele).
 
 ### Tipos
 
-- `ActorClassTribRecord`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `ActorFilter`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `ActorGroupRecord`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `ActorRecord`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `ActorRole`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `AnnexRecord`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `applicability`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `Applicability`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `ApplicabilityRecord`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `ApplicabilityResult`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `BRASILIA_OFFSET_MINUTES`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `ByTributo`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `canonicalJson`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `canonicalTable`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `CbsTransferRecord`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `changeKind`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `ChangeKind`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `civilDate`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `ClassTribCredit`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `ClassTribFilter`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `ClassTribGroups`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `ClassTribLegal`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `ClassTribRecord`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `contentVersionOf`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `CredPresCalculation`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `CredPresGroups`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `CredPresInForce`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `CredPresRates`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `CredPresRecord`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `CstGroups`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `CstRecord`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `DATA_SCHEMA_VERSION`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `DatasetBundle`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `DatasetDiff`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `DatasetManifest`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `DatasetTables`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `DataSource`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `DfeLink`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `DfeTypeRecord`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `diffDatasets`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `Family`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `FieldChange`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `FixedRateRecord`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `formatDiff`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `GovPurchaseReducerRecord`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `IbsCbsDataError`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `IbsCbsDataErrorCode`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `IbsCbsDataset`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `Indicator`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `inForce`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `isIsoDate`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `LegalBasis`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `loadDataset`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `NfseNbsRecord`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `Nomenclature`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `PrefixException`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `RateKind`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `RecordChange`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `ReductionRecord`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `requireIsoDate`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `SourceId`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `TABLE_NAMES`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `TableDiff`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `TableManifest`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `TableName`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `TaxContent`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `TreatmentExpressions`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `TreatmentFlags`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `TreatmentLink`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `TreatmentRecord`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `AliquotasCredPres`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `aplicabilidade`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `Aplicabilidade`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `BaseLegal`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `BaseLegalClassTrib`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `BundleDoDataset`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `CalculoCredPres`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `carregarDataset`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `CodigoErroDadosIbsCbs`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `compararDatasets`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `conferirDataset`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `ConteudoTributario`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `CreditoClassTrib`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `CredPresVigente`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `dataCivil`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `DatasetIbsCbs`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `DESLOCAMENTO_BRASILIA_MIN`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `DiferencaDeDatasets`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `DiferencaDeTabela`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `ehDataIso`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `ErroDadosIbsCbs`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `ExcecaoDePrefixo`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `exigirDataIso`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `ExpressoesDoTratamento`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `Familia`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `FiltroClassTrib`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `FiltroDeAtores`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `FonteDoDataset`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `formatarDiferenca`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `GruposClassTrib`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `GruposCredPres`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `GruposCst`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `IdDaFonte`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `Indicador`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `IndicadoresDoTratamento`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `jsonCanonico`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `ManifestoDaTabela`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `ManifestoDoDataset`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `MudancaDeCampo`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `MudancaDeRegistro`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `NomeDaTabela`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `Nomenclatura`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `NOMES_DAS_TABELAS`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `PapelDoAtor`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `PorTributo`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `RegistroAliquotaFixa`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `RegistroAnexo`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `RegistroAplicabilidade`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `RegistroAtor`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `RegistroAtorClassTrib`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `RegistroClassTrib`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `RegistroCredPres`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `RegistroCst`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `RegistroGrupoDeAtores`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `RegistroNfseNbs`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `RegistroReducao`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `RegistroRedutorCompraGov`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `RegistroTipoDfe`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `RegistroTransferenciaCbs`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `RegistroTratamento`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `ResultadoAplicabilidade`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `tabelaCanonica`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `TabelasDoDataset`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `TipoDeAliquota`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `tipoDeMudanca`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `TipoDeMudanca`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
 - `Tributo`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
-- `verifyDataset`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `VERSAO_DO_FORMATO_DOS_DADOS`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `versaoDoConteudo`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `vigente`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `VinculoDfe`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).
+- `VinculoTratamento`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).

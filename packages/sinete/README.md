@@ -18,7 +18,7 @@ Os imports escolhem a parte usada pelo sistema:
 ```ts
 import { buildNfe, createNfeClient, signNfe } from 'sinete/nfe';
 import { createNfeEmissor } from 'sinete/emissor/nfe';
-import { determine } from 'sinete/nfe/ibs-cbs';
+import { determinar } from 'sinete/nfe/ibs-cbs';
 import { danfe, toPdf } from 'sinete/da/nfe';
 import { damdfe } from 'sinete/da/mdfe';
 import { cnpjValido } from 'sinete/validators';

@@ -30,18 +30,18 @@ Este projeto usa o sinete (DF-e brasileiros em TypeScript: NF-e, NFC-e, MDF-e, N
 - `sinete/emissor/memoria`: `createMemoriaStore`, `createBancoMemoria` (só teste)
 - `sinete/emissor/contrato`: `casosDoContrato`
 - `sinete/nfe`: `NfeInput`, `buildNfe`, `signNfe`, `createNfeClient` (`.autorizar()`, `.consultar()`, `.cancelar()`, `.cartaCorrecao()`, `.manifestar()`, `.inutilizar()`, `.consultarCadastro()`, `.distribuicaoDFe()`, `.statusServico()`), `resolverEnvioSemResposta`, `recuperarEventoRegistrado`, `nfeAssinadaDoProc`, `autorizadorContingencia`, `assinaturaQrCode`, `comQrCode`, `urlsNfce`, `ibsCbsCalculator`, `carregarDatasetEmbarcado`, `rotuloDoCaminho`
-- `sinete/nfe/ibs-cbs`: motor do IBS/CBS reexportado (`determine`, `calculate`, `validate`, `officialRates`)
+- `sinete/nfe/ibs-cbs`: motor do IBS/CBS reexportado (`determinar`, `calcular`, `validar`, `aliquotasOficiais`)
 - `sinete/mdfe`: `MdfeInput`, `buildMdfe`, `signMdfe`, `createMdfeClient` (`.encerrar()`, `.consultarNaoEncerrados()`), `conferirPercurso`, `sugerirPercurso`, `prazoContingencia`, `rotuloDoCaminho`
 - `sinete/nfse`: `DpsInput`, `buildDps`, `signDps`, `createNfseClient` (`.consultarDps()`, `.solicitarAnaliseFiscal()`), `resolverEnvioSemResposta`
 - `sinete/da/nfe`: `danfe`, `toPdf`, `toHtml`; `sinete/da/nfce`: `danfce`; `sinete/da/mdfe`: `damdfe`; `sinete/da/nfse`: `danfse`; `sinete/da/cce`: `dacce`
-- `sinete/ibs-cbs`: `calculate`, `validate`, `determine`, `officialRates`, `withOverrides`
-- `sinete/ibs-cbs-dados`: `loadDataset`, `verifyDataset`; `/bundled`: `bundledDataset`
-- `sinete/cert`: `openPfx`, `buildChain`, `createA1Signer`
-- `sinete/transport`: `createTransport`, `allowlistPolicy`, `nfeEndpoint`
-- `sinete/transport/signer`: `startSigner`, `certificadoAberto` (cliente do helper `sinete-signer`, distribuído em `@sinete/signer`: A3 em token PKCS#11, A3 em nuvem de PSC e chave não exportável)
+- `sinete/ibs-cbs`: `calcular`, `validar`, `determinar`, `aliquotasOficiais`, `comAliquotasInformadas`
+- `sinete/ibs-cbs-dados`: `carregarDataset`, `conferirDataset`; `/bundled`: `datasetEmbarcado`
+- `sinete/cert`: `abrirPfx`, `montarCadeia`, `criarAssinadorA1`
+- `sinete/transport`: `criarTransporte`, `politicaDeHostsPermitidos`, `nfeEndpoint`
+- `sinete/transport/signer`: `iniciarSigner`, `certificadoAberto` (cliente do helper `sinete-signer`, distribuído em `@sinete/signer`: A3 em token PKCS#11, A3 em nuvem de PSC e chave não exportável)
 - `sinete/validators`: `lerCnpj`, `lerCpf`, `lerIe`, `lerChaveAcesso`, `cnpjValido`
 - `sinete/rejeicoes`: `rejeicaoPorCodigo`, `completarRecusado`; `/nfse`: `nfseErroPorCodigo`
-- `sinete/schemas`: `selecionarPl`, `decodeXml`, `validateRoot`
+- `sinete/schemas`: `selecionarPl`, `decodificarXml`, `validarRaiz`
 - `sinete/core`: `ErroSinete`, `ehErroSinete`, `ErroDeValidacao`, `tratarResultado`, `relogioDoSistema`, `relogioManual`, `contextoDeTempo`; `/xml`: `conferirAssinatura`
 - `@sinete/sefaz-sim` (dev, fora do guarda-chuva): `createSefazSim`, `createNfseSim`, `simTransport`, `redirectToSim`, `redirectNfseToSim`, `syntheticCertificate`, `syntheticPfx`
 - CLI: `npx sinete doctor --pfx <arquivo>` confere certificado, cadeia, relógio e TLS; `npx sinete agents-md` atualiza este bloco e a skill `sinete`.

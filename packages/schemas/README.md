@@ -6,16 +6,16 @@ Status: pré-alfa, API instável até a 1.0.
 
 ```ts
 import { relogioFixo } from '@sinete/core';
-import { decodeXml, selecionarPl, serialize, validateRoot } from '@sinete/schemas';
+import { decodificarXml, selecionarPl, serializar, validarRaiz } from '@sinete/schemas';
 import { nfeProcElement, TNFe_infNFe } from '@sinete/schemas/nfe/PL_010f';
 
 selecionarPl('nfe', 'producao', relogioFixo('2026-09-25T10:00:00-03:00')).modulo; // 'nfe/PL_010e'
 
 const inf: TNFe_infNFe = { Id: 'NFe35...', versao: '4.00', ide, emit, det, total, transp, pag }; // os grupos montados
-const xml = serialize(TNFe_infNFe, 'infNFe', inf); // forma canônica: é o C14N do elemento, pronto para assinar
+const xml = serializar(TNFe_infNFe, 'infNFe', inf); // forma canônica: é o C14N do elemento, pronto para assinar
 
-const { value, issues } = decodeXml(nfeProcElement, recebido); // tolerante: issues em vez de exceção
-const erros = validateRoot(nfeProcElement, recebido); // estrito: [] = válido
+const { valor: value, ocorrencias: issues } = decodificarXml(nfeProcElement, recebido); // tolerante: issues em vez de exceção
+const erros = validarRaiz(nfeProcElement, recebido); // estrito: [] = válido
 ```
 
 ## Módulos
@@ -44,7 +44,7 @@ Cada subpath é autocontido e exporta, com o mesmo identificador, o tipo TS e o 
 | `nfse/1.01-20260209` | NFSe-ESQUEMAS_XSD-v1.01-20260209 (NFS-e Nacional) | `DPS`, `NFSe`, `pedRegEvento`, `evento` |
 | `nfse/1.01-20260727` | NFSe-ESQUEMAS_XSD-v1.01-20260727 (CNPJ alfanumérico) | as mesmas |
 
-Os módulos da NFS-e trazem em `schema.patches` as correções documentadas sobre o XSD oficial: o `TSSerieDPS` de 09/02/2026 declara `^0{0,4}\d{1,5}$`, e em regex de XSD `^` e `$` são literais, então nenhuma série passaria; o módulo usa `0{0,4}\d{1,5}`. A `ds:Signature` da NFS-e é opaca (`$any`), porque o xmldsig do W3C usa construções fora do subconjunto do gerador. O `TSChaveNFSe` de 27/07/2026 (`[0-9]{6}([0-9A-Z]{14})[0-9]{30}`) põe o trecho alfanumérico nas posições 7 a 20, e não nas 10 a 23 da inscrição federal; o módulo segue o XSD oficial sem correção, e chave com CNPJ alfanumérico pode ser recusada por ele.
+Os módulos da NFS-e trazem em `schema.ajustes` as correções documentadas sobre o XSD oficial: o `TSSerieDPS` de 09/02/2026 declara `^0{0,4}\d{1,5}$`, e em regex de XSD `^` e `$` são literais, então nenhuma série passaria; o módulo usa `0{0,4}\d{1,5}`. A `ds:Signature` da NFS-e é opaca (`$any`), porque o xmldsig do W3C usa construções fora do subconjunto do gerador. O `TSChaveNFSe` de 27/07/2026 (`[0-9]{6}([0-9A-Z]{14})[0-9]{30}`) põe o trecho alfanumérico nas posições 7 a 20, e não nas 10 a 23 da inscrição federal; o módulo segue o XSD oficial sem correção, e chave com CNPJ alfanumérico pode ser recusada por ele.
 
 Os eventos, a consulta, a inutilização e o cadastro não vêm no zip do PL_010f: o portal da NF-e publica esses schemas em pacotes separados. O mais recente para eles é o PL_010d_v1.03 (CNPJ alfanumérico). O status do serviço só é redistribuído até o PL_009q. Cada evento é um módulo próprio porque a SEFAZ valida em duas etapas: o envelope genérico (onde `detEvento` é `xs:any`) e depois o `detEvento` pelo schema do tipo de evento; o módulo gerado junta as duas coisas. No MDF-e, os schemas dos eventos vêm no mesmo pacote do documento, então um módulo só liga o `detEvento` aos sete tipos como uma escolha; quem confere que o elemento é o do `tpEvento` (regra J06 do MOC 3.00b, rejeição 630) é o `@sinete/mdfe` ao montar e o simulador ao receber. O `retMDFe_v3.00.xsd` oficial declara o `tpAmb` do `TRetMDFe` sem tipo (`xs:anyType`); o gerador o aceita como texto porque está listado em `untypedAsText` no `modules.ts`, e o validador recusa filhos ali. O `retConsSitMDFe` do XSD aceita um único elemento dentro de `procEventoMDFe` (`xs:any`), mas o autorizador devolve `eventoMDFe` e `retEventoMDFe` juntos; o validador segue o XSD, e o `@sinete/mdfe` lê o retorno pelo decoder tolerante.
 
@@ -61,11 +61,11 @@ Os eventos, a consulta, a inutilização e o cadastro não vêm no zip do PL_010
 
 | Função | O que faz |
 |---|---|
-| `serialize(ct, nome, valor, nsHerdado?)`, `serializeRoot(raiz, valor)` | forma canônica, na ordem do XSD; é o C14N do elemento (o de `serializeRoot` inclui o `xmlns`) |
-| `decode(ct, el)`, `decodeRoot(raiz, doc)`, `decodeXml(raiz, xml)` | decoder tolerante: `{ value, issues }` com `elemento_desconhecido`, `whitespace_descartado`, `namespace_divergente`... |
-| `validate(ct, el)`, `validateRoot(raiz, xml)`, `assertValid(raiz, xml)` | validador estrito: modelo de conteúdo, atributos, facetas, espaço léxico dos tipos embutidos, `xs:unique`, `ID` único. `assertValid` lança `ErroDeValidacao` do core |
-| `selecionarPl(familia, ambiente, relogio)`, `VIGENCIAS` | PL por data (dia de Brasília) e ambiente, nunca por tentativa; `VigenciaError` (`pl_sem_vigencia`) fora de toda vigência |
-| `xsdRegexToJs`, `compileXsdRegex`, `checkSimple`, `compareDecimal` | utilitários do validador |
+| `serializar(ct, nome, valor, nsHerdado?)`, `serializarRaiz(raiz, valor)` | forma canônica, na ordem do XSD; é o C14N do elemento (o de `serializarRaiz` inclui o `xmlns`) |
+| `decodificar(ct, el)`, `decodificarRaiz(raiz, doc)`, `decodificarXml(raiz, xml)` | decoder tolerante: `{ valor, ocorrencias }` com `elemento_desconhecido`, `whitespace_descartado`, `namespace_divergente`... |
+| `validar(ct, el)`, `validarRaiz(raiz, xml)`, `exigirValido(raiz, xml)` | validador estrito: modelo de conteúdo, atributos, facetas, espaço léxico dos tipos embutidos, `xs:unique`, `ID` único. `exigirValido` lança `ErroDeValidacao` do core |
+| `selecionarPl(familia, ambiente, relogio)`, `VIGENCIAS` | PL por data (dia de Brasília) e ambiente, nunca por tentativa; `ErroVigencia` (`pl_sem_vigencia`) fora de toda vigência |
+| `regexXsdParaJs`, `compilarRegexXsd`, `conferirTipoSimples`, `compararDecimal` | utilitários do validador |
 
 As ocorrências seguem o `Ocorrencia` do core (`caminho`, `code`, `mensagem`) e nunca trazem o valor do campo, só a regra e o caminho.
 

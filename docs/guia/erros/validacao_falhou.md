@@ -6,7 +6,7 @@ O dado foi recusado pela validação local, antes de o documento ou pedido ser e
 
 A montagem chamada pelo emissor, durante `emitir` ou `assinar`, encontrou problemas na entrada ou no documento montado: campo obrigatório ausente, valor que não confere com o cálculo do Manual de Orientação do Contribuinte (MOC), identificado por `valor_divergente`, XML fora do XSD (schema que define a estrutura e as restrições do XML) do leiaute vigente, identificado por `schema`, percurso de Manifesto Eletrônico de Documentos Fiscais (MDF-e) rodoviário entre unidades federativas (UFs) que não fazem divisa, base de cálculo do Imposto sobre Bens e Serviços (IBS) e da Contribuição sobre Bens e Serviços (CBS) ausente, entre outros. Na montagem direta com `buildNfe`, `buildMdfe` ou `buildDps`, as falhas de validação são devolvidas como `{ ok: false, issues }`; o emissor transforma esse resultado em `ErroDeValidacao`.
 
-O erro também é lançado pelos clientes quando um pedido de evento não passa na validação do schema, por exemplo, por justificativa curta ou texto da Carta de Correção Eletrônica (CC-e) fora do tamanho permitido. O `assertValid` do `@sinete/schemas` também lança `ErroDeValidacao` quando encontra ocorrências de schema.
+O erro também é lançado pelos clientes quando um pedido de evento não passa na validação do schema, por exemplo, por justificativa curta ou texto da Carta de Correção Eletrônica (CC-e) fora do tamanho permitido. O `exigirValido` do `@sinete/schemas` também lança `ErroDeValidacao` quando encontra ocorrências de schema.
 
 ## Correção
 

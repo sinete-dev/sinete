@@ -5,10 +5,10 @@ Fechamento do M1: os pacotes na forma publicada, não os spikes, contra a SEFAZ 
 ## Como foi feito
 
 - Pacotes importados pelo nome (`@sinete/nfe`, `@sinete/cert`, `@sinete/transport`, `@sinete/cli`, `@sinete/core/xml`), resolvidos para o `dist` do `bun run build`. Nenhum import do fonte nem dos spikes.
-- PFX legado (RC2-40 + 3DES) aberto pelo `openPfx` do `@sinete/cert` em memória, lido do 1Password por spawn sem shell. PFX, chave e senha não foram gravados, impressos nem passados em argv ou env de outro processo.
-- Guarda: `HostPolicy` do `@sinete/transport` (`allowlistPolicy`) com 15 hosts de NF-e e MDF-e de homologação escritos à mão, porta 443 e `tpAmb` 2 no corpo. Testada antes da rodada (`tools/homologacao/test/policy.test.ts`: todo endpoint de produção recusado, NFC-e e NFS-e fora, `tpAmb` 1 recusado mesmo com prefixo ou comentário, e o transporte real recusando antes do socket sem nenhum evento de auditoria).
+- PFX legado (RC2-40 + 3DES) aberto pelo `abrirPfx` do `@sinete/cert` em memória, lido do 1Password por spawn sem shell. PFX, chave e senha não foram gravados, impressos nem passados em argv ou env de outro processo.
+- Guarda: `PoliticaDeHosts` do `@sinete/transport` (`politicaDeHostsPermitidos`) com 15 hosts de NF-e e MDF-e de homologação escritos à mão, porta 443 e `tpAmb` 2 no corpo. Testada antes da rodada (`tools/homologacao/test/policy.test.ts`: todo endpoint de produção recusado, NFC-e e NFS-e fora, `tpAmb` 1 recusado mesmo com prefixo ou comentário, e o transporte real recusando antes do socket sem nenhum evento de auditoria).
 - Ledger em `~/.local/state/sinete/cert-usage.log`: 48 linhas nesta rodada, 40 envios que usaram o certificado, 6 recusas do Deno antes do socket e 2 assinaturas locais.
-- Identidade TLS: `pemIdentity` com a cadeia que o `buildChain` montou. O bundle ICP-Brasil do pacote não tem as intermediárias da AC SAFEWEB, então o cliente mandou **só a folha**.
+- Identidade TLS: `identidadePem` com a cadeia que o `montarCadeia` montou. O bundle ICP-Brasil do pacote não tem as intermediárias da AC SAFEWEB, então o cliente mandou **só a folha**.
 
 ## Resultados
 

@@ -25,7 +25,7 @@
 | [../packages/validators/README.md](../packages/validators/README.md) | for validar CPF, CNPJ alfanumérico, CAEPF, chave de acesso ou IE, ou mexer nas regras de IE por UF (`src/data/ie.json`) |
 | [../packages/rejeicoes/README.md](../packages/rejeicoes/README.md) e [../tools/rejeicoes-data/README.md](../tools/rejeicoes-data/README.md) | for consultar rejeições (inclusive os códigos de erro da NFS-e), enriquecer um desfecho `recusado` ou regenerar o catálogo a partir dos PDFs e planilhas oficiais |
 | [../packages/cert/README.md](../packages/cert/README.md) | for ler PFX, extrair CNPJ/CPF, montar a cadeia ICP-Brasil ou assinar com A1 |
-| [../packages/transport/README.md](../packages/transport/README.md) | for enviar para a SEFAZ, resolver endpoints, escrever uma `HostPolicy` ou entender por que o Deno recusa um host |
+| [../packages/transport/README.md](../packages/transport/README.md) | for enviar para a SEFAZ, resolver endpoints, escrever uma `PoliticaDeHosts` ou entender por que o Deno recusa um host |
 | [../packages/sefaz-sim/README.md](../packages/sefaz-sim/README.md) | for testar um fluxo de DF-e contra a SEFAZ simulada (em processo ou HTTPS com mTLS), injetar falhas de rede ou acrescentar uma regra de rejeição ao simulador (NF-e e NFS-e Nacional) |
 | [../packages/cli/README.md](../packages/cli/README.md) | for diagnosticar certificado, cadeia, relógio e TLS com `sinete doctor` |
 | [../packages/da/README.md](../packages/da/README.md) | for gerar DANFE, DANFC-e, DAMDFE ou DACCe, ou escolher o subpath de um documento |

@@ -33,7 +33,7 @@ const nfe = await createNfeEmissor({ pfx, senha, ambiente: 'homologacao', store,
 
 - **Datas.** A data do fato gerador determina os dados e as alíquotas; a data de emissão determina quais regras da NT já estão implantadas no ambiente. Os dois relógios vêm do `ContextoDeTempo`; sem fato gerador explícito, vale a data da emissão.
 - **Local da operação.** O sinete usa `cMunFGIBS`, o código do município do fato gerador informado na nota (campo B12a), quando consegue identificar sua unidade federativa (UF). Caso contrário, usa o destino da mercadoria: primeiro o endereço de entrega, depois o endereço do destinatário, conforme o critério de local da entrega da LC 214/2025, art. 11. Sem destino ou com destino no exterior, usa o município e a UF do emitente.
-- **Alíquota não publicada.** Uma alíquota necessária ao cálculo que não está disponível no provedor nunca vira zero: a calculadora retorna a ocorrência `ibscbs_aliquota_desconhecida`, e a nota não é montada. Para simular, informe as alíquotas (`ibsCbsCalculator({ rates })`, com `withOverrides` do `sinete/nfe/ibs-cbs`). No resultado do motor de cálculo avulso, `simulated` indica o uso de alíquotas informadas; a calculadora integrada à montagem não repassa esse indicador.
+- **Alíquota não publicada.** Uma alíquota necessária ao cálculo que não está disponível no provedor nunca vira zero: a calculadora retorna a ocorrência `ibscbs_aliquota_desconhecida`, e a nota não é montada. Para simular, informe as alíquotas (`ibsCbsCalculator({ rates })`, com `comAliquotasInformadas` do `sinete/nfe/ibs-cbs`). No resultado do motor de cálculo avulso, `simulado` indica o uso de alíquotas informadas; a calculadora integrada à montagem não repassa esse indicador.
 - **Grupo pronto.** Se outro sistema já calcula, mande o grupo do leiaute em `ibsCbs.grupo` no lugar da classificação; a calculadora não roda para esse item.
 - **Crédito presumido, diferimento e devolução de tributos.** Para informar esses valores, use o grupo pronto. A classificação aceita `cCredPres`, mas a calculadora padrão retorna `ibscbs_nao_suportado` quando ele é informado, pois precisa dos percentuais de crédito por tributo. A classificação não tem campos para informar percentuais de diferimento nem de devolução de tributos.
 
@@ -41,24 +41,24 @@ As ocorrências do IBS/CBS voltam como as outras da montagem: `ErroDeValidacao` 
 
 ## Chegar ao CST e ao `cClassTrib`
 
-Se o cadastro do item não tem a classificação, `determine` (em `sinete/nfe/ibs-cbs`) elimina candidatos com base nos dados oficiais e nas regras legais implementadas. Quando essas regras não determinam a classificação, consulta resolvedores, funções que podem usar o cadastro do item, uma pergunta ao usuário ou uma fila de revisão. Por padrão, tenta a classificação do cadastro, escolhe se restou um único candidato ou retorna uma pergunta com as opções restantes. Cada decisão registra sua proveniência: quem decidiu, quando e com qual versão dos dados.
+Se o cadastro do item não tem a classificação, `determinar` (em `sinete/nfe/ibs-cbs`) elimina candidatos com base nos dados oficiais e nas regras legais implementadas. Quando essas regras não determinam a classificação, consulta resolvedores, funções que podem usar o cadastro do item, uma pergunta ao usuário ou uma fila de revisão. Por padrão, tenta a classificação do cadastro, escolhe se restou um único candidato ou retorna uma pergunta com as opções restantes. Cada decisão registra sua proveniência: quem decidiu, quando e com qual versão dos dados.
 
 ```ts
 import { relogioFixo, contextoDeTempo } from 'sinete/core';
 import { carregarDatasetEmbarcado } from 'sinete/nfe';
-import { determine, questionId } from 'sinete/nfe/ibs-cbs';
+import { determinar, idDaPergunta } from 'sinete/nfe/ibs-cbs';
 
 const opts = {
   dataset: await carregarDatasetEmbarcado(),
-  time: contextoDeTempo({ emissao: relogioFixo('2026-10-10T12:00:00-03:00') }),
+  tempo: contextoDeTempo({ emissao: relogioFixo('2026-10-10T12:00:00-03:00') }),
 };
-const fatos = { modelo: 55, kind: 'venda', items: [{ n: 1, ncm: '10063021', description: 'arroz' }] } as const;
+const fatos = { modelo: 55, tipo: 'venda', itens: [{ n: 1, ncm: '10063021', descricao: 'arroz' }] } as const;
 
-const primeira = await determine(fatos, opts);
-console.log(primeira.items[0]?.pending); // pergunta com os cClassTrib possíveis
+const primeira = await determinar(fatos, opts);
+console.log(primeira.itens[0]?.pendente); // pergunta com os cClassTrib possíveis
 
-const decidida = await determine(fatos, { ...opts, answers: { [questionId(1)]: '200003' } });
-console.log(decidida.items[0]?.decided?.provenance); // quem decidiu, quando e com que versão dos dados
+const decidida = await determinar(fatos, { ...opts, respostas: { [idDaPergunta(1)]: '200003' } });
+console.log(decidida.itens[0]?.decidido?.procedencia); // quem decidiu, quando e com que versão dos dados
 ```
 
 Um fato desconhecido não exclui candidatos por si só: sem NCM (Nomenclatura Comum do Mercosul, o código de classificação da mercadoria), a aplicabilidade pelo anexo correspondente da LC 214/2025 não é conferida. Quando uma regra legal exige códigos que os dados oficiais já excluíram, o resultado registra um conflito e deixa o item sem candidato. A regra não ignora a restrição para escolher uma classificação.
@@ -87,7 +87,7 @@ O motor (`sinete/ibs-cbs` ou `@sinete/ibs-cbs`) calcula sem depender da montagem
 
 - **Base presumida por conta própria.** Como a composição da base pela UB16-10 não está implementada nas regras usadas pelo sinete, você precisa fornecer a base; documente de onde ela vem no seu sistema.
 - **Relógio único.** Reprocessar uma nota antiga com o relógio de hoje pode trocar os dados e as alíquotas aplicáveis. Passe o fato gerador da operação (`contextoDeTempo({ emissao, fatoGerador })`).
-- **Dataset trocado sem verificação.** Para carregar um novo conjunto de dados sem atualizar o pacote, verifique o pacote de dados com `verifyDataset` antes de chamar `loadDataset`. A verificação confere os hashes das tabelas e do conjunto contra o manifesto.
+- **Dataset trocado sem verificação.** Para carregar um novo conjunto de dados sem atualizar o pacote, verifique o pacote de dados com `conferirDataset` antes de chamar `carregarDataset`. A verificação confere os hashes das tabelas e do conjunto contra o manifesto.
 
 ## Veja também
 

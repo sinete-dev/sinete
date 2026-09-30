@@ -54,11 +54,11 @@ Regras do Anexo I conferidas no builder: F08, F10, F11, F13 a F22, F24, F26 a F3
 
 ## Serviços (`createMdfeClient`)
 
-`MdfeClient` fala SOAP 1.2 com o holder `mdfeDadosMsg` sobre qualquer `Transport` do `@sinete/transport`, com os endpoints do MDF-e (SVRS) vindos dele. Cada operação devolve um `ResultadoSefaz` do core, com a rejeição enriquecida pelo catálogo do MDF-e do `@sinete/rejeicoes` (os códigos colidem com os da NF-e, por isso a entrada própria). O mapa de cStat é dado (`src/data/cstat.json`).
+`MdfeClient` fala SOAP 1.2 com o holder `mdfeDadosMsg` sobre qualquer `Transporte` do `@sinete/transport`, com os endpoints do MDF-e (SVRS) vindos dele. Cada operação devolve um `ResultadoSefaz` do core, com a rejeição enriquecida pelo catálogo do MDF-e do `@sinete/rejeicoes` (os códigos colidem com os da NF-e, por isso a entrada própria). O mapa de cStat é dado (`src/data/cstat.json`).
 
-- `statusServico`, `autorizar` (MDFeRecepcaoSinc, o MDF-e em gzip e Base64; como a política do transporte não enxerga o `tpAmb` dentro do gzip, o cliente confere o `tpAmb` do MDF-e contra o ambiente dele e recusa com `PolicyError` antes do envio), `consultar` (situação, protocolo, eventos e conferência do `digVal` contra o MDF-e assinado), `consultarNaoEncerrados`.
+- `statusServico`, `autorizar` (MDFeRecepcaoSinc, o MDF-e em gzip e Base64; como a política do transporte não enxerga o `tpAmb` dentro do gzip, o cliente confere o `tpAmb` do MDF-e contra o ambiente dele e recusa com `ErroPolitica` antes do envio), `consultar` (situação, protocolo, eventos e conferência do `digVal` contra o MDF-e assinado), `consultarNaoEncerrados`.
 - Eventos: `cancelar`, `encerrar` (`dtEnc`, padrão a data de hoje no fuso da UF da chave, `cUF` e `cMun`; o município tem de ser da UF, ou 9999999 no exterior, conferido antes do envio como K03 e K04; `terceiro` é o encerramento pelo proprietário do veículo de tração, que assina com o próprio certificado, vira o autor e liga o `indEncPorTerceiro`, NT 2024.001), `incluirCondutor`, `incluirDFe`, `pagamentoOperacao`. O `Id` segue o leiaute, `cOrgao` é o cUF da chave e o autor é o emitente da chave (fora o encerramento por terceiro); `options.autor` é o padrão da consulta de não encerrados.
-- Cancelamento: todo método que vai à rede aceita `opcoes?: OpcoesEnvio` como último parâmetro, com o `signal` que cancela a requisição em curso. Abortar rejeita com `TransportError` de `code: 'cancelado'` (com o transporte do `@sinete/transport`), e um pedido que já saiu pode ter sido processado: confirme por consulta antes de repetir.
+- Cancelamento: todo método que vai à rede aceita `opcoes?: OpcoesEnvio` como último parâmetro, com o `signal` que cancela a requisição em curso. Abortar rejeita com `ErroTransporte` de `code: 'cancelado'` (com o transporte do `@sinete/transport`), e um pedido que já saiu pode ter sido processado: confirme por consulta antes de repetir.
 - `mdfeProc` e `procEventoMDFe` são montados por splice: o documento assinado entra byte a byte.
 - Envio sem resposta: `resolverEnvioSemResposta(client, assinado, desfecho?)` consulta a chave e devolve `concluida`, `reenviar`, `divergente` (duplicidade com outra chave, extraída do xMotivo 539), `sem-prova` (a chave consta e o protocolo não traz o `digVal` para provar que é este MDF-e) ou `indefinida`. `recuperarEventoRegistrado(client, chave, tpEvento)` confirma pela consulta um evento cujo pedido ficou sem resposta ou voltou como duplicidade, e devolve o `procEventoMDFe` que a SEFAZ tem. `mdfeAssinadoDoProc(xml)` tira do `mdfeProc` guardado o MDF-e assinado pronto para isso, com o namespace declarado na raiz quando ele o herdava do envelope.
 
@@ -72,7 +72,7 @@ Regras do Anexo I conferidas no builder: F08, F10, F11, F13 a F22, F24, F26 a F3
 
 ## Ponta a ponta contra a SEFAZ simulada
 
-`test/e2e/sefaz-sim.test.ts` sobe o `@sinete/sefaz-sim` em HTTPS com mTLS (AC, e-CPF do produtor, e-CNPJ da transportadora e certificado do servidor gerados na hora) e usa o `createTransport` real. Cobre status, autorização, consulta com `digVal`, não encerrados e encerramento com o e-CPF; contingência off-line autorizada 48 horas depois e cancelamento com o e-CNPJ; e o envio sem resposta resolvido pela consulta. Roda no `bun run check`.
+`test/e2e/sefaz-sim.test.ts` sobe o `@sinete/sefaz-sim` em HTTPS com mTLS (AC, e-CPF do produtor, e-CNPJ da transportadora e certificado do servidor gerados na hora) e usa o `criarTransporte` real. Cobre status, autorização, consulta com `digVal`, não encerrados e encerramento com o e-CPF; contingência off-line autorizada 48 horas depois e cancelamento com o e-CNPJ; e o envio sem resposta resolvido pela consulta. Roda no `bun run check`.
 
 ## Checagem local contra o corpus
 

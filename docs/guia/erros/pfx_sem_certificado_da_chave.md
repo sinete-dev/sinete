@@ -1,6 +1,6 @@
 # `pfx_sem_certificado_da_chave`: nenhum certificado do PFX é da chave
 
-O arquivo PFX contém uma chave privada RSA, mas nenhum certificado do titular, também chamado de certificado de fim de cadeia, corresponde a uma chave privada RSA presente nele. A função `openPfx`, de `@sinete/cert`, lança um `CertError`, que herda de `ErroSinete`, com `code: 'pfx_sem_certificado_da_chave'`. Trate o erro pelo `code`, usando `ehErroSinete(e, 'pfx_sem_certificado_da_chave')`, de `@sinete/core`, nunca pela mensagem.
+O arquivo PFX contém uma chave privada RSA, mas nenhum certificado do titular, também chamado de certificado de fim de cadeia, corresponde a uma chave privada RSA presente nele. A função `abrirPfx`, de `@sinete/cert`, lança um `ErroCertificado`, que herda de `ErroSinete`, com `code: 'pfx_sem_certificado_da_chave'`. Trate o erro pelo `code`, usando `ehErroSinete(e, 'pfx_sem_certificado_da_chave')`, de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 
@@ -12,4 +12,4 @@ Exporte o PFX de novo da origem que contém o certificado do titular e a chave p
 
 ## Armadilha
 
-Um PFX que contém o certificado antigo correspondente à mesma chave também passa pela verificação de correspondência. Entre os certificados de fim de cadeia que correspondem a uma chave privada RSA do PFX, o sinete escolhe aquele cuja data de vencimento é mais distante. Em caso de empate, escolhe o que tem a data de início de validade mais recente. Isso não garante que o certificado escolhido esteja válido: por padrão, `openPfx` recusa certificados vencidos ou que ainda não começaram a valer. Confira a validade com `sinete doctor --pfx arquivo.pfx`.
+Um PFX que contém o certificado antigo correspondente à mesma chave também passa pela verificação de correspondência. Entre os certificados de fim de cadeia que correspondem a uma chave privada RSA do PFX, o sinete escolhe aquele cuja data de vencimento é mais distante. Em caso de empate, escolhe o que tem a data de início de validade mais recente. Isso não garante que o certificado escolhido esteja válido: por padrão, `abrirPfx` recusa certificados vencidos ou que ainda não começaram a valer. Confira a validade com `sinete doctor --pfx arquivo.pfx`.

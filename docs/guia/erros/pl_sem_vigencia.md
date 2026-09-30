@@ -1,6 +1,6 @@
 # `pl_sem_vigencia`: nenhum leiaute vigente para a data e o ambiente
 
-A seleção não encontrou um pacote de liberação (PL), conjunto de esquemas que define o leiaute do documento, para a família, a data e o ambiente pedidos. A função `selecionarPl`, de `@sinete/schemas`, lança um `VigenciaError`, que é um `ErroSinete` com `code: 'pl_sem_vigencia'`. Trate o erro pelo `code`, usando `ehErroSinete(e, 'pl_sem_vigencia')`, de `@sinete/core`, nunca pela mensagem.
+A seleção não encontrou um pacote de liberação (PL), conjunto de esquemas que define o leiaute do documento, para a família, a data e o ambiente pedidos. A função `selecionarPl`, de `@sinete/schemas`, lança um `ErroVigencia`, que é um `ErroSinete` com `code: 'pl_sem_vigencia'`. Trate o erro pelo `code`, usando `ehErroSinete(e, 'pl_sem_vigencia')`, de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 

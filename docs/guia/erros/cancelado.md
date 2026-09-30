@@ -1,6 +1,6 @@
 # `cancelado`: o envio foi cancelado pelo chamador
 
-O envio foi interrompido pelo `AbortSignal`, o sinal de cancelamento passado pelo chamador. O erro é um `TransportError` (`@sinete/transport`), que herda de `ErroSinete` e tem `code: 'cancelado'`. Identifique-o pelo `code`, usando `ehErroSinete(e, 'cancelado')` de `@sinete/core`, nunca pela mensagem.
+O envio foi interrompido pelo `AbortSignal`, o sinal de cancelamento passado pelo chamador. O erro é um `ErroTransporte` (`@sinete/transport`), que herda de `ErroSinete` e tem `code: 'cancelado'`. Identifique-o pelo `code`, usando `ehErroSinete(e, 'cancelado')` de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 

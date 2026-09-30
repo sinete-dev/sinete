@@ -1,6 +1,6 @@
 # `pfx_invalido`: o arquivo não é um PFX legível
 
-O arquivo passado como PFX não é um PKCS#12, formato que armazena certificados e chaves privadas, que o leitor consiga abrir. O erro é uma instância de `CertError` (`@sinete/cert`), que estende `ErroSinete`, com `code: 'pfx_invalido'`. Trate o erro pelo `code`, usando `ehErroSinete(e, 'pfx_invalido')` de `@sinete/core`, nunca pela mensagem.
+O arquivo passado como PFX não é um PKCS#12, formato que armazena certificados e chaves privadas, que o leitor consiga abrir. O erro é uma instância de `ErroCertificado` (`@sinete/cert`), que estende `ErroSinete`, com `code: 'pfx_invalido'`. Trate o erro pelo `code`, usando `ehErroSinete(e, 'pfx_invalido')` de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 
@@ -12,4 +12,4 @@ Passe os bytes do arquivo original (`await readFile('empresa.pfx')`, com `readFi
 
 ## Armadilha
 
-Ler o arquivo como texto (`readFile(caminho, 'utf8')`) corrompe o binário: passe sempre o PFX como bytes. Um PFX legível de outro titular não causa este erro apenas por pertencer a outra pessoa ou empresa. Depois de abrir o arquivo com `openPfx` de `@sinete/cert`, confira `identity.cnpj` ou `identity.cpf` no objeto retornado. Esses campos podem ser `undefined` quando o documento não é identificado no certificado.
+Ler o arquivo como texto (`readFile(caminho, 'utf8')`) corrompe o binário: passe sempre o PFX como bytes. Um PFX legível de outro titular não causa este erro apenas por pertencer a outra pessoa ou empresa. Depois de abrir o arquivo com `abrirPfx` de `@sinete/cert`, confira `identity.cnpj` ou `identity.cpf` no objeto retornado. Esses campos podem ser `undefined` quando o documento não é identificado no certificado.

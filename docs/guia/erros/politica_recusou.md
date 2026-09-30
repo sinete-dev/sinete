@@ -1,12 +1,12 @@
 # `politica_recusou`: a política de hosts recusou o envio
 
-O envio foi recusado antes de abrir uma conexão de rede. O erro é um `PolicyError` (`@sinete/transport`), derivado de `ErroSinete`, com `code: 'politica_recusou'`. Ele pode vir da `HostPolicy`, a política que controla os destinos permitidos e pode conferir o ambiente do documento, ou de verificações do transporte e do cliente. Decida pelo `code` (`ehErroSinete(e, 'politica_recusou')`, com `ehErroSinete` de `@sinete/core`), nunca pela mensagem.
+O envio foi recusado antes de abrir uma conexão de rede. O erro é um `ErroPolitica` (`@sinete/transport`), derivado de `ErroSinete`, com `code: 'politica_recusou'`. Ele pode vir da `PoliticaDeHosts`, a política que controla os destinos permitidos e pode conferir o ambiente do documento, ou de verificações do transporte e do cliente. Decida pelo `code` (`ehErroSinete(e, 'politica_recusou')`, com `ehErroSinete` de `@sinete/core`), nunca pela mensagem.
 
 ## Causa
 
 O pedido ia para um host fora da lista permitida ou para uma porta não permitida. Se a política confere o `tpAmb`, campo que identifica o ambiente (`1` para produção e `2` para homologação), ela também recusa valores diferentes do esperado no corpo. A ausência desse campo em um pedido POST causa a recusa quando a política exige sua presença. O transporte também lança este erro se a URL contém credenciais ou se o cabeçalho `Host` difere do host da URL.
 
-No MDF-e (Manifesto Eletrônico de Documentos Fiscais), o documento vai comprimido, e o próprio cliente confere o `tpAmb` antes do envio. Se o campo estiver ausente ou diferente do ambiente do cliente, ele lança `PolicyError`. Na NFS-e (Nota Fiscal de Serviço Eletrônica), a DPS (Declaração de Prestação de Serviços) também vai comprimida e tem o ambiente conferido pelo cliente, mas essa divergência lança `ErroDeConfiguracao`, com `code: 'config_invalida'`.
+No MDF-e (Manifesto Eletrônico de Documentos Fiscais), o documento vai comprimido, e o próprio cliente confere o `tpAmb` antes do envio. Se o campo estiver ausente ou diferente do ambiente do cliente, ele lança `ErroPolitica`. Na NFS-e (Nota Fiscal de Serviço Eletrônica), a DPS (Declaração de Prestação de Serviços) também vai comprimida e tem o ambiente conferido pelo cliente, mas essa divergência lança `ErroDeConfiguracao`, com `code: 'config_invalida'`.
 
 ## Correção
 

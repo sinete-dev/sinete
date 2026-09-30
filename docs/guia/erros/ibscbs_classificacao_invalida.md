@@ -1,10 +1,10 @@
 # `ibscbs_classificacao_invalida`: a classificação do IBS/CBS não é aceita pelos dados oficiais
 
-O motor de cálculo do Imposto sobre Bens e Serviços (IBS) e da Contribuição sobre Bens e Serviços (CBS) recusou a classificação informada: Código de Situação Tributária (CST), código de classificação tributária (`cClassTrib`), crédito presumido ou grupos de informações tributárias. O erro é uma instância de `ClassificationError` (`@sinete/ibs-cbs`), que herda de `ErroSinete` e tem `code: 'ibscbs_classificacao_invalida'`. O campo `detalhes.reason` informa o motivo; `detalhes.item`, quando presente, informa o número do item (`nItem`). Trate o erro pelo `code`, usando `ehErroSinete(e, 'ibscbs_classificacao_invalida')` de `@sinete/core`, nunca pela mensagem.
+O motor de cálculo do Imposto sobre Bens e Serviços (IBS) e da Contribuição sobre Bens e Serviços (CBS) recusou a classificação informada: Código de Situação Tributária (CST), código de classificação tributária (`cClassTrib`), crédito presumido ou grupos de informações tributárias. O erro é uma instância de `ErroClassificacao` (`@sinete/ibs-cbs`), que herda de `ErroSinete` e tem `code: 'ibscbs_classificacao_invalida'`. O campo `detalhes.motivo` informa o motivo; `detalhes.item`, quando presente, informa o número do item (`nItem`). Trate o erro pelo `code`, usando `ehErroSinete(e, 'ibscbs_classificacao_invalida')` de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 
-Os motivos possíveis em `detalhes.reason` são:
+Os motivos possíveis em `detalhes.motivo` são:
 
 - `cst_inexistente`: CST inexistente ou fora de vigência na data do fato gerador, quando ocorre a operação que dá origem ao tributo.
 - `cclasstrib_inexistente`: `cClassTrib` inexistente ou fora de vigência nessa data.
@@ -25,7 +25,7 @@ As regras vêm dos dados oficiais distribuídos em `@sinete/ibs-cbs-dados`, prov
 
 ## Correção
 
-Use `detalhes.reason` para corrigir a classificação no cadastro do item ou os dados enviados ao cálculo. Para encontrar os códigos válidos a partir de fatos do negócio, como a Nomenclatura Comum do Mercosul (NCM), que identifica a mercadoria, a natureza da operação e os participantes envolvidos, use `determine` (`sinete/nfe/ibs-cbs` ou `sinete/ibs-cbs/determinar`). O resultado inclui os candidatos e o motivo de cada exclusão. Veja [como informar o IBS e a CBS](../como-fazer/ibs-cbs.md).
+Use `detalhes.motivo` para corrigir a classificação no cadastro do item ou os dados enviados ao cálculo. Para encontrar os códigos válidos a partir de fatos do negócio, como a Nomenclatura Comum do Mercosul (NCM), que identifica a mercadoria, a natureza da operação e os participantes envolvidos, use `determinar` (`sinete/nfe/ibs-cbs` ou `sinete/ibs-cbs/determinar`). O resultado inclui os candidatos e o motivo de cada exclusão. Veja [como informar o IBS e a CBS](../como-fazer/ibs-cbs.md).
 
 Na montagem da Nota Fiscal eletrônica (NF-e), este erro é convertido em uma ocorrência de validação no caminho do item, com `origem: 'entrada'`. Quando o erro não informa o número do item, a ocorrência é associada ao primeiro item da solicitação de cálculo.
 

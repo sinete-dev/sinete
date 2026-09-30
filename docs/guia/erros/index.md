@@ -4,15 +4,15 @@ Gerado do fonte por `scripts/docs-gerados.ts`; não edite à mão. Todo erro lan
 
 ## `@sinete/cert`
 
-- [`algoritmo_nao_suportado`](algoritmo_nao_suportado.md) (`CertError`): a chave ou o hash não é o que os DF-e usam
-- [`certificado_ainda_nao_valido`](certificado_ainda_nao_valido.md) (`CertError`): o certificado ainda não começou a valer
-- [`certificado_expirado`](certificado_expirado.md) (`CertError`): o certificado já venceu
-- [`certificado_invalido`](certificado_invalido.md) (`CertError`): o certificado ou a chave não é um DER válido
-- [`pfx_invalido`](pfx_invalido.md) (`CertError`): o arquivo não é um PFX legível
-- [`pfx_nao_suportado`](pfx_nao_suportado.md) (`CertError`): o PFX usa uma cifra que o leitor não implementa
-- [`pfx_sem_certificado_da_chave`](pfx_sem_certificado_da_chave.md) (`CertError`): nenhum certificado do PFX é da chave
-- [`pfx_sem_chave`](pfx_sem_chave.md) (`CertError`): o PFX não tem chave privada
-- [`pfx_senha_incorreta`](pfx_senha_incorreta.md) (`CertError`): a senha não abriu o PFX
+- [`algoritmo_nao_suportado`](algoritmo_nao_suportado.md) (`ErroCertificado`): a chave ou o hash não é o que os DF-e usam
+- [`certificado_ainda_nao_valido`](certificado_ainda_nao_valido.md) (`ErroCertificado`): o certificado ainda não começou a valer
+- [`certificado_expirado`](certificado_expirado.md) (`ErroCertificado`): o certificado já venceu
+- [`certificado_invalido`](certificado_invalido.md) (`ErroCertificado`): o certificado ou a chave não é um DER válido
+- [`pfx_invalido`](pfx_invalido.md) (`ErroCertificado`): o arquivo não é um PFX legível
+- [`pfx_nao_suportado`](pfx_nao_suportado.md) (`ErroCertificado`): o PFX usa uma cifra que o leitor não implementa
+- [`pfx_sem_certificado_da_chave`](pfx_sem_certificado_da_chave.md) (`ErroCertificado`): nenhum certificado do PFX é da chave
+- [`pfx_sem_chave`](pfx_sem_chave.md) (`ErroCertificado`): o PFX não tem chave privada
+- [`pfx_senha_incorreta`](pfx_senha_incorreta.md) (`ErroCertificado`): a senha não abriu o PFX
 
 ## `@sinete/core`
 
@@ -48,39 +48,39 @@ Gerado do fonte por `scripts/docs-gerados.ts`; não edite à mão. Todo erro lan
 
 ## `@sinete/ibs-cbs`
 
-- [`ibscbs_aliquota_desconhecida`](ibscbs_aliquota_desconhecida.md) (`RateUnknownError`): a alíquota ainda não foi publicada
-- [`ibscbs_aliquotas_invalidas`](ibscbs_aliquotas_invalidas.md) (`RatesDataError`): tabela de alíquotas malformada
-- [`ibscbs_classificacao_invalida`](ibscbs_classificacao_invalida.md) (`ClassificationError`): a classificação do IBS/CBS não é aceita pelos dados oficiais
-- [`ibscbs_determinacao_invalida`](ibscbs_determinacao_invalida.md) (`DeterminationError`): a determinação do CST e do cClassTrib não pode seguir
-- [`ibscbs_expressao_invalida`](ibscbs_expressao_invalida.md) (`ExpressionError`): expressão de cálculo do dataset fora da gramática
-- [`ibscbs_regime_nao_suportado`](ibscbs_regime_nao_suportado.md) (`UnsupportedRegimeError`): o motor ainda não calcula este regime
+- [`ibscbs_aliquota_desconhecida`](ibscbs_aliquota_desconhecida.md) (`ErroAliquotaDesconhecida`): a alíquota ainda não foi publicada
+- [`ibscbs_aliquotas_invalidas`](ibscbs_aliquotas_invalidas.md) (`ErroDadosDeAliquotas`): tabela de alíquotas malformada
+- [`ibscbs_classificacao_invalida`](ibscbs_classificacao_invalida.md) (`ErroClassificacao`): a classificação do IBS/CBS não é aceita pelos dados oficiais
+- [`ibscbs_determinacao_invalida`](ibscbs_determinacao_invalida.md) (`ErroDeterminacao`): a determinação do CST e do cClassTrib não pode seguir
+- [`ibscbs_expressao_invalida`](ibscbs_expressao_invalida.md) (`ErroExpressao`): expressão de cálculo do dataset fora da gramática
+- [`ibscbs_regime_nao_suportado`](ibscbs_regime_nao_suportado.md) (`ErroRegimeNaoSuportado`): o motor ainda não calcula este regime
 
 ## `@sinete/ibs-cbs-dados`
 
-- [`ibscbs_dados_invalidos`](ibscbs_dados_invalidos.md) (`IbsCbsDataError`): o bundle de dados do IBS/CBS não confere
-- [`ibscbs_dados_versao_incompativel`](ibscbs_dados_versao_incompativel.md) (`IbsCbsDataError`): o formato do dataset não é o que o código lê
+- [`ibscbs_dados_invalidos`](ibscbs_dados_invalidos.md) (`ErroDadosIbsCbs`): o bundle de dados do IBS/CBS não confere
+- [`ibscbs_dados_versao_incompativel`](ibscbs_dados_versao_incompativel.md) (`ErroDadosIbsCbs`): o formato do dataset não é o que o código lê
 
 ## `@sinete/schemas`
 
-- [`pl_sem_vigencia`](pl_sem_vigencia.md) (`VigenciaError`): nenhum leiaute vigente para a data e o ambiente
-- [`serializacao_invalida`](serializacao_invalida.md) (`SerializeError`): o valor não serializa no tipo do XSD
+- [`pl_sem_vigencia`](pl_sem_vigencia.md) (`ErroVigencia`): nenhum leiaute vigente para a data e o ambiente
+- [`serializacao_invalida`](serializacao_invalida.md) (`ErroSerializacao`): o valor não serializa no tipo do XSD
 
 ## `@sinete/transport`
 
-- [`assinatura_documento_recusada`](assinatura_documento_recusada.md) (`SignerError`): o helper recusou assinar o documento
-- [`assinatura_tls_expirou`](assinatura_tls_expirou.md) (`SignerError`): quem assina não respondeu a tempo
-- [`assinatura_tls_recusada`](assinatura_tls_recusada.md) (`SignerError`): quem assina recusou o handshake
-- [`cadeia_servidor_nao_confiavel`](cadeia_servidor_nao_confiavel.md) (`TransportError`): o certificado do servidor não fecha numa raiz confiável
-- [`cancelado`](cancelado.md) (`TransportError`): o envio foi cancelado pelo chamador
-- [`certificado_ausente_ou_recusado`](certificado_ausente_ou_recusado.md) (`TransportError`): recusa do certificado sem distinguir ausência de recusa
-- [`certificado_nao_apresentado`](certificado_nao_apresentado.md) (`TransportError`): o servidor pediu o certificado e não recebeu
-- [`certificado_nao_carregado`](certificado_nao_carregado.md) (`TransportError`): a identidade não entrou no contexto TLS
-- [`certificado_recusado`](certificado_recusado.md) (`TransportError`): o servidor recebeu o certificado e recusou
-- [`conexao_recusada`](conexao_recusada.md) (`TransportError`): o servidor fechou ou recusou a conexão
-- [`falha_rede`](falha_rede.md) (`TransportError`): falha de rede
-- [`falha_tls`](falha_tls.md) (`TransportError`): outra falha de TLS
-- [`nome_servidor_divergente`](nome_servidor_divergente.md) (`TransportError`): o certificado do servidor é de outro host
-- [`pkcs11_falhou`](pkcs11_falhou.md) (`SignerError`): o token PKCS#11 falhou
-- [`politica_recusou`](politica_recusou.md) (`PolicyError`): a política de hosts recusou o envio
-- [`signer_indisponivel`](signer_indisponivel.md) (`SignerError`): o helper sinete-signer não está disponível
-- [`signer_protocolo`](signer_protocolo.md) (`SignerError`): o helper respondeu fora do contrato
+- [`assinatura_documento_recusada`](assinatura_documento_recusada.md) (`ErroSigner`): o helper recusou assinar o documento
+- [`assinatura_tls_expirou`](assinatura_tls_expirou.md) (`ErroSigner`): quem assina não respondeu a tempo
+- [`assinatura_tls_recusada`](assinatura_tls_recusada.md) (`ErroSigner`): quem assina recusou o handshake
+- [`cadeia_servidor_nao_confiavel`](cadeia_servidor_nao_confiavel.md) (`ErroTransporte`): o certificado do servidor não fecha numa raiz confiável
+- [`cancelado`](cancelado.md) (`ErroTransporte`): o envio foi cancelado pelo chamador
+- [`certificado_ausente_ou_recusado`](certificado_ausente_ou_recusado.md) (`ErroTransporte`): recusa do certificado sem distinguir ausência de recusa
+- [`certificado_nao_apresentado`](certificado_nao_apresentado.md) (`ErroTransporte`): o servidor pediu o certificado e não recebeu
+- [`certificado_nao_carregado`](certificado_nao_carregado.md) (`ErroTransporte`): a identidade não entrou no contexto TLS
+- [`certificado_recusado`](certificado_recusado.md) (`ErroTransporte`): o servidor recebeu o certificado e recusou
+- [`conexao_recusada`](conexao_recusada.md) (`ErroTransporte`): o servidor fechou ou recusou a conexão
+- [`falha_rede`](falha_rede.md) (`ErroTransporte`): falha de rede
+- [`falha_tls`](falha_tls.md) (`ErroTransporte`): outra falha de TLS
+- [`nome_servidor_divergente`](nome_servidor_divergente.md) (`ErroTransporte`): o certificado do servidor é de outro host
+- [`pkcs11_falhou`](pkcs11_falhou.md) (`ErroSigner`): o token PKCS#11 falhou
+- [`politica_recusou`](politica_recusou.md) (`ErroPolitica`): a política de hosts recusou o envio
+- [`signer_indisponivel`](signer_indisponivel.md) (`ErroSigner`): o helper sinete-signer não está disponível
+- [`signer_protocolo`](signer_protocolo.md) (`ErroSigner`): o helper respondeu fora do contrato

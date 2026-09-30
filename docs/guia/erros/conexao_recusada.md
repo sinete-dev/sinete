@@ -1,6 +1,6 @@
 # `conexao_recusada`: o servidor fechou ou recusou a conexão
 
-A conexão foi recusada ou fechada pelo servidor, antes ou depois do envio da requisição. O erro é uma instância de `TransportError` (`@sinete/transport`), que estende `ErroSinete`, com `code: 'conexao_recusada'`. Identifique-o pelo `code`, usando `ehErroSinete(e, 'conexao_recusada')` de `@sinete/core`, nunca pela mensagem.
+A conexão foi recusada ou fechada pelo servidor, antes ou depois do envio da requisição. O erro é uma instância de `ErroTransporte` (`@sinete/transport`), que estende `ErroSinete`, com `code: 'conexao_recusada'`. Identifique-o pelo `code`, usando `ehErroSinete(e, 'conexao_recusada')` de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 

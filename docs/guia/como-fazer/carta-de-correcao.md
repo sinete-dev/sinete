@@ -26,7 +26,7 @@ else console.log(r.tipo, r.cStat, r.xMotivo);
 
 ## Quando o pedido fica sem resposta
 
-`cartaCorrecao` propaga falhas de transporte, como `ErroDeTempoEsgotado` com código `tempo_esgotado` ou `TransportError` com código `conexao_recusada`. Se a resposta não chegou, o evento pode ter sido registrado. Antes de reenviar, consulte: `recuperarEventoRegistrado` devolve o evento 110110 de maior sequencial encontrado na consulta da chave, desde que tenha retorno de registro válido.
+`cartaCorrecao` propaga falhas de transporte, como `ErroDeTempoEsgotado` com código `tempo_esgotado` ou `ErroTransporte` com código `conexao_recusada`. Se a resposta não chegou, o evento pode ter sido registrado. Antes de reenviar, consulte: `recuperarEventoRegistrado` devolve o evento 110110 de maior sequencial encontrado na consulta da chave, desde que tenha retorno de registro válido.
 
 ```ts
 import { recuperarEventoRegistrado } from 'sinete/nfe';
