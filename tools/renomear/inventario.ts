@@ -124,7 +124,11 @@ function membrosDoTipo(ctx: { pacote: string; sub: string }, t: ts.TypeNode | un
   if (ts.isTypeLiteralNode(t)) for (const m of t.members) membro(ctx, m, dono, prof + 1);
   else if (ts.isUnionTypeNode(t) || ts.isIntersectionTypeNode(t))
     for (const x of t.types) membrosDoTipo(ctx, x, dono, prof);
-  else if (ts.isParenthesizedTypeNode(t)) membrosDoTipo(ctx, t.type, dono, prof);
+  else if (ts.isParenthesizedTypeNode(t) || ts.isTypeOperatorNode(t)) membrosDoTipo(ctx, t.type, dono, prof);
+  // Lista e argumento de tipo (`readonly { code: string }[]`, `Readonly<Record<string, { url: string }>>`): o membro é
+  // do item, com o mesmo dono.
+  else if (ts.isArrayTypeNode(t)) membrosDoTipo(ctx, t.elementType, dono, prof);
+  else if (ts.isTypeReferenceNode(t)) for (const x of t.typeArguments ?? []) membrosDoTipo(ctx, x, dono, prof);
   else if (ts.isFunctionTypeNode(t)) {
     t.parameters.forEach((p) => {
       parametro(ctx, p, dono, prof + 1);
