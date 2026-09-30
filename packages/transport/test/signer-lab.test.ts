@@ -320,7 +320,7 @@ describe.skipIf(!bins || !openssl)('sinete-signer de verdade no laboratório TLS
       const evId = `ID210210${chave}01`;
       const xml = (autor: string): string =>
         `<evento xmlns="http://www.portalfiscal.inf.br/nfe" versao="1.00"><infEvento Id="${evId}"><cOrgao>91</cOrgao><tpAmb>2</tpAmb><CNPJ>${autor}</CNPJ><chNFe>${chave}</chNFe><dhEvento>2026-09-28T10:00:00-03:00</dhEvento><tpEvento>210210</tpEvento><nSeqEvento>1</nSeqEvento><verEvento>1.00</verEvento><detEvento versao="1.00"><descEvento>Ciencia da Operacao</descEvento></detEvento></infEvento></evento>`;
-      // signXml passa o elemento canonicalizado no SignContext, e o helper confere o autor nele.
+      // assinarXml passa o elemento canonicalizado no ContextoDaAssinatura, e o helper confere o autor nele.
       const assinado = await assinarXml(xml(CNPJ), { id: evId }, ds);
       expect(assinado).toContain('<SignatureValue>');
       expect(assinado).not.toContain('@@SINETE');

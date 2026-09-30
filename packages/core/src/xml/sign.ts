@@ -83,7 +83,7 @@ export async function prepararAssinatura(xml: string, opcoes: PrepararAssinatura
     '</KeyInfo></Signature>';
   // Último filho do pai, não logo depois do elemento: NFC-e (`infNFeSupl`), MDF-e (`infMDFeSupl`) e CT-e têm um
   // irmão entre o elemento assinado e a Signature no schema. Em NFe, evento, MDFe e inutNFe a Signature é o último
-  // filho. `contentEnd` é o `<` da tag de fechamento do pai (que existe, porque o pai tem o alvo como filho).
+  // filho. `fimDoConteudo` é o `<` da tag de fechamento do pai (que existe, porque o pai tem o alvo como filho).
   const insertedAt = target.pai.fimDoConteudo;
   const template = xml.slice(0, insertedAt) + signature + xml.slice(insertedAt);
 

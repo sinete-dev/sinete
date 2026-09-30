@@ -108,7 +108,7 @@ export function conferirDestinatario(input: NfeInput, ide: IdeDestinatario, issu
     // Na saída a entrega vale contra o emitente e a retirada contra o destinatário; na entrada, ao contrário.
     const [ufEntrega, ufRetirada] = saida ? [emitUf, destUf] : [destUf, emitUf];
     if (ide.idDest === '2' && destUf === emitUf) {
-      // CNPJ alfanumérico: as letras contam; só a máscara sai (a mesma normalização do parseCnpj).
+      // CNPJ alfanumérico: as letras contam; só a máscara sai (a mesma normalização do lerCnpj).
       const cnpj = (v: string | undefined): string | undefined => {
         if (v === undefined) return undefined;
         const r = lerCnpj(v);

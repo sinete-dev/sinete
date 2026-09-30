@@ -163,7 +163,7 @@ try {
   const names = covered.map((p) => path.basename(p.dir));
 
   // 3b. Consumidor sem o @sinete/da, peer dependency opcional do @sinete/emissor: a instalação não o traz, o bundle de
-  // browser fecha sem ele e o pdf() pede o pacote com ConfigError.
+  // browser fecha sem ele e o pdf() pede o pacote com ErroDeConfiguracao.
   const semDa = path.join(work, 'consumer-sem-da');
   await mkdir(semDa, { recursive: true });
   const depsSemDa = Object.fromEntries(
@@ -333,7 +333,7 @@ try {
     }
 
     // Peers opcionais do @sinete/emissor no Deno com `npm:` (ADR 0010). Sem o @sinete/da, o pdf() pede o pacote com
-    // ConfigError, como no Node.
+    // ErroDeConfiguracao, como no Node.
     const semDaDeno = path.join(denoDir, '_sem-da');
     await mkdir(semDaDeno, { recursive: true });
     await Bun.write(

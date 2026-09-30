@@ -3,7 +3,8 @@
  * Portão depois de aplicar os mapas: procura cada nome antigo no repo inteiro (fora dos CHANGELOG) e classifica cada
  * ocorrência. Só passa o que tem justificativa:
  *
- * - `adr`: prosa histórica de um ADR;
+ * - `historico`: prosa histórica de um ADR, a tabela de nomes antigos de um changeset ou a própria ferramenta de
+ *   renomeação, que cita os nomes antigos como exemplo;
  * - `homonimo`: identificador de código que o verificador resolve para outro símbolo (uma variável local `err`, o
  *   `Signer` de outro pacote), ou código fora do TypeScript (Go do helper, `spikes/`, que não importam o sinete);
  * - `revisar`: todo o resto (comentário, texto, Markdown, literal). Tem de chegar a zero, ou virar exceção anotada.
@@ -163,7 +164,7 @@ const checker = programa.getTypeChecker();
 // ---------------------------------------------------------------------------------------------------------------------
 // Varredura
 
-type Classe = 'adr' | 'homonimo' | 'revisar' | 'excecao';
+type Classe = 'historico' | 'homonimo' | 'revisar' | 'excecao';
 interface Achado {
   readonly nome: string;
   readonly arquivo: string;
@@ -198,11 +199,13 @@ function classificarNoCodigo(
   emForma: boolean,
 ): [Classe, string] | undefined {
   const t = token(sf, pos);
-  if (t.kind >= ts.SyntaxKind.FirstKeyword && t.kind <= ts.SyntaxKind.LastKeyword) return undefined;
   const jsdoc = t.kind >= ts.SyntaxKind.FirstJSDocNode && t.kind <= ts.SyntaxKind.LastJSDocNode;
+  // Fora do token é comentário: `getTokenAtPosition` devolve o token seguinte, que pode ser uma palavra-chave (`if`,
+  // `const`) sem nada a ver com o nome achado no comentário.
   const dentro = !jsdoc && pos >= t.getStart(sf) && pos < t.getEnd();
   // Comentário: membro comum só conta na forma de código (`.status`, `status:`, entre crases).
   if (!dentro) return comum && !emForma ? undefined : ['revisar', 'comentário'];
+  if (t.kind >= ts.SyntaxKind.FirstKeyword && t.kind <= ts.SyntaxKind.LastKeyword) return undefined;
   if (ts.isIdentifier(t) || ts.isPrivateIdentifier(t)) {
     let s = checker.getSymbolAtLocation(t);
     if (s && s.flags & ts.SymbolFlags.Alias) s = checker.getAliasedSymbol(s);
@@ -262,7 +265,11 @@ for (const arquivo of arquivos) {
     for (const m of texto.matchAll(re)) {
       const inicio = (m.index ?? 0) + m[0].indexOf(nome);
       const linha = linhaDe(inicio);
-      if (rel.startsWith('docs/adr/')) registrar(nome, arquivo, linha, 'adr', 'prosa histórica do ADR');
+      if (rel.startsWith('docs/adr/')) registrar(nome, arquivo, linha, 'historico', 'prosa histórica do ADR');
+      else if (rel.startsWith('.changeset/'))
+        registrar(nome, arquivo, linha, 'historico', 'changeset: a tabela de nomes antigos e novos vai para o CHANGELOG');
+      else if (rel.startsWith('tools/renomear/'))
+        registrar(nome, arquivo, linha, 'historico', 'a ferramenta de renomeação cita os nomes antigos como exemplo');
       else if (rel.startsWith('spikes/'))
         registrar(nome, arquivo, linha, 'homonimo', 'spike: código descartável, não importa o sinete');
       else if (rel.endsWith('.go')) registrar(nome, arquivo, linha, 'homonimo', 'código Go do helper');
@@ -306,18 +313,18 @@ const L: string[] = [
   '',
   '| Classe | Ocorrências |',
   '|---|---|',
-  ...(['revisar', 'excecao', 'adr', 'homonimo'] as const).map((c) => `| ${c} | ${porClasse.get(c) ?? 0} |`),
+  ...(['revisar', 'excecao', 'historico', 'homonimo'] as const).map((c) => `| ${c} | ${porClasse.get(c) ?? 0} |`),
   '',
   '## Por nome',
   '',
-  '| Nome | revisar | exceção | adr | homônimo |',
+  '| Nome | revisar | exceção | histórico | homônimo |',
   '|---|---|---|---|---|',
 ];
 for (const n of [...topo, ...comuns].sort()) {
   const d = achados.filter((a) => a.nome === n);
   if (d.length === 0) continue;
   const c = (k: Classe): number => d.filter((a) => a.classe === k).length;
-  L.push(`| \`${n}\` | ${c('revisar')} | ${c('excecao')} | ${c('adr')} | ${c('homonimo')} |`);
+  L.push(`| \`${n}\` | ${c('revisar')} | ${c('excecao')} | ${c('historico')} | ${c('homonimo')} |`);
 }
 L.push('', '## A revisar', '');
 for (const a of achados.filter((x) => x.classe === 'revisar'))
@@ -342,6 +349,6 @@ if (arquivoJson) writeFileSync(arquivoJson, `${JSON.stringify(achados, null, 1)}
 else console.log(saida);
 const revisar = porClasse.get('revisar') ?? 0;
 console.error(
-  `portão: ${revisar} a revisar, ${porClasse.get('excecao') ?? 0} exceções, ${porClasse.get('adr') ?? 0} em ADR, ${porClasse.get('homonimo') ?? 0} homônimos`,
+  `portão: ${revisar} a revisar, ${porClasse.get('excecao') ?? 0} exceções, ${porClasse.get('historico') ?? 0} históricos (ADR, changeset, a própria ferramenta), ${porClasse.get('homonimo') ?? 0} homônimos`,
 );
 process.exit(revisar > 0 ? 1 : 0);
