@@ -229,7 +229,7 @@ export function generator(dataset: DatasetIbsCbs, nom: Nomenclatures, seed: numb
         if (deducts && red > 60) return undefined;
         const p = (): { pCredPres: string } => ({ pCredPres: deducts ? '0.01' : pick(['1.5', '20', '3.75', '0.9']) });
         Object.assign(extra, {
-          presumedCredit: {
+          creditoPresumido: {
             cCredPres: cp.registro.codigo,
             vBCCredPres: deducts ? '__BASE__' : base(),
             ...(cp.ibs && cp.registro.grupos.gIBSCredPres !== 'vedado' ? { ibs: p() } : {}),
