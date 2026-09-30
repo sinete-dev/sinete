@@ -67,12 +67,6 @@
   },
   {
     "arquivo": "docs/guia/como-fazer/browser.md",
-    "nome": "value",
-    "trecho": "const assinada = await signNfe(r.value, await ks.signer());",
-    "motivo": "resultado da montagem (`buildNfe`, `buildMdfe`, `buildDps`) dos pacotes de documento, que tem `value`/`issues` próprios, fora da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/como-fazer/browser.md",
     "nome": "ref",
     "trecho": "async function receberAssinada(ref: string, xml: string) {",
     "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
@@ -82,12 +76,6 @@
     "nome": "hint",
     "trecho": "console.log(d.cStat, d.xMotivo, d.hint?.comoCorrigir);",
     "motivo": "`hint` do desfecho do `@sinete/emissor`, fora da fase 1 (o `Recusado` do core já usa `dica`)"
-  },
-  {
-    "arquivo": "docs/guia/como-fazer/certificado-a3.md",
-    "nome": "sign",
-    "trecho": "O helper mantém um cache de sessões TLS e permite retomá-las quando o servidor oferece esse recurso. Nos servidores da SEFAZ medidos, que não emitem tickets de sessão, não há essa economia; manter a conexão viva permite evitar novas assinaturas. `TlsInfo.signatures` informa quantas assinaturas TLS foram atribuídas à requisição, e `signer.stats()` informa o total por identidade, incluindo handshakes e assinaturas de documentos por `dfe.sign`. Esses dados permitem contabilizar o uso da cota de um PSC.",
-    "motivo": "método `sign`/`dfe.sign` do protocolo do helper, uso `sign` da WebCrypto ou parâmetro `sign` do QR Code do MDF-e (MOC)"
   },
   {
     "arquivo": "docs/guia/como-fazer/contingencia.md",
@@ -109,21 +97,9 @@
   },
   {
     "arquivo": "docs/guia/como-fazer/ibs-cbs.md",
-    "nome": "pending",
-    "trecho": "console.log(primeira.items[0]?.pending); // pergunta com os cClassTrib possíveis",
-    "motivo": "membro de tipo do `@sinete/ibs-cbs` ou do `@sinete/sefaz-sim`, fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/como-fazer/ibs-cbs.md",
     "nome": "issues",
     "trecho": "As ocorrências do IBS/CBS voltam como as outras da montagem: `ErroDeValidacao` no emissor e `issues` no `buildNfe`. As ocorrências de um item apontam para `itens[n].impostos.ibsCbs` ou seus campos, com índice iniciado em zero. Há também ocorrências em outros caminhos: alíquota desconhecida aponta para `impostos.ibsCbs`, e violações das regras de totalização apontam para `total.IBSCBSTot`. A propriedade `origem` vale `entrada` quando a ocorrência aponta um valor informado na nota e `montagem` quando decorre do cálculo ou dos dados usados pelo sinete. As violações das regras da NT usam o código `ibscbs_regra_nt`, com a identificação da regra, o código de rejeição e a fonte na mensagem. Veja [como tratar as ocorrências de validação](ocorrencias-de-validacao.md).",
     "motivo": "resultado da montagem (`buildNfe`, `buildMdfe`, `buildDps`) dos pacotes de documento, que tem `value`/`issues` próprios, fora da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/como-fazer/ibs-cbs.md",
-    "nome": "kind",
-    "trecho": "const fatos = { modelo: 55, kind: 'venda', items: [{ n: 1, ncm: '10063021', description: 'arroz' }] } as const;",
-    "motivo": "membro de tipo do `@sinete/ibs-cbs` ou do `@sinete/sefaz-sim`, fora dos três pacotes da fase 1"
   },
   {
     "arquivo": "docs/guia/como-fazer/nfse.md",
@@ -198,36 +174,6 @@
     "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
   },
   {
-    "arquivo": "docs/guia/erros/assinatura_tls_recusada.md",
-    "nome": "message",
-    "trecho": "Não amplie `allowedHosts` indiscriminadamente para \"fazer funcionar\". Essa lista aplica a restrição de destinos do dono da chave, independentemente das verificações do helper. Uma lista vazia é rejeitada por `openRemote` com `ErroDeConfiguracao`; ela não desativa a política. No modo `message`, o transcript permite conferir o destino informado. No modo `digest`, essa conferência não é possível: o cliente depende do contexto informado pelo helper, e `allowedHosts` sozinho não comprova o destino real se o helper estiver comprometido.",
-    "motivo": "modo `message` do `TlsSigner` do `@sinete/transport`, fora da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/erros/ibscbs_determinacao_invalida.md",
-    "nome": "pending",
-    "trecho": "Corrija os fatos inválidos e responda às perguntas com o valor `cClassTrib` de uma das opções em `items[].pending[].options`. Só chame `toClassified` quando todos os itens tiverem `decided`, condição indicada por `complete: true` no resultado da determinação.",
-    "motivo": "membro de tipo do `@sinete/ibs-cbs` ou do `@sinete/sefaz-sim`, fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/erros/ibscbs_determinacao_invalida.md",
-    "nome": "pending",
-    "trecho": "Cada pergunta em `items[].pending` tem um `id`: `questionId(n)` nas perguntas do resolvedor padrão `askUser()`, em que `n` é o número do item, ou um identificador definido pelo resolvedor próprio. Na próxima chamada a `determine`, envie a resposta nas opções como `answers[id]`, com o cClassTrib escolhido. Se usar outro identificador, a resposta não será associada à pergunta, que poderá aparecer novamente.",
-    "motivo": "membro de tipo do `@sinete/ibs-cbs` ou do `@sinete/sefaz-sim`, fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/erros/nao_suportado.md",
-    "nome": "kind",
-    "trecho": "Certificados A3 e chaves não exportáveis já são suportados pelo helper nativo `sinete-signer`, disponível pelo pacote npm `@sinete/signer`, com cliente em `@sinete/transport/signer`. A identidade TLS usada pelo transporte nesse caso é `kind: 'helper'`; `external` e `pkcs11` não são variantes atuais de `TlsIdentity`.",
-    "motivo": "`kind` da `TlsIdentity` do `@sinete/transport`, fora da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/erros/serializacao_invalida.md",
-    "nome": "path",
-    "trecho": "O serializador canônico do `@sinete/schemas` recebeu um valor incompatível com a estrutura esperada pelo XSD, o arquivo que define os tipos e a estrutura do XML. Ele lança `SerializeError`, exportado por `@sinete/schemas`, que é um `ErroSinete` com `code: 'serializacao_invalida'`. A mensagem começa pelo caminho do campo, também disponível em `path`. Identifique o erro pelo `code`, usando `ehErroSinete(e, 'serializacao_invalida')` de `@sinete/core`, nunca pela mensagem.",
-    "motivo": "`path` do `SerializeError` do `@sinete/schemas` ou do pedido HTTP do simulador, fora da fase 1"
-  },
-  {
     "arquivo": "docs/guia/erros/transmissao_em_andamento.md",
     "nome": "ref",
     "trecho": "Mostre \"em processamento\" e consulte o resultado depois pelo seu sistema. A função `aoDecidir`, implementada por você, guarda o documento quando o emissor obtém um desfecho autorizado ou denegado. Para tentar novamente, chame `emitir` ou `retomar` mais tarde, com a mesma `ref`. Se já houver bytes do documento assinado gravados, ambos retomam a transmissão com esses bytes. Sem bytes gravados, `retomar` devolve `undefined`, enquanto `emitir` monta o documento a partir da entrada fornecida.",
@@ -288,34 +234,10 @@
     "motivo": "caminho da pasta `data/`, campo `data` do protocolo do helper, evento `data` de stream do Node ou a palavra portuguesa \"data\""
   },
   {
-    "arquivo": "docs/guia/referencia/ibs-cbs-dados.md",
-    "nome": "DataSource",
-    "trecho": "- `DataSource`: Artefato oficial de onde o dataset foi extraído. Membros: `id`, `kind`, `title`, `version`, `date`, `url`, `sha256`, `pins`, `notes`.",
-    "motivo": "`DataSource` próprio do `@sinete/ibs-cbs-dados`, fora da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/referencia/ibs-cbs.md",
-    "nome": "pending",
-    "trecho": "- `ItemDetermination`: Membros: `n`, `candidates`, `exclusions`, `rules`, `decided`, `pending`.",
-    "motivo": "membro de tipo do `@sinete/ibs-cbs` ou do `@sinete/sefaz-sim`, fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/referencia/nfe.md",
-    "nome": "DataSource",
-    "trecho": "- `DataSource`: reexportado de `@sinete/ibs-cbs-dados` (veja a referência dele).",
-    "motivo": "`DataSource` próprio do `@sinete/ibs-cbs-dados`, fora da fase 1"
-  },
-  {
     "arquivo": "docs/guia/referencia/sefaz-sim.md",
     "nome": "pending",
     "trecho": "- `LoteRecord`: Membros: `nRec`, `autorizador`, `svc`, `receivedAt`, `availableAt`, `dhRecbto`, `payload`, `pending`, `transmissor`, `protNFe`, `processedAt`.",
     "motivo": "membro de tipo do `@sinete/ibs-cbs` ou do `@sinete/sefaz-sim`, fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "docs/guia/referencia/transport.md",
-    "nome": "err",
-    "trecho": "- `classifyTransportFailure`: Converte a falha de uma runtime num erro tipado do sinete. `ErroSinete` passa direto. `classifyTransportFailure(err: unknown, context: { readonly host: string; }): ErroSinete`",
-    "motivo": "membro `err` do `CliIo` ou parâmetro de `classifyTransportFailure`, fora da fase 1"
   },
   {
     "arquivo": "docs/guia/referencia/validators.md",
@@ -424,12 +346,6 @@
     "nome": "sign",
     "trecho": "- `internal/signer/`: identidades `remote` e `pkcs11`, titular do certificado e a validação do `dfe.sign`.",
     "motivo": "método `sign`/`dfe.sign` do protocolo do helper, uso `sign` da WebCrypto ou parâmetro `sign` do QR Code do MDF-e (MOC)"
-  },
-  {
-    "arquivo": "packages/cert/src/chain.ts",
-    "nome": "root",
-    "trecho": ".filter((c) => c.kind === 'root')",
-    "motivo": "`kind: 'root'` da cadeia do `@sinete/cert`, fora da fase 1"
   },
   {
     "arquivo": "packages/cli/README.md",
@@ -606,12 +522,6 @@
     "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
   },
   {
-    "arquivo": "packages/emissor/src/certificado.ts",
-    "nome": "root",
-    "trecho": ".filter((c) => c.kind !== 'root')",
-    "motivo": "`kind: 'root'` da cadeia do `@sinete/cert`, fora da fase 1"
-  },
-  {
     "arquivo": "packages/emissor/src/contingencia.ts",
     "nome": "length",
     "trecho": "if (implementados !== 0 && implementados !== METODOS.length) {",
@@ -712,54 +622,6 @@
     "nome": "ref",
     "trecho": "/** Grava bytes para `ref` e deixa o relógio andar `parada` (a gravação fica parada esse tempo). */",
     "motivo": "`ref` do `@sinete/emissor` (identificador do documento no sistema do integrador), fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "packages/ibs-cbs-dados/src/dates.ts",
-    "nome": "data",
-    "trecho": "export function requireIsoDate(value: unknown, what = 'data'): IsoDate {",
-    "motivo": "caminho da pasta `data/`, campo `data` do protocolo do helper, evento `data` de stream do Node ou a palavra portuguesa \"data\""
-  },
-  {
-    "arquivo": "packages/ibs-cbs-dados/test/dataset.test.ts",
-    "nome": "data",
-    "trecho": "expect(() => requireIsoDate('x', 'data de teste')).toThrow(/data de teste/);",
-    "motivo": "caminho da pasta `data/`, campo `data` do protocolo do helper, evento `data` de stream do Node ou a palavra portuguesa \"data\""
-  },
-  {
-    "arquivo": "packages/ibs-cbs/README.md",
-    "nome": "pending",
-    "trecho": "first.items[0].pending; // [{ id: 'cClassTrib:1', options: [{ cClassTrib: '000001', ... }, { cClassTrib: '200003', ... }, ...] }]",
-    "motivo": "membro de tipo do `@sinete/ibs-cbs` ou do `@sinete/sefaz-sim`, fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "packages/ibs-cbs/README.md",
-    "nome": "pending",
-    "trecho": "4. Resolvedores em ordem (padrão `fromProfile()`, `uniqueCandidate()`, `askUser()`): o primeiro que decidir vence; `ask` devolve perguntas em `pending`, e a resposta volta em `answers[id]` com o id que o resolvedor deu à pergunta (o resolvedor também recebe `ctx.answers`); `abstain` passa adiante. Um `Resolver` é `{ name, resolve(ctx, signal) }` assíncrono e só escolhe dentro de `ctx.candidates`.",
-    "motivo": "membro de tipo do `@sinete/ibs-cbs` ou do `@sinete/sefaz-sim`, fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "packages/ibs-cbs/README.md",
-    "nome": "kind",
-    "trecho": "const facts = { modelo: 55, kind: 'venda', items: [{ n: 1, ncm: '10063021', description: 'arroz' }] } as const;",
-    "motivo": "membro de tipo do `@sinete/ibs-cbs` ou do `@sinete/sefaz-sim`, fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "packages/ibs-cbs/src/calcular/calculate.ts",
-    "nome": "reason",
-    "trecho": "(typeof it.informedRates.reason !== 'string' || !it.informedRates.reason.trim())",
-    "motivo": "membro de tipo do `@sinete/ibs-cbs` ou do `@sinete/sefaz-sim`, fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "packages/ibs-cbs/src/determinar/determine.ts",
-    "nome": "clock",
-    "trecho": "export interface DetermineOptions extends ConstrainOptions, Omit<DetermineAtOptions, 'clock'> {",
-    "motivo": "membro de tipo do `@sinete/ibs-cbs` ou do `@sinete/sefaz-sim`, fora dos três pacotes da fase 1"
-  },
-  {
-    "arquivo": "packages/ibs-cbs/src/determinar/determine.ts",
-    "nome": "at",
-    "trecho": "const base = (): Pick<Provenance, 'at' | 'contentVersion' | 'asOf'> => ({",
-    "motivo": "membro de tipo do `@sinete/ibs-cbs` ou do `@sinete/sefaz-sim`, fora dos três pacotes da fase 1"
   },
   {
     "arquivo": "packages/ibs-cbs/test/validar/engine.test.ts",
@@ -990,18 +852,6 @@
     "motivo": "caminho da pasta `data/`, campo `data` do protocolo do helper, evento `data` de stream do Node ou a palavra portuguesa \"data\""
   },
   {
-    "arquivo": "packages/schemas/src/runtime/serialize.ts",
-    "nome": "value",
-    "trecho": "* Serializa `value` como o elemento `name` do tipo `ct`. `inheritedNs` é o namespace default já em escopo onde a",
-    "motivo": "membros e parâmetros do `@sinete/schemas`, fora da fase 1"
-  },
-  {
-    "arquivo": "packages/schemas/src/runtime/serialize.ts",
-    "nome": "name",
-    "trecho": "* Serializa `value` como o elemento `name` do tipo `ct`. `inheritedNs` é o namespace default já em escopo onde a",
-    "motivo": "membros e parâmetros do `@sinete/schemas`, fora da fase 1"
-  },
-  {
     "arquivo": "packages/schemas/src/vigencia.ts",
     "nome": "data",
     "trecho": "* e vigência (`data/vigencia.json`), nunca de tentativa: a emissão usa a data do relógio de emissão (princípio 6) e",
@@ -1146,12 +996,6 @@
     "motivo": "método `sign`/`dfe.sign` do protocolo do helper, uso `sign` da WebCrypto ou parâmetro `sign` do QR Code do MDF-e (MOC)"
   },
   {
-    "arquivo": "packages/transport/README.md",
-    "nome": "sign",
-    "trecho": "- `openPkcs11({ module, token, label | keyId, pin })`: token pelo helper `-p11`; `documentSigner` assina XML pelo `dfe.sign`, que o helper valida (perfil XMLDSig dos DF-e e `Id` de documento do titular).",
-    "motivo": "método `sign`/`dfe.sign` do protocolo do helper, uso `sign` da WebCrypto ou parâmetro `sign` do QR Code do MDF-e (MOC)"
-  },
-  {
     "arquivo": "packages/transport/src/classify.ts",
     "nome": "error",
     "trecho": "if (/ENOTFOUND|EAI_AGAIN|EHOSTUNREACH|ENETUNREACH|dns error|failed to lookup/i.test(text)) {",
@@ -1189,18 +1033,6 @@
   },
   {
     "arquivo": "packages/transport/src/signer.ts",
-    "nome": "message",
-    "trecho": "input = base64ToBytes(String(p.message ?? ''));",
-    "motivo": "modo `message` do `TlsSigner` do `@sinete/transport`, fora da fase 1"
-  },
-  {
-    "arquivo": "packages/transport/src/signer.ts",
-    "nome": "message",
-    "trecho": "* `TlsSigner` sobre uma `CryptoKey` RSASSA-PKCS1-v1_5 com SHA-256 (não exportável serve), no modo `message`: o",
-    "motivo": "modo `message` do `TlsSigner` do `@sinete/transport`, fora da fase 1"
-  },
-  {
-    "arquivo": "packages/transport/src/signer.ts",
     "nome": "status",
     "trecho": "status: Number(r.status),",
     "motivo": "status HTTP da resposta"
@@ -1209,12 +1041,6 @@
     "arquivo": "packages/transport/src/signer.ts",
     "nome": "sign",
     "trecho": "*   PSC, OpenBao Transit). O helper pede `sign` no meio do handshake; este cliente aplica a política do dono da chave",
-    "motivo": "método `sign`/`dfe.sign` do protocolo do helper, uso `sign` da WebCrypto ou parâmetro `sign` do QR Code do MDF-e (MOC)"
-  },
-  {
-    "arquivo": "packages/transport/src/signer.ts",
-    "nome": "sign",
-    "trecho": "* - `openPkcs11`: token local pelo helper `-p11`. O `documentSigner` assina XML dos DF-e pelo `dfe.sign`, que o",
     "motivo": "método `sign`/`dfe.sign` do protocolo do helper, uso `sign` da WebCrypto ou parâmetro `sign` do QR Code do MDF-e (MOC)"
   },
   {
@@ -1423,12 +1249,6 @@
   },
   {
     "arquivo": "smoke/fixtures/cert/checks.mjs",
-    "nome": "root",
-    "trecho": "expect('bundle com 4 raízes', icpBrasilCertificates().filter((c) => c.kind === 'root').length === 4);",
-    "motivo": "`kind: 'root'` da cadeia do `@sinete/cert`, fora da fase 1"
-  },
-  {
-    "arquivo": "smoke/fixtures/cert/checks.mjs",
     "nome": "code",
     "trecho": "expect('senha errada tipada', err?.code === 'pfx_senha_incorreta');",
     "motivo": "`code` do `ErroSinete` e das ocorrências, mantido pela decisão 4 (só `Rejeicao.code` e `NfseErro.code` viraram `codigo`), ou `code` do SOAP Fault"
@@ -1488,36 +1308,6 @@
     "motivo": "`code` do `ErroSinete` e das ocorrências, mantido pela decisão 4 (só `Rejeicao.code` e `NfseErro.code` viraram `codigo`), ou `code` do SOAP Fault"
   },
   {
-    "arquivo": "smoke/fixtures/schemas/checks.mjs",
-    "nome": "name",
-    "trecho": "for (const r of roots) expect(`${subpath}: ${r}`, isComplexType(m[r]?.type) && typeof m[r].name === 'string');",
-    "motivo": "membros e parâmetros do `@sinete/schemas`, fora da fase 1"
-  },
-  {
-    "arquivo": "smoke/fixtures/schemas/checks.mjs",
-    "nome": "name",
-    "trecho": "const empty = `<${root.name} xmlns=\"${root.ns}\"/>`;",
-    "motivo": "membros e parâmetros do `@sinete/schemas`, fora da fase 1"
-  },
-  {
-    "arquivo": "smoke/fixtures/schemas/checks.mjs",
-    "nome": "type",
-    "trecho": "for (const r of roots) expect(`${subpath}: ${r}`, isComplexType(m[r]?.type) && typeof m[r].name === 'string');",
-    "motivo": "membros e parâmetros do `@sinete/schemas`, fora da fase 1"
-  },
-  {
-    "arquivo": "smoke/fixtures/schemas/checks.mjs",
-    "nome": "code",
-    "trecho": "expect('checkSimple', out.length === 1 && out[0].code === 'digitos_fracionarios');",
-    "motivo": "`code` do `ErroSinete` e das ocorrências, mantido pela decisão 4 (só `Rejeicao.code` e `NfseErro.code` viraram `codigo`), ou `code` do SOAP Fault"
-  },
-  {
-    "arquivo": "smoke/fixtures/transport/checks.mjs",
-    "nome": "name",
-    "trecho": "if (rt === 'deno') expect('Deno recusa host que renegocia', err?.name === 'TransportUnsupportedError' && err?.code === 'nao_suportado');",
-    "motivo": "`name` e `message` do `Error` do JavaScript, que o `ErroSinete` herda, ou texto da runtime"
-  },
-  {
     "arquivo": "smoke/fixtures/transport/checks.mjs",
     "nome": "code",
     "trecho": "expect('signer: binário ausente', serr?.code === 'signer_indisponivel');",
@@ -1527,12 +1317,6 @@
     "arquivo": "smoke/fixtures/transport/checks.mjs",
     "nome": "code",
     "trecho": "expect('browser sem transporte mTLS', err?.code === 'nao_suportado');",
-    "motivo": "`code` do `ErroSinete` e das ocorrências, mantido pela decisão 4 (só `Rejeicao.code` e `NfseErro.code` viraram `codigo`), ou `code` do SOAP Fault"
-  },
-  {
-    "arquivo": "smoke/fixtures/transport/checks.mjs",
-    "nome": "code",
-    "trecho": "if (rt === 'deno') expect('Deno recusa host que renegocia', err?.name === 'TransportUnsupportedError' && err?.code === 'nao_suportado');",
     "motivo": "`code` do `ErroSinete` e das ocorrências, mantido pela decisão 4 (só `Rejeicao.code` e `NfseErro.code` viraram `codigo`), ou `code` do SOAP Fault"
   },
   {
@@ -1660,5 +1444,1559 @@
     "nome": "pattern",
     "trecho": "case 'pattern': {",
     "motivo": "nomes do XSD (`element`, `pattern`, `length`) e do codegen, ou texto do xmllint"
+  },
+  {
+    "arquivo": "CLAUDE.md",
+    "nome": "code",
+    "trecho": "- **Erro tipado.** Todo erro estende `ErroSinete` com `code` estável; rejeição da SEFAZ é `ResultadoSefaz`, não exceção.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "CONTRIBUTING.md",
+    "nome": "name",
+    "trecho": "- A skill `sinete` (`docs/guia/skill-sinete.md`, o `SKILL.md` que o `agents-md` instala em `.claude/skills/` e `.agents/skills/`) só aponta para esta documentação, sem repeti-la; o `check-docs` confere o frontmatter (`name: sinete`, `description` até 1024 caracteres) e a linha `<!-- sinete-skill: ... -->` que a marca como gerada.",
+    "motivo": "campos `name` e `description` do frontmatter do `SKILL.md`"
+  },
+  {
+    "arquivo": "CONTRIBUTING.md",
+    "nome": "code",
+    "trecho": "- Código de erro novo (`ErroSinete` com `code` novo) precisa de `docs/guia/erros/<code>.md` com as seções Causa, Correção e Armadilha; o `scripts/check-docs.ts` confere nos dois sentidos.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "CONTRIBUTING.md",
+    "nome": "rules",
+    "trecho": "The sinete is an Apache-2.0 TypeScript core for Brazilian electronic fiscal documents. Contributions are welcome under these rules:",
+    "motivo": "texto em inglês da licença, do botão do GitHub ou da seção em inglês do CONTRIBUTING"
+  },
+  {
+    "arquivo": "CONTRIBUTING.md",
+    "nome": "description",
+    "trecho": "- A skill `sinete` (`docs/guia/skill-sinete.md`, o `SKILL.md` que o `agents-md` instala em `.claude/skills/` e `.agents/skills/`) só aponta para esta documentação, sem repeti-la; o `check-docs` confere o frontmatter (`name: sinete`, `description` até 1024 caracteres) e a linha `<!-- sinete-skill: ... -->` que a marca como gerada.",
+    "motivo": "campos `name` e `description` do frontmatter do `SKILL.md`"
+  },
+  {
+    "arquivo": "LICENSE",
+    "nome": "percent",
+    "trecho": "otherwise, or (ii) ownership of fifty percent (50%) or more of the",
+    "motivo": "texto em inglês da licença, do botão do GitHub ou da seção em inglês do CONTRIBUTING"
+  },
+  {
+    "arquivo": "README.md",
+    "nome": "code",
+    "trecho": "Uma rejeição da SEFAZ volta como desfecho da operação. Erros têm `code` estável e uma página correspondente em `erros/<code>.md`.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "SECURITY.md",
+    "nome": "Report",
+    "trecho": "**Não abra issue pública para vulnerabilidade.** Use o reporte privado do GitHub: aba **Security** do repositório, botão **Report a vulnerability**. O relato fica visível só para os mantenedores.",
+    "motivo": "texto em inglês da licença, do botão do GitHub ou da seção em inglês do CONTRIBUTING"
+  },
+  {
+    "arquivo": "docs/guia/bloco-agents.md",
+    "nome": "code",
+    "trecho": "- Rejeição da SEFAZ é desfecho (`tipo: 'recusado'`, no emissor e no cliente), não exceção. Erro lançado é `ErroSinete` com `code` estável e `pagina` (página em `docs/erros/<code>.md`): decida pelo `code`, nunca pela mensagem.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/browser.md",
+    "nome": "value",
+    "trecho": "const assinada = await signNfe(r.value, await ks.assinador());",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/browser.md",
+    "nome": "time",
+    "trecho": "const r = await buildNfe(nota, { ambiente: 'homologacao', time: contextoDeTempo({ emissao: relogioDoSistema }) });",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/certificado-a3.md",
+    "nome": "sign",
+    "trecho": "- Não oferece assinatura avulsa: a chave só é usada num handshake com host aprovado ou numa chamada validada de `dfe.sign`, o método de assinatura de documentos do protocolo.",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/certificado-a3.md",
+    "nome": "sign",
+    "trecho": "O helper mantém um cache de sessões TLS e permite retomá-las quando o servidor oferece esse recurso. Nos servidores da SEFAZ medidos, que não emitem tickets de sessão, não há essa economia; manter a conexão viva permite evitar novas assinaturas. `DescricaoTls.assinaturas` informa quantas assinaturas TLS foram atribuídas à requisição, e `signer.estatisticas()` informa o total por identidade, incluindo handshakes e assinaturas de documentos por `dfe.sign`. Esses dados permitem contabilizar o uso da cota de um PSC.",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/ocorrencias-de-validacao.md",
+    "nome": "code",
+    "trecho": "| Regra | Rejeição | `code` e `caminho` |",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "docs/guia/como-fazer/ocorrencias-de-validacao.md",
+    "nome": "code",
+    "trecho": "- **Decidir pela mensagem.** A mensagem muda entre versões; decida pelo `code` e pela `origem`.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "docs/guia/erros/assinatura_tls_recusada.md",
+    "nome": "message",
+    "trecho": "Não amplie `hostsPermitidos` indiscriminadamente para \"fazer funcionar\". Essa lista aplica a restrição de destinos do dono da chave, independentemente das verificações do helper. Uma lista vazia é rejeitada por `abrirRemoto` com `ErroDeConfiguracao`; ela não desativa a política. No modo `message`, o transcript permite conferir o destino informado. No modo `digest`, essa conferência não é possível: o cliente depende do contexto informado pelo helper, e `hostsPermitidos` sozinho não comprova o destino real se o helper estiver comprometido.",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/guia/erros/cadeia_servidor_nao_confiavel.md",
+    "nome": "code",
+    "trecho": "O transporte não conseguiu validar a cadeia de certificados do servidor com o conjunto de confiança configurado. Por padrão, esse conjunto reúne as raízes confiáveis da runtime e os certificados da ICP-Brasil (Infraestrutura de Chaves Públicas Brasileira) incluídos no sinete. A falha gera um `ErroTransporte` (`@sinete/transport`), que herda de `ErroSinete`, com `code: 'cadeia_servidor_nao_confiavel'`. Trate o erro pelo `code`, usando `ehErroSinete(e, 'cadeia_servidor_nao_confiavel')` de `@sinete/core`, nunca pela mensagem.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "docs/guia/erros/certificado_ausente_ou_recusado.md",
+    "nome": "code",
+    "trecho": "O servidor recusou a conexão ou a requisição sem indicar se faltou o certificado ou se ele não foi aceito. O transporte usa esse código para respostas HTTP 403, como as do servidor IIS, e para a falha `bad record mac`, observada no Ambiente de Dados Nacional (ADN) em TLS 1.3, o protocolo de segurança da conexão. O erro é uma instância de `ErroTransporte` (`@sinete/transport`), que estende `ErroSinete`, com `code: 'certificado_ausente_ou_recusado'`. Identifique-o pelo `code`, usando `ehErroSinete(e, 'certificado_ausente_ou_recusado')` de `@sinete/core`, nunca pela mensagem. A conversão de HTTP 403 nesse erro é habilitada por padrão e pode ser desativada com `recusarEm403: false` nas opções do transporte.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "docs/guia/erros/certificado_invalido.md",
+    "nome": "code",
+    "trecho": "O conteúdo não pôde ser lido como DER, a codificação binária usada para certificados X.509 e chaves privadas PKCS#8, ou contém uma estrutura de certificado incompleta. Base64 inválido também pode gerar esse erro. Ele é lançado por `ErroCertificado` (`@sinete/cert`), que estende `ErroSinete` com `code: 'certificado_invalido'`. Identifique o erro pelo `code`, usando `ehErroSinete(e, 'certificado_invalido')` de `@sinete/core`, nunca pela mensagem.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "docs/guia/erros/certificado_nao_apresentado.md",
+    "nome": "code",
+    "trecho": "O servidor encerrou a conexão TLS, o protocolo que protege a comunicação, com um alerta que o sinete classifica como certificado de cliente não apresentado: 40 (`handshake_failure`), 42 (`bad_certificate`) ou 116 (`certificate_required`, no TLS 1.3). Essa classificação não garante que o certificado estava ausente, especialmente no alerta 40. O erro é um `ErroTransporte` de `@sinete/transport`, que estende `ErroSinete`, com `code: 'certificado_nao_apresentado'`. Decida pelo `code`, usando `ehErroSinete(e, 'certificado_nao_apresentado')` de `@sinete/core`, nunca pela mensagem.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "docs/guia/erros/certificado_nao_carregado.md",
+    "nome": "code",
+    "trecho": "Depois do handshake, a negociação que estabelece a conexão TLS segura, o socket não tinha certificado local ou tinha um certificado diferente do configurado na identidade do transporte. O erro é uma instância de `ErroTransporte` (`@sinete/transport`), que estende `ErroSinete`, com `code: 'certificado_nao_carregado'`. Decida pelo `code`, usando `ehErroSinete(e, 'certificado_nao_carregado')` de `@sinete/core`, nunca pela mensagem.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "docs/guia/erros/codigo_barras_invalido.md",
+    "nome": "code",
+    "trecho": "O conteúdo do código de barras ou do QR Code não pode ser codificado. O erro é uma instância de `DanfeError` (`@sinete/da`), que estende `ErroSinete`, com `code: 'codigo_barras_invalido'`. Identifique o erro pelo `code`, usando `ehErroSinete(e, 'codigo_barras_invalido')` de `@sinete/core`, nunca pela mensagem.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "docs/guia/erros/ibscbs_dados_invalidos.md",
+    "nome": "code",
+    "trecho": "Uma data inválida passada a `dataset.em(data)`, seja pelo formato diferente de `AAAA-MM-DD` ou por não existir no calendário, gera `ErroDeConfiguracao` com `code: 'config_invalida'`.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "docs/guia/erros/ibscbs_dados_versao_incompativel.md",
+    "nome": "code",
+    "trecho": "O conjunto de dados (dataset) declara, no campo `manifesto.versaoDoFormato` do bundle, uma versão de formato diferente da constante `VERSAO_DO_FORMATO_DOS_DADOS` aceita pelo código instalado. O erro é uma instância de `ErroDadosIbsCbs` (`@sinete/ibs-cbs-dados`), que estende `ErroSinete`, com `code: 'ibscbs_dados_versao_incompativel'`. Identifique-o pelo `code`, usando `ehErroSinete(e, 'ibscbs_dados_versao_incompativel')`, de `@sinete/core`, nunca pela mensagem.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "docs/guia/erros/index.md",
+    "nome": "code",
+    "trecho": "Gerado do fonte por `scripts/docs-gerados.ts`; não edite à mão. Todo erro lançado pelo sinete é um `ErroSinete` com `code` estável e `pagina`, o caminho da página do código nesta pasta (`erros/<code>.md`). Decida pelo `code` (ou por `ehErroSinete(e, code)`), nunca pela mensagem. Rejeição da SEFAZ não é erro lançado: é desfecho (`tipo: 'recusado'`, no cliente e no emissor), e o catálogo de rejeições é o `@sinete/rejeicoes`.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "docs/guia/erros/pfx_senha_incorreta.md",
+    "nome": "code",
+    "trecho": "O leitor não conseguiu verificar o MAC, código de autenticação que protege a integridade do arquivo, ou decifrar o conteúdo com a senha informada. O PFX é um arquivo no formato PKCS#12 que pode conter o certificado e sua chave privada. O erro é uma instância de `ErroCertificado` (`@sinete/cert`), que herda de `ErroSinete`, com `code: 'pfx_senha_incorreta'`. Identifique o erro pelo `code`, usando `ehErroSinete(e, 'pfx_senha_incorreta')` de `@sinete/core`, nunca pela mensagem.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "docs/guia/erros/politica_recusou.md",
+    "nome": "code",
+    "trecho": "No MDF-e (Manifesto Eletrônico de Documentos Fiscais), o documento vai comprimido, e o próprio cliente confere o `tpAmb` antes do envio. Se o campo estiver ausente ou diferente do ambiente do cliente, ele lança `ErroPolitica`. Na NFS-e (Nota Fiscal de Serviço Eletrônica), a DPS (Declaração de Prestação de Serviços) também vai comprimida e tem o ambiente conferido pelo cliente, mas essa divergência lança `ErroDeConfiguracao`, com `code: 'config_invalida'`.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "docs/guia/erros/sefaz_rejeitou.md",
+    "nome": "code",
+    "trecho": "Pelo emissor, o desfecho já vem normalizado no campo `tipo`: `autorizado`, `denegado`, `recusado`, `pendente` ou `divergente`. Esses desfechos são retornados como valores. Há, porém, erros locais que podem impedir uma nova tentativa: quando a barreira de recusa repetida está ativa e o limite é atingido, o emissor lança `RecusaRepetidaError`, com `code: 'recusa_repetida'`, antes de gravar ou enviar o documento novamente. Essa barreira depende de o store implementar `registrarRecusa` e `recusaRecente` e ajuda a evitar consumo indevido, associado ao código `656`.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "docs/guia/erros/serializacao_invalida.md",
+    "nome": "code",
+    "trecho": "O serializador canônico do `@sinete/schemas` recebeu um valor incompatível com a estrutura esperada pelo XSD, o arquivo que define os tipos e a estrutura do XML. Ele lança `ErroSerializacao`, exportado por `@sinete/schemas`, que é um `ErroSinete` com `code: 'serializacao_invalida'`. A mensagem começa pelo caminho do campo, também disponível em `caminho`. Identifique o erro pelo `code`, usando `ehErroSinete(e, 'serializacao_invalida')` de `@sinete/core`, nunca pela mensagem.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "docs/guia/erros/signer_protocolo.md",
+    "nome": "code",
+    "trecho": "O erro é uma instância de `ErroSigner` (`@sinete/transport`), que estende `ErroSinete` e tem `code: 'signer_protocolo'`. Decida pelo `code`, com `ehErroSinete(e, 'signer_protocolo')` de `@sinete/core`, nunca pela mensagem. Quando o cliente converte um erro recebido do helper, `detalhes.code` traz o código original, como `unknown_method`, `unknown_identity`, `identity_exists`, `bad_request`, `protocol_version` ou `forbidden`. A verificação local de identidade remota repetida também preenche `detalhes.code` com `identity_exists`. Outras verificações locais, como a de versão do protocolo, podem lançar esse erro sem `detalhes.code`.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "docs/guia/erros/signer_protocolo.md",
+    "nome": "forbidden",
+    "trecho": "O erro é uma instância de `ErroSigner` (`@sinete/transport`), que estende `ErroSinete` e tem `code: 'signer_protocolo'`. Decida pelo `code`, com `ehErroSinete(e, 'signer_protocolo')` de `@sinete/core`, nunca pela mensagem. Quando o cliente converte um erro recebido do helper, `detalhes.code` traz o código original, como `unknown_method`, `unknown_identity`, `identity_exists`, `bad_request`, `protocol_version` ou `forbidden`. A verificação local de identidade remota repetida também preenche `detalhes.code` com `identity_exists`. Outras verificações locais, como a de versão do protocolo, podem lançar esse erro sem `detalhes.code`.",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/guia/erros/signer_protocolo.md",
+    "nome": "forbidden",
+    "trecho": "Se o código original for `bad_request`, consulte a mensagem do helper para identificar o parâmetro inválido. Para `unknown_method` ou `forbidden`, confira se o método existe e se é permitido para aquele tipo de identidade. Por exemplo, `dfe.sign`, usado para assinar documentos fiscais eletrônicos, exige uma chave controlada pelo helper por meio de PKCS#11, a interface de acesso ao token. No modo `remote`, a assinatura do documento cabe a quem controla a chave.",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/guia/erros/transmissao_em_andamento.md",
+    "nome": "code",
+    "trecho": "O emissor tentou adquirir a trava que impede transmissões simultâneas do mesmo documento, identificado pelo par `tipo` (tipo de documento) e `ref` (identificador no seu sistema). Outro processo, ou outra chamada do mesmo processo, já tem essa trava em vigor. O erro lançado é `TransmissaoEmAndamentoError`, de `@sinete/emissor`, que estende `ErroSinete` e tem `code: 'transmissao_em_andamento'`. Identifique-o pelo `code`, usando `ehErroSinete(e, 'transmissao_em_andamento')`, de `@sinete/core`, nunca pela mensagem.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "docs/guia/erros/transmissao_ja_gravada.md",
+    "nome": "code",
+    "trecho": "O `TransmissaoStore`, responsável por persistir o XML assinado e controlar a trava de transmissão, recusou uma gravação porque já existem bytes assinados para o mesmo `tipo` de documento e a mesma `ref`, o identificador do documento no sistema do integrador. O erro é uma instância de `TransmissaoJaGravadaError` (`@sinete/emissor`), que estende `ErroSinete` e tem `code: 'transmissao_ja_gravada'`. Identifique-o pelo `code`, usando `ehErroSinete(e, 'transmissao_ja_gravada')` de `@sinete/core`, nunca pela mensagem.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "docs/guia/erros/validacao_falhou.md",
+    "nome": "code",
+    "trecho": "Percorra `e.ocorrencias`. Cada ocorrência tem `caminho`, `code` e `mensagem`. Os montadores também preenchem `origem`: `entrada` quando a conferência aponta um valor da entrada que pode ser corrigido naquele caminho, ou `montagem` quando a conferência é sobre o que o sinete produziu, como o XML contra o XSD, a chave ou um grupo calculado. Uma ocorrência de `montagem` ainda pode ter sido causada por um valor da entrada, mas não identifica diretamente o campo a corrigir. Em validadores avulsos, `origem` pode estar ausente, indicando que a ocorrência não foi classificada.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "docs/guia/erros/xmldsig_falhou.md",
+    "nome": "code",
+    "trecho": "A assinatura digital do XML, no padrão XMLDSig, não pôde ser preparada ou montada. O erro é uma instância de `ErroAssinaturaXml`, exportada por `@sinete/core/xml`, que estende `ErroSinete` e tem `code: 'xmldsig_falhou'`. O campo `detalhes.motivo` informa o motivo. Decida como tratar o erro pelo `code`, usando `ehErroSinete(e, 'xmldsig_falhou')` de `@sinete/core`, nunca pela mensagem.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "docs/guia/explicacao/bytes-antes-do-envio.md",
+    "nome": "code",
+    "trecho": "Pelo mesmo motivo, a rejeição recebida da SEFAZ não é lançada como exceção: é um resultado discriminado (`tipo: 'recusado'` no cliente, `tipo: 'recusado'` no emissor), que o código precisa tratar. Exceções representam falhas locais ou na execução, como configuração inválida, validação local, problemas de transporte ou resposta fora do leiaute. No emissor, as falhas que podem ter ocorrido depois de o documento chegar ao autorizador levam à consulta; se ela não resolver, o resultado pode ser `pendente`. As exceções próprias do sinete têm um `code` estável, documentado em [erros](../erros/index.md). Erros lançados pelo store ou pelas funções do integrador também podem se propagar.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "docs/guia/explicacao/bytes-antes-do-envio.md",
+    "nome": "code",
+    "trecho": "Há ainda uma proteção local contra repetir uma recusa definitiva: quando o store implementa `registrarRecusa` e `recusaRecente` e a barreira está habilitada, o emissor conta recusas do mesmo conteúdo com o mesmo `cStat`. Por padrão, depois de três recusas iguais em uma janela de uma hora, a próxima emissão do mesmo documento com o mesmo conteúdo lança `RecusaRepetidaError`, com `code: 'recusa_repetida'`, antes de gravar ou enviar. Essa barreira ajuda a evitar o consumo indevido, rejeição 656 da NF-e. Corrigir o conteúdo permite uma nova tentativa; se a causa foi resolvida fora da nota, a opção `reenviarRecusado: true` permite o reenvio consciente. Essa exceção local não é uma nova rejeição recebida da SEFAZ.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "docs/guia/referencia/cert.md",
+    "nome": "value",
+    "trecho": "- `AtributoDoNome`: Atributo de um nome distinto (DN), na ordem em que aparece no certificado. Membros: `oid`, `type`, `value`.",
+    "motivo": "campo do certificado X.509 com o nome da RFC 5280, mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/guia/referencia/cert.md",
+    "nome": "value",
+    "trecho": "- `OtherName`: `otherName` do SAN: OID e o valor já decodificado como texto. Membros: `oid`, `value`.",
+    "motivo": "campo do certificado X.509 com o nome da RFC 5280, mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/guia/referencia/cert.md",
+    "nome": "version",
+    "trecho": "- `CertificadoX509`: Membros: `der`, `version`, `serialNumber`, `subject`, `issuer`, `notBefore`, `notAfter`, `notBeforeIso`, `notAfterIso`, `isCA`, `pathLenConstraint`, `selfIssued`, `extensoesCriticasNaoSuportadas`, `keyUsage`, `extKeyUsage`, `subjectAltNames`, `subjectKeyId`, `authorityKeyId`, `urlsOcsp`, `urlsCaIssuers`, `urlsCrl`, `chavePublica`, `spki`, `tbs`, `signatureAlgorithm`, `signature`.",
+    "motivo": "campo do certificado X.509 com o nome da RFC 5280, mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/guia/referencia/cert.md",
+    "nome": "signatureAlgorithm",
+    "trecho": "- `CertificadoX509`: Membros: `der`, `version`, `serialNumber`, `subject`, `issuer`, `notBefore`, `notAfter`, `notBeforeIso`, `notAfterIso`, `isCA`, `pathLenConstraint`, `selfIssued`, `extensoesCriticasNaoSuportadas`, `keyUsage`, `extKeyUsage`, `subjectAltNames`, `subjectKeyId`, `authorityKeyId`, `urlsOcsp`, `urlsCaIssuers`, `urlsCrl`, `chavePublica`, `spki`, `tbs`, `signatureAlgorithm`, `signature`.",
+    "motivo": "campo do certificado X.509 com o nome da RFC 5280, mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/guia/referencia/cert.md",
+    "nome": "type",
+    "trecho": "- `AtributoDoNome`: Atributo de um nome distinto (DN), na ordem em que aparece no certificado. Membros: `oid`, `type`, `value`.",
+    "motivo": "campo do certificado X.509 com o nome da RFC 5280, mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/guia/referencia/cert.md",
+    "nome": "issuer",
+    "trecho": "- `CertificadoX509`: Membros: `der`, `version`, `serialNumber`, `subject`, `issuer`, `notBefore`, `notAfter`, `notBeforeIso`, `notAfterIso`, `isCA`, `pathLenConstraint`, `selfIssued`, `extensoesCriticasNaoSuportadas`, `keyUsage`, `extKeyUsage`, `subjectAltNames`, `subjectKeyId`, `authorityKeyId`, `urlsOcsp`, `urlsCaIssuers`, `urlsCrl`, `chavePublica`, `spki`, `tbs`, `signatureAlgorithm`, `signature`.",
+    "motivo": "campo do certificado X.509 com o nome da RFC 5280, mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/guia/referencia/core.md",
+    "nome": "code",
+    "trecho": "- `ehErroSinete`: Confere se `valor` é um `ErroSinete`, inclusive vindo de outra cópia do pacote. Com `code`, confere também o código. `ehErroSinete(valor: unknown, code?: string): valor is ErroSinete`",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "docs/guia/referencia/core.md",
+    "nome": "code",
+    "trecho": "- `paginaDoErro`: Página de um código de erro na documentação embarcada, relativa à pasta `docs/` do pacote `sinete` ou do `@sinete/emissor` (`node_modules/sinete/docs/erros/<code>.md`). O `bun run check` confere que todo código lançado pelos pacotes tem a página. `paginaDoErro(code: string): string`",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "docs/guia/referencia/core.md",
+    "nome": "code",
+    "trecho": "- `ErroSerializado`: Forma do erro em `JSON.stringify`, para log estruturado. Membros: `name`, `code`, `message`, `pagina`, `detalhes`, `cause`.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "docs/guia/referencia/core.md",
+    "nome": "code",
+    "trecho": "- `Ocorrencia`: Uma ocorrência de validação local, com o caminho do campo (`infNFe.emit.CNPJ`, `[3].cUF`). Membros: `caminho`, `code`, `mensagem`, `origem`.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "docs/guia/referencia/ibs-cbs-dados.md",
+    "nome": "data",
+    "trecho": "- `aplicabilidade`: `aplicabilidade(vinculos: readonly RegistroAplicabilidade[], codigo: string, data: DataIso, tamanhoCompleto: number): ResultadoAplicabilidade`",
+    "motivo": "`data` em português (data civil), a pasta `data/` ou o campo `data` do erro do protocolo do helper; nenhum é a chave renomeada"
+  },
+  {
+    "arquivo": "docs/guia/referencia/ibs-cbs-dados.md",
+    "nome": "data",
+    "trecho": "- `vigente`: Vigência fechada nas duas pontas, como nas consultas da Calculadora (`inicio <= data <= fim`). `vigente(vigencia: Vigencia, data: DataIso): boolean`",
+    "motivo": "`data` em português (data civil), a pasta `data/` ou o campo `data` do erro do protocolo do helper; nenhum é a chave renomeada"
+  },
+  {
+    "arquivo": "docs/guia/referencia/ibs-cbs-dados.md",
+    "nome": "data",
+    "trecho": "- `FonteDoDataset`: Artefato oficial de onde o dataset foi extraído. Membros: `id`, `tipo`, `titulo`, `versao`, `data`, `url`, `sha256`, `pins`, `notas`.",
+    "motivo": "`data` em português (data civil), a pasta `data/` ou o campo `data` do erro do protocolo do helper; nenhum é a chave renomeada"
+  },
+  {
+    "arquivo": "docs/guia/referencia/ibs-cbs.md",
+    "nome": "data",
+    "trecho": "- `calcularEm`: Variante com a data civil do fato gerador já resolvida (`AAAA-MM-DD`): para reprocessamento e para o oráculo, que trabalham com a data que a Calculadora recebe. `calcularEm(op: OperacaoClassificada, opcoes: { readonly dataset: DatasetIbsCbs; readonly aliquotas: ProvedorDeAliquotas; readonly data: DataIso; }): Roc`",
+    "motivo": "`data` em português (data civil), a pasta `data/` ou o campo `data` do erro do protocolo do helper; nenhum é a chave renomeada"
+  },
+  {
+    "arquivo": "docs/guia/referencia/ibs-cbs.md",
+    "nome": "data",
+    "trecho": "- `exigirAliquota`: Valor da alíquota, ou `ErroAliquotaDesconhecida` quando ela ainda não existe. `exigirAliquota(aliquota: Aliquota, data: DataIso): string`",
+    "motivo": "`data` em português (data civil), a pasta `data/` ou o campo `data` do erro do protocolo do helper; nenhum é a chave renomeada"
+  },
+  {
+    "arquivo": "docs/guia/referencia/ibs-cbs.md",
+    "nome": "data",
+    "trecho": "- `redistribuir`: Valores que cada ente efetivamente recebe. `transferPercent` é o percentual da CBS transferido ao ente contratante (`'0'` até 2028), já em fração de 8 casas. `redistribuir(valores: ValoresCompraGov, tp: TpEnteGov, data: DataIso, fracaoTransferida: Decimal): ValoresCompraGov`",
+    "motivo": "`data` em português (data civil), a pasta `data/` ou o campo `data` do erro do protocolo do helper; nenhum é a chave renomeada"
+  },
+  {
+    "arquivo": "docs/guia/referencia/ibs-cbs.md",
+    "nome": "data",
+    "trecho": "- `ErroAliquotaDesconhecida` (estende `ErroSinete<'ibscbs_aliquota_desconhecida'>`): A alíquota pedida ainda não foi publicada (estado `desconhecida`). O cálculo não segue com zero nem com um palpite: quem precisa simular informa a alíquota com `comAliquotasInformadas`, e o resultado sai marcado como simulado. Membros: `tributo`, `data`.",
+    "motivo": "`data` em português (data civil), a pasta `data/` ou o campo `data` do erro do protocolo do helper; nenhum é a chave renomeada"
+  },
+  {
+    "arquivo": "docs/guia/referencia/ibs-cbs.md",
+    "nome": "data",
+    "trecho": "- `FonteDaAliquota`: Membros: `id`, `titulo`, `url`, `versao`, `data`, `sha256`.",
+    "motivo": "`data` em português (data civil), a pasta `data/` ou o campo `data` do erro do protocolo do helper; nenhum é a chave renomeada"
+  },
+  {
+    "arquivo": "docs/guia/referencia/ibs-cbs.md",
+    "nome": "parse",
+    "trecho": "- `dec`: Atalho para `Decimal.parse`. `dec(texto: string): Decimal`",
+    "motivo": "`Decimal` e seus métodos ficam em inglês (ADR 0015, exceção 3)"
+  },
+  {
+    "arquivo": "docs/guia/referencia/ibs-cbs.md",
+    "nome": "code",
+    "trecho": "- `MotivoErroClassificacao`: Motivo de uma classificação recusada pelo motor, estável como o `code`.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "docs/guia/referencia/nfe.md",
+    "nome": "percent",
+    "trecho": "- `Decimal`: Valor decimal imutável: `coef × 10^-scale`. Membros: `coef`, `scale`, `ZERO`, `ONE`, `HUNDRED`, `fromParts()`, `of()`, `tryOf()`, `plus()`, `minus()`, `times()`, `dividedBy()`, `percent()`, `negate()`, `abs()`, `round()`, `compare()`, `eq()`, `lt()`, `gt()`, `isZero()`, `isNegative()`, `significantScale()`, `toFixed()`, `toString()`, `toJSON()`.",
+    "motivo": "`Decimal` e seus métodos ficam em inglês (ADR 0015, exceção 3)"
+  },
+  {
+    "arquivo": "docs/guia/referencia/transport.md",
+    "nome": "status",
+    "trecho": "- `EventoDeAuditoria`: Um uso do certificado, para auditoria (o app grava onde quiser). Sem segredo e sem corpo. Membros: `runtime`, `host`, `caminho`, `metodo`, `status`, `codigoDoErro`, `duracaoMs`.",
+    "motivo": "termo do HTTP ou do SOAP 1.2 (`status`, `connection: close`, `action` do `Content-Type`, `https.request`, cabeçalho `date`)"
+  },
+  {
+    "arquivo": "docs/guia/referencia/transport.md",
+    "nome": "status",
+    "trecho": "- `RespostaTransporte`: Membros: `status`, `cabecalhos`, `corpo`, `tls`, `texto()`.",
+    "motivo": "termo do HTTP ou do SOAP 1.2 (`status`, `connection: close`, `action` do `Content-Type`, `https.request`, cabeçalho `date`)"
+  },
+  {
+    "arquivo": "docs/guia/referencia/transport.md",
+    "nome": "sign",
+    "trecho": "Identidades: - `abrirRemoto`: a chave fica com quem chamou, num `AssinadorTls` (A1 em `CryptoKey` não exportável, A3 em nuvem de PSC, OpenBao Transit). O helper pede `sign` no meio do handshake; este cliente aplica a política do dono da chave (host, propósito, esquema e, no modo `message`, o transcript) antes de chamar o `AssinadorTls`. - `abrirPkcs11`: token local pelo helper `-p11`. O `assinadorDeDocumentos` assina XML dos DF-e pelo `dfe.sign`, que o helper valida antes de usar a chave do token.",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/guia/referencia/transport.md",
+    "nome": "reason",
+    "trecho": "- `SoapFault`: Membros: `code`, `reason`.",
+    "motivo": "`Code` e `Reason` do SOAP Fault 1.2"
+  },
+  {
+    "arquivo": "docs/guia/referencia/transport.md",
+    "nome": "data",
+    "trecho": "- `classificarFalhaDoHelper`: Converte a falha de transporte relatada pelo helper (código `transport` com `data` estruturado) no mesmo erro tipado que o transporte em processo produziria. O prazo estourado fica de fora: quem chama lança `ErroDeTempoEsgotado`. `classificarFalhaDoHelper(dados: DadosDaFalhaDoHelper, mensagem: string, host: string): ErroTransporte`",
+    "motivo": "`data` em português (data civil), a pasta `data/` ou o campo `data` do erro do protocolo do helper; nenhum é a chave renomeada"
+  },
+  {
+    "arquivo": "docs/guia/referencia/transport.md",
+    "nome": "data",
+    "trecho": "- `DadosDaFalhaDoHelper`: O `data` de um erro `transport` do helper `sinete-signer` (docs/signer-contract/PROTOCOL.md). Membros: `stage`, `alert`, `x509`, `timeout`, `reset`, `refused`, `dns`, `notTls`.",
+    "motivo": "`data` em português (data civil), a pasta `data/` ou o campo `data` do erro do protocolo do helper; nenhum é a chave renomeada"
+  },
+  {
+    "arquivo": "docs/guia/referencia/transport.md",
+    "nome": "code",
+    "trecho": "- `SoapFault`: Membros: `code`, `reason`.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "docs/guia/referencia/transport.md",
+    "nome": "protocol",
+    "trecho": "- `HelloDoSigner`: O que o helper disse no `hello`. Membros: `protocol`, `helper`, `lab`, `ambientes`, `backends`, `signModes`, `schemes`, `methods`, `dataVersion`.",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/guia/referencia/transport.md",
+    "nome": "action",
+    "trecho": "- `contentTypeSoap12`: `Content-Type` do SOAP 1.2, com a `action` do WSDL quando houver (`<namespace do WSDL>/<operação>`). `contentTypeSoap12(acao?: string): string`",
+    "motivo": "termo do HTTP ou do SOAP 1.2 (`status`, `connection: close`, `action` do `Content-Type`, `https.request`, cabeçalho `date`)"
+  },
+  {
+    "arquivo": "docs/guia/referencia/transport.md",
+    "nome": "dataVersion",
+    "trecho": "- `HelloDoSigner`: O que o helper disse no `hello`. Membros: `protocol`, `helper`, `lab`, `ambientes`, `backends`, `signModes`, `schemes`, `methods`, `dataVersion`.",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/signer-contract/PROTOCOL.md",
+    "nome": "status",
+    "trecho": "**`http.request`** faz uma requisição HTTP/1.1 com mTLS pela identidade. Parâmetros: `identity`, `url`, `method` (`POST` ou `GET`), `headers`, `body` (base64), `timeoutMs` (prazo total, padrão 60 s), `service` (rótulo para a auditoria) e `freshConn` (fecha as conexões ociosas antes, para medir retomada). Redirecionamento nunca é seguido: o 3xx volta como resposta. A resposta traz `status`, `headers` (nomes em minúsculas, valores repetidos juntados por `, `), `body` (base64), `ms` e o bloco `tls`: `version`, `cipher`, `conn` (número da conexão), `connReused`, `handshakes` e `renegotiations` da conexão, `resumed` por handshake, `certRequests`, `handshakeMs`, `peerChain` (CN da cadeia do servidor) e `signatures`, as assinaturas pedidas **durante esta requisição**. É esse bloco que permite ao cliente contabilizar a cota de um PSC.",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/signer-contract/PROTOCOL.md",
+    "nome": "kind",
+    "trecho": "A C14N é do cliente; o helper valida os bytes canônicos, que são o que a assinatura cobre. Um cliente que mentisse na C14N só produziria uma assinatura que não confere no documento real. A resposta traz `signature`, `reference` e `kind`. Recusa: `dfe_refused`.",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/signer-contract/PROTOCOL.md",
+    "nome": "version",
+    "trecho": "**`http.request`** faz uma requisição HTTP/1.1 com mTLS pela identidade. Parâmetros: `identity`, `url`, `method` (`POST` ou `GET`), `headers`, `body` (base64), `timeoutMs` (prazo total, padrão 60 s), `service` (rótulo para a auditoria) e `freshConn` (fecha as conexões ociosas antes, para medir retomada). Redirecionamento nunca é seguido: o 3xx volta como resposta. A resposta traz `status`, `headers` (nomes em minúsculas, valores repetidos juntados por `, `), `body` (base64), `ms` e o bloco `tls`: `version`, `cipher`, `conn` (número da conexão), `connReused`, `handshakes` e `renegotiations` da conexão, `resumed` por handshake, `certRequests`, `handshakeMs`, `peerChain` (CN da cadeia do servidor) e `signatures`, as assinaturas pedidas **durante esta requisição**. É esse bloco que permite ao cliente contabilizar a cota de um PSC.",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/signer-contract/PROTOCOL.md",
+    "nome": "dropSessions",
+    "trecho": "**`pool.reset`** (`identity`, `dropSessions`) fecha as conexões ociosas da identidade; com `dropSessions: true`, descarta também o cache de sessão TLS.",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/signer-contract/PROTOCOL.md",
+    "nome": "additionalCa",
+    "trecho": "- `additionalCa` (PEMs) soma ACs à confiança do servidor só desta identidade (AC de teste, proxy corporativo). Não amplia a lista de hosts.",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/signer-contract/PROTOCOL.md",
+    "nome": "keyId",
+    "trecho": "- `backend: \"pkcs11\"`: o helper abre o módulo (`module`, caminho absoluto), acha o token pelo rótulo (`token`; `serial` desempata), faz login com `pin` e usa o certificado de rótulo `label` (ou de `keyId`, o `CKA_ID` em hexadecimal) e a chave privada com o mesmo `CKA_ID` do certificado. `chain` completa as intermediárias. O PIN atravessa o canal e nunca vai para argv ou env.",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/signer-contract/PROTOCOL.md",
+    "nome": "signTimeoutMs",
+    "trecho": "- `backend: \"remote\"`: o cliente manda só a cadeia pública (`chain`, DER em base64, titular primeiro, sem a raiz), o `mode` de assinatura (`digest` ou `message`) e, opcional, `signTimeoutMs` (padrão 30 s, máximo 5 min). A chave fica com o cliente, que responde aos `sign`.",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/signer-contract/PROTOCOL.md",
+    "nome": "dataVersion",
+    "trecho": "**`hello`** (`protocol`, `client`) devolve `protocol`, `helper` (`sinete-signer/<versão>`), `lab`, `ambientes` liberados na linha de comando, `backends` deste binário (`remote` sempre; `pkcs11` só no sabor com cgo), `signModes`, `schemes`, `methods` e `dataVersion` (versão dos endpoints, perfis TLS e bundle ICP compilados). O cliente chama antes de tudo e recusa helper cujo `protocol` não conhece.",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/signer-contract/PROTOCOL.md",
+    "nome": "reference",
+    "trecho": "A C14N é do cliente; o helper valida os bytes canônicos, que são o que a assinatura cobre. Um cliente que mentisse na C14N só produziria uma assinatura que não confere no documento real. A resposta traz `signature`, `reference` e `kind`. Recusa: `dfe_refused`.",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/signer-contract/PROTOCOL.md",
+    "nome": "forbidden",
+    "trecho": "**`dfe.sign`** assina um documento fiscal com a chave que o helper controla (só backend `pkcs11`; no `remote` o cliente já tem a chave e recebe `forbidden`). Parâmetros: `identity`, `signedInfo` (o `SignedInfo` canonicalizado, C14N 1.0, exatamente os bytes que a assinatura cobre), `hash` (`SHA-1` nos leiautes atuais) e, opcional, `element` (o elemento referenciado, canonicalizado). Não existe hash cego. Antes de assinar, o helper:",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "docs/signer-contract/PROTOCOL.md",
+    "nome": "forbidden",
+    "trecho": "| `forbidden` | operação não permitida para a identidade (`dfe.sign` no `remote`) |",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "helpers/signer-tls/scripts/npm.ts",
+    "nome": "module",
+    "trecho": "type: 'module',",
+    "motivo": "`type: 'module'` do `package.json`"
+  },
+  {
+    "arquivo": "helpers/signer-tls/scripts/smoke.ts",
+    "nome": "signer",
+    "trecho": "(a, b) => Number(/sinete-signer-\\d/.test(path.basename(a))) - Number(/sinete-signer-\\d/.test(path.basename(b))),",
+    "motivo": "nome próprio do helper (`sinete-signer`, `@sinete/signer`, subpath `@sinete/transport/signer`), mantido (ADR 0015)"
+  },
+  {
+    "arquivo": "helpers/signer-tls/scripts/smoke.ts",
+    "nome": "signer",
+    "trecho": ": /^sinete-signer-\\d/.test(f)",
+    "motivo": "nome próprio do helper (`sinete-signer`, `@sinete/signer`, subpath `@sinete/transport/signer`), mantido (ADR 0015)"
+  },
+  {
+    "arquivo": "helpers/signer-tls/scripts/smoke.ts",
+    "nome": "module",
+    "trecho": "JSON.stringify({ private: true, type: 'module', dependencies: { '@sinete/signer': await version() } }, null, 2),",
+    "motivo": "`type: 'module'` do `package.json`"
+  },
+  {
+    "arquivo": "packages/cert/src/bundle.ts",
+    "nome": "data",
+    "trecho": "* `data/icp-brasil.json` é gerado por `tools/icp-bundle/build-bundle.ts` a partir do `ACcompactado.zip` do ITI, com o",
+    "motivo": "`data` em português (data civil), a pasta `data/` ou o campo `data` do erro do protocolo do helper; nenhum é a chave renomeada"
+  },
+  {
+    "arquivo": "packages/cert/src/pkcs12.ts",
+    "nome": "password",
+    "trecho": "if (/MAC could not be verified|wrong password|Failed to decrypt/i.test(msg)) {",
+    "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
+  },
+  {
+    "arquivo": "packages/cert/src/pkcs12.ts",
+    "nome": "to",
+    "trecho": "if (/MAC could not be verified|wrong password|Failed to decrypt/i.test(msg)) {",
+    "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
+  },
+  {
+    "arquivo": "packages/cert/src/x509.ts",
+    "nome": "Validity",
+    "trecho": "const [nb, na] = children(buf, expectTag(at(i + 3), TAG.SEQUENCE, 'Validity'));",
+    "motivo": "campo do certificado X.509 com o nome da RFC 5280, mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/cert/src/x509.ts",
+    "nome": "Validity",
+    "trecho": "if (!nb || !na) throw new ErroCertificado('certificado_invalido', 'Validity incompleta');",
+    "motivo": "campo do certificado X.509 com o nome da RFC 5280, mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/cli/src/doctor.ts",
+    "nome": "status",
+    "trecho": "* 3. Relógio: a validade do certificado contra o relógio local e, com referência (`--status` ou `--relogio-url`), a",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "packages/cli/src/doctor.ts",
+    "nome": "status",
+    "trecho": "*    pedem o certificado por renegociação, o handshake sozinho não prova a aceitação: é o que `--status` faz.",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "packages/cli/src/doctor.ts",
+    "nome": "status",
+    "trecho": "* 5. Status (só com `--status`): consulta de status do serviço (NF-e ou MDF-e), a única requisição que o doctor envia.",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "packages/cli/src/doctor.ts",
+    "nome": "expired",
+    "trecho": "* Com `allowLeafExpiry` (o `--allow-expired`), a validade do titular já foi tratada na verificação `pfx` e não conta",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "packages/cli/src/doctor.ts",
+    "nome": "date",
+    "trecho": "const server = parseHttpDate(res.cabecalhos.date);",
+    "motivo": "termo do HTTP ou do SOAP 1.2 (`status`, `connection: close`, `action` do `Content-Type`, `https.request`, cabeçalho `date`)"
+  },
+  {
+    "arquivo": "packages/cli/src/main.ts",
+    "nome": "code",
+    "trecho": "/** Lê um arquivo; lança com `code: 'ENOENT'` quando ele não existe. */",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "packages/cli/test/doctor.test.ts",
+    "nome": "password",
+    "trecho": "const base = (): Pick<DoctorOptions, 'pfx' | 'password' | 'clock' | 'extraCaPem' | 'timeoutMs'> => ({",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "packages/core/README.md",
+    "nome": "code",
+    "trecho": "Todo erro lançado pelo sinete é `ErroSinete`, com `code` estável (snake_case, português, sem acento), `cause` preservada e `detalhes` serializáveis. O `code` é API pública; renomear um código é major. Nunca decida nada pela mensagem.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "packages/core/README.md",
+    "nome": "code",
+    "trecho": "| Classe | `code` | Quando |",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "packages/core/README.md",
+    "nome": "code",
+    "trecho": "Cada ocorrência de um `ErroDeValidacao` é uma `Ocorrencia` com `caminho`, `code`, `mensagem` e `origem`: `entrada` quando a conferência foi sobre a entrada do domínio (o caminho é dela e corrigir o valor ali resolve), `montagem` quando foi sobre o que o sinete produziu (XML contra o XSD, chave gerada, cálculo). Os montadores sempre preenchem; ausente, a ocorrência não foi classificada. Para mostrar o caminho em português, cada pacote de documento tem o seu `rotuloDoCaminho`, montado com `criarRotuloDoCaminho` e `normalizarCaminho` daqui (ADR 0011).",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "packages/core/src/errors.ts",
+    "nome": "code",
+    "trecho": "* Todo erro lançado por um pacote `@sinete/*` é um `ErroSinete` com um `code` estável: snake_case, em português,",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "packages/core/src/errors.ts",
+    "nome": "code",
+    "trecho": "* sem acento. O `code` faz parte da API pública; renomear um código é mudança incompatível (major). A mensagem é",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "packages/core/src/errors.ts",
+    "nome": "result",
+    "trecho": "* Rejeição da SEFAZ não é erro: é um `ResultadoSefaz` (ver `result.ts`). Erro é o que impede de obter uma resposta",
+    "motivo": "nome de arquivo, pasta ou opção de linha de comando (`result.ts`, `manifest.json`, `sources.json`, `--record`, `--check`, `src`)"
+  },
+  {
+    "arquivo": "packages/core/src/signer.ts",
+    "nome": "signer",
+    "trecho": "* (o helper `sinete-signer`, por exemplo, confere o autor de um evento no elemento). Quem assina localmente ignora.",
+    "motivo": "nome próprio do helper (`sinete-signer`, `@sinete/signer`, subpath `@sinete/transport/signer`), mantido (ADR 0015)"
+  },
+  {
+    "arquivo": "packages/core/src/xml/parser.ts",
+    "nome": "yes",
+    "trecho": "/^<\\?xml[ \\t\\r\\n]+version[ \\t\\r\\n]*=[ \\t\\r\\n]*([\"'])1\\.[0-9]+\\1(?:[ \\t\\r\\n]+encoding[ \\t\\r\\n]*=[ \\t\\r\\n]*([\"'])[A-Za-z][A-Za-z0-9._-]*\\2)?(?:[ \\t\\r\\n]+standalone[ \\t\\r\\n]*=[ \\t\\r\\n]*([\"'])(?:yes|no)\\3)?[ \\t\\r\\n]*\\?>/;",
+    "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
+  },
+  {
+    "arquivo": "packages/core/src/xml/parser.ts",
+    "nome": "no",
+    "trecho": "/^<\\?xml[ \\t\\r\\n]+version[ \\t\\r\\n]*=[ \\t\\r\\n]*([\"'])1\\.[0-9]+\\1(?:[ \\t\\r\\n]+encoding[ \\t\\r\\n]*=[ \\t\\r\\n]*([\"'])[A-Za-z][A-Za-z0-9._-]*\\2)?(?:[ \\t\\r\\n]+standalone[ \\t\\r\\n]*=[ \\t\\r\\n]*([\"'])(?:yes|no)\\3)?[ \\t\\r\\n]*\\?>/;",
+    "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
+  },
+  {
+    "arquivo": "packages/da/src/input/mdfe.ts",
+    "nome": "docs",
+    "trecho": "const docs: MdfeView['docs'][number][] = [];",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "packages/da/src/render/html.ts",
+    "nome": "line",
+    "trecho": "case 'line': {",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "packages/da/src/render/html.ts",
+    "nome": "none",
+    "trecho": "const fill = op.fill === undefined ? 'none' : gray(op.fill);",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "packages/emissor/src/mdfe.ts",
+    "nome": "signer",
+    "trecho": "readonly cliente?: Omit<Partial<MdfeClientOptions>, 'transport' | 'signer' | 'ambiente' | 'clock'>;",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "packages/emissor/src/nfe.ts",
+    "nome": "signer",
+    "trecho": "'transport' | 'signer' | 'ambiente' | 'uf' | 'clock' | 'contingencia'",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "packages/emissor/src/nfse.ts",
+    "nome": "signer",
+    "trecho": "readonly cliente?: Omit<Partial<NfseClientOptions>, 'transport' | 'signer' | 'ambiente' | 'clock'>;",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "packages/emissor/test/retomada.test.ts",
+    "nome": "resolve",
+    "trecho": "type Comportamento = 'resolve' | 'falha' | 'ocupada' | 'divergente' | 'sem-bytes' | 'descarta' | 'pendente';",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "packages/emissor/test/retomada.test.ts",
+    "nome": "resolve",
+    "trecho": "if (c === 'resolve') {",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "packages/emissor/test/signer-a3.test.ts",
+    "nome": "signer",
+    "trecho": "* `@sinete/transport/signer` a partir de um token PKCS#11 (SoftHSM, com o par gerado dentro do token) e emite contra o",
+    "motivo": "nome próprio do helper (`sinete-signer`, `@sinete/signer`, subpath `@sinete/transport/signer`), mantido (ADR 0015)"
+  },
+  {
+    "arquivo": "packages/ibs-cbs-dados/README.md",
+    "nome": "code",
+    "trecho": "| Erro | `code` | Quando |",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "packages/ibs-cbs-dados/src/bundled.ts",
+    "nome": "bundled",
+    "trecho": "* `@sinete/ibs-cbs-dados/bundled`: o dataset embarcado nesta versão do pacote, extraído por `tools/ibs-cbs-dados` das fontes",
+    "motivo": "subpath `/bundled` do `@sinete/ibs-cbs-dados`, que a fase 2 não renomeia"
+  },
+  {
+    "arquivo": "packages/ibs-cbs-dados/src/data/manifest.json",
+    "nome": "data",
+    "trecho": "\"data\": \"2026-09-03\",",
+    "motivo": "`data` em português (data civil), a pasta `data/` ou o campo `data` do erro do protocolo do helper; nenhum é a chave renomeada"
+  },
+  {
+    "arquivo": "packages/ibs-cbs-dados/src/data/manifest.json",
+    "nome": "data",
+    "trecho": "\"data\": \"2026-06-22\",",
+    "motivo": "`data` em português (data civil), a pasta `data/` ou o campo `data` do erro do protocolo do helper; nenhum é a chave renomeada"
+  },
+  {
+    "arquivo": "packages/ibs-cbs-dados/src/dataset.ts",
+    "nome": "bundled",
+    "trecho": "* `carregarDataset` aceita qualquer `BundleDoDataset`: o embarcado neste pacote (`@sinete/ibs-cbs-dados/bundled`) ou um obtido em",
+    "motivo": "subpath `/bundled` do `@sinete/ibs-cbs-dados`, que a fase 2 não renomeia"
+  },
+  {
+    "arquivo": "packages/ibs-cbs-dados/src/dates.ts",
+    "nome": "data",
+    "trecho": "export function exigirDataIso(valor: unknown, oQue = 'data'): DataIso {",
+    "motivo": "`data` em português (data civil), a pasta `data/` ou o campo `data` do erro do protocolo do helper; nenhum é a chave renomeada"
+  },
+  {
+    "arquivo": "packages/ibs-cbs-dados/src/index.ts",
+    "nome": "bundled",
+    "trecho": "* embarcado está em `@sinete/ibs-cbs-dados/bundled`, e qualquer outro bundle compatível pode ser carregado em runtime com",
+    "motivo": "subpath `/bundled` do `@sinete/ibs-cbs-dados`, que a fase 2 não renomeia"
+  },
+  {
+    "arquivo": "packages/ibs-cbs-dados/test/dataset.test.ts",
+    "nome": "data",
+    "trecho": "expect(() => exigirDataIso('x', 'data de teste')).toThrow(/data de teste/);",
+    "motivo": "`data` em português (data civil), a pasta `data/` ou o campo `data` do erro do protocolo do helper; nenhum é a chave renomeada"
+  },
+  {
+    "arquivo": "packages/ibs-cbs/README.md",
+    "nome": "determine",
+    "trecho": "Até a reorganização dos pacotes (ADR 0008), cada parte era um pacote: `@sinete/rtc-rates`, `@sinete/rtc-engine`, `@sinete/rtc-rules` e `@sinete/rtc-determine`.",
+    "motivo": "nome histórico do pacote `@sinete/rtc-determine`, anterior ao ADR 0008"
+  },
+  {
+    "arquivo": "packages/ibs-cbs/README.md",
+    "nome": "code",
+    "trecho": "| Classe | `code` | Quando |",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "packages/ibs-cbs/src/aliquotas/data/rates.json",
+    "nome": "data",
+    "trecho": "\"data\": \"2026-09-03\",",
+    "motivo": "`data` em português (data civil), a pasta `data/` ou o campo `data` do erro do protocolo do helper; nenhum é a chave renomeada"
+  },
+  {
+    "arquivo": "packages/ibs-cbs/src/aliquotas/data/rates.json",
+    "nome": "data",
+    "trecho": "\"data\": \"2026-05-12\",",
+    "motivo": "`data` em português (data civil), a pasta `data/` ou o campo `data` do erro do protocolo do helper; nenhum é a chave renomeada"
+  },
+  {
+    "arquivo": "packages/ibs-cbs/src/calcular/decimal.ts",
+    "nome": "parse",
+    "trecho": "/** Atalho para `Decimal.parse`. */",
+    "motivo": "`Decimal` e seus métodos ficam em inglês (ADR 0015, exceção 3)"
+  },
+  {
+    "arquivo": "packages/ibs-cbs/src/validar/rules.ts",
+    "nome": "data",
+    "trecho": "* da NT (tipo de nota x cClassTrib, alíquotas por ano, áreas incentivadas) estão em `data/nt2025002.json`.",
+    "motivo": "`data` em português (data civil), a pasta `data/` ou o campo `data` do erro do protocolo do helper; nenhum é a chave renomeada"
+  },
+  {
+    "arquivo": "packages/ibs-cbs/test/calcular/oracle.test.ts",
+    "nome": "error",
+    "trecho": "const agree = cases.filter((c) => c.divergences.length === 0 && !('error' in c.engine)).length;",
+    "motivo": "formato das respostas gravadas pelo oráculo (`tools/ibs-cbs-oraculo`), fora da fase 2"
+  },
+  {
+    "arquivo": "packages/ibs-cbs/test/calcular/oracle.test.ts",
+    "nome": "error",
+    "trecho": "if ('error' in c.engine) {",
+    "motivo": "formato das respostas gravadas pelo oráculo (`tools/ibs-cbs-oraculo`), fora da fase 2"
+  },
+  {
+    "arquivo": "packages/ibs-cbs/test/calcular/oracle.test.ts",
+    "nome": "record",
+    "trecho": "* Regressão contra respostas gravadas da Calculadora offline (`tools/ibs-cbs-oraculo/run.ts --record`). Cada caso guarda a",
+    "motivo": "formato das respostas gravadas pelo oráculo (`tools/ibs-cbs-oraculo`), fora da fase 2"
+  },
+  {
+    "arquivo": "packages/mdfe/README.md",
+    "nome": "code",
+    "trecho": "- **Validação estrita.** Cada problema volta como `Ocorrencia` (`caminho`, `code`, `mensagem` com a regra do MOC e a rejeição, por exemplo `(F90, rejeição 663)`), nunca como exceção. Os códigos estão em `MDFE_ISSUE_CODES`. `origem` diz se a ocorrência veio da conferência da entrada (`entrada`, com o caminho da `MdfeInput`) ou do documento montado (`montagem`: schema, chave, `tpEmis` das opções), e `rotuloDoCaminho(path)` dá o caminho em português para a tela (`Condutor 1, CPF`); veja o [ADR 0011](../../docs/adr/0011-origem-e-rotulo-das-ocorrencias.md).",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "packages/mdfe/README.md",
+    "nome": "code",
+    "trecho": "- Cancelamento: todo método que vai à rede aceita `opcoes?: OpcoesEnvio` como último parâmetro, com o `signal` que cancela a requisição em curso. Abortar rejeita com `ErroTransporte` de `code: 'cancelado'` (com o transporte do `@sinete/transport`), e um pedido que já saiu pode ter sido processado: confirme por consulta antes de repetir.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "packages/nfe/README.md",
+    "nome": "code",
+    "trecho": "- **Validação estrita.** O XML canônico é validado contra o schema do PL vigente antes de devolver; qualquer problema volta como lista de `Ocorrencia` (`caminho`, `code`, `mensagem`, `origem`), nunca como exceção. Os códigos estão em `NFE_ISSUE_CODES`. `origem` é `entrada` quando a conferência foi sobre a `NfeInput` (o caminho é dela) e `montagem` quando foi sobre o que o pacote produziu (schema e PL do XML, chave gerada, grupo IBS/CBS da calculadora); `rotuloDoCaminho(path)` dá o caminho em português para a tela (`Item 2, Descrição do produto`), nos dois formatos de caminho. Veja o [ADR 0011](../../docs/adr/0011-origem-e-rotulo-das-ocorrencias.md).",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "packages/nfe/README.md",
+    "nome": "code",
+    "trecho": "- Cancelamento: todo método que vai à rede aceita `signal` (`OpcoesEnvio`) no último parâmetro de opções. Em `statusServico`, `autorizar`, `consultarRecibo`, `aguardarRecibo` e `distribuicaoDFe`, ele fica no mesmo objeto das outras opções; nos demais, é um `opcoes?: OpcoesEnvio` a mais no fim. Abortar rejeita com `ErroTransporte` de `code: 'cancelado'` (com o transporte do `@sinete/transport`), e um pedido que já saiu pode ter sido processado: confirme por consulta antes de repetir.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "packages/nfe/README.md",
+    "nome": "rates",
+    "trecho": "const ibsCbs = ibsCbsCalculator({ base: (item) => item.vProd.minus(item.vDesc).toFixed(2), rates: minhasAliquotas });",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "packages/nfe/README.md",
+    "nome": "rates",
+    "trecho": "| `rates` | `aliquotasOficiais()` | um provedor com alíquotas informadas |",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "packages/nfe/README.md",
+    "nome": "utcOffsetMinutes",
+    "trecho": "| `utcOffsetMinutes` | -180 | fuso para a data civil do fato gerador |",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "packages/nfe/src/rtc.ts",
+    "nome": "options",
+    "trecho": "* `options.ibsCbs` não é informado; crie a sua para trocar dataset, alíquotas, base ou regras. Com `dataset` informado",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "packages/nfse/README.md",
+    "nome": "code",
+    "trecho": "- **Validação estrita.** O XML é validado contra o schema vigente antes de devolver; problemas voltam como `Ocorrencia` (`caminho`, `code`, `mensagem`, `origem`: `entrada` na conferência da `DpsInput`, `montagem` no schema do XML), nunca como exceção. Competência depois da emissão (E0015) é conferida localmente.",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "packages/rejeicoes/test/rejeicoes.test.ts",
+    "nome": "no",
+    "trecho": "const dangling = /\\s(a|o|as|os|ao|aos|e|ou|de|da|do|das|dos|com|para|por|no|na|nos|nas|em|um|uma|que|se|sem)$/i;",
+    "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
+  },
+  {
+    "arquivo": "packages/schemas/README.md",
+    "nome": "serialize",
+    "trecho": "- Tipos com `Signature` obrigatória (`TNFe`, `TEvento`, `TInutNFe`) descrevem o documento assinado. Para emitir, serialize o elemento assinado (`infNFe`, `infEvento`), monte o envelope e assine com o `@sinete/core/xml`, que insere a `Signature` sem reserializar.",
+    "motivo": "vocabulário do XSD (`use=\"required\"`, tipos embutidos `date`/`time`, verbo \"serialize\" em português), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/schemas/src/runtime/desc.ts",
+    "nome": "required",
+    "trecho": "/** `use=\"required\"`. */",
+    "motivo": "vocabulário do XSD (`use=\"required\"`, tipos embutidos `date`/`time`, verbo \"serialize\" em português), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/schemas/src/runtime/validate.ts",
+    "nome": "date",
+    "trecho": "if ((t.b === 'date' || t.b === 'dateTime') && !validCalendarDay(v)) {",
+    "motivo": "vocabulário do XSD (`use=\"required\"`, tipos embutidos `date`/`time`, verbo \"serialize\" em português), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/schemas/src/runtime/validate.ts",
+    "nome": "time",
+    "trecho": "if (b !== 'time') {",
+    "motivo": "vocabulário do XSD (`use=\"required\"`, tipos embutidos `date`/`time`, verbo \"serialize\" em português), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/schemas/src/runtime/validate.ts",
+    "nome": "time",
+    "trecho": "if (b === 'time' || b === 'dateTime') {",
+    "motivo": "vocabulário do XSD (`use=\"required\"`, tipos embutidos `date`/`time`, verbo \"serialize\" em português), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/sefaz-sim/README.md",
+    "nome": "source",
+    "trecho": "- Regras como dados: cada regra de negócio é um `SimRule` com `id` e `source` (item do MOC 7.0 Anexo I ou da Visão Geral) e a lista é trocável por `options.rules` (`DEFAULT_RULES` é o ponto de partida). Nada de `if (uf === ...)`: o que muda por autorizador está em `NFE_SERVICES` e nas opções.",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "packages/sefaz-sim/README.md",
+    "nome": "rules",
+    "trecho": "- Regras como dados: cada regra de negócio é um `SimRule` com `id` e `source` (item do MOC 7.0 Anexo I ou da Visão Geral) e a lista é trocável por `options.rules` (`DEFAULT_RULES` é o ponto de partida). Nada de `if (uf === ...)`: o que muda por autorizador está em `NFE_SERVICES` e nas opções.",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "packages/sefaz-sim/README.md",
+    "nome": "signer",
+    "trecho": "signer: servidor.signer, // a Sefin simulada assina a NFS-e e o evento",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "packages/sefaz-sim/README.md",
+    "nome": "signer",
+    "trecho": "- **Documentos.** A NFS-e leva a DPS recebida byte a byte, os valores do ISSQN e do IBS/CBS calculados em centavos inteiros (contas simples do simulador, não a apuração da Sefin) e a assinatura do `signer`. A chave tem DV módulo 11, escolha do simulador: o Anexo I não publica o algoritmo. A substituta registra sozinha o e105102 na substituída.",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "packages/sefaz-sim/README.md",
+    "nome": "key",
+    "trecho": "const server = await startSefazSimServer(sim, { cert: servidor.pem, key: servidor.keyPem });",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "packages/sefaz-sim/README.md",
+    "nome": "key",
+    "trecho": "const server = await startSimServer(sim, { cert: servidor.pem, key: servidor.keyPem });",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "packages/sefaz-sim/README.md",
+    "nome": "close",
+    "trecho": "await server.close();",
+    "motivo": "termo do HTTP ou do SOAP 1.2 (`status`, `connection: close`, `action` do `Content-Type`, `https.request`, cabeçalho `date`)"
+  },
+  {
+    "arquivo": "packages/sefaz-sim/README.md",
+    "nome": "tlsIdentity",
+    "trecho": "const t = criarTransporteNode({ identidade: emitente.tlsIdentity, acsAdicionais: [ac.pem] });",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "packages/sefaz-sim/README.md",
+    "nome": "tlsIdentity",
+    "trecho": "const transport = redirectNfseToSim(criarTransporte({ identidade: prestador.tlsIdentity, acsAdicionais: [ac.pem] }), server.baseUrl);",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "packages/sefaz-sim/README.md",
+    "nome": "tlsIdentity",
+    "trecho": "`syntheticCertificate({ clock, role })` gera na hora (WebCrypto, RSA-2048, sha256WithRSA) a AC, o e-CNPJ (`otherName` 2.16.76.1.3.3), o e-CPF (2.16.76.1.3.1 posicional) e o certificado do servidor (SAN com IP e DNS), com `signer` (`AssinadorDeDados` do core), `tlsIdentity` (`pem` do transporte) e PEM da chave. Não são ICP-Brasil e nada vai para o repo. No Bun, um certificado de AC apresentado como cliente derruba o handshake no servidor; use um de titular.",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "packages/sefaz-sim/src/server.node.ts",
+    "nome": "close",
+    "trecho": "`connection: ${keepAlive ? 'keep-alive' : 'close'}`,",
+    "motivo": "termo do HTTP ou do SOAP 1.2 (`status`, `connection: close`, `action` do `Content-Type`, `https.request`, cabeçalho `date`)"
+  },
+  {
+    "arquivo": "packages/sefaz-sim/src/server.node.ts",
+    "nome": "close",
+    "trecho": "const keepAlive = (req.headers.connection ?? 'keep-alive').toLowerCase() !== 'close';",
+    "motivo": "termo do HTTP ou do SOAP 1.2 (`status`, `connection: close`, `action` do `Content-Type`, `https.request`, cabeçalho `date`)"
+  },
+  {
+    "arquivo": "packages/sefaz-sim/src/soap.ts",
+    "nome": "action",
+    "trecho": "const m = /;\\s*action\\s*=\\s*\"?([^\";]+)\"?/i.exec(contentType ?? '');",
+    "motivo": "termo do HTTP ou do SOAP 1.2 (`status`, `connection: close`, `action` do `Content-Type`, `https.request`, cabeçalho `date`)"
+  },
+  {
+    "arquivo": "packages/sefaz-sim/src/synthetic.ts",
+    "nome": "clock",
+    "trecho": "/** Dias de validade a partir de `clock.agora()`. Padrão: 365. Negativo gera um certificado já vencido. */",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "packages/sefaz-sim/src/transport.ts",
+    "nome": "path",
+    "trecho": "/** Cria o transporte em processo. As URLs são `SIM_BASE_URL` + `sim.path(...)`. */",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "packages/sinete/src/ibs-cbs-dados/bundled.ts",
+    "nome": "bundled",
+    "trecho": "/** `sinete/ibs-cbs-dados/bundled`: reexporta `@sinete/ibs-cbs-dados/bundled`. Gerado por `scripts/umbrella.ts`; não edite. */",
+    "motivo": "subpath `/bundled` do `@sinete/ibs-cbs-dados`, que a fase 2 não renomeia"
+  },
+  {
+    "arquivo": "packages/transport/README.md",
+    "nome": "sign",
+    "trecho": "- `abrirPkcs11({ modulo, token, rotulo | idDaChave, pin })`: token pelo helper `-p11`; `assinadorDeDocumentos` assina XML pelo `dfe.sign`, que o helper valida (perfil XMLDSig dos DF-e e `Id` de documento do titular).",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/README.md",
+    "nome": "code",
+    "trecho": "Antes de abrir socket, o transporte cruza o perfil TLS do host com as capacidades e recusa com `ErroTransporteNaoSuportado` (`code: 'nao_suportado'`, `detalhes: { host, motivos, alternativa }`).",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "packages/transport/src/classify.ts",
+    "nome": "certificate",
+    "trecho": "/UNABLE_TO_GET_ISSUER_CERT|UNABLE_TO_VERIFY_LEAF_SIGNATURE|SELF_SIGNED_CERT|CERT_HAS_EXPIRED|CERT_UNTRUSTED|UnknownIssuer|invalid peer certificate|certificate verify failed/i.test(",
+    "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
+  },
+  {
+    "arquivo": "packages/transport/src/classify.ts",
+    "nome": "key",
+    "trecho": "if (/KEY_VALUES_MISMATCH|key values mismatch/i.test(text)) {",
+    "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
+  },
+  {
+    "arquivo": "packages/transport/src/classify.ts",
+    "nome": "request",
+    "trecho": "readonly stage?: 'dial' | 'handshake' | 'request' | 'response';",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/src/classify.ts",
+    "nome": "cipher",
+    "trecho": "if (/SSL|TLS|handshake|cipher/i.test(text)) return { code: 'falha_tls' };",
+    "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
+  },
+  {
+    "arquivo": "packages/transport/src/classify.ts",
+    "nome": "record",
+    "trecho": "if (/BAD_RECORD_MAC|bad record mac|BadRecordMac/i.test(text)) return { code: 'certificado_ausente_ou_recusado' };",
+    "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
+  },
+  {
+    "arquivo": "packages/transport/src/classify.ts",
+    "nome": "to",
+    "trecho": "if (/ENOTFOUND|EAI_AGAIN|EHOSTUNREACH|ENETUNREACH|dns error|failed to lookup/i.test(text)) {",
+    "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
+  },
+  {
+    "arquivo": "packages/transport/src/classify.ts",
+    "nome": "values",
+    "trecho": "if (/KEY_VALUES_MISMATCH|key values mismatch/i.test(text)) {",
+    "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
+  },
+  {
+    "arquivo": "packages/transport/src/signer.ts",
+    "nome": "message",
+    "trecho": "input = decodificarBase64(String(p.message ?? ''));",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/src/signer.ts",
+    "nome": "message",
+    "trecho": "* `AssinadorTls` sobre uma `CryptoKey` RSASSA-PKCS1-v1_5 com SHA-256 (não exportável serve), no modo `message`: o",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/src/signer.ts",
+    "nome": "sign",
+    "trecho": "* - `abrirPkcs11`: token local pelo helper `-p11`. O `assinadorDeDocumentos` assina XML dos DF-e pelo `dfe.sign`, que o",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/src/signer.ts",
+    "nome": "chain",
+    "trecho": "const chain = ((r.chain as string[] | undefined) ?? []).map((c) => decodificarBase64(c));",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/src/signer.ts",
+    "nome": "signer",
+    "trecho": "* `@sinete/transport/signer`: cliente do protocolo v1 do helper `sinete-signer` (ADR 0005,",
+    "motivo": "nome próprio do helper (`sinete-signer`, `@sinete/signer`, subpath `@sinete/transport/signer`), mantido (ADR 0015)"
+  },
+  {
+    "arquivo": "packages/transport/src/signer.ts",
+    "nome": "identity",
+    "trecho": "/** Prazo dos pedidos de controle (`hello`, `identity.open`, `stats`). Padrão: 60 000 ms (login em token é lento). */",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/src/signer.ts",
+    "nome": "identity",
+    "trecho": "const identity = String(p.identity);",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/src/signer.ts",
+    "nome": "signature",
+    "trecho": "return decodificarBase64(String(res.signature));",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/src/signer.ts",
+    "nome": "scheme",
+    "trecho": "if (p.scheme !== 'rsa_pkcs1_sha256') return refuse(`esquema recusado: ${String(p.scheme)}`);",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/src/signer.ts",
+    "nome": "context",
+    "trecho": "const ctx = (p.context ?? {}) as { purpose?: unknown; host?: unknown; conn?: unknown; handshake?: unknown };",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/src/signer.ts",
+    "nome": "headers",
+    "trecho": "const headers = (r.headers ?? {}) as Record<string, string>;",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/src/signer.ts",
+    "nome": "body",
+    "trecho": "const body = decodificarBase64(String(r.body ?? ''));",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/src/signer.ts",
+    "nome": "protocol",
+    "trecho": "if (helloRaw.protocol !== VERSAO_PROTOCOLO_SIGNER) {",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/src/signer.ts",
+    "nome": "protocol",
+    "trecho": "`o helper fala o protocolo ${String(helloRaw.protocol)}; este cliente fala ${VERSAO_PROTOCOLO_SIGNER}`,",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/src/signer.ts",
+    "nome": "stats",
+    "trecho": "/** Prazo dos pedidos de controle (`hello`, `identity.open`, `stats`). Padrão: 60 000 ms (login em token é lento). */",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/src/signer.ts",
+    "nome": "dataVersion",
+    "trecho": "dataVersion: typeof helloRaw.dataVersion === 'string' ? helloRaw.dataVersion : undefined,",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/src/soap.ts",
+    "nome": "action",
+    "trecho": "/** `Content-Type` do SOAP 1.2, com a `action` do WSDL quando houver (`<namespace do WSDL>/<operação>`). */",
+    "motivo": "termo do HTTP ou do SOAP 1.2 (`status`, `connection: close`, `action` do `Content-Type`, `https.request`, cabeçalho `date`)"
+  },
+  {
+    "arquivo": "packages/transport/src/transport.node.ts",
+    "nome": "request",
+    "trecho": "// Prazo total da requisição. O `timeout` do https.request é só de inatividade do socket: um servidor que pinga",
+    "motivo": "termo do HTTP ou do SOAP 1.2 (`status`, `connection: close`, `action` do `Content-Type`, `https.request`, cabeçalho `date`)"
+  },
+  {
+    "arquivo": "packages/transport/src/types.ts",
+    "nome": "signer",
+    "trecho": "* Identidade TLS do cliente. `pem` roda em processo; `helper` passa pelo `sinete-signer` do ADR 0005, e é o que",
+    "motivo": "nome próprio do helper (`sinete-signer`, `@sinete/signer`, subpath `@sinete/transport/signer`), mantido (ADR 0015)"
+  },
+  {
+    "arquivo": "packages/transport/src/types.ts",
+    "nome": "signer",
+    "trecho": "* `abrirRemoto` e `abrirPkcs11` do `@sinete/transport/signer` devolvem (A3 em token, A3 em nuvem, OpenBao, `CryptoKey`",
+    "motivo": "nome próprio do helper (`sinete-signer`, `@sinete/signer`, subpath `@sinete/transport/signer`), mantido (ADR 0015)"
+  },
+  {
+    "arquivo": "packages/transport/test/lab/servers.ts",
+    "nome": "length",
+    "trecho": "const FINISHED_FROM_CLIENT = /<<< TLS 1\\.2, Handshake \\[length [0-9a-f]+\\], Finished/g;",
+    "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
+  },
+  {
+    "arquivo": "packages/transport/test/lab/servers.ts",
+    "nome": "length",
+    "trecho": "const after = log.split(/>>> TLS 1\\.2, Handshake \\[length [0-9a-f]+\\], HelloRequest/)[1] ?? '';",
+    "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
+  },
+  {
+    "arquivo": "packages/transport/test/lab/servers.ts",
+    "nome": "length",
+    "trecho": "/<<< TLS 1\\.2, Handshake \\[length [0-9a-f]+\\], Certificate\\n/.test(after) &&",
+    "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
+  },
+  {
+    "arquivo": "packages/transport/test/lab/servers.ts",
+    "nome": "length",
+    "trecho": "/<<< TLS 1\\.2, Handshake \\[length [0-9a-f]+\\], CertificateVerify/.test(after)",
+    "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-contract.test.ts",
+    "nome": "method",
+    "trecho": "if (f.method === 'hello') reply({ v: 1, id: f.id, result: HELLO });",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-contract.test.ts",
+    "nome": "method",
+    "trecho": "else if (f.method === 'identity.open')",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-contract.test.ts",
+    "nome": "method",
+    "trecho": "else if (f.method === 'http.request') {",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-contract.test.ts",
+    "nome": "method",
+    "trecho": "const httpSent = sent.find((f) => f.method === 'http.request') as { params: Record<string, unknown> };",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-contract.test.ts",
+    "nome": "method",
+    "trecho": "else if (f.method === 'http.request') reply({ v: 1, id: f.id, error: errs[(f.params as { url: string }).url] });",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-contract.test.ts",
+    "nome": "method",
+    "trecho": "else if (f.method === 'identity.open') {",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-contract.test.ts",
+    "nome": "method",
+    "trecho": "else if (f.method === 'identity.open') reply({ v: 1, id: f.id, result: { ...OPENED, id: 'a' } });",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-contract.test.ts",
+    "nome": "method",
+    "trecho": "expect(sent.filter((f) => f.method === 'identity.open')).toHaveLength(1);",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-contract.test.ts",
+    "nome": "method",
+    "trecho": "if (f.method === 'hello') reply({ v: 1, id: f.id, result: { ...HELLO, backends: ['remote', 'pkcs11'] } });",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-contract.test.ts",
+    "nome": "method",
+    "trecho": "else if (f.method === 'identity.open' && atrasados.length < 2) {",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-contract.test.ts",
+    "nome": "method",
+    "trecho": "} else if (f.method === 'identity.open') reply({ v: 1, id: f.id, result: { ...OPENED, id: params.id } });",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-contract.test.ts",
+    "nome": "method",
+    "trecho": "else if (f.method === 'identity.close') reply({ v: 1, id: f.id, result: { closed: true } });",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-contract.test.ts",
+    "nome": "method",
+    "trecho": "expect(sent.some((f) => f.method === 'identity.close')).toBe(false);",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-contract.test.ts",
+    "nome": "method",
+    "trecho": "const closes = sent.filter((f) => f.method === 'identity.close').map((f) => f.params);",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-contract.test.ts",
+    "nome": "method",
+    "trecho": "else if (f.method === 'cancel') reply({ v: 1, id: f.id, result: { cancelled: true } });",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-contract.test.ts",
+    "nome": "method",
+    "trecho": "const req = sent.find((f) => f.method === 'http.request');",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-contract.test.ts",
+    "nome": "method",
+    "trecho": "const cancel = sent.find((f) => f.method === 'cancel');",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-contract.test.ts",
+    "nome": "method",
+    "trecho": "expect(sent.slice(antes).some((f) => f.method === 'cancel')).toBe(false);",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-contract.test.ts",
+    "nome": "client",
+    "trecho": "readonly from: 'client' | 'helper';",
+    "motivo": "nome do protocolo do helper `sinete-signer` (método, campo ou modo no fio), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-lab.test.ts",
+    "nome": "signer",
+    "trecho": "expect(signer.hello.helper).toMatch(/^sinete-signer\\//);",
+    "motivo": "nome próprio do helper (`sinete-signer`, `@sinete/signer`, subpath `@sinete/transport/signer`), mantido (ADR 0015)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-npm.test.ts",
+    "nome": "signer",
+    "trecho": "expect(res.helper).toMatch(/^sinete-signer\\//);",
+    "motivo": "nome próprio do helper (`sinete-signer`, `@sinete/signer`, subpath `@sinete/transport/signer`), mantido (ADR 0015)"
+  },
+  {
+    "arquivo": "packages/transport/test/signer-npm.test.ts",
+    "nome": "signer",
+    "trecho": "expect((JSON.parse(comEnv.stdout.toString()) as { helper: string }).helper).toMatch(/^sinete-signer\\//);",
+    "motivo": "nome próprio do helper (`sinete-signer`, `@sinete/signer`, subpath `@sinete/transport/signer`), mantido (ADR 0015)"
+  },
+  {
+    "arquivo": "packages/validators/README.md",
+    "nome": "code",
+    "trecho": "`lerX` devolve o `Resultado` do core: `{ ok: true, valor }` com o valor normalizado (sem máscara, maiúsculo, no tamanho do leiaute) ou `{ ok: false, erro }` com uma `Ocorrencia` (`caminho`, `code`, `mensagem`). O `caminho` padrão é o nome do campo; passe `{ caminho: 'infNFe.dest.IE' }` para compor um `ErroDeValidacao` com várias ocorrências. Os códigos estão em `CODIGOS_OCORRENCIA` e são API pública (renomear é major).",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "scripts/docs-gerados.ts",
+    "nome": "from",
+    "trecho": "for (const m of t.matchAll(/import\\s+(?:type\\s+)?\\{([^}]*)\\}\\s*from\\s*'([^']+)'/g)) {",
+    "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
+  },
+  {
+    "arquivo": "scripts/docs-gerados.ts",
+    "nome": "from",
+    "trecho": "for (const m of t.matchAll(/export\\s+(?:type\\s+)?\\{([^}]*)\\}(?:\\s*from\\s*'([^']+)')?/g)) {",
+    "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
+  },
+  {
+    "arquivo": "scripts/docs-gerados.ts",
+    "nome": "from",
+    "trecho": "for (const m of t.matchAll(/export\\s+\\*\\s+from\\s*'([^']+)'/g)) {",
+    "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
+  },
+  {
+    "arquivo": "scripts/docs-gerados.ts",
+    "nome": "link",
+    "trecho": ".replace(/\\{@link\\s+([^}\\s|]+)[^}]*\\}/g, '`$1`')",
+    "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
+  },
+  {
+    "arquivo": "scripts/release.ts",
+    "nome": "Provenance",
+    "trecho": "// Provenance só no release real para o npmjs: a smoke do CI publica num verdaccio efêmero sem id-token.",
+    "motivo": "`provenance` e `version` do npm e do `package.json`"
+  },
+  {
+    "arquivo": "scripts/umbrella.ts",
+    "nome": "check",
+    "trecho": "*      bun scripts/umbrella.ts --check   (falha se o pacote estiver fora de sincronia; roda no `bun run check`)",
+    "motivo": "nome de arquivo, pasta ou opção de linha de comando (`result.ts`, `manifest.json`, `sources.json`, `--record`, `--check`, `src`)"
+  },
+  {
+    "arquivo": "scripts/umbrella.ts",
+    "nome": "module",
+    "trecho": "type: 'module',",
+    "motivo": "`type: 'module'` do `package.json`"
+  },
+  {
+    "arquivo": "scripts/umbrella.ts",
+    "nome": "src",
+    "trecho": "files: ['dist', 'src', 'docs', 'NOTICE'],",
+    "motivo": "nome de arquivo, pasta ou opção de linha de comando (`result.ts`, `manifest.json`, `sources.json`, `--record`, `--check`, `src`)"
+  },
+  {
+    "arquivo": "scripts/versao-gerada.ts",
+    "nome": "version",
+    "trecho": "* (`formatarVerProc` do `@sinete/core`), lida do `version` de cada `package.json`. Existe para nunca ler",
+    "motivo": "`provenance` e `version` do npm e do `package.json`"
+  },
+  {
+    "arquivo": "smoke/fixtures/schemas/checks.mjs",
+    "nome": "code",
+    "trecho": "expect('conferirTipoSimples', out.length === 1 && out[0].code === 'digitos_fracionarios');",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "smoke/fixtures/transport/checks.mjs",
+    "nome": "name",
+    "trecho": "if (rt === 'deno') expect('Deno recusa host que renegocia', err?.name === 'ErroTransporteNaoSuportado' && err?.code === 'nao_suportado');",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "smoke/fixtures/transport/checks.mjs",
+    "nome": "code",
+    "trecho": "if (rt === 'deno') expect('Deno recusa host que renegocia', err?.name === 'ErroTransporteNaoSuportado' && err?.code === 'nao_suportado');",
+    "motivo": "`code` do erro (`ErroSinete`, Node, SOAP ou helper), mantido; o `code` que a fase 2 renomeou é a chave dos registros do dataset"
+  },
+  {
+    "arquivo": "smoke/fixtures/transport/checks.mjs",
+    "nome": "signer",
+    "trecho": "// Cliente do helper sinete-signer: o protocolo sobre um canal de mentira, sem binário (ADR 0005).",
+    "motivo": "nome próprio do helper (`sinete-signer`, `@sinete/signer`, subpath `@sinete/transport/signer`), mantido (ADR 0015)"
+  },
+  {
+    "arquivo": "smoke/run.ts",
+    "nome": "module",
+    "trecho": "JSON.stringify({ private: true, type: 'module', dependencies: deps }, null, 2),",
+    "motivo": "`type: 'module'` do `package.json`"
+  },
+  {
+    "arquivo": "smoke/run.ts",
+    "nome": "module",
+    "trecho": "JSON.stringify({ private: true, type: 'module', dependencies: depsSemDa }, null, 2),",
+    "motivo": "`type: 'module'` do `package.json`"
+  },
+  {
+    "arquivo": "smoke/run.ts",
+    "nome": "from",
+    "trecho": "/((?:from|import)\\s*\\(?\\s*)(['\"])(@sinete\\/[a-z0-9-]+|sinete)(\\/[^'\"]*)?\\2/g,",
+    "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
+  },
+  {
+    "arquivo": "tools/danfe-corpus/check.ts",
+    "nome": "stats",
+    "trecho": "fit?: Doc['stats'];",
+    "motivo": "formato de ferramenta fora da API dos pacotes (colunas do SQLite da Calculadora, rótulos do registro de conflitos e do ledger do oráculo, API do módulo de referência do ie-crosscheck, tabela do DANFE)"
+  },
+  {
+    "arquivo": "tools/ibs-cbs-dados/diff.ts",
+    "nome": "data",
+    "trecho": "* Cada lado é um diretório com `manifest.json` e as tabelas (como `packages/ibs-cbs-dados/src/data`) ou `git:<ref>`, que lê",
+    "motivo": "`data` em português (data civil), a pasta `data/` ou o campo `data` do erro do protocolo do helper; nenhum é a chave renomeada"
+  },
+  {
+    "arquivo": "tools/ibs-cbs-dados/diff.ts",
+    "nome": "manifest",
+    "trecho": "* Cada lado é um diretório com `manifest.json` e as tabelas (como `packages/ibs-cbs-dados/src/data`) ou `git:<ref>`, que lê",
+    "motivo": "nome de arquivo, pasta ou opção de linha de comando (`result.ts`, `manifest.json`, `sources.json`, `--record`, `--check`, `src`)"
+  },
+  {
+    "arquivo": "tools/ibs-cbs-dados/extract.ts",
+    "nome": "sources",
+    "trecho": "*   1. obtém o `calculadora.zip` oficial (URL de `sources.json`, cache local ou `--calculadora-zip`) e confere o sha256",
+    "motivo": "nome de arquivo, pasta ou opção de linha de comando (`result.ts`, `manifest.json`, `sources.json`, `--record`, `--check`, `src`)"
+  },
+  {
+    "arquivo": "tools/ibs-cbs-dados/src/calculadora.ts",
+    "nome": "ref",
+    "trecho": "referencia: str(x.ref),",
+    "motivo": "formato de ferramenta fora da API dos pacotes (colunas do SQLite da Calculadora, rótulos do registro de conflitos e do ledger do oráculo, API do módulo de referência do ie-crosscheck, tabela do DANFE)"
+  },
+  {
+    "arquivo": "tools/ibs-cbs-dados/src/calculadora.ts",
+    "nome": "short",
+    "trecho": "resumo: str(x.short),",
+    "motivo": "formato de ferramenta fora da API dos pacotes (colunas do SQLite da Calculadora, rótulos do registro de conflitos e do ledger do oráculo, API do módulo de referência do ie-crosscheck, tabela do DANFE)"
+  },
+  {
+    "arquivo": "tools/ibs-cbs-dados/src/merge.ts",
+    "nome": "table",
+    "trecho": "table: Conflict['table'],",
+    "motivo": "formato de ferramenta fora da API dos pacotes (colunas do SQLite da Calculadora, rótulos do registro de conflitos e do ledger do oráculo, API do módulo de referência do ie-crosscheck, tabela do DANFE)"
+  },
+  {
+    "arquivo": "tools/ibs-cbs-oraculo/src/data.ts",
+    "nome": "data",
+    "trecho": "if (!r.ok) continue; // cClassTrib fora de vigência na data: a API responde erro, não \"inválido\"",
+    "motivo": "`data` em português (data civil), a pasta `data/` ou o campo `data` do erro do protocolo do helper; nenhum é a chave renomeada"
+  },
+  {
+    "arquivo": "tools/ibs-cbs-oraculo/src/ledger.ts",
+    "nome": "diff",
+    "trecho": "export type Outcome = 'diff' | 'oracle-error' | 'engine-error';",
+    "motivo": "formato de ferramenta fora da API dos pacotes (colunas do SQLite da Calculadora, rótulos do registro de conflitos e do ledger do oráculo, API do módulo de referência do ie-crosscheck, tabela do DANFE)"
+  },
+  {
+    "arquivo": "tools/ie-crosscheck/README.md",
+    "nome": "validate",
+    "trecho": "O módulo de referência exporta `validate(ie: string, uf: string): boolean`. Nem a lista nem a referência entram no repositório.",
+    "motivo": "formato de ferramenta fora da API dos pacotes (colunas do SQLite da Calculadora, rótulos do registro de conflitos e do ledger do oráculo, API do módulo de referência do ie-crosscheck, tabela do DANFE)"
+  },
+  {
+    "arquivo": "tools/ie-crosscheck/crosscheck.ts",
+    "nome": "validate",
+    "trecho": "* O módulo de referência exporta `validate(ie: string, uf: string): boolean`. Sem ele, só as estatísticas do sinete.",
+    "motivo": "formato de ferramenta fora da API dos pacotes (colunas do SQLite da Calculadora, rótulos do registro de conflitos e do ledger do oráculo, API do módulo de referência do ie-crosscheck, tabela do DANFE)"
+  },
+  {
+    "arquivo": "tools/rejeicoes-data/build.ts",
+    "nome": "sources",
+    "trecho": "* `sources.json`). O builder confere que a linha da regra, com o código, está no texto do PDF.",
+    "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
+  },
+  {
+    "arquivo": "tools/rejeicoes-data/build.ts",
+    "nome": "signature",
+    "trecho": "if (/assinatura|digest|signature|signedinfo|canonicaliza|transform/.test(m)) return 'assinatura';",
+    "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
+  },
+  {
+    "arquivo": "tools/rejeicoes-data/build.ts",
+    "nome": "no",
+    "trecho": "const DANGLING = /\\s(a|o|as|os|ao|aos|e|ou|de|da|do|das|dos|com|para|por|no|na|nos|nas|em|um|uma|que|se|sem)$/i;",
+    "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
+  },
+  {
+    "arquivo": "tools/rejeicoes-data/mdfe.ts",
+    "nome": "signature",
+    "trecho": "if (/assinatura|digest|signature/.test(m)) return 'assinatura';",
+    "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
+  },
+  {
+    "arquivo": "tools/rejeicoes-data/mdfe.ts",
+    "nome": "no",
+    "trecho": "const DANGLING = /\\s(a|o|as|os|ao|aos|e|ou|de|da|do|das|dos|com|para|por|no|na|nos|nas|em|um|uma|que|se|sem)$/i;",
+    "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
+  },
+  {
+    "arquivo": "tools/transport-data/build.ts",
+    "nome": "table",
+    "trecho": "for (const m of html.matchAll(/<caption>([^<]*?)\\s*<\\/caption>(.*?)<\\/table>/gs)) {",
+    "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
+  },
+  {
+    "arquivo": "tools/transport-data/build.ts",
+    "nome": "table",
+    "trecho": "for (const m of html.matchAll(/<caption>(.*?)<\\/caption>(.*?)<\\/table>/gs)) {",
+    "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
+  },
+  {
+    "arquivo": "tools/xsd-codegen/src/corpus-check/oracle.ts",
+    "nome": "required",
+    "trecho": ": /is required/.test(msg)",
+    "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
+  },
+  {
+    "arquivo": "tools/xsd-codegen/src/corpus-check/oracle.ts",
+    "nome": "allowed",
+    "trecho": ": /not allowed/.test(msg)",
+    "motivo": "texto externo casado por regex (mensagem de OpenSSL, rustls, Node, libxml, HTML, TSDoc ou palavra portuguesa), não é nome do sinete"
+  },
+  {
+    "arquivo": "tools/xsd-codegen/src/generate.ts",
+    "nome": "ref",
+    "trecho": "if (!('ref' in p.type)) visit(p.type);",
+    "motivo": "vocabulário do XSD (`use=\"required\"`, tipos embutidos `date`/`time`, verbo \"serialize\" em português), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "tools/xsd-codegen/src/xsd.ts",
+    "nome": "required",
+    "trecho": "const out: AttrIR = { name: name ?? '?', type, required: attr(a, 'use') === 'required' };",
+    "motivo": "vocabulário do XSD (`use=\"required\"`, tipos embutidos `date`/`time`, verbo \"serialize\" em português), mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/cert/src/x509.ts",
+    "nome": "signatureAlgorithm",
+    "trecho": "if (!sigAlgOid) throw new ErroCertificado('certificado_invalido', 'signatureAlgorithm vazio');",
+    "motivo": "campo do certificado X.509 com o nome da RFC 5280, mantido (ADR 0015, exceção 1)"
+  },
+  {
+    "arquivo": "packages/nfe/test/services/eventos.test.ts",
+    "nome": "offsetMinutes",
+    "trecho": "test('offsetMinutes sobrepõe o fuso da UF; autor explícito CPF', async () => {",
+    "motivo": "nome de pacote fora da fase 2 (`nfe`, `mdfe`, `nfse`, `cli`, `da`, `emissor`, `sefaz-sim`, ferramentas), que a fase dele renomeia"
+  },
+  {
+    "arquivo": "tools/ibs-cbs-dados/src/merge.ts",
+    "nome": "rateKind",
+    "trecho": "check('rateKind', c.tipoDeAliquota, i.rateKind);",
+    "motivo": "formato de ferramenta fora da API dos pacotes (colunas do SQLite da Calculadora, rótulos do registro de conflitos e do ledger do oráculo, API do módulo de referência do ie-crosscheck, tabela do DANFE)"
   }
 ]
