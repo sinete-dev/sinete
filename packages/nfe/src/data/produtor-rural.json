@@ -1,5 +1,5 @@
 {
-  "descricao": "Regras do produtor rural que variam no tempo ou por UF. refNFP: a nota fiscal de produtor em papel (modelo 04) foi extinta; uma NF-e ainda pode referenciar uma nota modelo 04 emitida antes do fim da vigência na UF da nota referenciada. vedadaDesde é o primeiro AAMM em que a UF não aceita mais nota modelo 04 emitida; a referência a nota com AAMM igual ou posterior é recusada pelo builder. series: faixas de série por tipo de emitente na emissão pelo contribuinte (procEmi 0, a única que o buildNfe monta).",
+  "descricao": "Regras do produtor rural que variam no tempo ou por UF. refNFP: a nota fiscal de produtor em papel (modelo 04) foi extinta; uma NF-e ainda pode referenciar uma nota modelo 04 emitida antes do fim da vigência na UF da nota referenciada. vedadaDesde é o primeiro AAMM em que a UF não aceita mais nota modelo 04 emitida; a referência a nota com AAMM igual ou posterior é recusada pelo builder. series: faixas de série por tipo de emitente na emissão pelo contribuinte (procEmi 0, a única que o montarNfe monta).",
   "atualizadoEm": "2026-09-28",
   "refNFP": {
     "modelo04": {

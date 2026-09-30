@@ -4,7 +4,7 @@
  * Síncrono (`indSinc=1`): o lote de uma NF-e é processado na hora e o `retEnviNFe` traz o `protNFe` (cStat 104).
  * Assíncrono (`indSinc=0`): o lote recebe um recibo (103) e é processado quando o relógio injetado passa do atraso
  * configurado; até lá a consulta do recibo devolve 105. O processamento é preguiçoso e determinístico: acontece no
- * primeiro pedido depois do instante (ou em `settle()`), sempre na ordem de recebimento.
+ * primeiro pedido depois do instante (ou em `processarLotes()`), sempre na ordem de recebimento.
  */
 
 import type { DocumentoXml, ElementoXml } from '@sinete/core/xml';
@@ -14,16 +14,23 @@ import { serializarRaiz, VIGENCIAS } from '@sinete/schemas';
 import * as PL_010e from '@sinete/schemas/nfe/PL_010e';
 import type { TProtNFe, TRetConsReciNFe, TRetEnviNFe } from '@sinete/schemas/nfe/PL_010f';
 import * as PL_010f from '@sinete/schemas/nfe/PL_010f';
-import { checkAssinatura } from '../certs.ts';
-import type { RequestContext, Runtime, Status, Svc } from '../context.ts';
+import { conferirAssinaturaDoDocumento } from '../certs.ts';
+import type { ContextoDoPedido, EstadoDeExecucao, Status, Svc } from '../context.ts';
 import { dh, omitirDigVal, prelude, status, svcAtual, tipoAutorizador, verAplic } from '../context.ts';
 import { standalone } from '../docs.ts';
-import { isDenegacao, motivo } from '../messages.ts';
+import { ehDenegacao, motivo } from '../messages.ts';
 import { assinaturaDoQrCodeConfere, parametrosDoQrCode } from '../nfce.ts';
-import type { NfeFacts, SimView } from '../rules.ts';
-import { firstRejection } from '../rules.ts';
-import type { SimAutorizador } from '../services.ts';
-import type { Contribuinte, EventoRecord, InutilizacaoRecord, LoteRecord, NfeRecord, PendingNfe } from '../state.ts';
+import type { FatosNfe, VisaoSim } from '../rules.ts';
+import { primeiraRejeicao } from '../rules.ts';
+import type { AutorizadorSim } from '../services.ts';
+import type {
+  Contribuinte,
+  NfePendente,
+  RegistroEvento,
+  RegistroInutilizacao,
+  RegistroLote,
+  RegistroNfe,
+} from '../state.ts';
 import { docKey } from '../state.ts';
 import { recepcaoSvcRecusada } from '../svc.ts';
 import { parseDateTime, yearOf } from '../time.ts';
@@ -37,9 +44,9 @@ const MODULOS: Readonly<Record<string, Tpl>> = { 'nfe/PL_010e': PL_010e, 'nfe/PL
  * PL aceitos: todos cuja vigência já começou no ambiente, do mais novo para o mais antigo (a SEFAZ convive com o PL
  * anterior durante a transição). O dia é o do fuso do autorizador. Antes do primeiro PL gerado, vale o mais antigo.
  */
-export function plsAceitos(rt: Runtime, now: number): Tpl[] {
+export function plsAceitos(rt: EstadoDeExecucao, now: number): Tpl[] {
   const dia = dh({ rt }, now).slice(0, 10);
-  const campo = rt.config.ambiente === 'producao' ? 'producao' : 'homologacao';
+  const campo = rt.configuracao.ambiente === 'producao' ? 'producao' : 'homologacao';
   const modulos = (entries: readonly { readonly modulo: string }[]): Tpl[] =>
     entries.map((v) => MODULOS[v.modulo]).filter((m): m is Tpl => m !== undefined);
   const vigentes = VIGENCIAS.nfe.filter((v) => {
@@ -51,18 +58,18 @@ export function plsAceitos(rt: Runtime, now: number): Tpl[] {
 }
 
 function retEnviNFe(
-  ctx: RequestContext,
+  ctx: ContextoDoPedido,
   s: Status,
   extra: Pick<TRetEnviNFe, 'infRec'> | Pick<TRetEnviNFe, 'protNFe'> = {},
 ): string {
   const value = {
     versao: '4.00',
-    tpAmb: ctx.rt.config.tpAmb,
+    tpAmb: ctx.rt.configuracao.tpAmb,
     verAplic: verAplic(ctx),
     cStat: s.cStat,
     xMotivo: s.xMotivo,
-    cUF: ctx.rt.config.cUF,
-    dhRecbto: dh(ctx, ctx.now),
+    cUF: ctx.rt.configuracao.cUF,
+    dhRecbto: dh(ctx, ctx.agora),
     ...extra,
   } as TRetEnviNFe;
   return serializarRaiz(PL_010f.retEnviNFeElement, value);
@@ -72,25 +79,25 @@ function retEnviNFe(
  * Visão somente leitura do estado para as regras. `nRec` é o recibo do lote em processamento: o 635 só enxerga os
  * lotes recebidos antes dele. Sem `nRec` (eventos, inutilização), todos os lotes pendentes contam.
  */
-export function viewOf(rt: Runtime, nRec?: string, svc?: Svc): SimView {
-  const st = rt.state;
+export function viewOf(rt: EstadoDeExecucao, nRec?: string, svc?: Svc): VisaoSim {
+  const st = rt.estado;
   return {
-    config: rt.config,
+    configuracao: rt.configuracao,
     contingencia: svc ?? svcAtual(rt),
-    nfe: (chave: string): NfeRecord | undefined => st.nfes.get(chave),
-    nfeByNumero: (e: string, m: string, s: string, n: string): NfeRecord | undefined => st.nfeByNumero(e, m, s, n),
-    pendenteByNumero: (e: string, m: string, s: string, n: string): PendingNfe | undefined =>
+    nfe: (chave: string): RegistroNfe | undefined => st.nfes.get(chave),
+    nfePorNumero: (e: string, m: string, s: string, n: string): RegistroNfe | undefined => st.nfeByNumero(e, m, s, n),
+    pendentePorNumero: (e: string, m: string, s: string, n: string): NfePendente | undefined =>
       st.pendingByNumero(e, m, s, n, nRec),
-    inutilizacaoCom: (c: string, a: string, m: string, s: number, n: number): InutilizacaoRecord | undefined =>
+    inutilizacaoCom: (c: string, a: string, m: string, s: number, n: number): RegistroInutilizacao | undefined =>
       st.inutilizacaoCom(c, a, m, s, n),
-    inutilizacoes: (): readonly InutilizacaoRecord[] => st.inutilizacoes,
-    eventos: (chave: string): readonly EventoRecord[] => st.eventosDa(chave),
+    inutilizacoes: (): readonly RegistroInutilizacao[] => st.inutilizacoes,
+    eventos: (chave: string): readonly RegistroEvento[] => st.eventosDa(chave),
     contribuinte: (uf: string, ie: string): Contribuinte | undefined =>
-      rt.config.cadastro.find((c) => c.UF === uf && c.IE === ie),
+      rt.configuracao.cadastro.find((c) => c.UF === uf && c.IE === ie),
   };
 }
 
-function factsOf(nfe: ElementoXml): { facts: NfeFacts; inf: ElementoXml } {
+function factsOf(nfe: ElementoXml): { facts: FatosNfe; inf: ElementoXml } {
   const inf = at(nfe, 'infNFe') as ElementoXml;
   const ide = at(inf, 'ide');
   const emit = at(inf, 'emit');
@@ -103,7 +110,7 @@ function factsOf(nfe: ElementoXml): { facts: NfeFacts; inf: ElementoXml } {
       : { ...documento(destEl), ...(idEstrangeiro === undefined ? {} : { idEstrangeiro }) };
   const supl = at(nfe, 'infNFeSupl');
   const qrCode = text(supl, 'qrCode')?.trim();
-  const facts: NfeFacts = {
+  const facts: FatosNfe = {
     id: atributoDe(inf, 'Id') ?? '',
     cUF: req(ide, 'cUF'),
     cNF: req(ide, 'cNF'),
@@ -136,7 +143,7 @@ function factsOf(nfe: ElementoXml): { facts: NfeFacts; inf: ElementoXml } {
 }
 
 /** O `protNFe` como sai na resposta `onde`: sem `digVal` quando o simulador foi configurado assim. */
-export function protNFeNaResposta(rt: Runtime, onde: 'autorizacao' | 'consulta', prot: TProtNFe): TProtNFe {
+export function protNFeNaResposta(rt: EstadoDeExecucao, onde: 'autorizacao' | 'consulta', prot: TProtNFe): TProtNFe {
   const inf = prot.infProt;
   if (inf.digVal === undefined || !omitirDigVal(rt, onde, inf.cStat)) return prot;
   const { digVal: _, ...semDigVal } = inf;
@@ -149,8 +156,8 @@ interface Processed {
 
 /** Processa uma NF-e de um lote: grupos E e F, regras de negócio e gravação no estado. */
 async function processNfe(
-  rt: Runtime,
-  quem: { readonly autorizador: SimAutorizador; readonly svc: Svc | undefined },
+  rt: EstadoDeExecucao,
+  quem: { readonly autorizador: AutorizadorSim; readonly svc: Svc | undefined },
   doc: DocumentoXml,
   nfeEl: ElementoXml,
   now: number,
@@ -162,30 +169,40 @@ async function processNfe(
   const chave = facts.id.replace(/^NFe/, '');
   const { autorizador, svc } = quem;
   const ctxLike = { rt, autorizador, svc };
-  const base = { tpAmb: rt.config.tpAmb, verAplic: verAplic(ctxLike), chNFe: chave, dhRecbto: dh(ctxLike, now) };
+  const base = { tpAmb: rt.configuracao.tpAmb, verAplic: verAplic(ctxLike), chNFe: chave, dhRecbto: dh(ctxLike, now) };
   const rejected = (cStat: string, params?: Readonly<Record<string, string>>): Processed => ({
     prot: { versao: '4.00', infProt: { ...base, cStat, xMotivo: motivo(cStat, params) } },
   });
-  const sig = await checkAssinatura({ doc, id: facts.id, element: 'infNFe', now, titular: facts.emitente });
+  const sig = await conferirAssinaturaDoDocumento({
+    documento: doc,
+    id: facts.id,
+    elemento: 'infNFe',
+    agora: now,
+    titular: facts.emitente,
+  });
   if (!sig.ok) return rejected(sig.cStat);
   // ZX02-338: a assinatura do QR Code versão 3 off-line confere com o certificado da nota; a regra lê o resultado.
   const qr = facts.supl?.qrCode;
   const params = qr === undefined ? undefined : parametrosDoQrCode(qr);
   if (facts.mod === '65' && facts.tpEmis === '9' && params?.[1] === '3') {
-    const assinaturaConfere = await assinaturaDoQrCodeConfere(params, sig.certificateDer);
+    const assinaturaConfere = await assinaturaDoQrCodeConfere(params, sig.certificadoDer);
     facts = { ...facts, supl: { ...facts.supl, assinaturaConfere } };
   }
-  const r = firstRejection(rt.config.rules.autorizacao, {
+  const r = primeiraRejeicao(rt.configuracao.regras.autorizacao, {
     nfe: facts,
     chave,
     autorizador,
-    view: viewOf(rt, nRec, svc),
-    now,
+    visao: viewOf(rt, nRec, svc),
+    agora: now,
   });
-  if (r !== undefined && !isDenegacao(r.cStat)) return rejected(r.cStat, r.params);
+  if (r !== undefined && !ehDenegacao(r.cStat)) return rejected(r.cStat, r.parametros);
   const cStat = r === undefined ? '100' : r.cStat;
-  const nProt = rt.state.nextProtocolo(tipoAutorizador(ctxLike), facts.cUF, yearOf(now, rt.config.offsetMinutes));
-  const infProt = { ...base, nProt, digVal: sig.digestValue, cStat, xMotivo: motivo(cStat, r?.params) };
+  const nProt = rt.estado.nextProtocolo(
+    tipoAutorizador(ctxLike),
+    facts.cUF,
+    yearOf(now, rt.configuracao.deslocamentoMin),
+  );
+  const infProt = { ...base, nProt, digVal: sig.digestValue, cStat, xMotivo: motivo(cStat, r?.parametros) };
   const prot: TProtNFe = { versao: '4.00', infProt: { Id: `ID${nProt}`, ...infProt } };
   const dest = at(inf, 'dest');
   const destDoc = documento(dest);
@@ -193,7 +210,7 @@ async function processNfe(
     ...all(inf, 'autXML').map((a) => docKey(documento(a))),
     docKey(documento(at(inf, 'transp/transporta'))),
   ].filter((x): x is string => x !== undefined);
-  const record: NfeRecord = {
+  const record: RegistroNfe = {
     chave,
     cUF: facts.cUF,
     mod: facts.mod,
@@ -220,33 +237,33 @@ async function processNfe(
     situacao: cStat === '100' ? 'autorizada' : 'denegada',
     liberadaAoDestinatario: false,
   };
-  rt.state.nfes.set(chave, record);
-  distribuirAutorizacao(rt.state, record);
+  rt.estado.nfes.set(chave, record);
+  distribuirAutorizacao(rt.estado, record);
   return { prot };
 }
 
-async function processLote(rt: Runtime, lote: LoteRecord): Promise<void> {
+async function processLote(rt: EstadoDeExecucao, lote: RegistroLote): Promise<void> {
   const doc = lerXml(lote.payload);
   // O 635 só olha lotes recebidos antes deste (viewOf com o nRec), então as NF-e do lote não contam para si. O
   // resultado é publicado de uma vez no fim; o simulador atende um pedido por vez, então ninguém vê o lote pela metade.
   const protNFe: TProtNFe[] = [];
   for (const nfeEl of all(doc.raiz, 'NFe')) {
-    protNFe.push((await processNfe(rt, lote, doc, nfeEl, lote.availableAt, lote.nRec)).prot);
+    protNFe.push((await processNfe(rt, lote, doc, nfeEl, lote.disponivelEm, lote.nRec)).prot);
   }
   lote.protNFe = protNFe;
-  lote.processedAt = dh({ rt }, lote.availableAt);
+  lote.processadoEm = dh({ rt }, lote.disponivelEm);
 }
 
 /** Processa, na ordem de recebimento, os lotes assíncronos cujo instante de processamento já passou. */
-export async function settleLotes(rt: Runtime, now: number): Promise<void> {
-  for (const lote of rt.state.lotes.values()) {
-    if (lote.protNFe === undefined && lote.availableAt <= now) await processLote(rt, lote);
+export async function settleLotes(rt: EstadoDeExecucao, now: number): Promise<void> {
+  for (const lote of rt.estado.lotes.values()) {
+    if (lote.protNFe === undefined && lote.disponivelEm <= now) await processLote(rt, lote);
   }
 }
 
 /** NFeAutorizacao4 (nfeAutorizacaoLote). */
-export async function autorizacao(ctx: RequestContext): Promise<string> {
-  const pls = plsAceitos(ctx.rt, ctx.now);
+export async function autorizacao(ctx: ContextoDoPedido): Promise<string> {
+  const pls = plsAceitos(ctx.rt, ctx.agora);
   const pre = prelude(ctx, { roots: pls.map((p) => p.enviNFeElement), lote: true });
   if (!pre.ok) return retEnviNFe(ctx, pre.status);
   const doc = pre.doc;
@@ -254,34 +271,34 @@ export async function autorizacao(ctx: RequestContext): Promise<string> {
   const indSinc = text(doc.raiz, 'indSinc');
   // GAP03a-1 e GAP03a-2 (Anexo I, DA), B06-20 (lote com NF-e e NFC-e).
   if (indSinc === '1' && nfes.length > 1) return retEnviNFe(ctx, status('764'));
-  if (indSinc === '1' && ctx.rt.config.respostaSincrona === 'recusa') return retEnviNFe(ctx, status('776'));
+  if (indSinc === '1' && ctx.rt.configuracao.respostaSincrona === 'recusa') return retEnviNFe(ctx, status('776'));
   const modelos = new Set(nfes.map((n) => text(n, 'infNFe/ide/mod')));
   if (modelos.size > 1) return retEnviNFe(ctx, status('765'));
   // GAP03a-4 (NT 2023.002 v1.00, item 3.1): o lote de NFC-e tem uma nota só.
   if (modelos.has('65') && nfes.length > 1) return retEnviNFe(ctx, status('126'));
   const cUFs = new Set(nfes.map((n) => text(n, 'infNFe/ide/cUF')));
   // B05: UF atendida pelo web service (410), antes das regras de cada NF-e.
-  if ([...cUFs].some((c) => c === undefined || !ctx.rt.config.cUFsAtendidas.includes(c))) {
+  if ([...cUFs].some((c) => c === undefined || !ctx.rt.configuracao.cUFsAtendidas.includes(c))) {
     return retEnviNFe(ctx, status('410'));
   }
   // C03.2 e GB02.2 (NT 2013.007 v1.03, item 04.1): a SVC só recebe da UF para a qual a SEFAZ de origem a ativou.
-  const semSvc = ctx.autorizador === 'svc' ? recepcaoSvcRecusada(ctx.rt, cUFs as Set<string>, ctx.now) : undefined;
+  const semSvc = ctx.autorizador === 'svc' ? recepcaoSvcRecusada(ctx.rt, cUFs as Set<string>, ctx.agora) : undefined;
   if (semSvc !== undefined) return retEnviNFe(ctx, semSvc);
-  const nRec = ctx.rt.state.nextRecibo(ctx.rt.config.cUF, tipoAutorizador(ctx));
-  const sincrono = indSinc === '1' && ctx.rt.config.respostaSincrona === 'aceita';
-  const lote: LoteRecord = {
+  const nRec = ctx.rt.estado.nextRecibo(ctx.rt.configuracao.cUF, tipoAutorizador(ctx));
+  const sincrono = indSinc === '1' && ctx.rt.configuracao.respostaSincrona === 'aceita';
+  const lote: RegistroLote = {
     nRec,
     autorizador: ctx.autorizador === 'svc' ? 'svc' : 'uf',
     svc: ctx.autorizador === 'svc' ? svcAtual(ctx.rt) : undefined,
-    receivedAt: ctx.now,
-    availableAt: ctx.now + ctx.rt.config.atrasoProcessamentoMs,
-    dhRecbto: dh(ctx, ctx.now),
+    recebidoEm: ctx.agora,
+    disponivelEm: ctx.agora + ctx.rt.configuracao.atrasoProcessamentoMs,
+    dhRecbto: dh(ctx, ctx.agora),
     payload: ctx.payload,
-    pending: nfes.map((n) => {
+    pendente: nfes.map((n) => {
       const emit = documento(at(n, 'infNFe/emit'));
       return {
         chave: (atributoDe(at(n, 'infNFe') as ElementoXml, 'Id') ?? '').replace(/^NFe/, ''),
-        emitenteKey: docKey(emit) ?? '',
+        chaveDoEmitente: docKey(emit) ?? '',
         mod: req(n, 'infNFe/ide/mod'),
         serie: req(n, 'infNFe/ide/serie'),
         nNF: req(n, 'infNFe/ide/nNF'),
@@ -289,45 +306,45 @@ export async function autorizacao(ctx: RequestContext): Promise<string> {
     }),
     transmissor: docKey(ctx.transmissor),
     protNFe: undefined,
-    processedAt: undefined,
+    processadoEm: undefined,
   };
   // O lote síncrono também fica registrado, processado: o recibo que o 204 devolve continua consultável.
-  ctx.rt.state.lotes.set(nRec, lote);
+  ctx.rt.estado.lotes.set(nRec, lote);
   if (sincrono) {
-    const { prot } = await processNfe(ctx.rt, lote, doc, nfes[0] as ElementoXml, ctx.now, nRec);
+    const { prot } = await processNfe(ctx.rt, lote, doc, nfes[0] as ElementoXml, ctx.agora, nRec);
     lote.protNFe = [prot];
-    lote.processedAt = dh(ctx, ctx.now);
+    lote.processadoEm = dh(ctx, ctx.agora);
     return retEnviNFe(ctx, status('104'), { protNFe: protNFeNaResposta(ctx.rt, 'autorizacao', prot) });
   }
-  const tMed = String(Math.max(1, Math.ceil(ctx.rt.config.atrasoProcessamentoMs / 1000)));
+  const tMed = String(Math.max(1, Math.ceil(ctx.rt.configuracao.atrasoProcessamentoMs / 1000)));
   return retEnviNFe(ctx, status('103'), { infRec: { nRec, tMed } });
 }
 
 /** NFeRetAutorizacao4 (nfeRetAutorizacaoLote): consulta do recibo. */
-export async function retAutorizacao(ctx: RequestContext): Promise<string> {
-  const pls = plsAceitos(ctx.rt, ctx.now);
+export async function retAutorizacao(ctx: ContextoDoPedido): Promise<string> {
+  const pls = plsAceitos(ctx.rt, ctx.agora);
   const pre = prelude(ctx, { roots: pls.map((p) => p.consReciNFeElement), lote: false });
   const nRecLido = pre.doc === undefined ? undefined : text(pre.doc.raiz, 'nRec');
   const nRec = nRecLido !== undefined && /^[0-9]{15}$/.test(nRecLido) ? nRecLido : '0'.repeat(15);
   const ret = (s: Status, extra: Pick<TRetConsReciNFe, 'protNFe'> = {}): string => {
     const value: TRetConsReciNFe = {
       versao: '4.00',
-      tpAmb: ctx.rt.config.tpAmb,
+      tpAmb: ctx.rt.configuracao.tpAmb,
       verAplic: verAplic(ctx),
       nRec,
       cStat: s.cStat,
       xMotivo: s.xMotivo,
-      cUF: ctx.rt.config.cUF as TRetConsReciNFe['cUF'],
-      dhRecbto: dh(ctx, ctx.now),
+      cUF: ctx.rt.configuracao.cUF as TRetConsReciNFe['cUF'],
+      dhRecbto: dh(ctx, ctx.agora),
       ...extra,
     };
     return serializarRaiz(PL_010f.retConsReciNFeElement, value);
   };
   if (!pre.ok) return ret(pre.status);
   // B24-10 (252) e 248 (UF do recibo diverge da UF autorizadora).
-  if (text(pre.doc.raiz, 'tpAmb') !== ctx.rt.config.tpAmb) return ret(status('252'));
-  if (nRec.slice(0, 2) !== ctx.rt.config.cUF) return ret(status('248'));
-  const lote = ctx.rt.state.lotes.get(nRec);
+  if (text(pre.doc.raiz, 'tpAmb') !== ctx.rt.configuracao.tpAmb) return ret(status('252'));
+  if (nRec.slice(0, 2) !== ctx.rt.configuracao.cUF) return ret(status('248'));
+  const lote = ctx.rt.estado.lotes.get(nRec);
   const mesmoAutorizador = lote !== undefined && (lote.autorizador === 'svc') === (ctx.autorizador === 'svc');
   if (lote === undefined || !mesmoAutorizador) return ret(status('106'));
   const quem = docKey(ctx.transmissor);

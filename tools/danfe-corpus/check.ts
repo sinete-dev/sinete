@@ -8,8 +8,8 @@ import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, wr
 import { homedir, tmpdir } from 'node:os';
 import path from 'node:path';
 import { ehErroSinete } from '@sinete/core';
-import type { Doc } from '@sinete/da';
-import { toHtml, toPdf } from '@sinete/da';
+import type { Documento } from '@sinete/da';
+import { gerarHtml, gerarPdf } from '@sinete/da';
 import { dacce } from '@sinete/da/cce';
 import { damdfe } from '@sinete/da/mdfe';
 import { danfe } from '@sinete/da/nfe';
@@ -71,7 +71,7 @@ interface Row {
   ms?: number;
   kb?: number;
   deterministic?: boolean;
-  fit?: Doc['stats'];
+  fit?: Documento['estatisticas'];
   formato?: string;
   marca?: string;
   /** Algum texto do documento diz "SEM VALOR FISCAL". */
@@ -152,32 +152,40 @@ interface Esperado {
 }
 
 let n = 0;
-function run(kind: Kind, render: () => Doc, digits: string, qr: string | undefined, esperado: Esperado = {}): void {
+function run(
+  kind: Kind,
+  render: () => Documento,
+  digits: string,
+  qr: string | undefined,
+  esperado: Esperado = {},
+): void {
   try {
     const t0 = performance.now();
     const doc = render();
-    const pdf = toPdf(doc);
-    toHtml(doc);
+    const pdf = gerarPdf(doc);
+    gerarHtml(doc);
     const ms = performance.now() - t0;
-    const again = toPdf(render());
+    const again = gerarPdf(render());
     const deterministic = again.length === pdf.length && again.every((b, i) => b === pdf[i]);
     const row: Row = {
       kind,
       ok: true,
-      pages: doc.pages.length,
+      pages: doc.paginas.length,
       ms,
       kb: pdf.length / 1024,
       deterministic,
-      fit: doc.stats,
+      fit: doc.estatisticas,
     };
-    row.formato = formatoDe(doc.title);
+    row.formato = formatoDe(doc.titulo);
     row.marca = marcaDe(doc);
-    const textos = doc.pages.flatMap((p) => p.ops.flatMap((o) => (o.t === 'text' ? [o] : [])));
+    const textos = doc.paginas.flatMap((p) => p.ops.flatMap((o) => (o.t === 'texto' ? [o] : [])));
     row.semValor = textos.some((o) => o.s.includes('SEM VALOR FISCAL'));
     const { protocolo, carimbo } = esperado;
     if (protocolo) row.protocolo = textos.some((o) => o.s.includes(protocolo));
     if (carimbo)
-      row.carimboEvento = textos.some((o) => o.rot !== undefined && o.rot > 0 && o.rot < 90 && o.s.includes(carimbo));
+      row.carimboEvento = textos.some(
+        (o) => o.rotacao !== undefined && o.rotacao > 0 && o.rotacao < 90 && o.s.includes(carimbo),
+      );
     if (zbarEvery > 0 && n % zbarEvery === 0 && digits) row.zbar = zbarCheck(pdf, digits, qr);
     if (saida && !variantes.has(kind)) {
       writeFileSync(path.join(saida, `${String(n).padStart(5, '0')}.pdf`), pdf);
@@ -193,7 +201,7 @@ for (const t of texts) {
   const root = /<(nfeProc|procEventoNFe|mdfeProc|NFe|MDFe)[\s>]/.exec(t)?.[1];
   const tp = /<tpEvento>(\d{6})</.exec(t)?.[1];
   let kind: Kind = 'outro';
-  let render: (() => Doc) | undefined;
+  let render: (() => Documento) | undefined;
   let digits = '';
   let qr: string | undefined;
   if (root === 'nfeProc' || root === 'NFe') {

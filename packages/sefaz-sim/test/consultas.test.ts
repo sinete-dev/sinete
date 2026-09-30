@@ -6,7 +6,7 @@ import * as canc from '@sinete/schemas/nfe/evento-cancelamento/PL_010d';
 import * as PL_010f from '@sinete/schemas/nfe/PL_010f';
 import { contentTypeSoap12, envelopeSoap12 } from '@sinete/transport';
 import { montarChaveAcesso } from '@sinete/validators';
-import { SIM_BASE_URL, simTransport } from '../src/index.ts';
+import { transporteSim, URL_BASE_SIM } from '../src/index.ts';
 import type { Harness } from './helpers.ts';
 import {
   CPF,
@@ -74,22 +74,22 @@ describe('consulta protocolo', () => {
     });
     const temDigVal = (xml: string): boolean => tag(xml, 'digVal') !== undefined;
     const den = await nfe();
-    h.sim.setProtocoloSemDigVal('denegacao', 'autorizacao');
+    h.sim.definirProtocoloSemDigVal('denegacao', 'autorizacao');
     const r = await h.send('NFeAutorizacao', enviNFe([den.xml]));
     expect([tags(r, 'cStat')[1], temDigVal(r)]).toEqual(['301', false]);
     // O estado guarda o digVal; só a consulta configurada o omite.
-    expect(h.sim.inspect.nfe(den.chave)?.prot.infProt.digVal).toBeDefined();
+    expect(h.sim.inspecao.nfe(den.chave)?.prot.infProt.digVal).toBeDefined();
     expect(temDigVal(await h.send('NfeConsultaProtocolo', consSitNFe(den.chave)))).toBe(true);
-    h.sim.setProtocoloSemDigVal('denegacao', 'consulta');
+    h.sim.definirProtocoloSemDigVal('denegacao', 'consulta');
     expect(temDigVal(await h.send('NfeConsultaProtocolo', consSitNFe(den.chave)))).toBe(false);
-    h.sim.setProtocoloSemDigVal(undefined);
+    h.sim.definirProtocoloSemDigVal(undefined);
     expect(temDigVal(await h.send('NfeConsultaProtocolo', consSitNFe(den.chave)))).toBe(true);
 
     const h2 = await harness();
-    h2.sim.setProtocoloSemDigVal('denegacao');
+    h2.sim.definirProtocoloSemDigVal('denegacao');
     const { chave } = await autoriza(h2);
     expect(temDigVal(await h2.send('NfeConsultaProtocolo', consSitNFe(chave)))).toBe(true);
-    h2.sim.setProtocoloSemDigVal('todos');
+    h2.sim.definirProtocoloSemDigVal('todos');
     const sem = await h2.send('NFeAutorizacao', enviNFe([(await nfe({ nNF: 2 })).xml]));
     expect([tags(sem, 'cStat')[1], temDigVal(sem)]).toEqual(['100', false]);
     expect(temDigVal(await h2.send('NfeConsultaProtocolo', consSitNFe(chave)))).toBe(false);
@@ -186,7 +186,7 @@ describe('inutilização', () => {
     for (const [p, esperado] of casos) {
       expect([esperado, tag(await h.send('NfeInutilizacao', await inutNFe(p)), 'cStat')]).toEqual([esperado, esperado]);
     }
-    expect(h.sim.inspect.inutilizacoes()).toHaveLength(1);
+    expect(h.sim.inspecao.inutilizacoes()).toHaveLength(1);
   });
 
   test('cadastro: 203 não habilitado e 240 irregular', async () => {
@@ -245,15 +245,15 @@ describe('distribuição de DF-e (AN)', () => {
     expect(validarRaiz(PL_010f.nfeProcElement, docs[1]?.xml ?? '')).toEqual([]);
     expect(validarRaiz(canc.procEventoNFeElement, docs[2]?.xml ?? '')).toEqual([]);
     // O XML da NF-e distribuída é a string recebida.
-    expect(docs[1]?.xml).toContain(h.sim.inspect.nfe(chave)?.xml as string);
+    expect(docs[1]?.xml).toContain(h.sim.inspecao.nfe(chave)?.xml as string);
     // Emitente recebe a manifestação do destinatário; terceiros recebem NF-e e eventos completos.
-    expect(h.sim.inspect.distribuicao(EMITENTE).map((d) => d.schema)).toEqual(['procEventoNFe_v1.00.xsd']);
-    expect(h.sim.inspect.distribuicao(TERCEIRO).map((d) => d.schema)).toEqual([
+    expect(h.sim.inspecao.distribuicao(EMITENTE).map((d) => d.schema)).toEqual(['procEventoNFe_v1.00.xsd']);
+    expect(h.sim.inspecao.distribuicao(TERCEIRO).map((d) => d.schema)).toEqual([
       'procNFe_v4.00.xsd',
       'procEventoNFe_v1.00.xsd',
       'procEventoNFe_v1.00.xsd',
     ]);
-    expect(h.sim.inspect.distribuicao(TRANSPORTADOR)).toHaveLength(3);
+    expect(h.sim.inspecao.distribuicao(TRANSPORTADOR)).toHaveLength(3);
   });
 
   test('consNSU, 589, 137 e consumo indevido (656) antes de uma hora', async () => {
@@ -328,9 +328,9 @@ describe('consulta cadastro no MT', () => {
   const W = 'http://www.portalfiscal.inf.br/nfe/wsdl/CadConsultaCadastro4';
   const cadastro = [{ UF: 'MT' as const, IE: '131313130130', CNPJ: EMITENTE, xNome: 'EMITENTE SINTETICO MT' }];
   const enviar = async (h: Harness, body: string) => {
-    const t = simTransport(h.sim, { clientCertificate: h.c.terceiro.der });
+    const t = transporteSim(h.sim, { certificadoDoCliente: h.c.terceiro.der });
     const res = await t.enviar({
-      url: h.sim.url(SIM_BASE_URL, 'NfeConsultaCadastro'),
+      url: h.sim.url(URL_BASE_SIM, 'NfeConsultaCadastro'),
       cabecalhos: { 'content-type': contentTypeSoap12(`${W}/consultaCadastro`) },
       corpo: envelopeSoap12(body),
     });

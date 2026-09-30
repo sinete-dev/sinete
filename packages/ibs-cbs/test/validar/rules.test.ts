@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import type { ContextoDeTempo } from '@sinete/core';
 import { contextoDeTempo, ErroDeConfiguracao, relogioFixo } from '@sinete/core';
 import { carregarDataset } from '@sinete/ibs-cbs-dados';
-import { DATASET_EMBARCADO } from '@sinete/ibs-cbs-dados/bundled';
+import { DATASET_EMBARCADO } from '@sinete/ibs-cbs-dados/embarcado';
 import { REJEICOES } from '@sinete/rejeicoes';
 import { aliquotasOficiais, comAliquotasInformadas } from '../../src/aliquotas/index.ts';
 import type { IBSCBS, ItemClassificado } from '../../src/calcular/index.ts';

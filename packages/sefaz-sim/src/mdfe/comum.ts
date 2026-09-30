@@ -7,9 +7,9 @@ import type { DocumentoXml } from '@sinete/core/xml';
 import { decodificarBase64, ErroXml, lerXml } from '@sinete/core/xml';
 import type { ElementoRaiz } from '@sinete/schemas';
 import { validarRaiz } from '@sinete/schemas';
-import type { RequestContext, Status } from '../context.ts';
+import type { ContextoDoPedido, Status } from '../context.ts';
 import { motivoMdfe } from '../messages.ts';
-import type { Documento, MdfeRecord } from '../state.ts';
+import type { Documento, RegistroMdfe } from '../state.ts';
 import { formatInstant } from '../time.ts';
 import { hasPrefix } from '../xmlutil.ts';
 
@@ -28,13 +28,13 @@ export function verAplicMdfe(): string {
 }
 
 /** `dhRecbto`/`dhRegEvento` no fuso do autorizador. */
-export function dhMdfe(ctx: RequestContext, ms: number): string {
-  return formatInstant(ms, ctx.rt.config.offsetMinutes);
+export function dhMdfe(ctx: ContextoDoPedido, ms: number): string {
+  return formatInstant(ms, ctx.rt.configuracao.deslocamentoMin);
 }
 
 /** A regra está ligada (as desligadas vêm de `regrasMdfeDesligadas`). */
-export function ativa(ctx: RequestContext, id: string): boolean {
-  return !ctx.rt.config.regrasMdfeDesligadas.has(id);
+export function ativa(ctx: ContextoDoPedido, id: string): boolean {
+  return !ctx.rt.configuracao.regrasMdfeDesligadas.has(id);
 }
 
 /**
@@ -82,20 +82,20 @@ export type PreludeMdfe =
     };
 
 /** Grupos A, B-0, B e C. `root` é o schema da área de dados. */
-export async function preludeMdfe(ctx: RequestContext, root: ElementoRaiz<unknown>): Promise<PreludeMdfe> {
+export async function preludeMdfe(ctx: ContextoDoPedido, root: ElementoRaiz<unknown>): Promise<PreludeMdfe> {
   if (ctx.transmissorRecusado !== undefined) {
     return { ok: false, status: statusMdfe(ctx.transmissorRecusado), doc: undefined };
   }
   let payload = ctx.payload;
   // B00: descompactação da área de dados (só a recepção vai compactada).
-  if (ctx.def.compactado === true) {
-    const texto = await gunzip(payload, ctx.rt.config.tamanhoMaximoMdfe);
+  if (ctx.definicao.compactado === true) {
+    const texto = await gunzip(payload, ctx.rt.configuracao.tamanhoMaximoMdfe);
     if (texto === undefined) return { ok: false, status: statusMdfe('244'), doc: undefined };
     if (texto === 'grande') return { ok: false, status: statusMdfe('214'), doc: undefined };
     payload = texto.replace(/^﻿?<\?xml[^?]*\?>/, '');
   }
   // B01: tamanho.
-  if (new TextEncoder().encode(payload).length > ctx.rt.config.tamanhoMaximoMdfe) {
+  if (new TextEncoder().encode(payload).length > ctx.rt.configuracao.tamanhoMaximoMdfe) {
     return { ok: false, status: statusMdfe('214'), doc: undefined };
   }
   // B02: XML malformado.
@@ -136,6 +136,6 @@ export function mesmoDocumento(a: Documento, b: Documento): boolean {
 }
 
 /** Protocolo do MDF-e e data da situação para os marcadores das rejeições 204, 218, 539 e 609. */
-export function marcadores(m: MdfeRecord, extra: Readonly<Record<string, string>> = {}): Record<string, string> {
+export function marcadores(m: RegistroMdfe, extra: Readonly<Record<string, string>> = {}): Record<string, string> {
   return { nProt: m.nProt, dhAut: m.dhRecbto, chMDFe: m.chave, ...extra };
 }

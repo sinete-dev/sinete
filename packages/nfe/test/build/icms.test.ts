@@ -1,29 +1,29 @@
 import { describe, expect, test } from 'bun:test';
 import type { Ocorrencia } from '@sinete/core';
-import type { BuiltNfe, Icms } from '../../src/index.ts';
-import { buildNfe, MotivoDesoneracaoIcms } from '../../src/index.ts';
+import type { Icms, NfeMontada } from '../../src/index.ts';
+import { MotivoDesoneracaoIcms, montarNfe } from '../../src/index.ts';
 import { item, nota, opcoes } from '../helpers/nota.ts';
 
 type Grupo = Record<string, Record<string, string>>;
 
-async function comIcms(icms: Icms, crt: '1' | '3' = '3'): Promise<BuiltNfe> {
+async function comIcms(icms: Icms, crt: '1' | '3' = '3'): Promise<NfeMontada> {
   const base = nota({ itens: [item({}, icms)] });
-  const r = await buildNfe({ ...base, emitente: { ...base.emitente, CRT: crt } }, opcoes());
-  if (!r.ok) throw new Error(JSON.stringify(r.issues, null, 1));
-  return r.value;
+  const r = await montarNfe({ ...base, emitente: { ...base.emitente, CRT: crt } }, opcoes());
+  if (!r.ok) throw new Error(JSON.stringify(r.ocorrencias, null, 1));
+  return r.valor;
 }
 
 async function issuesDe(icms: Icms): Promise<readonly Ocorrencia[]> {
-  const r = await buildNfe(nota({ itens: [item({}, icms)] }), opcoes());
+  const r = await montarNfe(nota({ itens: [item({}, icms)] }), opcoes());
   if (r.ok) throw new Error('esperava ocorrências');
-  return r.issues;
+  return r.ocorrencias;
 }
 
-function icmsDe(n: BuiltNfe): Grupo {
+function icmsDe(n: NfeMontada): Grupo {
   return (n.infNFe.det[0] as unknown as { imposto: { ICMS: Grupo } }).imposto.ICMS;
 }
 
-function totais(n: BuiltNfe): Record<string, string> {
+function totais(n: NfeMontada): Record<string, string> {
   return n.infNFe.total.ICMSTot as unknown as Record<string, string>;
 }
 
@@ -90,11 +90,11 @@ describe('grupos do ICMS', () => {
   test('10 com IPI: o IPI entra na base do ST por MVA', async () => {
     const base = item({}, { CST: '10', orig: '0', pICMS: '12', st: { modBCST: '4', pMVAST: '40', pICMSST: '18' } });
     const it = { ...base, impostos: { ...base.impostos, ipi: { cEnq: '999', CST: '50' as const, pIPI: '10' } } };
-    const r = await buildNfe(nota({ itens: [it] }), opcoes());
-    if (!r.ok) throw new Error(JSON.stringify(r.issues));
+    const r = await montarNfe(nota({ itens: [it] }), opcoes());
+    if (!r.ok) throw new Error(JSON.stringify(r.ocorrencias));
     // (15 + 1,50) × 1,4 = 23,10; 23,10 × 18% = 4,158 → 4,16 - 1,80 = 2,36
-    expect(icmsDe(r.value).ICMS10).toMatchObject({ vBCST: '23.10', vICMSST: '2.36' });
-    expect(totais(r.value)).toMatchObject({ vIPI: '1.50', vNF: '18.86' });
+    expect(icmsDe(r.valor).ICMS10).toMatchObject({ vBCST: '23.10', vICMSST: '2.36' });
+    expect(totais(r.valor)).toMatchObject({ vIPI: '1.50', vNF: '18.86' });
   });
 
   test('15 monofásico com retenção', async () => {

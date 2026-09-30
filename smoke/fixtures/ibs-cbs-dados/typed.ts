@@ -1,7 +1,7 @@
 // Tipos do pacote publicado, vistos por um consumidor com tsc nodenext (e por deno check).
 import type { ResultadoAplicabilidade, RegistroClassTrib, DiferencaDeDatasets, DatasetIbsCbs, ConteudoTributario } from '@sinete/ibs-cbs-dados';
 import { compararDatasets } from '@sinete/ibs-cbs-dados';
-import { DATASET_EMBARCADO, datasetEmbarcado } from '@sinete/ibs-cbs-dados/bundled';
+import { DATASET_EMBARCADO, datasetEmbarcado } from '@sinete/ibs-cbs-dados/embarcado';
 
 const ds: DatasetIbsCbs = datasetEmbarcado();
 const at: ConteudoTributario = ds.em('2026-10-10');

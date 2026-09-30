@@ -8,19 +8,19 @@
  */
 
 import { MEIO_PAGAMENTO } from '../data/leiaute-bobina.ts';
-import { DanfeError } from '../errors.ts';
+import { ErroDa } from '../errors.ts';
 import * as f from '../format.ts';
 import type { NotaView } from '../input/nfe.ts';
-import type { Doc } from '../model.ts';
+import type { Documento } from '../model.ts';
 import type { Align } from '../render/canvas.ts';
 import { Canvas, lineHeight, MIN_SIZE } from '../render/canvas.ts';
 import { ascentMm, toWinAnsi, widthMm } from '../render/text.ts';
-import type { CommonOptions } from './common.ts';
+import type { DaOpcoes } from './common.ts';
 import { DocBuilder, drawLogo, qrcode } from './common.ts';
 import type { Cancelamento, Situacao } from './marcas.ts';
 import { avisoSituacao, marcas, protocoloDeUso } from './marcas.ts';
 
-export interface BobinaOptions extends CommonOptions {
+export interface BobinaOpcoes extends DaOpcoes {
   /** Largura do papel em mm (padrão 80; mínimo 56, NT 2026.003, 3.3 e Ajuste SINIEF 19/16). */
   readonly largura?: number;
   /** Via impressa em contingência (NT 2026.003, 3.1.9): a do estabelecimento leva a identificação ao lado da data. */
@@ -36,13 +36,13 @@ const BODY = 7;
 export function bobina(
   nota: NotaView,
   tipo: 'nfce' | 'tipo2',
-  options: BobinaOptions,
+  options: BobinaOpcoes,
   situacao: Situacao,
   cancel?: Cancelamento,
-): Doc {
+): Documento {
   const largura = Math.max(56, options.largura ?? 80);
   if (!nota.qrCode) {
-    throw new DanfeError('campo_ausente', 'NFC-e e DANFE Simplificado Tipo 2 exigem infNFeSupl/qrCode', {
+    throw new ErroDa('campo_ausente', 'NFC-e e DANFE Simplificado Tipo 2 exigem infNFeSupl/qrCode', {
       detalhes: { chave: nota.chave },
     });
   }

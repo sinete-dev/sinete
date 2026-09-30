@@ -1,11 +1,11 @@
 {
-  "schemaVersion": 1,
-  "source": "MOC 7.0 Anexo I, tabela 4.4.1 (Tabela de Códigos de Resultado de Processamento)",
+  "versaoDoFormato": 2,
+  "fonte": "MOC 7.0 Anexo I, tabela 4.4.1 (Tabela de Códigos de Resultado de Processamento)",
   "url": "https://www.nfe.fazenda.gov.br/portal/listaConteudo.aspx?tipoConteudo=ndIjl+iEFdE=",
   "sha256": "5eb4cf2010b10b0b62f78197c4eb64025f24535d4c6e61158bc7806dd008f55d",
-  "retrievedAt": "2026-09-25",
-  "note": "Mesmo PDF registrado em tools/rejeicoes-data/sources.json (moc70-anexo1). Só os códigos de resultado que o simulador devolve; as rejeições vêm do @sinete/rejeicoes.",
-  "codes": {
+  "coletadoEm": "2026-09-25",
+  "nota": "Mesmo PDF registrado em tools/rejeicoes-data/sources.json (moc70-anexo1). Só os códigos de resultado que o simulador devolve; as rejeições vêm do @sinete/rejeicoes.",
+  "codigos": {
     "100": "Autorizado o uso da NF-e",
     "101": "Cancelamento de NF-e homologado",
     "102": "Inutilização de número homologado",

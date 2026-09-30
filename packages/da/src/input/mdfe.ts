@@ -2,7 +2,7 @@
 
 import type { mdfeProc, TMDFe } from '@sinete/schemas/mdfe/3.00b';
 import { MDFeElement, mdfeProcElement } from '@sinete/schemas/mdfe/3.00b';
-import { DanfeError } from '../errors.ts';
+import { ErroDa } from '../errors.ts';
 import type { EnderecoView } from './nfe.ts';
 import type { Rec } from './xml.ts';
 import { decodeAs, parse, str, vista } from './xml.ts';
@@ -189,6 +189,6 @@ export function readMdfe(xml: string): MdfeView {
   );
   const proc = root === 'mdfeProc' ? (value as mdfeProc) : undefined;
   const m = proc ? proc.MDFe : (value as TMDFe);
-  if (!m?.infMDFe) throw new DanfeError('campo_ausente', 'MDF-e sem infMDFe');
+  if (!m?.infMDFe) throw new ErroDa('campo_ausente', 'MDF-e sem infMDFe');
   return vista('MDF-e', () => view(m, proc));
 }

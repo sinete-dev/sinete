@@ -7,7 +7,7 @@
 import { procEventoNFeElement as cancElement } from '@sinete/schemas/nfe/evento-cancelamento/PL_010d';
 import { procEventoNFeElement as cancSubstElement } from '@sinete/schemas/nfe/evento-cancelamento-substituicao/PL_010d';
 import { procEventoNFeElement as cceElement } from '@sinete/schemas/nfe/evento-cce/PL_010d';
-import { DanfeError } from '../errors.ts';
+import { ErroDa } from '../errors.ts';
 import type { Rec } from './xml.ts';
 import { decodeAs, parse, str } from './xml.ts';
 
@@ -42,7 +42,7 @@ export function readEvento(xml: string, tipos: readonly string[]): EventoView {
   const inf = ((value.evento as Rec | undefined)?.infEvento ?? {}) as Rec;
   const tpEvento = str(inf, 'tpEvento') ?? '';
   if (!tipos.includes(tpEvento)) {
-    throw new DanfeError('evento_incompativel', `evento ${tpEvento || 'sem tipo'} não é ${tipos.join(' nem ')}`, {
+    throw new ErroDa('evento_incompativel', `evento ${tpEvento || 'sem tipo'} não é ${tipos.join(' nem ')}`, {
       detalhes: { tpEvento, esperado: tipos },
     });
   }

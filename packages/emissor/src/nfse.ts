@@ -1,5 +1,5 @@
 /**
- * `@sinete/emissor/nfse`: o emissor da NFS-e Nacional (`createNfseEmissor`) e o perfil da NFS-e (`perfilNfse`).
+ * `@sinete/emissor/nfse`: o emissor da NFS-e Nacional (`criarEmissorNfse`) e o perfil da NFS-e (`perfilNfse`).
  *
  * Importa o `@sinete/nfse` (peer dependency) de forma estática; a raiz do `@sinete/emissor` não o importa.
  *
@@ -15,43 +15,47 @@ import type { Autorizado } from '@sinete/core';
 import { contextoDeTempo, ErroDeConfiguracao, ErroDeValidacao } from '@sinete/core';
 import { descendentes, lerXml } from '@sinete/core/xml';
 import type {
-  BuildDpsOptions,
   CancelamentoPedido,
-  DpsInput,
+  ClienteNfse,
+  ClienteNfseOpcoes,
+  DadosDps,
   EventoRegistrado,
   InscricaoFederal,
-  NfseClient,
-  NfseClientOptions,
+  MontarDpsOpcoes,
   NfseConsultada,
   NfseGerada,
-  NfseOutcome,
-  NfseRejeicao,
+  RejeicaoNfse,
   ResolucaoEnvio,
+  ResultadoNfse,
 } from '@sinete/nfse';
-import { buildDps, createNfseClient, resolverEnvioSemResposta, signDps } from '@sinete/nfse';
+import { assinarDps, criarClienteNfse, montarDps, resolverEnvioSemResposta } from '@sinete/nfse';
 import { conteudoDps } from './conteudo.ts';
 import { codigosDe, eventoRegistradoNfse } from './cstat.ts';
+import type { PdfNfseOpcoes } from './da.ts';
 import { carregadorDa } from './da.ts';
+
+export type { PdfNfseOpcoes } from './da.ts';
+
 import type { Desfecho, DesfechoEvento } from './desfecho.ts';
 import { semResposta } from './desfecho.ts';
-import type { ContextoEmissor, Emissor, OpcoesEmissor, OpcoesEmitir, PerfilDocumento } from './emissor.ts';
-import { createEmissor } from './emissor.ts';
+import type { ContextoEmissor, Emissor, EmissorOpcoes, EmitirOpcoes, PerfilDocumento } from './emissor.ts';
+import { criarEmissor } from './emissor.ts';
 import { eventoRecusado, eventoRegistrado } from './evento.ts';
 
 /** De onde sai o desfecho da NFS-e: a emissão ou a NFS-e da consulta da DPS. */
-export type BrutoNfse = NfseOutcome<NfseGerada> | NfseConsultada;
+export type BrutoNfse = ResultadoNfse<NfseGerada> | NfseConsultada;
 
 /** Desfecho de `emitir` e `retomar` da NFS-e. `id` é o Id da DPS; a chave da NFS-e está em `protocolo.chaveAcesso`. */
 export type DesfechoNfse = Desfecho<NfseGerada, BrutoNfse>;
 
 /** Desfecho do `cancelar` da NFS-e. */
-export type DesfechoCancelamentoNfse = DesfechoEvento<EventoRegistrado, NfseOutcome<EventoRegistrado> | undefined>;
+export type DesfechoCancelamentoNfse = DesfechoEvento<EventoRegistrado, ResultadoNfse<EventoRegistrado> | undefined>;
 
-export interface OpcoesPerfilNfse {
+export interface PerfilNfseOpcoes {
   /** Opções da montagem além de ambiente e relógio (versão do aplicativo, fuso). */
-  readonly montagem?: Omit<Partial<BuildDpsOptions>, 'ambiente'>;
+  readonly montagem?: Omit<Partial<MontarDpsOpcoes>, 'ambiente'>;
   /** Opções do cliente além das que o emissor preenche (cache de parâmetros, endpoints). */
-  readonly cliente?: Omit<Partial<NfseClientOptions>, 'transport' | 'signer' | 'ambiente' | 'clock'>;
+  readonly cliente?: Omit<Partial<ClienteNfseOpcoes>, 'transporte' | 'assinador' | 'ambiente' | 'relogio'>;
 }
 
 const CODIGOS = codigosDe('nfse');
@@ -97,17 +101,17 @@ function idDe(xml: string): string {
   return id;
 }
 
-/** Perfil da NFS-e para o `createEmissor` da raiz. */
+/** Perfil da NFS-e para o `criarEmissor` da raiz. */
 export function perfilNfse(
-  opcoes: OpcoesPerfilNfse = {},
-): PerfilDocumento<DpsInput, NfseClient, NfseGerada, BrutoNfse> {
-  const recusado = (id: string, r: NfseRejeicao): DesfechoNfse => ({
+  opcoes: PerfilNfseOpcoes = {},
+): PerfilDocumento<DadosDps, ClienteNfse, NfseGerada, BrutoNfse> {
+  const recusado = (id: string, r: RejeicaoNfse): DesfechoNfse => ({
     documento: 'nfse',
     tipo: 'recusado',
     id,
     cStat: r.cStat,
     xMotivo: r.xMotivo,
-    ...(r.dica === undefined ? {} : { hint: r.dica }),
+    ...(r.dica === undefined ? {} : { dica: r.dica }),
     bruto: r,
   });
   const gerada = (id: string, r: Autorizado<NfseGerada>): DesfechoNfse => ({
@@ -122,8 +126,8 @@ export function perfilNfse(
   });
 
   /** Envia; sem resposta ou E0014, resolve pela consulta da DPS. `reenvia` limita o reenvio a um. */
-  async function autorizar(cli: NfseClient, xml: string, reenvia: boolean): Promise<DesfechoNfse> {
-    let r: NfseOutcome<NfseGerada>;
+  async function autorizar(cli: ClienteNfse, xml: string, reenvia: boolean): Promise<DesfechoNfse> {
+    let r: ResultadoNfse<NfseGerada>;
     try {
       r = await cli.autorizar(xml);
     } catch (e) {
@@ -135,9 +139,9 @@ export function perfilNfse(
   }
 
   async function resolver(
-    cli: NfseClient,
+    cli: ClienteNfse,
     xml: string,
-    anterior: NfseRejeicao | undefined,
+    anterior: RejeicaoNfse | undefined,
     erroEnvio: unknown,
     reenvia: boolean,
   ): Promise<DesfechoNfse> {
@@ -159,7 +163,7 @@ export function perfilNfse(
     }
     switch (res.acao) {
       case 'concluida':
-        return gerada(id, res.outcome);
+        return gerada(id, res.resultado);
       case 'divergente':
         return {
           documento: 'nfse',
@@ -193,38 +197,38 @@ export function perfilNfse(
     transitorio: (cStat: string): boolean => CODIGOS.transitorio.has(cStat),
     recusaPorCampoVolatil: (cStat: string): boolean => CODIGOS.campoVolatil.has(cStat),
     conteudoParaRecusa: conteudoDps,
-    criarCliente(ctx: ContextoEmissor): NfseClient {
-      return createNfseClient({
-        transport: ctx.transporte(),
-        signer: ctx.signer,
+    criarCliente(ctx: ContextoEmissor): ClienteNfse {
+      return criarClienteNfse({
+        transporte: ctx.transporte(),
+        assinador: ctx.assinador,
         ambiente: ctx.ambiente,
-        clock: ctx.clock,
+        relogio: ctx.relogio,
         ...(ctx.logger === undefined ? {} : { logger: ctx.logger }),
         ...(ctx.timeoutMs === undefined ? {} : { timeoutMs: ctx.timeoutMs }),
         ...opcoes.cliente,
       });
     },
-    async assinar(dps: DpsInput, ctx: ContextoEmissor): Promise<{ readonly id: string; readonly xml: string }> {
-      const r = buildDps(dps, {
-        time: contextoDeTempo({ emissao: ctx.clock }),
+    async assinar(dps: DadosDps, ctx: ContextoEmissor): Promise<{ readonly id: string; readonly xml: string }> {
+      const r = await montarDps(dps, {
+        tempo: contextoDeTempo({ emissao: ctx.relogio }),
         ...opcoes.montagem,
         ambiente: ctx.ambiente,
       });
-      if (!r.ok) throw new ErroDeValidacao('a DPS não passou na validação', r.issues);
-      return { id: r.value.id, xml: await signDps(r.value, ctx.signer) };
+      if (!r.ok) throw new ErroDeValidacao('a DPS não passou na validação', r.ocorrencias);
+      return { id: r.valor.id, xml: await assinarDps(r.valor, ctx.assinador) };
     },
-    enviar: (cli: NfseClient, xml: string, modo: 'primeiro' | 'retomada'): Promise<DesfechoNfse> =>
+    enviar: (cli: ClienteNfse, xml: string, modo: 'primeiro' | 'retomada'): Promise<DesfechoNfse> =>
       modo === 'primeiro' ? autorizar(cli, xml, true) : resolver(cli, xml, undefined, undefined, true),
   };
 }
 
 /** O que o emissor precisa do `@sinete/da`: o módulo `@sinete/da/nfse` serve como está. */
 export interface ModuloDanfse {
-  danfse(xml: string, opcoes?: object): unknown;
-  toPdf(doc: never): Uint8Array;
+  danfse(xml: string, opcoes?: PdfNfseOpcoes): unknown;
+  gerarPdf(documento: never): Uint8Array;
 }
 
-export interface NfseEmissorOptions extends OpcoesEmissor<NfseGerada, BrutoNfse>, OpcoesPerfilNfse {
+export interface EmissorNfseOpcoes extends EmissorOpcoes<NfseGerada, BrutoNfse>, PerfilNfseOpcoes {
   /**
    * Módulo `@sinete/da/nfse` para o `pdf`, o `pdfCancelado` e o `pdfPorChave`. Padrão: importado na primeira chamada,
    * se estiver instalado (Node e Bun). No Deno e num bundle de browser, importe `@sinete/da/nfse` de forma estática e
@@ -236,12 +240,12 @@ export interface NfseEmissorOptions extends OpcoesEmissor<NfseGerada, BrutoNfse>
 /** Pedido de cancelamento do emissor: o autor, se faltar, é o titular do certificado. */
 export type CancelamentoNfseEmissor = Omit<CancelamentoPedido, 'autor'> & { readonly autor?: InscricaoFederal };
 
-export interface NfseEmissor extends Emissor<DpsInput, NfseClient, NfseGerada, BrutoNfse> {
+export interface EmissorNfse extends Emissor<DadosDps, ClienteNfse, NfseGerada, BrutoNfse> {
   /**
    * Emite a DPS substituta (com o grupo `substituicao`), com a mesma gravação e retomada do `emitir`. A Sefin gera a
    * nova NFS-e e registra sozinha o cancelamento por substituição da anterior.
    */
-  substituir(ref: string, dps: DpsInput, opcoes?: OpcoesEmitir): Promise<DesfechoNfse>;
+  substituir(ref: string, dps: DadosDps, opcoes?: EmitirOpcoes): Promise<DesfechoNfse>;
   /** NFS-e pela chave, ou `undefined` se a Sefin não a conhece. */
   consultar(chave: string): Promise<NfseConsultada | undefined>;
   /**
@@ -251,34 +255,37 @@ export interface NfseEmissor extends Emissor<DpsInput, NfseClient, NfseGerada, B
   cancelar(pedido: CancelamentoNfseEmissor): Promise<DesfechoCancelamentoNfse>;
   /**
    * PDF do DANFSe v2 a partir do XML da NFS-e: o `proc` do desfecho autorizado, o que o `aoDecidir` guardou (`opcoes`
-   * são as do `danfse`: `canhoto`, `nomeMunicipio`). Nada vai à rede.
+   * são as do `danfse` do `@sinete/da/nfse`). Nada vai à rede.
    */
-  pdf(nfse: string, opcoes?: object): Promise<Uint8Array>;
+  pdf(nfse: string, opcoes?: PdfNfseOpcoes): Promise<Uint8Array>;
   /**
    * PDF do DANFSe com a marca d'água: "SUBSTITUÍDA" com o evento de cancelamento por substituição (e105102),
    * "CANCELADA" com os outros de cancelamento (e101101, e105104, e305101). O evento é o registrado, como o `cancelar`
    * devolve em `xml`. Só o render: guardar é do integrador. Evento de outra NFS-e ou de outro tipo lança
    * (`evento_incompativel`).
    */
-  pdfCancelado(nfse: string, evento: string, opcoes?: object): Promise<Uint8Array>;
+  pdfCancelado(nfse: string, evento: string, opcoes?: MarcaDanfseAutomatica): Promise<Uint8Array>;
   /**
    * PDF do DANFSe para quem não guardou o XML: consulta a NFS-e pela chave na Sefin e os eventos que a marcam
    * (cancelamento, deferido por análise fiscal, por ofício e por substituição, sequência 1), e gera com a marca, se
    * houver. `undefined` se a Sefin não conhece a chave. Prefira o `pdf` com o XML guardado: são até cinco consultas.
    */
-  pdfPorChave(chave: string, opcoes?: object): Promise<Uint8Array | undefined>;
+  pdfPorChave(chave: string, opcoes?: MarcaDanfseAutomatica): Promise<Uint8Array | undefined>;
 }
+
+/** Opções do DANFSe quando o emissor põe a marca: a marca sai do evento, não das opções. */
+export type MarcaDanfseAutomatica = Omit<PdfNfseOpcoes, 'cancelamento' | 'substituicao'>;
 
 /**
  * Abre o PFX e devolve o emissor da NFS-e. Nada vai à rede até a primeira operação que precisa dela; o certificado
  * fora da validade é recusado aqui (`ErroCertificado`).
  */
-export async function createNfseEmissor(opcoes: NfseEmissorOptions): Promise<NfseEmissor> {
-  const base = await createEmissor(perfilNfse(opcoes), opcoes);
+export async function criarEmissorNfse(opcoes: EmissorNfseOpcoes): Promise<EmissorNfse> {
+  const base = await criarEmissor(perfilNfse(opcoes), opcoes);
   const da = carregadorDa<ModuloDanfse>('nfse', opcoes.da);
-  const render = async (nfse: string, o: object | undefined): Promise<Uint8Array> => {
+  const render = async (nfse: string, o: PdfNfseOpcoes | undefined): Promise<Uint8Array> => {
     const m = await da();
-    return (m.toPdf as (doc: unknown) => Uint8Array)(m.danfse(nfse, o));
+    return (m.gerarPdf as (doc: unknown) => Uint8Array)(m.danfse(nfse, o));
   };
   const t = base.titular;
   const titular: InscricaoFederal | undefined =
@@ -292,7 +299,7 @@ export async function createNfseEmissor(opcoes: NfseEmissorOptions): Promise<Nfs
    */
   async function recuperar(
     chave: string,
-    falha: { readonly erro: unknown } | NfseRejeicao,
+    falha: { readonly erro: unknown } | RejeicaoNfse,
   ): Promise<DesfechoCancelamentoNfse> {
     const bruto = 'erro' in falha ? undefined : falha;
     let eventos: readonly EventoRegistrado[];
@@ -305,14 +312,14 @@ export async function createNfseEmissor(opcoes: NfseEmissorOptions): Promise<Nfs
     const achado = eventos.find((ev) => ev.chaveAcesso === chave && ev.tpEvento === CANCELAMENTO);
     if (achado !== undefined) return eventoRegistrado(achado, achado.xml, eventoRegistradoNfse, true, bruto);
     if ('erro' in falha) return { tipo: 'pendente', motivo: 'sem-resposta', causa: falha.erro };
-    return eventoRecusado<EventoRegistrado, NfseOutcome<EventoRegistrado>>(falha, falha);
+    return eventoRecusado<EventoRegistrado, ResultadoNfse<EventoRegistrado>>(falha, falha);
   }
 
   async function cancelar(p: CancelamentoNfseEmissor): Promise<DesfechoCancelamentoNfse> {
     const autor = p.autor ?? titular;
     if (autor === undefined)
       throw new ErroDeConfiguracao('informe o autor do cancelamento: o certificado não traz CNPJ nem CPF');
-    let o: NfseOutcome<EventoRegistrado>;
+    let o: ResultadoNfse<EventoRegistrado>;
     try {
       o = await base.cliente.cancelar({ ...p, autor });
     } catch (e) {
@@ -322,7 +329,7 @@ export async function createNfseEmissor(opcoes: NfseEmissorOptions): Promise<Nfs
     if (o.tipo === 'autorizado') return eventoRegistrado(o.valor, o.valor.xml, o, false, o);
     return CODIGOS.eventoJaRegistrado.has(o.cStat)
       ? recuperar(p.chave, o)
-      : eventoRecusado<EventoRegistrado, NfseOutcome<EventoRegistrado>>(o, o);
+      : eventoRecusado<EventoRegistrado, ResultadoNfse<EventoRegistrado>>(o, o);
   }
 
   return {
@@ -332,10 +339,10 @@ export async function createNfseEmissor(opcoes: NfseEmissorOptions): Promise<Nfs
     assinar: base.assinar,
     retomar: base.retomar,
     fechar: base.fechar,
-    get cliente(): NfseClient {
+    get cliente(): ClienteNfse {
       return base.cliente;
     },
-    substituir(ref: string, dps: DpsInput, o?: OpcoesEmitir): Promise<DesfechoNfse> {
+    substituir(ref: string, dps: DadosDps, o?: EmitirOpcoes): Promise<DesfechoNfse> {
       if (dps.substituicao === undefined) {
         return Promise.reject(new ErroDeConfiguracao('a DPS substituta precisa do grupo substituicao'));
       }
@@ -343,11 +350,11 @@ export async function createNfseEmissor(opcoes: NfseEmissorOptions): Promise<Nfs
     },
     consultar: (chave: string): Promise<NfseConsultada | undefined> => base.cliente.consultar(chave),
     cancelar,
-    pdf: (nfse: string, o?: object): Promise<Uint8Array> => render(nfse, o),
-    pdfCancelado(nfse: string, evento: string, o?: object): Promise<Uint8Array> {
+    pdf: (nfse: string, o?: PdfNfseOpcoes): Promise<Uint8Array> => render(nfse, o),
+    pdfCancelado(nfse: string, evento: string, o?: MarcaDanfseAutomatica): Promise<Uint8Array> {
       return render(nfse, { ...o, [opcaoDoEvento(evento)]: evento });
     },
-    async pdfPorChave(chave: string, o?: object): Promise<Uint8Array | undefined> {
+    async pdfPorChave(chave: string, o?: MarcaDanfseAutomatica): Promise<Uint8Array | undefined> {
       const nfse = await base.cliente.consultar(chave);
       if (nfse === undefined) return undefined;
       const achados = await Promise.all(

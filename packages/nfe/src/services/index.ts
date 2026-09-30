@@ -5,40 +5,40 @@
 
 export type {
   AutorDocumento,
-  AutorizacaoOutcome,
   AutorizarOpcoes,
   Cadastro,
   CadastroPedido,
   CancelamentoPedido,
   CancelamentoSubstituicaoPedido,
   CartaCorrecaoPedido,
+  ClienteNfe,
+  ClienteNfeOpcoes,
   ConsultaNfe,
-  ConsultaOutcome,
   ConsultaReciboOpcoes,
   Distribuicao,
   DistribuicaoConsulta,
   DistribuicaoOpcoes,
   DocumentoDistribuido,
-  EventoOutcome,
+  EnvioOpcoes,
+  Espera,
   EventoRegistrado,
   Inutilizacao,
-  InutilizacaoOutcome,
   InutilizacaoPedido,
   ManifestacaoPedido,
   ManifestacaoTipo,
-  NfeClient,
-  NfeClientOptions,
-  OpcoesEnvio,
   PoliticaRecibo,
   ProtocoloNfe,
-  Sleep,
+  ResultadoAutorizacao,
+  ResultadoConsulta,
+  ResultadoEvento,
+  ResultadoInutilizacao,
   StatusServico,
   StatusServicoOpcoes,
 } from './client.ts';
-export { autorizadorContingencia, createNfeClient } from './client.ts';
-export { gunzipBase64 } from './gzip.ts';
+export { autorizadorContingencia, criarClienteNfe } from './client.ts';
+export { descomprimirGzipBase64 } from './gzip.ts';
 export type { DocumentoAssinado } from './proc.ts';
-export { documentoAssinado, nfeAssinadaDoProc, sliceElement } from './proc.ts';
+export { documentoAssinado, nfeAssinadaDoProc, recortarElemento } from './proc.ts';
 export type { RecuperacaoEvento } from './recuperar.ts';
 export { recuperarEventoRegistrado } from './recuperar.ts';
 export type { ConteudoDoProtocolo, ResolucaoEnvio } from './resolver.ts';

@@ -1,26 +1,26 @@
-/** Peças compartilhadas pelos layouts: montagem do `Doc`, logotipo, códigos de barras, QR e marcas d'água. */
+/** Peças compartilhadas pelos layouts: montagem do `Documento`, logotipo, códigos de barras, QR e marcas d'água. */
 
 import { code128Chave, modules, QUIET_MODULES } from '../barcode/code128.ts';
-import { qrMatrix } from '../barcode/qr.ts';
-import type { Doc, DocImage, FitStats, FontName, Page } from '../model.ts';
+import { matrizQr } from '../barcode/qr.ts';
+import type { Documento, EstatisticasDeEncaixe, ImagemDoDocumento, NomeDaFonte, Pagina } from '../model.ts';
 import type { Canvas } from '../render/canvas.ts';
 import { loadImage } from '../render/image.ts';
 import { widthMm } from '../render/text.ts';
 
 /** Opções comuns a todos os documentos auxiliares. */
-export interface CommonOptions {
+export interface DaOpcoes {
   /** Logotipo do emitente em PNG ou JPEG (MOC 7.0, Anexo II, 3.1.3: opcional). */
   readonly logo?: Uint8Array;
 }
 
-/** Junta páginas, imagens e contadores de encaixe num `Doc`. */
+/** Junta páginas, imagens e contadores de encaixe num `Documento`. */
 export class DocBuilder {
-  private readonly images: Record<string, DocImage> = {};
-  private readonly pages: Page[] = [];
-  private stats: FitStats = { reduzidos: 0, quebrados: 0, cortados: 0 };
-  readonly logo: { readonly ref: string; readonly img: DocImage } | undefined;
+  private readonly images: Record<string, ImagemDoDocumento> = {};
+  private readonly pages: Pagina[] = [];
+  private stats: EstatisticasDeEncaixe = { reduzidos: 0, quebrados: 0, cortados: 0 };
+  readonly logo: { readonly ref: string; readonly img: ImagemDoDocumento } | undefined;
 
-  constructor(options: CommonOptions) {
+  constructor(options: DaOpcoes) {
     if (options.logo) {
       const img = loadImage(options.logo);
       this.images.logo = img;
@@ -39,8 +39,8 @@ export class DocBuilder {
     };
   }
 
-  build(title: string): Doc {
-    return { title, pages: this.pages, images: this.images, stats: this.stats };
+  build(title: string): Documento {
+    return { titulo: title, paginas: this.pages, imagens: this.images, estatisticas: this.stats };
   }
 }
 
@@ -60,9 +60,9 @@ export function drawLogo(
 ): number {
   if (!b.logo) return 0;
   const { img, ref } = b.logo;
-  const s = Math.min(w / img.width, h / img.height);
-  const lw = img.width * s;
-  const lh = img.height * s;
+  const s = Math.min(w / img.largura, h / img.altura);
+  const lw = img.largura * s;
+  const lh = img.altura * s;
   c.image(ref, align === 'l' ? x : x + (w - lw) / 2, y + (h - lh) / 2, lw, lh);
   return lw;
 }
@@ -93,7 +93,7 @@ export function barcode(
   const widths = code128Chave(digits);
   const total = modules(widths);
   const module = Math.max(moduloMinimo(widths), Math.min(maxModule, w / (total + 2 * QUIET_MODULES)));
-  c.bars({ x: x + (w - total * module) / 2, y, h, module, widths });
+  c.bars({ x: x + (w - total * module) / 2, y, h, modulo: module, larguras: widths });
   return module;
 }
 
@@ -104,7 +104,7 @@ export function barcode(
 export function barcodeVertical(c: Canvas, digits: string, x: number, y: number, len: number): number {
   const widths = code128Chave(digits);
   const module = moduloMinimo(widths);
-  c.bars({ x, y: y + QUIET_MODULES * module, h: len, module, widths, vertical: true });
+  c.bars({ x, y: y + QUIET_MODULES * module, h: len, modulo: module, larguras: widths, vertical: true });
   return (modules(widths) + 2 * QUIET_MODULES) * module;
 }
 
@@ -114,9 +114,9 @@ export function barcodeVertical(c: Canvas, digits: string, x: number, y: number,
  * lado, 5% de cada lado (NT 2026.003, 3.4; MOC MDF-e 3.00a, Anexo II, 2.3). Nunca menos de 1,5 mm por lado.
  */
 export function qrcode(c: Canvas, text: string, x: number, y: number, size: number): void {
-  const matrix = qrMatrix(text, { ecc: 'M' });
+  const matrix = matrizQr(text, { nivelDeCorrecao: 'M' });
   const quiet = Math.max(1.5, size * 0.05);
-  c.qr({ x: x + quiet, y: y + quiet, size: size - 2 * quiet, modules: matrix });
+  c.qr({ x: x + quiet, y: y + quiet, tamanho: size - 2 * quiet, modulos: matrix });
 }
 
 /**
@@ -129,7 +129,7 @@ export function watermark(
   pageH: number,
   lines: readonly string[],
   gray = 0.82,
-  font: FontName = c.bold,
+  font: NomeDaFonte = c.bold,
 ): void {
   const angle = (Math.atan2(pageH, pageW) * 180) / Math.PI;
   const diag = Math.hypot(pageW, pageH);

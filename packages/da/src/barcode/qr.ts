@@ -7,12 +7,12 @@
  * 4.4.3). O nível de correção padrão é M (MOC MDF-e 3.00b, 9.3.2).
  */
 
-import { DanfeError } from '../errors.ts';
+import { ErroDa } from '../errors.ts';
 
-export type QrEcc = 'L' | 'M' | 'Q' | 'H';
+export type NivelCorrecaoQr = 'L' | 'M' | 'Q' | 'H';
 
 /** Codewords de correção por bloco, por nível e versão (ISO/IEC 18004, tabela 9). Índice 0 não é usado. */
-const ECC_PER_BLOCK: Readonly<Record<QrEcc, readonly number[]>> = {
+const ECC_PER_BLOCK: Readonly<Record<NivelCorrecaoQr, readonly number[]>> = {
   L: [
     0, 7, 10, 15, 20, 26, 18, 20, 24, 30, 18, 20, 24, 26, 30, 22, 24, 28, 30, 28, 28, 28, 28, 30, 30, 26, 28, 30, 30,
     30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
@@ -32,7 +32,7 @@ const ECC_PER_BLOCK: Readonly<Record<QrEcc, readonly number[]>> = {
 };
 
 /** Número de blocos de correção, por nível e versão (ISO/IEC 18004, tabela 9). */
-const BLOCKS: Readonly<Record<QrEcc, readonly number[]>> = {
+const BLOCKS: Readonly<Record<NivelCorrecaoQr, readonly number[]>> = {
   L: [
     0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 4, 4, 4, 4, 4, 6, 6, 6, 6, 7, 8, 8, 9, 9, 10, 12, 12, 12, 13, 14, 15, 16, 17, 18, 19,
     19, 20, 21, 22, 24, 25,
@@ -52,7 +52,7 @@ const BLOCKS: Readonly<Record<QrEcc, readonly number[]>> = {
 };
 
 /** Indicador de nível na informação de formato (ISO/IEC 18004, tabela 12). */
-const ECC_BITS: Readonly<Record<QrEcc, number>> = { L: 1, M: 0, Q: 3, H: 2 };
+const ECC_BITS: Readonly<Record<NivelCorrecaoQr, number>> = { L: 1, M: 0, Q: 3, H: 2 };
 
 /** Módulos disponíveis para dados e correção numa versão (total menos padrões de função e informações). */
 function rawModules(ver: number): number {
@@ -65,7 +65,7 @@ function rawModules(ver: number): number {
   return r;
 }
 
-function dataCodewords(ver: number, ecc: QrEcc): number {
+function dataCodewords(ver: number, ecc: NivelCorrecaoQr): number {
   return Math.floor(rawModules(ver) / 8) - (ECC_PER_BLOCK[ecc][ver] ?? 0) * (BLOCKS[ecc][ver] ?? 0);
 }
 
@@ -127,7 +127,7 @@ function utf8(s: string): Uint8Array {
 }
 
 /** Bits do segmento em modo byte, com terminador e preenchimento, em codewords. */
-function encodeData(bytes: Uint8Array, ver: number, ecc: QrEcc): Uint8Array {
+function encodeData(bytes: Uint8Array, ver: number, ecc: NivelCorrecaoQr): Uint8Array {
   const cap = dataCodewords(ver, ecc);
   const bits: number[] = [];
   const put = (v: number, n: number): void => {
@@ -149,7 +149,7 @@ function encodeData(bytes: Uint8Array, ver: number, ecc: QrEcc): Uint8Array {
 }
 
 /** Divide em blocos, calcula a correção de cada um e intercala (ISO/IEC 18004, 7.6). */
-function interleave(data: Uint8Array, ver: number, ecc: QrEcc): Uint8Array {
+function interleave(data: Uint8Array, ver: number, ecc: NivelCorrecaoQr): Uint8Array {
   const nBlocks = BLOCKS[ecc][ver] ?? 1;
   const eccLen = ECC_PER_BLOCK[ecc][ver] ?? 0;
   const raw = Math.floor(rawModules(ver) / 8);
@@ -358,28 +358,28 @@ class Matrix {
   }
 }
 
-export interface QrOptions {
-  readonly ecc?: QrEcc;
+export interface QrOpcoes {
+  readonly nivelDeCorrecao?: NivelCorrecaoQr;
   /** Máscara fixa (0 a 7); sem ela, a de menor penalidade. */
-  readonly mask?: number;
+  readonly mascara?: number;
 }
 
-/** Matriz de módulos do QR Code de `text` (true = escuro), sem a zona de silêncio. */
-export function qrMatrix(text: string, options: QrOptions = {}): boolean[][] {
-  const ecc = options.ecc ?? 'M';
-  const bytes = utf8(text);
+/** Matriz de módulos do QR Code de `texto` (true = escuro), sem a zona de silêncio. */
+export function matrizQr(texto: string, opcoes: QrOpcoes = {}): boolean[][] {
+  const ecc = opcoes.nivelDeCorrecao ?? 'M';
+  const bytes = utf8(texto);
   let ver = 1;
   const header = (v: number): number => 4 + (v < 10 ? 8 : 16);
   while (ver <= 40 && Math.ceil((header(ver) + bytes.length * 8) / 8) > dataCodewords(ver, ecc)) ver++;
   if (ver > 40) {
-    throw new DanfeError('codigo_barras_invalido', 'conteúdo grande demais para um QR Code', {
-      detalhes: { bytes: bytes.length, ecc },
+    throw new ErroDa('codigo_barras_invalido', 'conteúdo grande demais para um QR Code', {
+      detalhes: { bytes: bytes.length, nivelDeCorrecao: ecc },
     });
   }
   const m = new Matrix(ver);
   m.functionPatterns();
   m.place(interleave(encodeData(bytes, ver, ecc), ver, ecc));
-  let mask = options.mask;
+  let mask = opcoes.mascara;
   if (mask === undefined) {
     let best = Number.POSITIVE_INFINITY;
     for (let k = 0; k < 8; k++) {

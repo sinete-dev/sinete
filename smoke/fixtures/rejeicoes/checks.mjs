@@ -15,12 +15,12 @@ export function runChecks() {
   const r = completarRecusado(criarRecusado({ cStat: '204', xMotivo: 'Rejeição: Duplicidade de NF-e' }));
   expect('dica', r.dica?.fonte === 'MOC 7.0 Anexo I, RV 2B08-20');
   const o = completarResultado(criarRecusado({ cStat: '9998', xMotivo: 'x' }));
-  expect('sem hint fora do catálogo', o.tipo === 'recusado' && o.dica === undefined);
+  expect('sem dica fora do catálogo', o.tipo === 'recusado' && o.dica === undefined);
   expect('mdfe: entrada própria', REJEICOES_MDFE.length >= 200 && rejeicaoMdfePorCodigo('663')?.mensagem === 'Percurso informado inválido');
-  expect('mdfe: hint', completarRecusadoMdfe(criarRecusado({ cStat: '686', xMotivo: 'x' })).dica?.fonte === 'MOC MDF-e 3.00b Anexo I, regra F86');
+  expect('mdfe: dica', completarRecusadoMdfe(criarRecusado({ cStat: '686', xMotivo: 'x' })).dica?.fonte === 'MOC MDF-e 3.00b Anexo I, regra F86');
   expect('nfse: json embutido', NFSE_ERROS.length >= 490 && TABELA_ERROS_NFSE.fontes.length === 2);
   expect('nfse: nível 3', nfseErroPorCodigo('E0312')?.nivel === '3');
   const n = completarRecusadoNfse(criarRecusado({ cStat: 'E1229', xMotivo: 'Xml não está utilizando codificação UTF-8.' }));
-  expect('nfse: hint', n.dica?.fonte.includes('RN_RECEPCAO_DPS') === true);
+  expect('nfse: dica', n.dica?.fonte.includes('RN_RECEPCAO_DPS') === true);
   return failures;
 }

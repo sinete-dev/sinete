@@ -18,7 +18,7 @@ import { root, workspacePackages } from './lib/workspace.ts';
 
 /**
  * Pacotes cobertos. Ficam de fora o `@sinete/sefaz-sim`, que é ferramenta de teste e não deve entrar na instalação de
- * produção, e o `@sinete/cli`, que entra só como `bin` (o `runDoctor` programático continua no próprio pacote).
+ * produção, e o `@sinete/cli`, que entra só como `bin` (o `rodarDoctor` programático continua no próprio pacote).
  */
 const COBERTOS = [
   '@sinete/core',

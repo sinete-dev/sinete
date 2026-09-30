@@ -9,10 +9,10 @@ import type { DocumentoXml } from '@sinete/core/xml';
 import { atributoDe, ErroXml, lerXml } from '@sinete/core/xml';
 import type { ElementoRaiz, OcorrenciaSchema } from '@sinete/schemas';
 import { validarRaiz } from '@sinete/schemas';
-import type { CertIdentity } from './certs.ts';
-import { isDenegacao, motivo, motivoRejeicao } from './messages.ts';
-import type { SimRules } from './rules.ts';
-import type { ServiceDef, SimAutorizador } from './services.ts';
+import type { IdentidadeDoCertificado } from './certs.ts';
+import { ehDenegacao, motivo, motivoRejeicao } from './messages.ts';
+import type { RegrasSim } from './rules.ts';
+import type { AutorizadorSim, DefinicaoDeServico } from './services.ts';
 import type { Contribuinte, SimState, TipoAutorizador } from './state.ts';
 import { formatInstant } from './time.ts';
 import { hasPrefix } from './xmlutil.ts';
@@ -30,8 +30,8 @@ export type AtivacaoSvc =
   | { readonly situacao: 'desativando'; readonly ate: ReturnType<Relogio['agora']> }
   | { readonly situacao: 'inativa' };
 
-export interface SimConfig {
-  readonly clock: Relogio;
+export interface ConfiguracaoSim {
+  readonly relogio: Relogio;
   readonly ambiente: Ambiente;
   readonly tpAmb: '1' | '2';
   /** Sigla da UF autorizadora simulada. */
@@ -39,9 +39,9 @@ export interface SimConfig {
   readonly cUF: string;
   /** cUF das UFs atendidas pelo autorizador (regras B02-10 e B05). */
   readonly cUFsAtendidas: readonly string[];
-  readonly offsetMinutes: number;
+  readonly deslocamentoMin: number;
   readonly cadastro: readonly Contribuinte[];
-  readonly rules: SimRules;
+  readonly regras: RegrasSim;
   readonly exigirCertificado: boolean;
   readonly prazoCancelamentoMs: number;
   readonly prazoCancelamentoSubstituicaoMs: number;
@@ -59,19 +59,19 @@ export interface SimConfig {
 }
 
 /** Estado mutável de execução, compartilhado pelos três autorizadores. */
-export interface Runtime {
-  readonly config: SimConfig;
-  readonly state: SimState;
-  /** `setContingencia`: a UF responde 108, e a SVC (esta) fica ativa para as UFs atendidas. */
+export interface EstadoDeExecucao {
+  readonly configuracao: ConfiguracaoSim;
+  readonly estado: SimState;
+  /** `definirContingencia`: a UF responde 108, e a SVC (esta) fica ativa para as UFs atendidas. */
   contingencia: Svc | undefined;
-  /** SVC da UF simulada pela tabela do `@sinete/transport`, quando `setContingencia` não escolheu outra. */
+  /** SVC da UF simulada pela tabela do `@sinete/transport`, quando `definirContingencia` não escolheu outra. */
   readonly svcPadrao: Svc;
-  /** Ativação da SVC por cUF (`setAtivacaoSvc`), por cima da que `setContingencia` dá. */
+  /** Ativação da SVC por cUF (`definirAtivacaoSvc`), por cima da que `definirContingencia` dá. */
   readonly ativacaoSvc: Map<string, AtivacaoSvc>;
-  readonly paralisacao: Map<SimAutorizador, '108' | '109'>;
+  readonly paralisacao: Map<AutorizadorSim, '108' | '109'>;
   /** Paralisação dos serviços do MDF-e (a SVRS), independente da NF-e. */
   paralisacaoMdfe: '108' | '109' | undefined;
-  /** Protocolos que saem sem `digVal` (`setProtocoloSemDigVal`). */
+  /** Protocolos que saem sem `digVal` (`definirProtocoloSemDigVal`). */
   semDigVal: ProtocoloSemDigVal | undefined;
 }
 
@@ -87,28 +87,28 @@ export interface ProtocoloSemDigVal {
 }
 
 /** O protocolo com este `cStat` sai sem `digVal` na resposta `onde`. */
-export function omitirDigVal(rt: Runtime, onde: 'autorizacao' | 'consulta', cStat: string): boolean {
+export function omitirDigVal(rt: EstadoDeExecucao, onde: 'autorizacao' | 'consulta', cStat: string): boolean {
   const s = rt.semDigVal;
   if (s === undefined || (s.onde !== 'ambos' && s.onde !== onde)) return false;
-  return s.quais === 'todos' || isDenegacao(cStat);
+  return s.quais === 'todos' || ehDenegacao(cStat);
 }
 
-export interface RequestContext {
-  readonly rt: Runtime;
-  readonly def: ServiceDef;
-  readonly autorizador: SimAutorizador;
+export interface ContextoDoPedido {
+  readonly rt: EstadoDeExecucao;
+  readonly definicao: DefinicaoDeServico;
+  readonly autorizador: AutorizadorSim;
   /** Área de dados como recebida. */
   readonly payload: string;
-  readonly now: number;
+  readonly agora: number;
   /** Certificado de transmissão lido e aprovado no grupo A, ou `undefined` sem certificado. */
-  readonly transmissor: CertIdentity | undefined;
+  readonly transmissor: IdentidadeDoCertificado | undefined;
   /** cStat do grupo A quando o certificado de transmissão foi recusado (280, 281, 282). */
   readonly transmissorRecusado: string | undefined;
 }
 
 /** `dhRecbto`/`dhResp` no fuso do autorizador. */
-export function dh(ctx: { readonly rt: Runtime }, ms: number): string {
-  return formatInstant(ms, ctx.rt.config.offsetMinutes);
+export function dh(ctx: { readonly rt: EstadoDeExecucao }, ms: number): string {
+  return formatInstant(ms, ctx.rt.configuracao.deslocamentoMin);
 }
 
 /**
@@ -116,24 +116,24 @@ export function dh(ctx: { readonly rt: Runtime }, ms: number): string {
  * SVC-RS mesmo que a contingência mude antes do processamento. Sem `svc`, vale a contingência atual.
  */
 export interface AutorizadorCtx {
-  readonly rt: Runtime;
-  readonly autorizador: SimAutorizador;
+  readonly rt: EstadoDeExecucao;
+  readonly autorizador: AutorizadorSim;
   readonly svc?: Svc | undefined;
 }
 
 const svcDe = (ctx: AutorizadorCtx): Svc => ctx.svc ?? svcAtual(ctx.rt);
 
-/** A SVC que atende agora: a escolhida em `setContingencia`, ou a da tabela para a UF simulada. */
-export function svcAtual(rt: Runtime): Svc {
+/** A SVC que atende agora: a escolhida em `definirContingencia`, ou a da tabela para a UF simulada. */
+export function svcAtual(rt: EstadoDeExecucao): Svc {
   return rt.contingencia ?? rt.svcPadrao;
 }
 
 /**
- * Situação da SVC para a UF do `cUF` em `now`: `ativa`, `desativando` (antes de `ate`) ou `inativa`. Sem
- * `setAtivacaoSvc` para a UF, vale `setContingencia` (ligada: ativa; desligada: inativa).
+ * Situação da SVC para a UF do `cUF` em `agora`: `ativa`, `desativando` (antes de `ate`) ou `inativa`. Sem
+ * `definirAtivacaoSvc` para a UF, vale `definirContingencia` (ligada: ativa; desligada: inativa).
  */
 export function situacaoSvc(
-  rt: Runtime,
+  rt: EstadoDeExecucao,
   cUF: string,
   now: number,
 ):
@@ -148,7 +148,7 @@ export function situacaoSvc(
 
 /** `verAplic` do autorizador simulado (o MOC pede a sigla do órgão no início). */
 export function verAplic(ctx: AutorizadorCtx): string {
-  const sigla = ctx.autorizador === 'uf' ? ctx.rt.config.uf : ctx.autorizador === 'an' ? 'AN' : svcDe(ctx);
+  const sigla = ctx.autorizador === 'uf' ? ctx.rt.configuracao.uf : ctx.autorizador === 'an' ? 'AN' : svcDe(ctx);
   return `${sigla}_SINETE_SIM`;
 }
 
@@ -194,12 +194,12 @@ function schemaFailure(doc: DocumentoXml, spec: PreludeSpec, issues: readonly Oc
  * Grupos A, B e D. Devolve o documento parseado e a raiz que validou, ou o status da rejeição (o serviço monta a
  * resposta com os campos que conseguir ler).
  */
-export function prelude(ctx: RequestContext, spec: PreludeSpec): Prelude {
+export function prelude(ctx: ContextoDoPedido, spec: PreludeSpec): Prelude {
   if (ctx.transmissorRecusado !== undefined) {
     return { ok: false, status: status(ctx.transmissorRecusado), doc: undefined };
   }
   // B01: tamanho da área de dados.
-  if (new TextEncoder().encode(ctx.payload).length > ctx.rt.config.tamanhoMaximo) {
+  if (new TextEncoder().encode(ctx.payload).length > ctx.rt.configuracao.tamanhoMaximo) {
     return { ok: false, status: status('214'), doc: undefined };
   }
   // B02: XML malformado (a área de dados isolada do envelope precisa se sustentar sozinha).

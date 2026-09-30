@@ -9,7 +9,7 @@ import { ufPorSigla } from '@sinete/core';
 import { lerCnpj } from '@sinete/validators';
 import suframa from '../data/suframa.json' with { type: 'json' };
 import type { Issues } from '../issues.ts';
-import type { NfeInput } from '../model.ts';
+import type { DadosNfe } from '../model.ts';
 
 /** Identificação já resolvida pelo montador (com os padrões aplicados). */
 export interface IdeDestinatario {
@@ -26,7 +26,7 @@ const ID_ESTRANGEIRO = /^[0-9A-Za-z:.+\-/()]*$/;
 
 const digitos = (s: string): string => s.replace(/\D/g, '');
 
-export function conferirDestinatario(input: NfeInput, ide: IdeDestinatario, issues: Issues): void {
+export function conferirDestinatario(input: DadosNfe, ide: IdeDestinatario, issues: Issues): void {
   const d = input.destinatario;
   if (d === undefined) return;
   const nfe = ide.mod === '55';

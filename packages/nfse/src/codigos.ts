@@ -44,13 +44,14 @@ export type InscricaoFederal =
   | { readonly CPF: string; readonly CNPJ?: never };
 
 /** Tipo de inscrição (1 CPF, 2 CNPJ) e inscrição com 14 posições, como entram no Id da DPS e na chave. */
-export function inscricaoId(doc: InscricaoFederal): { readonly tpInsc: '1' | '2'; readonly inscricao: string } {
-  if (doc.CNPJ !== undefined) {
-    if (!/^[0-9A-Z]{12}\d{2}$/.test(doc.CNPJ)) throw new ErroDeConfiguracao(`CNPJ fora do formato: ${doc.CNPJ}`);
-    return { tpInsc: '2', inscricao: doc.CNPJ };
+export function inscricaoId(documento: InscricaoFederal): { readonly tpInsc: '1' | '2'; readonly inscricao: string } {
+  if (documento.CNPJ !== undefined) {
+    if (!/^[0-9A-Z]{12}\d{2}$/.test(documento.CNPJ))
+      throw new ErroDeConfiguracao(`CNPJ fora do formato: ${documento.CNPJ}`);
+    return { tpInsc: '2', inscricao: documento.CNPJ };
   }
-  if (!/^\d{11}$/.test(doc.CPF)) throw new ErroDeConfiguracao(`CPF fora do formato: ${doc.CPF}`);
-  return { tpInsc: '1', inscricao: `000${doc.CPF}` };
+  if (!/^\d{11}$/.test(documento.CPF)) throw new ErroDeConfiguracao(`CPF fora do formato: ${documento.CPF}`);
+  return { tpInsc: '1', inscricao: `000${documento.CPF}` };
 }
 
 export interface IdDpsPartes {
@@ -90,7 +91,7 @@ export interface ChaveNfse {
 const CHAVE = /^(\d{7})(\d)([12])([0-9A-Z]{14})(\d{13})(\d{4})(\d{9})(\d)$/;
 
 /** Lê a chave de 50 posições. Lança `ErroDeConfiguracao` se a estrutura não bate; o DV não é conferido (ver o topo). */
-export function parseChaveNfse(chave: string): ChaveNfse {
+export function lerChaveNfse(chave: string): ChaveNfse {
   const m = CHAVE.exec(chave);
   if (m === null) throw new ErroDeConfiguracao(`chave de NFS-e inválida: ${JSON.stringify(chave)}`);
   const tpInsc = m[3] as '1' | '2';
@@ -119,7 +120,7 @@ export const TIPOS_EVENTO = {
 
 /** Id do pedido de registro de evento: `PRE` + chave + código do evento. */
 export function idPedidoEvento(chave: string, tpEvento: string): string {
-  parseChaveNfse(chave);
+  lerChaveNfse(chave);
   if (!/^\d{6}$/.test(tpEvento)) throw new ErroDeConfiguracao(`código de evento inválido: ${tpEvento}`);
   return `PRE${chave}${tpEvento}`;
 }

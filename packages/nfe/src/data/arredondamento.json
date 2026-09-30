@@ -1,5 +1,5 @@
 {
-  "descricao": "Modo de arredondamento dos valores calculados pelo builder, por família de campo. HALF_UP é o arredondamento comercial; HALF_EVEN é o bancário (NBR 5891). Quem emite pode sobrepor por família em BuildNfeOptions.arredondamento.",
+  "descricao": "Modo de arredondamento dos valores calculados pelo builder, por família de campo. HALF_UP é o arredondamento comercial; HALF_EVEN é o bancário (NBR 5891). Quem emite pode sobrepor por família em MontarNfeOpcoes.arredondamento.",
   "atualizadoEm": "2026-09-26",
   "familias": {
     "produto": {

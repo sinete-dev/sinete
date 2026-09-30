@@ -1,17 +1,17 @@
 // Tipos do pacote publicado, vistos por um consumidor com tsc nodenext (e por deno check).
 import type { Ocorrencia } from '@sinete/core';
 import type {
-  BuildDpsResult,
+  ResultadoMontagemDps,
   CacheParametros,
-  DpsInput,
-  NfseClient,
-  NfseOutcome,
+  DadosDps,
+  ClienteNfse,
+  ResultadoNfse,
   NfseGerada,
   ResolucaoEnvio,
 } from '@sinete/nfse';
 import { cacheEmMemoria, TIPOS_EVENTO } from '@sinete/nfse';
 
-const entrada: DpsInput = {
+const entrada: DadosDps = {
   serie: '1',
   nDPS: '1',
   cLocEmi: '3550308',
@@ -21,13 +21,13 @@ const entrada: DpsInput = {
   tributacao: { issqn: { tribISSQN: '1', tpRetISSQN: '1' } },
 };
 // @ts-expect-error tribISSQN só aceita os códigos do leiaute
-const errada: DpsInput = { ...entrada, tributacao: { issqn: { tribISSQN: '9', tpRetISSQN: '1' } } };
-declare const r: BuildDpsResult;
-declare const client: NfseClient;
-declare const desfecho: NfseOutcome<NfseGerada>;
+const errada: DadosDps = { ...entrada, tributacao: { issqn: { tribISSQN: '9', tpRetISSQN: '1' } } };
+declare const r: ResultadoMontagemDps;
+declare const client: ClienteNfse;
+declare const desfecho: ResultadoNfse<NfseGerada>;
 declare const resolucao: ResolucaoEnvio;
 if (!r.ok) {
-  const issues: readonly Ocorrencia[] = r.issues;
+  const issues: readonly Ocorrencia[] = r.ocorrencias;
   void issues;
 }
 if (desfecho.tipo === 'recusado') {

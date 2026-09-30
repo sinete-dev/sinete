@@ -73,10 +73,10 @@ describe('cancelar (110111)', () => {
     expect((await conferirAssinatura(r.valor.procEventoNFe, { id, elemento: 'infEvento' })).ok).toBe(true);
   });
 
-  test('offsetMinutes sobrepõe o fuso da UF; autor explícito CPF', async () => {
+  test('deslocamentoMin sobrepõe o fuso da UF; autor explícito CPF', async () => {
     const ch = chave({ emitente: `000${CPF_EMIT}`, serie: 920 });
     const t = fakeTransport(soap(retEnvEvento({ evento: { cStat: '135', tpEvento: '110111', chNFe: ch, nProt: '' } })));
-    const { c } = await client(t, { offsetMinutes: -240 });
+    const { c } = await client(t, { deslocamentoMin: -240 });
     const r = await c.cancelar({
       chave: ch,
       nProt: '135260000000001',
@@ -262,7 +262,7 @@ describe('cancelarPorSubstituicao (110112)', () => {
     };
     const ufs: string[] = [];
     const { c } = await client(t, {
-      nfceEndpoint: (servico, uf) => {
+      endpointNfce: (servico, uf) => {
         ufs.push(`${servico} ${uf}`);
         return nfce;
       },

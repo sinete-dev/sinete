@@ -8,14 +8,14 @@
 import { code128Chave, modules, QUIET_MODULES } from '../barcode/code128.ts';
 import * as f from '../format.ts';
 import type { NotaView } from '../input/nfe.ts';
-import type { Doc } from '../model.ts';
+import type { Documento } from '../model.ts';
 import { Canvas } from '../render/canvas.ts';
-import type { CommonOptions } from './common.ts';
+import type { DaOpcoes } from './common.ts';
 import { barcode, barcodeVertical, DocBuilder, drawLogo, moduloMinimo } from './common.ts';
 import type { Cancelamento, Situacao } from './marcas.ts';
 import { avisoSituacao, marcas, protocoloDeUso } from './marcas.ts';
 
-export interface SimplificadoOptions extends CommonOptions {
+export interface SimplificadoOpcoes extends DaOpcoes {
   /** Largura do papel em mm (mínimo 55; padrão 80, e 100 na etiqueta). */
   readonly largura?: number;
   /** Protocolo do EPEC (3.12.4, f), quando `tpEmis` = 4. */
@@ -28,10 +28,10 @@ const BODY = 7;
 export function simplificado(
   nota: NotaView,
   etiqueta: boolean,
-  options: SimplificadoOptions,
+  options: SimplificadoOpcoes,
   situacao: Situacao,
   cancel?: Cancelamento,
-): Doc {
+): Documento {
   const largura = Math.max(55, options.largura ?? (etiqueta ? 100 : 80));
   const b = new DocBuilder(options);
   const c = new Canvas('Times-Roman', 'Times-Bold');

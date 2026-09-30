@@ -6,10 +6,10 @@
 import '@sinete/mdfe';
 import '@sinete/nfe';
 import { relogioManual } from '@sinete/core';
-import { createMdfeEmissor } from '@sinete/emissor/mdfe';
-import { createMemoriaStore } from '@sinete/emissor/memoria';
-import { createNfeEmissor } from '@sinete/emissor/nfe';
-import { createSefazSim, redirectToSim, SIM_BASE_URL, simTransport, syntheticCertificate, syntheticPfx } from '@sinete/sefaz-sim';
+import { criarEmissorMdfe } from '@sinete/emissor/mdfe';
+import { criarMemoriaStore } from '@sinete/emissor/memoria';
+import { criarEmissorNfe } from '@sinete/emissor/nfe';
+import { criarSefazSim, redirecionarParaSim, URL_BASE_SIM, transporteSim, certificadoSintetico, pfxSintetico } from '@sinete/sefaz-sim';
 
 export async function runChecks() {
   const failures = [];
@@ -17,20 +17,20 @@ export async function runChecks() {
     if (!cond) failures.push(name);
   };
   const clock = relogioManual('2026-09-26T10:00:00-03:00');
-  const ac = await syntheticCertificate({ clock, role: 'ac' });
-  const titular = await syntheticCertificate({ clock, role: 'titular', cnpj: '11222333000181', issuer: ac });
-  const sim = createSefazSim({ clock });
+  const ac = await certificadoSintetico({ relogio: clock, papel: 'ac' });
+  const titular = await certificadoSintetico({ relogio: clock, papel: 'titular', cnpj: '11222333000181', emissor: ac });
+  const sim = criarSefazSim({ relogio: clock });
   const comum = {
-    pfx: syntheticPfx(titular, 'senha-sintetica', { chain: [ac] }),
+    pfx: pfxSintetico(titular, 'senha-sintetica', { cadeia: [ac] }),
     senha: 'senha-sintetica',
     ambiente: 'homologacao',
-    clock,
-    store: createMemoriaStore({ clock }),
+    relogio: clock,
+    store: criarMemoriaStore({ relogio: clock }),
     aoDecidir: () => {},
-    transporte: () => redirectToSim(simTransport(sim, { clientCertificate: titular.der }), SIM_BASE_URL),
+    transporte: () => redirecionarParaSim(transporteSim(sim, { certificadoDoCliente: titular.der }), URL_BASE_SIM),
   };
-  const nfe = await createNfeEmissor(comum);
-  const mdfe = await createMdfeEmissor(comum);
+  const nfe = await criarEmissorNfe(comum);
+  const mdfe = await criarEmissorMdfe(comum);
   for (const [nome, emissor] of [
     ['nfe', nfe],
     ['mdfe', mdfe],

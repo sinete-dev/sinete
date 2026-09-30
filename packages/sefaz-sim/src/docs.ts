@@ -12,7 +12,7 @@ import { TRetEvento as RetEvento } from '@sinete/schemas/nfe/evento-cancelamento
 import type { TProtNFe } from '@sinete/schemas/nfe/PL_010f';
 import { TProtNFe as ProtNFe } from '@sinete/schemas/nfe/PL_010f';
 import { NFE_NS } from './services.ts';
-import type { EventoRecord, NfeRecord } from './state.ts';
+import type { RegistroEvento, RegistroNfe } from './state.ts';
 
 /**
  * Elemento cortado de um lote (`NFe` do `enviNFe`, `evento` do `envEvento`) como documento autônomo: as declarações de
@@ -44,7 +44,7 @@ export function protNFeXml(prot: TProtNFe, inherited: string): string {
 }
 
 /** `nfeProc` (procNFe_v4.00.xsd): a NF-e recebida e o protocolo. */
-export function nfeProcXml(nfe: NfeRecord, prot: TProtNFe): string {
+export function nfeProcXml(nfe: RegistroNfe, prot: TProtNFe): string {
   return `<nfeProc versao="4.00" xmlns="${NFE_NS}">${nfe.xml}${protNFeXml(prot, NFE_NS)}</nfeProc>`;
 }
 
@@ -53,12 +53,12 @@ export function retEventoXml(ret: TRetEvento, inherited: string): string {
 }
 
 /** `procEventoNFe` (procEventoNFe_v1.00.xsd): o evento recebido e o registro. */
-export function procEventoXml(evento: EventoRecord): string {
+export function procEventoXml(evento: RegistroEvento): string {
   return `<procEventoNFe versao="1.00" xmlns="${NFE_NS}">${evento.xml}${evento.retEvento}</procEventoNFe>`;
 }
 
 /** `resNFe` (resNFe_v1.01.xsd), o resumo que o destinatário recebe antes de se manifestar. */
-export function resNFeXml(nfe: NfeRecord): string {
+export function resNFeXml(nfe: RegistroNfe): string {
   const emit = nfe.emitente.CNPJ !== undefined ? { CNPJ: nfe.emitente.CNPJ } : { CPF: nfe.emitente.CPF ?? '' };
   const cSitNFe = nfe.situacao === 'autorizada' ? '1' : nfe.situacao === 'denegada' ? '2' : '3';
   const value: resNFe = {
@@ -81,7 +81,7 @@ export function resNFeXml(nfe: NfeRecord): string {
 }
 
 /** `resEvento` (resEvento_v1.01.xsd). */
-export function resEventoXml(evento: EventoRecord): string {
+export function resEventoXml(evento: RegistroEvento): string {
   const autor = evento.autor.CNPJ !== undefined ? { CNPJ: evento.autor.CNPJ } : { CPF: evento.autor.CPF ?? '' };
   const value: resEvento = {
     versao: '1.01',

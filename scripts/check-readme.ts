@@ -74,7 +74,7 @@ await Bun.write(
       typeRoots: [path.join(root, 'node_modules/@types')],
       module: 'preserve',
       moduleResolution: 'bundler',
-      // Os exemplos rodam no servidor: a condição node dá as entradas de runtime (criarTransporteNode, startSimServer).
+      // Os exemplos rodam no servidor: a condição node dá as entradas de runtime (criarTransporteNode, iniciarServidorSim).
       customConditions: ['node'],
       strict: true,
       exactOptionalPropertyTypes: true,

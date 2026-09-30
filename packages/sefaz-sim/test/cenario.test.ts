@@ -10,8 +10,8 @@ import { ErroDeTempoEsgotado, relogioManual } from '@sinete/core';
 import type { Transporte } from '@sinete/transport';
 // No Bun o pacote resolve a condição node, e o criarTransporte de lá é o node:https; o tsc vê a entrada padrão.
 import { contentTypeSoap12, criarTransporte } from '@sinete/transport';
-import type { SefazSimServer, SyntheticCertificate } from '../src/index.node.ts';
-import { createSefazSim, NFE_SERVICES, soapAction, startSefazSimServer } from '../src/index.node.ts';
+import type { CertificadoSintetico, ServidorSefazSim } from '../src/index.node.ts';
+import { acaoSoap, criarSefazSim, iniciarServidorSefazSim, SERVICOS_NFE } from '../src/index.node.ts';
 import type { Certs } from './helpers.ts';
 import {
   certs,
@@ -35,16 +35,16 @@ import {
   unwrap,
 } from './helpers.ts';
 
-type Servico = keyof typeof NFE_SERVICES;
+type Servico = keyof typeof SERVICOS_NFE;
 
 let c: Certs;
 const clock = relogioManual(INICIO);
-const sim = createSefazSim({ clock });
-let server: SefazSimServer;
+const sim = criarSefazSim({ relogio: clock });
+let server: ServidorSefazSim;
 const transports: Transporte[] = [];
 
-function transportOf(cert: SyntheticCertificate, timeoutMs = 5000): Transporte {
-  const t = criarTransporte({ identidade: cert.tlsIdentity, acsAdicionais: [c.ac.pem], timeoutMs });
+function transportOf(cert: CertificadoSintetico, timeoutMs = 5000): Transporte {
+  const t = criarTransporte({ identidade: cert.identidadeTls, acsAdicionais: [c.ac.pem], timeoutMs });
   transports.push(t);
   return t;
 }
@@ -57,7 +57,7 @@ async function send(
 ): Promise<string> {
   const res = await t.enviar({
     url: server.url(servico, autorizador),
-    cabecalhos: { 'content-type': contentTypeSoap12(soapAction(NFE_SERVICES[servico])) },
+    cabecalhos: { 'content-type': contentTypeSoap12(acaoSoap(SERVICOS_NFE[servico])) },
     corpo: envelope(servico, payload),
   });
   expect(res.status).toBe(200);
@@ -66,12 +66,12 @@ async function send(
 
 beforeAll(async () => {
   c = await certs();
-  server = await startSefazSimServer(sim, { cert: c.servidor.pem, key: c.servidor.keyPem });
+  server = await iniciarServidorSefazSim(sim, { certificado: c.servidor.pem, chave: c.servidor.chavePem });
 });
 
 afterAll(async () => {
   for (const t of transports) await t.fechar();
-  await server.close();
+  await server.fechar();
 });
 
 describe('HTTPS com mTLS', () => {
@@ -81,12 +81,12 @@ describe('HTTPS com mTLS', () => {
 
     // 1. Emissão: a SEFAZ processa e a resposta não chega.
     const nota = await nfe({ nNF: 1 });
-    sim.injectFault({ kind: 'hang', phase: 'after' }, { servico: 'NFeAutorizacao' });
+    sim.injetarFalha({ tipo: 'travar', fase: 'depois' }, { servico: 'NFeAutorizacao' });
     const semResposta = transportOf(c.emitente, 300);
     expect(await send(semResposta, 'NFeAutorizacao', enviNFe([nota.xml])).catch((e: unknown) => e)).toBeInstanceOf(
       ErroDeTempoEsgotado,
     );
-    const registro = sim.inspect.nfe(nota.chave);
+    const registro = sim.inspecao.nfe(nota.chave);
     expect(registro?.situacao).toBe('autorizada');
 
     // 2. Reenvio da mesma nota: 204 com o recibo original. Nota regerada com outro cNF: 539 com a chave autorizada.
@@ -149,7 +149,7 @@ describe('HTTPS com mTLS', () => {
 
   test('atraso maior que o prazo do cliente: timeout, e a conexão fechada não deixa resposta pendente', async () => {
     const t = transportOf(c.terceiro, 200);
-    sim.injectFault({ kind: 'delay', ms: 60_000 }, { servico: 'NfeStatusServico' });
+    sim.injetarFalha({ tipo: 'atraso', ms: 60_000 }, { servico: 'NfeStatusServico' });
     expect(await send(t, 'NfeStatusServico', consStatServ()).catch((e: unknown) => e)).toBeInstanceOf(
       ErroDeTempoEsgotado,
     );
@@ -160,7 +160,7 @@ describe('HTTPS com mTLS', () => {
   test('queda depois de processar vira erro de conexão e o reenvio responde 204', async () => {
     const t = transportOf(c.emitente);
     const nota = await nfe({ nNF: 50 });
-    sim.injectFault({ kind: 'drop', phase: 'after' }, { servico: 'NFeAutorizacao' });
+    sim.injetarFalha({ tipo: 'derrubar', fase: 'depois' }, { servico: 'NFeAutorizacao' });
     const erro = await send(t, 'NFeAutorizacao', enviNFe([nota.xml])).catch((e: unknown) => e);
     expect(erro).toBeInstanceOf(Error);
     expect(erro).not.toBeInstanceOf(ErroDeTempoEsgotado);
@@ -169,7 +169,7 @@ describe('HTTPS com mTLS', () => {
 
   test('atraso curto responde; keep-alive reaproveita a conexão; o certificado do canal é capturado', async () => {
     const t = transportOf(c.terceiro);
-    sim.injectFault({ kind: 'delay', ms: 30 }, { servico: 'NfeStatusServico' });
+    sim.injetarFalha({ tipo: 'atraso', ms: 30 }, { servico: 'NfeStatusServico' });
     expect(tag(await send(t, 'NfeStatusServico', consStatServ()), 'cStat')).toBe('107');
     expect(tag(await send(t, 'NfeStatusServico', consStatServ()), 'cStat')).toBe('107');
     // O certificado do canal chega ao simulador: vencido vira 281 e sem CNPJ vira 282.
@@ -178,13 +178,13 @@ describe('HTTPS com mTLS', () => {
   });
 
   test('HTTP cru: sem certificado (403), chunked, Connection: close, 404 e lixo', async () => {
-    const raw = (payload: string, cert?: SyntheticCertificate): Promise<string> =>
+    const raw = (payload: string, cert?: CertificadoSintetico): Promise<string> =>
       new Promise((resolve) => {
         const socket = tls.connect({
           host: '127.0.0.1',
-          port: server.port,
+          port: server.porta,
           ca: [c.ac.pem],
-          ...(cert === undefined ? {} : { cert: cert.pem, key: cert.keyPem }),
+          ...(cert === undefined ? {} : { cert: cert.pem, key: cert.chavePem }),
         });
         let out = '';
         socket.on('data', (d: Uint8Array) => {
@@ -196,8 +196,8 @@ describe('HTTPS com mTLS', () => {
         socket.on('error', () => resolve(out));
         socket.on('secureConnect', () => socket.write(payload));
       });
-    const path = sim.path('NfeStatusServico');
-    const ct = contentTypeSoap12(soapAction(NFE_SERVICES.NfeStatusServico));
+    const path = sim.caminho('NfeStatusServico');
+    const ct = contentTypeSoap12(acaoSoap(SERVICOS_NFE.NfeStatusServico));
     const body = envelope('NfeStatusServico', consStatServ());
     const semCert = await raw(`POST ${path} HTTP/1.1\r\nhost: x\r\ncontent-length: 0\r\nconnection: close\r\n\r\n`);
     expect(semCert).toStartWith('HTTP/1.1 403 Forbidden');
@@ -236,17 +236,17 @@ describe('HTTPS com mTLS', () => {
     // Pedido que passa do limite do buffer também.
     const enorme = `POST ${path} HTTP/1.1\r\ncontent-length: 99999999\r\n\r\n${'x'.repeat(9 * 1024 * 1024)}`;
     expect(await raw(enorme, c.terceiro)).toBe('');
-    const status = sim.config.clock === clock;
+    const status = sim.configuracao.relogio === clock;
     expect(status).toBe(true);
   });
 
   test('close() não espera conexão que nunca completou o handshake TLS', async () => {
-    const s = await startSefazSimServer(sim, { cert: c.servidor.pem, key: c.servidor.keyPem });
-    const bruta = net.connect({ host: '127.0.0.1', port: s.port });
+    const s = await iniciarServidorSefazSim(sim, { certificado: c.servidor.pem, chave: c.servidor.chavePem });
+    const bruta = net.connect({ host: '127.0.0.1', port: s.porta });
     bruta.on('error', () => undefined);
     await new Promise<void>((resolve) => bruta.once('connect', () => resolve()));
     const fechou = await Promise.race([
-      s.close().then(() => 'fechou'),
+      s.fechar().then(() => 'fechou'),
       new Promise<string>((resolve) => setTimeout(() => resolve('preso'), 2000)),
     ]);
     expect(fechou).toBe('fechou');
@@ -254,32 +254,36 @@ describe('HTTPS com mTLS', () => {
   });
 
   test('servidor em IPv6: URL com colchetes e o SAN do certificado cobre ::1', async () => {
-    const s = await startSefazSimServer(sim, { cert: c.servidor.pem, key: c.servidor.keyPem, hostname: '::1' });
-    expect(s.baseUrl).toBe(`https://[::1]:${s.port}`);
+    const s = await iniciarServidorSefazSim(sim, {
+      certificado: c.servidor.pem,
+      chave: c.servidor.chavePem,
+      host: '::1',
+    });
+    expect(s.urlBase).toBe(`https://[::1]:${s.porta}`);
     const res = await transportOf(c.terceiro).enviar({
       url: s.url('NfeStatusServico'),
-      cabecalhos: { 'content-type': contentTypeSoap12(soapAction(NFE_SERVICES.NfeStatusServico)) },
+      cabecalhos: { 'content-type': contentTypeSoap12(acaoSoap(SERVICOS_NFE.NfeStatusServico)) },
       corpo: envelope('NfeStatusServico', consStatServ()),
     });
     expect(tag(unwrap('NfeStatusServico', res.texto()), 'cStat')).toBe('107');
-    await s.close();
+    await s.fechar();
   });
 
   test('servidor sem pedir certificado e em porta fixa', async () => {
-    const s = await startSefazSimServer(createSefazSim({ clock, exigirCertificado: false }), {
-      cert: c.servidor.pem,
-      key: c.servidor.keyPem,
-      requestCert: false,
+    const s = await iniciarServidorSefazSim(criarSefazSim({ relogio: clock, exigirCertificado: false }), {
+      certificado: c.servidor.pem,
+      chave: c.servidor.chavePem,
+      pedirCertificado: false,
     });
     const t = transportOf(c.terceiro);
     const res = await t.enviar({
       url: s.url('NfeStatusServico'),
-      cabecalhos: { 'content-type': contentTypeSoap12(soapAction(NFE_SERVICES.NfeStatusServico)) },
+      cabecalhos: { 'content-type': contentTypeSoap12(acaoSoap(SERVICOS_NFE.NfeStatusServico)) },
       corpo: envelope('NfeStatusServico', consStatServ()),
     });
     expect(tag(unwrap('NfeStatusServico', res.texto()), 'cStat')).toBe('107');
-    expect(s.baseUrl).toBe(`https://127.0.0.1:${s.port}`);
+    expect(s.urlBase).toBe(`https://127.0.0.1:${s.porta}`);
     await t.fechar();
-    await s.close();
+    await s.fechar();
   });
 });

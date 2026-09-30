@@ -1,13 +1,13 @@
 /**
  * Coletor de ocorrências de validação (`Ocorrencia` do core). O builder junta todas as ocorrências antes de
  * decidir, em vez de parar na primeira. Os códigos são API pública (snake_case, português, sem acento) e estão listados
- * em `MDFE_ISSUE_CODES`; a mensagem de cada ocorrência de regra de negócio cita a regra do MOC e o `cStat` que a SEFAZ
+ * em `CODIGOS_OCORRENCIA_MDFE`; a mensagem de cada ocorrência de regra de negócio cita a regra do MOC e o `cStat` que a SEFAZ
  * devolveria.
  */
 
 import type { Ocorrencia, OrigemOcorrencia } from '@sinete/core';
 
-export const MDFE_ISSUE_CODES = [
+export const CODIGOS_OCORRENCIA_MDFE = [
   'campo_obrigatorio',
   'campo_invalido',
   'decimal_invalido',
@@ -31,7 +31,7 @@ export const MDFE_ISSUE_CODES = [
   'schema',
 ] as const;
 
-export type MdfeIssueCode = (typeof MDFE_ISSUE_CODES)[number];
+export type CodigoOcorrenciaMdfe = (typeof CODIGOS_OCORRENCIA_MDFE)[number];
 
 export class Issues {
   readonly list: Ocorrencia[];
@@ -41,12 +41,12 @@ export class Issues {
   }
 
   /** Ocorrência sobre a entrada, a não ser que `origem` diga outra coisa (ADR 0011). */
-  add(path: string, code: MdfeIssueCode | string, message: string, origem: OrigemOcorrencia = 'entrada'): void {
+  add(path: string, code: CodigoOcorrenciaMdfe | string, message: string, origem: OrigemOcorrencia = 'entrada'): void {
     this.list.push({ caminho: path, code, mensagem: message, origem });
   }
 
   /** Ocorrência sobre o que o sinete montou a partir da entrada (XML, schema, PL, chave gerada, calculadora). */
-  montagem(path: string, code: MdfeIssueCode | string, message: string): void {
+  montagem(path: string, code: CodigoOcorrenciaMdfe | string, message: string): void {
     this.add(path, code, message, 'montagem');
   }
 
@@ -56,7 +56,7 @@ export class Issues {
   }
 
   /** Ocorrência de uma regra do MOC: a mensagem termina com a regra e o `cStat` (`(F90, rejeição 663)`). */
-  regra(path: string, code: MdfeIssueCode, message: string, regra: string, cStat: string): void {
+  regra(path: string, code: CodigoOcorrenciaMdfe, message: string, regra: string, cStat: string): void {
     this.list.push({ caminho: path, code, mensagem: `${message} (${regra}, rejeição ${cStat})`, origem: 'entrada' });
   }
 

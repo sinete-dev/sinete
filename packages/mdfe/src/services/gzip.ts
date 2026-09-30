@@ -10,10 +10,10 @@ import { codificarBase64, decodificarBase64 } from '@sinete/core/xml';
 type Streams = { CompressionStream?: typeof CompressionStream; DecompressionStream?: typeof DecompressionStream };
 
 /** Texto UTF-8 para GZip em Base64. */
-export async function gzipBase64(text: string): Promise<string> {
+export async function comprimirGzipBase64(texto: string): Promise<string> {
   const Cs = (globalThis as Streams).CompressionStream;
   if (Cs === undefined) throw new ErroNaoSuportado('CompressionStream indisponível nesta runtime');
-  const stream = new Blob([new TextEncoder().encode(text)]).stream().pipeThrough(new Cs('gzip'));
+  const stream = new Blob([new TextEncoder().encode(texto)]).stream().pipeThrough(new Cs('gzip'));
   return codificarBase64(new Uint8Array(await new Response(stream).arrayBuffer()));
 }
 
@@ -21,7 +21,7 @@ export async function gzipBase64(text: string): Promise<string> {
  * Base64 de um GZip para o texto UTF-8 de dentro. `limiteBytes` para a leitura assim que o conteúdo descompactado
  * passa do limite (`ErroRespostaInvalida`), para GZip de origem não confiável.
  */
-export async function gunzipBase64(b64: string, limiteBytes?: number): Promise<string> {
+export async function descomprimirGzipBase64(b64: string, limiteBytes?: number): Promise<string> {
   const Ds = (globalThis as Streams).DecompressionStream;
   if (Ds === undefined) throw new ErroNaoSuportado('DecompressionStream indisponível nesta runtime');
   let bytes: Uint8Array<ArrayBuffer>;

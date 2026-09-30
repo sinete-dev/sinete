@@ -20,16 +20,16 @@
 
 import type { Recusado } from '@sinete/core';
 import { criarAutorizado } from '@sinete/core';
-import type { AutorizacaoOutcome, ConsultaOutcome, MdfeClient } from './client.ts';
+import type { ClienteMdfe, ResultadoAutorizacao, ResultadoConsulta } from './client.ts';
 import { cstatEm } from './outcome.ts';
 import { documentoAssinado } from './proc.ts';
 
 export type ResolucaoEnvio =
-  /** A chave consta com o mesmo conteúdo: `outcome` traz o protocolo e o `mdfeProc`. */
+  /** A chave consta com o mesmo conteúdo: `resultado` traz o protocolo e o `mdfeProc`. */
   | {
       readonly acao: 'concluida';
       readonly situacao: 'autorizado' | 'cancelado' | 'encerrado';
-      readonly outcome: AutorizacaoOutcome;
+      readonly resultado: ResultadoAutorizacao;
     }
   /** O MDF-e não consta (217): reenvie `mdfeAssinado`, os mesmos bytes. */
   | { readonly acao: 'reenviar'; readonly mdfeAssinado: string }
@@ -40,8 +40,8 @@ export type ResolucaoEnvio =
   | {
       readonly acao: 'divergente';
       readonly chMDFe?: string;
-      readonly consulta?: ConsultaOutcome;
-      readonly motivo: Recusado | ConsultaOutcome;
+      readonly consulta?: ResultadoConsulta;
+      readonly motivo: Recusado | ResultadoConsulta;
     }
   /**
    * A chave consta (autorizada, cancelada ou encerrada), mas o protocolo não traz `digVal`: nada prova que o conteúdo
@@ -51,10 +51,10 @@ export type ResolucaoEnvio =
   | {
       readonly acao: 'sem-prova';
       readonly situacao: 'autorizado' | 'cancelado' | 'encerrado';
-      readonly consulta: ConsultaOutcome;
+      readonly consulta: ResultadoConsulta;
     }
   /** A consulta não decidiu (serviço paralisado, rejeição de schema, situação sem protocolo): tente de novo depois. */
-  | { readonly acao: 'indefinida'; readonly outcome: ConsultaOutcome };
+  | { readonly acao: 'indefinida'; readonly resultado: ResultadoConsulta };
 
 const CHAVE_NO_MOTIVO = /\[\s*chMDFe\s*:\s*([0-9]{6}[0-9A-Z]{12}[0-9]{26})\s*\]/i;
 
@@ -68,9 +68,9 @@ export function chaveDaDuplicidade(xMotivo: string): string | undefined {
  * `anterior` é o desfecho do envio, quando houve um.
  */
 export async function resolverEnvioSemResposta(
-  client: MdfeClient,
+  cliente: ClienteMdfe,
   mdfeAssinado: string,
-  anterior?: AutorizacaoOutcome,
+  anterior?: ResultadoAutorizacao,
 ): Promise<ResolucaoEnvio> {
   const a = documentoAssinado(mdfeAssinado, 'MDFe', 'infMDFe');
   const chave = a.id.slice(4);
@@ -78,22 +78,22 @@ export async function resolverEnvioSemResposta(
     const outra = chaveDaDuplicidade(anterior.xMotivo);
     return { acao: 'divergente', motivo: anterior, ...(outra === undefined ? {} : { chMDFe: outra }) };
   }
-  const consulta = await client.consultar(chave, mdfeAssinado);
+  const consulta = await cliente.consultar(chave, mdfeAssinado);
   if (consulta.tipo === 'recusado') {
     if (cstatEm(consulta.cStat, 'naoConsta')) return { acao: 'reenviar', mdfeAssinado: a.xml };
-    return { acao: 'indefinida', outcome: consulta };
+    return { acao: 'indefinida', resultado: consulta };
   }
-  if (consulta.tipo !== 'autorizado') return { acao: 'indefinida', outcome: consulta };
+  if (consulta.tipo !== 'autorizado') return { acao: 'indefinida', resultado: consulta };
   const v = consulta.valor;
   const p = v.protocolo;
   if (p?.digVal !== undefined && v.digValConfere === false) {
     return { acao: 'divergente', chMDFe: chave, consulta, motivo: consulta };
   }
   if (p !== undefined && p.digVal === undefined) return { acao: 'sem-prova', situacao: v.situacao, consulta };
-  if (!p || v.digValConfere !== true || p.mdfeProc === undefined) return { acao: 'indefinida', outcome: consulta };
+  if (!p || v.digValConfere !== true || p.mdfeProc === undefined) return { acao: 'indefinida', resultado: consulta };
   return {
     acao: 'concluida',
     situacao: v.situacao,
-    outcome: criarAutorizado({ cStat: p.cStat, xMotivo: p.xMotivo }, p),
+    resultado: criarAutorizado({ cStat: p.cStat, xMotivo: p.xMotivo }, p),
   };
 }

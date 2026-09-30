@@ -14,9 +14,9 @@ import { serializar, serializarRaiz } from '@sinete/schemas';
 import type { TRetEvento } from '@sinete/schemas/mdfe/eventos/3.00b';
 import { eventoMDFeElement, TRetEvento as RetEvento, retEventoMDFeElement } from '@sinete/schemas/mdfe/eventos/3.00b';
 import { cnpjValido, cpfValido, lerChaveAcesso } from '@sinete/validators';
-import { checkAssinatura } from '../certs.ts';
-import type { RequestContext } from '../context.ts';
-import type { MdfeEventoRecord, MdfeRecord } from '../state.ts';
+import { conferirAssinaturaDoDocumento } from '../certs.ts';
+import type { ContextoDoPedido } from '../context.ts';
+import type { RegistroEventoMdfe, RegistroMdfe } from '../state.ts';
 import { parseDateTime, yearOf } from '../time.ts';
 import { all, at, documento, req, text } from '../xmlutil.ts';
 import {
@@ -53,7 +53,7 @@ const centavos = (v: string | undefined): bigint => {
  * Regras de pagamento do evento 110116 (Visão Geral, item 6.5, K07 a K16, as mesmas do grupo infPag do MDF-e), cada
  * uma desligável pelo próprio id, na ordem da tabela.
  */
-function regraPagamento(ctx: RequestContext, det: ElementoXml, dataEvento: string): string | undefined {
+function regraPagamento(ctx: ContextoDoPedido, det: ElementoXml, dataEvento: string): string | undefined {
   const dif = (a: bigint, b: bigint): bigint => (a > b ? a - b : b - a);
   for (const pag of all(det, 'infPag')) {
     const indPag = req(pag, 'indPag');
@@ -89,24 +89,24 @@ function regraPagamento(ctx: RequestContext, det: ElementoXml, dataEvento: strin
 
 /** Regras específicas de cada tipo (item 6). */
 function regrasDoTipo(
-  ctx: RequestContext,
+  ctx: ContextoDoPedido,
   tpEvento: string,
   det: ElementoXml,
-  m: MdfeRecord,
-  eventos: readonly MdfeEventoRecord[],
+  m: RegistroMdfe,
+  eventos: readonly RegistroEventoMdfe[],
   dhEvento: string,
 ): { readonly cStat: string; readonly params?: Readonly<Record<string, string>> } | undefined {
   const cancelado = eventos.find((e) => e.tpEvento === '110111');
   const encerrado = eventos.find((e) => e.tpEvento === '110112');
-  const r218 = cancelado && { cStat: '218', params: { nProt: cancelado.nProt, dhCanc: cancelado.dhRegEvento } };
-  const r609 = encerrado && { cStat: '609', params: { nProt: encerrado.nProt, dhEnc: encerrado.dhRegEvento } };
+  const r218 = cancelado && { cStat: '218', parametros: { nProt: cancelado.nProt, dhCanc: cancelado.dhRegEvento } };
+  const r609 = encerrado && { cStat: '609', parametros: { nProt: encerrado.nProt, dhEnc: encerrado.dhRegEvento } };
   const inclusoes = eventos.filter((e) => e.tpEvento === '110115');
   const nProt = text(det, 'nProt');
   switch (tpEvento) {
     case '110111': {
       if (ativa(ctx, 'K03') && r218) return r218;
       const semInclusao = m.carregaPosterior && inclusoes.length === 0;
-      if (ativa(ctx, 'K04') && !semInclusao && ctx.now - m.dhRecbtoMs > ctx.rt.config.prazoCancelamentoMdfeMs) {
+      if (ativa(ctx, 'K04') && !semInclusao && ctx.agora - m.dhRecbtoMs > ctx.rt.configuracao.prazoCancelamentoMdfeMs) {
         return { cStat: '220' };
       }
       if (ativa(ctx, 'K05') && nProt !== m.nProt) return { cStat: '222' };
@@ -171,7 +171,7 @@ function regrasDoTipo(
 }
 
 /** MDFeRecepcaoEvento (mdfeRecepcaoEvento). */
-export async function recepcaoEventoMdfe(ctx: RequestContext): Promise<string> {
+export async function recepcaoEventoMdfe(ctx: ContextoDoPedido): Promise<string> {
   const pre = await preludeMdfe(ctx, eventoMDFeElement);
   const doc = pre.doc;
   const inf = doc === undefined ? undefined : at(doc.raiz, 'infEvento');
@@ -182,7 +182,7 @@ export async function recepcaoEventoMdfe(ctx: RequestContext): Promise<string> {
   const cOrgao = lido('cOrgao');
   const ret = (value: TRetEvento): string => serializarRaiz(retEventoMDFeElement, value);
   const base = {
-    tpAmb: ctx.rt.config.tpAmb,
+    tpAmb: ctx.rt.configuracao.tpAmb,
     verAplic: verAplicMdfe(),
     cOrgao: (cOrgao !== undefined && /^[0-9]{2}$/.test(cOrgao) ? cOrgao : '43') as TRetEvento['infEvento']['cOrgao'],
   };
@@ -206,13 +206,19 @@ export async function recepcaoEventoMdfe(ctx: RequestContext): Promise<string> {
   const infEl = inf as ElementoXml;
   const id = atributoDe(infEl, 'Id') ?? '';
   const autor = documento(infEl);
-  const sig = await checkAssinatura({ doc: pre.doc, id, element: 'infEvento', now: ctx.now, titular: autor });
+  const sig = await conferirAssinaturaDoDocumento({
+    documento: pre.doc,
+    id,
+    elemento: 'infEvento',
+    agora: ctx.agora,
+    titular: autor,
+  });
   if (!sig.ok) return rejeitado(sig.cStat === '227' ? '202' : sig.cStat);
   const ch = chMDFe ?? '';
   const tp = tpEvento ?? '';
   const nSeq = Number(nSeqEvento);
   // J01 a J09
-  if (ativa(ctx, 'J01') && lido('tpAmb') !== ctx.rt.config.tpAmb) return rejeitado('252');
+  if (ativa(ctx, 'J01') && lido('tpAmb') !== ctx.rt.configuracao.tpAmb) return rejeitado('252');
   if (ativa(ctx, 'J02') && autor.CNPJ !== undefined && !cnpjValido(autor.CNPJ)) return rejeitado('627');
   if (ativa(ctx, 'J03') && autor.CPF !== undefined && !cpfValido(autor.CPF)) return rejeitado('700');
   const idEsperado = `ID${tp}${ch}${String(nSeq).padStart(nSeq > 99 ? 3 : 2, '0')}`;
@@ -227,7 +233,7 @@ export async function recepcaoEventoMdfe(ctx: RequestContext): Promise<string> {
   if (ativa(ctx, 'J07') && (!c.ok || c.valor.mod !== '58')) {
     return rejeitado('236', { Motivo: c.ok ? 'Modelo diferente de 58' : c.erro.mensagem });
   }
-  const eventos = ctx.rt.state.eventosDoMdfe(ch);
+  const eventos = ctx.rt.estado.eventosDoMdfe(ch);
   const duplicado = eventos.find((e) => e.cOrgao === cOrgao && e.tpEvento === tp && e.nSeqEvento === nSeq);
   if (ativa(ctx, 'J08') && duplicado !== undefined) {
     return rejeitado('631', { nProt: duplicado.nProt, dhRegEvento: duplicado.dhRegEvento });
@@ -237,10 +243,10 @@ export async function recepcaoEventoMdfe(ctx: RequestContext): Promise<string> {
   const porTerceiro = tp === '110112' && text(detEv, 'indEncPorTerceiro') === '1';
   if (ativa(ctx, 'J09') && !porTerceiro && !mesmoDocumento(autor, emitenteDaChave(ch))) return rejeitado('632');
   // J12 e J13: o MDF-e existe com esta chave.
-  const m = ctx.rt.state.mdfes.get(ch);
+  const m = ctx.rt.estado.mdfes.get(ch);
   if (m === undefined) {
     const e = emitenteDaChave(ch);
-    const outra = ctx.rt.state.mdfeByNumero(e.CNPJ ?? e.CPF ?? '', ch.slice(22, 25), ch.slice(25, 34));
+    const outra = ctx.rt.estado.mdfeByNumero(e.CNPJ ?? e.CPF ?? '', ch.slice(22, 25), ch.slice(25, 34));
     return rejeitado(outra === undefined ? '217' : '600');
   }
   if (porTerceiro) {
@@ -253,17 +259,17 @@ export async function recepcaoEventoMdfe(ctx: RequestContext): Promise<string> {
   }
   // J14 a J16: datas com 5 minutos de tolerância.
   const dhEvento = lido('dhEvento') ?? '';
-  const dhEventoMs = parseDateTime(dhEvento) ?? ctx.now;
+  const dhEventoMs = parseDateTime(dhEvento) ?? ctx.agora;
   if (ativa(ctx, 'J14') && dhEventoMs < m.dhEmiMs - CINCO_MINUTOS) return rejeitado('634');
   if (ativa(ctx, 'J15') && dhEventoMs < m.dhRecbtoMs - CINCO_MINUTOS) return rejeitado('637');
-  if (ativa(ctx, 'J16') && dhEventoMs > ctx.now + CINCO_MINUTOS) return rejeitado('635');
+  if (ativa(ctx, 'J16') && dhEventoMs > ctx.agora + CINCO_MINUTOS) return rejeitado('635');
   // K01: sequencial.
   if (ativa(ctx, 'K01') && tipo !== undefined && nSeq > tipo.maxSeq) return rejeitado('636');
   const r = regrasDoTipo(ctx, tp, detEv, m, eventos, dhEvento);
   if (r !== undefined) return rejeitado(r.cStat, r.params);
 
-  const nProt = ctx.rt.state.nextProtocolo('9', m.cUF, yearOf(ctx.now, ctx.rt.config.offsetMinutes));
-  const dhRegEvento = dhMdfe(ctx, ctx.now);
+  const nProt = ctx.rt.estado.nextProtocolo('9', m.cUF, yearOf(ctx.agora, ctx.rt.configuracao.deslocamentoMin));
+  const dhRegEvento = dhMdfe(ctx, ctx.agora);
   const valor: TRetEvento = {
     versao: VERSAO,
     infEvento: {
@@ -280,7 +286,7 @@ export async function recepcaoEventoMdfe(ctx: RequestContext): Promise<string> {
   };
   const detalhe: Record<string, string> = {};
   for (const x of elementosFilhos(detEv)) if (elementosFilhos(x).length === 0) detalhe[x.local] = textoDe(x);
-  ctx.rt.state.eventosMdfe.push({
+  ctx.rt.estado.eventosMdfe.push({
     chave: ch,
     tpEvento: tp,
     nSeqEvento: nSeq,

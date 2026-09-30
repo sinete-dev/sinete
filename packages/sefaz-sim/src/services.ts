@@ -15,28 +15,28 @@ export const NFE_NS = 'http://www.portalfiscal.inf.br/nfe';
 export const WSDL_BASE = 'http://www.portalfiscal.inf.br/nfe/wsdl/';
 
 /** Autorizador simulado: SEFAZ da UF, SVC (contingência) ou Ambiente Nacional. */
-export type SimAutorizador = 'uf' | 'svc' | 'an';
+export type AutorizadorSim = 'uf' | 'svc' | 'an';
 
 /** Serviços do MDF-e que o simulador atende (a distribuição de DF-e do MDF-e fica de fora). */
 export type MdfeServicoSim = Exclude<MdfeServico, 'MDFeDistribuicaoDFe'>;
 
 /** Serviço atendido pelo simulador: da NF-e ou do MDF-e, com os nomes que o `@sinete/transport` usa. */
-export type SimServico = NfeServico | MdfeServicoSim;
+export type ServicoSim = NfeServico | MdfeServicoSim;
 
-export interface ServiceDef {
-  readonly servico: SimServico;
+export interface DefinicaoDeServico {
+  readonly servico: ServicoSim;
   /** Nome do serviço no WSDL (`NFeAutorizacao4`); também é o fim do namespace e do caminho. */
   readonly wsdl: string;
   /** Operação do WSDL; a `action` do SOAP 1.2 é `<namespace>/<operação>`. */
-  readonly operation: string;
+  readonly operacao: string;
   /**
    * `resultMsg`: `nfeDadosMsg` no pedido e `nfeResultMsg` na resposta (serviços 4.00).
    * `operacao`: o elemento da operação envolve `nfeDadosMsg` e a resposta é `<operação>Response/<operação>Result`
    * (NFeDistribuicaoDFe do AN).
    * `mdfe`: `mdfeDadosMsg` no pedido e `<operação>Result` na resposta (MDF-e 3.00).
    */
-  readonly style: 'resultMsg' | 'operacao' | 'mdfe';
-  readonly autorizadores: readonly SimAutorizador[];
+  readonly estilo: 'resultMsg' | 'operacao' | 'mdfe';
+  readonly autorizadores: readonly AutorizadorSim[];
   /** Namespace do WSDL quando não é `WSDL_BASE` + `wsdl` (os serviços do MDF-e). */
   readonly namespace?: string;
   /** A área de dados vai em GZip e Base64 como texto de `mdfeDadosMsg` (recepção do MDF-e). */
@@ -49,62 +49,62 @@ export interface ServiceDef {
   readonly operacaoEm?: readonly string[];
 }
 
-export const NFE_SERVICES: Readonly<Record<NfeServico, ServiceDef>> = {
+export const SERVICOS_NFE: Readonly<Record<NfeServico, DefinicaoDeServico>> = {
   NfeStatusServico: {
     servico: 'NfeStatusServico',
     wsdl: 'NFeStatusServico4',
-    operation: 'nfeStatusServicoNF',
-    style: 'resultMsg',
+    operacao: 'nfeStatusServicoNF',
+    estilo: 'resultMsg',
     autorizadores: ['uf', 'svc'],
   },
   NFeAutorizacao: {
     servico: 'NFeAutorizacao',
     wsdl: 'NFeAutorizacao4',
-    operation: 'nfeAutorizacaoLote',
-    style: 'resultMsg',
+    operacao: 'nfeAutorizacaoLote',
+    estilo: 'resultMsg',
     autorizadores: ['uf', 'svc'],
   },
   NFeRetAutorizacao: {
     servico: 'NFeRetAutorizacao',
     wsdl: 'NFeRetAutorizacao4',
-    operation: 'nfeRetAutorizacaoLote',
-    style: 'resultMsg',
+    operacao: 'nfeRetAutorizacaoLote',
+    estilo: 'resultMsg',
     autorizadores: ['uf', 'svc'],
   },
   NfeConsultaProtocolo: {
     servico: 'NfeConsultaProtocolo',
     wsdl: 'NFeConsultaProtocolo4',
-    operation: 'nfeConsultaNF',
-    style: 'resultMsg',
+    operacao: 'nfeConsultaNF',
+    estilo: 'resultMsg',
     autorizadores: ['uf', 'svc'],
   },
   RecepcaoEvento: {
     servico: 'RecepcaoEvento',
     wsdl: 'NFeRecepcaoEvento4',
-    operation: 'nfeRecepcaoEvento',
-    style: 'resultMsg',
+    operacao: 'nfeRecepcaoEvento',
+    estilo: 'resultMsg',
     autorizadores: ['uf', 'svc', 'an'],
   },
   NfeInutilizacao: {
     servico: 'NfeInutilizacao',
     wsdl: 'NFeInutilizacao4',
-    operation: 'nfeInutilizacaoNF',
-    style: 'resultMsg',
+    operacao: 'nfeInutilizacaoNF',
+    estilo: 'resultMsg',
     autorizadores: ['uf'],
   },
   NfeConsultaCadastro: {
     servico: 'NfeConsultaCadastro',
     wsdl: 'CadConsultaCadastro4',
-    operation: 'consultaCadastro',
-    style: 'resultMsg',
+    operacao: 'consultaCadastro',
+    estilo: 'resultMsg',
     autorizadores: ['uf'],
     operacaoEm: ['MT'],
   },
   NFeDistribuicaoDFe: {
     servico: 'NFeDistribuicaoDFe',
     wsdl: 'NFeDistribuicaoDFe',
-    operation: 'nfeDistDFeInteresse',
-    style: 'operacao',
+    operacao: 'nfeDistDFeInteresse',
+    estilo: 'operacao',
     autorizadores: ['an'],
   },
 };
@@ -117,19 +117,19 @@ export const NFE_SERVICES: Readonly<Record<NfeServico, ServiceDef>> = {
 export const MDFE_NS = 'http://www.portalfiscal.inf.br/mdfe';
 const MDFE_WSDL_BASE = 'http://www.portalfiscal.inf.br/mdfe/wsdl/';
 
-function mdfeDef(servico: MdfeServicoSim, operation: string, compactado = false): ServiceDef {
+function mdfeDef(servico: MdfeServicoSim, operation: string, compactado = false): DefinicaoDeServico {
   return {
     servico,
     wsdl: servico,
-    operation,
-    style: 'mdfe',
+    operacao: operation,
+    estilo: 'mdfe',
     autorizadores: ['uf'],
     namespace: `${MDFE_WSDL_BASE}${servico}`,
     ...(compactado ? { compactado } : {}),
   };
 }
 
-export const MDFE_SERVICES: Readonly<Record<MdfeServicoSim, ServiceDef>> = {
+export const SERVICOS_MDFE: Readonly<Record<MdfeServicoSim, DefinicaoDeServico>> = {
   MDFeRecepcaoSinc: mdfeDef('MDFeRecepcaoSinc', 'mdfeRecepcao', true),
   MDFeConsulta: mdfeDef('MDFeConsulta', 'mdfeConsultaMDF'),
   MDFeConsNaoEnc: mdfeDef('MDFeConsNaoEnc', 'mdfeConsNaoEnc'),
@@ -137,40 +137,42 @@ export const MDFE_SERVICES: Readonly<Record<MdfeServicoSim, ServiceDef>> = {
   MDFeRecepcaoEvento: mdfeDef('MDFeRecepcaoEvento', 'mdfeRecepcaoEvento'),
 };
 
-const ALL_SERVICES: Readonly<Record<SimServico, ServiceDef>> = { ...NFE_SERVICES, ...MDFE_SERVICES };
+const ALL_SERVICES: Readonly<Record<ServicoSim, DefinicaoDeServico>> = { ...SERVICOS_NFE, ...SERVICOS_MDFE };
 
 /** Definição de um serviço da NF-e ou do MDF-e. */
-export function serviceDef(servico: SimServico): ServiceDef {
+export function definicaoDoServico(servico: ServicoSim): DefinicaoDeServico {
   const def = ALL_SERVICES[servico];
   if (def === undefined) throw new ErroDeConfiguracao(`serviço desconhecido: ${String(servico)}`);
   return def;
 }
 
 /** O serviço é do MDF-e. */
-export function isMdfeServico(servico: string): servico is MdfeServicoSim {
-  return Object.hasOwn(MDFE_SERVICES, servico);
+export function ehServicoMdfe(servico: string): servico is MdfeServicoSim {
+  return Object.hasOwn(SERVICOS_MDFE, servico);
 }
 
 /** Namespace do WSDL do serviço. */
-export function wsdlNamespace(def: ServiceDef): string {
-  return def.namespace ?? `${WSDL_BASE}${def.wsdl}`;
+export function namespaceDoWsdl(definicao: DefinicaoDeServico): string {
+  return definicao.namespace ?? `${WSDL_BASE}${definicao.wsdl}`;
 }
 
 /** `action` do SOAP 1.2 da operação, como vai no `Content-Type`. */
-export function soapAction(def: ServiceDef): string {
-  return `${wsdlNamespace(def)}/${def.operation}`;
+export function acaoSoap(definicao: DefinicaoDeServico): string {
+  return `${namespaceDoWsdl(definicao)}/${definicao.operacao}`;
 }
 
 /** Caminho do serviço no simulador. */
-export function servicePath(servico: SimServico, autorizador: SimAutorizador): string {
-  return `/${autorizador}/ws/${serviceDef(servico).wsdl}`;
+export function caminhoDoServico(servico: ServicoSim, autorizador: AutorizadorSim): string {
+  return `/${autorizador}/ws/${definicaoDoServico(servico).wsdl}`;
 }
 
 /** Resolve um caminho recebido; `undefined` se não for de nenhum serviço atendido por aquele autorizador. */
-export function routeOf(path: string): { readonly def: ServiceDef; readonly autorizador: SimAutorizador } | undefined {
-  const m = /^\/(uf|svc|an)\/ws\/([A-Za-z0-9]+)\/?(?:\?.*)?$/.exec(path);
+export function rotaDe(
+  caminho: string,
+): { readonly definicao: DefinicaoDeServico; readonly autorizador: AutorizadorSim } | undefined {
+  const m = /^\/(uf|svc|an)\/ws\/([A-Za-z0-9]+)\/?(?:\?.*)?$/.exec(caminho);
   if (!m) return undefined;
-  const autorizador = m[1] as SimAutorizador;
+  const autorizador = m[1] as AutorizadorSim;
   const def = Object.values(ALL_SERVICES).find((d) => d.wsdl === m[2]);
-  return def?.autorizadores.includes(autorizador) ? { def, autorizador } : undefined;
+  return def?.autorizadores.includes(autorizador) ? { definicao: def, autorizador } : undefined;
 }

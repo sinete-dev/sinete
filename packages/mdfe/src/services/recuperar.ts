@@ -9,14 +9,14 @@
 
 import type { DocumentoXml, ElementoXml } from '@sinete/core/xml';
 import { lerXml, primeiroFilho, textoDe } from '@sinete/core/xml';
-import type { ConsultaOutcome, EventoRegistrado, MdfeClient } from './client.ts';
+import type { ClienteMdfe, EventoRegistrado, ResultadoConsulta } from './client.ts';
 import { cstatEm } from './outcome.ts';
-import { MDFE_NS, sliceElement } from './proc.ts';
+import { MDFE_NS, recortarElemento } from './proc.ts';
 
 /** Resultado da recuperação: o evento registrado, com a consulta que o prova, ou só a consulta. */
 export type RecuperacaoEvento =
-  | { readonly registrado: true; readonly evento: EventoRegistrado; readonly consulta: ConsultaOutcome }
-  | { readonly registrado: false; readonly consulta: ConsultaOutcome };
+  | { readonly registrado: true; readonly evento: EventoRegistrado; readonly consulta: ResultadoConsulta }
+  | { readonly registrado: false; readonly consulta: ResultadoConsulta };
 
 /** Texto do filho `local` no namespace do MDF-e, se houver. */
 function campo(el: ElementoXml, local: string): string | undefined {
@@ -59,7 +59,7 @@ function lerProcEvento(xml: string): EventoRegistrado | undefined {
     chMDFe,
     tpEvento,
     nSeqEvento: String(Number(nSeq)),
-    retEventoMDFe: sliceElement(doc, retEl, ''),
+    retEventoMDFe: recortarElemento(doc, retEl, ''),
     procEventoMDFe: xml,
     ...(nProt === undefined ? {} : { nProt }),
     ...(dhRegEvento === undefined ? {} : { dhRegEvento }),
@@ -74,11 +74,11 @@ function lerProcEvento(xml: string): EventoRegistrado | undefined {
  * consulta não mostrou o evento (ou não decidiu: veja `consulta`); não quer dizer que o evento não existe.
  */
 export async function recuperarEventoRegistrado(
-  client: MdfeClient,
+  cliente: ClienteMdfe,
   chave: string,
   tpEvento: string,
 ): Promise<RecuperacaoEvento> {
-  const consulta = await client.consultar(chave);
+  const consulta = await cliente.consultar(chave);
   if (consulta.tipo !== 'autorizado') return { registrado: false, consulta };
   let achado: EventoRegistrado | undefined;
   for (const xml of consulta.valor.eventos) {

@@ -13,14 +13,19 @@ export type Valor = string | number;
 const TEXTO = /^\d+(?:\.(\d+))?$/;
 
 /**
- * Converte para texto com `casas` casas decimais. Devolve `undefined` e acrescenta a ocorrência em `issues` quando o
+ * Converte para texto com `casas` casas decimais. Devolve `undefined` e acrescenta a ocorrência em `ocorrencias` quando o
  * valor não tem representação exata.
  */
-export function formatValor(valor: Valor, path: string, issues: Ocorrencia[], casas: number = 2): string | undefined {
+export function formatarValor(
+  valor: Valor,
+  caminho: string,
+  ocorrencias: Ocorrencia[],
+  casas: number = 2,
+): string | undefined {
   if (typeof valor === 'number') {
     if (!Number.isFinite(valor) || valor < 0) {
-      issues.push({
-        caminho: path,
+      ocorrencias.push({
+        caminho: caminho,
         code: 'valor_invalido',
         mensagem: 'valor precisa ser um número finito não negativo',
       });
@@ -29,7 +34,11 @@ export function formatValor(valor: Valor, path: string, issues: Ocorrencia[], ca
     const fixo = valor.toFixed(casas);
     // Tolerância só para o ruído binário (0.1 + 0.2), nunca para uma casa a mais de verdade (1.005).
     if (Math.abs(Number(fixo) - valor) > 1e-9) {
-      issues.push({ caminho: path, code: 'valor_casas', mensagem: `valor com mais de ${casas} casas decimais` });
+      ocorrencias.push({
+        caminho: caminho,
+        code: 'valor_casas',
+        mensagem: `valor com mais de ${casas} casas decimais`,
+      });
       return undefined;
     }
     return fixo;
@@ -37,8 +46,8 @@ export function formatValor(valor: Valor, path: string, issues: Ocorrencia[], ca
   const texto = valor.trim();
   const m = TEXTO.exec(texto);
   if (m === null) {
-    issues.push({
-      caminho: path,
+    ocorrencias.push({
+      caminho: caminho,
       code: 'valor_invalido',
       mensagem: 'valor precisa ser decimal com ponto (ex.: 1500.00)',
     });
@@ -47,7 +56,7 @@ export function formatValor(valor: Valor, path: string, issues: Ocorrencia[], ca
   const frac = m[1] ?? '';
   const extra = frac.slice(casas);
   if (/[1-9]/.test(extra)) {
-    issues.push({ caminho: path, code: 'valor_casas', mensagem: `valor com mais de ${casas} casas decimais` });
+    ocorrencias.push({ caminho: caminho, code: 'valor_casas', mensagem: `valor com mais de ${casas} casas decimais` });
     return undefined;
   }
   const inteiro = texto.split('.')[0]?.replace(/^0+(?=\d)/, '') ?? '0';

@@ -13,14 +13,14 @@ import * as nfse from '@sinete/schemas/nfse/1.01-20260727';
 import type { PedidoTransporte, RespostaTransporte, Transporte } from '@sinete/transport';
 import { nfseEndpoint } from '@sinete/transport';
 import type {
+  CertificadoSintetico,
   MunicipioSim,
   NfseSim,
-  NfseSimFullOptions,
-  SimRequest,
-  SimResult,
-  SyntheticCertificate,
+  NfseSimOpcoesCompletas,
+  PedidoSim,
+  RespostaSim,
 } from '../src/index.ts';
-import { createNfseSim, dvChave, NFSE_REGRAS_PADRAO, redirectNfseToSim } from '../src/index.ts';
+import { criarNfseSim, dvChave, NFSE_REGRAS_PADRAO, redirecionarNfseParaSim } from '../src/index.ts';
 import type { Certs } from './helpers.ts';
 import { CPF, certs, DESTINATARIO, EMITENTE, INICIO, TERCEIRO } from './helpers.ts';
 
@@ -155,8 +155,8 @@ async function gunzip(b64: string): Promise<string> {
 
 const gz = (xml: string): Promise<string> => gzip(new TextEncoder().encode(xml));
 
-async function assinar(d: { readonly id: string; readonly xml: string }, cert: SyntheticCertificate): Promise<string> {
-  return DECL + (await assinarXml(d.xml, { id: d.id }, cert.signer));
+async function assinar(d: { readonly id: string; readonly xml: string }, cert: CertificadoSintetico): Promise<string> {
+  return DECL + (await assinarXml(d.xml, { id: d.id }, cert.assinador));
 }
 
 let c: Certs;
@@ -164,57 +164,62 @@ beforeAll(async () => {
   c = await certs();
 }, 60_000);
 
-/** Pedido cru; `clientCertificate: undefined` tira o certificado padrão do canal. */
-type Pedido = Omit<Partial<SimRequest>, 'clientCertificate'> & {
-  readonly path: string;
-  readonly clientCertificate?: Uint8Array | undefined;
+/** Pedido cru; `certificadoDoCliente: undefined` tira o certificado padrão do canal. */
+type Pedido = Omit<Partial<PedidoSim>, 'certificadoDoCliente'> & {
+  readonly caminho: string;
+  readonly certificadoDoCliente?: Uint8Array | undefined;
 };
 
 interface Ctx {
   readonly clock: RelogioManual;
   readonly sim: NfseSim;
   /** Pedido cru, com o certificado do emitente no canal por padrão. */
-  req(r: Pedido): Promise<SimResult>;
-  emitir(xml: string, canal?: SyntheticCertificate | null): Promise<SimResult>;
-  evento(chave: string, xml: string, canal?: SyntheticCertificate | null): Promise<SimResult>;
+  req(r: Pedido): Promise<RespostaSim>;
+  emitir(xml: string, canal?: CertificadoSintetico | null): Promise<RespostaSim>;
+  evento(chave: string, xml: string, canal?: CertificadoSintetico | null): Promise<RespostaSim>;
 }
 
-function ctx(o: Partial<NfseSimFullOptions> = {}): Ctx {
+function ctx(o: Partial<NfseSimOpcoesCompletas> = {}): Ctx {
   const clock = relogioManual(INICIO);
-  const sim = createNfseSim({ clock, signer: c.servidor.signer, municipios: MUNICIPIOS, ...o });
-  const req = (r: Pedido): Promise<SimResult> => {
-    const { clientCertificate, ...resto } = { clientCertificate: c.emitente.der, ...r };
-    return sim.handle(clientCertificate === undefined ? resto : { ...resto, clientCertificate });
+  const sim = criarNfseSim({ relogio: clock, assinador: c.servidor.assinador, municipios: MUNICIPIOS, ...o });
+  const req = (r: Pedido): Promise<RespostaSim> => {
+    const { certificadoDoCliente, ...resto } = { certificadoDoCliente: c.emitente.der, ...r };
+    return sim.atender(certificadoDoCliente === undefined ? resto : { ...resto, certificadoDoCliente });
   };
-  const comCanal = (canal: SyntheticCertificate | null | undefined): Omit<Pedido, 'path'> =>
-    canal === null ? { clientCertificate: undefined } : canal === undefined ? {} : { clientCertificate: canal.der };
+  const comCanal = (canal: CertificadoSintetico | null | undefined): Omit<Pedido, 'caminho'> =>
+    canal === null
+      ? { certificadoDoCliente: undefined }
+      : canal === undefined
+        ? {}
+        : { certificadoDoCliente: canal.der };
   return {
     clock,
     sim,
     req,
-    async emitir(xml, canal): Promise<SimResult> {
+    async emitir(xml, canal): Promise<RespostaSim> {
       return req({
-        method: 'POST',
-        path: '/sefin/nfse',
-        body: JSON.stringify({ dpsXmlGZipB64: await gz(xml) }),
+        metodo: 'POST',
+        caminho: '/sefin/nfse',
+        corpo: JSON.stringify({ dpsXmlGZipB64: await gz(xml) }),
         ...comCanal(canal),
       });
     },
-    async evento(chave, xml, canal): Promise<SimResult> {
+    async evento(chave, xml, canal): Promise<RespostaSim> {
       return req({
-        method: 'POST',
-        path: `/sefin/nfse/${chave}/eventos`,
-        body: JSON.stringify({ pedidoRegistroEventoXmlGZipB64: await gz(xml) }),
+        metodo: 'POST',
+        caminho: `/sefin/nfse/${chave}/eventos`,
+        corpo: JSON.stringify({ pedidoRegistroEventoXmlGZipB64: await gz(xml) }),
         ...comCanal(canal),
       });
     },
   };
 }
 
-const corpo = (r: SimResult): Record<string, unknown> => JSON.parse(String(r.body)) as Record<string, unknown>;
-const codigo = (r: SimResult): string | undefined => (corpo(r).erros as { Codigo: string }[] | undefined)?.[0]?.Codigo;
+const corpo = (r: RespostaSim): Record<string, unknown> => JSON.parse(String(r.corpo)) as Record<string, unknown>;
+const codigo = (r: RespostaSim): string | undefined =>
+  (corpo(r).erros as { Codigo: string }[] | undefined)?.[0]?.Codigo;
 
-async function nfseDe(r: SimResult): Promise<{ readonly chave: string; readonly xml: string }> {
+async function nfseDe(r: RespostaSim): Promise<{ readonly chave: string; readonly xml: string }> {
   expect(r.status).toBe(201);
   const b = corpo(r);
   const xml = await gunzip(b.nfseXmlGZipB64 as string);
@@ -232,8 +237,8 @@ describe('emissão', () => {
     expect(n.chave.slice(-1)).toBe(dvChave(n.chave.slice(0, 49)));
     expect(n.xml).toContain('<xNome>PRESTADOR CADASTRADO</xNome>');
     expect(n.xml).toContain('<vISSQN>30.00</vISSQN>');
-    expect(s.sim.inspect.nfse(n.chave)).toMatchObject({ situacao: 'normal', serie: '1' });
-    expect(s.sim.inspect.nfses()).toHaveLength(1);
+    expect(s.sim.inspecao.nfse(n.chave)).toMatchObject({ situacao: 'normal', serie: '1' });
+    expect(s.sim.inspecao.nfses()).toHaveLength(1);
   });
 
   test('IBS/CBS, retenção, descontos, prestador CPF e serviço no exterior', async () => {
@@ -261,7 +266,7 @@ describe('emissão', () => {
 
   test('recepção: corpo, base64, gzip, UTF-8, declaração, XML, prefixo, raiz e schema', async () => {
     const s = ctx();
-    const post = (body: string): Promise<SimResult> => s.req({ method: 'POST', path: '/sefin/nfse', body });
+    const post = (body: string): Promise<RespostaSim> => s.req({ metodo: 'POST', caminho: '/sefin/nfse', corpo: body });
     const ok = await assinar(dps(), c.emitente);
     expect(codigo(await post('não é json'))).toBe('E1225');
     expect(codigo(await post(JSON.stringify({ outro: 1 })))).toBe('E1225');
@@ -278,9 +283,11 @@ describe('emissão', () => {
     const invalido = await s.emitir(`${DECL}<DPS xmlns="${NS}" versao="1.01"/>`);
     expect(codigo(invalido)).toBe('E1235');
     expect(corpo(invalido).erros).toEqual([expect.objectContaining({ Complemento: expect.any(String) })]);
-    expect(await s.req({ method: 'POST', path: '/sefin/nfse', body: new TextEncoder().encode('x') })).toMatchObject({
-      status: 400,
-    });
+    expect(await s.req({ metodo: 'POST', caminho: '/sefin/nfse', corpo: new TextEncoder().encode('x') })).toMatchObject(
+      {
+        status: 400,
+      },
+    );
   });
 
   test('certificado do canal: ausente (403), vencido, sem documento; sem exigência passa', async () => {
@@ -289,9 +296,9 @@ describe('emissão', () => {
     expect(await s.emitir(xml, null)).toMatchObject({ status: 403 });
     expect(codigo(await s.emitir(xml, c.vencido))).toBe('E1203');
     expect(codigo(await s.emitir(xml, c.semDocumento))).toBe('E1209');
-    expect(codigo(await s.req({ method: 'POST', path: '/sefin/nfse', clientCertificate: new Uint8Array([1]) }))).toBe(
-      'E1200',
-    );
+    expect(
+      codigo(await s.req({ metodo: 'POST', caminho: '/sefin/nfse', certificadoDoCliente: new Uint8Array([1]) })),
+    ).toBe('E1200');
     expect((await ctx({ exigirCertificado: false }).emitir(xml, null)).status).toBe(201);
     // Canal de outro contribuinte, válido, com a DPS assinada pelo emitente: sem transmissor terceiro na NFS-e.
     expect(await s.emitir(xml, c.terceiro)).toMatchObject({ status: 403 });
@@ -355,8 +362,8 @@ describe('emissão', () => {
     const s = ctx();
     const a = await nfseDe(await s.emitir(await assinar(dps(), c.emitente)));
     const b = await nfseDe(await s.emitir(await assinar(dps({ nDPS: '2', subst: a.chave }), c.emitente)));
-    expect(s.sim.inspect.nfse(a.chave)?.situacao).toBe('substituida');
-    const [ev] = s.sim.inspect.eventos(a.chave);
+    expect(s.sim.inspecao.nfse(a.chave)?.situacao).toBe('substituida');
+    const [ev] = s.sim.inspecao.eventos(a.chave);
     expect(ev).toMatchObject({ tpEvento: '105102', nSeqEvento: 1 });
     expect(ev?.xml).toContain(`<chSubstituta>${b.chave}</chSubstituta>`);
     expect(validarRaiz(nfse.eventoElement, lerXml(ev?.xml ?? ''))).toEqual([]);
@@ -378,12 +385,12 @@ describe('eventos', () => {
     expect(r.status).toBe(201);
     const ev = await gunzip(corpo(r).eventoXmlGZipB64 as string);
     expect(validarRaiz(nfse.eventoElement, lerXml(ev))).toEqual([]);
-    expect(s.sim.inspect.nfse(chave)?.situacao).toBe('cancelada');
+    expect(s.sim.inspecao.nfse(chave)?.situacao).toBe('cancelada');
     const dup = await s.evento(chave, await assinar(pedido(chave), c.emitente));
     expect(codigo(dup)).toBe('E0840');
     expect(JSON.stringify(corpo(dup))).toContain('Cancelamento de NFS-e');
     expect((await s.evento(chave, await assinar(pedido(chave, { tp: '101103' }), c.emitente))).status).toBe(201);
-    expect(s.sim.inspect.eventos()).toHaveLength(2);
+    expect(s.sim.inspecao.eventos()).toHaveLength(2);
   });
 
   test('regras e recepção do pedido', async () => {
@@ -417,7 +424,7 @@ describe('eventos', () => {
     const cpf = await assinar(pedido(chave, { cpfAutor: CPF }), c.ecpf);
     expect(codigo(await s.evento(chave, cpf, c.ecpf))).toBe('E0816');
     expect(await s.evento(chave, await assinar(pedido(chave), c.emitente), c.terceiro)).toMatchObject({ status: 403 });
-    expect(s.sim.inspect.nfse(chave)?.situacao).toBe('normal');
+    expect(s.sim.inspecao.nfse(chave)?.situacao).toBe('normal');
     // O e105102 é da Sefin: pedido do contribuinte, mesmo do emitente, é E0813 e não registra nada.
     const id = `PRE${chave}105102`;
     const e105102 = {
@@ -429,7 +436,7 @@ describe('eventos', () => {
         `<chSubstituta>${chave}</chSubstituta></e105102></infPedReg></pedRegEvento>`,
     };
     expect(codigo(await s.evento(chave, await assinar(e105102, c.emitente)))).toBe('E0813');
-    expect(s.sim.inspect.eventos(chave)).toHaveLength(0);
+    expect(s.sim.inspecao.eventos(chave)).toHaveLength(0);
     expect((await s.evento(chave, await assinar(pedido(chave), c.emitente))).status).toBe(201);
   });
 
@@ -446,7 +453,7 @@ describe('consultas e parametrização', () => {
     const s = ctx();
     const d = dps();
     const { chave } = await nfseDe(await s.emitir(await assinar(d, c.emitente)));
-    const get = (path: string): Promise<SimResult> => s.req({ path });
+    const get = (path: string): Promise<RespostaSim> => s.req({ caminho: path });
     const n = await get(`/sefin/nfse/${chave}`);
     expect(n.status).toBe(200);
     expect(await gunzip(corpo(n).nfseXmlGZipB64 as string)).toContain(`NFS${chave}`);
@@ -456,10 +463,10 @@ describe('consultas e parametrização', () => {
     await s.evento(chave, await assinar(pedido(chave), c.emitente));
     // Como a Sefin da produção restrita em 28/09/2026: 405 sem o tipo, 404 HTML do IIS sem a sequência.
     const semTipo = await get(`/sefin/nfse/${chave}/eventos`);
-    expect([semTipo.status, semTipo.headers['content-type']]).toEqual([405, 'text/html']);
+    expect([semTipo.status, semTipo.cabecalhos['content-type']]).toEqual([405, 'text/html']);
     const semSeq = await get(`/sefin/nfse/${chave}/eventos/101101`);
-    expect([semSeq.status, semSeq.headers['content-type']]).toEqual([404, 'text/html']);
-    expect(String(semSeq.body)).toStartWith('<!DOCTYPE html>');
+    expect([semSeq.status, semSeq.cabecalhos['content-type']]).toEqual([404, 'text/html']);
+    expect(String(semSeq.corpo)).toStartWith('<!DOCTYPE html>');
     const r = await get(`/sefin/nfse/${chave}/eventos/101101/1?x=1`);
     expect(r.status).toBe(200);
     expect(Object.keys(corpo(r)).sort()).toEqual([
@@ -483,7 +490,7 @@ describe('consultas e parametrização', () => {
     expect(arquivo).toStartWith('SDRzSUFBQUFB');
     const interno = new TextDecoder().decode(decodificarBase64(arquivo));
     expect(interno).toStartWith('H4sI');
-    expect(await gunzip(interno)).toBe(s.sim.inspect.eventos(chave)[0]?.xml as string);
+    expect(await gunzip(interno)).toBe(s.sim.inspecao.eventos(chave)[0]?.xml as string);
     const semEvento = await get(`/sefin/nfse/${chave}/eventos/101101/2`);
     expect([semEvento.status, corpo(semEvento)]).toEqual([404, {}]);
     expect((await get(`/sefin/nfse/${chave}/eventos/105102/1`)).status).toBe(404);
@@ -495,11 +502,11 @@ describe('consultas e parametrização', () => {
   test('rotas desconhecidas', async () => {
     const s = ctx();
     for (const r of [
-      { path: '/sefin/outra' },
-      { path: '/sefin/nfse', method: 'GET' },
-      { path: '/adn/qualquer' },
-      { path: '/parametrizacao/x', method: 'POST' },
-      { path: `/parametrizacao/${SAO_PAULO}/qualquer` },
+      { caminho: '/sefin/outra' },
+      { caminho: '/sefin/nfse', metodo: 'GET' },
+      { caminho: '/adn/qualquer' },
+      { caminho: '/parametrizacao/x', metodo: 'POST' },
+      { caminho: `/parametrizacao/${SAO_PAULO}/qualquer` },
     ]) {
       expect((await s.req(r)).status).toBe(404);
     }
@@ -508,7 +515,7 @@ describe('consultas e parametrização', () => {
   test('parametrização: convênio, alíquotas, histórico, regimes especiais, retenções e benefício', async () => {
     const s = ctx();
     const get = async (path: string): Promise<[number, Record<string, unknown>]> => {
-      const r = await s.req({ path: `/parametrizacao${path}` });
+      const r = await s.req({ caminho: `/parametrizacao${path}` });
       return [r.status, corpo(r)];
     };
     expect(await get(`/${SAO_PAULO}/convenio`)).toEqual([
@@ -541,10 +548,10 @@ describe('consultas e parametrização', () => {
   });
 
   test('configuração inválida é ErroDeConfiguracao', () => {
-    const base = { clock: relogioManual(INICIO), signer: c.servidor.signer };
-    expect(() => createNfseSim({ ...base, municipios: [{ cMun: '355', nome: 'x' }] })).toThrow(ErroDeConfiguracao);
+    const base = { relogio: relogioManual(INICIO), assinador: c.servidor.assinador };
+    expect(() => criarNfseSim({ ...base, municipios: [{ cMun: '355', nome: 'x' }] })).toThrow(ErroDeConfiguracao);
     expect(() =>
-      createNfseSim({
+      criarNfseSim({
         ...base,
         municipios: [{ cMun: SAO_PAULO, nome: 'x', servicos: [{ codigo: '1', aliquotas: [] }] }],
       }),
@@ -562,23 +569,23 @@ describe('falhas injetadas', () => {
   test('HTTP, queda antes e depois, espera e escopo por rota', async () => {
     const s = ctx();
     const xml = await assinar(dps(), c.emitente);
-    s.sim.injectFault({ kind: 'http', status: 503 }, { rota: 'emitir' });
-    expect((await s.req({ path: '/danfse/1' })).status).toBe(404);
+    s.sim.injetarFalha({ tipo: 'http', status: 503 }, { rota: 'emitir' });
+    expect((await s.req({ caminho: '/danfse/1' })).status).toBe(404);
     expect(await s.emitir(xml)).toMatchObject({ status: 503 });
-    s.sim.injectFault({ kind: 'drop', phase: 'before' });
-    expect(await s.emitir(xml)).toMatchObject({ effect: 'drop' });
-    expect(s.sim.inspect.nfses()).toHaveLength(0);
-    s.sim.injectFault({ kind: 'hang', phase: 'after' }, { rota: 'emitir' });
-    expect(await s.emitir(xml)).toMatchObject({ effect: 'hang', status: 201 });
-    expect(s.sim.inspect.nfses()).toHaveLength(1);
-    s.sim.injectFault({ kind: 'delay', ms: 5 }, { rota: 'parametrizacao', times: 2 });
-    expect(await s.req({ path: `/parametrizacao/${SAO_PAULO}/convenio` })).toMatchObject({ delayMs: 5 });
-    s.sim.clearFaults();
-    expect(await s.req({ path: `/parametrizacao/${SAO_PAULO}/convenio` })).toMatchObject({ delayMs: 0 });
+    s.sim.injetarFalha({ tipo: 'derrubar', fase: 'antes' });
+    expect(await s.emitir(xml)).toMatchObject({ efeito: 'derrubar' });
+    expect(s.sim.inspecao.nfses()).toHaveLength(0);
+    s.sim.injetarFalha({ tipo: 'travar', fase: 'depois' }, { rota: 'emitir' });
+    expect(await s.emitir(xml)).toMatchObject({ efeito: 'travar', status: 201 });
+    expect(s.sim.inspecao.nfses()).toHaveLength(1);
+    s.sim.injetarFalha({ tipo: 'atraso', ms: 5 }, { rota: 'parametrizacao', vezes: 2 });
+    expect(await s.req({ caminho: `/parametrizacao/${SAO_PAULO}/convenio` })).toMatchObject({ atrasoMs: 5 });
+    s.sim.limparFalhas();
+    expect(await s.req({ caminho: `/parametrizacao/${SAO_PAULO}/convenio` })).toMatchObject({ atrasoMs: 0 });
   });
 });
 
-describe('redirectNfseToSim', () => {
+describe('redirecionarNfseParaSim', () => {
   function falso(): Transporte & { readonly pedidos: PedidoTransporte[] } {
     const pedidos: PedidoTransporte[] = [];
     return {
@@ -606,9 +613,9 @@ describe('redirectNfseToSim', () => {
   }
 
   test('troca a base da API pelo simulador e barra o que não é da NFS-e', async () => {
-    expect(() => redirectNfseToSim(falso(), 'http://localhost:1')).toThrow(ErroDeConfiguracao);
+    expect(() => redirecionarNfseParaSim(falso(), 'http://localhost:1')).toThrow(ErroDeConfiguracao);
     const t = falso();
-    const r = redirectNfseToSim(t, 'https://127.0.0.1:8443/');
+    const r = redirecionarNfseParaSim(t, 'https://127.0.0.1:8443/');
     const ep = nfseEndpoint({ ambiente: 'homologacao', api: 'parametrizacao' });
     await r.enviar({ url: `${ep.url}/${SAO_PAULO}/convenio`, endpoint: ep });
     expect(t.pedidos[0]).toMatchObject({

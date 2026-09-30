@@ -105,41 +105,41 @@ function sanName(host: string): Uint8Array {
 }
 
 /** Papel do certificado, que decide as extensões. */
-export type SyntheticRole = 'ac' | 'titular' | 'servidor';
+export type PapelSintetico = 'ac' | 'titular' | 'servidor';
 
-export interface SyntheticCertificateOptions {
-  /** Relógio da emissão: a validade começa um dia antes de `clock.agora()`. */
-  readonly clock: Relogio;
-  readonly role: SyntheticRole;
+export interface CertificadoSinteticoOpcoes {
+  /** Relógio da emissão: a validade começa um dia antes de `relogio.agora()`. */
+  readonly relogio: Relogio;
+  readonly papel: PapelSintetico;
   /** CN do titular. Padrão: `SINETE SIM:<documento>` ou `sinete-sim AC`. */
   readonly commonName?: string;
   /** CNPJ do e-CNPJ (numérico ou alfanumérico, sem máscara). */
   readonly cnpj?: string;
   /** CPF do e-CPF, sem máscara. */
   readonly cpf?: string;
-  /** Dias de validade a partir de `clock.agora()`. Padrão: 365. Negativo gera um certificado já vencido. */
-  readonly validDays?: number;
+  /** Dias de validade a partir de `relogio.agora()`. Padrão: 365. Negativo gera um certificado já vencido. */
+  readonly diasDeValidade?: number;
   /** AC que assina. Sem ela, o certificado é autoassinado. */
-  readonly issuer?: SyntheticCertificate;
+  readonly emissor?: CertificadoSintetico;
   /** Nomes do servidor (papel `servidor`): IPs (v4 e v6) e DNS do SAN. Padrão: `127.0.0.1`, `::1` e `localhost`. */
   readonly hosts?: readonly string[];
   /** Omite o `otherName` com o documento (para testar as regras 282 e 292). */
-  readonly omitDocumentExtension?: boolean;
+  readonly omitirExtensaoDoDocumento?: boolean;
 }
 
 /** Certificado com a chave, pronto para o TLS (PEM), para assinar XML (`AssinadorDeDados`) e para assinar outros. */
-export interface SyntheticCertificate {
+export interface CertificadoSintetico {
   readonly der: Uint8Array;
   readonly pem: string;
   /** Chave privada PKCS#8 em PEM. */
-  readonly keyPem: string;
+  readonly chavePem: string;
   /** `AssinadorDeDados` do `@sinete/core` (RSASSA-PKCS1-v1_5), para o `assinarXml` do `@sinete/core/xml`. */
-  readonly signer: AssinadorDeDados;
+  readonly assinador: AssinadorDeDados;
   /** Identidade `pem` do `@sinete/transport` (certificado seguido da AC, quando houver). */
-  readonly tlsIdentity: { readonly tipo: 'pem'; readonly cadeia: string; readonly chave: string };
+  readonly identidadeTls: { readonly tipo: 'pem'; readonly cadeia: string; readonly chave: string };
   readonly commonName: string;
   /** Uso interno: assina o TBSCertificate dos certificados emitidos por esta AC. */
-  readonly signTbs: (tbs: Uint8Array<ArrayBuffer>) => Promise<Uint8Array>;
+  readonly assinarTbs: (tbs: Uint8Array<ArrayBuffer>) => Promise<Uint8Array>;
 }
 
 function toPem(label: string, der: Uint8Array): string {
@@ -149,16 +149,16 @@ function toPem(label: string, der: Uint8Array): string {
 
 const SHA256_RSA = (): Uint8Array => seq(oid('1.2.840.113549.1.1.11'), tlv(0x05, []));
 
-function extensions(options: SyntheticCertificateOptions): Uint8Array[] {
+function extensions(options: CertificadoSinteticoOpcoes): Uint8Array[] {
   const out: Uint8Array[] = [];
-  if (options.role === 'ac') {
+  if (options.papel === 'ac') {
     out.push(extension('2.5.29.19', true, seq(tlv(0x01, [0xff]))));
     // keyCertSign (bit 5) e cRLSign (bit 6): 00000110, um bit sem uso.
     out.push(extension('2.5.29.15', true, tlv(0x03, [0x01, 0x06])));
     return out;
   }
   out.push(extension('2.5.29.19', true, seq()));
-  if (options.role === 'servidor') {
+  if (options.papel === 'servidor') {
     out.push(extension('2.5.29.15', true, tlv(0x03, [0x05, 0xa0])));
     out.push(extension('2.5.29.37', false, seq(oid('1.3.6.1.5.5.7.3.1'))));
     const names = (options.hosts ?? ['127.0.0.1', '::1', 'localhost']).map(sanName);
@@ -168,7 +168,7 @@ function extensions(options: SyntheticCertificateOptions): Uint8Array[] {
   // digitalSignature, nonRepudiation e keyEncipherment (bits 0 a 2): 11100000, cinco bits sem uso.
   out.push(extension('2.5.29.15', true, tlv(0x03, [0x05, 0xe0])));
   out.push(extension('2.5.29.37', false, seq(oid('1.3.6.1.5.5.7.3.2'), oid('1.3.6.1.5.5.7.3.4'))));
-  if (options.omitDocumentExtension !== true) {
+  if (options.omitirExtensaoDoDocumento !== true) {
     const otherName = (id: string, value: string): Uint8Array =>
       tlv(0xa0, oid(id), tlv(0xa0, tlv(0x04, [...te.encode(value)])));
     const names: Uint8Array[] = [];
@@ -183,8 +183,8 @@ function extensions(options: SyntheticCertificateOptions): Uint8Array[] {
 }
 
 /** Gera um certificado sintético com chave RSA-2048 nova. */
-export async function syntheticCertificate(options: SyntheticCertificateOptions): Promise<SyntheticCertificate> {
-  if (options.role === 'titular' && options.cnpj === undefined && options.cpf === undefined) {
+export async function certificadoSintetico(opcoes: CertificadoSinteticoOpcoes): Promise<CertificadoSintetico> {
+  if (opcoes.papel === 'titular' && opcoes.cnpj === undefined && opcoes.cpf === undefined) {
     throw new ErroDeConfiguracao('certificado de titular precisa de cnpj ou cpf');
   }
   const pair = (await subtle.generateKey(
@@ -194,28 +194,28 @@ export async function syntheticCertificate(options: SyntheticCertificateOptions)
   )) as CryptoKeyPair;
   const spki = new Uint8Array(await subtle.exportKey('spki', pair.publicKey));
   const pkcs8 = new Uint8Array(await subtle.exportKey('pkcs8', pair.privateKey));
-  const doc = options.cnpj ?? options.cpf;
+  const doc = opcoes.cnpj ?? opcoes.cpf;
   const commonName =
-    options.commonName ?? (options.role === 'titular' ? `SINETE SIM:${doc}` : `sinete-sim ${options.role}`);
-  const now = options.clock.agora().getTime();
+    opcoes.commonName ?? (opcoes.papel === 'titular' ? `SINETE SIM:${doc}` : `sinete-sim ${opcoes.papel}`);
+  const now = opcoes.relogio.agora().getTime();
   const serial = globalThis.crypto.getRandomValues(new Uint8Array(12));
   serial[0] = ((serial[0] ?? 0) & 0x7f) | 0x01;
   const tbs = seq(
     tlv(0xa0, tlv(0x02, [2])),
     tlv(0x02, serial),
     SHA256_RSA(),
-    name(options.issuer?.commonName ?? commonName),
-    seq(time(now - 86_400_000), time(now + (options.validDays ?? 365) * 86_400_000)),
+    name(opcoes.emissor?.commonName ?? commonName),
+    seq(time(now - 86_400_000), time(now + (opcoes.diasDeValidade ?? 365) * 86_400_000)),
     name(commonName),
     spki,
-    tlv(0xa3, seq(...extensions(options))),
+    tlv(0xa3, seq(...extensions(opcoes))),
   );
   const importFor = (hash: HashDaAssinatura): Promise<CryptoKey> =>
     subtle.importKey('pkcs8', pkcs8, { name: 'RSASSA-PKCS1-v1_5', hash }, false, ['sign']);
   const sha256Key = await importFor('SHA-256');
   const signTbs = async (data: Uint8Array<ArrayBuffer>): Promise<Uint8Array> =>
     new Uint8Array(await subtle.sign('RSASSA-PKCS1-v1_5', sha256Key, data));
-  const signature = await (options.issuer?.signTbs ?? signTbs)(tbs);
+  const signature = await (opcoes.emissor?.assinarTbs ?? signTbs)(tbs);
   const der = seq(tbs, SHA256_RSA(), tlv(0x03, [0, ...signature]));
   const pem = toPem('CERTIFICATE', der);
   const keyPem = toPem('PRIVATE KEY', pkcs8);
@@ -235,10 +235,10 @@ export async function syntheticCertificate(options: SyntheticCertificateOptions)
   return {
     der,
     pem,
-    keyPem,
-    signer,
-    tlsIdentity: { tipo: 'pem', cadeia: pem + (options.issuer?.pem ?? ''), chave: keyPem },
+    chavePem: keyPem,
+    assinador: signer,
+    identidadeTls: { tipo: 'pem', cadeia: pem + (opcoes.emissor?.pem ?? ''), chave: keyPem },
     commonName,
-    signTbs,
+    assinarTbs: signTbs,
   };
 }

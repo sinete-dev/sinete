@@ -23,7 +23,7 @@
 import type { Relogio } from '@sinete/core';
 import { ErroDeConfiguracao, ehErroSinete, relogioDoSistema } from '@sinete/core';
 import type { Desfecho } from './desfecho.ts';
-import type { AoDecidir, JaGuardado, OpcoesRetomar } from './emissor.ts';
+import type { AoDecidir, JaGuardado, RetomarOpcoes } from './emissor.ts';
 import type { RegistroTransmissao, TransmissaoStore } from './store.ts';
 
 export interface PoliticaRetomada {
@@ -52,7 +52,7 @@ export const POLITICA_RETOMADA_PADRAO: PoliticaRetomada = {
 
 /** O que a retomada precisa de um emissor: só `retomar`, que não monta. Qualquer emissor do pacote serve. */
 export interface EmissorRetomavel {
-  retomar(ref: string, opcoes?: OpcoesRetomar<never, never>): Promise<Desfecho | undefined>;
+  retomar(ref: string, opcoes?: RetomarOpcoes<never, never>): Promise<Desfecho | undefined>;
 }
 
 /** Como terminou cada gravação selecionada. */
@@ -62,7 +62,7 @@ export type DesfechoRetomada =
   /** Os bytes continuam gravados: conta uma tentativa. */
   | 'sem-desfecho'
   /**
-   * Outro processo (o usuário) tinha a trava, ou a assumiu no meio desta retomada (`TravaPerdidaError`): sem contar
+   * Outro processo (o usuário) tinha a trava, ou a assumiu no meio desta retomada (`ErroTravaPerdida`): sem contar
    * tentativa, porque quem tem a trava é que decide.
    */
   | 'ocupada'
@@ -80,7 +80,7 @@ export interface ResumoRetomada {
   readonly adiadas: number;
 }
 
-export interface OpcoesRetomada {
+export interface RetomadaOpcoes {
   readonly store: TransmissaoStore;
   /**
    * Empresta o emissor do documento durante `fn`. Com o pool: `(r, fn) => pool.usar(certificadoDe(r), fn)`. O emissor
@@ -111,7 +111,7 @@ export interface OpcoesRetomada {
   /** Veja `JaGuardado`: passado ao `retomar` de cada gravação. */
   readonly jaGuardado?: JaGuardado;
   /** Relógio do prazo da execução. Padrão: o do sistema. */
-  readonly clock?: Relogio;
+  readonly relogio?: Relogio;
 }
 
 /**
@@ -136,12 +136,12 @@ function conferirPolitica(p: PoliticaRetomada): void {
  * execuções não se sobreporem. Se se sobrepuserem, a trava impede duas transmissões ao mesmo tempo e a gravação é
  * conferida de novo antes do `retomar`; o pior caso é uma consulta a mais com os mesmos bytes, nunca outro documento.
  */
-export async function retomarPendentes(opcoes: OpcoesRetomada): Promise<ResumoRetomada> {
+export async function retomarPendentes(opcoes: RetomadaOpcoes): Promise<ResumoRetomada> {
   const politica: PoliticaRetomada = { ...POLITICA_RETOMADA_PADRAO, ...opcoes.politica };
   conferirPolitica(politica);
   if (typeof opcoes.aoAlertar !== 'function') throw new ErroDeConfiguracao('aoAlertar é obrigatório na retomada');
   const { store } = opcoes;
-  const clock = opcoes.clock ?? relogioDoSistema;
+  const clock = opcoes.relogio ?? relogioDoSistema;
   const inicio = clock.agora().getTime();
   const filtro = {
     idadeMaximaMs: politica.idadeMaximaMs,
@@ -200,12 +200,12 @@ export async function retomarPendentes(opcoes: OpcoesRetomada): Promise<ResumoRe
         // Outra execução tentou esta gravação depois da seleção: a vez é dela, e o intervalo da política vale.
         if (antes.tentativas !== r.tentativas) return 'ocupada';
         // A gravação vai junto e é conferida já com a trava: se mudou depois desta leitura, nada é enviado.
-        const o: OpcoesRetomar = {
+        const o: RetomarOpcoes = {
           gravacao: r.gravacao,
           ...(opcoes.aoDecidir === undefined ? {} : { aoDecidir: opcoes.aoDecidir }),
           ...(opcoes.jaGuardado === undefined ? {} : { jaGuardado: opcoes.jaGuardado }),
         };
-        return (await e.retomar(r.ref, o as OpcoesRetomar<never, never>)) ?? 'sem-bytes';
+        return (await e.retomar(r.ref, o as RetomarOpcoes<never, never>)) ?? 'sem-bytes';
       });
       if (typeof res === 'string') return res;
       // NFC-e off-line com o autorizador ainda fora (ADR 0013): nada foi enviado, então não conta tentativa nem alerta.

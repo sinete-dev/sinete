@@ -5,7 +5,7 @@
 
 import type { TProcEvento } from '@sinete/schemas/mdfe/eventos/3.00b';
 import { procEventoMDFeElement } from '@sinete/schemas/mdfe/eventos/3.00b';
-import { DanfeError } from '../errors.ts';
+import { ErroDa } from '../errors.ts';
 import type { Cancelamento } from '../layout/marcas.ts';
 import type { MdfeView } from './mdfe.ts';
 import { decodeAs, parse } from './xml.ts';
@@ -19,18 +19,18 @@ export function cancelamentoMdfe(m: MdfeView, xml: string): Cancelamento {
   const inf = v.eventoMDFe?.infEvento;
   const tpEvento = inf?.tpEvento ?? '';
   if (tpEvento !== '110111') {
-    throw new DanfeError('evento_incompativel', `evento ${tpEvento || 'sem tipo'} não é 110111`, {
+    throw new ErroDa('evento_incompativel', `evento ${tpEvento || 'sem tipo'} não é 110111`, {
       detalhes: { tpEvento, esperado: ['110111'] },
     });
   }
   if (inf?.chMDFe !== m.chave) {
-    throw new DanfeError('evento_incompativel', 'o cancelamento é de outro MDF-e', {
+    throw new ErroDa('evento_incompativel', 'o cancelamento é de outro MDF-e', {
       detalhes: { chave: m.chave, chaveEvento: inf?.chMDFe ?? '' },
     });
   }
   const ret = v.retEventoMDFe?.infEvento;
   if (ret === undefined || !REGISTRADO_MDFE.has(ret.cStat)) {
-    throw new DanfeError('evento_incompativel', 'cancelamento sem retorno de evento registrado', {
+    throw new ErroDa('evento_incompativel', 'cancelamento sem retorno de evento registrado', {
       detalhes: { cStat: ret?.cStat ?? '' },
     });
   }
@@ -41,7 +41,7 @@ export function cancelamentoMdfe(m: MdfeView, xml: string): Cancelamento {
     ret.nSeqEvento === undefined ||
     Number(ret.nSeqEvento) !== Number(inf.nSeqEvento)
   ) {
-    throw new DanfeError('evento_incompativel', 'o retorno do evento não é o deste cancelamento', {
+    throw new ErroDa('evento_incompativel', 'o retorno do evento não é o deste cancelamento', {
       detalhes: {
         chaveRetorno: ret.chMDFe ?? '',
         tpEventoRetorno: ret.tpEvento ?? '',

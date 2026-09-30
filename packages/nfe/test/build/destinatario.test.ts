@@ -5,11 +5,11 @@
  */
 import { describe, expect, test } from 'bun:test';
 import type { Ocorrencia } from '@sinete/core';
-import type { BuildNfeResult, NfeInput } from '../../src/index.ts';
-import { buildNfe } from '../../src/index.ts';
+import type { DadosNfe, ResultadoMontagemNfe } from '../../src/index.ts';
+import { montarNfe } from '../../src/index.ts';
 import { CNPJ_DEST, CNPJ_EMIT, CPF, item, nota, opcoes } from '../helpers/nota.ts';
 
-type Dest = NonNullable<NfeInput['destinatario']>;
+type Dest = NonNullable<DadosNfe['destinatario']>;
 
 const SP = { xLgr: 'RUA', nro: '1', xBairro: 'CENTRO', cMun: '3550308', xMun: 'SAO PAULO', UF: 'SP' } as const;
 const RJ = { xLgr: 'RUA', nro: '1', xBairro: 'CENTRO', cMun: '3304557', xMun: 'RIO DE JANEIRO', UF: 'RJ' } as const;
@@ -24,12 +24,12 @@ const EXTERIOR = {
 /** IE do RJ sintética, com o dígito do roteiro da UF. */
 const IE_RJ = '12345674';
 
-const ocorrencias = (r: BuildNfeResult): readonly Ocorrencia[] => (r.ok ? [] : r.issues);
-const achar = (r: BuildNfeResult, path: string): Ocorrencia | undefined =>
+const ocorrencias = (r: ResultadoMontagemNfe): readonly Ocorrencia[] => (r.ok ? [] : r.ocorrencias);
+const achar = (r: ResultadoMontagemNfe, path: string): Ocorrencia | undefined =>
   ocorrencias(r).find((i) => i.caminho === path);
-const comRegra = (r: BuildNfeResult, regra: string): Ocorrencia | undefined =>
+const comRegra = (r: ResultadoMontagemNfe, regra: string): Ocorrencia | undefined =>
   ocorrencias(r).find((i) => i.mensagem.includes(regra));
-const monta = (extra: Partial<NfeInput>, o = {}): Promise<BuildNfeResult> => buildNfe(nota(extra), opcoes(o));
+const monta = (extra: Partial<DadosNfe>, o = {}): Promise<ResultadoMontagemNfe> => montarNfe(nota(extra), opcoes(o));
 const dest = (d: Record<string, unknown>): { destinatario: Dest } => ({ destinatario: d as Dest });
 
 describe('grupo E: destinatário', () => {
@@ -91,7 +91,7 @@ describe('grupo E: destinatário', () => {
     expect(comRegra(transferencia, 'E12-30')).toBeUndefined();
     // CNPJ alfanumérico: a mesma raiz numérica com letras diferentes é outra empresa.
     const outraAlfanumerica = await monta({
-      emitente: { ...nota().emitente, CNPJ: '12345678DA0164' } as NfeInput['emitente'],
+      emitente: { ...nota().emitente, CNPJ: '12345678DA0164' } as DadosNfe['emitente'],
       ...dest({ CNPJ: '12345678ZA0164', xNome: 'OUTRA', indIEDest: '1', IE: '110042490114', endereco: SP }),
       idDest: '2',
     });
@@ -118,10 +118,10 @@ describe('grupo E: destinatário', () => {
   test('combustível (UFCons): outra UF afasta a E12-30, a UF do emitente afasta a E12-40', async () => {
     const contribuinte = (endereco: object, IE: string): { destinatario: Dest } =>
       dest({ CNPJ: CNPJ_DEST, xNome: 'CLIENTE', indIEDest: '1', IE, endereco });
-    const comb = (UFCons: string): Partial<NfeInput> => {
+    const comb = (UFCons: string): Partial<DadosNfe> => {
       const base = item();
       const especifico = { comb: { cProdANP: '320102001', descANP: 'GASOLINA C COMUM', UFCons } };
-      return { itens: [{ ...base, produto: { ...base.produto, especifico } } as NfeInput['itens'][number]] };
+      return { itens: [{ ...base, produto: { ...base.produto, especifico } } as DadosNfe['itens'][number]] };
     };
     const consumidoEmOutraUf = await monta({ ...contribuinte(SP, '110042490114'), idDest: '2', ...comb('RJ') });
     expect(comRegra(consumidoEmOutraUf, 'E12-30')).toBeUndefined();
@@ -182,8 +182,8 @@ describe('grupo E: destinatário', () => {
   });
 
   test('NFC-e: as regras de 55 e 65 valem, as só do 55 não', async () => {
-    const nfce = (d: Record<string, unknown>): Promise<BuildNfeResult> =>
-      buildNfe(
+    const nfce = (d: Record<string, unknown>): Promise<ResultadoMontagemNfe> =>
+      montarNfe(
         nota({
           modelo: '65',
           ...dest(d),

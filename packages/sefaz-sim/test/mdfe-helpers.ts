@@ -12,8 +12,8 @@ import * as ev from '@sinete/schemas/mdfe/eventos/3.00b';
 import * as serv from '@sinete/schemas/mdfe/servicos/3.00b';
 import { contentTypeSoap12, envelopeSoap12, lerBodySoap } from '@sinete/transport';
 import { montarChaveAcesso } from '@sinete/validators';
-import type { MdfeServicoSim, SyntheticCertificate } from '../src/index.ts';
-import { MDFE_NS, MDFE_SERVICES, SIM_BASE_URL, simTransport, soapAction, wsdlNamespace } from '../src/index.ts';
+import type { CertificadoSintetico, MdfeServicoSim } from '../src/index.ts';
+import { acaoSoap, MDFE_NS, namespaceDoWsdl, SERVICOS_MDFE, transporteSim, URL_BASE_SIM } from '../src/index.ts';
 import type { Harness } from './helpers.ts';
 import { CPF, EMITENTE } from './helpers.ts';
 
@@ -25,16 +25,16 @@ export const RET_MDFE: Readonly<Record<MdfeServicoSim, ElementoRaiz<unknown>>> =
   MDFeRecepcaoEvento: ev.retEventoMDFeElement,
 };
 
-export async function gzipBase64(text: string): Promise<string> {
+export async function comprimirGzipBase64(text: string): Promise<string> {
   const stream = new Blob([new TextEncoder().encode(text)]).stream().pipeThrough(new CompressionStream('gzip'));
   return codificarBase64(new Uint8Array(await new Response(stream).arrayBuffer()));
 }
 
 /** Envelope do pedido do MDF-e; a recepção vai compactada. */
 export async function envelopeMdfe(servico: MdfeServicoSim, payload: string): Promise<string> {
-  const def = MDFE_SERVICES[servico];
-  const dados = def.compactado === true ? await gzipBase64(payload) : payload;
-  return envelopeSoap12(`<mdfeDadosMsg xmlns="${wsdlNamespace(def)}">${dados}</mdfeDadosMsg>`);
+  const def = SERVICOS_MDFE[servico];
+  const dados = def.compactado === true ? await comprimirGzipBase64(payload) : payload;
+  return envelopeSoap12(`<mdfeDadosMsg xmlns="${namespaceDoWsdl(def)}">${dados}</mdfeDadosMsg>`);
 }
 
 /** Envia pelo transporte em processo e devolve o retorno conferido contra o schema oficial. */
@@ -42,20 +42,20 @@ export async function sendMdfe(
   h: Harness,
   servico: MdfeServicoSim,
   payload: string,
-  canal: SyntheticCertificate = h.c.ecpf,
+  canal: CertificadoSintetico = h.c.ecpf,
   bruto = false,
 ): Promise<string> {
-  const transport = simTransport(h.sim, { clientCertificate: canal.der });
+  const transport = transporteSim(h.sim, { certificadoDoCliente: canal.der });
   const res = await transport.enviar({
-    url: h.sim.url(SIM_BASE_URL, servico),
-    cabecalhos: { 'content-type': contentTypeSoap12(soapAction(MDFE_SERVICES[servico])) },
+    url: h.sim.url(URL_BASE_SIM, servico),
+    cabecalhos: { 'content-type': contentTypeSoap12(acaoSoap(SERVICOS_MDFE[servico])) },
     corpo: bruto
-      ? envelopeSoap12(`<mdfeDadosMsg xmlns="${wsdlNamespace(MDFE_SERVICES[servico])}">${payload}</mdfeDadosMsg>`)
+      ? envelopeSoap12(`<mdfeDadosMsg xmlns="${namespaceDoWsdl(SERVICOS_MDFE[servico])}">${payload}</mdfeDadosMsg>`)
       : await envelopeMdfe(servico, payload),
   });
   const body = lerBodySoap(res.texto());
   const holder = lerXml(body).raiz;
-  expect(holder.local).toBe(`${MDFE_SERVICES[servico].operation}Result`);
+  expect(holder.local).toBe(`${SERVICOS_MDFE[servico].operacao}Result`);
   const el = elementosFilhos(holder)[0];
   if (!el) throw new Error(`resposta inesperada: ${body}`);
   const ret = body.slice(el.inicio, el.fim);
@@ -100,7 +100,7 @@ export interface Mdfe {
 }
 
 /** MDF-e rodoviário de carga própria, de MT para SP pelo MS, assinado pelo certificado dado. */
-export async function mdfe(signer: SyntheticCertificate, p: MdfeParams = {}): Promise<Mdfe> {
+export async function mdfe(signer: CertificadoSintetico, p: MdfeParams = {}): Promise<Mdfe> {
   const emit = p.emitente ?? { CPF };
   const serie = p.serie ?? ('CPF' in emit ? 920 : 1);
   const nMDF = p.nMDF ?? 1;
@@ -158,7 +158,11 @@ export async function mdfe(signer: SyntheticCertificate, p: MdfeParams = {}): Pr
   let qr = p.qr === undefined ? `https://dfe-portal.svrs.rs.gov.br/mdfe/qrCode?chMDFe=${chave}&tpAmb=${tpAmb}` : p.qr;
   if (qr !== false && tpEmis === '2' && p.qr === undefined) qr = `${qr}&sign=QUJD`;
   const supl = qr === false ? '' : `<infMDFeSupl><qrCodMDFe>${qr.replace(/&/g, '&amp;')}</qrCodMDFe></infMDFeSupl>`;
-  const xml = await assinarXml(`<MDFe xmlns="${MDFE_NS}">${inf}${supl}</MDFe>`, { id: `MDFe${chave}` }, signer.signer);
+  const xml = await assinarXml(
+    `<MDFe xmlns="${MDFE_NS}">${inf}${supl}</MDFe>`,
+    { id: `MDFe${chave}` },
+    signer.assinador,
+  );
   return { chave, xml };
 }
 
@@ -184,7 +188,7 @@ export interface EventoMdfeParams {
   readonly id?: string;
 }
 
-export async function eventoMdfe(signer: SyntheticCertificate, p: EventoMdfeParams): Promise<string> {
+export async function eventoMdfe(signer: CertificadoSintetico, p: EventoMdfeParams): Promise<string> {
   const nSeq = p.nSeq ?? 1;
   const id = p.id ?? `ID${p.tpEvento}${p.chave}${String(nSeq).padStart(2, '0')}`;
   const autor = p.autor ?? `<CPF>${CPF}</CPF>`;
@@ -192,7 +196,7 @@ export async function eventoMdfe(signer: SyntheticCertificate, p: EventoMdfePara
     `<eventoMDFe xmlns="${MDFE_NS}" versao="3.00"><infEvento Id="${id}"><cOrgao>51</cOrgao><tpAmb>2</tpAmb>${autor}` +
     `<chMDFe>${p.chave}</chMDFe><dhEvento>${p.dhEvento ?? '2026-09-26T10:02:00-03:00'}</dhEvento><tpEvento>${p.tpEvento}</tpEvento>` +
     `<nSeqEvento>${nSeq}</nSeqEvento><detEvento versaoEvento="3.00">${p.det}</detEvento></infEvento></eventoMDFe>`;
-  return assinarXml(xml, { id }, signer.signer);
+  return assinarXml(xml, { id }, signer.assinador);
 }
 
 export const detMdfe = {

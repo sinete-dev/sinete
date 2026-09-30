@@ -1,5 +1,5 @@
 /**
- * Modelo de entrada da NF-e: o que quem emite descreve. O builder (`buildNfe`) transforma isto no objeto tipado do
+ * Modelo de entrada da NF-e: o que quem emite descreve. O builder (`montarNfe`) transforma isto no objeto tipado do
  * `@sinete/schemas` do pacote de liberação vigente, calcula os valores derivados e os totais em decimal exato e
  * confere as regras antes de qualquer serialização.
  *
@@ -727,7 +727,7 @@ export type PisCofinsSt = {
 // ---------------------------------------------------------------------------------------------------------------
 
 /**
- * Classificação do item para IBS/CBS (NT 2025.002): o que o `IbsCbsCalculator` recebe. `CST` e `cClassTrib` vêm do
+ * Classificação do item para IBS/CBS (NT 2025.002): o que o `CalculadoraIbsCbs` recebe. `CST` e `cClassTrib` vêm do
  * cadastro do item (tabela de classificação tributária); o cálculo, as alíquotas e as reduções são da calculadora.
  */
 export interface ClassificacaoIbsCbs {
@@ -955,7 +955,7 @@ export type FinNFe = '1' | '2' | '3' | '4' | '5' | '6';
  */
 export interface Contingencia {
   /**
-   * 6 SVC-AN, 7 SVC-RS; 2 FS-IA; 4 EPEC; 5 FS-DA; 9 off-line, só NFC-e. Para SVC, `tpEmisSvc` do `NfeClient` escolhe pelo
+   * 6 SVC-AN, 7 SVC-RS; 2 FS-IA; 4 EPEC; 5 FS-DA; 9 off-line, só NFC-e. Para SVC, `tpEmisSvc` do `ClienteNfe` escolhe pelo
    * dado da UF.
    */
   readonly tpEmis: '2' | '4' | '5' | '6' | '7' | '9';
@@ -966,7 +966,7 @@ export interface Contingencia {
 }
 
 /** Entrada completa de uma NF-e. */
-export interface NfeInput {
+export interface DadosNfe {
   /**
    * 55 (NF-e, padrão) ou 65 (NFC-e). Na NFC-e mudam os padrões (`indPres` 1, `indFinal` 1, `tpImp` 4), o destinatário
    * fica opcional, o pagamento passa a ser obrigatório e a montagem acrescenta o `infNFeSupl` (QR Code).

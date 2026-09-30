@@ -212,7 +212,7 @@ try {
     await cp(path.join(root, 'packages/cert/test/fixtures/ecnpj-legacy.pfx'), path.join(consumer, 'sintetico.pfx'));
     for (const cmd of nodes) {
       const v = (await $`${cmd} --version`.nothrow().quiet()).stdout.toString().trim();
-      const r = await $`${cmd} node_modules/.bin/sinete doctor --pfx sintetico.pfx --allow-expired --json`
+      const r = await $`${cmd} node_modules/.bin/sinete doctor --pfx sintetico.pfx --aceitar-vencido --json`
         .cwd(consumer)
         .env({ ...env, SINETE_PFX_SENHA: 'sinete-teste' })
         .nothrow()
@@ -220,9 +220,9 @@ try {
       const text = out(r);
       let ok = false;
       try {
-        const report = JSON.parse(r.stdout.toString()) as { checks: { id: string; status: string }[] };
-        const pfx = report.checks.find((c) => c.id === 'pfx');
-        ok = r.exitCode === 0 && (pfx?.status === 'ok' || pfx?.status === 'aviso') && !text.includes('PRIVATE');
+        const report = JSON.parse(r.stdout.toString()) as { verificacoes: { id: string; situacao: string }[] };
+        const pfx = report.verificacoes.find((c) => c.id === 'pfx');
+        ok = r.exitCode === 0 && (pfx?.situacao === 'ok' || pfx?.situacao === 'aviso') && !text.includes('PRIVATE');
       } catch {}
       record(`node ${v} bin sinete doctor`, ok, text);
     }
@@ -237,16 +237,16 @@ try {
     const cli = path.join('node_modules/sinete', bin.bin?.sinete ?? 'sem-bin');
     for (const cmd of nodes) {
       const v = (await $`${cmd} --version`.nothrow().quiet()).stdout.toString().trim();
-      const r = await $`${cmd} ${cli} doctor --pfx sintetico.pfx --allow-expired --json`
+      const r = await $`${cmd} ${cli} doctor --pfx sintetico.pfx --aceitar-vencido --json`
         .cwd(consumer)
         .env({ ...env, SINETE_PFX_SENHA: 'sinete-teste' })
         .nothrow()
         .quiet();
       let ok = false;
       try {
-        const report = JSON.parse(r.stdout.toString()) as { checks: { id: string; status: string }[] };
-        const pfx = report.checks.find((c) => c.id === 'pfx');
-        ok = r.exitCode === 0 && (pfx?.status === 'ok' || pfx?.status === 'aviso') && !out(r).includes('PRIVATE');
+        const report = JSON.parse(r.stdout.toString()) as { verificacoes: { id: string; situacao: string }[] };
+        const pfx = report.verificacoes.find((c) => c.id === 'pfx');
+        ok = r.exitCode === 0 && (pfx?.situacao === 'ok' || pfx?.situacao === 'aviso') && !out(r).includes('PRIVATE');
       } catch {}
       record(`node ${v} bin do guarda-chuva sinete doctor`, ok, out(r));
     }
@@ -354,7 +354,7 @@ try {
     await mkdir(semPeer, { recursive: true });
     await Bun.write(
       path.join(semPeer, 'main.mjs'),
-      toNpm(`import { createNfeEmissor } from '@sinete/emissor/nfe';\nconsole.log(typeof createNfeEmissor);\n`),
+      toNpm(`import { criarEmissorNfe } from '@sinete/emissor/nfe';\nconsole.log(typeof criarEmissorNfe);\n`),
     );
     const rSemPeer = await $`deno run --quiet ${age} main.mjs`.cwd(semPeer).env(denoEnv).nothrow().quiet();
     const textoSemPeer = out(rSemPeer);

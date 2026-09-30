@@ -7,7 +7,7 @@ import { ErroNaoSuportado, ErroRespostaInvalida } from '@sinete/core';
 import { decodificarBase64 } from '@sinete/core/xml';
 
 /** Base64 de um gzip para o texto UTF-8 de dentro. */
-export async function gunzipBase64(b64: string): Promise<string> {
+export async function descomprimirGzipBase64(b64: string): Promise<string> {
   const Ds = (globalThis as { DecompressionStream?: typeof DecompressionStream }).DecompressionStream;
   if (Ds === undefined)
     throw new ErroNaoSuportado('DecompressionStream indisponível nesta runtime; docZip não pode ser lido');

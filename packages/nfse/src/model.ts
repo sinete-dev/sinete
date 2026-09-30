@@ -150,7 +150,7 @@ export interface Substituicao {
   readonly xMotivo?: string;
 }
 
-export interface DpsInput {
+export interface DadosDps {
   /** Série (até 5 dígitos, de `0` a `89999`). */
   readonly serie: string | number;
   /** Número da DPS (1 a 15 dígitos, sem zero à esquerda). */

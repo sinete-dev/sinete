@@ -13,16 +13,16 @@ export type Instante = ReturnType<Relogio['agora']>;
 const UF_OFFSETS: Readonly<Record<string, number>> = fusos.ufs;
 
 /** Deslocamento do horário legal da UF em minutos (`-180` para Brasília). */
-export function offsetDaUf(uf: Uf): number {
+export function deslocamentoDaUf(uf: Uf): number {
   return Object.hasOwn(UF_OFFSETS, uf) ? (UF_OFFSETS[uf] as number) : fusos.padrao;
 }
 
 /** `TDateTimeUTC` do instante no deslocamento dado. */
-export function formatDh(date: Instante, offsetMinutes: number): string {
+export function formatarDh(date: Instante, offsetMinutes: number): string {
   return formatarDataHoraComFuso(date, offsetMinutes);
 }
 
 /** Data civil (`AAAA-MM-DD`) do instante no deslocamento dado. */
 export function dataDe(date: Instante, offsetMinutes: number): string {
-  return formatDh(date, offsetMinutes).slice(0, 10);
+  return formatarDh(date, offsetMinutes).slice(0, 10);
 }

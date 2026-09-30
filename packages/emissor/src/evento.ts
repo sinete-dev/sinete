@@ -20,14 +20,14 @@ export function eventoRegistrado<E, B>(
 }
 
 export function eventoRecusado<E, B>(
-  r: { readonly cStat: string; readonly xMotivo: string; readonly hint?: DicaRejeicao },
+  r: { readonly cStat: string; readonly xMotivo: string; readonly dica?: DicaRejeicao },
   bruto: B,
 ): DesfechoEvento<E, B> {
   return {
     tipo: 'recusado',
     cStat: r.cStat,
     xMotivo: r.xMotivo,
-    ...(r.hint === undefined ? {} : { hint: r.hint }),
+    ...(r.dica === undefined ? {} : { dica: r.dica }),
     bruto,
   };
 }

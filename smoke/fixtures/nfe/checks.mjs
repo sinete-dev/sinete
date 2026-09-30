@@ -1,30 +1,30 @@
 // Verificações do @sinete/nfe compartilhadas por Node, Bun, Deno e Chromium. Devolve a lista de falhas (vazia = ok).
 // Monta uma NF-e sintética em homologação (documentos de exemplo, sem dado real) e confere totais, chave e XML; os
 // data JSON (fusos, vigências, cStat) precisam estar embutidos no bundle. Depois autoriza a nota na SEFAZ simulada em
-// processo (o cliente resolve o endpoint pelos dados do transporte e o redirectToSim troca só a URL). Por fim, IBS/CBS
+// processo (o cliente resolve o endpoint pelos dados do transporte e o redirecionarParaSim troca só a URL). Por fim, IBS/CBS
 // pela calculadora padrão (o motor do @sinete/ibs-cbs com o dataset embarcado, importado sob demanda pelo pacote publicado).
 import { relogioFixo, relogioManual, contextoDeTempo } from '@sinete/core';
 import {
   autorizadorContingencia,
-  buildNfe,
-  createNfeClient,
+  montarNfe,
+  criarClienteNfe,
   carregarDatasetEmbarcado,
   Decimal,
   dec,
-  gunzipBase64,
-  ibsCbsCalculator,
+  descomprimirGzipBase64,
+  calculadoraIbsCbs,
   rotuloDoCaminho,
-  signNfe,
+  assinarNfe,
   TipoPagamento,
   XNOME_HOMOLOGACAO,
 } from '@sinete/nfe';
 import { determinar, aliquotasOficiais, REGRAS, conferirDataset } from '@sinete/nfe/ibs-cbs';
 import {
-  createSefazSim,
-  redirectToSim,
-  SIM_BASE_URL,
-  simTransport,
-  syntheticCertificate,
+  criarSefazSim,
+  redirecionarParaSim,
+  URL_BASE_SIM,
+  transporteSim,
+  certificadoSintetico,
 } from '@sinete/sefaz-sim';
 
 export async function runChecks() {
@@ -64,11 +64,11 @@ export async function runChecks() {
     pagamento: { detPag: [{ tPag: TipoPagamento.PIX_DINAMICO, vPag: '10' }] },
   };
   const time = contextoDeTempo({ emissao: relogioFixo('2026-09-26T10:00:00-03:00') });
-  const r = await buildNfe(nota, { ambiente: 'homologacao', time });
+  const r = await montarNfe(nota, { ambiente: 'homologacao', tempo: time });
   expect('monta', r.ok);
   expect('rótulo do caminho', rotuloDoCaminho('/infNFe/det[2]/prod/xProd') === 'Item 2, Descrição do produto');
   if (r.ok) {
-    const n = r.value;
+    const n = r.valor;
     expect('chave', n.chave.length === 44 && n.chave.startsWith('352609') && n.id === `NFe${n.chave}`);
     expect('pl por vigência', n.pl.pl.startsWith('PL_010f'));
     expect('fuso da UF', n.dhEmi === '2026-09-26T10:00:00-03:00');
@@ -76,29 +76,29 @@ export async function runChecks() {
     expect('homologação', n.infNFe.dest.xNome === XNOME_HOMOLOGACAO);
     expect('xml', n.xml.startsWith('<NFe xmlns="http://www.portalfiscal.inf.br/nfe"><infNFe Id="NFe'));
   }
-  const semDest = await buildNfe({ ...nota, destinatario: undefined }, { ambiente: 'homologacao', time });
-  expect('ocorrências', !semDest.ok && semDest.issues.some((i) => i.code === 'campo_obrigatorio'));
+  const semDest = await montarNfe({ ...nota, destinatario: undefined }, { ambiente: 'homologacao', tempo: time });
+  expect('ocorrências', !semDest.ok && semDest.ocorrencias.some((i) => i.code === 'campo_obrigatorio'));
   expect('contingência por dado', autorizadorContingencia('SP', 'homologacao').autorizador === 'SVC-AN');
   // gzip de "ok" (bytes fixos): DecompressionStream da plataforma
   const gz = 'H4sIAAAAAAAAA8vPBgBH3dx5AgAAAA==';
-  expect('gunzip', (await gunzipBase64(gz)) === 'ok');
+  expect('gunzip', (await descomprimirGzipBase64(gz)) === 'ok');
 
   if (r.ok) {
     const clock = relogioManual('2026-09-26T10:00:00-03:00');
-    const ac = await syntheticCertificate({ clock, role: 'ac' });
-    const titular = await syntheticCertificate({ clock, role: 'titular', cnpj: '11222333000181', issuer: ac });
-    const sim = createSefazSim({ clock });
-    const transport = redirectToSim(simTransport(sim, { clientCertificate: titular.der }), SIM_BASE_URL);
-    const client = createNfeClient({ transport, signer: titular.signer, ambiente: 'homologacao', uf: 'SP', clock });
-    const assinada = await signNfe(r.value, titular.signer);
+    const ac = await certificadoSintetico({ relogio: clock, papel: 'ac' });
+    const titular = await certificadoSintetico({ relogio: clock, papel: 'titular', cnpj: '11222333000181', emissor: ac });
+    const sim = criarSefazSim({ relogio: clock });
+    const transport = redirecionarParaSim(transporteSim(sim, { certificadoDoCliente: titular.der }), URL_BASE_SIM);
+    const client = criarClienteNfe({ transporte: transport, assinador: titular.assinador, ambiente: 'homologacao', uf: 'SP', relogio: clock });
+    const assinada = await assinarNfe(r.valor, titular.assinador);
     const aut = await client.autorizar(assinada);
     expect('autorizada no simulador', aut.tipo === 'autorizado' && aut.valor.nfeProc?.includes(assinada) === true);
-    const consulta = await client.consultar(r.value.chave, assinada);
+    const consulta = await client.consultar(r.valor.chave, assinada);
     expect('consulta confere o digVal', consulta.tipo === 'autorizado' && consulta.valor.digValConfere === true);
     await transport.fechar();
   }
 
-  // IBS/CBS sem calculadora nas opções: o buildNfe usa o ibsCbsCalculator e importa o dataset embarcado na hora.
+  // IBS/CBS sem calculadora nas opções: o montarNfe usa o calculadoraIbsCbs e importa o dataset embarcado na hora.
   const quando = relogioFixo('2026-10-10T12:00:00-03:00');
   const classificado = {
     ...nota,
@@ -115,8 +115,8 @@ export async function runChecks() {
     ],
     pagamento: undefined,
   };
-  const rtc = await buildNfe(classificado, { ambiente: 'homologacao', time: contextoDeTempo({ emissao: quando }) });
-  expect('ibs/cbs pelo motor padrão', rtc.ok && rtc.value.infNFe.total.IBSCBSTot?.gCBS.vCBS === '9.00');
+  const rtc = await montarNfe(classificado, { ambiente: 'homologacao', tempo: contextoDeTempo({ emissao: quando }) });
+  expect('ibs/cbs pelo motor padrão', rtc.ok && rtc.valor.infNFe.total.IBSCBSTot?.gCBS.vCBS === '9.00');
   const ds = await carregarDatasetEmbarcado();
   expect('dataset embarcado sob demanda', typeof ds === 'object' && ds !== null);
   // O subpath @sinete/nfe/ibs-cbs dá o motor e o leitor do dataset sem importar os pacotes do IBS/CBS.
@@ -128,7 +128,7 @@ export async function runChecks() {
   );
   expect('nfe/ibs-cbs: determinação', det.itens[0]?.decidido?.candidato.cClassTrib === '410002');
   const zero = Decimal.of('0');
-  const semBase = await ibsCbsCalculator({ regras: false }).calcular({
+  const semBase = await calculadoraIbsCbs({ regras: false }).calcular({
     nota: {
       fatoGerador: quando.agora(),
       emissao: quando.agora(),
@@ -144,6 +144,6 @@ export async function runChecks() {
       { nItem: 1, CST: '000', cClassTrib: '000001', NCM: '73181500', CFOP: '5102', uTrib: 'UN', qTrib: Decimal.of('1'), vProd: Decimal.of('1'), vDesc: zero, vFrete: zero, vSeg: zero, vOutro: zero, vICMS: zero, vICMSST: zero, vFCP: zero, vFCPST: zero, vIPI: zero, vPIS: zero, vCOFINS: zero, vII: zero, vISSQN: zero },
     ],
   });
-  expect('base ausente vira ocorrência', semBase.issues?.[0]?.code === 'ibscbs_base_ausente');
+  expect('base ausente vira ocorrência', semBase.ocorrencias?.[0]?.code === 'ibscbs_base_ausente');
   return failures;
 }

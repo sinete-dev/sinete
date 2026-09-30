@@ -7,8 +7,8 @@ import { loggerEmMemoria, relogioFixo } from '@sinete/core';
 import { assinarXml } from '@sinete/core/xml';
 import type { PedidoTransporte, RespostaTransporte, Transporte } from '@sinete/transport';
 import { montarChaveAcesso } from '@sinete/validators';
-import type { NfeClient, NfeClientOptions } from '../../src/services/index.ts';
-import { createNfeClient } from '../../src/services/index.ts';
+import type { ClienteNfe, ClienteNfeOpcoes } from '../../src/services/index.ts';
+import { criarClienteNfe } from '../../src/services/index.ts';
 import { generateTestKeys } from '../helpers/test-keys.ts';
 
 export const NFE_NS = 'http://www.portalfiscal.inf.br/nfe';
@@ -184,19 +184,19 @@ export const CLOCK_ISO = '2026-09-10T12:00:00Z';
 
 export function client(
   transport: Transporte,
-  over: Partial<NfeClientOptions> = {},
-): Promise<{ c: NfeClient; logger: ReturnType<typeof loggerEmMemoria>; sleeps: number[] }> {
+  over: Partial<ClienteNfeOpcoes> = {},
+): Promise<{ c: ClienteNfe; logger: ReturnType<typeof loggerEmMemoria>; sleeps: number[] }> {
   return testSigner().then((signer) => {
     const logger = loggerEmMemoria();
     const sleeps: number[] = [];
-    const c = createNfeClient({
-      transport,
-      signer,
+    const c = criarClienteNfe({
+      transporte: transport,
+      assinador: signer,
       ambiente: 'homologacao',
       uf: 'SP',
-      clock: relogioFixo(CLOCK_ISO),
+      relogio: relogioFixo(CLOCK_ISO),
       logger,
-      sleep: async (ms) => {
+      esperar: async (ms) => {
         sleeps.push(ms);
       },
       idLote: () => '42',
@@ -213,7 +213,7 @@ export function mensagem(g: Gravada): string {
   return m[1];
 }
 
-export async function gzipBase64(text: string): Promise<string> {
+export async function comprimirGzipBase64(text: string): Promise<string> {
   const stream = new Blob([text]).stream().pipeThrough(new CompressionStream('gzip'));
   const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
   let bin = '';

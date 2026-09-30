@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test';
-import { NFE_ISSUE_CODES } from '../src/index.ts';
+import { CODIGOS_OCORRENCIA_NFE } from '../src/index.ts';
 import { Issues } from '../src/issues.ts';
 
 test('Issues acumula ocorrências com códigos estáveis', () => {
@@ -9,5 +9,5 @@ test('Issues acumula ocorrências com códigos estáveis', () => {
   i.addAll([{ caminho: 'b', code: 'schema', mensagem: 'n' }]);
   expect(i.empty).toBe(false);
   expect(i.list.map((x) => x.caminho)).toEqual(['a', 'b']);
-  expect(NFE_ISSUE_CODES).toContain('campo_fora_do_pl');
+  expect(CODIGOS_OCORRENCIA_NFE).toContain('campo_fora_do_pl');
 });

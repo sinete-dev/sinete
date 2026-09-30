@@ -5,17 +5,18 @@
 import { describe, expect, test } from 'bun:test';
 import type { Ocorrencia } from '@sinete/core';
 import { contextoDeTempo, relogioFixo } from '@sinete/core';
-import type { BuildNfeResult, NfeInput } from '../../src/index.ts';
-import { buildNfe, conferirEmitenteDoCertificado } from '../../src/index.ts';
+import type { DadosNfe, ResultadoMontagemNfe } from '../../src/index.ts';
+import { conferirEmitenteDoCertificado, montarNfe } from '../../src/index.ts';
 import { CNPJ_DEST, CNPJ_EMIT, CPF, item, nota, opcoes } from '../helpers/nota.ts';
 
-function ocorrencias(r: BuildNfeResult): readonly Ocorrencia[] {
-  return r.ok ? [] : r.issues;
+function ocorrencias(r: ResultadoMontagemNfe): readonly Ocorrencia[] {
+  return r.ok ? [] : r.ocorrencias;
 }
 
-const com = (r: BuildNfeResult, code: string): readonly Ocorrencia[] => ocorrencias(r).filter((i) => i.code === code);
+const com = (r: ResultadoMontagemNfe, code: string): readonly Ocorrencia[] =>
+  ocorrencias(r).filter((i) => i.code === code);
 
-const isento = (UF: 'SP' | 'RJ'): NonNullable<NfeInput['destinatario']> => ({
+const isento = (UF: 'SP' | 'RJ'): NonNullable<DadosNfe['destinatario']> => ({
   CNPJ: CNPJ_DEST,
   xNome: 'DESTINATARIO ISENTO LTDA',
   indIEDest: '2',
@@ -28,10 +29,10 @@ const isento = (UF: 'SP' | 'RJ'): NonNullable<NfeInput['destinatario']> => ({
 describe('série do emitente CNPJ (RV C02-30 e B26-10, rejeições 503 e 244)', () => {
   test('0 a 889 passam; 890 a 999 são recusadas no campo da entrada', async () => {
     for (const serie of [0, 1, 889]) {
-      expect(com(await buildNfe(nota({ serie }), opcoes()), 'serie_invalida')).toEqual([]);
+      expect(com(await montarNfe(nota({ serie }), opcoes()), 'serie_invalida')).toEqual([]);
     }
     for (const serie of [890, 909, 910, 920, 969, 980, 999]) {
-      const [o] = com(await buildNfe(nota({ serie }), opcoes()), 'serie_invalida');
+      const [o] = com(await montarNfe(nota({ serie }), opcoes()), 'serie_invalida');
       expect(o).toMatchObject({ caminho: 'serie', origem: 'entrada' });
       expect(o?.mensagem).toContain('0 a 889');
     }
@@ -40,7 +41,7 @@ describe('série do emitente CNPJ (RV C02-30 e B26-10, rejeições 503 e 244)', 
 
 describe('CST com destinatário contribuinte isento (RV N12-80, rejeição 529)', () => {
   const nf = (
-    icms: NonNullable<NfeInput['itens'][number]['impostos']['icms']>,
+    icms: NonNullable<DadosNfe['itens'][number]['impostos']['icms']>,
     CFOP = '6102',
     UF: 'SP' | 'RJ' = 'RJ',
   ) =>
@@ -54,38 +55,38 @@ describe('CST com destinatário contribuinte isento (RV N12-80, rejeição 529)'
       { CST: '50', orig: '0' },
       { CST: '51', orig: '0' },
     ] as const) {
-      const [o] = com(await buildNfe(nf(icms), opcoes()), 'combinacao_invalida');
+      const [o] = com(await montarNfe(nf(icms), opcoes()), 'combinacao_invalida');
       expect(o).toMatchObject({ caminho: 'itens[0].impostos.icms.CST', origem: 'entrada' });
       expect(o?.mensagem).toContain('529');
     }
   });
 
   test('exceções: CST 50 em conserto ou demonstração; CST 51 interno com destinatário CNPJ ou CPF; outros CST', async () => {
-    expect(com(await buildNfe(nf({ CST: '50', orig: '0' }, '6915'), opcoes()), 'combinacao_invalida')).toEqual([]);
-    expect(com(await buildNfe(nf({ CST: '50', orig: '0' }, '5912', 'SP'), opcoes()), 'combinacao_invalida')).toEqual(
+    expect(com(await montarNfe(nf({ CST: '50', orig: '0' }, '6915'), opcoes()), 'combinacao_invalida')).toEqual([]);
+    expect(com(await montarNfe(nf({ CST: '50', orig: '0' }, '5912', 'SP'), opcoes()), 'combinacao_invalida')).toEqual(
       [],
     );
-    expect(com(await buildNfe(nf({ CST: '51', orig: '0' }, '5102', 'SP'), opcoes()), 'combinacao_invalida')).toEqual(
+    expect(com(await montarNfe(nf({ CST: '51', orig: '0' }, '5102', 'SP'), opcoes()), 'combinacao_invalida')).toEqual(
       [],
     );
-    expect(com(await buildNfe(nf({ CST: '40', orig: '0' }), opcoes()), 'combinacao_invalida')).toEqual([]);
+    expect(com(await montarNfe(nf({ CST: '40', orig: '0' }), opcoes()), 'combinacao_invalida')).toEqual([]);
     // Uma UF autorizou em produção CST 51 interno com destinatário CPF isento: a exceção 3 é critério da UF.
-    const { CNPJ: _, ...semCnpj } = isento('SP') as { CNPJ: string } & NonNullable<NfeInput['destinatario']>;
+    const { CNPJ: _, ...semCnpj } = isento('SP') as { CNPJ: string } & NonNullable<DadosNfe['destinatario']>;
     const cpfIsento = nota({
-      destinatario: { ...semCnpj, CPF, xNome: 'DESTINATARIO ISENTO' } as NonNullable<NfeInput['destinatario']>,
+      destinatario: { ...semCnpj, CPF, xNome: 'DESTINATARIO ISENTO' } as NonNullable<DadosNfe['destinatario']>,
       itens: [item({ produto: { ...item().produto, CFOP: '5102' } }, { CST: '51', orig: '0' })],
     });
-    expect(com(await buildNfe(cpfIsento, opcoes()), 'combinacao_invalida')).toEqual([]);
+    expect(com(await montarNfe(cpfIsento, opcoes()), 'combinacao_invalida')).toEqual([]);
   });
 
   test('destinatário que não é isento não entra na regra', async () => {
     const n = nota({ itens: [item({}, { CST: '50', orig: '0' })] });
-    expect(com(await buildNfe(n, opcoes()), 'combinacao_invalida')).toEqual([]);
+    expect(com(await montarNfe(n, opcoes()), 'combinacao_invalida')).toEqual([]);
   });
 });
 
 describe('vencimento das duplicatas (RV Y09-40, rejeição 853; Y09-20 e Y09-30 ficam para a SEFAZ)', () => {
-  const dups = (...dVenc: (string | undefined)[]): NfeInput =>
+  const dups = (...dVenc: (string | undefined)[]): DadosNfe =>
     nota({
       cobranca: {
         duplicatas: dVenc.map((d, n) => ({
@@ -94,11 +95,11 @@ describe('vencimento das duplicatas (RV Y09-40, rejeição 853; Y09-20 e Y09-30 
         })),
       },
     });
-  const paths = async (n: NfeInput, emissao?: string): Promise<string[]> =>
+  const paths = async (n: DadosNfe, emissao?: string): Promise<string[]> =>
     ocorrencias(
-      await buildNfe(
+      await montarNfe(
         n,
-        emissao === undefined ? opcoes() : { ...opcoes(), time: contextoDeTempo({ emissao: relogioFixo(emissao) }) },
+        emissao === undefined ? opcoes() : { ...opcoes(), tempo: contextoDeTempo({ emissao: relogioFixo(emissao) }) },
       ),
     )
       .filter((i) => i.caminho.startsWith('cobranca.duplicatas'))
@@ -122,10 +123,10 @@ describe('vencimento das duplicatas (RV Y09-40, rejeição 853; Y09-20 e Y09-30 
   });
 
   test('fuso à frente de Brasília (UTC-2): o vencimento no dia de Brasília não é "antes da emissão"', async () => {
-    const r = await buildNfe(dups('2026-09-27'), {
+    const r = await montarNfe(dups('2026-09-27'), {
       ...opcoes(),
-      offsetMinutes: -120,
-      time: contextoDeTempo({ emissao: relogioFixo('2026-09-28T00:30:00-02:00') }),
+      deslocamentoMin: -120,
+      tempo: contextoDeTempo({ emissao: relogioFixo('2026-09-28T00:30:00-02:00') }),
     });
     expect(ocorrencias(r).filter((i) => i.caminho.startsWith('cobranca.duplicatas'))).toEqual([]);
   });
@@ -142,8 +143,8 @@ describe('conferirEmitenteDoCertificado (RV F03 e F03A, rejeições 213 e 227)',
 
   test('e-CPF: CPF diferente é recusado; tipos diferentes ficam para a SEFAZ', () => {
     const base = nota();
-    const { CNPJ: _c, ...resto } = base.emitente as { CNPJ: string } & Omit<NfeInput['emitente'], 'CNPJ'>;
-    const produtor = { ...base, serie: 920, emitente: { ...resto, CPF } as NfeInput['emitente'] };
+    const { CNPJ: _c, ...resto } = base.emitente as { CNPJ: string } & Omit<DadosNfe['emitente'], 'CNPJ'>;
+    const produtor = { ...base, serie: 920, emitente: { ...resto, CPF } as DadosNfe['emitente'] };
     expect(conferirEmitenteDoCertificado(produtor, { cpf: CPF })).toEqual([]);
     expect(conferirEmitenteDoCertificado(produtor, { cpf: '52998224725' })[0]?.mensagem).toContain('227');
     expect(conferirEmitenteDoCertificado(produtor, { cnpj: CNPJ_EMIT })).toEqual([]);

@@ -1,7 +1,7 @@
 /** NFeAutorizacao4 e NFeRetAutorizacao4: grupos A, B, D, E, F e as regras de negócio padrão, na ordem do MOC. */
 import { describe, expect, test } from 'bun:test';
-import type { AutorizacaoContext, SimRejection, SimRule } from '../src/index.ts';
-import { DEFAULT_RULES, NFE_NS } from '../src/index.ts';
+import type { ContextoAutorizacao, RegraSim, RejeicaoSim } from '../src/index.ts';
+import { NFE_NS, REGRAS_PADRAO } from '../src/index.ts';
 import {
   consReciNFe,
   consStatServ,
@@ -27,11 +27,11 @@ describe('autorização síncrona', () => {
     expect(tag(r, 'nProt')).toBe('135260000000001');
     expect(tag(r, 'dhRecbto')).toBe('2026-09-26T10:00:00-03:00');
     expect(tag(r, 'digVal')).toBe(tag(n.xml, 'DigestValue'));
-    const rec = h.sim.inspect.nfe(n.chave);
+    const rec = h.sim.inspecao.nfe(n.chave);
     expect(rec?.situacao).toBe('autorizada');
     // A NF-e guardada é a string recebida, sem reserializar.
     expect(rec?.xml).toBe(n.xml);
-    expect(h.sim.inspect.nfes()).toHaveLength(1);
+    expect(h.sim.inspecao.nfes()).toHaveLength(1);
   });
 
   test('reenvio da mesma NF-e: 204 com o recibo; outra chave com o mesmo número: 539 com a chave e o recibo', async () => {
@@ -65,7 +65,7 @@ describe('autorização síncrona', () => {
       const r = await h.send('NFeAutorizacao', enviNFe([xml]));
       expect([esperado, cStat(r)[1]]).toEqual([esperado, esperado]);
     }
-    expect(h.sim.inspect.nfes()).toHaveLength(0);
+    expect(h.sim.inspecao.nfes()).toHaveLength(0);
   });
 
   test('regras de identificação: 502, 410, 252, 570', async () => {
@@ -84,14 +84,14 @@ describe('autorização síncrona', () => {
 
   test('regras plugáveis: uma regra acrescentada roda depois das padrão, com a mensagem oficial do código', async () => {
     const h0 = await harness();
-    const serie9: SimRule<AutorizacaoContext> = {
+    const serie9: RegraSim<ContextoAutorizacao> = {
       id: 'teste-serie-9',
-      source: 'regra de teste',
-      check: ({ nfe: f }: AutorizacaoContext): SimRejection | undefined =>
+      fonte: 'regra de teste',
+      conferir: ({ nfe: f }: ContextoAutorizacao): RejeicaoSim | undefined =>
         f.serie === '9' ? { cStat: '503' } : undefined,
     };
-    const h = await harness({ rules: { ...DEFAULT_RULES, autorizacao: [...DEFAULT_RULES.autorizacao, serie9] } });
-    expect(h0.sim.config.rules).toBe(DEFAULT_RULES);
+    const h = await harness({ regras: { ...REGRAS_PADRAO, autorizacao: [...REGRAS_PADRAO.autorizacao, serie9] } });
+    expect(h0.sim.configuracao.regras).toBe(REGRAS_PADRAO);
     const r = await h.send('NFeAutorizacao', enviNFe([(await nfe({ serie: 9 })).xml]));
     expect(tags(r, 'xMotivo')[1]).toBe('Rejeição: CNPJ do emitente com Série incompatível');
   });
@@ -123,7 +123,7 @@ describe('autorização síncrona', () => {
     expect(cStat(den)).toEqual(['104', '301']);
     expect(tags(den, 'xMotivo')[1]).toBe('Uso Denegado: Irregularidade fiscal do emitente');
     expect(tag(den, 'nProt')).toMatch(/^13526\d{10}$/);
-    expect(h.sim.inspect.nfe(n.chave)?.situacao).toBe('denegada');
+    expect(h.sim.inspecao.nfe(n.chave)?.situacao).toBe('denegada');
     expect(cStat(await h.send('NFeAutorizacao', enviNFe([n.xml])))[1]).toBe('205');
   });
 
@@ -133,7 +133,7 @@ describe('autorização síncrona', () => {
     expect(cStat(await h.send('NFeAutorizacao', enviNFe([(await nfe({ nNF: 5 })).xml])))[1]).toBe('206');
     const n = await nfe();
     await h.send('NFeAutorizacao', enviNFe([n.xml]));
-    (h.sim.inspect.nfe(n.chave) as { situacao: string }).situacao = 'cancelada';
+    (h.sim.inspecao.nfe(n.chave) as { situacao: string }).situacao = 'cancelada';
     expect(cStat(await h.send('NFeAutorizacao', enviNFe([n.xml])))[1]).toBe('218');
   });
 
@@ -167,7 +167,7 @@ describe('autorização assíncrona', () => {
     const done = await h.send('NFeRetAutorizacao', consReciNFe(nRec));
     expect(cStat(done)).toEqual(['104', '100', '100']);
     expect(tags(done, 'chNFe')).toEqual([a.chave, b.chave]);
-    expect(h.sim.inspect.lote(nRec)?.processedAt).toBe('2026-09-26T10:00:02-03:00');
+    expect(h.sim.inspecao.lote(nRec)?.processadoEm).toBe('2026-09-26T10:00:02-03:00');
     expect(cStat(await h.send('NFeRetAutorizacao', consReciNFe('351000000000999')))).toEqual(['106']);
     expect(cStat(await h.send('NFeRetAutorizacao', consReciNFe('311000000000001')))).toEqual(['248']);
     expect(cStat(await h.send('NFeRetAutorizacao', consReciNFe(nRec, '1')))).toEqual(['252']);
@@ -178,8 +178,8 @@ describe('autorização assíncrona', () => {
     const rec = await h.send('NFeAutorizacao', enviNFe([(await nfe()).xml], '1'));
     const nRec = tag(rec, 'nRec') as string;
     expect(cStat(rec)).toEqual(['103']);
-    await h.sim.settle();
-    expect(h.sim.inspect.lote(nRec)?.protNFe).toHaveLength(1);
+    await h.sim.processarLotes();
+    expect(h.sim.inspecao.lote(nRec)?.protNFe).toHaveLength(1);
     const outro = await h.send('NFeRetAutorizacao', consReciNFe(nRec), { canal: h.c.destinatario });
     expect(cStat(outro)).toEqual(['223']);
   });
@@ -191,7 +191,7 @@ describe('autorização assíncrona', () => {
     const primeiro = tag(await h.send('NFeAutorizacao', enviNFe([a.xml, b.xml], '0')), 'nRec') as string;
     const segundo = tag(await h.send('NFeAutorizacao', enviNFe([a.xml], '0')), 'nRec') as string;
     h.clock.avancar(1000);
-    const settle = h.sim.settle();
+    const settle = h.sim.processarLotes();
     const [r1, r2] = await Promise.all([
       h.send('NFeRetAutorizacao', consReciNFe(primeiro)),
       h.send('NFeRetAutorizacao', consReciNFe(segundo)),
@@ -229,11 +229,11 @@ describe('grupos gerais', () => {
       `<nfeDadosMsg xmlns="${def}"><consStatServ x:a="1" versao="4.00" xmlns="${NFE_NS}"><tpAmb>2</tpAmb></consStatServ>` +
       '</nfeDadosMsg></soap12:Body></soap12:Envelope>';
     const r = await h.raw({
-      path: '/uf/ws/NFeStatusServico4',
-      headers: { 'content-type': 'application/soap+xml; charset=utf-8' },
-      body,
+      caminho: '/uf/ws/NFeStatusServico4',
+      cabecalhos: { 'content-type': 'application/soap+xml; charset=utf-8' },
+      corpo: body,
     });
-    expect(tag(r.body, 'cStat')).toBe('243');
+    expect(tag(r.corpo, 'cStat')).toBe('243');
   });
 
   test('grupo A: 403 sem certificado, 280 de AC, 281 vencido, 282 sem documento; exigirCertificado desligado', async () => {
@@ -250,13 +250,13 @@ describe('grupos gerais', () => {
 
   test('paralisação 108/109 e contingência pela SVC-AN (570 na UF, 713 e 783 na SVC, 114 com a SVC desligada)', async () => {
     const h = await harness();
-    h.sim.setParalisacao('109');
+    h.sim.definirParalisacao('109');
     expect(tag(await h.send('NfeStatusServico', consStatServ()), 'xMotivo')).toBe('Serviço Paralisado sem Previsão');
     const n = await nfe();
     expect(tag(await h.send('NFeAutorizacao', enviNFe([n.xml])), 'xMotivo')).toBe(
       'Rejeição: Serviço Paralisado sem Previsão',
     );
-    h.sim.setParalisacao(undefined);
+    h.sim.definirParalisacao(undefined);
     expect(tag(await h.send('NfeStatusServico', consStatServ()), 'cStat')).toBe('107');
 
     // Sem ativação pela SEFAZ de origem, a SVC responde 114 na consulta status (NT 2013.007 v1.03, K05.1).
@@ -265,7 +265,7 @@ describe('grupos gerais', () => {
       '114',
       'Rejeição: SVC-AN desabilitada pela SEFAZ de Origem',
     ]);
-    h.sim.setContingencia('SVC-AN');
+    h.sim.definirContingencia('SVC-AN');
     expect(tag(await h.send('NfeStatusServico', consStatServ()), 'cStat')).toBe('108');
     expect(tag(await h.send('NfeStatusServico', consStatServ(), { autorizador: 'svc' }), 'verAplic')).toBe(
       'SVC-AN_SINETE_SIM',
@@ -279,7 +279,7 @@ describe('grupos gerais', () => {
     ).toBe('713');
     const nfce = await nfe({ nNF: 3, mod: '65', tpEmis: '6', qrCode: null });
     expect(cStat(await h.send('NFeAutorizacao', enviNFe([nfce.xml]), { autorizador: 'svc' }))[1]).toBe('783');
-    h.sim.setContingencia('SVC-RS');
+    h.sim.definirContingencia('SVC-RS');
     const rs = await nfe({ nNF: 4, tpEmis: '7' });
     const okRs = await h.send('NFeAutorizacao', enviNFe([rs.xml], '0'), { autorizador: 'svc' });
     const nRec = tag(okRs, 'nRec') as string;
@@ -287,7 +287,7 @@ describe('grupos gerais', () => {
     // A UF está paralisada durante a contingência; o recibo da SVC só existe na SVC.
     expect(cStat(await h.send('NFeRetAutorizacao', consReciNFe(nRec)))).toEqual(['108']);
     expect(cStat(await h.send('NFeRetAutorizacao', consReciNFe(nRec), { autorizador: 'svc' }))).toEqual(['104', '100']);
-    h.sim.setContingencia(undefined);
+    h.sim.definirContingencia(undefined);
     expect(tag(await h.send('NfeStatusServico', consStatServ()), 'cStat')).toBe('107');
     expect(cStat(await h.send('NFeRetAutorizacao', consReciNFe(nRec)))).toEqual(['106']);
   });
@@ -300,7 +300,7 @@ describe('grupos gerais', () => {
       return [tag(r, 'cStat'), tag(r, 'xMotivo')];
     };
     // Ativada só para SP: a UF segue em operação, a SVC atende SP e recusa MG.
-    h.sim.setAtivacaoSvc({ situacao: 'ativa' });
+    h.sim.definirAtivacaoSvc({ situacao: 'ativa' });
     expect(tag(await h.send('NfeStatusServico', consStatServ()), 'cStat')).toBe('107');
     expect(await statusSvc()).toEqual(['107', 'Serviço em Operação']);
     expect((await statusSvc('31'))[0]).toBe('114');
@@ -308,7 +308,7 @@ describe('grupos gerais', () => {
     expect(cStat(ok)).toEqual(['104', '100']);
 
     // Em desativação: 113 com a data e a hora no fuso do autorizador, e a recepção ainda aceita até a hora.
-    h.sim.setAtivacaoSvc({ situacao: 'desativando', ate: new Date('2026-09-26T10:15:00-03:00') });
+    h.sim.definirAtivacaoSvc({ situacao: 'desativando', ate: new Date('2026-09-26T10:15:00-03:00') });
     expect(await statusSvc()).toEqual([
       '113',
       'SVC em processo de desativação. SVC será desabilitada para a SEFAZ-SP em 26/09/26 às 10:15 horas',
@@ -324,23 +324,23 @@ describe('grupos gerais', () => {
     ]);
 
     // Desligada: 114 no status e na recepção; o retorno e a consulta da SVC continuam atendendo.
-    h.sim.setAtivacaoSvc({ situacao: 'inativa' });
+    h.sim.definirAtivacaoSvc({ situacao: 'inativa' });
     expect((await statusSvc())[0]).toBe('114');
     expect(cStat(await h.send('NFeAutorizacao', enviNFe([(await nfe({ tpEmis: '6', nNF: 4 })).xml]), svc))).toEqual([
       '114',
     ]);
-    expect(h.sim.inspect.nfes()).toHaveLength(2);
+    expect(h.sim.inspecao.nfes()).toHaveLength(2);
 
-    // setContingencia desfaz o ajuste por UF: ligada, a SVC fica ativa para as UFs atendidas.
-    h.sim.setContingencia('SVC-AN');
+    // definirContingencia desfaz o ajuste por UF: ligada, a SVC fica ativa para as UFs atendidas.
+    h.sim.definirContingencia('SVC-AN');
     expect((await statusSvc('31'))[0]).toBe('107');
-    h.sim.setContingencia(undefined);
+    h.sim.definirContingencia(undefined);
     expect((await statusSvc())[0]).toBe('114');
   });
 
   test('113: a hora sai no horário de Brasília, o da SVC, mesmo com outro fuso na UF simulada', async () => {
-    const h = await harness({ offsetMinutes: -240 });
-    h.sim.setAtivacaoSvc({ situacao: 'desativando', ate: new Date('2026-09-26T10:15:00-03:00') });
+    const h = await harness({ deslocamentoMin: -240 });
+    h.sim.definirAtivacaoSvc({ situacao: 'desativando', ate: new Date('2026-09-26T10:15:00-03:00') });
     const r = await h.send('NfeStatusServico', consStatServ(), { autorizador: 'svc' });
     expect(tag(r, 'xMotivo')).toContain('em 26/09/26 às 10:15 horas');
   });

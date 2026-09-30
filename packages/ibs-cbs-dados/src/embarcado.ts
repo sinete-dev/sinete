@@ -1,5 +1,5 @@
 /**
- * `@sinete/ibs-cbs-dados/bundled`: o dataset embarcado nesta versão do pacote, extraído por `tools/ibs-cbs-dados` das fontes
+ * `@sinete/ibs-cbs-dados/embarcado`: o dataset embarcado nesta versão do pacote, extraído por `tools/ibs-cbs-dados` das fontes
  * oficiais fixadas em `manifesto.fontes`. Entrada separada da principal para que quem carrega dados em runtime de
  * outra origem não leve os ~2 MB de JSON para o bundle.
  */

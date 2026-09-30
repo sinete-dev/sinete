@@ -2,7 +2,7 @@
  * Pool de emissores por certificado, para quem emite por muitos emitentes (ADR 0010, decisão 3).
  *
  * Abrir o PFX e subir o transporte mTLS a cada documento custa caro, e manter um emissor por certificado para sempre
- * segura conexões de emitentes que não emitem mais. O pool guarda cada emissor por `ttlMs` e no máximo `maximo` deles,
+ * segura conexões de emitentes que não emitem mais. O pool guarda cada emissor por `validadeMs` e no máximo `maximo` deles,
  * e fecha o transporte só quando ninguém mais o usa: o empréstimo é por escopo (`usar(cert, fn)`), com contagem
  * explícita, sem `AsyncLocalStorage` (que só existe no Node e no Bun).
  *
@@ -15,30 +15,30 @@ import type { Relogio } from '@sinete/core';
 import { ErroDeConfiguracao, relogioDoSistema } from '@sinete/core';
 import type { CertificadoA1 } from './certificado.ts';
 
-export interface OpcoesPool<E, C = CertificadoA1> {
+export interface PoolOpcoes<E, C = CertificadoA1> {
   /**
-   * Cria o emissor do certificado (em geral `createNfeEmissor({ ...cert, ...comum })`, ou com `certificado:
+   * Cria o emissor do certificado (em geral `criarEmissorNfe({ ...cert, ...comum })`, ou com `certificado:
    * await abrirCertificado(cert)` para vários emissores do mesmo certificado).
    */
-  readonly criar: (cert: C) => Promise<E>;
+  readonly criar: (certificado: C) => Promise<E>;
   /**
    * Identifica o certificado no pool. Padrão, para `CertificadoA1`: o SHA-256 do PFX e da senha. Obrigatória para
    * qualquer outro tipo de certificado.
    */
-  readonly chave?: (cert: C) => string | Promise<string>;
+  readonly chave?: (certificado: C) => string | Promise<string>;
   /**
    * Validade de um emissor no pool, a contar da criação. Padrão: 10 minutos. Conferida a cada empréstimo, para todos os
    * certificados; num pool sem empréstimos, o que venceu só sai no `fechar`.
    */
-  readonly ttlMs?: number;
+  readonly validadeMs?: number;
   /** Certificados no pool ao mesmo tempo; o mais antigo sai primeiro. Padrão: 32. */
   readonly maximo?: number;
-  readonly clock?: Relogio;
+  readonly relogio?: Relogio;
 }
 
 export interface PoolDeEmissores<E, C = CertificadoA1> {
   /** Empresta o emissor do certificado durante `fn`. O transporte só fecha quando nenhum empréstimo está em curso. */
-  usar<T>(cert: C, fn: (emissor: E) => Promise<T>): Promise<T>;
+  usar<T>(certificado: C, fn: (emissor: E) => Promise<T>): Promise<T>;
   /** Fecha todos os emissores, em uso ou não (desligamento). O pool não aceita mais empréstimos. */
   fechar(): Promise<void>;
 }
@@ -70,15 +70,17 @@ async function chaveA1(cert: CertificadoA1): Promise<string> {
  * Cria o pool. `E` é qualquer emissor do pacote (ou qualquer coisa com `fechar`); `C`, o certificado que `criar`
  * recebe (padrão: `CertificadoA1`).
  */
-export function createPoolDeEmissores<E extends { fechar(): Promise<void> }, C = CertificadoA1>(
-  opcoes: OpcoesPool<E, C>,
+export function criarPoolDeEmissores<E extends { fechar(): Promise<void> }, C = CertificadoA1>(
+  opcoes: PoolOpcoes<E, C>,
 ): PoolDeEmissores<E, C> {
   const chaveDe = opcoes.chave ?? ((cert: C): Promise<string> => chaveA1(cert as unknown as CertificadoA1));
-  const ttlMs = opcoes.ttlMs ?? 10 * 60 * 1000;
+  const validadeMs = opcoes.validadeMs ?? 10 * 60 * 1000;
   const maximo = opcoes.maximo ?? 32;
-  if (!Number.isFinite(ttlMs) || ttlMs <= 0) throw new ErroDeConfiguracao(`ttlMs do pool inválido: ${ttlMs}`);
+  if (!Number.isFinite(validadeMs) || validadeMs <= 0) {
+    throw new ErroDeConfiguracao(`validadeMs do pool inválido: ${validadeMs}`);
+  }
   if (!Number.isInteger(maximo) || maximo < 1) throw new ErroDeConfiguracao(`maximo do pool inválido: ${maximo}`);
-  const clock = opcoes.clock ?? relogioDoSistema;
+  const clock = opcoes.relogio ?? relogioDoSistema;
   const entradas = new Map<string, Entrada<E>>();
   /** Todas as entradas ainda abertas, inclusive as aposentadas com empréstimo em curso: o `fechar` fecha todas. */
   const abertas = new Set<Entrada<E>>();
@@ -106,7 +108,7 @@ export function createPoolDeEmissores<E extends { fechar(): Promise<void> }, C =
     // Aposenta as vencidas de qualquer certificado, não só deste: o `Map` está na ordem de criação, então as vencidas
     // estão no começo. Uma em uso só fecha quando o empréstimo terminar.
     for (const [k, e] of entradas) {
-      if (agora - e.criadoEm < ttlMs) break;
+      if (agora - e.criadoEm < validadeMs) break;
       entradas.delete(k);
       aposentar(e);
     }

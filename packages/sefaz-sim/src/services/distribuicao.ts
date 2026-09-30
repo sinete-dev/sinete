@@ -16,11 +16,11 @@ import type {
 } from '@sinete/schemas/nfe/dist-dfe/PL_NFeDistDFe_104';
 import { distDFeIntElement, retDistDFeIntElement } from '@sinete/schemas/nfe/dist-dfe/PL_NFeDistDFe_104';
 import { lerCnpj, lerCpf } from '@sinete/validators';
-import type { RequestContext, Status } from '../context.ts';
+import type { ContextoDoPedido, Status } from '../context.ts';
 import { dh, prelude, status, verAplic } from '../context.ts';
 import { nfeProcXml, procEventoXml, resEventoXml, resNFeXml } from '../docs.ts';
-import { chaveRejection } from '../rules.ts';
-import type { DistDoc, EventoRecord, NfeRecord, SimState } from '../state.ts';
+import { rejeicaoDaChave } from '../rules.ts';
+import type { DocumentoDaDistribuicao, RegistroEvento, RegistroNfe, SimState } from '../state.ts';
 import { docBase, docKey } from '../state.ts';
 import { at, documento, text } from '../xmlutil.ts';
 
@@ -35,7 +35,7 @@ const MANIFESTACOES = new Set(['210200', '210210', '210220', '210240']);
  * que não seja desconhecimento. Quem é destinatário e também `autXML` ou transportador tem acesso completo desde o
  * início, e cada documento chega uma vez só.
  */
-function completoPara(nfe: NfeRecord, key: string): boolean {
+function completoPara(nfe: RegistroNfe, key: string): boolean {
   const { dest, terceiros } = papeis(nfe);
   return terceiros.includes(key) || (key === dest && nfe.liberadaAoDestinatario);
 }
@@ -44,14 +44,14 @@ function completoPara(nfe: NfeRecord, key: string): boolean {
  * Quem recebe a NF-e pela distribuição: destinatário e terceiros (`autXML`, transportador), nunca o próprio emitente
  * (H17), mesmo que ele apareça num desses papéis.
  */
-function papeis(nfe: NfeRecord): { readonly dest: string | undefined; readonly terceiros: readonly string[] } {
+function papeis(nfe: RegistroNfe): { readonly dest: string | undefined; readonly terceiros: readonly string[] } {
   const emit = docKey(nfe.emitente);
   const dest = docKey(nfe.destinatario);
   return { dest: dest === emit ? undefined : dest, terceiros: nfe.terceiros.filter((t) => t !== emit) };
 }
 
 /** Autorização ou denegação: resumo para o destinatário, NF-e completa para `autXML` e transportador. */
-export function distribuirAutorizacao(state: SimState, nfe: NfeRecord): void {
+export function distribuirAutorizacao(state: SimState, nfe: RegistroNfe): void {
   // A distribuição de DF-e é só da NF-e (modelo 55, tabela 5-29 H12); a NFC-e não entra em fila nenhuma.
   if (nfe.mod !== '55') return;
   const { dest, terceiros } = papeis(nfe);
@@ -60,7 +60,7 @@ export function distribuirAutorizacao(state: SimState, nfe: NfeRecord): void {
 }
 
 /** Evento registrado: distribui conforme o autor (emitente ou destinatário). */
-export function distribuirEvento(state: SimState, evento: EventoRecord, nfe: NfeRecord): void {
+export function distribuirEvento(state: SimState, evento: RegistroEvento, nfe: RegistroNfe): void {
   if (nfe.mod !== '55') return;
   const { dest, terceiros } = papeis(nfe);
   const emit = docKey(nfe.emitente) as string;
@@ -83,30 +83,30 @@ export function distribuirEvento(state: SimState, evento: EventoRecord, nfe: Nfe
 
 const nsu = (n: number): string => String(n).padStart(15, '0');
 
-async function gzipBase64(xml: string): Promise<string> {
+async function comprimirGzipBase64(xml: string): Promise<string> {
   const stream = new Blob([xml]).stream().pipeThrough(new CompressionStream('gzip'));
   return codificarBase64(new Uint8Array(await new Response(stream).arrayBuffer()));
 }
 
-async function docZip(d: DistDoc): Promise<retDistDFeInt_loteDistDFeInt_docZip> {
-  return { NSU: nsu(d.nsu), schema: d.schema, $text: await gzipBase64(d.xml) };
+async function docZip(d: DocumentoDaDistribuicao): Promise<retDistDFeInt_loteDistDFeInt_docZip> {
+  return { NSU: nsu(d.nsu), schema: d.schema, $text: await comprimirGzipBase64(d.xml) };
 }
 
 /** NFeDistribuicaoDFe (nfeDistDFeInteresse), no Ambiente Nacional. */
-export async function distribuicao(ctx: RequestContext): Promise<string> {
+export async function distribuicao(ctx: ContextoDoPedido): Promise<string> {
   const pre = prelude(ctx, { roots: [distDFeIntElement], lote: false });
   const root = pre.doc?.raiz;
   const interessadoDoc = documento(root);
   const interessado = docKey(interessadoDoc) ?? '';
-  const fila = ctx.rt.state.distribuicao.get(interessado) ?? [];
-  const ret = async (s: Status, ult: number, docs: readonly DistDoc[] = []): Promise<string> => {
+  const fila = ctx.rt.estado.distribuicao.get(interessado) ?? [];
+  const ret = async (s: Status, ult: number, docs: readonly DocumentoDaDistribuicao[] = []): Promise<string> => {
     const value: retDistDFeInt = {
       versao: '1.01',
-      tpAmb: ctx.rt.config.tpAmb,
+      tpAmb: ctx.rt.configuracao.tpAmb,
       verAplic: verAplic(ctx),
       cStat: s.cStat,
       xMotivo: s.xMotivo,
-      dhResp: dh(ctx, ctx.now),
+      dhResp: dh(ctx, ctx.agora),
       ultNSU: nsu(ult),
       maxNSU: nsu(fila.length),
       ...(docs.length === 0 ? {} : { loteDistDFeInt: { docZip: await Promise.all(docs.map(docZip)) } }),
@@ -115,7 +115,7 @@ export async function distribuicao(ctx: RequestContext): Promise<string> {
   };
   if (!pre.ok) return ret(pre.status, 0);
   // H01 a H05 (MOC 7.0 Visão Geral, tabela 5-29): ambiente, documento válido e raiz do certificado de transmissão.
-  if (text(root, 'tpAmb') !== ctx.rt.config.tpAmb) return ret(status('252'), 0);
+  if (text(root, 'tpAmb') !== ctx.rt.configuracao.tpAmb) return ret(status('252'), 0);
   if (interessadoDoc.CNPJ !== undefined && !lerCnpj(interessadoDoc.CNPJ).ok) return ret(status('489'), 0);
   if (interessadoDoc.CPF !== undefined && !lerCpf(interessadoDoc.CPF).ok) return ret(status('490'), 0);
   const t = ctx.transmissor;
@@ -137,21 +137,21 @@ export async function distribuicao(ctx: RequestContext): Promise<string> {
   return consChNFe(ctx, interessado, text(at(root, 'consChNFe'), 'chNFe') ?? '', fila, ret);
 }
 
-type Ret = (s: Status, ult: number, docs?: readonly DistDoc[]) => Promise<string>;
+type Ret = (s: Status, ult: number, docs?: readonly DocumentoDaDistribuicao[]) => Promise<string>;
 
 async function distNSU(
-  ctx: RequestContext,
+  ctx: ContextoDoPedido,
   interessado: string,
   ult: number,
-  fila: readonly DistDoc[],
+  fila: readonly DocumentoDaDistribuicao[],
   ret: Ret,
 ): Promise<string> {
   if (ult > fila.length) return ret(status('589'), ult);
   // Item 5.7.4.4: sem documentos novos, esperar uma hora antes de consultar de novo (5.7.7.1: consumo indevido, 656).
-  const vazias = ctx.rt.state.ultimaConsultaVazia;
+  const vazias = ctx.rt.estado.ultimaConsultaVazia;
   const ultimaVazia = vazias.get(interessado);
   if (ult === fila.length) {
-    if (ultimaVazia !== undefined && ctx.now - ultimaVazia < ctx.rt.config.intervaloConsumoIndevidoMs) {
+    if (ultimaVazia !== undefined && ctx.agora - ultimaVazia < ctx.rt.configuracao.intervaloConsumoIndevidoMs) {
       return ret(
         status('656', {
           det: 'Deve ser aguardado 1 hora para efetuar nova solicitação caso não existam mais documentos a serem pesquisados',
@@ -159,26 +159,26 @@ async function distNSU(
         ult,
       );
     }
-    vazias.set(interessado, ctx.now);
+    vazias.set(interessado, ctx.agora);
     return ret(status('137'), ult);
   }
   vazias.delete(interessado);
   const docs = fila.slice(ult, ult + 50);
-  return ret(status('138'), (docs.at(-1) as DistDoc).nsu, docs);
+  return ret(status('138'), (docs.at(-1) as DocumentoDaDistribuicao).nsu, docs);
 }
 
 async function consChNFe(
-  ctx: RequestContext,
+  ctx: ContextoDoPedido,
   interessado: string,
   chave: string,
-  fila: readonly DistDoc[],
+  fila: readonly DocumentoDaDistribuicao[],
   ret: Ret,
 ): Promise<string> {
-  const invalida = chaveRejection(chave, ctx.now, ctx.rt.config.offsetMinutes);
+  const invalida = rejeicaoDaChave(chave, ctx.agora, ctx.rt.configuracao.deslocamentoMin);
   if (invalida !== undefined) return ret(status(invalida.cStat), 0);
   // H12: a distribuição é só da NF-e, modelo 55.
   if (chave.slice(20, 22) !== '55') return ret(status('618'), 0);
-  const nfe = ctx.rt.state.nfes.get(chave);
+  const nfe = ctx.rt.estado.nfes.get(chave);
   if (nfe === undefined) return ret(status('217'), 0);
   // H17: o emitente não recebe a própria NF-e (641), mesmo que se liste em autXML ou como transportador.
   if (interessado === docKey(nfe.emitente)) return ret(status('641'), 0);
@@ -194,7 +194,7 @@ async function consChNFe(
   const completo = ehTerceiro || nfe.liberadaAoDestinatario;
   const schema = completo ? PROC_NFE : RES_NFE;
   const naFila = fila.findLast((d) => d.chave === chave && d.schema === schema);
-  const doc: DistDoc = naFila ?? {
+  const doc: DocumentoDaDistribuicao = naFila ?? {
     nsu: 0,
     schema,
     xml: completo ? nfeProcXml(nfe, nfe.prot) : resNFeXml(nfe),

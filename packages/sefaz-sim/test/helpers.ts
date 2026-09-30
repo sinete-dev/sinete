@@ -20,26 +20,26 @@ import * as status from '@sinete/schemas/nfe/status-servico/PL_009q';
 import { contentTypeSoap12, envelopeSoap12, lerBodySoap } from '@sinete/transport';
 import { calcularDvCnpj, montarChaveAcesso } from '@sinete/validators';
 import type {
+  AutorizadorSim,
+  CertificadoSintetico,
+  PedidoSim,
+  RespostaSim,
   SefazSim,
-  SefazSimOptions,
-  SimAutorizador,
-  SimRequest,
-  SimResult,
-  SyntheticCertificate,
+  SefazSimOpcoes,
 } from '../src/index.ts';
 import {
-  createSefazSim,
+  acaoSoap,
+  certificadoSintetico,
+  criarSefazSim,
   NFE_NS,
-  NFE_SERVICES,
-  SIM_BASE_URL,
-  simTransport,
-  soapAction,
-  syntheticCertificate,
-  wsdlNamespace,
+  namespaceDoWsdl,
+  SERVICOS_NFE,
+  transporteSim,
+  URL_BASE_SIM,
 } from '../src/index.ts';
 
 /** Raiz de cada retorno: toda resposta do simulador é conferida contra o schema oficial. */
-export const RET_ROOTS: Readonly<Record<keyof typeof NFE_SERVICES, ElementoRaiz<unknown>>> = {
+export const RET_ROOTS: Readonly<Record<keyof typeof SERVICOS_NFE, ElementoRaiz<unknown>>> = {
   NfeStatusServico: status.retConsStatServElement,
   NFeAutorizacao: PL_010f.retEnviNFeElement,
   NFeRetAutorizacao: PL_010f.retConsReciNFeElement,
@@ -61,17 +61,17 @@ export const IE_EMITENTE = '111111110110';
 export const INICIO = '2026-09-26T10:00:00-03:00';
 
 export interface Certs {
-  readonly ac: SyntheticCertificate;
-  readonly emitente: SyntheticCertificate;
-  readonly destinatario: SyntheticCertificate;
-  readonly terceiro: SyntheticCertificate;
-  readonly servidor: SyntheticCertificate;
+  readonly ac: CertificadoSintetico;
+  readonly emitente: CertificadoSintetico;
+  readonly destinatario: CertificadoSintetico;
+  readonly terceiro: CertificadoSintetico;
+  readonly servidor: CertificadoSintetico;
   /** e-CNPJ do emitente já vencido (291, 281). */
-  readonly vencido: SyntheticCertificate;
+  readonly vencido: CertificadoSintetico;
   /** Titular sem o otherName com o documento (292, 282). */
-  readonly semDocumento: SyntheticCertificate;
+  readonly semDocumento: CertificadoSintetico;
   /** e-CPF (227, 472). */
-  readonly ecpf: SyntheticCertificate;
+  readonly ecpf: CertificadoSintetico;
 }
 
 export const CPF = '11144477735';
@@ -82,17 +82,23 @@ let cached: Promise<Certs> | undefined;
 export function certs(): Promise<Certs> {
   cached ??= (async (): Promise<Certs> => {
     const clock = relogioManual(INICIO);
-    const ac = await syntheticCertificate({ clock, role: 'ac', validDays: 3650 });
-    const titular = (cnpjDoc: string): Promise<SyntheticCertificate> =>
-      syntheticCertificate({ clock, role: 'titular', cnpj: cnpjDoc, issuer: ac });
+    const ac = await certificadoSintetico({ relogio: clock, papel: 'ac', diasDeValidade: 3650 });
+    const titular = (cnpjDoc: string): Promise<CertificadoSintetico> =>
+      certificadoSintetico({ relogio: clock, papel: 'titular', cnpj: cnpjDoc, emissor: ac });
     const [emitente, destinatario, terceiro, servidor, vencido, semDocumento, ecpf] = await Promise.all([
       titular(EMITENTE),
       titular(DESTINATARIO),
       titular(TERCEIRO),
-      syntheticCertificate({ clock, role: 'servidor', issuer: ac }),
-      syntheticCertificate({ clock, role: 'titular', cnpj: EMITENTE, issuer: ac, validDays: -2 }),
-      syntheticCertificate({ clock, role: 'titular', cnpj: EMITENTE, issuer: ac, omitDocumentExtension: true }),
-      syntheticCertificate({ clock, role: 'titular', cpf: CPF, issuer: ac }),
+      certificadoSintetico({ relogio: clock, papel: 'servidor', emissor: ac }),
+      certificadoSintetico({ relogio: clock, papel: 'titular', cnpj: EMITENTE, emissor: ac, diasDeValidade: -2 }),
+      certificadoSintetico({
+        relogio: clock,
+        papel: 'titular',
+        cnpj: EMITENTE,
+        emissor: ac,
+        omitirExtensaoDoDocumento: true,
+      }),
+      certificadoSintetico({ relogio: clock, papel: 'titular', cpf: CPF, emissor: ac }),
     ]);
     return { ac, emitente, destinatario, terceiro, servidor, vencido, semDocumento, ecpf };
   })();
@@ -100,9 +106,9 @@ export function certs(): Promise<Certs> {
 }
 
 export interface SendOptions {
-  readonly autorizador?: SimAutorizador;
+  readonly autorizador?: AutorizadorSim;
   /** Certificado do canal; `null` sem certificado. Padrão: o do harness. */
-  readonly canal?: SyntheticCertificate | null;
+  readonly canal?: CertificadoSintetico | null;
 }
 
 export interface Harness {
@@ -110,18 +116,18 @@ export interface Harness {
   readonly sim: SefazSim;
   readonly c: Certs;
   /** Envia a área de dados pelo transporte em processo e devolve o retorno, conferido contra o schema oficial. */
-  send(servico: keyof typeof NFE_SERVICES, payload: string, options?: SendOptions): Promise<string>;
+  send(servico: keyof typeof SERVICOS_NFE, payload: string, options?: SendOptions): Promise<string>;
   /** Pedido cru ao simulador, sem transporte. */
-  raw(request: Partial<SimRequest> & { readonly path: string }): Promise<SimResult>;
+  raw(pedido: Partial<PedidoSim> & { readonly caminho: string }): Promise<RespostaSim>;
 }
 
 export async function harness(
-  options: Partial<SefazSimOptions> = {},
-  canalPadrao?: SyntheticCertificate,
+  options: Partial<SefazSimOpcoes> = {},
+  canalPadrao?: CertificadoSintetico,
 ): Promise<Harness> {
   const c = await certs();
   const clock = relogioManual(INICIO);
-  const sim = createSefazSim({ clock, ...options });
+  const sim = criarSefazSim({ relogio: clock, ...options });
   const padrao = canalPadrao ?? c.terceiro;
   return {
     clock,
@@ -129,35 +135,35 @@ export async function harness(
     c,
     async send(servico, payload, o = {}): Promise<string> {
       const canal = o.canal === undefined ? padrao : o.canal;
-      const transport = simTransport(sim, canal === null ? {} : { clientCertificate: canal.der });
+      const transport = transporteSim(sim, canal === null ? {} : { certificadoDoCliente: canal.der });
       const res = await transport.enviar({
-        url: sim.url(SIM_BASE_URL, servico, o.autorizador),
-        cabecalhos: { 'content-type': contentTypeSoap12(soapAction(NFE_SERVICES[servico])) },
+        url: sim.url(URL_BASE_SIM, servico, o.autorizador),
+        cabecalhos: { 'content-type': contentTypeSoap12(acaoSoap(SERVICOS_NFE[servico])) },
         corpo: envelope(servico, payload),
       });
       const ret = unwrap(servico, res.texto());
       expect(validarRaiz(RET_ROOTS[servico], ret)).toEqual([]);
       return ret;
     },
-    raw: (request): Promise<SimResult> => sim.handle({ clientCertificate: padrao.der, ...request }),
+    raw: (pedido): Promise<RespostaSim> => sim.atender({ certificadoDoCliente: padrao.der, ...pedido }),
   };
 }
 
 /** Envelope SOAP 1.2 do pedido, como o pacote do documento vai montar. */
-export function envelope(servico: keyof typeof NFE_SERVICES, payload: string): string {
-  const def = NFE_SERVICES[servico];
-  const ns = wsdlNamespace(def);
+export function envelope(servico: keyof typeof SERVICOS_NFE, payload: string): string {
+  const def = SERVICOS_NFE[servico];
+  const ns = namespaceDoWsdl(def);
   const dados = `<nfeDadosMsg xmlns="${ns}">${payload}</nfeDadosMsg>`;
   return envelopeSoap12(
-    def.style === 'operacao' ? `<${def.operation} xmlns="${ns}">${dados}</${def.operation}>` : dados,
+    def.estilo === 'operacao' ? `<${def.operacao} xmlns="${ns}">${dados}</${def.operacao}>` : dados,
   );
 }
 
 /** Retorno (`retEnviNFe`...) de dentro do envelope de resposta, como fatia da string. */
-export function unwrap(servico: keyof typeof NFE_SERVICES, envelopeText: string): string {
+export function unwrap(servico: keyof typeof SERVICOS_NFE, envelopeText: string): string {
   const body = lerBodySoap(envelopeText);
   const doc = lerXml(body);
-  const holder = NFE_SERVICES[servico].style === 'operacao' ? elementosFilhos(doc.raiz)[0] : doc.raiz;
+  const holder = SERVICOS_NFE[servico].estilo === 'operacao' ? elementosFilhos(doc.raiz)[0] : doc.raiz;
   const el = holder && elementosFilhos(holder)[0];
   if (!el) throw new Error(`resposta inesperada: ${body}`);
   return body.slice(el.inicio, el.fim);
@@ -187,7 +193,7 @@ export interface NfeParams {
   readonly destinatario?: string;
   readonly autXML?: readonly string[];
   readonly transportador?: string;
-  readonly signer?: SyntheticCertificate;
+  readonly signer?: CertificadoSintetico;
   /** Estraga a chave: o Id não corresponde aos campos (502). */
   readonly idErrado?: boolean;
   readonly vNF?: string;
@@ -251,7 +257,7 @@ export async function nfe(p: NfeParams = {}): Promise<Nfe> {
     `<vNF>${vNF}</vNF></ICMSTot></total>${transp}<pag><detPag><tPag>01</tPag><vPag>${vNF}</vPag></detPag></pag></infNFe>`;
   // NFC-e: QR Code versão 3 (Manual do DANFE NFC-e 6.0, 4.4): on-line só com chave, versão e ambiente; off-line com
   // dia, valor, destinatário e a assinatura dos parâmetros pelo certificado da nota. Ou o informado.
-  const signer = (p.signer ?? c.emitente).signer;
+  const signer = (p.signer ?? c.emitente).assinador;
   let qrCode = p.qrCode;
   if (mod === '65' && qrCode === undefined) {
     const base = `${chave}|3|${p.tpAmb ?? '2'}`;
@@ -299,7 +305,7 @@ export interface EventoParams {
   readonly tpAmb?: string;
   /** Conteúdo do detEvento (sem o elemento). */
   readonly det: string;
-  readonly signer?: SyntheticCertificate;
+  readonly signer?: CertificadoSintetico;
   readonly id?: string;
 }
 
@@ -317,7 +323,7 @@ export async function evento(p: EventoParams): Promise<string> {
     `<CNPJ>${autor}</CNPJ><chNFe>${p.chave}</chNFe><dhEvento>${p.dhEvento ?? INICIO}</dhEvento>` +
     `<tpEvento>${p.tpEvento}</tpEvento><nSeqEvento>${seq}</nSeqEvento><verEvento>1.00</verEvento>` +
     `<detEvento versao="1.00">${p.det}</detEvento></infEvento></evento>`;
-  return assinarXml(xml, { id }, signer.signer);
+  return assinarXml(xml, { id }, signer.assinador);
 }
 
 export function envEvento(eventos: readonly string[], idLote = '1'): string {
@@ -345,7 +351,7 @@ export interface InutParams {
   readonly serie?: number;
   readonly ano?: string;
   readonly cnpj?: string;
-  readonly signer?: SyntheticCertificate;
+  readonly signer?: CertificadoSintetico;
   readonly idErrado?: boolean;
   readonly cUF?: string;
 }
@@ -363,7 +369,7 @@ export async function inutNFe(p: InutParams): Promise<string> {
     `<inutNFe versao="4.00" xmlns="${NFE_NS}"><infInut Id="${idUsado}"><tpAmb>2</tpAmb><xServ>INUTILIZAR</xServ>` +
     `<cUF>${p.cUF ?? '35'}</cUF><ano>${ano}</ano><CNPJ>${doc}</CNPJ><mod>55</mod><serie>${serie}</serie><nNFIni>${p.ini}</nNFIni>` +
     `<nNFFin>${p.fin}</nNFFin><xJust>NUMERACAO PULADA POR FALHA NO SISTEMA</xJust></infInut></inutNFe>`;
-  return assinarXml(xml, { id: idUsado }, (p.signer ?? c.emitente).signer);
+  return assinarXml(xml, { id: idUsado }, (p.signer ?? c.emitente).assinador);
 }
 
 export function consCad(campo: 'CNPJ' | 'IE' | 'CPF', valor: string, uf = 'SP'): string {

@@ -20,7 +20,7 @@ export type AcaoAgentsMd = 'criado' | 'inserido' | 'atualizado' | 'sem-mudanca';
  * marcadores. Lança se os marcadores estiverem incompletos, repetidos ou fora de ordem, para não apagar texto do
  * integrador.
  */
-export function upsertBloco(atual: string | undefined, bloco: string): { texto: string; acao: AcaoAgentsMd } {
+export function aplicarBloco(atual: string | undefined, bloco: string): { texto: string; acao: AcaoAgentsMd } {
   const novo = bloco.trimEnd();
   if (atual === undefined) return { texto: `${novo}\n`, acao: 'criado' };
   const inicio = atual.indexOf(INICIO_BLOCO);
@@ -56,7 +56,7 @@ export type AcaoSkill = 'criada' | 'atualizada' | 'sem-mudanca' | 'preservada';
  * instalada; um sem o marcador é do integrador (o arquivo inteiro é a skill, então não há trecho seguro para trocar) e
  * fica como está. Apagar a linha do marcador é como o integrador assume a skill.
  */
-export function upsertSkill(atual: string | undefined, skill: string): { texto: string; acao: AcaoSkill } {
+export function aplicarSkill(atual: string | undefined, skill: string): { texto: string; acao: AcaoSkill } {
   const novo = `${skill.trimEnd()}\n`;
   if (atual === undefined) return { texto: novo, acao: 'criada' };
   if (!atual.includes(MARCADOR_SKILL)) return { texto: atual, acao: 'preservada' };

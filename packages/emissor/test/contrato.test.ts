@@ -7,16 +7,16 @@
 import { describe, expect, test } from 'bun:test';
 import { relogioManual } from '@sinete/core';
 import type { AmbienteContrato } from '../src/contrato.ts';
-import { ContratoVioladoError, casosDoContrato } from '../src/contrato.ts';
-import { createBancoMemoria, createMemoriaStore } from '../src/memoria.ts';
+import { casosDoContrato, ErroContratoViolado } from '../src/contrato.ts';
+import { criarBancoMemoria, criarMemoriaStore } from '../src/memoria.ts';
 import type { TransmissaoStore } from '../src/store.ts';
 
 describe('contrato do TransmissaoStore no adaptador em memória, relógio manual', () => {
   const clock = relogioManual('2026-09-27T10:00:00-03:00');
   const casos = casosDoContrato({
     criar: (): AmbienteContrato => {
-      const banco = createBancoMemoria();
-      return { a: createMemoriaStore({ clock, banco }), b: createMemoriaStore({ clock, banco }) };
+      const banco = criarBancoMemoria();
+      return { a: criarMemoriaStore({ relogio: clock, banco }), b: criarMemoriaStore({ relogio: clock, banco }) };
     },
     esperar: async (ms) => {
       clock.avancar(ms);
@@ -32,10 +32,10 @@ describe('contrato do TransmissaoStore no adaptador em memória, relógio do sis
   let fechados = 0;
   const casos = casosDoContrato({
     criar: (): AmbienteContrato => {
-      const banco = createBancoMemoria();
+      const banco = criarBancoMemoria();
       return {
-        a: createMemoriaStore({ banco }),
-        b: createMemoriaStore({ banco }),
+        a: criarMemoriaStore({ banco }),
+        b: criarMemoriaStore({ banco }),
         fechar: async () => {
           fechados++;
         },
@@ -53,9 +53,12 @@ describe('contrato do TransmissaoStore no adaptador em memória, relógio do sis
 function quebrado(defeito: (s: TransmissaoStore) => Partial<TransmissaoStore>): () => AmbienteContrato {
   return () => {
     const clock = relogioManual('2026-09-27T10:00:00-03:00');
-    const banco = createBancoMemoria();
+    const banco = criarBancoMemoria();
     const embrulha = (s: TransmissaoStore): TransmissaoStore => ({ ...s, ...defeito(s) });
-    return { a: embrulha(createMemoriaStore({ clock, banco })), b: embrulha(createMemoriaStore({ clock, banco })) };
+    return {
+      a: embrulha(criarMemoriaStore({ relogio: clock, banco })),
+      b: embrulha(criarMemoriaStore({ relogio: clock, banco })),
+    };
   };
 }
 
@@ -65,8 +68,8 @@ async function reprovados(criar: () => AmbienteContrato): Promise<string[]> {
     try {
       await caso.rodar();
     } catch (e) {
-      expect(e).toBeInstanceOf(ContratoVioladoError);
-      expect((e as ContratoVioladoError).code).toBe('contrato_violado');
+      expect(e).toBeInstanceOf(ErroContratoViolado);
+      expect((e as ErroContratoViolado).code).toBe('contrato_violado');
       nomes.push(caso.nome);
     }
   }
@@ -114,7 +117,7 @@ describe('a suíte reprova adaptadores errados', () => {
   test('bytes que não sobrevivem a outro processo', async () => {
     const r = await reprovados(() => {
       const clock = relogioManual('2026-09-27T10:00:00-03:00');
-      return { a: createMemoriaStore({ clock }), b: createMemoriaStore({ clock }) };
+      return { a: criarMemoriaStore({ relogio: clock }), b: criarMemoriaStore({ relogio: clock }) };
     });
     expect(r).toContain('bytes, id e meta gravados sobrevivem ao processo e a outra leitura');
   });

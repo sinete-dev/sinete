@@ -60,6 +60,6 @@ describe('NFC-e', () => {
     });
     const n = await nfe({ mod: '65' });
     expect(cStat(await h.send('NFeAutorizacao', enviNFe([n.xml])))).toEqual(['104', '781']);
-    expect(h.sim.inspect.nfe(n.chave)).toBeUndefined();
+    expect(h.sim.inspecao.nfe(n.chave)).toBeUndefined();
   });
 });

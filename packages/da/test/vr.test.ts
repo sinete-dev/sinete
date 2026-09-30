@@ -11,7 +11,7 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, 
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import pixelmatch from 'pixelmatch';
-import { toPdf } from '../src/index.ts';
+import { gerarPdf } from '../src/index.ts';
 import { decodePng } from '../src/render/image.ts';
 import { CASES } from './cases.ts';
 import { encodeGrayPng } from './helpers/png.ts';
@@ -50,7 +50,7 @@ function rgba(png: Uint8Array): { width: number; height: number; data: Uint8Arra
 const manifest: Manifest = existsSync(MANIFEST)
   ? (JSON.parse(readFileSync(MANIFEST, 'utf8')) as Manifest)
   : { poppler: '', dpi: DPI, casos: {} };
-const pdfs = new Map(CASES.map((c) => [c.name, toPdf(c.doc())]));
+const pdfs = new Map(CASES.map((c) => [c.name, gerarPdf(c.doc())]));
 const poppler = popplerVersion();
 
 if (UPDATE) {

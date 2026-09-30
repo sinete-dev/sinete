@@ -1,48 +1,55 @@
 /**
  * Regras de negócio plugáveis. Cada serviço aplica, depois dos grupos gerais e da assinatura, a lista de regras do seu
  * tipo na ordem da lista; a primeira que devolver uma rejeição encerra a validação daquele documento. As regras padrão
- * (`DEFAULT_RULES`) são um subconjunto útil do MOC 7.0, cada uma com a origem em `source`. Para trocar, acrescentar ou
- * remover, monte outro `SimRules` a partir de `DEFAULT_RULES`.
+ * (`REGRAS_PADRAO`) são um subconjunto útil do MOC 7.0, cada uma com a origem em `fonte`. Para trocar, acrescentar ou
+ * remover, monte outro `RegrasSim` a partir de `REGRAS_PADRAO`.
  */
 
 import { ehUf, ufPorCUf } from '@sinete/core';
 import { lerChaveAcesso, lerCnpj, lerCpf, lerIe } from '@sinete/validators';
-import type { SimConfig, Svc } from './context.ts';
+import type { ConfiguracaoSim, Svc } from './context.ts';
 import { parametrosDoQrCode } from './nfce.ts';
-import type { SimAutorizador } from './services.ts';
-import type { Contribuinte, Documento, EventoRecord, InutilizacaoRecord, NfeRecord, PendingNfe } from './state.ts';
+import type { AutorizadorSim } from './services.ts';
+import type {
+  Contribuinte,
+  Documento,
+  NfePendente,
+  RegistroEvento,
+  RegistroInutilizacao,
+  RegistroNfe,
+} from './state.ts';
 import { docBase, docKey } from './state.ts';
 import { parseDateTime, yearOf } from './time.ts';
 
 /** Rejeição devolvida por uma regra: o `cStat` e os valores dos marcadores da mensagem oficial. */
-export interface SimRejection {
+export interface RejeicaoSim {
   readonly cStat: string;
-  readonly params?: Readonly<Record<string, string>>;
+  readonly parametros?: Readonly<Record<string, string>>;
 }
 
-export interface SimRule<C> {
+export interface RegraSim<C> {
   /** Identificador da regra no documento de origem (`2B08-20`, `P15-10`). */
   readonly id: string;
   /** Documento e item de origem (`MOC 7.0 Anexo I, item 4.2.1`). */
-  readonly source: string;
-  check(ctx: C): SimRejection | undefined;
+  readonly fonte: string;
+  conferir(contexto: C): RejeicaoSim | undefined;
 }
 
 /** Consultas somente leitura ao estado, para as regras. */
-export interface SimView {
-  readonly config: SimConfig;
+export interface VisaoSim {
+  readonly configuracao: ConfiguracaoSim;
   readonly contingencia: Svc | undefined;
-  nfe(chave: string): NfeRecord | undefined;
-  nfeByNumero(emitente: string, mod: string, serie: string, nNF: string): NfeRecord | undefined;
-  pendenteByNumero(emitente: string, mod: string, serie: string, nNF: string): PendingNfe | undefined;
-  inutilizacaoCom(CNPJ: string, ano: string, mod: string, serie: number, nNF: number): InutilizacaoRecord | undefined;
-  inutilizacoes(): readonly InutilizacaoRecord[];
-  eventos(chave: string): readonly EventoRecord[];
+  nfe(chave: string): RegistroNfe | undefined;
+  nfePorNumero(emitente: string, mod: string, serie: string, nNF: string): RegistroNfe | undefined;
+  pendentePorNumero(emitente: string, mod: string, serie: string, nNF: string): NfePendente | undefined;
+  inutilizacaoCom(CNPJ: string, ano: string, mod: string, serie: number, nNF: number): RegistroInutilizacao | undefined;
+  inutilizacoes(): readonly RegistroInutilizacao[];
+  eventos(chave: string): readonly RegistroEvento[];
   contribuinte(uf: string, ie: string): Contribuinte | undefined;
 }
 
 /** Campos da NF-e usados pelas regras de autorização. */
-export interface NfeFacts {
+export interface FatosNfe {
   readonly id: string;
   readonly cUF: string;
   readonly cNF: string;
@@ -72,15 +79,15 @@ export interface NfeFacts {
   readonly supl?: { readonly qrCode?: string; readonly assinaturaConfere?: boolean };
 }
 
-export interface AutorizacaoContext {
-  readonly nfe: NfeFacts;
+export interface ContextoAutorizacao {
+  readonly nfe: FatosNfe;
   readonly chave: string;
-  readonly autorizador: SimAutorizador;
-  readonly view: SimView;
-  readonly now: number;
+  readonly autorizador: AutorizadorSim;
+  readonly visao: VisaoSim;
+  readonly agora: number;
 }
 
-export interface EventoFacts {
+export interface FatosEvento {
   readonly id: string;
   readonly cOrgao: string;
   readonly tpAmb: string;
@@ -94,14 +101,14 @@ export interface EventoFacts {
   readonly det: Readonly<Record<string, string>>;
 }
 
-export interface EventoContext {
-  readonly evento: EventoFacts;
-  readonly autorizador: SimAutorizador;
-  readonly view: SimView;
-  readonly now: number;
+export interface ContextoEvento {
+  readonly evento: FatosEvento;
+  readonly autorizador: AutorizadorSim;
+  readonly visao: VisaoSim;
+  readonly agora: number;
 }
 
-export interface InutilizacaoFacts {
+export interface FatosInutilizacao {
   readonly id: string;
   readonly tpAmb: string;
   readonly cUF: string;
@@ -113,22 +120,22 @@ export interface InutilizacaoFacts {
   readonly nNFFin: string;
 }
 
-export interface InutilizacaoContext {
-  readonly inut: InutilizacaoFacts;
-  readonly view: SimView;
-  readonly now: number;
+export interface ContextoInutilizacao {
+  readonly inut: FatosInutilizacao;
+  readonly visao: VisaoSim;
+  readonly agora: number;
 }
 
-export interface SimRules {
-  readonly autorizacao: readonly SimRule<AutorizacaoContext>[];
-  readonly evento: readonly SimRule<EventoContext>[];
-  readonly inutilizacao: readonly SimRule<InutilizacaoContext>[];
+export interface RegrasSim {
+  readonly autorizacao: readonly RegraSim<ContextoAutorizacao>[];
+  readonly evento: readonly RegraSim<ContextoEvento>[];
+  readonly inutilizacao: readonly RegraSim<ContextoInutilizacao>[];
 }
 
 const ANEXO_I = 'MOC 7.0 Anexo I';
 const VISAO_GERAL = 'MOC 7.0 Visão Geral';
-const reject = (cStat: string, params?: Readonly<Record<string, string>>): SimRejection =>
-  params === undefined ? { cStat } : { cStat, params };
+const reject = (cStat: string, params?: Readonly<Record<string, string>>): RejeicaoSim =>
+  params === undefined ? { cStat } : { cStat, parametros: params };
 
 const EMITENTE_EVENTOS = new Set(['110110', '110111', '110112']);
 const CANCELAMENTOS = new Set(['110111', '110112']);
@@ -142,9 +149,9 @@ const CONCLUSIVAS = new Set(['210200', '210220', '210240']);
  * Contribuinte do emitente no cadastro simulado: `null` quando a regra não se aplica (sem IE, ou cadastro sem nenhum
  * contribuinte da UF do emitente), `undefined` quando a IE não está cadastrada.
  */
-function cadastroDoEmitente(nfe: NfeFacts, view: SimView): Contribuinte | undefined | null {
+function cadastroDoEmitente(nfe: FatosNfe, view: VisaoSim): Contribuinte | undefined | null {
   const ie = nfe.emitente.IE;
-  if (ie === undefined || !view.config.cadastro.some((c) => c.UF === nfe.emitente.UF)) return null;
+  if (ie === undefined || !view.configuracao.cadastro.some((c) => c.UF === nfe.emitente.UF)) return null;
   return view.contribuinte(nfe.emitente.UF, ie);
 }
 
@@ -152,11 +159,11 @@ function aamm(dhEmi: string): string {
   return `${dhEmi.slice(2, 4)}${dhEmi.slice(5, 7)}`;
 }
 
-const autorizacao: SimRule<AutorizacaoContext>[] = [
+const autorizacao: RegraSim<ContextoAutorizacao>[] = [
   {
     id: 'A03-10',
-    source: `${ANEXO_I}, item 4.2.1 (A. Dados da NF-e)`,
-    check({ nfe, chave }: AutorizacaoContext): SimRejection | undefined {
+    fonte: `${ANEXO_I}, item 4.2.1 (A. Dados da NF-e)`,
+    conferir({ nfe, chave }: ContextoAutorizacao): RejeicaoSim | undefined {
       const emit = (nfe.emitente.CNPJ ?? `000${nfe.emitente.CPF ?? ''}`).padStart(14, '0');
       const esperado =
         `${nfe.cUF}${aamm(nfe.dhEmi)}${emit}${nfe.mod.padStart(2, '0')}${nfe.serie.padStart(3, '0')}` +
@@ -167,26 +174,26 @@ const autorizacao: SimRule<AutorizacaoContext>[] = [
   },
   {
     id: 'B02-10',
-    source: `${ANEXO_I}, item 4.2.1 (B. Identificação da NF-e)`,
-    check: ({ nfe, view }: AutorizacaoContext): SimRejection | undefined =>
-      view.config.cUFsAtendidas.includes(nfe.cUF) ? undefined : reject('226'),
+    fonte: `${ANEXO_I}, item 4.2.1 (B. Identificação da NF-e)`,
+    conferir: ({ nfe, visao: view }: ContextoAutorizacao): RejeicaoSim | undefined =>
+      view.configuracao.cUFsAtendidas.includes(nfe.cUF) ? undefined : reject('226'),
   },
   {
     id: 'B11-10',
-    source: `${ANEXO_I}, item 4.2.1; NFC-e só de saída (tpNF 1)`,
-    check: ({ nfe }: AutorizacaoContext): SimRejection | undefined =>
+    fonte: `${ANEXO_I}, item 4.2.1; NFC-e só de saída (tpNF 1)`,
+    conferir: ({ nfe }: ContextoAutorizacao): RejeicaoSim | undefined =>
       nfe.mod === '65' && nfe.ide !== undefined && nfe.ide.tpNF !== '1' ? reject('706') : undefined,
   },
   {
     id: 'B11a-10',
-    source: `${ANEXO_I}, item 4.2.1; NFC-e só em operação interna (idDest 1)`,
-    check: ({ nfe }: AutorizacaoContext): SimRejection | undefined =>
+    fonte: `${ANEXO_I}, item 4.2.1; NFC-e só em operação interna (idDest 1)`,
+    conferir: ({ nfe }: ContextoAutorizacao): RejeicaoSim | undefined =>
       nfe.mod === '65' && nfe.ide !== undefined && nfe.ide.idDest !== '1' ? reject('707') : undefined,
   },
   {
     id: 'B21-10',
-    source: `${ANEXO_I}, item 4.2.1; NFC-e com tpImp 4 ou 5 (DANFC-e)`,
-    check({ nfe }: AutorizacaoContext): SimRejection | undefined {
+    fonte: `${ANEXO_I}, item 4.2.1; NFC-e com tpImp 4 ou 5 (DANFC-e)`,
+    conferir({ nfe }: ContextoAutorizacao): RejeicaoSim | undefined {
       if (nfe.ide === undefined) return undefined;
       const nfceImp = nfe.ide.tpImp === '4' || nfe.ide.tpImp === '5';
       if (nfe.mod === '65') return nfceImp ? undefined : reject('709');
@@ -196,40 +203,40 @@ const autorizacao: SimRule<AutorizacaoContext>[] = [
   },
   {
     id: 'B22-10',
-    source: `${ANEXO_I}, item 4.2.1; contingência off-line (tpEmis 9) é só da NFC-e`,
-    check: ({ nfe }: AutorizacaoContext): SimRejection | undefined =>
+    fonte: `${ANEXO_I}, item 4.2.1; contingência off-line (tpEmis 9) é só da NFC-e`,
+    conferir: ({ nfe }: ContextoAutorizacao): RejeicaoSim | undefined =>
       nfe.mod === '55' && nfe.tpEmis === '9' ? reject('711') : undefined,
   },
   {
     id: 'B22-30',
-    source: `${ANEXO_I}, item 4.2.1; tpEmis 3, 6 ou 7 só na SVC`,
-    check: ({ nfe, autorizador }: AutorizacaoContext): SimRejection | undefined =>
+    fonte: `${ANEXO_I}, item 4.2.1; tpEmis 3, 6 ou 7 só na SVC`,
+    conferir: ({ nfe, autorizador }: ContextoAutorizacao): RejeicaoSim | undefined =>
       autorizador === 'uf' && ['3', '6', '7'].includes(nfe.tpEmis) ? reject('570') : undefined,
   },
   {
     id: 'B22-60',
-    source: `${ANEXO_I}, item 4.2.1; na SVC, tpEmis 6 (SVC-AN) ou 7 (SVC-RS)`,
-    check({ nfe, autorizador, view }: AutorizacaoContext): SimRejection | undefined {
+    fonte: `${ANEXO_I}, item 4.2.1; na SVC, tpEmis 6 (SVC-AN) ou 7 (SVC-RS)`,
+    conferir({ nfe, autorizador, visao: view }: ContextoAutorizacao): RejeicaoSim | undefined {
       if (autorizador !== 'svc') return undefined;
       return nfe.tpEmis === (view.contingencia === 'SVC-RS' ? '7' : '6') ? undefined : reject('713');
     },
   },
   {
     id: 'B22-70',
-    source: `${ANEXO_I}, item 4.2.1; NFC-e não é autorizada pela SVC`,
-    check: ({ nfe, autorizador }: AutorizacaoContext): SimRejection | undefined =>
+    fonte: `${ANEXO_I}, item 4.2.1; NFC-e não é autorizada pela SVC`,
+    conferir: ({ nfe, autorizador }: ContextoAutorizacao): RejeicaoSim | undefined =>
       autorizador === 'svc' && nfe.mod === '65' ? reject('783') : undefined,
   },
   {
     id: 'B24-10',
-    source: `${ANEXO_I}, item 4.2.1`,
-    check: ({ nfe, view }: AutorizacaoContext): SimRejection | undefined =>
-      nfe.tpAmb === view.config.tpAmb ? undefined : reject('252'),
+    fonte: `${ANEXO_I}, item 4.2.1`,
+    conferir: ({ nfe, visao: view }: ContextoAutorizacao): RejeicaoSim | undefined =>
+      nfe.tpAmb === view.configuracao.tpAmb ? undefined : reject('252'),
   },
   {
     id: 'B25-20',
-    source: `${ANEXO_I}, item 4.2.1 (B25-20, B25a-10); NT 2025.002 v1.51, B25b-20 (NFC-e presencial: indPres 1, 4 ou 5)`,
-    check({ nfe }: AutorizacaoContext): SimRejection | undefined {
+    fonte: `${ANEXO_I}, item 4.2.1 (B25-20, B25a-10); NT 2025.002 v1.51, B25b-20 (NFC-e presencial: indPres 1, 4 ou 5)`,
+    conferir({ nfe }: ContextoAutorizacao): RejeicaoSim | undefined {
       const ide = nfe.ide;
       if (nfe.mod !== '65' || ide === undefined) return undefined;
       if (ide.finNFe !== '1') return reject('715');
@@ -239,8 +246,8 @@ const autorizacao: SimRule<AutorizacaoContext>[] = [
   },
   {
     id: 'ZX01-10',
-    source: `${ANEXO_I}, item 4.2.1 (ZX01-10 e ZX02-10): infNFeSupl só na NFC-e, e nela o QR Code é obrigatório`,
-    check({ nfe }: AutorizacaoContext): SimRejection | undefined {
+    fonte: `${ANEXO_I}, item 4.2.1 (ZX01-10 e ZX02-10): infNFeSupl só na NFC-e, e nela o QR Code é obrigatório`,
+    conferir({ nfe }: ContextoAutorizacao): RejeicaoSim | undefined {
       if (nfe.supl === undefined) return undefined;
       if (nfe.mod === '55') return nfe.supl.qrCode === undefined ? undefined : reject('393');
       return nfe.supl.qrCode === undefined ? reject('394') : undefined;
@@ -248,15 +255,15 @@ const autorizacao: SimRule<AutorizacaoContext>[] = [
   },
   {
     id: 'ZX02-222',
-    source:
+    fonte:
       'NT 2025.001 v1.03, regras ZX02-222 a ZX02-338 (QR Code versões 2 e 3; o hash da versão 2 com o CSC não é conferido)',
-    check({ nfe, chave }: AutorizacaoContext): SimRejection | undefined {
+    conferir({ nfe, chave }: ContextoAutorizacao): RejeicaoSim | undefined {
       const qr = nfe.supl?.qrCode;
       if (nfe.mod !== '65' || qr === undefined) return undefined;
       const p = parametrosDoQrCode(qr);
       if (p === undefined) return undefined;
       const [chQr, versao, tpAmb] = p;
-      const divergente = (param: string): SimRejection => reject('397', { Param: param });
+      const divergente = (param: string): RejeicaoSim => reject('397', { Param: param });
       if (chQr === undefined || chQr === '') return reject('396', { Param: 'chNFe' });
       if (chQr !== chave) return divergente('chNFe');
       if (versao !== '2' && versao !== '3') return reject('398', { Param: versao ?? '' });
@@ -286,8 +293,8 @@ const autorizacao: SimRule<AutorizacaoContext>[] = [
   },
   {
     id: 'C17',
-    source: `${ANEXO_I}, item 4.2.1 (C17-10, C17-20 e C17-30)`,
-    check({ nfe }: AutorizacaoContext): SimRejection | undefined {
+    fonte: `${ANEXO_I}, item 4.2.1 (C17-10, C17-20 e C17-30)`,
+    conferir({ nfe }: ContextoAutorizacao): RejeicaoSim | undefined {
       const ie = nfe.emitente.IE;
       // O PL_010f deixa emit/IE opcional no schema; a regra de negócio exige.
       if (ie === undefined || /^0*$/.test(ie)) return reject('229');
@@ -303,8 +310,8 @@ const autorizacao: SimRule<AutorizacaoContext>[] = [
   {
     // 1C17-10 a 1C17-34: só quando o cadastro simulado tem contribuintes da UF do emitente.
     id: '1C17',
-    source: `${ANEXO_I}, item 4.2.1 (1. Banco de Dados: Emitente), regras 1C17-10, 1C17-20, 1C17-30 e 1C17-34`,
-    check({ nfe, view }: AutorizacaoContext): SimRejection | undefined {
+    fonte: `${ANEXO_I}, item 4.2.1 (1. Banco de Dados: Emitente), regras 1C17-10, 1C17-20, 1C17-30 e 1C17-34`,
+    conferir({ nfe, visao: view }: ContextoAutorizacao): RejeicaoSim | undefined {
       const c = cadastroDoEmitente(nfe, view);
       if (c === null) return undefined;
       if (c === undefined) return reject('230');
@@ -315,23 +322,23 @@ const autorizacao: SimRule<AutorizacaoContext>[] = [
   },
   {
     id: '2B08',
-    source: `${ANEXO_I}, item 4.2.1 (2. Banco de Dados: NF-e), regras 2B08-10 a 2B08-50`,
-    check({ nfe, chave, view }: AutorizacaoContext): SimRejection | undefined {
+    fonte: `${ANEXO_I}, item 4.2.1 (2. Banco de Dados: NF-e), regras 2B08-10 a 2B08-50`,
+    conferir({ nfe, chave, visao: view }: ContextoAutorizacao): RejeicaoSim | undefined {
       const emit = docKey(nfe.emitente) ?? '';
-      const existing = view.nfeByNumero(emit, nfe.mod, nfe.serie, nfe.nNF);
+      const existing = view.nfePorNumero(emit, nfe.mod, nfe.serie, nfe.nNF);
       if (existing !== undefined) {
         if (existing.chave !== chave) return reject('539', { chNFe: existing.chave, nRec: existing.nRec });
         if (existing.situacao === 'cancelada') return reject('218', { nRec: existing.nRec });
         if (existing.situacao === 'denegada') return reject('205', { nRec: existing.nRec });
         return reject('204', { nRec: existing.nRec });
       }
-      return view.pendenteByNumero(emit, nfe.mod, nfe.serie, nfe.nNF) === undefined ? undefined : reject('635');
+      return view.pendentePorNumero(emit, nfe.mod, nfe.serie, nfe.nNF) === undefined ? undefined : reject('635');
     },
   },
   {
     id: '3B08-100',
-    source: `${ANEXO_I}, item 4.2.1 (3. Banco de Dados: Inutilização; o ano da inutilização contra o AA da chave)`,
-    check({ nfe, chave, view }: AutorizacaoContext): SimRejection | undefined {
+    fonte: `${ANEXO_I}, item 4.2.1 (3. Banco de Dados: Inutilização; o ano da inutilização contra o AA da chave)`,
+    conferir({ nfe, chave, visao: view }: ContextoAutorizacao): RejeicaoSim | undefined {
       const cnpj = nfe.emitente.CNPJ;
       if (cnpj === undefined) return undefined;
       const ano = chave.slice(2, 4);
@@ -341,8 +348,8 @@ const autorizacao: SimRule<AutorizacaoContext>[] = [
   {
     // Denegação por último: a NF-e passou em todas as rejeições e fica registrada como denegada, com protocolo.
     id: '1C17-40',
-    source: `${ANEXO_I}, item 4.2.1 (1. Banco de Dados: Emitente); NT 2023.002 v1.00, item 6 (a NFC-e não é denegada: 1C17-38, rejeição 781)`,
-    check({ nfe, view }: AutorizacaoContext): SimRejection | undefined {
+    fonte: `${ANEXO_I}, item 4.2.1 (1. Banco de Dados: Emitente); NT 2023.002 v1.00, item 6 (a NFC-e não é denegada: 1C17-38, rejeição 781)`,
+    conferir({ nfe, visao: view }: ContextoAutorizacao): RejeicaoSim | undefined {
       if (cadastroDoEmitente(nfe, view)?.situacao !== 'irregular') return undefined;
       return nfe.mod === '65' ? reject('781') : reject('301');
     },
@@ -352,10 +359,10 @@ const autorizacao: SimRule<AutorizacaoContext>[] = [
 // ---------- eventos (MOC 7.0 Visão Geral, itens 5.8 a 5.11) ----------
 
 /** J02a a J02g e P12-10 a P12-34: validação da chave de acesso, na ordem do MOC. */
-export function chaveRejection(chave: string, now: number, offsetMinutes: number): SimRejection | undefined {
+export function rejeicaoDaChave(chave: string, agora: number, deslocamentoMin: number): RejeicaoSim | undefined {
   const r = lerChaveAcesso(chave);
   if (r.ok) {
-    if (Number(r.valor.aamm.slice(0, 2)) > yearOf(now, offsetMinutes) % 100) return reject('615');
+    if (Number(r.valor.aamm.slice(0, 2)) > yearOf(agora, deslocamentoMin) % 100) return reject('615');
     // O parser aceita a chave de qualquer DF-e (CT-e 57, MDF-e 58...); aqui só NF-e e NFC-e (J02e, P12-30).
     return r.valor.mod === '55' || r.valor.mod === '65' ? undefined : reject('618');
   }
@@ -373,17 +380,17 @@ export function chaveRejection(chave: string, now: number, offsetMinutes: number
   return reject(byIssue[r.erro.code] ?? '236');
 }
 
-function nfeDo(ctx: EventoContext): NfeRecord | undefined {
-  return ctx.view.nfe(ctx.evento.chNFe);
+function nfeDo(ctx: ContextoEvento): RegistroNfe | undefined {
+  return ctx.visao.nfe(ctx.evento.chNFe);
 }
 
 const TOLERANCIA_MS = 5 * 60_000;
 
-const evento: SimRule<EventoContext>[] = [
+const evento: RegraSim<ContextoEvento>[] = [
   {
     id: 'P07-10',
-    source: `${VISAO_GERAL}, tabela 5-35`,
-    check({ evento: e }: EventoContext): SimRejection | undefined {
+    fonte: `${VISAO_GERAL}, tabela 5-35`,
+    conferir({ evento: e }: ContextoEvento): RejeicaoSim | undefined {
       const esperado = `ID${e.tpEvento}${e.chNFe}${e.nSeqEvento.padStart(2, '0')}`;
       return e.id === esperado ? undefined : reject('572');
     },
@@ -391,38 +398,38 @@ const evento: SimRule<EventoContext>[] = [
   {
     // Cancelamento, CC-e e cancelamento por substituição vão para a UF; manifestação vai para o AN (cOrgao 91).
     id: 'P08-10',
-    source: `${VISAO_GERAL}, tabela 5-35`,
-    check({ evento: e, autorizador, view }: EventoContext): SimRejection | undefined {
+    fonte: `${VISAO_GERAL}, tabela 5-35`,
+    conferir({ evento: e, autorizador, visao: view }: ContextoEvento): RejeicaoSim | undefined {
       const orgao = autorizador === 'an' ? '91' : e.chNFe.slice(0, 2);
       const doOrgao = autorizador === 'an' ? MANIFESTACOES.has(e.tpEvento) : EMITENTE_EVENTOS.has(e.tpEvento);
-      const atende = autorizador === 'an' || view.config.cUFsAtendidas.includes(e.cOrgao);
+      const atende = autorizador === 'an' || view.configuracao.cUFsAtendidas.includes(e.cOrgao);
       return e.cOrgao === orgao && doOrgao && atende ? undefined : reject('250');
     },
   },
   {
     id: 'P09-10',
-    source: `${VISAO_GERAL}, tabela 5-35`,
-    check: ({ evento: e, view }: EventoContext): SimRejection | undefined =>
-      e.tpAmb === view.config.tpAmb ? undefined : reject('252'),
+    fonte: `${VISAO_GERAL}, tabela 5-35`,
+    conferir: ({ evento: e, visao: view }: ContextoEvento): RejeicaoSim | undefined =>
+      e.tpAmb === view.configuracao.tpAmb ? undefined : reject('252'),
   },
   {
     id: 'P10-10',
-    source: `${VISAO_GERAL}, tabela 5-35 (P10-10 e P11-10)`,
-    check({ evento: e }: EventoContext): SimRejection | undefined {
+    fonte: `${VISAO_GERAL}, tabela 5-35 (P10-10 e P11-10)`,
+    conferir({ evento: e }: ContextoEvento): RejeicaoSim | undefined {
       if (e.autor.CNPJ !== undefined) return lerCnpj(e.autor.CNPJ).ok ? undefined : reject('489');
       return lerCpf(e.autor.CPF ?? '').ok ? undefined : reject('490');
     },
   },
   {
     id: 'P12-10',
-    source: `${VISAO_GERAL}, tabela 5-35 (P12-10 a P12-34)`,
-    check: ({ evento: e, now, view }: EventoContext): SimRejection | undefined =>
-      chaveRejection(e.chNFe, now, view.config.offsetMinutes),
+    fonte: `${VISAO_GERAL}, tabela 5-35 (P12-10 a P12-34)`,
+    conferir: ({ evento: e, agora: now, visao: view }: ContextoEvento): RejeicaoSim | undefined =>
+      rejeicaoDaChave(e.chNFe, now, view.configuracao.deslocamentoMin),
   },
   {
     id: 'P12-44',
-    source: `${VISAO_GERAL}, tabela 5-38 (autor do evento do emitente)`,
-    check({ evento: e }: EventoContext): SimRejection | undefined {
+    fonte: `${VISAO_GERAL}, tabela 5-38 (autor do evento do emitente)`,
+    conferir({ evento: e }: ContextoEvento): RejeicaoSim | undefined {
       if (!EMITENTE_EVENTOS.has(e.tpEvento)) return undefined;
       const emit = e.chNFe.slice(6, 20);
       const autor = e.autor.CNPJ ?? `000${e.autor.CPF ?? ''}`;
@@ -431,24 +438,24 @@ const evento: SimRule<EventoContext>[] = [
   },
   {
     id: 'P13-10',
-    source: `${VISAO_GERAL}, tabela 5-35 (tolerância de 5 minutos)`,
-    check({ evento: e, now }: EventoContext): SimRejection | undefined {
+    fonte: `${VISAO_GERAL}, tabela 5-35 (tolerância de 5 minutos)`,
+    conferir({ evento: e, agora: now }: ContextoEvento): RejeicaoSim | undefined {
       const t = parseDateTime(e.dhEvento);
       return t !== undefined && t > now + TOLERANCIA_MS ? reject('578') : undefined;
     },
   },
   {
     id: '3P15-10',
-    source: `${VISAO_GERAL}, tabela 5-35`,
-    check({ evento: e, view }: EventoContext): SimRejection | undefined {
+    fonte: `${VISAO_GERAL}, tabela 5-35`,
+    conferir({ evento: e, visao: view }: ContextoEvento): RejeicaoSim | undefined {
       const dup = view.eventos(e.chNFe).some((x) => x.tpEvento === e.tpEvento && x.nSeqEvento === Number(e.nSeqEvento));
       return dup ? reject('573') : undefined;
     },
   },
   {
     id: 'P15-10',
-    source: `${VISAO_GERAL}, tabelas 5-38 (cancelamento), 5-40 (CC-e, GA03: 1 a 20) e 5-42 (manifestação, H02)`,
-    check({ evento: e }: EventoContext): SimRejection | undefined {
+    fonte: `${VISAO_GERAL}, tabelas 5-38 (cancelamento), 5-40 (CC-e, GA03: 1 a 20) e 5-42 (manifestação, H02)`,
+    conferir({ evento: e }: ContextoEvento): RejeicaoSim | undefined {
       const n = Number(e.nSeqEvento);
       if (e.tpEvento === '110110') return n > 20 ? reject('594') : undefined;
       return n === 1 ? undefined : reject('594');
@@ -456,8 +463,8 @@ const evento: SimRule<EventoContext>[] = [
   },
   {
     id: 'P20-10',
-    source: `${VISAO_GERAL}, tabela 5-38 (cancelamento por substituição: P20-10 e P21-10)`,
-    check({ evento: e }: EventoContext): SimRejection | undefined {
+    fonte: `${VISAO_GERAL}, tabela 5-38 (cancelamento por substituição: P20-10 e P21-10)`,
+    conferir({ evento: e }: ContextoEvento): RejeicaoSim | undefined {
       if (e.tpEvento !== '110112') return undefined;
       if (e.det.cOrgaoAutor !== e.chNFe.slice(0, 2)) return reject('455');
       return e.det.tpAutor === '1' ? undefined : reject('466');
@@ -465,27 +472,27 @@ const evento: SimRule<EventoContext>[] = [
   },
   {
     id: 'GA03a',
-    source: `${VISAO_GERAL}, tabela 5-40 (NFC-e não tem CC-e)`,
-    check: ({ evento: e }: EventoContext): SimRejection | undefined =>
+    fonte: `${VISAO_GERAL}, tabela 5-40 (NFC-e não tem CC-e)`,
+    conferir: ({ evento: e }: ContextoEvento): RejeicaoSim | undefined =>
       e.tpEvento === '110110' && e.chNFe.slice(20, 22) === '65' ? reject('784') : undefined,
   },
   {
     id: 'H01',
-    source: `${VISAO_GERAL}, tabela 5-42 (justificativa da operação não realizada)`,
-    check: ({ evento: e }: EventoContext): SimRejection | undefined =>
+    fonte: `${VISAO_GERAL}, tabela 5-42 (justificativa da operação não realizada)`,
+    conferir: ({ evento: e }: ContextoEvento): RejeicaoSim | undefined =>
       e.tpEvento === '210240' && (e.det.xJust ?? '') === '' ? reject('595') : undefined,
   },
   {
     // 2P12-10 no UF (cancelamento, CC-e) e H14 no AN: a chave precisa existir.
     id: '2P12-10',
-    source: `${VISAO_GERAL}, tabela 5-38`,
-    check: (ctx: EventoContext): SimRejection | undefined =>
+    fonte: `${VISAO_GERAL}, tabela 5-38`,
+    conferir: (ctx: ContextoEvento): RejeicaoSim | undefined =>
       nfeDo(ctx) === undefined ? reject('494', { chNFe: ctx.evento.chNFe }) : undefined,
   },
   {
     id: 'P21',
-    source: `${ANEXO_I}, tabela 4.4.2 (575); ${VISAO_GERAL}, 5.11 (autor da manifestação é o destinatário)`,
-    check(ctx: EventoContext): SimRejection | undefined {
+    fonte: `${ANEXO_I}, tabela 4.4.2 (575); ${VISAO_GERAL}, 5.11 (autor da manifestação é o destinatário)`,
+    conferir(ctx: ContextoEvento): RejeicaoSim | undefined {
       if (!MANIFESTACOES.has(ctx.evento.tpEvento)) return undefined;
       const nfe = nfeDo(ctx);
       return docBase(nfe?.destinatario) === docBase(ctx.evento.autor) ? undefined : reject('575');
@@ -493,28 +500,30 @@ const evento: SimRule<EventoContext>[] = [
   },
   {
     id: '2P12-14',
-    source: `${VISAO_GERAL}, tabela 5-38 (2P12-14: 24 horas; 2P12-18: 168 horas no cancelamento por substituição)`,
-    check(ctx: EventoContext): SimRejection | undefined {
+    fonte: `${VISAO_GERAL}, tabela 5-38 (2P12-14: 24 horas; 2P12-18: 168 horas no cancelamento por substituição)`,
+    conferir(ctx: ContextoEvento): RejeicaoSim | undefined {
       const e = ctx.evento;
       const nfe = nfeDo(ctx);
       if (!CANCELAMENTOS.has(e.tpEvento) || nfe === undefined || nfe.situacao !== 'autorizada') return undefined;
       const prazo =
-        e.tpEvento === '110111' ? ctx.view.config.prazoCancelamentoMs : ctx.view.config.prazoCancelamentoSubstituicaoMs;
-      return ctx.now - nfe.dhRecbtoMs > prazo ? reject('501') : undefined;
+        e.tpEvento === '110111'
+          ? ctx.visao.configuracao.prazoCancelamentoMs
+          : ctx.visao.configuracao.prazoCancelamentoSubstituicaoMs;
+      return ctx.agora - nfe.dhRecbtoMs > prazo ? reject('501') : undefined;
     },
   },
   {
     id: '2P12-22',
-    source: `${VISAO_GERAL}, tabelas 5-38 (2P12-22) e 5-40 (GA01)`,
-    check(ctx: EventoContext): SimRejection | undefined {
+    fonte: `${VISAO_GERAL}, tabelas 5-38 (2P12-22) e 5-40 (GA01)`,
+    conferir(ctx: ContextoEvento): RejeicaoSim | undefined {
       if (!EMITENTE_EVENTOS.has(ctx.evento.tpEvento)) return undefined;
       return nfeDo(ctx)?.situacao === 'autorizada' ? undefined : reject('580');
     },
   },
   {
     id: 'H04',
-    source: `${VISAO_GERAL}, tabela 5-42 (H04 e H05: ciência e desconhecimento de NF-e cancelada ou denegada)`,
-    check(ctx: EventoContext): SimRejection | undefined {
+    fonte: `${VISAO_GERAL}, tabela 5-42 (H04 e H05: ciência e desconhecimento de NF-e cancelada ou denegada)`,
+    conferir(ctx: ContextoEvento): RejeicaoSim | undefined {
       const tp = ctx.evento.tpEvento;
       if (nfeDo(ctx)?.situacao === 'autorizada') return undefined;
       if (tp === '210210') return reject('650');
@@ -523,16 +532,16 @@ const evento: SimRule<EventoContext>[] = [
   },
   {
     id: 'H06',
-    source: `${VISAO_GERAL}, tabela 5-42`,
-    check(ctx: EventoContext): SimRejection | undefined {
+    fonte: `${VISAO_GERAL}, tabela 5-42`,
+    conferir(ctx: ContextoEvento): RejeicaoSim | undefined {
       if (ctx.evento.tpEvento !== '210210') return undefined;
-      return ctx.view.eventos(ctx.evento.chNFe).some((x) => CONCLUSIVAS.has(x.tpEvento)) ? reject('655') : undefined;
+      return ctx.visao.eventos(ctx.evento.chNFe).some((x) => CONCLUSIVAS.has(x.tpEvento)) ? reject('655') : undefined;
     },
   },
   {
     id: '2P13-10',
-    source: `${VISAO_GERAL}, tabela 5-38 (2P13-10 e 2P13-14, tolerância de 5 minutos)`,
-    check(ctx: EventoContext): SimRejection | undefined {
+    fonte: `${VISAO_GERAL}, tabela 5-38 (2P13-10 e 2P13-14, tolerância de 5 minutos)`,
+    conferir(ctx: ContextoEvento): RejeicaoSim | undefined {
       const nfe = nfeDo(ctx);
       const t = parseDateTime(ctx.evento.dhEvento);
       if (nfe === undefined || t === undefined || !EMITENTE_EVENTOS.has(ctx.evento.tpEvento)) return undefined;
@@ -542,8 +551,8 @@ const evento: SimRule<EventoContext>[] = [
   },
   {
     id: '2P23-10',
-    source: `${VISAO_GERAL}, tabela 5-38`,
-    check(ctx: EventoContext): SimRejection | undefined {
+    fonte: `${VISAO_GERAL}, tabela 5-38`,
+    conferir(ctx: ContextoEvento): RejeicaoSim | undefined {
       if (!CANCELAMENTOS.has(ctx.evento.tpEvento)) return undefined;
       return nfeDo(ctx)?.nProt === ctx.evento.det.nProt ? undefined : reject('222');
     },
@@ -551,10 +560,10 @@ const evento: SimRule<EventoContext>[] = [
   {
     // Vale a última manifestação: desconhecimento ou operação não realizada depois da confirmação liberam o cancelamento.
     id: '4P15-14',
-    source: `${VISAO_GERAL}, tabela 5-38`,
-    check(ctx: EventoContext): SimRejection | undefined {
+    fonte: `${VISAO_GERAL}, tabela 5-38`,
+    conferir(ctx: ContextoEvento): RejeicaoSim | undefined {
       if (!CANCELAMENTOS.has(ctx.evento.tpEvento) || ctx.evento.chNFe.slice(20, 22) !== '55') return undefined;
-      const ultima = ctx.view
+      const ultima = ctx.visao
         .eventos(ctx.evento.chNFe)
         .filter((x) => CONCLUSIVAS.has(x.tpEvento))
         .at(-1);
@@ -563,15 +572,15 @@ const evento: SimRule<EventoContext>[] = [
   },
   {
     id: '5P31',
-    source: `${VISAO_GERAL}, tabela 5-38 (P31-10 a P31-52 e 5P31-10 a 5P31-14: NF-e substituta)`,
-    check(ctx: EventoContext): SimRejection | undefined {
+    fonte: `${VISAO_GERAL}, tabela 5-38 (P31-10 a P31-52 e 5P31-10 a 5P31-14: NF-e substituta)`,
+    conferir(ctx: ContextoEvento): RejeicaoSim | undefined {
       const e = ctx.evento;
       if (e.tpEvento !== '110112') return undefined;
       const ref = e.det.chNFeRef ?? '';
       if (!lerChaveAcesso(ref).ok) return reject('910', { campo: 'Dígito' });
       if (ref === e.chNFe) return reject('911', { campo: 'mesma Chave de Acesso' });
       if (ref.slice(6, 20) !== e.chNFe.slice(6, 20)) return reject('911', { campo: 'CNPJ/CPF' });
-      const sub = ctx.view.nfe(ref);
+      const sub = ctx.visao.nfe(ref);
       if (sub === undefined) return reject('912');
       return sub.situacao === 'autorizada' ? undefined : reject('913');
     },
@@ -580,41 +589,41 @@ const evento: SimRule<EventoContext>[] = [
 
 // ---------- inutilização (MOC 7.0 Visão Geral, item 5.3.4, tabela 5-12) ----------
 
-const inutilizacao: SimRule<InutilizacaoContext>[] = [
+const inutilizacao: RegraSim<ContextoInutilizacao>[] = [
   {
     id: 'I01',
-    source: `${VISAO_GERAL}, tabela 5-12`,
-    check: ({ inut, view }: InutilizacaoContext): SimRejection | undefined =>
-      inut.tpAmb === view.config.tpAmb ? undefined : reject('252'),
+    fonte: `${VISAO_GERAL}, tabela 5-12`,
+    conferir: ({ inut, visao: view }: ContextoInutilizacao): RejeicaoSim | undefined =>
+      inut.tpAmb === view.configuracao.tpAmb ? undefined : reject('252'),
   },
   {
     id: 'I02',
-    source: `${VISAO_GERAL}, tabela 5-12`,
-    check: ({ inut, view }: InutilizacaoContext): SimRejection | undefined =>
-      view.config.cUFsAtendidas.includes(inut.cUF) ? undefined : reject('250'),
+    fonte: `${VISAO_GERAL}, tabela 5-12`,
+    conferir: ({ inut, visao: view }: ContextoInutilizacao): RejeicaoSim | undefined =>
+      view.configuracao.cUFsAtendidas.includes(inut.cUF) ? undefined : reject('250'),
   },
   {
     id: 'I02a',
-    source:
+    fonte:
       'NT 2018.001 v1.10 (emitente CPF), item 6.2: série 910 a 969 identifica emitente pessoa física, e o controle de inutilização não se aplica a ele (item 6.1)',
-    check({ inut }: InutilizacaoContext): SimRejection | undefined {
+    conferir({ inut }: ContextoInutilizacao): RejeicaoSim | undefined {
       const serie = Number(inut.serie);
       return serie >= 910 && serie <= 969 ? reject('266') : undefined;
     },
   },
   {
     id: 'I02b',
-    source: `${VISAO_GERAL}, tabela 5-12 (I02b e I02c)`,
-    check({ inut, now, view }: InutilizacaoContext): SimRejection | undefined {
+    fonte: `${VISAO_GERAL}, tabela 5-12 (I02b e I02c)`,
+    conferir({ inut, agora: now, visao: view }: ContextoInutilizacao): RejeicaoSim | undefined {
       const ano = 2000 + Number(inut.ano);
-      if (ano > yearOf(now, view.config.offsetMinutes)) return reject('453');
+      if (ano > yearOf(now, view.configuracao.deslocamentoMin)) return reject('453');
       return ano < 2006 ? reject('454') : undefined;
     },
   },
   {
     id: 'I03',
-    source: `${VISAO_GERAL}, tabela 5-12 (I03 e I04: até 10.000 números)`,
-    check({ inut }: InutilizacaoContext): SimRejection | undefined {
+    fonte: `${VISAO_GERAL}, tabela 5-12 (I03 e I04: até 10.000 números)`,
+    conferir({ inut }: ContextoInutilizacao): RejeicaoSim | undefined {
       const ini = Number(inut.nNFIni);
       const fin = Number(inut.nNFFin);
       if (ini > fin) return reject('224');
@@ -623,8 +632,8 @@ const inutilizacao: SimRule<InutilizacaoContext>[] = [
   },
   {
     id: 'I04.a',
-    source: `${VISAO_GERAL}, tabela 5-12`,
-    check({ inut }: InutilizacaoContext): SimRejection | undefined {
+    fonte: `${VISAO_GERAL}, tabela 5-12`,
+    conferir({ inut }: ContextoInutilizacao): RejeicaoSim | undefined {
       const esperado =
         `ID${inut.cUF}${inut.ano}${inut.CNPJ}${inut.mod}${inut.serie.padStart(3, '0')}` +
         `${inut.nNFIni.padStart(9, '0')}${inut.nNFFin.padStart(9, '0')}`;
@@ -633,19 +642,19 @@ const inutilizacao: SimRule<InutilizacaoContext>[] = [
   },
   {
     id: 'I05',
-    source: `${VISAO_GERAL}, tabela 5-12 (I05 e I06, pelo cadastro simulado)`,
-    check({ inut, view }: InutilizacaoContext): SimRejection | undefined {
+    fonte: `${VISAO_GERAL}, tabela 5-12 (I05 e I06, pelo cadastro simulado)`,
+    conferir({ inut, visao: view }: ContextoInutilizacao): RejeicaoSim | undefined {
       // Cadastro da UF do pedido (cUF), que pode ser qualquer uma das atendidas pelo autorizador.
       const uf = ufPorCUf(inut.cUF)?.sigla;
-      const c = view.config.cadastro.find((x) => x.CNPJ === inut.CNPJ && x.UF === uf);
+      const c = view.configuracao.cadastro.find((x) => x.CNPJ === inut.CNPJ && x.UF === uf);
       if (c?.situacao === 'nao-habilitado') return reject('203');
       return c?.situacao === 'irregular' ? reject('240') : undefined;
     },
   },
   {
     id: 'I07',
-    source: `${VISAO_GERAL}, tabela 5-12 (I07: mesma faixa do mesmo ano, com o nProt anterior; I07a: número já inutilizado)`,
-    check({ inut, view }: InutilizacaoContext): SimRejection | undefined {
+    fonte: `${VISAO_GERAL}, tabela 5-12 (I07: mesma faixa do mesmo ano, com o nProt anterior; I07a: número já inutilizado)`,
+    conferir({ inut, visao: view }: ContextoInutilizacao): RejeicaoSim | undefined {
       const ini = Number(inut.nNFIni);
       const fin = Number(inut.nNFFin);
       const serie = Number(inut.serie);
@@ -659,10 +668,10 @@ const inutilizacao: SimRule<InutilizacaoContext>[] = [
   },
   {
     id: 'I08',
-    source: `${VISAO_GERAL}, tabela 5-12 (NF-e do mesmo ano, pelo AA da chave)`,
-    check({ inut, view }: InutilizacaoContext): SimRejection | undefined {
+    fonte: `${VISAO_GERAL}, tabela 5-12 (NF-e do mesmo ano, pelo AA da chave)`,
+    conferir({ inut, visao: view }: ContextoInutilizacao): RejeicaoSim | undefined {
       for (let n = Number(inut.nNFIni); n <= Number(inut.nNFFin); n++) {
-        const usada = view.nfeByNumero(inut.CNPJ, inut.mod, inut.serie, String(n));
+        const usada = view.nfePorNumero(inut.CNPJ, inut.mod, inut.serie, String(n));
         if (usada !== undefined && usada.chave.slice(2, 4) === inut.ano) return reject('241');
       }
       return undefined;
@@ -671,12 +680,12 @@ const inutilizacao: SimRule<InutilizacaoContext>[] = [
 ];
 
 /** Regras padrão do simulador. */
-export const DEFAULT_RULES: SimRules = { autorizacao, evento, inutilizacao };
+export const REGRAS_PADRAO: RegrasSim = { autorizacao, evento, inutilizacao };
 
 /** Aplica as regras na ordem e devolve a primeira rejeição. */
-export function firstRejection<C>(rules: readonly SimRule<C>[], ctx: C): SimRejection | undefined {
-  for (const r of rules) {
-    const found = r.check(ctx);
+export function primeiraRejeicao<C>(regras: readonly RegraSim<C>[], contexto: C): RejeicaoSim | undefined {
+  for (const r of regras) {
+    const found = r.conferir(contexto);
     if (found !== undefined) return found;
   }
   return undefined;

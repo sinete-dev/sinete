@@ -8,13 +8,13 @@ import type { DocumentoXml } from '@sinete/core/xml';
 import { lerXml } from '@sinete/core/xml';
 import type { ElementoRaiz } from '@sinete/schemas';
 import { decodificarRaiz } from '@sinete/schemas';
-import { DanfeError } from '../errors.ts';
+import { ErroDa } from '../errors.ts';
 
 export function parse(xml: string): DocumentoXml {
   try {
     return lerXml(xml);
   } catch (e) {
-    throw new DanfeError('xml_invalido', 'XML malformado', { cause: e });
+    throw new ErroDa('xml_invalido', 'XML malformado', { cause: e });
   }
 }
 
@@ -26,7 +26,7 @@ export function decodeAs<T>(
 ): { root: string; value: T } {
   const root = roots.find((r) => r.nome === doc.raiz.local && r.ns === doc.raiz.ns);
   if (!root) {
-    throw new DanfeError('documento_inesperado', `esperado ${what}, recebido <${doc.raiz.local}>`, {
+    throw new ErroDa('documento_inesperado', `esperado ${what}, recebido <${doc.raiz.local}>`, {
       detalhes: { raiz: doc.raiz.local, esperado: roots.map((r) => r.nome) },
     });
   }
@@ -58,7 +58,7 @@ export function vista<T>(what: string, build: () => T): T {
     return build();
   } catch (e) {
     if (e instanceof TypeError) {
-      throw new DanfeError('campo_ausente', `${what} sem um grupo obrigatório`, { cause: e });
+      throw new ErroDa('campo_ausente', `${what} sem um grupo obrigatório`, { cause: e });
     }
     throw e;
   }

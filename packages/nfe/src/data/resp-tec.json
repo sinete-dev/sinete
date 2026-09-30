@@ -1,5 +1,5 @@
 {
-  "descricao": "Exigência do grupo infRespTec e do CSRT por UF do emitente, com vigência por ambiente. infRespTec: 'obrigatorio' faz o builder recusar a nota sem responsável técnico; 'opcional' só o inclui quando informado. csrt: 'obrigatorio' exige idCSRT e hashCSRT (rejeição 975). Datas no formato AAAA-MM-DD, a partir de 00:00 de Brasília. UF ausente usa o padrão. A adesão é de cada UF (NT 2018.005); quem emite pode sobrepor em BuildNfeOptions.",
+  "descricao": "Exigência do grupo infRespTec e do CSRT por UF do emitente, com vigência por ambiente. infRespTec: 'obrigatorio' faz o builder recusar a nota sem responsável técnico; 'opcional' só o inclui quando informado. csrt: 'obrigatorio' exige idCSRT e hashCSRT (rejeição 975). Datas no formato AAAA-MM-DD, a partir de 00:00 de Brasília. UF ausente usa o padrão. A adesão é de cada UF (NT 2018.005); quem emite pode sobrepor em MontarNfeOpcoes.",
   "atualizadoEm": "2026-09-26",
   "fonte": "NT 2018.005 v1.50 (responsável técnico e CSRT, adesão a critério da UF)",
   "padrao": { "infRespTec": "opcional", "csrt": "opcional" },

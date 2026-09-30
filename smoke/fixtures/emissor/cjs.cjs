@@ -8,18 +8,18 @@ const mdfe = require('@sinete/emissor/mdfe');
 const nfse = require('@sinete/emissor/nfse');
 const core = require('@sinete/core');
 const failures = [];
-if (!(new emissor.TravaPerdidaError('x') instanceof core.ErroSinete)) failures.push('TravaPerdidaError via require');
-if (typeof memoria.createMemoriaStore !== 'function' || typeof contrato.casosDoContrato !== 'function') {
+if (!(new emissor.ErroTravaPerdida('x') instanceof core.ErroSinete)) failures.push('ErroTravaPerdida via require');
+if (typeof memoria.criarMemoriaStore !== 'function' || typeof contrato.casosDoContrato !== 'function') {
   failures.push('memoria e contrato via require');
 }
 if (
-  typeof nfe.createNfeEmissor !== 'function' ||
-  typeof mdfe.createMdfeEmissor !== 'function' ||
-  typeof nfse.createNfseEmissor !== 'function'
+  typeof nfe.criarEmissorNfe !== 'function' ||
+  typeof mdfe.criarEmissorMdfe !== 'function' ||
+  typeof nfse.criarEmissorNfse !== 'function'
 ) {
   failures.push('emissores via require');
 }
 import('@sinete/emissor').then((esm) => {
-  if (esm.TravaPerdidaError !== emissor.TravaPerdidaError) failures.push('mesma classe em require e import');
+  if (esm.ErroTravaPerdida !== emissor.ErroTravaPerdida) failures.push('mesma classe em require e import');
   console.log(JSON.stringify({ ok: failures.length === 0, rt: `node ${process.version}`, mode: 'require', failures }));
 });

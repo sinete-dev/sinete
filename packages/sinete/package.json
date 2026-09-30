@@ -147,9 +147,9 @@
       "types": "./dist/ibs-cbs-dados/index.d.ts",
       "default": "./dist/ibs-cbs-dados/index.js"
     },
-    "./ibs-cbs-dados/bundled": {
-      "types": "./dist/ibs-cbs-dados/bundled.d.ts",
-      "default": "./dist/ibs-cbs-dados/bundled.js"
+    "./ibs-cbs-dados/embarcado": {
+      "types": "./dist/ibs-cbs-dados/embarcado.d.ts",
+      "default": "./dist/ibs-cbs-dados/embarcado.js"
     },
     "./ibs-cbs": {
       "types": "./dist/ibs-cbs/index.d.ts",

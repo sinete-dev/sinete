@@ -46,9 +46,9 @@ describe('cancelamento', () => {
     expect(tag(r, 'CNPJDest')).toBe(DESTINATARIO);
     expect(tag(r, 'nProt')).toBe('135260000000002');
     expect(tag(r, 'cOrgao')).toBe('35');
-    expect(h.sim.inspect.nfe(chave)?.situacao).toBe('cancelada');
-    expect(h.sim.inspect.eventos(chave)[0]?.xml).toBe(ev);
-    expect(h.sim.inspect.eventos()).toHaveLength(1);
+    expect(h.sim.inspecao.nfe(chave)?.situacao).toBe('cancelada');
+    expect(h.sim.inspecao.eventos(chave)[0]?.xml).toBe(ev);
+    expect(h.sim.inspecao.eventos()).toHaveLength(1);
     expect(await eventoStat(h, ev)).toBe('573');
   });
 
@@ -158,7 +158,7 @@ describe('cancelamento por substituição (110112)', () => {
     const r = await h.send('RecepcaoEvento', envEvento([await evento({ ...base, det: d(substituta.chave) })]));
     expect(tags(r, 'cStat')).toEqual(['128', '135']);
     expect(tag(r, 'cOrgaoAutor')).toBe('35');
-    expect(h.sim.inspect.nfe(cancelada.chave)?.situacao).toBe('cancelada');
+    expect(h.sim.inspecao.nfe(cancelada.chave)?.situacao).toBe('cancelada');
     // A substituta cancelada não serve para outra substituição (913).
     const terceira = await autorizada(h, 5, { mod: '65' });
     const ev913 = await evento({
@@ -184,7 +184,7 @@ describe('carta de correção (110110)', () => {
     expect(await eventoStat(h, seq2)).toBe('135');
     expect(await eventoStat(h, seq2)).toBe('573');
     expect(await eventoStat(h, await evento({ chave, tpEvento: '110110', nSeq: 21, det: det.cce() }))).toBe('594');
-    expect(h.sim.inspect.eventos(chave).map((e) => e.nSeqEvento)).toEqual([1, 2]);
+    expect(h.sim.inspecao.eventos(chave).map((e) => e.nSeqEvento)).toEqual([1, 2]);
     expect(await eventoStat(h, await evento({ chave, tpEvento: '110111', det: det.cancelamento(nProt) }))).toBe('135');
     expect(await eventoStat(h, await evento({ chave, tpEvento: '110110', nSeq: 3, det: det.cce() }))).toBe('580');
     const nfce = await autorizada(h, 2, { mod: '65' });
@@ -276,7 +276,7 @@ describe('manifestação do destinatário no AN', () => {
       'RecepcaoEvento',
       envEvento([await evento({ chave, tpEvento: '110111', det: det.cancelamento(nProt) })]),
     );
-    const e = h.sim.inspect.eventos(chave)[0];
+    const e = h.sim.inspecao.eventos(chave)[0];
     const proc = `<procEventoNFe versao="1.00" xmlns="http://www.portalfiscal.inf.br/nfe">${e?.xml}${e?.retEvento}</procEventoNFe>`;
     expect(validarRaiz(canc.procEventoNFeElement, proc)).toEqual([]);
   });

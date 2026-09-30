@@ -1,5 +1,5 @@
 /**
- * Nome do formato para as estatísticas do corpus. O título do `Doc` traz a chave de acesso, que tem o CNPJ do emitente
+ * Nome do formato para as estatísticas do corpus. O título do `Documento` traz a chave de acesso, que tem o CNPJ do emitente
  * (e letras, com o CNPJ alfanumérico): o nome sai de uma lista fechada e nunca do título, para que nenhum identificador
  * chegue à saída, que é só de agregados.
  */
@@ -32,9 +32,11 @@ const MARCAS = [
 ] as const;
 
 export function marcaDe(doc: {
-  readonly pages: readonly { readonly ops: readonly { t: string; s?: string; rot?: number }[] }[];
+  readonly paginas: readonly { readonly ops: readonly { t: string; s?: string; rotacao?: number }[] }[];
 }): string {
-  const primeira = doc.pages[0]?.ops.find((o) => o.t === 'text' && o.rot !== undefined && o.rot > 0 && o.rot < 90);
+  const primeira = doc.paginas[0]?.ops.find(
+    (o) => o.t === 'texto' && o.rotacao !== undefined && o.rotacao > 0 && o.rotacao < 90,
+  );
   if (!primeira) return 'nenhuma';
   return MARCAS.find(([texto]) => primeira.s === texto)?.[1] ?? 'outra';
 }

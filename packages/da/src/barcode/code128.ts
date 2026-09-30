@@ -4,7 +4,7 @@
  * 2025.001 para a chave com CNPJ alfanumérico.
  */
 
-import { DanfeError } from '../errors.ts';
+import { ErroDa } from '../errors.ts';
 
 /**
  * Larguras barra/espaço dos 107 símbolos (valores 0 a 106; 105 é o Start C, 106 é o Stop), do Anexo III.01 do MOC e
@@ -44,14 +44,14 @@ function symbolize(vals: number[]): number[] {
  * Larguras (em módulos) de Start C, dados, dígito verificador módulo 103 (MOC 2.1) e Stop, começando por barra.
  * Exige quantidade par de dígitos.
  */
-export function code128C(digits: string): number[] {
-  if (!/^(\d\d)+$/.test(digits)) {
-    throw new DanfeError('codigo_barras_invalido', 'CODE-128C exige quantidade par de dígitos', {
-      detalhes: { comprimento: digits.length },
+export function code128C(digitos: string): number[] {
+  if (!/^(\d\d)+$/.test(digitos)) {
+    throw new ErroDa('codigo_barras_invalido', 'CODE-128C exige quantidade par de dígitos', {
+      detalhes: { comprimento: digitos.length },
     });
   }
   const vals = [START_C];
-  for (let i = 0; i < digits.length; i += 2) vals.push(Number(digits.slice(i, i + 2)));
+  for (let i = 0; i < digitos.length; i += 2) vals.push(Number(digitos.slice(i, i + 2)));
   return symbolize(vals);
 }
 
@@ -68,7 +68,7 @@ export function code128Chave(chave: string): number[] {
 /** Valores dos símbolos da chave (start, dados, trocas de subconjunto, DV e stop), para conferir contra a NT. */
 export function valoresChave(chave: string): number[] {
   if (!/^[0-9A-Z]+$/.test(chave)) {
-    throw new DanfeError('codigo_barras_invalido', 'chave com caractere fora de 0-9 e A-Z', {
+    throw new ErroDa('codigo_barras_invalido', 'chave com caractere fora de 0-9 e A-Z', {
       detalhes: { comprimento: chave.length },
     });
   }

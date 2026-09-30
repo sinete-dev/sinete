@@ -1,7 +1,7 @@
 /**
- * Montagem da NF-e: entrada do domínio (`NfeInput`) para o objeto tipado do `@sinete/schemas` no PL vigente, com os
+ * Montagem da NF-e: entrada do domínio (`DadosNfe`) para o objeto tipado do `@sinete/schemas` no PL vigente, com os
  * derivados e os totais em decimal exato, a chave de acesso e as regras conferidas antes de qualquer serialização. A
- * saída é a string canônica de `<NFe>` ainda sem assinatura, já validada contra o schema; `signNfe` insere a
+ * saída é a string canônica de `<NFe>` ainda sem assinatura, já validada contra o schema; `assinarNfe` insere a
  * `Signature` por splice (ADR 0003) e nada mais toca nela.
  */
 
@@ -39,6 +39,7 @@ import { Decimal } from '../decimal.ts';
 import { D0302, D0302A04, D1104V, D1110V, D1203, D1302, D1302_OPC } from '../format.ts';
 import { Issues } from '../issues.ts';
 import type {
+  DadosNfe,
   Destinatario,
   DocumentoPessoa,
   Emitente,
@@ -46,14 +47,13 @@ import type {
   EnderecoExterior,
   Item,
   Local,
-  NfeInput,
   Referenciada,
   ResponsavelTecnico,
 } from '../model.ts';
-import type { IbsCbsCalculator, IbsCbsItemRequest } from '../ports.ts';
-import { ibsCbsCalculator } from '../rtc.ts';
+import type { CalculadoraIbsCbs, PedidoIbsCbsItem } from '../ports.ts';
+import { calculadoraIbsCbs } from '../rtc.ts';
 import type { Instante } from '../time.ts';
-import { formatDh, offsetDaUf } from '../time.ts';
+import { deslocamentoDaUf, formatarDh } from '../time.ts';
 import { VERSAO_PACOTE } from '../versao-gerada.ts';
 import { conferirDestinatario } from './destinatario.ts';
 import { decimaisInvalidos, grupoInvalido, ibsCbsDoItem, totalIbsCbs } from './ibscbs.ts';
@@ -74,11 +74,11 @@ import { buildIcmsUfDest, buildIi, buildIpi, buildIssqn, buildPisCofins, buildPi
 import type { Familia } from './values.ts';
 import { Ctx, clean, digits, TOLERANCIA } from './values.ts';
 
-let padrao: IbsCbsCalculator | undefined;
+let padrao: CalculadoraIbsCbs | undefined;
 
-/** A calculadora de IBS/CBS usada quando `options.ibsCbs` não vem: o motor do sinete, criada uma vez por processo. */
-function calculadoraPadrao(): IbsCbsCalculator {
-  padrao ??= ibsCbsCalculator();
+/** A calculadora de IBS/CBS usada quando `opcoes.ibsCbs` não vem: o motor do sinete, criada uma vez por processo. */
+function calculadoraPadrao(): CalculadoraIbsCbs {
+  padrao ??= calculadoraIbsCbs();
   return padrao;
 }
 
@@ -92,18 +92,18 @@ export const XPROD_HOMOLOGACAO_NFCE = 'NOTA FISCAL EMITIDA EM AMBIENTE DE HOMOLO
 
 export type ExigenciaRespTec = 'obrigatorio' | 'opcional';
 
-export interface BuildNfeOptions {
+export interface MontarNfeOpcoes {
   readonly ambiente: Ambiente;
   /** Relógio de emissão (dhEmi, PL vigente, CSRT) e de fato gerador (IBS/CBS). */
-  readonly time: ContextoDeTempo;
+  readonly tempo: ContextoDeTempo;
   /**
-   * Calculadora de IBS/CBS dos itens com `ibsCbs.classificacao`. Padrão: `ibsCbsCalculator()`, o motor do sinete com o
+   * Calculadora de IBS/CBS dos itens com `ibsCbs.classificacao`. Padrão: `calculadoraIbsCbs()`, o motor do sinete com o
    * dataset embarcado (importado na primeira nota que precisar dele) e as alíquotas oficiais. Informe outra para trocar
    * dataset, alíquotas, base ou regras, ou para calcular fora do sinete.
    */
-  readonly ibsCbs?: IbsCbsCalculator;
+  readonly ibsCbs?: CalculadoraIbsCbs;
   /** Fuso do emitente em minutos; padrão pela UF (`data/fusos.json`). */
-  readonly offsetMinutes?: number;
+  readonly deslocamentoMin?: number;
   /** Versão do aplicativo emissor (`verProc`); padrão `sinete <versão do @sinete/nfe>` (`formatarVerProc`). */
   readonly verProc?: string;
   /** Sobrepõe o modo de arredondamento de uma família (`data/arredondamento.json`). */
@@ -113,7 +113,7 @@ export interface BuildNfeOptions {
   /** Sobrepõe a exigência de infRespTec e CSRT da tabela por UF (`data/resp-tec.json`). */
   readonly exigencias?: { readonly infRespTec?: ExigenciaRespTec; readonly csrt?: ExigenciaRespTec };
   /** Fonte de aleatoriedade para o cNF; padrão `crypto.getRandomValues`. */
-  readonly random?: (bytes: Uint8Array) => Uint8Array;
+  readonly aleatorio?: (bytes: Uint8Array) => Uint8Array;
   /**
    * O `vPag` do único `detPag` passa a ser o `vNF` calculado na mesma montagem, e o valor informado nele é ignorado.
    * Serve a quem recebe à vista o total da nota e não quer calcular o `vNF` antes de montar. Mais de um `detPag`,
@@ -136,7 +136,7 @@ export interface BuildNfeOptions {
   readonly urlChave?: string;
 }
 
-export interface BuiltNfe {
+export interface NfeMontada {
   /** Chave de acesso (44 posições). */
   readonly chave: string;
   /** `Id` do `infNFe` (`NFe` + chave): é o que a assinatura referencia. */
@@ -148,7 +148,7 @@ export interface BuiltNfe {
   readonly tpEmis: string;
   readonly dhEmi: string;
   /**
-   * Só NFC-e: o `infNFeSupl` a acrescentar (`comQrCode`, `signNfe`). Na versão 3 em contingência off-line, falta a
+   * Só NFC-e: o `infNFeSupl` a acrescentar (`comQrCode`, `assinarNfe`). Na versão 3 em contingência off-line, falta a
    * assinatura dos parâmetros, que só o certificado faz (`assinaturaQrCode`).
    */
   readonly nfce?: NfceSupl;
@@ -160,9 +160,9 @@ export interface BuiltNfe {
   readonly xml: string;
 }
 
-export type BuildNfeResult =
-  | { readonly ok: true; readonly value: BuiltNfe }
-  | { readonly ok: false; readonly issues: readonly Ocorrencia[] };
+export type ResultadoMontagemNfe =
+  | { readonly ok: true; readonly valor: NfeMontada }
+  | { readonly ok: false; readonly ocorrencias: readonly Ocorrencia[] };
 
 const MODES: Record<Familia, RoundingMode> = Object.fromEntries(
   Object.entries(arredondamento.familias).map(([k, v]) => [k, v.modo as RoundingMode]),
@@ -172,7 +172,7 @@ const SEM_GTIN = 'SEM GTIN';
 const BRASILIA = -180;
 
 function diaBrasilia(d: Instante): string {
-  return formatDh(d, BRASILIA).slice(0, 10);
+  return formatarDh(d, BRASILIA).slice(0, 10);
 }
 
 /** Exigência de infRespTec ou CSRT para a UF no ambiente e na data (tabela `data/resp-tec.json`). */
@@ -624,44 +624,44 @@ function composicao(m: ItemMontado, incluirProd: boolean): Decimal {
 }
 
 /** Monta, calcula e valida. Nunca lança por dado do chamador: devolve as ocorrências. */
-export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promise<BuildNfeResult> {
+export async function montarNfe(entrada: DadosNfe, opcoes: MontarNfeOpcoes): Promise<ResultadoMontagemNfe> {
   const issues = new Issues();
-  const finNFeIn = input.finNFe ?? '1';
-  const mod = input.modelo ?? '55';
+  const finNFeIn = entrada.finNFe ?? '1';
+  const mod = entrada.modelo ?? '55';
   if (mod !== '55' && mod !== '65') {
     issues.add('modelo', 'modelo_nao_suportado', `modelo ${String(mod)}: o builder monta NF-e (55) e NFC-e (65)`);
-    return { ok: false, issues: issues.classificadas };
+    return { ok: false, ocorrencias: issues.classificadas };
   }
   const nfce = mod === '65';
   // Padrões da identificação resolvidos uma vez: o mesmo valor vai para o ide e para a calculadora de IBS/CBS. A NFC-e
   // é presencial e para consumidor final (MOC 7.0 Anexo I, B25a-10 e B25b-20).
-  const indPres = input.indPres ?? (nfce ? '1' : finNFeIn === '2' || finNFeIn === '3' ? '0' : '9');
-  const indFinal = input.indFinal ?? (nfce || input.destinatario?.indIEDest === '9' ? '1' : '0');
-  const ctx = new Ctx(issues, { ...MODES, ...options.arredondamento }, finNFeIn !== '2' && finNFeIn !== '3');
-  const pRedutorGov = input.gCompraGov && ctx.req(input.gCompraGov.pRedutor, 'gCompraGov.pRedutor', D0302A04);
-  const emitUf = input.emitente.endereco.UF;
+  const indPres = entrada.indPres ?? (nfce ? '1' : finNFeIn === '2' || finNFeIn === '3' ? '0' : '9');
+  const indFinal = entrada.indFinal ?? (nfce || entrada.destinatario?.indIEDest === '9' ? '1' : '0');
+  const ctx = new Ctx(issues, { ...MODES, ...opcoes.arredondamento }, finNFeIn !== '2' && finNFeIn !== '3');
+  const pRedutorGov = entrada.gCompraGov && ctx.req(entrada.gCompraGov.pRedutor, 'gCompraGov.pRedutor', D0302A04);
+  const emitUf = entrada.emitente.endereco.UF;
   if (!ehUf(emitUf)) {
     issues.add('emitente.endereco.UF', 'campo_invalido', 'UF do emitente inválida');
-    return { ok: false, issues: issues.classificadas };
+    return { ok: false, ocorrencias: issues.classificadas };
   }
   const cUF = ufPorSigla(emitUf)?.cUF ?? '';
-  const offset = options.offsetMinutes ?? offsetDaUf(emitUf);
-  const agora = options.time.emissao.agora();
+  const offset = opcoes.deslocamentoMin ?? deslocamentoDaUf(emitUf);
+  const agora = opcoes.tempo.emissao.agora();
   // Um instante de fato gerador por montagem: o mesmo vai para a calculadora e para a regra de composição do vItem.
-  const fatoGerador = options.time.fatoGerador.agora();
-  const dhEmi = formatDh(agora, offset);
+  const fatoGerador = opcoes.tempo.fatoGerador.agora();
+  const dhEmi = formatarDh(agora, offset);
   const aamm = dhEmi.slice(2, 4) + dhEmi.slice(5, 7);
-  const tpAmb = tpAmbDoAmbiente(options.ambiente);
+  const tpAmb = tpAmbDoAmbiente(opcoes.ambiente);
 
   // PL vigente (ErroVigencia do schemas propaga: data fora de toda vigência é erro de configuração, não de dado).
   // O PL sai do mesmo instante do dhEmi: reler o relógio numa virada de vigência escolheria outro PL.
-  const pl = escolherPl(options.ambiente, relogioFixo(agora));
+  const pl = escolherPl(opcoes.ambiente, relogioFixo(agora));
 
   // Emitente (grupo C)
-  const e: Emitente = input.emitente;
+  const e: Emitente = entrada.emitente;
   const emitDoc = documento(e, 'emitente', issues);
-  const serie = Number(input.serie);
-  const nNF = Number(input.nNF);
+  const serie = Number(entrada.serie);
+  const nNF = Number(entrada.nNF);
   if (!Number.isInteger(serie) || serie < 0 || serie > 999) issues.add('serie', 'serie_invalida', 'série de 0 a 999');
   if (!Number.isInteger(nNF) || nNF < 1 || nNF > 999_999_999)
     issues.add('nNF', 'campo_invalido', 'nNF de 1 a 999999999');
@@ -695,7 +695,7 @@ export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promi
 
   // Destinatário (grupo E): obrigatório na NF-e (RV E01-10); na NFC-e, só na entrega a domicílio (E01-20, conferida
   // com as demais regras da NFC-e).
-  const d: Destinatario | undefined = input.destinatario;
+  const d: Destinatario | undefined = entrada.destinatario;
   let dest: Record<string, unknown> | undefined;
   let destUf: Uf | 'EX' | undefined;
   if (d === undefined) {
@@ -731,7 +731,7 @@ export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promi
         : d.IE;
     dest = clean({
       ...docDest,
-      xNome: options.ambiente === 'homologacao' ? XNOME_HOMOLOGACAO : d.xNome,
+      xNome: opcoes.ambiente === 'homologacao' ? XNOME_HOMOLOGACAO : d.xNome,
       enderDest,
       indIEDest: d.indIEDest,
       IE: destIe,
@@ -742,7 +742,7 @@ export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promi
   }
 
   // Identificação: contingência e forma de emissão
-  const cont = input.contingencia;
+  const cont = entrada.contingencia;
   const tpEmis = cont?.tpEmis ?? '1';
   if (cont !== undefined) {
     if (cont.xJust.length < 15 || cont.xJust.length > 256) {
@@ -774,25 +774,25 @@ export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promi
   // Identificação que as regras do modelo conferem antes de montar.
   // Na NFC-e a operação é sempre interna (B11a-10, rejeição 707): o endereço do consumidor não a torna interestadual.
   const idDest =
-    input.idDest ?? (nfce ? '1' : destUf === 'EX' ? '3' : destUf !== undefined && destUf !== emitUf ? '2' : '1');
-  const tpImp = input.tpImp ?? (nfce ? '4' : '1');
+    entrada.idDest ?? (nfce ? '1' : destUf === 'EX' ? '3' : destUf !== undefined && destUf !== emitUf ? '2' : '1');
+  const tpImp = entrada.tpImp ?? (nfce ? '4' : '1');
   conferirDestinatario(
-    input,
+    entrada,
     {
       mod,
-      tpNF: input.tpNF,
+      tpNF: entrada.tpNF,
       idDest,
-      idDestInformado: input.idDest !== undefined,
+      idDestInformado: entrada.idDest !== undefined,
       indFinal,
-      producao: options.ambiente === 'producao',
+      producao: opcoes.ambiente === 'producao',
     },
     issues,
   );
   if (nfce) {
     conferirNfce(
-      input,
+      entrada,
       {
-        tpNF: input.tpNF,
+        tpNF: entrada.tpNF,
         idDest,
         tpImp,
         finNFe: finNFeIn,
@@ -804,7 +804,7 @@ export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promi
   } else if (tpImp === '4' || tpImp === '5') {
     issues.add('tpImp', 'campo_invalido', 'tpImp 4 e 5 (DANFC-e) são da NFC-e (B21-20, rejeição 710)');
   }
-  const qr: QrCodeNfceOpcoes = options.qrCode ?? { versao: '3' };
+  const qr: QrCodeNfceOpcoes = opcoes.qrCode ?? { versao: '3' };
   if (nfce && qr.versao === '2') {
     // O CSC e o idCSC são opções do montador, não da nota: as ocorrências são da montagem (ADR 0011).
     if (!/^\d{1,6}$/.test(qr.idCSC) || Number(qr.idCSC) === 0) {
@@ -832,12 +832,13 @@ export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promi
 
   // Chave de acesso e cNF
   const random =
-    options.random ?? ((b: Uint8Array): Uint8Array => globalThis.crypto.getRandomValues(b as Uint8Array<ArrayBuffer>));
+    opcoes.aleatorio ??
+    ((b: Uint8Array): Uint8Array => globalThis.crypto.getRandomValues(b as Uint8Array<ArrayBuffer>));
   const emitente14 = 'CNPJ' in emitDoc ? emitDoc.CNPJ : emitDoc.CPF;
   const gerada = issues.empty
     ? gerarChave(
         { cUF, aamm, emitente: emitente14, mod, serie: String(serie), nNF: String(nNF), tpEmis },
-        input.cNF,
+        entrada.cNF,
         random,
         issues,
       )
@@ -847,24 +848,24 @@ export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promi
   const cDV = chave.slice(43);
 
   // Itens
-  if (input.itens.length === 0 || input.itens.length > 990) {
+  if (entrada.itens.length === 0 || entrada.itens.length > 990) {
     issues.add('itens', 'itens_limite', 'a NF-e tem de 1 a 990 itens');
   }
-  const itens = input.itens.map((it, n) => montarItem(ctx, it, n, finNFeIn === '1'));
+  const itens = entrada.itens.map((it, n) => montarItem(ctx, it, n, finNFeIn === '1'));
   // Na NFC-e em homologação, a descrição do primeiro item é a literal da RV I04-10, como o nome do destinatário da
   // E04-20: o builder a põe, e a descrição informada fica fora do XML de teste.
   const primeiro = itens[0];
-  if (nfce && options.ambiente === 'homologacao' && primeiro !== undefined) {
+  if (nfce && opcoes.ambiente === 'homologacao' && primeiro !== undefined) {
     (primeiro.det.prod as unknown as Record<string, unknown>).xProd = XPROD_HOMOLOGACAO_NFCE;
   }
 
   // IBS/CBS pela calculadora das opções, ou pelo motor do sinete
-  const classificados = input.itens
+  const classificados = entrada.itens
     .map((it, n) => ({ it, n }))
     .filter(({ it }) => it.impostos.ibsCbs?.classificacao !== undefined);
   if (classificados.length > 0) {
-    const calculadora = options.ibsCbs ?? calculadoraPadrao();
-    const reqs: IbsCbsItemRequest[] = classificados.map(({ it, n }) => {
+    const calculadora = opcoes.ibsCbs ?? calculadoraPadrao();
+    const reqs: PedidoIbsCbsItem[] = classificados.map(({ it, n }) => {
       const c = it.impostos.ibsCbs?.classificacao as NonNullable<
         NonNullable<typeof it.impostos.ibsCbs>['classificacao']
       >;
@@ -902,29 +903,29 @@ export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promi
       };
     });
     const destino =
-      input.entrega !== undefined
-        ? { UF: input.entrega.UF, cMun: input.entrega.cMun }
+      entrada.entrega !== undefined
+        ? { UF: entrada.entrega.UF, cMun: entrada.entrega.cMun }
         : d?.endereco !== undefined
           ? isExterior(d.endereco)
             ? { UF: 'EX' as const, cMun: '9999999' }
             : { UF: d.endereco.UF, cMun: d.endereco.cMun }
           : undefined;
-    const compra = input.gCompraGov;
+    const compra = entrada.gCompraGov;
     const resp = await calculadora.calcular({
       nota: {
         fatoGerador,
         emissao: agora,
-        ambiente: options.ambiente,
+        ambiente: opcoes.ambiente,
         mod,
-        tpNF: input.tpNF,
+        tpNF: entrada.tpNF,
         finNFe: finNFeIn,
-        ...(input.tpNFDebito ? { tpNFDebito: input.tpNFDebito } : {}),
-        ...(input.tpNFCredito ? { tpNFCredito: input.tpNFCredito } : {}),
+        ...(entrada.tpNFDebito ? { tpNFDebito: entrada.tpNFDebito } : {}),
+        ...(entrada.tpNFCredito ? { tpNFCredito: entrada.tpNFCredito } : {}),
         indFinal,
         indPres,
         emitente: { UF: emitUf, cMun: e.endereco.cMun, CRT: e.CRT },
         ...(destino ? { destino } : {}),
-        ...(input.cMunFGIBS ? { cMunFGIBS: input.cMunFGIBS } : {}),
+        ...(entrada.cMunFGIBS ? { cMunFGIBS: entrada.cMunFGIBS } : {}),
         ...(compra && pRedutorGov
           ? {
               compraGov: {
@@ -937,7 +938,7 @@ export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promi
       },
       itens: reqs,
     });
-    issues.addAll(resp.issues ?? [], 'montagem');
+    issues.addAll(resp.ocorrencias ?? [], 'montagem');
     for (const { n } of classificados) {
       const g = resp.itens.find((x) => x.nItem === n + 1);
       if (g === undefined) {
@@ -959,7 +960,7 @@ export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promi
     const ib = `itens[${n}].impostos.ibsCbs`;
     const is = `itens[${n}].impostos.is`;
     // O IBSCBS pronto (ibsCbs.grupo) é da entrada; o que a calculadora devolveu é da montagem (ADR 0011).
-    const ibsDaCalculadora = input.itens[n]?.impostos.ibsCbs?.grupo === undefined;
+    const ibsDaCalculadora = entrada.itens[n]?.impostos.ibsCbs?.grupo === undefined;
     const antes = issues.list.length;
     decimaisInvalidos(imp.IBSCBS, ib, issues);
     if (ibsDaCalculadora) issues.reclassificarDesde(antes, 'montagem');
@@ -970,7 +971,7 @@ export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promi
       grupoInvalido(TISCt as ComplexType, 'IS', imp.IS, is, issues);
     }
   });
-  if (!issues.empty) return { ok: false, issues: issues.classificadas };
+  if (!issues.empty) return { ok: false, ocorrencias: issues.classificadas };
 
   // Totais (grupo W)
   const gruposIbsCbs = itens
@@ -1104,43 +1105,43 @@ export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promi
   const ide = clean({
     cUF,
     cNF,
-    natOp: input.natOp,
+    natOp: entrada.natOp,
     mod,
     serie: String(serie),
     nNF: String(nNF),
     dhEmi,
-    dhSaiEnt: input.dhSaiEnt === undefined ? undefined : formatDh(input.dhSaiEnt, offset),
-    dPrevEntrega: input.dPrevEntrega,
-    tpNF: input.tpNF,
+    dhSaiEnt: entrada.dhSaiEnt === undefined ? undefined : formatarDh(entrada.dhSaiEnt, offset),
+    dPrevEntrega: entrada.dPrevEntrega,
+    tpNF: entrada.tpNF,
     idDest,
-    cMunFG: input.cMunFG ?? e.endereco.cMun,
-    cMunFGIBS: input.cMunFGIBS,
+    cMunFG: entrada.cMunFG ?? e.endereco.cMun,
+    cMunFGIBS: entrada.cMunFGIBS,
     tpImp,
     tpEmis,
     cDV,
     tpAmb,
     finNFe,
-    tpNFDebito: input.tpNFDebito,
-    tpNFCredito: input.tpNFCredito,
+    tpNFDebito: entrada.tpNFDebito,
+    tpNFCredito: entrada.tpNFCredito,
     indFinal,
     indPres,
     // NT 2020.006: indIntermed obrigatório com indPres 2, 3, 4 e 9.
-    indIntermed: input.indIntermed ?? (['2', '3', '4', '9'].includes(indPres) ? '0' : undefined),
+    indIntermed: entrada.indIntermed ?? (['2', '3', '4', '9'].includes(indPres) ? '0' : undefined),
     procEmi: '0',
-    verProc: options.verProc ?? formatarVerProc('sinete', VERSAO_PACOTE),
-    dhCont: cont === undefined ? undefined : formatDh(cont.dhCont, offset),
+    verProc: opcoes.verProc ?? formatarVerProc('sinete', VERSAO_PACOTE),
+    dhCont: cont === undefined ? undefined : formatarDh(cont.dhCont, offset),
     xJust: cont?.xJust,
-    NFref: input.referenciadas?.map((r, n) => referencia(r, `referenciadas[${n}]`, issues)),
+    NFref: entrada.referenciadas?.map((r, n) => referencia(r, `referenciadas[${n}]`, issues)),
     gCompraGov:
-      input.gCompraGov === undefined
+      entrada.gCompraGov === undefined
         ? undefined
         : clean({
-            tpEnteGov: input.gCompraGov.tpEnteGov,
+            tpEnteGov: entrada.gCompraGov.tpEnteGov,
             pRedutor: ctx.s(pRedutorGov ?? Decimal.ZERO, D0302A04),
-            tpOperGov: input.gCompraGov.tpOperGov,
-            refDFeAnt: input.gCompraGov.refDFeAnt as string[] | undefined,
+            tpOperGov: entrada.gCompraGov.tpOperGov,
+            refDFeAnt: entrada.gCompraGov.refDFeAnt as string[] | undefined,
           }),
-    gPagAntecipado: input.gPagAntecipado === undefined ? undefined : { refNFe: [...input.gPagAntecipado] },
+    gPagAntecipado: entrada.gPagAntecipado === undefined ? undefined : { refNFe: [...entrada.gPagAntecipado] },
   });
 
   // Locais, autorizados, transporte, cobrança, pagamento, informações adicionais
@@ -1156,10 +1157,10 @@ export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promi
           email: l.email,
           IE: l.IE,
         });
-  if ((input.autXML?.length ?? 0) > 10) issues.add('autXML', 'campo_invalido', 'no máximo 10 autorizados');
-  const autXML = input.autXML?.map((a, n) => documento(a, `autXML[${n}]`, issues));
+  if ((entrada.autXML?.length ?? 0) > 10) issues.add('autXML', 'campo_invalido', 'no máximo 10 autorizados');
+  const autXML = entrada.autXML?.map((a, n) => documento(a, `autXML[${n}]`, issues));
 
-  const tr = input.transporte;
+  const tr = entrada.transporte;
   const transp: Record<string, unknown> = { modFrete: tr?.modFrete ?? '9' };
   if (tr?.transportador !== undefined) {
     const t = tr.transportador;
@@ -1202,8 +1203,8 @@ export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promi
   }
 
   let cobr: Record<string, unknown> | undefined;
-  if (input.cobranca !== undefined) {
-    const c = input.cobranca;
+  if (entrada.cobranca !== undefined) {
+    const c = entrada.cobranca;
     cobr = {};
     if (c.fatura !== undefined) {
       const f = c.fatura;
@@ -1233,10 +1234,10 @@ export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promi
     }
   }
 
-  const pagIn = input.pagamento ?? { detPag: [{ tPag: '90' as const, vPag: '0' }] };
-  const igualTotal = options.pagamentoIgualTotal === true;
+  const pagIn = entrada.pagamento ?? { detPag: [{ tPag: '90' as const, vPag: '0' }] };
+  const igualTotal = opcoes.pagamentoIgualTotal === true;
   if (igualTotal) {
-    const unico = input.pagamento?.detPag.length === 1 ? input.pagamento.detPag[0] : undefined;
+    const unico = entrada.pagamento?.detPag.length === 1 ? entrada.pagamento.detPag[0] : undefined;
     if (unico === undefined) {
       issues.add('pagamento.detPag', 'pagamento_igual_total', 'pagamentoIgualTotal pede exatamente um detPag');
     } else if (unico.tPag === '90') {
@@ -1261,7 +1262,7 @@ export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promi
   }) as unknown as PagMontado;
   // Pagamentos e troco contra o vNF (W16), não o vNFTot: é o total que a YA03-10 (NT 2025.001 v1.03) e a YA09-10 (MOC 7.0
   // Anexo I) citam, e a NT 2025.002 (até a v1.51) não mudou essas regras nem o W16.
-  if (nfce && input.pagamento !== undefined && input.pagamento.detPag.length > 0 && issues.empty) {
+  if (nfce && entrada.pagamento !== undefined && entrada.pagamento.detPag.length > 0 && issues.empty) {
     pagamentoNfce(pag, vNF, issues);
   }
   // W16-40 (rejeição 750): acima do limite, a NFC-e identifica o destinatário por CNPJ, CPF ou idEstrangeiro.
@@ -1272,7 +1273,7 @@ export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promi
       `NFC-e acima de R$ ${NFCE_LIMITE_SEM_DESTINATARIO} identifica o destinatário (W16-40, rejeição 750)`,
     );
   }
-  const ia = input.informacoesAdicionais;
+  const ia = entrada.informacoesAdicionais;
   const infAdic =
     ia === undefined || Object.values(ia).every((x) => x === undefined)
       ? undefined
@@ -1285,8 +1286,8 @@ export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promi
         });
 
   // Responsável técnico e CSRT (NT 2018.005), com a exigência por UF como dado
-  const exig = { ...exigenciaRespTec(emitUf, options.ambiente, agora), ...options.exigencias };
-  const rt = input.respTec ?? options.respTec;
+  const exig = { ...exigenciaRespTec(emitUf, opcoes.ambiente, agora), ...opcoes.exigencias };
+  const rt = entrada.respTec ?? opcoes.respTec;
   let infRespTec: Record<string, unknown> | undefined;
   if (rt === undefined) {
     if (exig.infRespTec === 'obrigatorio') {
@@ -1315,30 +1316,30 @@ export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promi
     ide,
     emit,
     dest,
-    retirada: local(input.retirada, 'retirada'),
-    entrega: local(input.entrega, 'entrega'),
+    retirada: local(entrada.retirada, 'retirada'),
+    entrega: local(entrada.entrega, 'entrega'),
     autXML,
     det: itens.map((m) => m.det),
     total,
     transp,
     cobr,
     pag,
-    infIntermed: input.infIntermed,
+    infIntermed: entrada.infIntermed,
     infAdic,
-    exporta: input.exporta,
-    compra: input.compra,
-    cana: input.cana,
+    exporta: entrada.exporta,
+    compra: entrada.compra,
+    cana: entrada.cana,
     infRespTec,
-    agropecuario: input.agropecuario,
+    agropecuario: entrada.agropecuario,
   }) as unknown as TNFe_infNFe;
 
   // Regras da SEFAZ que só dependem do documento (ADR 0012).
-  cstComIsento(input, idDest, issues);
-  vencimentos(input, { dhEmi, instante: agora }, issues);
+  cstComIsento(entrada, idDest, issues);
+  vencimentos(entrada, { dhEmi, instante: agora }, issues);
 
   camposForaDoPl(pl.infNFe, inf, 'infNFe', pl.vigencia.pl, issues);
   textosForaDoXml(inf, 'infNFe', issues);
-  if (!issues.empty) return { ok: false, issues: issues.classificadas };
+  if (!issues.empty) return { ok: false, ocorrencias: issues.classificadas };
 
   // Serialização canônica e validação estrita contra o schema do PL vigente, antes de qualquer assinatura.
   // O serializer recusa com ErroSerializacao o que não cabe no modelo (escolhas exclusivas informadas juntas, por
@@ -1348,7 +1349,10 @@ export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promi
     xml = `<NFe xmlns="${NFE_NS}">${serializar(pl.infNFe, 'infNFe', inf, NFE_NS)}</NFe>`;
   } catch (e) {
     if (!(e instanceof ErroSerializacao)) throw e;
-    return { ok: false, issues: [{ caminho: e.caminho, code: 'schema', mensagem: e.message, origem: 'montagem' }] };
+    return {
+      ok: false,
+      ocorrencias: [{ caminho: e.caminho, code: 'schema', mensagem: e.message, origem: 'montagem' }],
+    };
   }
   const doc = lerXml(xml);
   const infEl = primeiroFilho(doc.raiz, 'infNFe', NFE_NS);
@@ -1356,7 +1360,7 @@ export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promi
   if (schemaIssues.length > 0) {
     return {
       ok: false,
-      issues: schemaIssues.map((i) => ({
+      ocorrencias: schemaIssues.map((i) => ({
         caminho: i.caminho,
         code: 'schema',
         mensagem: `${i.code}: ${i.mensagem}`,
@@ -1367,14 +1371,14 @@ export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promi
   let supl: NfceSupl | undefined;
   if (nfce) {
     // infNFeSupl (grupo ZX, NT 2025.001 item 04): endereços da UF no dia da emissão, pelo horário de Brasília.
-    const tabela = urlsNfce(emitUf, options.ambiente, diaBrasilia(agora));
-    const urlQr = options.urlQrCode ?? tabela.qrCode;
-    const urlChave = options.urlChave ?? tabela.urlChave;
+    const tabela = urlsNfce(emitUf, opcoes.ambiente, diaBrasilia(agora));
+    const urlQr = opcoes.urlQrCode ?? tabela.qrCode;
+    const urlChave = opcoes.urlChave ?? tabela.urlChave;
     if (urlQr === undefined || !/^https?:\/\//i.test(urlQr)) {
       issues.montagem(
         'urlQrCode',
         'qrcode_invalido',
-        `sem endereço completo do QR Code da NFC-e para ${emitUf} em ${options.ambiente}: informe urlQrCode (data/nfce-urls.json)`,
+        `sem endereço completo do QR Code da NFC-e para ${emitUf} em ${opcoes.ambiente}: informe urlQrCode (data/nfce-urls.json)`,
       );
     }
     if (urlChave === undefined) {
@@ -1385,11 +1389,11 @@ export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promi
       );
     }
     if (urlQr === undefined || urlChave === undefined || !issues.empty)
-      return { ok: false, issues: issues.classificadas };
+      return { ok: false, ocorrencias: issues.classificadas };
     const p = await parametrosQrCode(
       {
         chave,
-        ambiente: options.ambiente,
+        ambiente: opcoes.ambiente,
         tpEmis,
         dhEmi,
         vNF: (inf.total as { ICMSTot: { vNF: string } }).ICMSTot.vNF,
@@ -1403,13 +1407,13 @@ export async function buildNfe(input: NfeInput, options: BuildNfeOptions): Promi
     // off-line, com uma assinatura do tamanho da de uma chave RSA de 2048 bits no lugar da que o certificado ainda vai
     // fazer; o `comQrCode` confere de novo com a assinatura verdadeira.
     const suplIssues = conferirSupl(
-      inserirSupl({ xml, nfce: supl } as BuiltNfe, supl.assinar ? ASSINATURA_2048 : undefined),
+      inserirSupl({ xml, nfce: supl } as NfeMontada, supl.assinar ? ASSINATURA_2048 : undefined),
     );
-    if (suplIssues.length > 0) return { ok: false, issues: suplIssues };
+    if (suplIssues.length > 0) return { ok: false, ocorrencias: suplIssues };
   }
   return {
     ok: true,
-    value: {
+    valor: {
       chave,
       id: `NFe${chave}`,
       cNF,
@@ -1447,8 +1451,8 @@ const escapeXml = (s: string): string => s.replace(/&/g, '&amp;').replace(/</g, 
  * certificado que assina a nota; Manual do DANFE NFC-e 6.0, 4.4.2). `undefined` quando o QR Code não leva assinatura
  * (NF-e, emissão normal, versão 2).
  */
-export async function assinaturaQrCode(built: BuiltNfe, signer: Assinador): Promise<string | undefined> {
-  return built.nfce?.assinar === true ? assinarParametros(built.nfce.parametros, signer) : undefined;
+export async function assinaturaQrCode(nota: NfeMontada, assinador: Assinador): Promise<string | undefined> {
+  return nota.nfce?.assinar === true ? assinarParametros(nota.nfce.parametros, assinador) : undefined;
 }
 
 /**
@@ -1458,8 +1462,8 @@ export async function assinaturaQrCode(built: BuiltNfe, signer: Assinador): Prom
  * este texto ao `prepararAssinatura` do `@sinete/core/xml` com o `id` da nota. Na NF-e (modelo 55), devolve o XML como
  * veio: ela não tem `infNFeSupl` (ZX01-10, rejeição 393).
  */
-export function comQrCode(built: BuiltNfe, assinatura?: string): string {
-  const xml = inserirSupl(built, assinatura);
+export function comQrCode(nota: NfeMontada, assinatura?: string): string {
+  const xml = inserirSupl(nota, assinatura);
   // Com a assinatura verdadeira, o qrCode pode passar do tamanho que a montagem conferiu (chave maior que 2048 bits).
   if (assinatura !== undefined) {
     const issues = conferirSupl(xml);
@@ -1468,7 +1472,7 @@ export function comQrCode(built: BuiltNfe, assinatura?: string): string {
   return xml;
 }
 
-function inserirSupl(built: BuiltNfe, assinatura: string | undefined): string {
+function inserirSupl(built: NfeMontada, assinatura: string | undefined): string {
   const s = built.nfce;
   if (s === undefined) {
     if (assinatura !== undefined) throw new ErroDeConfiguracao('a NF-e (modelo 55) não tem QR Code');
@@ -1494,6 +1498,6 @@ function inserirSupl(built: BuiltNfe, assinatura: string | undefined): string {
  * contingência off-line pede); depois, a `Signature` como último filho de `NFe`, tudo por splice, e devolve a string
  * final. É essa string que vai para a SEFAZ e para o banco; nada depois deve reparseá-la para reescrever.
  */
-export async function signNfe(built: BuiltNfe, signer: Assinador): Promise<string> {
-  return assinarXml(comQrCode(built, await assinaturaQrCode(built, signer)), { id: built.id }, signer);
+export async function assinarNfe(nota: NfeMontada, assinador: Assinador): Promise<string> {
+  return assinarXml(comQrCode(nota, await assinaturaQrCode(nota, assinador)), { id: nota.id }, assinador);
 }

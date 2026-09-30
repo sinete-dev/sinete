@@ -23,11 +23,11 @@ import { serializarRaiz } from '@sinete/schemas';
 import type { TProtMDFe, TRetMDFe } from '@sinete/schemas/mdfe/3.00b';
 import { MDFeElement, retMDFeElement } from '@sinete/schemas/mdfe/3.00b';
 import { calcularDvChaveAcesso, cnpjValido, cpfValido } from '@sinete/validators';
-import { checkAssinatura } from '../certs.ts';
-import type { RequestContext, Status } from '../context.ts';
+import { conferirAssinaturaDoDocumento } from '../certs.ts';
+import type { ContextoDoPedido, Status } from '../context.ts';
 import { omitirDigVal } from '../context.ts';
 import { standalone } from '../docs.ts';
-import type { MdfeRecord } from '../state.ts';
+import type { RegistroMdfe } from '../state.ts';
 import { parseDateTime, utcParts, yearOf } from '../time.ts';
 import { all, at, documento, req, text } from '../xmlutil.ts';
 import {
@@ -51,18 +51,18 @@ const MESES_CHAVE_ANTIGA = 6;
 
 const cUFDe = (uf: string): string | undefined => (ehUf(uf) ? ufPorSigla(uf)?.cUF : undefined);
 
-function naoEncerrados(ctx: RequestContext): MdfeRecord[] {
-  return [...ctx.rt.state.mdfes.values()]
+function naoEncerrados(ctx: ContextoDoPedido): RegistroMdfe[] {
+  return [...ctx.rt.estado.mdfes.values()]
     .filter((m) => m.situacao === 'autorizado')
     .sort((a, b) => a.dhRecbtoMs - b.dhRecbtoMs);
 }
 
 /** MDFeRecepcaoSinc (mdfeRecepcao). */
-export async function recepcaoMdfe(ctx: RequestContext): Promise<string> {
+export async function recepcaoMdfe(ctx: ContextoDoPedido): Promise<string> {
   const ret = (s: Status, prot?: TProtMDFe): string => {
     const value: TRetMDFe = {
       versao: VERSAO,
-      tpAmb: ctx.rt.config.tpAmb,
+      tpAmb: ctx.rt.configuracao.tpAmb,
       cUF: CUF_SVRS as TRetMDFe['cUF'],
       verAplic: verAplicMdfe(),
       cStat: s.cStat,
@@ -80,11 +80,17 @@ export async function recepcaoMdfe(ctx: RequestContext): Promise<string> {
   const id = atributoDe(inf, 'Id') ?? '';
   const chave = id.slice(4);
   const emitente = documento(emit);
-  const now = ctx.now;
+  const now = ctx.agora;
   const rej = (cStat: string, params?: Readonly<Record<string, string>>): string => ret(statusMdfe(cStat, params));
 
   // Grupos D e E: assinatura sobre o documento como recebido; E04 do MDF-e é 202 (a NF-e usa 227).
-  const sig = await checkAssinatura({ doc, id, element: 'infMDFe', now, titular: emitente });
+  const sig = await conferirAssinaturaDoDocumento({
+    documento: doc,
+    id,
+    elemento: 'infMDFe',
+    agora: now,
+    titular: emitente,
+  });
   if (!sig.ok) return rej(sig.cStat === '227' ? '202' : sig.cStat);
 
   const tpAmb = req(ide, 'tpAmb');
@@ -96,7 +102,7 @@ export async function recepcaoMdfe(ctx: RequestContext): Promise<string> {
   const tpEmit = req(ide, 'tpEmit');
   const dhEmi = req(ide, 'dhEmi');
   const dhEmiMs = parseDateTime(dhEmi) ?? now;
-  if (ativa(ctx, 'F01') && tpAmb !== ctx.rt.config.tpAmb) return rej('252');
+  if (ativa(ctx, 'F01') && tpAmb !== ctx.rt.configuracao.tpAmb) return rej('252');
   if (ativa(ctx, 'F02') && cUFDe(req(emit, 'enderEmit/UF')) !== cUF) return rej('247');
   // F03: "MDFe" + cUF, AAMM do dhEmi, CNPJ ou 000 + CPF, 58, série, número, tpEmis, cMDF e cDV.
   const doc14 = emitente.CNPJ ?? `000${emitente.CPF ?? ''}`;
@@ -114,7 +120,7 @@ export async function recepcaoMdfe(ctx: RequestContext): Promise<string> {
 
   // NT 2024.001: chaves de CT-e e NF-e anteriores a 6 meses da autorização (F30a, F37a) e cavalo mecânico sem reboque
   // (F89c). O mês limite passa (autorizado em setembro, março ainda é aceito).
-  const agora = utcParts(now + ctx.rt.config.offsetMinutes * 60_000);
+  const agora = utcParts(now + ctx.rt.configuracao.deslocamentoMin * 60_000);
   const limite = agora.year * 12 + (agora.month - 1) - MESES_CHAVE_ANTIGA;
   const antiga = (ch: string): boolean => (2000 + Number(ch.slice(2, 4))) * 12 + (Number(ch.slice(4, 6)) - 1) < limite;
   for (const mun of all(at(inf, 'infDoc'), 'infMunDescarga')) {
@@ -150,7 +156,7 @@ export async function recepcaoMdfe(ctx: RequestContext): Promise<string> {
 
   // Duplicidade (F81 e F82): a mesma numeração do emitente.
   const docKey = emitente.CNPJ ?? emitente.CPF ?? '';
-  const existente = ctx.rt.state.mdfeByNumero(docKey, serie, nMDF);
+  const existente = ctx.rt.estado.mdfeByNumero(docKey, serie, nMDF);
   if (existente !== undefined) {
     if (ativa(ctx, 'F81') && existente.chave !== chave) return rej('539', marcadores(existente));
     if (ativa(ctx, 'F82')) return rej('204', marcadores(existente));
@@ -179,13 +185,13 @@ export async function recepcaoMdfe(ctx: RequestContext): Promise<string> {
   }
 
   // Autorização: protocolo 9 + cUF do emitente + ano + sequencial.
-  const nProt = ctx.rt.state.nextProtocolo('9', cUF, yearOf(now, ctx.rt.config.offsetMinutes));
+  const nProt = ctx.rt.estado.nextProtocolo('9', cUF, yearOf(now, ctx.rt.configuracao.deslocamentoMin));
   const dhRecbto = dhMdfe(ctx, now);
   const prot: TProtMDFe = {
     versao: VERSAO,
     infProt: {
       Id: `ID${nProt}`,
-      tpAmb: ctx.rt.config.tpAmb,
+      tpAmb: ctx.rt.configuracao.tpAmb,
       verAplic: verAplicMdfe(),
       chMDFe: chave,
       dhRecbto,
@@ -201,7 +207,7 @@ export async function recepcaoMdfe(ctx: RequestContext): Promise<string> {
     ? ret(statusMdfe('100'), { ...prot, infProt: semDigVal })
     : xml;
   const inicioProt = xml.indexOf('<protMDFe');
-  const record: MdfeRecord = {
+  const record: RegistroMdfe = {
     chave,
     cUF,
     emitente,
@@ -232,6 +238,6 @@ export async function recepcaoMdfe(ctx: RequestContext): Promise<string> {
       .replace('<protMDFe', `<protMDFe xmlns="${doc.raiz.ns}"`),
     situacao: 'autorizado',
   };
-  ctx.rt.state.mdfes.set(chave, record);
+  ctx.rt.estado.mdfes.set(chave, record);
   return resposta;
 }

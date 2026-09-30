@@ -5,13 +5,19 @@
 
 import type { RelogioManual } from '@sinete/core';
 import { contextoDeTempo, relogioManual } from '@sinete/core';
-import type { MunicipioSim, NfseSim, NfseSimFullOptions, SimServer, SyntheticCertificate } from '@sinete/sefaz-sim';
-import { createNfseSim, redirectNfseToSim, startSimServer, syntheticCertificate } from '@sinete/sefaz-sim';
+import type {
+  CertificadoSintetico,
+  MunicipioSim,
+  NfseSim,
+  NfseSimOpcoesCompletas,
+  ServidorSim,
+} from '@sinete/sefaz-sim';
+import { certificadoSintetico, criarNfseSim, iniciarServidorSim, redirecionarNfseParaSim } from '@sinete/sefaz-sim';
 import type { Transporte } from '@sinete/transport';
 import { criarTransporte } from '@sinete/transport';
 import { calcularDvCnpj, calcularDvCpf } from '@sinete/validators';
-import type { DpsInput, NfseClient, NfseClientOptions } from '../src/index.ts';
-import { buildDps, createNfseClient, signDps } from '../src/index.ts';
+import type { ClienteNfse, ClienteNfseOpcoes, DadosDps } from '../src/index.ts';
+import { assinarDps, criarClienteNfse, montarDps } from '../src/index.ts';
 
 export const cnpj = (base12: string): string => base12 + calcularDvCnpj(base12);
 export const cpf = (base9: string): string => base9 + calcularDvCpf(base9);
@@ -45,7 +51,7 @@ export const MUNICIPIOS: readonly MunicipioSim[] = [
   { cMun: CAMPINAS, nome: 'Campinas', convenio: { aderenteEmissorNacional: 0 } },
 ];
 
-export function dps(over: Partial<DpsInput> = {}): DpsInput {
+export function dps(over: Partial<DadosDps> = {}): DadosDps {
   return {
     serie: '1',
     nDPS: '1',
@@ -65,19 +71,19 @@ export function dps(over: Partial<DpsInput> = {}): DpsInput {
 }
 
 export interface Certs {
-  readonly ac: SyntheticCertificate;
-  readonly servidor: SyntheticCertificate;
-  readonly prestador: SyntheticCertificate;
-  readonly outro: SyntheticCertificate;
+  readonly ac: CertificadoSintetico;
+  readonly servidor: CertificadoSintetico;
+  readonly prestador: CertificadoSintetico;
+  readonly outro: CertificadoSintetico;
 }
 
 export async function gerarCerts(): Promise<Certs> {
   const clock = relogioManual(EMISSAO);
-  const ac = await syntheticCertificate({ clock, role: 'ac', validDays: 3650 });
+  const ac = await certificadoSintetico({ relogio: clock, papel: 'ac', diasDeValidade: 3650 });
   const [servidor, prestador, outro] = await Promise.all([
-    syntheticCertificate({ clock, role: 'servidor', issuer: ac }),
-    syntheticCertificate({ clock, role: 'titular', cnpj: PRESTADOR, issuer: ac }),
-    syntheticCertificate({ clock, role: 'titular', cnpj: OUTRO, issuer: ac }),
+    certificadoSintetico({ relogio: clock, papel: 'servidor', emissor: ac }),
+    certificadoSintetico({ relogio: clock, papel: 'titular', cnpj: PRESTADOR, emissor: ac }),
+    certificadoSintetico({ relogio: clock, papel: 'titular', cnpj: OUTRO, emissor: ac }),
   ]);
   return { ac, servidor, prestador, outro };
 }
@@ -85,44 +91,48 @@ export async function gerarCerts(): Promise<Certs> {
 export interface Cenario {
   readonly clock: RelogioManual;
   readonly sim: NfseSim;
-  readonly server: SimServer;
+  readonly server: ServidorSim;
   readonly transport: Transporte;
-  readonly client: NfseClient;
+  readonly client: ClienteNfse;
   /** Caminhos pedidos ao simulador, na ordem. */
   readonly caminhos: string[];
-  assinar(input: DpsInput, assinante?: SyntheticCertificate): Promise<string>;
+  assinar(input: DadosDps, assinante?: CertificadoSintetico): Promise<string>;
   close(): Promise<void>;
 }
 
 export async function cenario(
   c: Certs,
   o: {
-    readonly sim?: Partial<NfseSimFullOptions>;
-    readonly client?: Partial<NfseClientOptions>;
-    readonly canal?: SyntheticCertificate;
+    readonly sim?: Partial<NfseSimOpcoesCompletas>;
+    readonly client?: Partial<ClienteNfseOpcoes>;
+    readonly canal?: CertificadoSintetico;
   } = {},
 ): Promise<Cenario> {
   const clock = relogioManual(EMISSAO);
-  const sim = createNfseSim({ clock, signer: c.servidor.signer, municipios: MUNICIPIOS, ...o.sim });
+  const sim = criarNfseSim({ relogio: clock, assinador: c.servidor.assinador, municipios: MUNICIPIOS, ...o.sim });
   const caminhos: string[] = [];
-  const server = await startSimServer(
+  const server = await iniciarServidorSim(
     {
-      handle: (r) => {
-        caminhos.push(`${r.method ?? 'GET'} ${r.path}`);
-        return sim.handle(r);
+      atender: (r) => {
+        caminhos.push(`${r.metodo ?? 'GET'} ${r.caminho}`);
+        return sim.atender(r);
       },
     },
-    { cert: c.servidor.pem, key: c.servidor.keyPem },
+    { certificado: c.servidor.pem, chave: c.servidor.chavePem },
   );
-  const transport = redirectNfseToSim(
-    criarTransporte({ identidade: (o.canal ?? c.prestador).tlsIdentity, acsAdicionais: [c.ac.pem], timeoutMs: 5_000 }),
-    server.baseUrl,
+  const transport = redirecionarNfseParaSim(
+    criarTransporte({
+      identidade: (o.canal ?? c.prestador).identidadeTls,
+      acsAdicionais: [c.ac.pem],
+      timeoutMs: 5_000,
+    }),
+    server.urlBase,
   );
-  const client = createNfseClient({
-    transport,
+  const client = criarClienteNfse({
+    transporte: transport,
     ambiente: 'homologacao',
-    clock,
-    signer: c.prestador.signer,
+    relogio: clock,
+    assinador: c.prestador.assinador,
     ...o.client,
   });
   return {
@@ -132,14 +142,14 @@ export async function cenario(
     transport,
     client,
     caminhos,
-    async assinar(input: DpsInput, assinante: SyntheticCertificate = c.prestador): Promise<string> {
-      const r = buildDps(input, { ambiente: 'homologacao', time: contextoDeTempo({ emissao: clock }) });
-      if (!r.ok) throw new Error(r.issues.map((i) => `${i.caminho}: ${i.mensagem}`).join('\n'));
-      return signDps(r.value, assinante.signer);
+    async assinar(input: DadosDps, assinante: CertificadoSintetico = c.prestador): Promise<string> {
+      const r = await montarDps(input, { ambiente: 'homologacao', tempo: contextoDeTempo({ emissao: clock }) });
+      if (!r.ok) throw new Error(r.ocorrencias.map((i) => `${i.caminho}: ${i.mensagem}`).join('\n'));
+      return assinarDps(r.valor, assinante.assinador);
     },
     async close(): Promise<void> {
       await transport.fechar();
-      await server.close();
+      await server.fechar();
     },
   };
 }

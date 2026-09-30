@@ -1,5 +1,5 @@
 /**
- * A calculadora padrão de IBS/CBS do `buildNfe`: a porta `IbsCbsCalculator` implementada sobre o motor do sinete.
+ * A calculadora padrão de IBS/CBS do `montarNfe`: a porta `CalculadoraIbsCbs` implementada sobre o motor do sinete.
  *
  * Para cada item classificado, monta a operação do `@sinete/ibs-cbs/calcular` (CST, cClassTrib, base, local da operação,
  * compra governamental), calcula com o dataset do `@sinete/ibs-cbs-dados` e as alíquotas do `@sinete/ibs-cbs/aliquotas`, confere o
@@ -28,12 +28,12 @@ import { calcular, ErroClassificacao, ErroRegimeNaoSuportado } from '@sinete/ibs
 import type { Regra } from '@sinete/ibs-cbs/validar';
 import { documentoDoRoc, validar } from '@sinete/ibs-cbs/validar';
 import type { DatasetIbsCbs } from '@sinete/ibs-cbs-dados';
-import type { IbsCbsCalculator, IbsCbsItemRequest, IbsCbsNotaRequest, IbsCbsResponse } from './ports.ts';
+import type { CalculadoraIbsCbs, PedidoIbsCbsItem, PedidoIbsCbsNota, RespostaIbsCbs } from './ports.ts';
 
 /** Grupo `IBSCBS` do item, como o `@sinete/nfe` o recebe. */
-export type GrupoIbsCbs = IbsCbsResponse['itens'][number]['IBSCBS'];
+export type GrupoIbsCbs = RespostaIbsCbs['itens'][number]['IBSCBS'];
 
-export interface IbsCbsCalculatorOptions {
+export interface CalculadoraIbsCbsOpcoes {
   /**
    * Dataset do IBS/CBS. Padrão: o embarcado no `@sinete/ibs-cbs-dados`, importado sob demanda na primeira nota
    * (`carregarDatasetEmbarcado`). Informe um bundle verificado em runtime (`conferirDataset`) para usar dados de outra
@@ -41,20 +41,20 @@ export interface IbsCbsCalculatorOptions {
    */
   readonly dataset?: DatasetIbsCbs;
   /** Alíquotas. Padrão: `aliquotasOficiais()` do `@sinete/ibs-cbs/aliquotas`; troque por um provedor com alíquotas informadas. */
-  readonly rates?: ProvedorDeAliquotas;
+  readonly aliquotas?: ProvedorDeAliquotas;
   /**
    * Base do IBS/CBS do item que não trouxe `vBC`, em texto com até 2 casas. A composição da base (NT 2025.002, UB16-10)
    * ainda é "implementação futura, aguardando orientação normativa": sem esta função, item sem `vBC` vira ocorrência
    * `ibscbs_base_ausente` em vez de uma base presumida.
    */
-  readonly base?: (item: IbsCbsItemRequest, nota: IbsCbsNotaRequest) => string;
+  readonly base?: (item: PedidoIbsCbsItem, nota: PedidoIbsCbsNota) => string;
   /**
    * Regras da NT 2025.002 conferidas sobre os grupos produzidos (`@sinete/ibs-cbs/validar`). Padrão: as implantadas na data
    * de emissão e no ambiente. `false` desliga; `{ rules }` troca a lista.
    */
-  readonly regras?: false | { readonly rules?: readonly Regra[]; readonly ignoreActivation?: boolean };
+  readonly regras?: false | { readonly regras?: readonly Regra[]; readonly ignorarAtivacao?: boolean };
   /** Fuso do local da operação para a data civil do fato gerador, em minutos. Padrão: Brasília (-180). */
-  readonly utcOffsetMinutes?: number;
+  readonly deslocamentoMin?: number;
 }
 
 const BASE = /^\d{1,13}(\.\d{1,2})?$/;
@@ -79,7 +79,7 @@ function ufDoMunicipio(cMun: string): string | undefined {
  * 2025.002, município de ocorrência do fato gerador do IBS/CBS), senão o destino da mercadoria (entrega ou
  * destinatário, pela LC 214/2025, art. 11, o local da entrega), senão o emitente. Destino no exterior cai no emitente.
  */
-export function localDaOperacao(nota: IbsCbsNotaRequest): LocalDaOperacao {
+export function localDaOperacao(nota: PedidoIbsCbsNota): LocalDaOperacao {
   if (nota.cMunFGIBS !== undefined) {
     const uf = ufDoMunicipio(nota.cMunFGIBS);
     if (uf !== undefined) return { uf, cMun: nota.cMunFGIBS };
@@ -110,7 +110,7 @@ function grupoDoLeiaute(g: IBSCBS, indDoacao: '1' | undefined): GrupoIbsCbs {
 }
 
 /** Erro do motor ou das alíquotas como ocorrência no item (ou na nota, quando o erro não diz o item). */
-function ocorrenciaDoMotor(e: unknown, itens: readonly IbsCbsItemRequest[]): Ocorrencia | undefined {
+function ocorrenciaDoMotor(e: unknown, itens: readonly PedidoIbsCbsItem[]): Ocorrencia | undefined {
   if (e instanceof ErroClassificacao || e instanceof ErroRegimeNaoSuportado) {
     const path = e.item !== undefined ? caminho(e.item) : caminho(itens[0]?.nItem ?? 1);
     return { caminho: path, code: e.code, mensagem: e.message, origem: 'entrada' };
@@ -129,7 +129,7 @@ let embarcado: Promise<DatasetIbsCbs> | undefined;
  * import falhar, a próxima chamada tenta de novo.
  */
 export function carregarDatasetEmbarcado(): Promise<DatasetIbsCbs> {
-  embarcado ??= import('@sinete/ibs-cbs-dados/bundled').then(
+  embarcado ??= import('@sinete/ibs-cbs-dados/embarcado').then(
     (m) => m.datasetEmbarcado(),
     (e: unknown) => {
       embarcado = undefined;
@@ -140,20 +140,20 @@ export function carregarDatasetEmbarcado(): Promise<DatasetIbsCbs> {
 }
 
 /**
- * Cria a calculadora de IBS/CBS sobre o motor do sinete. O `buildNfe` usa uma com as opções padrão quando
- * `options.ibsCbs` não é informado; crie a sua para trocar dataset, alíquotas, base ou regras. Com `dataset` informado
+ * Cria a calculadora de IBS/CBS sobre o motor do sinete. O `montarNfe` usa uma com as opções padrão quando
+ * `opcoes.ibsCbs` não é informado; crie a sua para trocar dataset, alíquotas, base ou regras. Com `dataset` informado
  * o cálculo é síncrono; sem ele, a primeira chamada espera o import do dataset embarcado.
  */
-export function ibsCbsCalculator(options: IbsCbsCalculatorOptions = {}): IbsCbsCalculator {
-  const rates = options.rates ?? aliquotasOficiais();
-  const dataset = options.dataset;
+export function calculadoraIbsCbs(opcoes: CalculadoraIbsCbsOpcoes = {}): CalculadoraIbsCbs {
+  const rates = opcoes.aliquotas ?? aliquotasOficiais();
+  const dataset = opcoes.dataset;
   return {
     calcular(request: {
-      readonly nota: IbsCbsNotaRequest;
-      readonly itens: readonly IbsCbsItemRequest[];
-    }): IbsCbsResponse | Promise<IbsCbsResponse> {
-      if (dataset !== undefined) return calcularCom(dataset, rates, options, request);
-      return carregarDatasetEmbarcado().then((ds) => calcularCom(ds, rates, options, request));
+      readonly nota: PedidoIbsCbsNota;
+      readonly itens: readonly PedidoIbsCbsItem[];
+    }): RespostaIbsCbs | Promise<RespostaIbsCbs> {
+      if (dataset !== undefined) return calcularCom(dataset, rates, opcoes, request);
+      return carregarDatasetEmbarcado().then((ds) => calcularCom(ds, rates, opcoes, request));
     },
   };
 }
@@ -161,15 +161,15 @@ export function ibsCbsCalculator(options: IbsCbsCalculatorOptions = {}): IbsCbsC
 function calcularCom(
   dataset: DatasetIbsCbs,
   rates: ProvedorDeAliquotas,
-  options: IbsCbsCalculatorOptions,
+  options: CalculadoraIbsCbsOpcoes,
   {
     nota,
     itens,
   }: {
-    readonly nota: IbsCbsNotaRequest;
-    readonly itens: readonly IbsCbsItemRequest[];
+    readonly nota: PedidoIbsCbsNota;
+    readonly itens: readonly PedidoIbsCbsItem[];
   },
-): IbsCbsResponse {
+): RespostaIbsCbs {
   const issues: Ocorrencia[] = [];
   const classificados: ItemClassificado[] = [];
   for (const it of itens) {
@@ -189,7 +189,7 @@ function calcularCom(
         caminho: `${caminho(it.nItem)}.classificacao.vBC`,
         code: 'ibscbs_base_ausente',
         mensagem:
-          'informe vBC do IBS/CBS ou IbsCbsCalculatorOptions.base: a composição da base (UB16-10) ainda não tem regra publicada',
+          'informe vBC do IBS/CBS ou CalculadoraIbsCbsOpcoes.base: a composição da base (UB16-10) ainda não tem regra publicada',
         origem: 'entrada',
       });
       continue;
@@ -216,7 +216,7 @@ function calcularCom(
         : { regular: { cst: it.gTribRegular.CSTReg, cClassTrib: it.gTribRegular.cClassTribReg } }),
     });
   }
-  if (issues.length > 0) return { itens: [], issues };
+  if (issues.length > 0) return { itens: [], ocorrencias: issues };
 
   const op: OperacaoClassificada = {
     modelo: Number(nota.mod),
@@ -240,12 +240,12 @@ function calcularCom(
       dataset,
       aliquotas: rates,
       tempo: time,
-      ...(options.utcOffsetMinutes === undefined ? {} : { deslocamentoMin: options.utcOffsetMinutes }),
+      ...(options.deslocamentoMin === undefined ? {} : { deslocamentoMin: options.deslocamentoMin }),
     });
   } catch (e) {
     const issue = ocorrenciaDoMotor(e, itens);
     if (issue === undefined) throw e;
-    return { itens: [], issues: [issue] };
+    return { itens: [], ocorrencias: [issue] };
   }
 
   // O redutor da compra governamental vai no ide.gCompraGov como a nota informou, mas o motor calcula com o do
@@ -280,9 +280,9 @@ function calcularCom(
       tempo: time,
       ambiente: nota.ambiente,
       aliquotas: rates,
-      ...(options.utcOffsetMinutes === undefined ? {} : { deslocamentoMin: options.utcOffsetMinutes }),
-      ...(options.regras?.rules === undefined ? {} : { regras: options.regras.rules }),
-      ...(options.regras?.ignoreActivation === undefined ? {} : { ignorarAtivacao: options.regras.ignoreActivation }),
+      ...(options.deslocamentoMin === undefined ? {} : { deslocamentoMin: options.deslocamentoMin }),
+      ...(options.regras?.regras === undefined ? {} : { regras: options.regras.regras }),
+      ...(options.regras?.ignorarAtivacao === undefined ? {} : { ignorarAtivacao: options.regras.ignorarAtivacao }),
     });
     for (const v of report.violacoes) {
       issues.push({
@@ -300,6 +300,6 @@ function calcularCom(
       nItem: r.nItem,
       IBSCBS: grupoDoLeiaute(r.IBSCBS, porItem.get(r.nItem)?.indDoacao),
     })),
-    ...(issues.length === 0 ? {} : { issues }),
+    ...(issues.length === 0 ? {} : { ocorrencias: issues }),
   };
 }

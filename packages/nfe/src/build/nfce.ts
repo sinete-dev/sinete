@@ -14,7 +14,7 @@ import { lerCnpj } from '@sinete/validators';
 import urls from '../data/nfce-urls.json' with { type: 'json' };
 import { Decimal } from '../decimal.ts';
 import type { Issues } from '../issues.ts';
-import type { NfeInput } from '../model.ts';
+import type { DadosNfe } from '../model.ts';
 
 /**
  * Versão do QR Code da NFC-e. A 3 (padrão) dispensa o CSC: na emissão normal leva só chave, versão e ambiente, e na
@@ -60,7 +60,7 @@ function vigente(lista: readonly Entrada[] | undefined, dia: string): Entrada | 
 /**
  * Endereços da NFC-e da UF no ambiente e no dia (`data/nfce-urls.json`, das tabelas do Portal Nacional da NFC-e). O
  * `qrCode` é `undefined` onde a tabela não traz o endereço completo (AM e MA publicam sem o protocolo): informe
- * `BuildNfeOptions.urlQrCode`.
+ * `MontarNfeOpcoes.urlQrCode`.
  */
 export function urlsNfce(
   uf: Uf,
@@ -192,7 +192,7 @@ export interface IdeNfce {
  * Regras da NFC-e sobre a entrada (origem `entrada`, ADR 0011), todas de aplicação obrigatória. Grupos que a NFC-e
  * não tem saem como `grupo_vedado` no caminho da entrada.
  */
-export function conferirNfce(input: NfeInput, ide: IdeNfce, issues: Issues): void {
+export function conferirNfce(input: DadosNfe, ide: IdeNfce, issues: Issues): void {
   const vedado = (path: string, msg: string): void => issues.add(path, 'grupo_vedado', `NFC-e ${msg}`);
   const invalido = (path: string, msg: string): void => issues.add(path, 'campo_invalido', `NFC-e ${msg}`);
 

@@ -1,11 +1,11 @@
 {
-  "schemaVersion": 1,
-  "source": "NT 2013.007 v1.03 (SVC), item 04.1 (regras C03.2 e GB02.2 da recepção) e item 04.7 (códigos da consulta status na SVC e regras K05.1 a K05.3)",
+  "versaoDoFormato": 2,
+  "fonte": "NT 2013.007 v1.03 (SVC), item 04.1 (regras C03.2 e GB02.2 da recepção) e item 04.7 (códigos da consulta status na SVC e regras K05.1 a K05.3)",
   "url": "https://www.nfe.fazenda.gov.br/portal/listaConteudo.aspx?tipoConteudo=04BIflQt1aY=",
   "sha256": "e8d4e4f4b31a1e8c3d6b5ad33e94a387e22a78273009cdc8bceda70458d14d83",
-  "retrievedAt": "2026-09-28",
-  "note": "Os códigos 113 e 114 da SVC não estão na tabela 4.4.1 do MOC 7.0 nem no catálogo de rejeições: vêm da NT. No 113, o simulador usa o texto do item 04.7, que traz a data e a hora; a regra K05.3 traz só a hora (HH:MM).",
-  "codes": {
+  "coletadoEm": "2026-09-28",
+  "nota": "Os códigos 113 e 114 da SVC não estão na tabela 4.4.1 do MOC 7.0 nem no catálogo de rejeições: vêm da NT. No 113, o simulador usa o texto do item 04.7, que traz a data e a hora; a regra K05.3 traz só a hora (HH:MM).",
+  "codigos": {
     "113": "SVC em processo de desativação. SVC será desabilitada para a SEFAZ-[UF] em [data] às [hora] horas",
     "114Status": "Rejeição: [SVC] desabilitada pela SEFAZ de Origem",
     "114Recepcao": "Rejeição: SVC não ativada para a SEFAZ do Emitente"

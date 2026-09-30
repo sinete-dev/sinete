@@ -14,15 +14,15 @@ try {
 } catch (e) {
   err = e;
 }
-if (!(err instanceof da.DanfeError) || !(err instanceof core.ErroSinete)) failures.push('DanfeError via require');
-if (nfe.DanfeError !== da.DanfeError || mdfe.DanfeError !== da.DanfeError || nfse.DanfeError !== da.DanfeError) {
+if (!(err instanceof da.ErroDa) || !(err instanceof core.ErroSinete)) failures.push('ErroDa via require');
+if (nfe.ErroDa !== da.ErroDa || mdfe.ErroDa !== da.ErroDa || nfse.ErroDa !== da.ErroDa) {
   failures.push('uma classe só entre subpaths');
 }
 if (typeof nfce.danfce !== 'function' || typeof mdfe.damdfe !== 'function' || typeof cce.dacce !== 'function' || typeof nfse.danfse !== 'function') {
   failures.push('funções dos subpaths via require');
 }
-if (da.toPdf({ title: 't', pages: [], images: {}, stats: { reduzidos: 0, quebrados: 0, cortados: 0 } })[0] !== 37) failures.push('toPdf via require');
+if (da.gerarPdf({ titulo: 't', paginas: [], imagens: {}, estatisticas: { reduzidos: 0, quebrados: 0, cortados: 0 } })[0] !== 37) failures.push('gerarPdf via require');
 import('@sinete/da').then((esm) => {
-  if (esm.DanfeError !== da.DanfeError) failures.push('mesma classe em require e import');
+  if (esm.ErroDa !== da.ErroDa) failures.push('mesma classe em require e import');
   console.log(JSON.stringify({ ok: failures.length === 0, rt: `node ${process.version}`, mode: 'require', failures }));
 });

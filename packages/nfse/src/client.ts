@@ -42,33 +42,33 @@ import type { TCNFSe } from '@sinete/schemas/nfse/1.01-20260727';
 import { NFSeElement } from '@sinete/schemas/nfse/1.01-20260727';
 import type { EndpointResolvido, NfseApi, RespostaTransporte, Transporte } from '@sinete/transport';
 import { nfseEndpoint } from '@sinete/transport';
-import { parseChaveNfse } from './codigos.ts';
+import { lerChaveNfse } from './codigos.ts';
 import situacoes from './data/situacoes.json' with { type: 'json' };
 import type { AnaliseFiscalPedido, CancelamentoPedido } from './evento.ts';
-import { buildPedidoAnaliseFiscal, buildPedidoCancelamento, signPedidoEvento } from './evento.ts';
-import { gunzipBase64, gunzipBase64Duplo, gzipBase64 } from './gzip.ts';
+import { assinarPedidoEvento, montarPedidoAnaliseFiscal, montarPedidoCancelamento } from './evento.ts';
+import { comprimirGzipBase64, descomprimirGzipBase64, gunzipBase64Duplo } from './gzip.ts';
 import { NFSE_NS } from './leiaute.ts';
 import type { CacheParametros, ParametrosMunicipais } from './parametros.ts';
-import { createParametrosMunicipais } from './parametros.ts';
-import type { NfseMensagem, NfseOutcome } from './respostas.ts';
+import { criarParametrosMunicipais } from './parametros.ts';
+import type { MensagemNfse, ResultadoNfse } from './respostas.ts';
 import { documentosDosEventos, exigirTexto, lerJson, mensagens, rejeicao, texto } from './respostas.ts';
 
-export interface NfseClientOptions {
+export interface ClienteNfseOpcoes {
   /** Transporte com a identidade TLS do emitente (e-CNPJ ou e-CPF A1, ou A3 pelo helper). */
-  readonly transport: Transporte;
+  readonly transporte: Transporte;
   /** `homologacao` é a produção restrita. */
   readonly ambiente: Ambiente;
   /** Relógio de emissão: `dhEvento` e validade do cache de parâmetros. */
-  readonly clock: Relogio;
+  readonly relogio: Relogio;
   /** Assina os pedidos de evento em `cancelar` e `solicitarAnaliseFiscal`. */
-  readonly signer?: Assinador;
+  readonly assinador?: Assinador;
   readonly logger?: Logger;
   /** Prazo por requisição; padrão o do transporte. */
   readonly timeoutMs?: number;
   /** Cache da parametrização municipal; `false` desliga. Padrão: em memória. */
   readonly cacheParametros?: CacheParametros | false;
   /** Validade de uma consulta de parâmetro com resposta. Padrão: 6 horas. */
-  readonly ttlParametrosMs?: number;
+  readonly validadeParametrosMs?: number;
   /** Sobrepõe a base de uma API (padrão: `nfseEndpoint` do `@sinete/transport`). */
   readonly endpoint?: (api: NfseApi, ambiente: Ambiente) => EndpointResolvido;
   /** `verAplic` repassado ao `cancelar` e ao `solicitarAnaliseFiscal`; sem valor, cada um usa seu próprio padrão. */
@@ -83,7 +83,7 @@ export interface NfseGerada {
   readonly nfse: TCNFSe;
   readonly nNFSe: string;
   readonly dhProc: string;
-  readonly alertas: readonly NfseMensagem[];
+  readonly alertas: readonly MensagemNfse[];
   readonly dataHoraProcessamento: string | undefined;
   readonly versaoAplicativo: string | undefined;
 }
@@ -118,37 +118,37 @@ export interface FiltroEventos {
   readonly nSeqEvento: number;
 }
 
-export interface OpcoesEnvio {
+export interface EnvioOpcoes {
   readonly signal?: AbortSignal;
 }
 
-export interface NfseClient {
+export interface ClienteNfse {
   readonly ambiente: Ambiente;
   /** Envia a DPS assinada (com a declaração UTF-8) e devolve a NFS-e gerada ou a rejeição. */
-  autorizar(dpsAssinada: string, opcoes?: OpcoesEnvio): Promise<NfseOutcome<NfseGerada>>;
+  autorizar(dpsAssinada: string, opcoes?: EnvioOpcoes): Promise<ResultadoNfse<NfseGerada>>;
   /**
    * Emite a DPS substituta (com o grupo `subst`). A Sefin gera a nova NFS-e e registra sozinha o cancelamento por
    * substituição (e105102) na substituída.
    */
-  substituir(dpsAssinada: string, opcoes?: OpcoesEnvio): Promise<NfseOutcome<NfseGerada>>;
+  substituir(dpsAssinada: string, opcoes?: EnvioOpcoes): Promise<ResultadoNfse<NfseGerada>>;
   /** NFS-e pela chave, ou `undefined` se a Sefin responder 404. */
-  consultar(chave: string, opcoes?: OpcoesEnvio): Promise<NfseConsultada | undefined>;
+  consultar(chave: string, opcoes?: EnvioOpcoes): Promise<NfseConsultada | undefined>;
   /** Chave da NFS-e gerada a partir da DPS de Id `idDps`, ou `undefined` se a DPS não gerou NFS-e. */
   consultarDps(
     idDps: string,
-    opcoes?: OpcoesEnvio,
+    opcoes?: EnvioOpcoes,
   ): Promise<{ readonly idDps: string; readonly chaveAcesso: string } | undefined>;
   /** Registra um pedido de evento já assinado. */
-  registrarEvento(pedidoAssinado: string, opcoes?: OpcoesEnvio): Promise<NfseOutcome<EventoRegistrado>>;
-  /** Monta, assina (com `options.signer`) e registra o cancelamento (e101101). */
-  cancelar(pedido: CancelamentoPedido, opcoes?: OpcoesEnvio): Promise<NfseOutcome<EventoRegistrado>>;
+  registrarEvento(pedidoAssinado: string, opcoes?: EnvioOpcoes): Promise<ResultadoNfse<EventoRegistrado>>;
+  /** Monta, assina (com `opcoes.assinador`) e registra o cancelamento (e101101). */
+  cancelar(pedido: CancelamentoPedido, opcoes?: EnvioOpcoes): Promise<ResultadoNfse<EventoRegistrado>>;
   /** Monta, assina e registra a solicitação de análise fiscal para cancelamento (e101103). */
-  solicitarAnaliseFiscal(pedido: AnaliseFiscalPedido, opcoes?: OpcoesEnvio): Promise<NfseOutcome<EventoRegistrado>>;
+  solicitarAnaliseFiscal(pedido: AnaliseFiscalPedido, opcoes?: EnvioOpcoes): Promise<ResultadoNfse<EventoRegistrado>>;
   /**
    * Evento de um tipo e de uma sequência (`GET /nfse/{chave}/eventos/{tipo}/{seq}`), ou lista vazia se a Sefin
    * responder 404. A Sefin real não lista os eventos sem os dois (ver `FiltroEventos`).
    */
-  consultarEventos(chave: string, filtro: FiltroEventos, opcoes?: OpcoesEnvio): Promise<readonly EventoRegistrado[]>;
+  consultarEventos(chave: string, filtro: FiltroEventos, opcoes?: EnvioOpcoes): Promise<readonly EventoRegistrado[]>;
   readonly parametros: ParametrosMunicipais;
 }
 
@@ -161,7 +161,7 @@ interface DpsLida {
 function lerDps(xml: string): DpsLida {
   if (!xml.startsWith('<?xml')) {
     throw new ErroDeConfiguracao(
-      'DPS sem a declaração XML: a Sefin recusa com E1229; monte com buildDps, que já a inclui, e assine a string dele',
+      'DPS sem a declaração XML: a Sefin recusa com E1229; monte com montarDps, que já a inclui, e assine a string dele',
     );
   }
   let root: ElementoXml;
@@ -210,7 +210,7 @@ function lerEvento(xml: string, operacao: string): EventoRegistrado {
 }
 
 function conferirChave(chave: string): void {
-  parseChaveNfse(chave);
+  lerChaveNfse(chave);
 }
 
 /** Desfecho `autorizado` da NFS-e gerada, com o `cStat` do documento e o texto da tabela de situações. */
@@ -222,26 +222,26 @@ function geradaAutorizada(nfse: TCNFSe, v: Omit<NfseGerada, 'nfse' | 'nNFSe' | '
 }
 
 /** Cria o cliente. Nada é enviado até a primeira operação. */
-export function createNfseClient(options: NfseClientOptions): NfseClient {
-  const { transport, ambiente } = options;
-  const logger = options.logger ?? loggerSilencioso;
+export function criarClienteNfse(opcoesDoCliente: ClienteNfseOpcoes): ClienteNfse {
+  const { transporte: transport, ambiente } = opcoesDoCliente;
+  const logger = opcoesDoCliente.logger ?? loggerSilencioso;
   const endpointDe = (api: NfseApi): EndpointResolvido =>
-    (options.endpoint ?? ((a: NfseApi, amb: Ambiente): EndpointResolvido => nfseEndpoint({ ambiente: amb, api: a })))(
-      api,
-      ambiente,
-    );
+    (
+      opcoesDoCliente.endpoint ??
+      ((a: NfseApi, amb: Ambiente): EndpointResolvido => nfseEndpoint({ ambiente: amb, api: a }))
+    )(api, ambiente);
   const tpAmb = tpAmbDoAmbiente(ambiente);
 
   async function enviar(
     api: NfseApi,
     caminho: string,
     corpo: Record<string, string> | undefined,
-    opcoes: OpcoesEnvio | undefined,
+    opcoes: EnvioOpcoes | undefined,
     operacao: string,
   ): Promise<RespostaTransporte> {
     const endpoint = endpointDe(api);
     const url = `${endpoint.url.replace(/\/+$/, '')}${caminho}`;
-    const started = options.clock.agora().getTime();
+    const started = opcoesDoCliente.relogio.agora().getTime();
     const res = await transport.enviar({
       url,
       metodo: corpo === undefined ? 'GET' : 'POST',
@@ -252,9 +252,13 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
       ...(corpo === undefined ? {} : { corpo: JSON.stringify(corpo) }),
       endpoint,
       ...(opcoes?.signal === undefined ? {} : { signal: opcoes.signal }),
-      ...(options.timeoutMs === undefined ? {} : { timeoutMs: options.timeoutMs }),
+      ...(opcoesDoCliente.timeoutMs === undefined ? {} : { timeoutMs: opcoesDoCliente.timeoutMs }),
     });
-    logger.debug('nfse.envio', { operacao, status: res.status, ms: options.clock.agora().getTime() - started });
+    logger.debug('nfse.envio', {
+      operacao,
+      status: res.status,
+      ms: opcoesDoCliente.relogio.agora().getTime() - started,
+    });
     return res;
   }
 
@@ -270,7 +274,7 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
   }
 
   async function nfseDe(json: Record<string, unknown>, operacao: string): Promise<{ xml: string; nfse: TCNFSe }> {
-    const xml = await gunzipBase64(exigirTexto(json, 'nfseXmlGZipB64', operacao), 'nfseXmlGZipB64');
+    const xml = await descomprimirGzipBase64(exigirTexto(json, 'nfseXmlGZipB64', operacao), 'nfseXmlGZipB64');
     let decoded: ReturnType<typeof decodificarXml<TCNFSe>>;
     try {
       decoded = decodificarXml(NFSeElement, xml);
@@ -285,9 +289,9 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
 
   async function emitirDps(
     dps: string,
-    opcoes: OpcoesEnvio | undefined,
+    opcoes: EnvioOpcoes | undefined,
     operacao: string,
-  ): Promise<NfseOutcome<NfseGerada>> {
+  ): Promise<ResultadoNfse<NfseGerada>> {
     const lida = lerDps(dps);
     if (lida.tpAmb !== tpAmb) {
       throw new ErroDeConfiguracao(`DPS com tpAmb ${lida.tpAmb} num cliente de ${ambiente} (tpAmb ${tpAmb})`, {
@@ -295,7 +299,7 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
       });
     }
     if (operacao === 'substituir' && !lida.substituta) throw new ErroDeConfiguracao('DPS substituta sem o grupo subst');
-    const res = await enviar('sefin', '/nfse', { dpsXmlGZipB64: await gzipBase64(dps) }, opcoes, operacao);
+    const res = await enviar('sefin', '/nfse', { dpsXmlGZipB64: await comprimirGzipBase64(dps) }, opcoes, operacao);
     const json = lerJson(res.texto());
     if (res.status >= 400 && res.status < 500) return rejeicao(json, res.status, operacao);
     if ((res.status !== 200 && res.status !== 201) || json === undefined) throw foraDoContrato(operacao, res);
@@ -318,7 +322,7 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
     });
   }
 
-  async function registrar(pedido: string, opcoes: OpcoesEnvio | undefined): Promise<NfseOutcome<EventoRegistrado>> {
+  async function registrar(pedido: string, opcoes: EnvioOpcoes | undefined): Promise<ResultadoNfse<EventoRegistrado>> {
     let root: ElementoXml;
     try {
       root = lerXml(pedido).raiz;
@@ -336,47 +340,47 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
     if (!pedido.startsWith('<?xml')) throw new ErroDeConfiguracao('pedido de evento sem a declaração XML UTF-8');
     const chave = textoDe(ch);
     conferirChave(chave);
-    const body = { pedidoRegistroEventoXmlGZipB64: await gzipBase64(pedido) };
+    const body = { pedidoRegistroEventoXmlGZipB64: await comprimirGzipBase64(pedido) };
     const res = await enviar('sefin', `/nfse/${chave}/eventos`, body, opcoes, 'evento');
     const json = lerJson(res.texto());
     if (res.status >= 400 && res.status < 500) return rejeicao(json, res.status, 'evento');
     if ((res.status !== 200 && res.status !== 201) || json === undefined) throw foraDoContrato('evento', res);
-    const xml = await gunzipBase64(exigirTexto(json, 'eventoXmlGZipB64', 'evento'), 'eventoXmlGZipB64');
+    const xml = await descomprimirGzipBase64(exigirTexto(json, 'eventoXmlGZipB64', 'evento'), 'eventoXmlGZipB64');
     const ev = lerEvento(xml, 'evento');
     if (ev.chaveAcesso !== chave) throw new ErroRespostaInvalida('evento: o evento devolvido é de outra NFS-e');
     return criarAutorizado({ cStat: situacoes.evento.cStat, xMotivo: situacoes.evento.xMotivo }, ev);
   }
 
   function assinante(): Assinador {
-    if (options.signer === undefined)
+    if (opcoesDoCliente.assinador === undefined)
       throw new ErroDeConfiguracao('cancelar e solicitarAnaliseFiscal precisam de options.signer');
-    return options.signer;
+    return opcoesDoCliente.assinador;
   }
 
   const eventoOpts = {
     ambiente,
-    clock: options.clock,
-    ...(options.verAplic === undefined ? {} : { verAplic: options.verAplic }),
+    relogio: opcoesDoCliente.relogio,
+    ...(opcoesDoCliente.verAplic === undefined ? {} : { verAplic: opcoesDoCliente.verAplic }),
   };
 
-  const parametros = createParametrosMunicipais({
-    transport,
+  const parametros = criarParametrosMunicipais({
+    transporte: transport,
     endpoint: endpointDe('parametrizacao'),
-    clock: options.clock,
+    relogio: opcoesDoCliente.relogio,
     logger,
-    ...(options.cacheParametros === undefined ? {} : { cache: options.cacheParametros }),
-    ...(options.ttlParametrosMs === undefined ? {} : { ttlMs: options.ttlParametrosMs }),
-    ...(options.timeoutMs === undefined ? {} : { timeoutMs: options.timeoutMs }),
+    ...(opcoesDoCliente.cacheParametros === undefined ? {} : { cache: opcoesDoCliente.cacheParametros }),
+    ...(opcoesDoCliente.validadeParametrosMs === undefined ? {} : { validadeMs: opcoesDoCliente.validadeParametrosMs }),
+    ...(opcoesDoCliente.timeoutMs === undefined ? {} : { timeoutMs: opcoesDoCliente.timeoutMs }),
   });
 
   return {
     ambiente,
-    autorizar: (dps: string, opcoes?: OpcoesEnvio): Promise<NfseOutcome<NfseGerada>> =>
+    autorizar: (dps: string, opcoes?: EnvioOpcoes): Promise<ResultadoNfse<NfseGerada>> =>
       emitirDps(dps, opcoes, 'autorizar'),
-    substituir: (dps: string, opcoes?: OpcoesEnvio): Promise<NfseOutcome<NfseGerada>> =>
+    substituir: (dps: string, opcoes?: EnvioOpcoes): Promise<ResultadoNfse<NfseGerada>> =>
       emitirDps(dps, opcoes, 'substituir'),
 
-    async consultar(chave: string, opcoes?: OpcoesEnvio): Promise<NfseConsultada | undefined> {
+    async consultar(chave: string, opcoes?: EnvioOpcoes): Promise<NfseConsultada | undefined> {
       conferirChave(chave);
       const res = await enviar('sefin', `/nfse/${chave}`, undefined, opcoes, 'consultar');
       if (res.status === 404) return undefined;
@@ -390,7 +394,7 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
 
     async consultarDps(
       idDps: string,
-      opcoes?: OpcoesEnvio,
+      opcoes?: EnvioOpcoes,
     ): Promise<{ readonly idDps: string; readonly chaveAcesso: string } | undefined> {
       if (!/^DPS\d{8}[0-9A-Z]{14}\d{20}$/.test(idDps)) throw new ErroDeConfiguracao(`Id de DPS inválido: ${idDps}`);
       const res = await enviar('sefin', `/dps/${idDps}`, undefined, opcoes, 'consultarDps');
@@ -404,25 +408,25 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
 
     registrarEvento: registrar,
 
-    async cancelar(pedido: CancelamentoPedido, opcoes?: OpcoesEnvio): Promise<NfseOutcome<EventoRegistrado>> {
-      const r = buildPedidoCancelamento(pedido, eventoOpts);
-      if (!r.ok) throw new ErroDeValidacao('pedido de cancelamento inválido', r.issues);
-      return registrar(await signPedidoEvento(r.value, assinante()), opcoes);
+    async cancelar(pedido: CancelamentoPedido, opcoes?: EnvioOpcoes): Promise<ResultadoNfse<EventoRegistrado>> {
+      const r = montarPedidoCancelamento(pedido, eventoOpts);
+      if (!r.ok) throw new ErroDeValidacao('pedido de cancelamento inválido', r.ocorrencias);
+      return registrar(await assinarPedidoEvento(r.valor, assinante()), opcoes);
     },
 
     async solicitarAnaliseFiscal(
       pedido: AnaliseFiscalPedido,
-      opcoes?: OpcoesEnvio,
-    ): Promise<NfseOutcome<EventoRegistrado>> {
-      const r = buildPedidoAnaliseFiscal(pedido, eventoOpts);
-      if (!r.ok) throw new ErroDeValidacao('pedido de análise fiscal inválido', r.issues);
-      return registrar(await signPedidoEvento(r.value, assinante()), opcoes);
+      opcoes?: EnvioOpcoes,
+    ): Promise<ResultadoNfse<EventoRegistrado>> {
+      const r = montarPedidoAnaliseFiscal(pedido, eventoOpts);
+      if (!r.ok) throw new ErroDeValidacao('pedido de análise fiscal inválido', r.ocorrencias);
+      return registrar(await assinarPedidoEvento(r.valor, assinante()), opcoes);
     },
 
     async consultarEventos(
       chave: string,
       filtro: FiltroEventos,
-      opcoes?: OpcoesEnvio,
+      opcoes?: EnvioOpcoes,
     ): Promise<readonly EventoRegistrado[]> {
       conferirChave(chave);
       const { tpEvento, nSeqEvento } = filtro ?? ({} as Partial<FiltroEventos>);
@@ -454,7 +458,7 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
       for (const d of documentosDosEventos(json, 'consultarEventos')) {
         const xml = d.duplo
           ? await gunzipBase64Duplo(d.b64, 'arquivoXml')
-          : await gunzipBase64(d.b64, 'eventoXmlGZipB64');
+          : await descomprimirGzipBase64(d.b64, 'eventoXmlGZipB64');
         const ev = lerEvento(xml, 'consultarEventos');
         if (ev.chaveAcesso !== chave)
           throw new ErroRespostaInvalida('consultarEventos: o evento devolvido é de outra NFS-e');
@@ -469,12 +473,12 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
 
 /** Desfecho de `resolverEnvioSemResposta`, com a mesma forma do resolvedor da NF-e e do MDF-e. */
 export type ResolucaoEnvio =
-  /** A DPS gerou NFS-e: `outcome` é o desfecho que a emissão teria devolvido, e `nfse` a leitura da consulta. */
+  /** A DPS gerou NFS-e: `resultado` é o desfecho que a emissão teria devolvido, e `nfse` a leitura da consulta. */
   | {
       readonly acao: 'concluida';
       readonly chaveAcesso: string;
       readonly nfse: NfseConsultada;
-      readonly outcome: Autorizado<NfseGerada>;
+      readonly resultado: Autorizado<NfseGerada>;
     }
   /** A Sefin não tem NFS-e para esta DPS: reenvie `dpsAssinada`, exatamente os mesmos bytes. */
   | { readonly acao: 'reenviar'; readonly dpsAssinada: string }
@@ -510,17 +514,17 @@ function digestDaDps(xml: string): string | undefined {
  * e, achando a chave, lê a NFS-e. Nunca monte outra DPS para o mesmo número antes disso: a Sefin responderia E0014
  * (série e número já usados) ou geraria uma segunda nota se o número mudasse.
  */
-export async function resolverEnvioSemResposta(client: NfseClient, dpsAssinada: string): Promise<ResolucaoEnvio> {
+export async function resolverEnvioSemResposta(cliente: ClienteNfse, dpsAssinada: string): Promise<ResolucaoEnvio> {
   const { id, tpAmb } = lerDps(dpsAssinada);
   // O Id da DPS não carrega o ambiente: série e número repetidos em produção e em homologação dariam outra NFS-e.
-  if (tpAmb !== tpAmbDoAmbiente(client.ambiente)) {
+  if (tpAmb !== tpAmbDoAmbiente(cliente.ambiente)) {
     throw new ErroDeConfiguracao(
-      `DPS com tpAmb ${tpAmb} num cliente de ${client.ambiente}: consulte no ambiente da DPS`,
+      `DPS com tpAmb ${tpAmb} num cliente de ${cliente.ambiente}: consulte no ambiente da DPS`,
     );
   }
-  const dps = await client.consultarDps(id);
+  const dps = await cliente.consultarDps(id);
   if (dps === undefined) return { acao: 'reenviar', dpsAssinada };
-  const nfse = await client.consultar(dps.chaveAcesso);
+  const nfse = await cliente.consultar(dps.chaveAcesso);
   if (nfse === undefined)
     throw new ErroRespostaInvalida('a DPS consta como processada, mas a NFS-e não foi encontrada');
   if (nfse.nfse.infNFSe?.DPS?.infDPS?.Id !== id) {
@@ -543,5 +547,5 @@ export async function resolverEnvioSemResposta(client: NfseClient, dpsAssinada: 
     dataHoraProcessamento: undefined,
     versaoAplicativo: undefined,
   });
-  return { acao: 'concluida', chaveAcesso: dps.chaveAcesso, nfse, outcome };
+  return { acao: 'concluida', chaveAcesso: dps.chaveAcesso, nfse, resultado: outcome };
 }

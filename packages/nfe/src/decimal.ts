@@ -220,13 +220,13 @@ function roundCoef(coef: bigint, from: number, to: number, mode: RoundingMode, s
 }
 
 /** Atalho para `Decimal.of`. */
-export function dec(input: DecimalInput): Decimal {
-  return Decimal.of(input);
+export function dec(valor: DecimalInput): Decimal {
+  return Decimal.of(valor);
 }
 
 /** Soma uma lista (vazia = zero). */
-export function sum(values: Iterable<Decimal>): Decimal {
+export function sum(valores: Iterable<Decimal>): Decimal {
   let acc = Decimal.ZERO;
-  for (const v of values) acc = acc.plus(v);
+  for (const v of valores) acc = acc.plus(v);
   return acc;
 }

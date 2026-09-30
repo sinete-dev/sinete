@@ -9,9 +9,9 @@
 
 import type { Ocorrencia } from '@sinete/core';
 import type { Issues } from '../issues.ts';
-import type { NfeInput } from '../model.ts';
+import type { DadosNfe } from '../model.ts';
 import type { Instante } from '../time.ts';
-import { formatDh } from '../time.ts';
+import { formatarDh } from '../time.ts';
 
 /**
  * CFOP em que o CST 50 (suspensão) é aceito com destinatário contribuinte isento: conserto ou reparo e remessa para
@@ -40,7 +40,7 @@ const CFOP_CST50_ISENTO: ReadonlySet<string> = new Set([
  * recusado aqui, seja qual for o documento do destinatário. A exceção 2 (emissão antes de 01/07/2016) não alcança nota
  * montada agora.
  */
-export function cstComIsento(input: NfeInput, idDest: string, issues: Issues): void {
+export function cstComIsento(input: DadosNfe, idDest: string, issues: Issues): void {
   const d = input.destinatario;
   if (d?.indIEDest !== '2') return;
   input.itens.forEach((it, n) => {
@@ -60,7 +60,7 @@ export function cstComIsento(input: NfeInput, idDest: string, issues: Issues): v
 
 /** Data (`AAAA-MM-DD`) do instante no deslocamento dado, em minutos. */
 const dataNoFuso = (instante: Instante, offsetMinutes: number): string =>
-  formatDh(instante, offsetMinutes).slice(0, 10);
+  formatarDh(instante, offsetMinutes).slice(0, 10);
 
 /** Brasília (UTC-3), o fuso das SEFAZ, para a comparação de datas que o MOC faz "desconsiderando a hora". */
 const OFFSET_BRASILIA = -180;
@@ -78,7 +78,7 @@ const OFFSET_BRASILIA = -180;
  * "na data da emissão" só vale quando a data local do `dhEmi`, a de Brasília e a de UTC coincidem.
  */
 export function vencimentos(
-  input: NfeInput,
+  input: DadosNfe,
   emissao: { readonly dhEmi: string; readonly instante: Instante },
   issues: Issues,
 ): void {
@@ -107,11 +107,11 @@ const soDocumento = (s: string): string => s.replace(/[^0-9A-Za-z]/g, '').toUppe
  * - e-CPF: o CPF do emitente é o do certificado, senão rejeição 227 (RV F03A).
  *
  * Só compara documento com documento do mesmo tipo: e-CNPJ assinando nota de emitente CPF (ou o contrário) fica para a
- * SEFAZ. O certificado da SEFAZ que a F03 dispensa só assina a nota avulsa, que o `buildNfe` não monta (procEmi 0).
+ * SEFAZ. O certificado da SEFAZ que a F03 dispensa só assina a nota avulsa, que o `montarNfe` não monta (procEmi 0).
  * Devolve as ocorrências (vazio quando confere), com o caminho da entrada.
  */
 export function conferirEmitenteDoCertificado(
-  nfe: NfeInput,
+  nfe: DadosNfe,
   titular: { readonly cnpj?: string | undefined; readonly cpf?: string | undefined },
 ): readonly Ocorrencia[] {
   const e = nfe.emitente;

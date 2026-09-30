@@ -5,8 +5,8 @@
  */
 
 import { unzlibSync } from 'fflate';
-import { DanfeError } from '../errors.ts';
-import type { DocImage } from '../model.ts';
+import { ErroDa } from '../errors.ts';
+import type { ImagemDoDocumento } from '../model.ts';
 
 /** Amostras de 8 bits prontas para o PDF: `color` em cinza (1 canal) ou RGB (3), `alpha` quando há transparência. */
 export interface DecodedPng {
@@ -28,7 +28,7 @@ export interface JpegInfo {
 const PNG_SIG = [137, 80, 78, 71, 13, 10, 26, 10];
 
 function fail(message: string, cause?: unknown): never {
-  throw new DanfeError('imagem_invalida', message, cause === undefined ? {} : { cause });
+  throw new ErroDa('imagem_invalida', message, cause === undefined ? {} : { cause });
 }
 
 function u32(b: Uint8Array, o: number): number {
@@ -40,14 +40,14 @@ function u16(b: Uint8Array, o: number): number {
 }
 
 /** Identifica o formato e lê as dimensões; lança `imagem_invalida` para o que não for PNG nem JPEG. */
-export function loadImage(bytes: Uint8Array): DocImage {
+export function loadImage(bytes: Uint8Array): ImagemDoDocumento {
   if (PNG_SIG.every((v, i) => bytes[i] === v)) {
     const { width, height } = pngHeader(bytes);
-    return { format: 'png', bytes, width, height };
+    return { formato: 'png', bytes, largura: width, altura: height };
   }
   if (bytes[0] === 0xff && bytes[1] === 0xd8) {
     const { width, height } = jpegInfo(bytes);
-    return { format: 'jpeg', bytes, width, height };
+    return { formato: 'jpeg', bytes, largura: width, altura: height };
   }
   return fail('logotipo precisa ser PNG ou JPEG');
 }

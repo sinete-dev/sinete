@@ -28,9 +28,9 @@ export interface CertificadoAberto {
   readonly identidade: IdentidadeTls;
 }
 
-export interface OpcoesAbrirCertificado {
+export interface AbrirCertificadoOpcoes {
   /** Relógio da validade do certificado e da cadeia. Padrão: o do sistema. */
-  readonly clock?: Relogio;
+  readonly relogio?: Relogio;
   /**
    * Completa a cadeia do mTLS com as ACs da ICP-Brasil que o pacote conhece (as intermediárias do `@sinete/cert`, além
    * das que vieram no PFX), para o PFX que só traz o titular. Padrão: `false`, a cadeia que veio no PFX.
@@ -40,11 +40,11 @@ export interface OpcoesAbrirCertificado {
 
 /** Abre o PFX (fora da validade, `ErroCertificado`) e devolve o certificado aberto. Os bytes não ficam guardados. */
 export async function abrirCertificado(
-  cert: CertificadoA1,
-  opcoes: OpcoesAbrirCertificado = {},
+  certificado: CertificadoA1,
+  opcoes: AbrirCertificadoOpcoes = {},
 ): Promise<CertificadoAberto> {
-  const clock = opcoes.clock ?? relogioDoSistema;
-  const ks = await abrirPfx(cert.pfx, { senha: cert.senha, relogio: clock });
+  const clock = opcoes.relogio ?? relogioDoSistema;
+  const ks = await abrirPfx(certificado.pfx, { senha: certificado.senha, relogio: clock });
   const cadeia = opcoes.completarCadeia
     ? (
         await montarCadeia(ks.certificado, {

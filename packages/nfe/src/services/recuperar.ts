@@ -11,14 +11,14 @@
 
 import type { DocumentoXml, ElementoXml } from '@sinete/core/xml';
 import { lerXml, primeiroFilho, textoDe } from '@sinete/core/xml';
-import type { ConsultaOutcome, EventoRegistrado, NfeClient } from './client.ts';
+import type { ClienteNfe, EventoRegistrado, ResultadoConsulta } from './client.ts';
 import { cstatEm } from './outcome.ts';
-import { NFE_NS, sliceElement } from './proc.ts';
+import { NFE_NS, recortarElemento } from './proc.ts';
 
 /** Resultado da recuperação: o evento registrado, com a consulta que o prova, ou só a consulta. */
 export type RecuperacaoEvento =
-  | { readonly registrado: true; readonly evento: EventoRegistrado; readonly consulta: ConsultaOutcome }
-  | { readonly registrado: false; readonly consulta: ConsultaOutcome };
+  | { readonly registrado: true; readonly evento: EventoRegistrado; readonly consulta: ResultadoConsulta }
+  | { readonly registrado: false; readonly consulta: ResultadoConsulta };
 
 /** Texto do filho `local` no namespace da NF-e, se houver. */
 function campo(el: ElementoXml, local: string): string | undefined {
@@ -62,7 +62,7 @@ function lerProcEvento(xml: string): EventoRegistrado | undefined {
     tpEvento,
     nSeqEvento: String(Number(nSeq)),
     dhRegEvento,
-    retEvento: sliceElement(doc, retEl, ''),
+    retEvento: recortarElemento(doc, retEl, ''),
     procEventoNFe: xml,
     ...(nProt === undefined ? {} : { nProt }),
   };
@@ -70,21 +70,23 @@ function lerProcEvento(xml: string): EventoRegistrado | undefined {
 
 /**
  * Consulta a chave e devolve o evento `tpEvento` que a SEFAZ registrou para ela (o de maior `nSeqEvento`, quando há
- * vários, como na CC-e). Serve depois de um pedido de evento sem resposta ou respondido com 573 ou 580: nunca conclua
- * que o evento existe só pelo `cStat` do pedido. `registrado: false` quer dizer que a consulta não mostrou o evento
- * (ou não decidiu: veja `consulta`); não quer dizer que o evento não existe.
+ * vários, como na CC-e; com `nSeqEvento`, só o dessa sequência). Serve depois de um pedido de evento sem resposta ou
+ * respondido com 573 ou 580: nunca conclua que o evento existe só pelo `cStat` do pedido. `registrado: false` quer
+ * dizer que a consulta não mostrou o evento (ou não decidiu: veja `consulta`); não quer dizer que o evento não existe.
  */
 export async function recuperarEventoRegistrado(
-  client: NfeClient,
+  cliente: ClienteNfe,
   chave: string,
   tpEvento: string,
+  nSeqEvento?: number,
 ): Promise<RecuperacaoEvento> {
-  const consulta = await client.consultar(chave);
+  const consulta = await cliente.consultar(chave);
   if (consulta.tipo !== 'autorizado' && consulta.tipo !== 'denegado') return { registrado: false, consulta };
   let achado: EventoRegistrado | undefined;
   for (const xml of consulta.valor.eventos) {
     const e = lerProcEvento(xml);
     if (e === undefined || e.chNFe !== consulta.valor.chNFe || e.tpEvento !== tpEvento) continue;
+    if (nSeqEvento !== undefined && Number(e.nSeqEvento) !== nSeqEvento) continue;
     if (achado === undefined || Number(e.nSeqEvento) > Number(achado.nSeqEvento)) achado = e;
   }
   return achado === undefined ? { registrado: false, consulta } : { registrado: true, evento: achado, consulta };

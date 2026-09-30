@@ -6,8 +6,8 @@
  * sabe ainda; o motivo diz por quê) e `divergente` (a SEFAZ tem outro documento no número desses bytes). A situação
  * posterior de um documento autorizado (cancelado ou encerrado fora deste fluxo) também só existe aqui.
  *
- * Todo desfecho leva o `bruto`, o desfecho do pacote do documento de onde ele saiu (o `AutorizacaoOutcome` da NF-e, a
- * consulta, a `NfseOutcome`), para ninguém perder informação.
+ * Todo desfecho leva o `bruto`, o desfecho do pacote do documento de onde ele saiu (o `ResultadoAutorizacao` da NF-e, a
+ * consulta, a `ResultadoNfse`), para ninguém perder informação.
  */
 
 import type { DicaRejeicao } from '@sinete/core';
@@ -92,7 +92,7 @@ export interface DesfechoRecusado<B = unknown> extends DesfechoBase {
   readonly tipo: 'recusado';
   readonly cStat: string;
   readonly xMotivo: string;
-  readonly hint?: DicaRejeicao;
+  readonly dica?: DicaRejeicao;
   readonly bruto: B;
 }
 
@@ -180,7 +180,7 @@ export type DesfechoEvento<E = unknown, B = unknown> =
       readonly tipo: 'recusado';
       readonly cStat: string;
       readonly xMotivo: string;
-      readonly hint?: DicaRejeicao;
+      readonly dica?: DicaRejeicao;
       readonly bruto: B;
     }
   | {

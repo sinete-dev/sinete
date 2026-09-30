@@ -4,7 +4,7 @@
  */
 import { contextoDeTempo, relogioFixo } from '@sinete/core';
 import { montarChaveAcesso } from '@sinete/validators';
-import type { BuildMdfeOptions, MdfeInput } from '../../src/index.ts';
+import type { DadosMdfe, MontarMdfeOpcoes } from '../../src/index.ts';
 
 export const CNPJ_EMIT = '11222333000181';
 export const CNPJ_TERCEIRO = '11444777000161';
@@ -15,12 +15,12 @@ export const IE_MT = '00130000019';
 /** Emissão em homologação em 26/09/2026 (MDF-e 3.00b vigente; CIOT obrigatório em homologação desde 21/09/2026). */
 export const EMISSAO = '2026-09-26T10:00:00-04:00';
 
-export function opcoes(extra: Partial<BuildMdfeOptions> = {}, at: string = EMISSAO): BuildMdfeOptions {
+export function opcoes(extra: Partial<MontarMdfeOpcoes> = {}, at: string = EMISSAO): MontarMdfeOpcoes {
   let seed = 4242;
   return {
     ambiente: 'homologacao',
-    time: contextoDeTempo({ emissao: relogioFixo(at) }),
-    random: (b: Uint8Array): Uint8Array => {
+    tempo: contextoDeTempo({ emissao: relogioFixo(at) }),
+    aleatorio: (b: Uint8Array): Uint8Array => {
       for (let i = 0; i < b.length; i++) {
         seed = (seed * 1103515245 + 12345) % 2 ** 31;
         b[i] = seed & 0xff;
@@ -46,7 +46,7 @@ export function chaveDoc(n: number, mod: '55' | '57' = '55', tpEmis = '1'): stri
 }
 
 /** Produtor rural (CPF) transportando a própria carga em veículo próprio, de MT para SP passando por MS. */
-export function cargaPropria(extra: Partial<MdfeInput> = {}): MdfeInput {
+export function cargaPropria(extra: Partial<DadosMdfe> = {}): DadosMdfe {
   return {
     tpEmit: '2',
     serie: 920,
@@ -88,7 +88,7 @@ export function cargaPropria(extra: Partial<MdfeInput> = {}): MdfeInput {
 }
 
 /** Transportador (CNPJ) prestando serviço com um CT-e (carga lotação), com seguro, CIOT, contratante e pagamento. */
-export function prestador(extra: Partial<MdfeInput> = {}): MdfeInput {
+export function prestador(extra: Partial<DadosMdfe> = {}): DadosMdfe {
   return {
     tpEmit: '1',
     serie: 1,

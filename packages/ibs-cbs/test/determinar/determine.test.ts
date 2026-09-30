@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { contextoDeTempo, relogioFixo } from '@sinete/core';
 import type { ConteudoTributario } from '@sinete/ibs-cbs-dados';
 import { carregarDataset } from '@sinete/ibs-cbs-dados';
-import { DATASET_EMBARCADO } from '@sinete/ibs-cbs-dados/bundled';
+import { DATASET_EMBARCADO } from '@sinete/ibs-cbs-dados/embarcado';
 import { aliquotasOficiais } from '../../src/aliquotas/index.ts';
 import { calcularEm } from '../../src/calcular/index.ts';
 import type {

@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { ErroDeConfiguracao } from '@sinete/core';
 import pkg from '../package.json' with { type: 'json' };
-import { DATASET_EMBARCADO, datasetEmbarcado } from '../src/bundled.ts';
+import { DATASET_EMBARCADO, datasetEmbarcado } from '../src/embarcado.ts';
 import type { BundleDoDataset, NomeDaTabela, RegistroAplicabilidade } from '../src/index.ts';
 import {
   aplicabilidade,

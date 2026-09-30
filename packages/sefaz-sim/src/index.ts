@@ -9,22 +9,34 @@
  * determinísticos e cenários de falha. Esta entrada roda em qualquer runtime (o simulador em processo e o `Transporte`
  * sem socket); a entrada `node` acrescenta o servidor HTTPS com mTLS.
  *
- * A NFS-e Nacional tem simulador próprio (`createNfseSim`): Sefin Nacional (emissão síncrona, consultas, eventos) e
+ * A NFS-e Nacional tem simulador próprio (`criarNfseSim`): Sefin Nacional (emissão síncrona, consultas, eventos) e
  * ADN (parametrização municipal), com as regras dos Anexos I e II como dado.
  */
 
-export type { CertCheck, CertIdentity, SignatureCheck, SignatureCheckInput } from './certs.ts';
-export { checkAssinatura, checkTransmissor } from './certs.ts';
-export type { AtivacaoSvc, ProtocoloSemDigVal, RequestContext, Runtime, SimConfig, Svc } from './context.ts';
-export type { SimHandler } from './handler.ts';
-export type { MotivoParams } from './messages.ts';
-export { isDenegacao, isResultado, motivo, motivoMdfe, motivoRejeicao } from './messages.ts';
+export type {
+  ConferenciaDaAssinatura,
+  ConferenciaDoCertificado,
+  EntradaConferenciaAssinatura,
+  IdentidadeDoCertificado,
+} from './certs.ts';
+export { conferirAssinaturaDoDocumento, conferirTransmissor } from './certs.ts';
+export type {
+  AtivacaoSvc,
+  ConfiguracaoSim,
+  ContextoDoPedido,
+  EstadoDeExecucao,
+  ProtocoloSemDigVal,
+  Svc,
+} from './context.ts';
+export type { TratadorSim } from './handler.ts';
+export type { ParametrosDoMotivo } from './messages.ts';
+export { ehDenegacao, ehResultado, motivo, motivoMdfe, motivoRejeicao } from './messages.ts';
 export type {
   AliquotaSim,
   AliquotasIbsCbsSim,
   ContribuinteNfseSim,
   MunicipioSim,
-  NfseSimOptions,
+  NfseSimOpcoes,
   ServicoMunicipalSim,
 } from './nfse/dados.ts';
 export { dvChave } from './nfse/documentos.ts';
@@ -37,63 +49,63 @@ export type {
   NfseSimRegras,
 } from './nfse/regras.ts';
 export { NFSE_REGRAS_PADRAO } from './nfse/regras.ts';
-export type { NfseRota, NfseSim, NfseSimFaultTarget, NfseSimFullOptions, NfseSimInspect } from './nfse/sim.ts';
-export { createNfseSim, NFSE_SIM_PREFIXOS } from './nfse/sim.ts';
-export { redirectNfseToSim } from './nfse/transport.ts';
-export type { SyntheticPfxOptions } from './pfx.ts';
-export { syntheticPfx } from './pfx.ts';
+export type { AlvoDaFalhaNfseSim, InspecaoNfseSim, NfseRota, NfseSim, NfseSimOpcoesCompletas } from './nfse/sim.ts';
+export { criarNfseSim, NFSE_SIM_PREFIXOS } from './nfse/sim.ts';
+export { redirecionarNfseParaSim } from './nfse/transport.ts';
+export type { PfxSinteticoOpcoes } from './pfx.ts';
+export { pfxSintetico } from './pfx.ts';
 export type {
-  AutorizacaoContext,
-  EventoContext,
-  EventoFacts,
-  InutilizacaoContext,
-  InutilizacaoFacts,
-  NfeFacts,
-  SimRejection,
-  SimRule,
-  SimRules,
-  SimView,
+  ContextoAutorizacao,
+  ContextoEvento,
+  ContextoInutilizacao,
+  FatosEvento,
+  FatosInutilizacao,
+  FatosNfe,
+  RegraSim,
+  RegrasSim,
+  RejeicaoSim,
+  VisaoSim,
 } from './rules.ts';
-export { chaveRejection, DEFAULT_RULES, firstRejection } from './rules.ts';
-export type { MdfeServicoSim, ServiceDef, SimAutorizador, SimServico } from './services.ts';
+export { primeiraRejeicao, REGRAS_PADRAO, rejeicaoDaChave } from './rules.ts';
+export type { AutorizadorSim, DefinicaoDeServico, MdfeServicoSim, ServicoSim } from './services.ts';
 export {
-  isMdfeServico,
+  acaoSoap,
+  caminhoDoServico,
+  definicaoDoServico,
+  ehServicoMdfe,
   MDFE_NS,
-  MDFE_SERVICES,
   NFE_NS,
-  NFE_SERVICES,
-  routeOf,
-  serviceDef,
-  servicePath,
-  soapAction,
-  wsdlNamespace,
+  namespaceDoWsdl,
+  rotaDe,
+  SERVICOS_MDFE,
+  SERVICOS_NFE,
 } from './services.ts';
 export type {
-  FaultTarget,
+  AlvoDaFalha,
+  EfeitoSim,
+  FalhaSim,
+  InspecaoSim,
+  PedidoSim,
+  RespostaSim,
   SefazSim,
-  SefazSimOptions,
-  SimEffect,
-  SimFault,
-  SimInspect,
-  SimRequest,
-  SimResult,
+  SefazSimOpcoes,
 } from './sim.ts';
-export { createSefazSim } from './sim.ts';
+export { criarSefazSim } from './sim.ts';
 export type {
   Contribuinte,
-  DistDoc,
   Documento,
-  EventoRecord,
-  InutilizacaoRecord,
-  LoteRecord,
-  MdfeEventoRecord,
-  MdfeRecord,
-  NfeRecord,
-  PendingNfe,
+  DocumentoDaDistribuicao,
+  NfePendente,
+  RegistroEvento,
+  RegistroEventoMdfe,
+  RegistroInutilizacao,
+  RegistroLote,
+  RegistroMdfe,
+  RegistroNfe,
   SituacaoMdfe,
   SituacaoNfe,
 } from './state.ts';
-export type { SyntheticCertificate, SyntheticCertificateOptions, SyntheticRole } from './synthetic.ts';
-export { syntheticCertificate } from './synthetic.ts';
-export type { SimTransportOptions } from './transport.ts';
-export { redirectToSim, SIM_BASE_URL, simAutorizadorOf, simTransport } from './transport.ts';
+export type { CertificadoSintetico, CertificadoSinteticoOpcoes, PapelSintetico } from './synthetic.ts';
+export { certificadoSintetico } from './synthetic.ts';
+export type { TransporteSimOpcoes } from './transport.ts';
+export { autorizadorSimDe, redirecionarParaSim, transporteSim, URL_BASE_SIM } from './transport.ts';

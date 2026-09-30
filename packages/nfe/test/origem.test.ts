@@ -1,52 +1,52 @@
 /**
- * Classificação das ocorrências do `buildNfe` (ADR 0011): `entrada` para o que foi conferido na `NfeInput`, `montagem`
+ * Classificação das ocorrências do `montarNfe` (ADR 0011): `entrada` para o que foi conferido na `DadosNfe`, `montagem`
  * para o que foi conferido no que o sinete produziu (XML contra o XSD e o PL, calculadora de IBS/CBS). E o rótulo em
  * português dos dois formatos de caminho.
  */
 import { describe, expect, test } from 'bun:test';
 import type { Ocorrencia } from '@sinete/core';
-import type { BuildNfeResult, IbsCbsCalculator, Item } from '../src/index.ts';
-import { buildNfe, rotuloDoCaminho } from '../src/index.ts';
+import type { CalculadoraIbsCbs, Item, ResultadoMontagemNfe } from '../src/index.ts';
+import { montarNfe, rotuloDoCaminho } from '../src/index.ts';
 import { item, nota, opcoes } from './helpers/nota.ts';
 
-function falha(r: BuildNfeResult): readonly Ocorrencia[] {
+function falha(r: ResultadoMontagemNfe): readonly Ocorrencia[] {
   if (r.ok) throw new Error('esperava ocorrências');
-  return r.issues;
+  return r.ocorrencias;
 }
 
-describe('buildNfe: origem das ocorrências', () => {
+describe('montarNfe: origem das ocorrências', () => {
   test('dado da entrada é entrada, inclusive a ocorrência vinda de um validador', async () => {
     const e = nota().emitente;
-    const issues = falha(await buildNfe(nota({ emitente: { ...e, IE: '123' } }), opcoes()));
+    const issues = falha(await montarNfe(nota({ emitente: { ...e, IE: '123' } }), opcoes()));
     expect(issues.length).toBeGreaterThan(0);
     expect(issues.every((i) => i.origem === 'entrada')).toBe(true);
     expect(issues.map((i) => i.caminho)).toContain('emitente.IE');
   });
 
   test('cNF informado recusado pela regra da chave é entrada, no campo cNF', async () => {
-    const issues = falha(await buildNfe(nota({ cNF: '00000000' }), opcoes()));
+    const issues = falha(await montarNfe(nota({ cNF: '00000000' }), opcoes()));
     expect(issues).toEqual([expect.objectContaining({ caminho: 'cNF', code: 'chave_invalida', origem: 'entrada' })]);
   });
 
   test('schema do XML montado é montagem', async () => {
-    const issues = falha(await buildNfe(nota({ natOp: 'X'.repeat(61) }), opcoes()));
+    const issues = falha(await montarNfe(nota({ natOp: 'X'.repeat(61) }), opcoes()));
     expect(issues).toEqual([
       expect.objectContaining({ code: 'schema', caminho: '/infNFe/ide/natOp', origem: 'montagem' }),
     ]);
   });
 
   test('caractere fora do XML é conferido no documento montado', async () => {
-    const issues = falha(await buildNfe(nota({ natOp: 'VENDA \u0001' }), opcoes()));
+    const issues = falha(await montarNfe(nota({ natOp: 'VENDA \u0001' }), opcoes()));
     expect(issues).toEqual([
       expect.objectContaining({ caminho: 'infNFe.ide.natOp', code: 'campo_invalido', origem: 'montagem' }),
     ]);
   });
 
   test('ocorrência da calculadora sem origem é montagem; a marcada fica como veio', async () => {
-    const calculadora: IbsCbsCalculator = {
+    const calculadora: CalculadoraIbsCbs = {
       calcular: () => ({
         itens: [],
-        issues: [
+        ocorrencias: [
           { caminho: 'itens[0].impostos.ibsCbs', code: 'ibscbs_calculo', mensagem: 'sem origem' },
           { caminho: 'itens[0].impostos.ibsCbs', code: 'ibscbs_nao_suportado', mensagem: 'marcada', origem: 'entrada' },
         ],
@@ -57,7 +57,7 @@ describe('buildNfe: origem das ocorrências', () => {
       ...b,
       impostos: { ...b.impostos, ibsCbs: { classificacao: { CST: '000', cClassTrib: '000001', vBC: '10.00' } } },
     };
-    const issues = falha(await buildNfe(nota({ itens: [it] }), opcoes({ ibsCbs: calculadora })));
+    const issues = falha(await montarNfe(nota({ itens: [it] }), opcoes({ ibsCbs: calculadora })));
     expect(issues.find((i) => i.mensagem === 'sem origem')?.origem).toBe('montagem');
     expect(issues.find((i) => i.mensagem === 'marcada')?.origem).toBe('entrada');
   });
@@ -69,7 +69,7 @@ describe('buildNfe: origem das ocorrências', () => {
       ...b,
       impostos: { ...b.impostos, ibsCbs: { grupo } as unknown as NonNullable<Item['impostos']['ibsCbs']> },
     };
-    const issues = falha(await buildNfe(nota({ itens: [it] }), opcoes()));
+    const issues = falha(await montarNfe(nota({ itens: [it] }), opcoes()));
     expect(issues.length).toBeGreaterThan(0);
     expect(issues.every((i) => i.code === 'schema' && i.origem === 'entrada')).toBe(true);
   });

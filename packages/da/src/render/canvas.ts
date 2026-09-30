@@ -9,7 +9,7 @@
  * 4. só então corta a última linha com reticências, e conta o corte.
  */
 
-import type { BarsOp, FitStats, FontName, Op, QrOp } from '../model.ts';
+import type { EstatisticasDeEncaixe, NomeDaFonte, Op, OpBarras, OpQr } from '../model.ts';
 import { PT } from '../model.ts';
 import { ascentMm, ellipsis, shrinkToFit, toWinAnsi, widthMm, wrap } from './text.ts';
 
@@ -37,7 +37,7 @@ export interface Fitted {
  */
 export function fit(
   s: string,
-  font: FontName,
+  font: NomeDaFonte,
   nominal: number,
   w: number,
   maxLines = 1,
@@ -60,7 +60,7 @@ export function fit(
 }
 
 export interface TextOptions {
-  readonly font?: FontName;
+  readonly font?: NomeDaFonte;
   readonly size: number;
   readonly min?: number;
   readonly align?: Align;
@@ -86,15 +86,15 @@ export class Canvas {
   private quebrados = 0;
   private cortados = 0;
 
-  readonly regular: FontName;
-  readonly bold: FontName;
+  readonly regular: NomeDaFonte;
+  readonly bold: NomeDaFonte;
 
-  constructor(regular: FontName, bold: FontName) {
+  constructor(regular: NomeDaFonte, bold: NomeDaFonte) {
     this.regular = regular;
     this.bold = bold;
   }
 
-  get stats(): FitStats {
+  get stats(): EstatisticasDeEncaixe {
     return { reduzidos: this.reduzidos, quebrados: this.quebrados, cortados: this.cortados };
   }
 
@@ -106,50 +106,63 @@ export class Canvas {
   }
 
   rect(x: number, y: number, w: number, h: number, stroke = 0.15, fill?: number): void {
-    this.ops.push(fill === undefined ? { t: 'rect', x, y, w, h, stroke } : { t: 'rect', x, y, w, h, stroke, fill });
+    this.ops.push(
+      fill === undefined
+        ? { t: 'retangulo', x, y, w, h, contorno: stroke }
+        : { t: 'retangulo', x, y, w, h, contorno: stroke, preenchimento: fill },
+    );
   }
 
   fillRect(x: number, y: number, w: number, h: number, fill: number): void {
-    this.ops.push({ t: 'rect', x, y, w, h, fill });
+    this.ops.push({ t: 'retangulo', x, y, w, h, preenchimento: fill });
   }
 
   line(x1: number, y1: number, x2: number, y2: number, w = 0.15, dash?: number): void {
-    this.ops.push(dash === undefined ? { t: 'line', x1, y1, x2, y2, w } : { t: 'line', x1, y1, x2, y2, w, dash });
+    this.ops.push(
+      dash === undefined ? { t: 'linha', x1, y1, x2, y2, w } : { t: 'linha', x1, y1, x2, y2, w, tracejado: dash },
+    );
   }
 
-  bars(op: Omit<BarsOp, 't'>): void {
-    this.ops.push({ t: 'bars', ...op });
+  bars(op: Omit<OpBarras, 't'>): void {
+    this.ops.push({ t: 'barras', ...op });
   }
 
-  qr(op: Omit<QrOp, 't'>): void {
+  qr(op: Omit<OpQr, 't'>): void {
     this.ops.push({ t: 'qr', ...op });
   }
 
   image(ref: string, x: number, y: number, w: number, h: number): void {
-    this.ops.push({ t: 'image', ref, x, y, w, h });
+    this.ops.push({ t: 'imagem', imagem: ref, x, y, w, h });
   }
 
   /** Texto já encaixado, sem medir de novo; devolve a largura. */
-  raw(s: string, x: number, y: number, font: FontName, size: number, gray?: number, rot?: number): number {
+  raw(s: string, x: number, y: number, font: NomeDaFonte, size: number, gray?: number, rot?: number): number {
     const w = widthMm(s, font, size);
     if (!s) return 0;
     this.ops.push({
-      t: 'text',
+      t: 'texto',
       x,
       y,
       s,
-      font,
-      size,
+      fonte: font,
+      tamanho: size,
       w,
-      ...(gray === undefined ? {} : { gray }),
-      ...(rot === undefined ? {} : { rot }),
+      ...(gray === undefined ? {} : { cinza: gray }),
+      ...(rot === undefined ? {} : { rotacao: rot }),
     });
     return w;
   }
 
   /** Texto já encaixado em cor RGB (só onde a norma pede cor). */
-  rawRgb(s: string, x: number, y: number, font: FontName, size: number, rgb: readonly [number, number, number]): void {
-    if (s) this.ops.push({ t: 'text', x, y, s, font, size, w: widthMm(s, font, size), rgb });
+  rawRgb(
+    s: string,
+    x: number,
+    y: number,
+    font: NomeDaFonte,
+    size: number,
+    rgb: readonly [number, number, number],
+  ): void {
+    if (s) this.ops.push({ t: 'texto', x, y, s, fonte: font, tamanho: size, w: widthMm(s, font, size), rgb });
   }
 
   /** Uma linha alinhada em [x, x + w], com redução até o mínimo e reticências como último recurso. */
@@ -166,7 +179,7 @@ export class Canvas {
     x: number,
     yBase: number,
     w: number,
-    font: FontName,
+    font: NomeDaFonte,
     size: number,
     align: Align,
     gray?: number,
@@ -233,7 +246,15 @@ export class Canvas {
   }
 
   /** Parágrafo de linhas já quebradas; devolve as que não couberam na altura (para continuar em outra folha). */
-  para(lines: readonly string[], x: number, y: number, h: number, font: FontName, size: number, lead = 1.15): string[] {
+  para(
+    lines: readonly string[],
+    x: number,
+    y: number,
+    h: number,
+    font: NomeDaFonte,
+    size: number,
+    lead = 1.15,
+  ): string[] {
     const lh = lineHeight(size, lead);
     let yy = y + ascentMm(font, size);
     let i = 0;

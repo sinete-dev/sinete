@@ -3,7 +3,7 @@
  * --record`): aplicabilidade de NCM e NBS, filtro por atores e listas de cClassTrib e CST vigentes por data.
  */
 import { describe, expect, test } from 'bun:test';
-import { datasetEmbarcado } from '../src/bundled.ts';
+import { datasetEmbarcado } from '../src/embarcado.ts';
 import fixture from './fixtures/oracle-data.json' with { type: 'json' };
 
 const ds = datasetEmbarcado();

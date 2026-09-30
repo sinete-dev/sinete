@@ -7,7 +7,7 @@
  * linha, comparada com o relógio do banco) e rode a suíte de `@sinete/emissor/contrato` contra ele.
  *
  * Dois stores criados sobre o mesmo `BancoMemoria` se comportam como dois processos sobre o mesmo banco: é assim que a
- * suíte de contrato e os testes simulam o outro processo e o reinício. O relógio do "banco" é o `clock` recebido.
+ * suíte de contrato e os testes simulam o outro processo e o reinício. O relógio do "banco" é o `relogio` recebido.
  */
 
 import type { Relogio } from '@sinete/core';
@@ -15,7 +15,7 @@ import { relogioDoSistema } from '@sinete/core';
 import type { DadosContingenciaMemoria } from './contingencia.ts';
 import { contingenciaEmMemoria, dadosContingenciaMemoria } from './contingencia.ts';
 import type { TipoDocumento } from './desfecho.ts';
-import { TransmissaoJaGravadaError, TravaPerdidaError } from './erros.ts';
+import { ErroTransmissaoJaGravada, ErroTravaPerdida } from './erros.ts';
 import type {
   FiltroPendentes,
   GravacaoTransmissao,
@@ -59,13 +59,13 @@ export interface BancoMemoria {
 }
 
 /** Banco vazio. */
-export function createBancoMemoria(): BancoMemoria {
+export function criarBancoMemoria(): BancoMemoria {
   return { linhas: new Map(), recusas: new Map(), contingencia: dadosContingenciaMemoria(), sequencia: 0 };
 }
 
-export interface OpcoesMemoria {
+export interface MemoriaOpcoes {
   /** Relógio do "banco": prazos, gravação e tentativas. Padrão: o do sistema. */
-  readonly clock?: Relogio;
+  readonly relogio?: Relogio;
   /** Banco compartilhado; padrão, um novo e só deste store. */
   readonly banco?: BancoMemoria;
 }
@@ -73,9 +73,9 @@ export interface OpcoesMemoria {
 const chave = (tipo: TipoDocumento, ref: string): string => `${tipo}\u0000${ref}`;
 
 /** Cria o store em memória (veja o aviso do módulo: só testes e scripts de um processo). */
-export function createMemoriaStore(opcoes: OpcoesMemoria = {}): TransmissaoStore {
-  const clock = opcoes.clock ?? relogioDoSistema;
-  const banco = opcoes.banco ?? createBancoMemoria();
+export function criarMemoriaStore(opcoes: MemoriaOpcoes = {}): TransmissaoStore {
+  const clock = opcoes.relogio ?? relogioDoSistema;
+  const banco = opcoes.banco ?? criarBancoMemoria();
   const agora = (): number => clock.agora().getTime();
   const proximo = (prefixo: string): string => `${prefixo}-${++banco.sequencia}`;
   /** Instante para o chamador, sem o global `Date` (relógio injetado): uma cópia do `Date` do relógio. */
@@ -147,9 +147,9 @@ export function createMemoriaStore(opcoes: OpcoesMemoria = {}): TransmissaoStore
 
     async gravar(trava: Trava, g: GravacaoTransmissao): Promise<RegistroTransmissao> {
       const l = banco.linhas.get(chave(trava.tipo, trava.ref));
-      if (!emVigor(l, trava)) throw new TravaPerdidaError('a trava venceu: outro processo pode ter assumido');
+      if (!emVigor(l, trava)) throw new ErroTravaPerdida('a trava venceu: outro processo pode ter assumido');
       if (l.gravado !== undefined) {
-        throw new TransmissaoJaGravadaError('já há bytes gravados para este documento: retome com eles');
+        throw new ErroTransmissaoJaGravada('já há bytes gravados para este documento: retome com eles');
       }
       const t = agora();
       l.gravado = {
@@ -168,7 +168,7 @@ export function createMemoriaStore(opcoes: OpcoesMemoria = {}): TransmissaoStore
 
     async descartar(trava: Trava): Promise<void> {
       const l = banco.linhas.get(chave(trava.tipo, trava.ref));
-      if (!emVigor(l, trava)) throw new TravaPerdidaError('a trava venceu: outro processo pode ter assumido');
+      if (!emVigor(l, trava)) throw new ErroTravaPerdida('a trava venceu: outro processo pode ter assumido');
       l.gravado = undefined;
       l.atividadeEm = agora();
     },

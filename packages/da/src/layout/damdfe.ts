@@ -15,15 +15,15 @@ import { CONSULTA_MDFE } from '../data/leiaute-mdfe.ts';
 import * as f from '../format.ts';
 import { cancelamentoMdfe } from '../input/cancelamento-mdfe.ts';
 import type { MdfeView } from '../input/mdfe.ts';
-import type { Doc } from '../model.ts';
+import type { Documento } from '../model.ts';
 import { Canvas, lineHeight } from '../render/canvas.ts';
 import { ascentMm, toWinAnsi, widthMm, wrap } from '../render/text.ts';
-import type { CommonOptions } from './common.ts';
+import type { DaOpcoes } from './common.ts';
 import { barcode, DocBuilder, drawLogo, qrcode } from './common.ts';
 import type { Cancelamento } from './marcas.ts';
 import { carimbo, marcas, protocoloDeUso, situacaoMdfe } from './marcas.ts';
 
-export interface DamdfeOptions extends CommonOptions {
+export interface DamdfeOpcoes extends DaOpcoes {
   /**
    * Lista dos documentos vinculados (composição da carga). Padrão: só em contingência, onde é obrigatória (2.4); a
    * lista pode ser longa e ocupar várias folhas.
@@ -50,7 +50,7 @@ const MODAL: Readonly<Record<string, string>> = {
   '4': 'Modelo Ferroviário de Carga',
 };
 
-export function damdfeLayout(m: MdfeView, options: DamdfeOptions): Doc {
+export function damdfeLayout(m: MdfeView, options: DamdfeOpcoes): Documento {
   const b = new DocBuilder(options);
   const contingencia = m.tpEmis === '2';
   const situacao = situacaoMdfe(m);
@@ -324,11 +324,11 @@ export function damdfeLayout(m: MdfeView, options: DamdfeOptions): Doc {
     'CANCELADO',
   );
   pages.forEach((p, i) => {
-    const fl = p.ops.findIndex((op) => op.t === 'text' && /^\d+\/0$/.test(op.s));
+    const fl = p.ops.findIndex((op) => op.t === 'texto' && /^\d+\/0$/.test(op.s));
     const op = p.ops[fl];
-    if (op && op.t === 'text') {
+    if (op && op.t === 'texto') {
       const s = `${i + 1}/${total}`;
-      p.ops[fl] = { ...op, s, w: widthMm(s, op.font, op.size) };
+      p.ops[fl] = { ...op, s, w: widthMm(s, op.fonte, op.tamanho) };
     }
     const bg = new Canvas('Helvetica', 'Helvetica-Bold');
     marcas(bg, PAGE_W, PAGE_H, m.tpAmb, situacao, cancel, MARCAS.contingenciaMdfe);
