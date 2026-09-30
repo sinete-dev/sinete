@@ -18,6 +18,7 @@
 | [adr/0012-pre-validacao-pelas-rejeicoes-reais.md](adr/0012-pre-validacao-pelas-rejeicoes-reais.md) | for pré-validar uma regra da SEFAZ, curar a dica de uma rejeição ou mexer na barreira da recusa repetida: o critério do que se recusa antes de enviar, a classificação de cada rejeição real e os métodos opcionais de recusa do `TransmissaoStore` |
 | [adr/0013-contingencia-automatica.md](adr/0013-contingencia-automatica.md) | for mexer na contingência automática do emissor (SVC da NF-e, NFC-e off-line): o que conta como falha do autorizador, onde fica o estado, a sonda da volta e por que os bytes gravados nunca mudam de tipo de emissão |
 | [adr/0014-distribuicao-do-signer.md](adr/0014-distribuicao-do-signer.md) | for mexer no cliente `@sinete/transport/signer`, nos pacotes npm do helper (`@sinete/signer` e os de plataforma) ou no build e na release dos binários |
+| [adr/0015-nomes-em-portugues.md](adr/0015-nomes-em-portugues.md) | for dar nome a qualquer coisa pública (função, tipo, propriedade, valor de união): o glossário inglês → português e as exceções |
 | [validacao-homologacao.md](validacao-homologacao.md) e [../tools/homologacao/README.md](../tools/homologacao/README.md) | for saber o que já foi provado contra a SEFAZ de homologação real, ou rodar a validação com o seu certificado |
 | [release.md](release.md) | for versionar ou publicar pacotes |
 | [../packages/core/README.md](../packages/core/README.md) | for usar erros, desfechos da SEFAZ, relógio, logger, ambiente ou UFs em outro pacote |

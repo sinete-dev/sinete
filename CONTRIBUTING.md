@@ -60,7 +60,7 @@ A documentação de uso fica em `docs/guia/` e vai no tarball do `sinete` e do `
 
 - Biome formata e faz o lint (`bun run format`). As regras proíbem builtins do Node e o global `Date` nos pacotes puros.
 - API pública com tipos de retorno explícitos (`isolatedDeclarations`).
-- Identificadores em inglês; termos do leiaute com o nome do MOC (`cStat`, `xMotivo`, `cUF`); códigos de erro em snake_case, português, sem acento.
+- Identificadores da API pública em português, com as exceções e o glossário do [ADR 0015](docs/adr/0015-nomes-em-portugues.md): nome oficial como na fonte (`cStat`, `xMotivo`, `cUF`), jargão técnico da lista fechada (`store`, `logger`...) e o que a plataforma fixa; códigos de erro em snake_case, português, sem acento.
 
 ---
 
