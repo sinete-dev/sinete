@@ -35,7 +35,7 @@ export function danfce(xml: string, options: DanfceOptions = {}): Doc {
   const nota = readNota(xml);
   if (nota.mod !== '65') {
     throw new DanfeError('formato_incompativel', `o DANFE NFC-e não se aplica ao modelo ${nota.mod}`, {
-      details: { mod: nota.mod, use: nota.mod === '55' ? '@sinete/da/nfe' : '' },
+      detalhes: { mod: nota.mod, use: nota.mod === '55' ? '@sinete/da/nfe' : '' },
     });
   }
   const situacao = situacaoNfe(nota, false);

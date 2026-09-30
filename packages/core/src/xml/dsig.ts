@@ -10,16 +10,16 @@
  */
 
 import { c14n } from './c14n.ts';
-import { base64Decode, base64Encode, spkiFromCertificate } from './encoding.ts';
-import { XmlError } from './errors.ts';
-import type { XmlDocument, XmlElement } from './parser.ts';
-import { attributeOf, childElements, descendants, firstChild, parseXml, textOf } from './parser.ts';
+import { codificarBase64, decodificarBase64, extrairSpki } from './encoding.ts';
+import { ErroXml } from './errors.ts';
+import type { DocumentoXml, ElementoXml } from './parser.ts';
+import { atributoDe, descendentes, elementosFilhos, lerXml, primeiroFilho, textoDe } from './parser.ts';
 
 /** Namespace do XMLDSig. */
 export const XMLDSIG_NS = 'http://www.w3.org/2000/09/xmldsig#';
 
 /** URIs de algoritmo usadas pelo perfil SEFAZ. */
-export const XMLDSIG_ALGORITHMS: {
+export const ALGORITMOS_XMLDSIG: {
   readonly c14n: 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315';
   readonly envelopedSignature: 'http://www.w3.org/2000/09/xmldsig#enveloped-signature';
   readonly rsaSha1: 'http://www.w3.org/2000/09/xmldsig#rsa-sha1';
@@ -36,9 +36,9 @@ export const XMLDSIG_ALGORITHMS: {
 };
 
 /** Categoria de uma verificação que falhou. */
-export type VerifyFailure =
+export type MotivoFalhaConferencia =
   /** O texto não é XML bem formado (`detail` traz o motivo e o offset). */
-  | 'parse'
+  | 'leitura'
   /** Nenhum `Signature` do XMLDSig no documento. */
   | 'sem-assinatura'
   /** Há assinatura, mas nenhuma referencia o `Id` esperado. */
@@ -58,46 +58,50 @@ export type VerifyFailure =
   /** Sem certificado em `KeyInfo`, ou certificado ilegível. */
   | 'certificado';
 
-export interface VerifyExpectation {
+export interface AssinaturaEsperada {
   /** Valor do atributo `Id` que deve estar assinado (por exemplo `NFe` + chave de acesso). */
   readonly id: string;
   /** Nome local esperado do elemento referenciado (`infNFe`, `infEvento`, `infMDFe`). */
-  readonly element?: string;
+  readonly elemento?: string;
 }
 
-export interface VerifySuccess {
+export interface ConferenciaValida {
   readonly ok: true;
   readonly id: string;
   /** O elemento assinado, no documento parseado. Leia os dados dele, não de outro lugar do documento. */
-  readonly element: XmlElement;
-  readonly document: XmlDocument;
+  readonly elemento: ElementoXml;
+  readonly documento: DocumentoXml;
   /** Certificado de `KeyInfo` em DER. Confiança na cadeia é com o `@sinete/cert`, não aqui. */
-  readonly certificateDer: Uint8Array;
-  readonly signatureAlgorithm: 'rsa-sha1' | 'rsa-sha256';
-  readonly digestAlgorithm: 'sha1' | 'sha256';
+  readonly certificadoDer: Uint8Array;
+  readonly algoritmoDeAssinatura: 'rsa-sha1' | 'rsa-sha256';
+  readonly algoritmoDeDigest: 'sha1' | 'sha256';
 }
 
-export interface VerifyFailed {
+export interface ConferenciaInvalida {
   readonly ok: false;
-  readonly failure: VerifyFailure;
-  readonly detail: string;
+  readonly motivo: MotivoFalhaConferencia;
+  readonly detalhe: string;
   /**
    * Só em `digest-diverge`: se o `SignatureValue` confere com o `SignedInfo`. `true` indica documento alterado depois
    * de assinado (namespace removido, whitespace inserido); `false` indica assinatura que nunca foi válida.
    */
-  readonly signedInfoValid?: boolean;
+  readonly signedInfoValido?: boolean;
 }
 
-export type VerifyResult = VerifySuccess | VerifyFailed;
+export type ResultadoConferencia = ConferenciaValida | ConferenciaInvalida;
 
 type HashName = 'SHA-1' | 'SHA-256';
 
 const te = new TextEncoder();
 
-function fail(failure: VerifyFailure, detail: string, extra?: { signedInfoValid: boolean }): VerifyFailed {
+function fail(
+  failure: MotivoFalhaConferencia,
+  detail: string,
+  extra?: { signedInfoValid: boolean },
+): ConferenciaInvalida {
   return extra
-    ? { ok: false, failure, detail, signedInfoValid: extra.signedInfoValid }
-    : { ok: false, failure, detail };
+    ? { ok: false, motivo: failure, detalhe: detail, signedInfoValido: extra.signedInfoValid }
+    : { ok: false, motivo: failure, detalhe: detail };
 }
 
 async function digestOf(hash: HashName, data: Uint8Array<ArrayBuffer>): Promise<Uint8Array> {
@@ -105,93 +109,96 @@ async function digestOf(hash: HashName, data: Uint8Array<ArrayBuffer>): Promise<
 }
 
 /** Todos os `Signature` do XMLDSig no documento, em ordem de documento. */
-export function findSignatures(doc: XmlDocument): XmlElement[] {
-  const out: XmlElement[] = [];
-  for (const e of descendants(doc.root)) if (e.local === 'Signature' && e.ns === XMLDSIG_NS) out.push(e);
+export function encontrarAssinaturas(doc: DocumentoXml): ElementoXml[] {
+  const out: ElementoXml[] = [];
+  for (const e of descendentes(doc.raiz)) if (e.local === 'Signature' && e.ns === XMLDSIG_NS) out.push(e);
   return out;
 }
 
-function referenceUri(sig: XmlElement): string | undefined {
-  const si = firstChild(sig, 'SignedInfo', XMLDSIG_NS);
-  const ref = si && firstChild(si, 'Reference', XMLDSIG_NS);
-  return ref ? attributeOf(ref, 'URI') : undefined;
+function referenceUri(sig: ElementoXml): string | undefined {
+  const si = primeiroFilho(sig, 'SignedInfo', XMLDSIG_NS);
+  const ref = si && primeiroFilho(si, 'Reference', XMLDSIG_NS);
+  return ref ? atributoDe(ref, 'URI') : undefined;
 }
 
 /**
  * Verifica a assinatura que referencia `expected.id`. Aceita a string XML ou um documento já parseado por
  * `parseXml`. Nunca lança por causa do documento: toda falha volta como `VerifyFailed` com categoria.
  */
-export async function verifySignature(xml: string | XmlDocument, expected: VerifyExpectation): Promise<VerifyResult> {
-  let doc: XmlDocument;
+export async function conferirAssinatura(
+  xml: string | DocumentoXml,
+  expected: AssinaturaEsperada,
+): Promise<ResultadoConferencia> {
+  let doc: DocumentoXml;
   if (typeof xml === 'string') {
     try {
-      doc = parseXml(xml);
+      doc = lerXml(xml);
     } catch (e) {
-      if (e instanceof XmlError) return fail('parse', e.message);
+      if (e instanceof ErroXml) return fail('leitura', e.message);
       throw e;
     }
   } else doc = xml;
 
-  const sigs = findSignatures(doc);
+  const sigs = encontrarAssinaturas(doc);
   if (sigs.length === 0) return fail('sem-assinatura', 'documento sem Signature do XMLDSig');
   const mine = sigs.filter((s) => referenceUri(s) === `#${expected.id}`);
   if (mine.length === 0) return fail('referencia-inesperada', `nenhuma Signature referencia #${expected.id}`);
   if (mine.length > 1) return fail('id-duplicado', `${mine.length} Signature referenciam #${expected.id}`);
-  const sig = mine[0] as XmlElement;
+  const sig = mine[0] as ElementoXml;
 
   const targets = doc.ids.get(expected.id) ?? [];
   if (targets.length === 0) return fail('referencia-nao-encontrada', `nenhum elemento com Id=${expected.id}`);
   if (targets.length > 1) return fail('id-duplicado', `${targets.length} elementos com Id=${expected.id}`);
-  const target = targets[0] as XmlElement;
-  if (expected.element !== undefined && target.local !== expected.element) {
+  const target = targets[0] as ElementoXml;
+  if (expected.elemento !== undefined && target.local !== expected.elemento) {
     return fail(
       'referencia-nao-encontrada',
-      `Id=${expected.id} está em <${target.local}>, esperado <${expected.element}>`,
+      `Id=${expected.id} está em <${target.local}>, esperado <${expected.elemento}>`,
     );
   }
 
-  const si = firstChild(sig, 'SignedInfo', XMLDSIG_NS);
+  const si = primeiroFilho(sig, 'SignedInfo', XMLDSIG_NS);
   if (!si) return fail('estrutura', 'Signature sem SignedInfo');
-  const cm = firstChild(si, 'CanonicalizationMethod', XMLDSIG_NS);
-  const cmAlg = cm && attributeOf(cm, 'Algorithm');
-  if (cmAlg !== XMLDSIG_ALGORITHMS.c14n) return fail('algoritmo-nao-suportado', `CanonicalizationMethod ${cmAlg}`);
-  const sm = firstChild(si, 'SignatureMethod', XMLDSIG_NS);
-  const smAlg = sm && attributeOf(sm, 'Algorithm');
+  const cm = primeiroFilho(si, 'CanonicalizationMethod', XMLDSIG_NS);
+  const cmAlg = cm && atributoDe(cm, 'Algorithm');
+  if (cmAlg !== ALGORITMOS_XMLDSIG.c14n) return fail('algoritmo-nao-suportado', `CanonicalizationMethod ${cmAlg}`);
+  const sm = primeiroFilho(si, 'SignatureMethod', XMLDSIG_NS);
+  const smAlg = sm && atributoDe(sm, 'Algorithm');
   const signatureAlgorithm =
-    smAlg === XMLDSIG_ALGORITHMS.rsaSha1 ? 'rsa-sha1' : smAlg === XMLDSIG_ALGORITHMS.rsaSha256 ? 'rsa-sha256' : null;
+    smAlg === ALGORITMOS_XMLDSIG.rsaSha1 ? 'rsa-sha1' : smAlg === ALGORITMOS_XMLDSIG.rsaSha256 ? 'rsa-sha256' : null;
   if (!signatureAlgorithm) return fail('algoritmo-nao-suportado', `SignatureMethod ${smAlg}`);
-  const refs = childElements(si).filter((e) => e.local === 'Reference' && e.ns === XMLDSIG_NS);
+  const refs = elementosFilhos(si).filter((e) => e.local === 'Reference' && e.ns === XMLDSIG_NS);
   if (refs.length !== 1) return fail('algoritmo-nao-suportado', `${refs.length} Reference no SignedInfo`);
-  const ref = refs[0] as XmlElement;
+  const ref = refs[0] as ElementoXml;
 
-  const exclude = new Set<XmlElement>();
-  const transforms = firstChild(ref, 'Transforms', XMLDSIG_NS);
-  for (const t of transforms ? childElements(transforms) : []) {
-    const alg = attributeOf(t, 'Algorithm');
-    if (alg === XMLDSIG_ALGORITHMS.envelopedSignature) exclude.add(sig);
-    else if (alg !== XMLDSIG_ALGORITHMS.c14n) return fail('algoritmo-nao-suportado', `Transform ${alg}`);
+  const exclude = new Set<ElementoXml>();
+  const transforms = primeiroFilho(ref, 'Transforms', XMLDSIG_NS);
+  for (const t of transforms ? elementosFilhos(transforms) : []) {
+    const alg = atributoDe(t, 'Algorithm');
+    if (alg === ALGORITMOS_XMLDSIG.envelopedSignature) exclude.add(sig);
+    else if (alg !== ALGORITMOS_XMLDSIG.c14n) return fail('algoritmo-nao-suportado', `Transform ${alg}`);
   }
-  const dm = firstChild(ref, 'DigestMethod', XMLDSIG_NS);
-  const dmAlg = dm && attributeOf(dm, 'Algorithm');
+  const dm = primeiroFilho(ref, 'DigestMethod', XMLDSIG_NS);
+  const dmAlg = dm && atributoDe(dm, 'Algorithm');
   const digestAlgorithm =
-    dmAlg === XMLDSIG_ALGORITHMS.sha1 ? 'sha1' : dmAlg === XMLDSIG_ALGORITHMS.sha256 ? 'sha256' : null;
+    dmAlg === ALGORITMOS_XMLDSIG.sha1 ? 'sha1' : dmAlg === ALGORITMOS_XMLDSIG.sha256 ? 'sha256' : null;
   if (!digestAlgorithm) return fail('algoritmo-nao-suportado', `DigestMethod ${dmAlg}`);
-  const dv = firstChild(ref, 'DigestValue', XMLDSIG_NS);
-  const svEl = firstChild(sig, 'SignatureValue', XMLDSIG_NS);
+  const dv = primeiroFilho(ref, 'DigestValue', XMLDSIG_NS);
+  const svEl = primeiroFilho(sig, 'SignatureValue', XMLDSIG_NS);
   if (!dv || !svEl) return fail('estrutura', 'Signature sem DigestValue ou SignatureValue');
 
   let certificateDer: Uint8Array;
   let key: CryptoKey;
   const signatureHash: HashName = signatureAlgorithm === 'rsa-sha1' ? 'SHA-1' : 'SHA-256';
   try {
-    const keyInfo = firstChild(sig, 'KeyInfo', XMLDSIG_NS);
-    const x509Data = keyInfo && firstChild(keyInfo, 'X509Data', XMLDSIG_NS);
-    const certEl = x509Data && firstChild(x509Data, 'X509Certificate', XMLDSIG_NS);
+    const keyInfo = primeiroFilho(sig, 'KeyInfo', XMLDSIG_NS);
+    const x509Data = keyInfo && primeiroFilho(keyInfo, 'X509Data', XMLDSIG_NS);
+    const certEl = x509Data && primeiroFilho(x509Data, 'X509Certificate', XMLDSIG_NS);
     if (!certEl) return fail('certificado', 'sem KeyInfo/X509Data/X509Certificate');
-    certificateDer = base64Decode(textOf(certEl));
+    certificateDer = decodificarBase64(textoDe(certEl));
     key = await globalThis.crypto.subtle.importKey(
       'spki',
-      spkiFromCertificate(certificateDer),
+      extrairSpki(certificateDer),
       { name: 'RSASSA-PKCS1-v1_5', hash: signatureHash },
       false,
       ['verify'],
@@ -203,8 +210,8 @@ export async function verifySignature(xml: string | XmlDocument, expected: Verif
   let signatureValue: Uint8Array<ArrayBuffer>;
   let expectedDigest: string;
   try {
-    signatureValue = base64Decode(textOf(svEl));
-    expectedDigest = base64Encode(base64Decode(textOf(dv)));
+    signatureValue = decodificarBase64(textoDe(svEl));
+    expectedDigest = codificarBase64(decodificarBase64(textoDe(dv)));
   } catch {
     return fail('estrutura', 'DigestValue ou SignatureValue não é base64');
   }
@@ -214,8 +221,11 @@ export async function verifySignature(xml: string | XmlDocument, expected: Verif
     signatureValue,
     te.encode(c14n(si)),
   );
-  const digest = await digestOf(digestAlgorithm === 'sha1' ? 'SHA-1' : 'SHA-256', te.encode(c14n(target, { exclude })));
-  if (base64Encode(digest) !== expectedDigest) {
+  const digest = await digestOf(
+    digestAlgorithm === 'sha1' ? 'SHA-1' : 'SHA-256',
+    te.encode(c14n(target, { excluir: exclude })),
+  );
+  if (codificarBase64(digest) !== expectedDigest) {
     return fail('digest-diverge', `digest de <${target.local}> não confere com o DigestValue`, {
       signedInfoValid: signedInfoOk,
     });
@@ -224,10 +234,10 @@ export async function verifySignature(xml: string | XmlDocument, expected: Verif
   return {
     ok: true,
     id: expected.id,
-    element: target,
-    document: doc,
-    certificateDer,
-    signatureAlgorithm,
-    digestAlgorithm,
+    elemento: target,
+    documento: doc,
+    certificadoDer: certificateDer,
+    algoritmoDeAssinatura: signatureAlgorithm,
+    algoritmoDeDigest: digestAlgorithm,
   };
 }

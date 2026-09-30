@@ -8,14 +8,14 @@
 
 import type { CertificateInfo } from '@sinete/cert';
 import { icpIdentity, parseCertificate } from '@sinete/cert';
-import type { XmlDocument, XmlElement } from '@sinete/core/xml';
+import type { DocumentoXml, ElementoXml } from '@sinete/core/xml';
 import {
-  attributeOf,
-  base64Decode,
-  descendants,
-  firstChild,
-  textOf,
-  verifySignature,
+  atributoDe,
+  conferirAssinatura,
+  decodificarBase64,
+  descendentes,
+  primeiroFilho,
+  textoDe,
   XMLDSIG_NS,
 } from '@sinete/core/xml';
 import type { Documento } from './state.ts';
@@ -60,30 +60,30 @@ export function checkTransmissor(der: Uint8Array, now: number): CertCheck {
   return { ok: true, identity: { ...doc, info } };
 }
 
-function signatureFor(doc: XmlDocument, id: string): XmlElement | undefined {
-  for (const e of descendants(doc.root)) {
+function signatureFor(doc: DocumentoXml, id: string): ElementoXml | undefined {
+  for (const e of descendentes(doc.raiz)) {
     if (e.local !== 'Signature' || e.ns !== XMLDSIG_NS) continue;
-    const si = firstChild(e, 'SignedInfo', XMLDSIG_NS);
-    const ref = si && firstChild(si, 'Reference', XMLDSIG_NS);
-    if (ref && attributeOf(ref, 'URI') === `#${id}`) return e;
+    const si = primeiroFilho(e, 'SignedInfo', XMLDSIG_NS);
+    const ref = si && primeiroFilho(si, 'Reference', XMLDSIG_NS);
+    if (ref && atributoDe(ref, 'URI') === `#${id}`) return e;
   }
   return undefined;
 }
 
-function certificateOf(sig: XmlElement): Uint8Array | undefined {
-  const keyInfo = firstChild(sig, 'KeyInfo', XMLDSIG_NS);
-  const data = keyInfo && firstChild(keyInfo, 'X509Data', XMLDSIG_NS);
-  const cert = data && firstChild(data, 'X509Certificate', XMLDSIG_NS);
+function certificateOf(sig: ElementoXml): Uint8Array | undefined {
+  const keyInfo = primeiroFilho(sig, 'KeyInfo', XMLDSIG_NS);
+  const data = keyInfo && primeiroFilho(keyInfo, 'X509Data', XMLDSIG_NS);
+  const cert = data && primeiroFilho(data, 'X509Certificate', XMLDSIG_NS);
   if (!cert) return undefined;
   try {
-    return base64Decode(textOf(cert));
+    return decodificarBase64(textoDe(cert));
   } catch {
     return undefined;
   }
 }
 
 export interface SignatureCheckInput {
-  readonly doc: XmlDocument;
+  readonly doc: DocumentoXml;
   /** `Id` do elemento assinado (`NFe<chave>`, `ID110111<chave>01`, `ID<cUF><ano>...`). */
   readonly id: string;
   /** Nome local do elemento assinado (`infNFe`, `infEvento`, `infInut`). */
@@ -126,9 +126,9 @@ export async function checkAssinatura(input: SignatureCheckInput): Promise<Signa
   if (input.now < info.notBefore || input.now > info.notAfter) return { ok: false, cStat: '291' };
   const doc = identityOf(info);
   if (doc.CNPJ === undefined && doc.CPF === undefined) return { ok: false, cStat: '292' };
-  const r = await verifySignature(input.doc, { id: input.id, element: input.element });
+  const r = await conferirAssinatura(input.doc, { id: input.id, elemento: input.element });
   if (!r.ok) {
-    return { ok: false, cStat: r.failure === 'digest-diverge' || r.failure === 'assinatura-invalida' ? '297' : '298' };
+    return { ok: false, cStat: r.motivo === 'digest-diverge' || r.motivo === 'assinatura-invalida' ? '297' : '298' };
   }
   const titular = input.titular;
   if (doc.CNPJ !== undefined && titular.CNPJ !== undefined && doc.CNPJ.slice(0, 8) !== titular.CNPJ.slice(0, 8)) {
@@ -136,12 +136,12 @@ export async function checkAssinatura(input: SignatureCheckInput): Promise<Signa
   }
   if (doc.CNPJ !== undefined && titular.CPF !== undefined) return { ok: false, cStat: '213' };
   if (doc.CPF !== undefined && doc.CPF !== titular.CPF) return { ok: false, cStat: '227' };
-  const dv = firstChild(firstChild(sig, 'SignedInfo', XMLDSIG_NS) as XmlElement, 'Reference', XMLDSIG_NS);
-  const digest = dv && firstChild(dv, 'DigestValue', XMLDSIG_NS);
+  const dv = primeiroFilho(primeiroFilho(sig, 'SignedInfo', XMLDSIG_NS) as ElementoXml, 'Reference', XMLDSIG_NS);
+  const digest = dv && primeiroFilho(dv, 'DigestValue', XMLDSIG_NS);
   return {
     ok: true,
     identity: { ...doc, info },
-    digestValue: digest ? textOf(digest).trim() : '',
+    digestValue: digest ? textoDe(digest).trim() : '',
     certificateDer: der as Uint8Array,
   };
 }

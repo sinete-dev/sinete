@@ -11,9 +11,9 @@
  * confirmado, o validador aceita qualquer letra maiúscula, como a expressão do schema.
  */
 
-import type { Result, ValidationIssue } from '@sinete/core';
-import { err, ok } from '@sinete/core';
-import type { ParseOptions } from './cpf.ts';
+import type { Ocorrencia, Resultado } from '@sinete/core';
+import { falha, ok } from '@sinete/core';
+import type { LerOpcoes } from './cpf.ts';
 import {
   allSame,
   applyMask,
@@ -30,7 +30,7 @@ const CNPJ_WEIGHTS_2: readonly number[] = cyclicWeights(13);
 const CNPJ_FORMAT = /^[A-Z0-9]{12}\d{2}$/;
 
 /** Os 2 dígitos verificadores de uma base de 12 caracteres (algarismos ou letras maiúsculas). */
-export function cnpjCheckDigits(base: string): string {
+export function calcularDvCnpj(base: string): string {
   if (!/^[A-Z0-9]{12}$/.test(base))
     throwInvalid('CNPJ', 'cnpj_base_invalida', 'A base do CNPJ tem 12 caracteres [A-Z0-9]');
   const d1 = mod11Complement(weightedSum(base, CNPJ_WEIGHTS_1));
@@ -39,33 +39,33 @@ export function cnpjCheckDigits(base: string): string {
 }
 
 /** Valida e normaliza um CNPJ, numérico ou alfanumérico (aceita máscara e minúsculas); devolve os 14 caracteres. */
-export function parseCnpj(input: string, options: ParseOptions = {}): Result<string, ValidationIssue> {
-  const path = options.path ?? 'CNPJ';
+export function lerCnpj(input: string, options: LerOpcoes = {}): Resultado<string, Ocorrencia> {
+  const path = options.caminho ?? 'CNPJ';
   const value = stripMask(input.trim()).toUpperCase();
   if (!/^[A-Z0-9]*$/.test(value)) {
-    return err(issue(path, 'cnpj_caractere_invalido', 'CNPJ só tem letras e algarismos'));
+    return falha(issue(path, 'cnpj_caractere_invalido', 'CNPJ só tem letras e algarismos'));
   }
-  if (value.length !== 14) return err(issue(path, 'cnpj_tamanho_invalido', 'CNPJ tem 14 caracteres'));
+  if (value.length !== 14) return falha(issue(path, 'cnpj_tamanho_invalido', 'CNPJ tem 14 caracteres'));
   if (!CNPJ_FORMAT.test(value)) {
-    return err(issue(path, 'cnpj_formato_invalido', 'Os 2 últimos caracteres do CNPJ (DV) são numéricos'));
+    return falha(issue(path, 'cnpj_formato_invalido', 'Os 2 últimos caracteres do CNPJ (DV) são numéricos'));
   }
-  if (allSame(value)) return err(issue(path, 'cnpj_digitos_repetidos', 'CNPJ com todos os caracteres iguais'));
-  if (cnpjCheckDigits(value.slice(0, 12)) !== value.slice(12)) {
-    return err(issue(path, 'cnpj_dv_invalido', 'Dígito verificador do CNPJ não confere'));
+  if (allSame(value)) return falha(issue(path, 'cnpj_digitos_repetidos', 'CNPJ com todos os caracteres iguais'));
+  if (calcularDvCnpj(value.slice(0, 12)) !== value.slice(12)) {
+    return falha(issue(path, 'cnpj_dv_invalido', 'Dígito verificador do CNPJ não confere'));
   }
   return ok(value);
 }
 
-export function isValidCnpj(input: string): boolean {
-  return parseCnpj(input).ok;
+export function cnpjValido(input: string): boolean {
+  return lerCnpj(input).ok;
 }
 
 /** Verdadeiro se o CNPJ (já normalizado ou com máscara) tem alguma letra na raiz ou na ordem. */
-export function isAlphanumericCnpj(value: string): boolean {
+export function cnpjAlfanumerico(value: string): boolean {
   return /[A-Z]/i.test(stripMask(value).slice(0, 12));
 }
 
 /** `00.000.000/0000-00`, também para o alfanumérico (`12.ABC.345/01DE-35`). Não valida. */
-export function formatCnpj(value: string): string {
+export function formatarCnpj(value: string): string {
   return applyMask(stripMask(value).toUpperCase(), '##.###.###/####-##');
 }

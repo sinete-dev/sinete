@@ -3,9 +3,9 @@
  * eventos, com as regras do MOC do MDF-e. Toda resposta é conferida contra o schema oficial do retorno.
  */
 import { describe, expect, test } from 'bun:test';
-import { ConfigError } from '@sinete/core';
+import { ErroDeConfiguracao } from '@sinete/core';
 import { mdfeEndpoint } from '@sinete/transport';
-import { buildChaveAcesso } from '@sinete/validators';
+import { montarChaveAcesso } from '@sinete/validators';
 import type { SyntheticCertificate } from '../src/index.ts';
 import { MDFE_SERVICES, redirectToSim, routeOf, SIM_BASE_URL, simTransport } from '../src/index.ts';
 import { CPF, cnpj, EMITENTE, harness, TERCEIRO, tag, tags } from './helpers.ts';
@@ -23,7 +23,7 @@ describe('rotas e envelope', () => {
     const h = await harness();
     const t = redirectToSim(simTransport(h.sim, { clientCertificate: h.c.ecpf.der }), SIM_BASE_URL);
     const ep = mdfeEndpoint({ ambiente: 'homologacao', servico: 'MDFeDistribuicaoDFe' });
-    await expect(t.send({ url: ep.url, endpoint: ep, body: '' })).rejects.toBeInstanceOf(ConfigError);
+    await expect(t.send({ url: ep.url, endpoint: ep, body: '' })).rejects.toBeInstanceOf(ErroDeConfiguracao);
   });
 
   test('área de dados que não é GZip (244) e XML com espaço entre as tags (599)', async () => {
@@ -118,10 +118,10 @@ describe('recepção (Anexo I, grupo F)', () => {
     expect(await cStat({ nMDF: 3, ufIni: 'SP', ufFim: 'MT', cMunCarrega: '3550308', cMunDescarga: '5103403' })).toBe(
       '662',
     );
-    h.clock.advance(6 * 24 * HORA);
+    h.clock.avancar(6 * 24 * HORA);
     const dia = (d: string): string => `2026-10-${d}T09:00:00-04:00`;
     expect(await cStat({ nMDF: 4, ufFim: 'GO', cMunDescarga: '5208707', dhEmi: dia('02') })).toBe('462');
-    h.clock.advance(25 * 24 * HORA);
+    h.clock.avancar(25 * 24 * HORA);
     expect(await cStat({ nMDF: 5, placa: 'XYZ9A87', ufFim: 'GO', cMunDescarga: '5208707', dhEmi: dia('27') })).toBe(
       '686',
     );
@@ -131,7 +131,7 @@ describe('recepção (Anexo I, grupo F)', () => {
     const h = await harness();
     const matriz = { CNPJ: EMITENTE };
     await sendMdfe(h, 'MDFeRecepcaoSinc', (await mdfe(h.c.emitente, { emitente: matriz })).xml, h.c.emitente);
-    h.clock.advance(31 * 24 * HORA);
+    h.clock.avancar(31 * 24 * HORA);
     const depois = { ufFim: 'GO', cMunDescarga: '5208707', dhEmi: '2026-10-27T09:00:00-04:00' };
     const cStat = async (p: Parameters<typeof mdfe>[1]): Promise<string | undefined> =>
       tag(await sendMdfe(h, 'MDFeRecepcaoSinc', (await mdfe(h.c.emitente, p)).xml, h.c.emitente), 'cStat');
@@ -157,7 +157,7 @@ describe('consultas', () => {
       /<protMDFe versao="3.00"><protMDFe xmlns="http:\/\/www.portalfiscal.inf.br\/mdfe" versao="3.00"><infProt/,
     );
     const nProt = h.sim.inspect.mdfe(a.chave)?.nProt as string;
-    h.clock.advance(HORA);
+    h.clock.avancar(HORA);
     const enc = await sendMdfe(
       h,
       'MDFeRecepcaoEvento',
@@ -215,7 +215,7 @@ describe('eventos (J01 a J16 e regras de cada tipo)', () => {
     const nProt = h.sim.inspect.mdfe(a.chave)?.nProt as string;
     const ev = (det: string, tpEvento = '110111', dhEvento = '2026-09-26T13:30:00-03:00'): Promise<string> =>
       eventoMdfe(h.c.ecpf, { chave: a.chave, tpEvento, det, dhEvento });
-    h.clock.advance(3 * HORA + 30 * 60_000);
+    h.clock.avancar(3 * HORA + 30 * 60_000);
     expect(tag(await sendMdfe(h, 'MDFeRecepcaoEvento', await ev(detMdfe.canc(nProt))), 'cStat')).toBe('220');
     const h2 = await harness();
     const b = await mdfe(h2.c.ecpf);
@@ -270,7 +270,7 @@ describe('eventos (J01 a J16 e regras de cada tipo)', () => {
     await sendMdfe(h, 'MDFeRecepcaoSinc', a.xml);
     const prot = (ch: string): string => h.sim.inspect.mdfe(ch)?.nProt as string;
     const nfe = (mod = '55'): string =>
-      buildChaveAcesso({
+      montarChaveAcesso({
         cUF: '51',
         aamm: '2609',
         emitente: EMITENTE,

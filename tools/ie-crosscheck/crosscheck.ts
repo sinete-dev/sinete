@@ -11,8 +11,8 @@
  */
 import path from 'node:path';
 import type { Uf } from '@sinete/core';
-import { isUf } from '@sinete/core';
-import { parseIe } from '@sinete/validators';
+import { ehUf } from '@sinete/core';
+import { lerIe } from '@sinete/validators';
 
 type Stats = {
   total: number;
@@ -40,7 +40,7 @@ for (const line of text.split('\n')) {
   if (!line.trim()) continue;
   const [ufRaw = '', ie = ''] = line.split('\t');
   const uf = ufRaw.trim().toUpperCase();
-  if (!isUf(uf) || !ie.trim() || ie.trim().toUpperCase() === 'NULL') {
+  if (!ehUf(uf) || !ie.trim() || ie.trim().toUpperCase() === 'NULL') {
     skipped++;
     continue;
   }
@@ -58,14 +58,14 @@ for (const line of text.split('\n')) {
   };
   byUf.set(uf, s);
   s.total++;
-  const r = parseIe(ie, uf as Uf);
+  const r = lerIe(ie, uf as Uf);
   if (r.ok) {
     s.ok++;
-    if (r.value.kind === 'isento') s.isento++;
-    else if (r.value.legacy) s.legacy++;
-  } else s.codes.set(r.error.code, (s.codes.get(r.error.code) ?? 0) + 1);
+    if (r.valor.tipo === 'isento') s.isento++;
+    else if (r.valor.legado) s.legacy++;
+  } else s.codes.set(r.erro.code, (s.codes.get(r.erro.code) ?? 0) + 1);
   if (ref) {
-    const isento = r.ok && r.value.kind === 'isento';
+    const isento = r.ok && r.valor.tipo === 'isento';
     const refOk = ref.validate(ie, uf);
     if (refOk) s.ref++;
     // ISENTO não é número de inscrição: a comparação é só entre números.
@@ -74,7 +74,7 @@ for (const line of text.split('\n')) {
     else if (r.ok) {
       s.onlySinete++;
       // aceita só depois de ajustar zeros à esquerda (nota *2 do Anexo I)
-      if (r.value.kind === 'numero' && r.value.value !== ie.replace(/[.\-/\s]/g, '').toUpperCase()) s.onlySineteZeros++;
+      if (r.valor.tipo === 'numero' && r.valor.valor !== ie.replace(/[.\-/\s]/g, '').toUpperCase()) s.onlySineteZeros++;
     } else s.onlyRef++;
   }
 }

@@ -15,8 +15,8 @@ const r = await nfe.cartaCorrecao({
   xCorrecao: 'Onde se le Rua A, numero 1, leia-se Rua A, numero 10',
   nSeqEvento: 1,
 });
-if (r.status === 'authorized') await guardarEvento(chave, r.value.procEventoNFe);
-else console.log(r.status, r.cStat, r.xMotivo);
+if (r.tipo === 'autorizado') await guardarEvento(chave, r.valor.procEventoNFe);
+else console.log(r.tipo, r.cStat, r.xMotivo);
 ```
 
 - **Sequência.** Cada nova CC-e da mesma nota substitui a anterior e leva o número sequencial seguinte (`nSeqEvento` de 1 a 20). Inclua no texto as correções anteriores que devem continuar valendo. O sinete lança `ConfigError` antes do envio se o sequencial não for inteiro ou estiver fora desse intervalo. A Secretaria da Fazenda (SEFAZ) rejeita sequencial repetido com o código 573 (duplicidade de evento). O código 594 corresponde à rejeição por sequencial acima do permitido, mas o sinete impede esse envio na validação local.

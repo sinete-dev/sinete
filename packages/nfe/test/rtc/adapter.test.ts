@@ -1,6 +1,6 @@
 /** A calculadora padrão sobre o motor: pedido da porta para a operação do motor, grupo do motor para o leiaute, erros e regras como ocorrências. */
 import { describe, expect, test } from 'bun:test';
-import { fixedClock } from '@sinete/core';
+import { relogioFixo } from '@sinete/core';
 import type { RateProvider } from '@sinete/ibs-cbs/aliquotas';
 import { officialRates } from '@sinete/ibs-cbs/aliquotas';
 import { calculateAt } from '@sinete/ibs-cbs/calcular';
@@ -12,7 +12,7 @@ import { LOCAIS, notaRtc, opcoesRtc } from './helpers.ts';
 
 const dataset = bundledDataset();
 const rates = officialRates();
-const QUANDO = fixedClock('2026-10-10T12:00:00-03:00').now();
+const QUANDO = relogioFixo('2026-10-10T12:00:00-03:00').agora();
 
 function nota(extra: Partial<IbsCbsNotaRequest> = {}): IbsCbsNotaRequest {
   return {
@@ -97,7 +97,7 @@ describe('ibsCbsCalculator', () => {
       nota: nota({ compraGov: { tpEnteGov: '1', pRedutor: Decimal.of('50.00'), tpOperGov: '1' } }),
       itens: [item()],
     });
-    expect(r.issues?.map((i) => [i.path, i.code])).toEqual([['gCompraGov.pRedutor', 'ibscbs_redutor_divergente']]);
+    expect(r.issues?.map((i) => [i.caminho, i.code])).toEqual([['gCompraGov.pRedutor', 'ibscbs_redutor_divergente']]);
     const igual = await calc.calcular({
       nota: nota({ compraGov: { tpEnteGov: '1', pRedutor: Decimal.of('0.0000'), tpOperGov: '1' } }),
       itens: [item()],
@@ -140,7 +140,7 @@ describe('ibsCbsCalculator', () => {
     const calc = ibsCbsCalculator({ dataset, rates });
     const exportacao = item({ CST: '550', cClassTrib: '550001', CFOP: '7101' });
     const sem = await calc.calcular({ nota: nota(), itens: [exportacao] });
-    expect(sem.issues?.map((i) => [i.path, i.code])).toEqual([
+    expect(sem.issues?.map((i) => [i.caminho, i.code])).toEqual([
       ['itens[0].impostos.ibsCbs', 'ibscbs_classificacao_invalida'],
     ]);
     const com = await calc.calcular({
@@ -157,7 +157,7 @@ describe('ibsCbsCalculator', () => {
   });
 
   test('no buildNfe: ICMS e FCP de partilha chegam à base; gTribRegular vai da entrada ao XML', async () => {
-    const clock = fixedClock('2026-10-10T12:00:00-03:00');
+    const clock = relogioFixo('2026-10-10T12:00:00-03:00');
     const entrada = notaRtc(LOCAIS.SP, [
       { CST: '000', cClassTrib: '000001', base: '1000.00' },
       { CST: '550', cClassTrib: '550001', base: '100.00' },
@@ -205,7 +205,7 @@ describe('ibsCbsCalculator', () => {
       },
     });
     const r = await buildNfe({ ...entrada, itens }, opcoesRtc(clock, calc));
-    if (!r.ok) throw new Error(r.issues.map((i) => `${i.path}: ${i.message}`).join('\n'));
+    if (!r.ok) throw new Error(r.issues.map((i) => `${i.caminho}: ${i.mensagem}`).join('\n'));
     expect(vistos).toEqual([
       [1, '60.00', '20.00'],
       [2, '0.00', '0.00'],
@@ -217,7 +217,7 @@ describe('ibsCbsCalculator', () => {
 
   test('crédito presumido sem os percentuais: ocorrência de não suportado', async () => {
     const r = await ibsCbsCalculator({ dataset, rates }).calcular({ nota: nota(), itens: [item({ cCredPres: '01' })] });
-    expect(r.issues?.map((i) => [i.path, i.code])).toEqual([['itens[0].impostos.ibsCbs', 'ibscbs_nao_suportado']]);
+    expect(r.issues?.map((i) => [i.caminho, i.code])).toEqual([['itens[0].impostos.ibsCbs', 'ibscbs_nao_suportado']]);
   });
 
   test('erros do motor e das alíquotas viram ocorrências; outro erro propaga', async () => {
@@ -230,9 +230,11 @@ describe('ibsCbsCalculator', () => {
     const mono = await calc.calcular({ nota: nota(), itens: [item({ CST: '620', cClassTrib: '620001' })] });
     expect(mono.issues?.map((i) => i.code)).toEqual([expect.stringMatching(/^ibscbs_/)]);
     // 2027: a CBS ainda não foi fixada pelo Senado.
-    const em2027 = fixedClock('2027-03-10T12:00:00-03:00').now();
+    const em2027 = relogioFixo('2027-03-10T12:00:00-03:00').agora();
     const futuro = await calc.calcular({ nota: nota({ fatoGerador: em2027, emissao: em2027 }), itens: [item()] });
-    expect(futuro.issues?.map((i) => [i.path, i.code])).toEqual([['impostos.ibsCbs', 'ibscbs_aliquota_desconhecida']]);
+    expect(futuro.issues?.map((i) => [i.caminho, i.code])).toEqual([
+      ['impostos.ibsCbs', 'ibscbs_aliquota_desconhecida'],
+    ]);
     const quebrado: RateProvider = {
       id: 'quebrado',
       nominal: () => {
@@ -266,15 +268,15 @@ describe('ibsCbsCalculator', () => {
     });
     expect(r.issues).toEqual([
       {
-        path: 'itens[0].impostos.ibsCbs',
+        caminho: 'itens[0].impostos.ibsCbs',
         code: 'ibscbs_regra_nt',
-        message: 'TESTE-10 (rejeição 9999): item reprovado [teste]',
+        mensagem: 'TESTE-10 (rejeição 9999): item reprovado [teste]',
         origem: 'montagem',
       },
       {
-        path: 'total.IBSCBSTot',
+        caminho: 'total.IBSCBSTot',
         code: 'ibscbs_regra_nt',
-        message: 'TESTE-10 (rejeição 9999): total reprovado [teste]',
+        mensagem: 'TESTE-10 (rejeição 9999): total reprovado [teste]',
         origem: 'montagem',
       },
     ]);
@@ -317,7 +319,7 @@ describe('ibsCbsCalculator', () => {
   });
 
   test('no buildNfe: grupos do motor no XML e IBSCBSTot somado pelo builder', async () => {
-    const clock = fixedClock('2026-10-10T12:00:00-03:00');
+    const clock = relogioFixo('2026-10-10T12:00:00-03:00');
     const r = await buildNfe(
       notaRtc(LOCAIS.SP, [
         { CST: '000', cClassTrib: '000001', base: '1000.00' },
@@ -325,7 +327,7 @@ describe('ibsCbsCalculator', () => {
       ]),
       opcoesRtc(clock, ibsCbsCalculator({ dataset, rates })),
     );
-    if (!r.ok) throw new Error(r.issues.map((i) => `${i.path}: ${i.message}`).join('\n'));
+    if (!r.ok) throw new Error(r.issues.map((i) => `${i.caminho}: ${i.mensagem}`).join('\n'));
     expect(r.value.xml).toContain('<IBSCBS><CST>000</CST><cClassTrib>000001</cClassTrib><gIBSCBS><vBC>1000.00</vBC>');
     expect(r.value.infNFe.total.IBSCBSTot).toMatchObject({ vBCIBSCBS: '1007.56', gCBS: { vCBS: '9.03' } });
   });

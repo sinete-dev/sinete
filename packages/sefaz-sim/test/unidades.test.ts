@@ -1,7 +1,7 @@
 /** Datas sem `Date`, mensagens oficiais e certificados sintéticos. */
 import { describe, expect, test } from 'bun:test';
 import { icpIdentity, parseCertificate } from '@sinete/cert';
-import { manualClock } from '@sinete/core';
+import { relogioManual } from '@sinete/core';
 import { isDenegacao, isResultado, motivo, motivoRejeicao, syntheticCertificate } from '../src/index.ts';
 import { civilFromDays, daysFromCivil, formatInstant, parseDateTime, utcParts, yearOf } from '../src/time.ts';
 
@@ -49,7 +49,7 @@ describe('mensagens', () => {
 });
 
 describe('certificados sintéticos', () => {
-  const clock = manualClock('2026-09-26T10:00:00-03:00');
+  const clock = relogioManual('2026-09-26T10:00:00-03:00');
 
   test('e-CNPJ, e-CPF e servidor legíveis pelo @sinete/cert; validade em GeneralizedTime depois de 2049', async () => {
     const ac = await syntheticCertificate({ clock, role: 'ac', validDays: 30 * 365 });
@@ -61,10 +61,10 @@ describe('certificados sintéticos', () => {
     expect(pf.commonName).toBe('PF');
     expect(srv.tlsIdentity.certChain).toContain(ac.pem.trim());
     expect(parseCertificate(ac.der).notAfterIso).toStartWith('2056-');
-    const sig = await pj.signer.sign(new Uint8Array([1, 2, 3]), 'SHA-1');
+    const sig = await pj.signer.assinar(new Uint8Array([1, 2, 3]), 'SHA-1');
     expect(sig.length).toBe(256);
-    expect(await pj.signer.sign(new Uint8Array([1]), 'SHA-1')).toHaveLength(256);
-    expect(await pj.signer.certificateDer()).toBe(pj.der);
+    expect(await pj.signer.assinar(new Uint8Array([1]), 'SHA-1')).toHaveLength(256);
+    expect(await pj.signer.certificadoDer()).toBe(pj.der);
   });
 
   test('erros de configuração', async () => {

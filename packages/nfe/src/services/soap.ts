@@ -4,9 +4,9 @@
  */
 
 import type { Logger } from '@sinete/core';
-import { ProtocolError } from '@sinete/core';
-import type { XmlDocument, XmlElement } from '@sinete/core/xml';
-import { childElements, descendants, parseXml } from '@sinete/core/xml';
+import { ErroRespostaInvalida } from '@sinete/core';
+import type { DocumentoXml, ElementoXml } from '@sinete/core/xml';
+import { descendentes, elementosFilhos, lerXml } from '@sinete/core/xml';
 import type { EndpointRef, NfeServico, Transport } from '@sinete/transport';
 import { soap12ContentType, soap12Envelope, soapFault } from '@sinete/transport';
 import servicos from '../data/servicos.json' with { type: 'json' };
@@ -29,7 +29,7 @@ const SERVICOS: Readonly<Record<string, ServicoInfo>> = servicos.servicos;
 /** Namespace do WSDL e operação do serviço. */
 export function servicoInfo(servico: NfeServico): ServicoInfo {
   const s = SERVICOS[servico];
-  if (!s) throw new ProtocolError(`serviço sem descrição em data/servicos.json: ${servico}`);
+  if (!s) throw new ErroRespostaInvalida(`serviço sem descrição em data/servicos.json: ${servico}`);
   return s;
 }
 
@@ -44,8 +44,8 @@ export function soapBodyFor(servico: NfeServico, mensagem: string, autorizador?:
 
 /** Resposta de um serviço: o documento inteiro (para fatiar) e o elemento de retorno. */
 export interface RespostaSoap {
-  readonly doc: XmlDocument;
-  readonly ret: XmlElement;
+  readonly doc: DocumentoXml;
+  readonly ret: ElementoXml;
   readonly status: number;
 }
 
@@ -78,40 +78,40 @@ export async function chamar(c: ChamadaSoap): Promise<RespostaSoap> {
   const fault = soapFault(text);
   if (fault) {
     c.logger.warn('nfe.soap.fault', { ...started, status: res.status, code: fault.code });
-    throw new ProtocolError(`SOAP fault de ${c.endpoint.host}: ${fault.reason ?? fault.code ?? 'sem motivo'}`, {
-      details: { status: res.status, code: fault.code, reason: fault.reason, servico: c.servico },
+    throw new ErroRespostaInvalida(`SOAP fault de ${c.endpoint.host}: ${fault.reason ?? fault.code ?? 'sem motivo'}`, {
+      detalhes: { status: res.status, code: fault.code, reason: fault.reason, servico: c.servico },
     });
   }
-  let doc: XmlDocument;
+  let doc: DocumentoXml;
   try {
-    doc = parseXml(text.replace(/^﻿/, ''));
+    doc = lerXml(text.replace(/^﻿/, ''));
   } catch (cause) {
-    throw new ProtocolError(`resposta de ${c.endpoint.host} não é XML (HTTP ${res.status})`, {
+    throw new ErroRespostaInvalida(`resposta de ${c.endpoint.host} não é XML (HTTP ${res.status})`, {
       cause,
-      details: { status: res.status, servico: c.servico },
+      detalhes: { status: res.status, servico: c.servico },
     });
   }
-  let ret: XmlElement | undefined;
-  for (const el of descendants(doc.root)) {
+  let ret: ElementoXml | undefined;
+  for (const el of descendentes(doc.raiz)) {
     if (el.local === c.retorno && el.ns === NFE_NS) {
       ret = el;
       break;
     }
   }
-  if (!ret) ret = retornoForaDoNamespace(doc.root, c.retorno);
+  if (!ret) ret = retornoForaDoNamespace(doc.raiz, c.retorno);
   if (ret && ret.ns !== NFE_NS) {
     // A SEFAZ-MG devolve o <retConsCad> sem o namespace da NF-e: ele herda o default do WSDL do nfeResultMsg, e só
     // os filhos declaram o da NF-e (visto em homologação e em produção em 28/09/2026). O conteúdo é o do leiaute.
     c.logger.warn('nfe.soap.retorno_fora_do_namespace', { ...started, retorno: c.retorno, ns: ret.ns });
   }
   if (!ret) {
-    throw new ProtocolError(`resposta de ${c.endpoint.host} sem <${c.retorno}> (HTTP ${res.status})`, {
-      details: { status: res.status, servico: c.servico },
+    throw new ErroRespostaInvalida(`resposta de ${c.endpoint.host} sem <${c.retorno}> (HTTP ${res.status})`, {
+      detalhes: { status: res.status, servico: c.servico },
     });
   }
-  if (!Array.from(descendants(ret)).some((el) => el.local === 'cStat' && el.ns === NFE_NS)) {
-    throw new ProtocolError(`<${c.retorno}> de ${c.endpoint.host} sem cStat (HTTP ${res.status})`, {
-      details: { status: res.status, servico: c.servico },
+  if (!Array.from(descendentes(ret)).some((el) => el.local === 'cStat' && el.ns === NFE_NS)) {
+    throw new ErroRespostaInvalida(`<${c.retorno}> de ${c.endpoint.host} sem cStat (HTTP ${res.status})`, {
+      detalhes: { status: res.status, servico: c.servico },
     });
   }
   c.logger.debug('nfe.soap.resposta', { ...started, status: res.status });
@@ -123,10 +123,10 @@ export async function chamar(c: ChamadaSoap): Promise<RespostaSoap> {
  * NF-e: é o caso do autorizador que esquece o `xmlns` no elemento de retorno e o declara nos filhos. Com os filhos
  * fora do namespace, a resposta continua recusada.
  */
-function retornoForaDoNamespace(root: XmlElement, retorno: string): XmlElement | undefined {
-  for (const el of descendants(root)) {
+function retornoForaDoNamespace(root: ElementoXml, retorno: string): ElementoXml | undefined {
+  for (const el of descendentes(root)) {
     if (el.local !== retorno) continue;
-    const filhos = childElements(el);
+    const filhos = elementosFilhos(el);
     if (filhos.length > 0 && filhos.every((f) => f.ns === NFE_NS)) return el;
   }
   return undefined;

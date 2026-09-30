@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import type { Uf } from '@sinete/core';
 import { UFS } from '@sinete/core';
 import table from '../src/data/ie.json' with { type: 'json' };
-import { completeIe, formatIe, IE_TABLE, ieCheckDigits, ieRule, isIeIsento, isValidIe, parseIe } from '../src/index.ts';
+import { calcularDvIe, completarIe, formatarIe, ieIsenta, ieValida, lerIe, regraIe, TABELA_IE } from '../src/index.ts';
 import { expectValidationError } from './helpers.ts';
 
 /**
@@ -83,13 +83,13 @@ describe('exemplos oficiais por UF', () => {
   for (const [uf, values] of Object.entries(OFFICIAL_VALID)) {
     test(`${uf}: válidos e, com o DV trocado, inválidos`, () => {
       for (const v of values) {
-        const r = parseIe(v, uf as Uf);
+        const r = lerIe(v, uf as Uf);
         expect(r.ok, `${uf} ${v}`).toBe(true);
         // No produtor rural de SP os 3 últimos algarismos ficam fora do cálculo: troca-se o DV (10ª posição).
         const bad = v.startsWith('P')
           ? v.replace(/\.(\d)/, (_m, d: string) => `.${(Number(d) + 1) % 10}`)
           : bumpLast(v);
-        expect(isValidIe(bad, uf as Uf), `${uf} ${bad}`).toBe(false);
+        expect(ieValida(bad, uf as Uf), `${uf} ${bad}`).toBe(false);
       }
     });
   }
@@ -99,20 +99,20 @@ describe('tabela de regras', () => {
   test('cobre as 27 UFs, cada uma com fonte e variantes coerentes', () => {
     expect(Object.keys(table.ufs).sort()).toEqual(UFS.map((u) => u.sigla).sort());
     for (const { sigla } of UFS) {
-      const rule = ieRule(sigla);
-      expect(rule.sources.length, sigla).toBeGreaterThan(0);
-      for (const s of rule.sources) expect(s.url).toMatch(/^https?:\/\//);
-      for (const v of rule.variants) {
-        expect(() => new RegExp(v.pattern)).not.toThrow();
-        if (v.mask) expect(v.mask.split('').filter((c) => c === '#').length, `${sigla} ${v.id}`).toBe(v.length);
-        for (const c of v.checks) {
-          expect(c.at).toBeLessThan(v.length);
-          expect((c.over ?? c.weights.map((_, i) => i)).length).toBe(c.weights.length);
+      const rule = regraIe(sigla);
+      expect(rule.fontes.length, sigla).toBeGreaterThan(0);
+      for (const s of rule.fontes) expect(s.url).toMatch(/^https?:\/\//);
+      for (const v of rule.variantes) {
+        expect(() => new RegExp(v.padrao)).not.toThrow();
+        if (v.mascara) expect(v.mascara.split('').filter((c) => c === '#').length, `${sigla} ${v.id}`).toBe(v.tamanho);
+        for (const c of v.digitosVerificadores) {
+          expect(c.posicao).toBeLessThan(v.tamanho);
+          expect((c.posicoesSomadas ?? c.pesos.map((_, i) => i)).length).toBe(c.pesos.length);
         }
       }
     }
-    expect(IE_TABLE.version).toMatch(/^\d{4}\.\d{2}\.\d{2}$/);
-    expect(IE_TABLE.sources.length).toBeGreaterThan(0);
+    expect(TABELA_IE.versao).toMatch(/^\d{4}\.\d{2}\.\d{2}$/);
+    expect(TABELA_IE.fontes.length).toBeGreaterThan(0);
   });
 });
 
@@ -120,22 +120,22 @@ describe('propriedades', () => {
   const rand = rng(20260925);
   for (const { sigla } of UFS) {
     test(`${sigla}: IE gerada valida e qualquer algarismo trocado falha`, () => {
-      for (const variant of ieRule(sigla).variants) {
+      for (const variant of regraIe(sigla).variantes) {
         for (let i = 0; i < 60; i++) {
-          const ie = completeIe(randomBase(variant.pattern, variant.length, rand), sigla, variant.id);
-          const r = parseIe(ie, sigla);
+          const ie = completarIe(randomBase(variant.padrao, variant.tamanho, rand), sigla, variant.id);
+          const r = lerIe(ie, sigla);
           expect(r.ok, `${sigla} ${variant.id} ${ie}`).toBe(true);
           // Troca um dos dígitos verificadores: o DV tem de detectar. (Trocar a base pode cair noutra variante.)
-          const pos = variant.checks[i % variant.checks.length]?.at ?? 0;
-          const accepted = variant.checks
-            .filter((c) => c.at === pos)
-            .flatMap((c) => ieCheckDigits(ie, c))
+          const pos = variant.digitosVerificadores[i % variant.digitosVerificadores.length]?.posicao ?? 0;
+          const accepted = variant.digitosVerificadores
+            .filter((c) => c.posicao === pos)
+            .flatMap((c) => calcularDvIe(ie, c))
             .map(String);
           const others = '0123456789'.split('').filter((d) => !accepted.includes(d));
           const d = others[i % others.length] ?? '0';
           const mutated = ie.slice(0, pos) + d + ie.slice(pos + 1);
-          const m = parseIe(mutated, sigla, { allowLegacy: variant.legacy === true });
-          if (m.ok && m.value.kind === 'numero') expect(m.value.variant, `${sigla} ${mutated}`).not.toBe(variant.id);
+          const m = lerIe(mutated, sigla, { aceitarLegado: variant.legado === true });
+          if (m.ok && m.valor.tipo === 'numero') expect(m.valor.variante, `${sigla} ${mutated}`).not.toBe(variant.id);
         }
       }
     });
@@ -146,20 +146,22 @@ describe('propriedade: algarismo da base trocado', () => {
   test('o DV detecta a grande maioria das trocas de um algarismo da base, em toda UF', () => {
     const rand = rng(7);
     for (const { sigla } of UFS) {
-      for (const variant of ieRule(sigla).variants) {
-        const used = new Set(variant.checks.flatMap((c) => c.over ?? c.weights.map((_, i) => i)));
-        const positions = [...used].filter((p) => !variant.checks.some((c) => c.at === p) && p > 1);
+      for (const variant of regraIe(sigla).variantes) {
+        const used = new Set(
+          variant.digitosVerificadores.flatMap((c) => c.posicoesSomadas ?? c.pesos.map((_, i) => i)),
+        );
+        const positions = [...used].filter((p) => !variant.digitosVerificadores.some((c) => c.posicao === p) && p > 1);
         let tries = 0;
         let caught = 0;
         for (let i = 0; i < 200; i++) {
-          const ie = completeIe(randomBase(variant.pattern, variant.length, rand), sigla, variant.id);
+          const ie = completarIe(randomBase(variant.padrao, variant.tamanho, rand), sigla, variant.id);
           const pos = positions[i % positions.length] ?? 2;
           const d = String((Number(ie[pos]) + 1 + Math.floor(rand() * 9)) % 10);
           const mutated = ie.slice(0, pos) + d + ie.slice(pos + 1);
-          if (!new RegExp(variant.pattern).test(mutated)) continue;
+          if (!new RegExp(variant.padrao).test(mutated)) continue;
           tries++;
-          const m = parseIe(mutated, sigla);
-          if (!(m.ok && m.value.kind === 'numero' && m.value.variant === variant.id)) caught++;
+          const m = lerIe(mutated, sigla);
+          if (!(m.ok && m.valor.tipo === 'numero' && m.valor.variante === variant.id)) caught++;
         }
         // Módulo 11 com resto 0 e 1 levados a 0 deixa passar cerca de 1 em 11; módulo 10 e 9 um pouco mais.
         expect(caught / tries, `${sigla} ${variant.id}`).toBeGreaterThan(0.75);
@@ -170,39 +172,39 @@ describe('propriedade: algarismo da base trocado', () => {
 
 describe('normalização e ocorrências', () => {
   test('zeros à esquerda a menos ou a mais (Anexo I, nota *2)', () => {
-    const r = parseIe('130000019', 'MT');
-    expect(r.ok && r.value.kind === 'numero' && r.value.value).toBe('00130000019');
-    const extra = parseIe('00251040852', 'SC');
-    expect(extra.ok && extra.value.kind === 'numero' && extra.value.value).toBe('251040852');
-    expect(isValidIe('10251040852', 'SC')).toBe(false);
+    const r = lerIe('130000019', 'MT');
+    expect(r.ok && r.valor.tipo === 'numero' && r.valor.valor).toBe('00130000019');
+    const extra = lerIe('00251040852', 'SC');
+    expect(extra.ok && extra.valor.tipo === 'numero' && extra.valor.valor).toBe('251040852');
+    expect(ieValida('10251040852', 'SC')).toBe(false);
   });
 
   test('máscara oficial e forma normalizada', () => {
-    const r = parseIe('0100482300112', 'AC');
-    expect(r.ok && r.value.kind === 'numero' && r.value.formatted).toBe('01.004.823/001-12');
-    expect(formatIe('110042490114', 'SP')).toBe('110.042.490.114');
-    expect(formatIe('P011004243002', 'SP')).toBe('P-01100424.3/002');
-    expect(formatIe('240000048', 'AL')).toBe('240000048');
-    expect(formatIe('nada', 'AL')).toBe('nada');
-    expect(formatIe('isento', 'MT')).toBe('ISENTO');
+    const r = lerIe('0100482300112', 'AC');
+    expect(r.ok && r.valor.tipo === 'numero' && r.valor.formatada).toBe('01.004.823/001-12');
+    expect(formatarIe('110042490114', 'SP')).toBe('110.042.490.114');
+    expect(formatarIe('P011004243002', 'SP')).toBe('P-01100424.3/002');
+    expect(formatarIe('240000048', 'AL')).toBe('240000048');
+    expect(formatarIe('nada', 'AL')).toBe('nada');
+    expect(formatarIe('isento', 'MT')).toBe('ISENTO');
   });
 
   test('ISENTO', () => {
-    expect(isIeIsento(' Isento ')).toBe(true);
-    const r = parseIe('isento', 'MT');
-    expect(r.ok && r.value).toEqual({ kind: 'isento', value: 'ISENTO' });
-    const no = parseIe('ISENTO', 'MT', { allowIsento: false, path: 'emit.IE' });
-    expect(!no.ok && no.error).toEqual({
-      path: 'emit.IE',
+    expect(ieIsenta(' Isento ')).toBe(true);
+    const r = lerIe('isento', 'MT');
+    expect(r.ok && r.valor).toEqual({ tipo: 'isento', valor: 'ISENTO' });
+    const no = lerIe('ISENTO', 'MT', { aceitarIsento: false, caminho: 'emit.IE' });
+    expect(!no.ok && no.erro).toEqual({
+      caminho: 'emit.IE',
       code: 'ie_isento_nao_permitido',
-      message: 'ISENTO não é aceito neste campo',
+      mensagem: 'ISENTO não é aceito neste campo',
     });
   });
 
   test('códigos de ocorrência', () => {
     const code = (v: string, uf: Uf): string | undefined => {
-      const r = parseIe(v, uf);
-      return r.ok ? undefined : r.error.code;
+      const r = lerIe(v, uf);
+      return r.ok ? undefined : r.erro.code;
     };
     expect(code('12a', 'SP')).toBe('ie_caractere_invalido');
     expect(code('', 'SP')).toBe('ie_caractere_invalido');
@@ -213,42 +215,42 @@ describe('normalização e ocorrências', () => {
   });
 
   test('formatos antigos só com allowLegacy', () => {
-    const r = parseIe('101625213', 'RO');
-    expect(r.ok && r.value.kind === 'numero' && r.value.legacy).toBe(true);
-    expect(isValidIe('101625213', 'RO', { allowLegacy: false })).toBe(false);
+    const r = lerIe('101625213', 'RO');
+    expect(r.ok && r.valor.tipo === 'numero' && r.valor.legado).toBe(true);
+    expect(ieValida('101625213', 'RO', { aceitarLegado: false })).toBe(false);
   });
 
   test('faixas especiais de Goiás e Amapá', () => {
     // Goiás: resto 1 dá DV 1 na faixa 10103105 a 10119997
-    expect(isValidIe(completeIe('101031050', 'GO'), 'GO')).toBe(true);
-    expect(isValidIe('110944020', 'GO')).toBe(true);
-    expect(isValidIe('110944021', 'GO')).toBe(true);
+    expect(ieValida(completarIe('101031050', 'GO'), 'GO')).toBe(true);
+    expect(ieValida('110944020', 'GO')).toBe(true);
+    expect(ieValida('110944021', 'GO')).toBe(true);
     // Amapá: p = 9 e d = 1 na faixa 03017001 a 03019022
-    const ap = completeIe('030170010', 'AP');
-    expect(isValidIe(ap, 'AP')).toBe(true);
-    expectValidationError(() => completeIe('1', 'AP'), 'ie_base_invalida');
-    expectValidationError(() => completeIe('1', 'XX' as Uf), 'ie_uf_invalida');
-    expectValidationError(() => completeIe('030170010', 'AP', 'nao-existe'), 'ie_base_invalida');
+    const ap = completarIe('030170010', 'AP');
+    expect(ieValida(ap, 'AP')).toBe(true);
+    expectValidationError(() => completarIe('1', 'AP'), 'ie_base_invalida');
+    expectValidationError(() => completarIe('1', 'XX' as Uf), 'ie_uf_invalida');
+    expectValidationError(() => completarIe('030170010', 'AP', 'nao-existe'), 'ie_base_invalida');
   });
 });
 
 describe('IE só com zeros (regressão)', () => {
   test('qualquer quantidade de zeros, com ou sem máscara e P, é recusada em toda UF', () => {
     for (const { sigla } of UFS) {
-      const lengths = new Set([1, 2, ...ieRule(sigla).variants.map((v) => v.length), 14, 15, 20]);
+      const lengths = new Set([1, 2, ...regraIe(sigla).variantes.map((v) => v.tamanho), 14, 15, 20]);
       for (const n of lengths) {
         for (const v of ['0'.repeat(n), `P${'0'.repeat(n)}`, `${'0'.repeat(n)}-0`.slice(0, n + 2)]) {
-          const r = parseIe(v, sigla);
+          const r = lerIe(v, sigla);
           expect(r.ok, `${sigla} ${v}`).toBe(false);
-          if (!r.ok && /^[P0-]+$/.test(v)) expect(['ie_zerada', 'ie_caractere_invalido']).toContain(r.error.code);
+          if (!r.ok && /^[P0-]+$/.test(v)) expect(['ie_zerada', 'ie_caractere_invalido']).toContain(r.erro.code);
         }
       }
-      expect(parseIe('000.000.000', sigla)).toMatchObject({ ok: false, error: { code: 'ie_zerada' } });
+      expect(lerIe('000.000.000', sigla)).toMatchObject({ ok: false, erro: { code: 'ie_zerada' } });
     }
   });
 
   test('IE válida com zeros à esquerda continua aceita', () => {
-    expect(isValidIe('00130000019', 'MT')).toBe(true);
-    expect(isValidIe('0000000062521-3', 'RO')).toBe(true);
+    expect(ieValida('00130000019', 'MT')).toBe(true);
+    expect(ieValida('0000000062521-3', 'RO')).toBe(true);
   });
 });

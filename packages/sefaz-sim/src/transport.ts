@@ -4,7 +4,7 @@
  * é `conexao_recusada`; sem resposta é `TimeoutError` no prazo da requisição).
  */
 
-import { ConfigError, TimeoutError } from '@sinete/core';
+import { ErroDeConfiguracao, ErroDeTempoEsgotado } from '@sinete/core';
 import type { EndpointRef, HostPolicy, Transport, TransportRequest, TransportResponse } from '@sinete/transport';
 import { http403Error, TransportError } from '@sinete/transport';
 import type { SimHandler } from './handler.ts';
@@ -51,7 +51,7 @@ function guard(timeoutMs: number, host: string, signal: AbortSignal | undefined)
   let onAbort: (() => void) | undefined;
   const stop = new Promise<never>((_, reject) => {
     timer = setTimeout(
-      () => reject(new TimeoutError(`${host}: sem resposta em ${timeoutMs} ms`, timeoutMs)),
+      () => reject(new ErroDeTempoEsgotado(`${host}: sem resposta em ${timeoutMs} ms`, timeoutMs)),
       timeoutMs,
     );
     if (signal?.aborted === true) reject(cancelado(signal));
@@ -91,7 +91,7 @@ export function simTransport(sim: SimHandler, options: SimTransportOptions = {})
       clientCertificateCheck: false,
     },
     async send(request: TransportRequest): Promise<TransportResponse> {
-      if (closed) throw new ConfigError('transporte já fechado');
+      if (closed) throw new ErroDeConfiguracao('transporte já fechado');
       if (abortado(request.signal)) throw cancelado(request.signal as AbortSignal);
       const url = new URL(request.url);
       const method = request.method ?? (request.body === undefined ? 'GET' : 'POST');
@@ -120,7 +120,7 @@ export function simTransport(sim: SimHandler, options: SimTransportOptions = {})
       }
       if (result.effect === 'drop') {
         throw new TransportError('conexao_recusada', `${url.hostname}: conexão encerrada sem resposta`, {
-          details: { host: url.hostname },
+          detalhes: { host: url.hostname },
         });
       }
       if (result.status === 403 && options.rejectOn403 !== false) throw http403Error(url.hostname);
@@ -158,21 +158,23 @@ export function simAutorizadorOf(endpoint: EndpointRef): SimAutorizador {
  */
 export function redirectToSim(transport: Transport, baseUrl: string): Transport {
   const base = new URL(baseUrl);
-  if (base.protocol !== 'https:') throw new ConfigError(`baseUrl do simulador precisa ser https: ${baseUrl}`);
+  if (base.protocol !== 'https:') throw new ErroDeConfiguracao(`baseUrl do simulador precisa ser https: ${baseUrl}`);
   const origin = base.origin;
   return {
     capabilities: transport.capabilities,
     send(request: TransportRequest): Promise<TransportResponse> {
       const ep = request.endpoint;
       if (ep === undefined) {
-        return Promise.reject(new ConfigError(`pedido sem endpoint não é redirecionado ao simulador: ${request.url}`));
+        return Promise.reject(
+          new ErroDeConfiguracao(`pedido sem endpoint não é redirecionado ao simulador: ${request.url}`),
+        );
       }
       const nfe = (ep.documento === 'nfe' || ep.documento === 'nfce') && Object.hasOwn(NFE_SERVICES, ep.servico);
       const mdfe = ep.documento === 'mdfe' && isMdfeServico(ep.servico);
       if (!nfe && !mdfe) {
         return Promise.reject(
-          new ConfigError(`o simulador não atende ${ep.documento} ${ep.servico}`, {
-            details: { documento: ep.documento, servico: ep.servico },
+          new ErroDeConfiguracao(`o simulador não atende ${ep.documento} ${ep.servico}`, {
+            detalhes: { documento: ep.documento, servico: ep.servico },
           }),
         );
       }

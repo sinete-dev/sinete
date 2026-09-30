@@ -12,19 +12,19 @@
  * (`resolverEnvioSemResposta`) e, se ela não constar, reenvie exatamente os mesmos bytes.
  */
 
-import type { Ambiente, Clock, Logger, SefazOutcome, Signer } from '@sinete/core';
+import type { Ambiente, Assinador, Logger, Relogio, ResultadoSefaz } from '@sinete/core';
 import {
-  authorized,
-  ConfigError,
-  isUf,
-  noopLogger,
-  ProtocolError,
-  tpAmbOf,
-  ufBySigla,
-  ValidationError,
+  criarAutorizado,
+  ErroDeConfiguracao,
+  ErroDeValidacao,
+  ErroRespostaInvalida,
+  ehUf,
+  loggerSilencioso,
+  tpAmbDoAmbiente,
+  ufPorSigla,
 } from '@sinete/core';
-import type { XmlDocument, XmlElement } from '@sinete/core/xml';
-import { childElements, firstChild, parseXml, signXml, textOf } from '@sinete/core/xml';
+import type { DocumentoXml, ElementoXml } from '@sinete/core/xml';
+import { assinarXml, elementosFilhos, lerXml, primeiroFilho, textoDe } from '@sinete/core/xml';
 import type { SchemaIssue } from '@sinete/schemas';
 import { decode, serialize, serializeRoot, validate } from '@sinete/schemas';
 import { TProtMDFe, TRetMDFe } from '@sinete/schemas/mdfe/3.00b';
@@ -44,7 +44,7 @@ import {
 import type { EndpointRef, Transport } from '@sinete/transport';
 import { mdfeEndpoint, PolicyError } from '@sinete/transport';
 import type { ChaveAcesso } from '@sinete/validators';
-import { parseChaveAcesso, parseCnpj, parseCpf } from '@sinete/validators';
+import { lerChaveAcesso, lerCnpj, lerCpf } from '@sinete/validators';
 import { pagamentosDoLeiaute } from '../build/build.ts';
 import emissao from '../data/emissao.json' with { type: 'json' };
 import type { Condutor, PagamentoFrete } from '../model.ts';
@@ -67,10 +67,10 @@ export type AutorDocumento =
 export interface MdfeClientOptions {
   readonly transport: Transport;
   /** Assina o MDF-e e os eventos (A1 WebCrypto, A3 via PKCS#11, HSM). */
-  readonly signer: Signer;
+  readonly signer: Assinador;
   readonly ambiente: Ambiente;
   /** Relógio de emissão: `dhEvento`. */
-  readonly clock: Clock;
+  readonly clock: Relogio;
   readonly logger?: Logger;
   /** Prazo por requisição; padrão o do transporte. */
   readonly timeoutMs?: number;
@@ -107,7 +107,7 @@ export interface ProtocoloMdfe {
   readonly mdfeProc?: string;
 }
 
-export type AutorizacaoOutcome = SefazOutcome<ProtocoloMdfe, never>;
+export type AutorizacaoOutcome = ResultadoSefaz<ProtocoloMdfe, never>;
 
 /** Opções de toda chamada que vai à rede. */
 export interface OpcoesEnvio {
@@ -129,7 +129,7 @@ export interface ConsultaMdfe {
   readonly digValConfere?: boolean;
 }
 
-export type ConsultaOutcome = SefazOutcome<ConsultaMdfe, never>;
+export type ConsultaOutcome = ResultadoSefaz<ConsultaMdfe, never>;
 
 /** MDF-e autorizado e ainda não encerrado do emitente. */
 export interface MdfeNaoEncerrado {
@@ -151,7 +151,7 @@ export interface EventoRegistrado {
   readonly procEventoMDFe: string;
 }
 
-export type EventoOutcome = SefazOutcome<EventoRegistrado, never>;
+export type EventoOutcome = ResultadoSefaz<EventoRegistrado, never>;
 
 export interface CancelamentoPedido {
   readonly chave: string;
@@ -207,7 +207,7 @@ export interface PagamentoOperacaoPedido {
 
 export interface MdfeClient {
   readonly options: MdfeClientOptions;
-  statusServico(opcoes?: OpcoesEnvio): Promise<SefazOutcome<StatusServico, never>>;
+  statusServico(opcoes?: OpcoesEnvio): Promise<ResultadoSefaz<StatusServico, never>>;
   /**
    * Envia um MDF-e assinado (a string devolvida pelo `signMdfe`, sem outra alteração). O `tpAmb` do MDF-e diferente do
    * ambiente do cliente lança `PolicyError` antes do envio.
@@ -219,7 +219,7 @@ export interface MdfeClient {
   consultarNaoEncerrados(
     autor?: AutorDocumento,
     opcoes?: OpcoesEnvio,
-  ): Promise<SefazOutcome<readonly MdfeNaoEncerrado[], never>>;
+  ): Promise<ResultadoSefaz<readonly MdfeNaoEncerrado[], never>>;
   cancelar(p: CancelamentoPedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome>;
   encerrar(p: EncerramentoPedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome>;
   incluirCondutor(p: InclusaoCondutorPedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome>;
@@ -234,29 +234,29 @@ export interface MdfeClient {
 const VERSAO = '3.00';
 
 function chaveValida(chave: string, path: string): ChaveAcesso {
-  const r = parseChaveAcesso(chave, { path });
-  if (!r.ok) throw new ValidationError(`chave de acesso inválida: ${r.error.message}`, [r.error]);
-  if (r.value.mod !== '58') {
-    throw new ValidationError('a chave não é de MDF-e', [
-      { path, code: 'chave_invalida', message: `modelo ${r.value.mod}, esperado 58` },
+  const r = lerChaveAcesso(chave, { caminho: path });
+  if (!r.ok) throw new ErroDeValidacao(`chave de acesso inválida: ${r.erro.mensagem}`, [r.erro]);
+  if (r.valor.mod !== '58') {
+    throw new ErroDeValidacao('a chave não é de MDF-e', [
+      { caminho: path, code: 'chave_invalida', mensagem: `modelo ${r.valor.mod}, esperado 58` },
     ]);
   }
-  return r.value;
+  return r.valor;
 }
 
 function schemaIssues(what: string, issues: readonly SchemaIssue[]): void {
-  if (issues.length > 0) throw new ValidationError(`${what} não confere com o schema`, issues);
+  if (issues.length > 0) throw new ErroDeValidacao(`${what} não confere com o schema`, issues);
 }
 
 function documentoAutor(a: AutorDocumento, path: string): { CNPJ: string } | { CPF: string } {
   if (a.CNPJ !== undefined) {
-    const r = parseCnpj(a.CNPJ, { path: `${path}.CNPJ` });
-    if (!r.ok) throw new ValidationError('CNPJ inválido', [r.error]);
-    return { CNPJ: r.value };
+    const r = lerCnpj(a.CNPJ, { caminho: `${path}.CNPJ` });
+    if (!r.ok) throw new ErroDeValidacao('CNPJ inválido', [r.erro]);
+    return { CNPJ: r.valor };
   }
-  const r = parseCpf(a.CPF ?? '', { path: `${path}.CPF` });
-  if (!r.ok) throw new ValidationError('CPF inválido', [r.error]);
-  return { CPF: r.value };
+  const r = lerCpf(a.CPF ?? '', { caminho: `${path}.CPF` });
+  if (!r.ok) throw new ErroDeValidacao('CPF inválido', [r.erro]);
+  return { CPF: r.valor };
 }
 
 const [SERIE_CPF_INI, SERIE_CPF_FIM] = emissao.series.cpf as [number, number];
@@ -273,7 +273,7 @@ function autorDaChave(c: ChaveAcesso): { CNPJ: string } | { CPF: string } {
 }
 
 /** Fatia autossuficiente (com o `xmlns` do elemento), para devolver ao chamador fora de um envelope. */
-function avulso(doc: XmlDocument, el: XmlElement): string {
+function avulso(doc: DocumentoXml, el: ElementoXml): string {
   return sliceElement(doc, el, '');
 }
 
@@ -282,9 +282,9 @@ interface ProtocoloLido {
   readonly embutido: string;
 }
 
-function lerProtocolo(doc: XmlDocument, el: XmlElement): ProtocoloLido {
-  const inf = decode(TProtMDFe, el, doc.source).value.infProt;
-  if (!inf) throw new ProtocolError('protMDFe sem infProt');
+function lerProtocolo(doc: DocumentoXml, el: ElementoXml): ProtocoloLido {
+  const inf = decode(TProtMDFe, el, doc.texto).value.infProt;
+  if (!inf) throw new ErroRespostaInvalida('protMDFe sem infProt');
   const p = {
     chMDFe: inf.chMDFe,
     cStat: inf.cStat,
@@ -301,12 +301,12 @@ function lerProtocolo(doc: XmlDocument, el: XmlElement): ProtocoloLido {
 /** `mdfeProc`: MDF-e assinado + protocolo, só quando o `digVal` prova que o protocolo é deste conteúdo. */
 function comProc({ p, embutido }: ProtocoloLido, a: DocumentoAssinado): ProtocoloMdfe {
   if (`MDFe${p.chMDFe}` !== a.id) {
-    throw new ProtocolError('protocolo de outra chave de acesso', { details: { chMDFe: p.chMDFe } });
+    throw new ErroRespostaInvalida('protocolo de outra chave de acesso', { detalhes: { chMDFe: p.chMDFe } });
   }
   if (p.digVal === undefined) return p;
   if (p.digVal !== a.digestValue) {
-    throw new ProtocolError('digVal do protocolo difere do DigestValue do MDF-e enviado', {
-      details: { chMDFe: p.chMDFe, cStat: p.cStat },
+    throw new ErroRespostaInvalida('digVal do protocolo difere do DigestValue do MDF-e enviado', {
+      detalhes: { chMDFe: p.chMDFe, cStat: p.cStat },
     });
   }
   return { ...p, mdfeProc: envelope('mdfeProc', VERSAO, [a.xml, embutido]) };
@@ -319,10 +319,10 @@ function comProc({ p, embutido }: ProtocoloLido, a: DocumentoAssinado): Protocol
  * transporte, o mesmo que a NF-e recebe da política, antes de qualquer socket.
  */
 function conferirAmbiente(a: DocumentoAssinado, tpAmb: string): void {
-  const inf = firstChild(a.doc.root, 'infMDFe', MDFE_NS);
-  const ide = inf === undefined ? undefined : firstChild(inf, 'ide', MDFE_NS);
-  const el = ide === undefined ? undefined : firstChild(ide, 'tpAmb', MDFE_NS);
-  const doDocumento = el === undefined ? undefined : textOf(el).trim();
+  const inf = primeiroFilho(a.doc.raiz, 'infMDFe', MDFE_NS);
+  const ide = inf === undefined ? undefined : primeiroFilho(inf, 'ide', MDFE_NS);
+  const el = ide === undefined ? undefined : primeiroFilho(ide, 'tpAmb', MDFE_NS);
+  const doDocumento = el === undefined ? undefined : textoDe(el).trim();
   if (doDocumento !== tpAmb) {
     throw new PolicyError(`tpAmb ${doDocumento ?? 'ausente'} no MDF-e, o cliente é do tpAmb ${tpAmb}`, {
       tpAmb: doDocumento ?? '',
@@ -348,8 +348,8 @@ interface EventoPedido {
 
 /** Cria o cliente dos serviços do MDF-e. */
 export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
-  const logger = (options.logger ?? noopLogger).child({ modulo: 'mdfe', ambiente: options.ambiente });
-  const tpAmb = tpAmbOf(options.ambiente);
+  const logger = (options.logger ?? loggerSilencioso).child({ modulo: 'mdfe', ambiente: options.ambiente });
+  const tpAmb = tpAmbDoAmbiente(options.ambiente);
   const endpoint = (servico: MdfeServicoCliente): EndpointRef =>
     options.endpoint ? options.endpoint(servico) : mdfeEndpoint({ ambiente: options.ambiente, servico });
   const offsetDe = (c: ChaveAcesso): number => options.offsetMinutes ?? offsetDaUf(c.uf);
@@ -375,7 +375,7 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
 
   async function enviarEvento(p: EventoPedido): Promise<EventoOutcome> {
     const nSeq = p.nSeqEvento;
-    if (!Number.isInteger(nSeq) || nSeq < 1 || nSeq > 999) throw new ConfigError(`nSeqEvento inválido: ${nSeq}`);
+    if (!Number.isInteger(nSeq) || nSeq < 1 || nSeq > 999) throw new ErroDeConfiguracao(`nSeqEvento inválido: ${nSeq}`);
     const nSeqEvento = String(nSeq);
     // Id = "ID" + tpEvento + chave + nSeqEvento com 2 dígitos (até 99) ou 3 (até 999) (Visão Geral, 5.1.1, GP04).
     const id = `ID${p.tpEvento}${p.c.chave}${nSeqEvento.padStart(nSeq > 99 ? 3 : 2, '0')}`;
@@ -385,18 +385,18 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
       tpAmb,
       ...(p.autor ?? autorDaChave(p.c)),
       chMDFe: p.c.chave,
-      dhEvento: formatDh(options.clock.now(), offsetDe(p.c)),
+      dhEvento: formatDh(options.clock.agora(), offsetDe(p.c)),
       tpEvento: p.tpEvento,
       nSeqEvento,
       detEvento: { versaoEvento: VERSAO, [p.detalhe.nome]: p.detalhe.valor },
     };
     const infXml = serialize(TEvento_infEvento, 'infEvento', inf as unknown as TEvento_infEventoT, MDFE_NS);
     const evento = `<eventoMDFe xmlns="${MDFE_NS}" versao="${VERSAO}">${infXml}</eventoMDFe>`;
-    const infEl = firstChild(parseXml(evento).root, 'infEvento', MDFE_NS) as XmlElement;
+    const infEl = primeiroFilho(lerXml(evento).raiz, 'infEvento', MDFE_NS) as ElementoXml;
     schemaIssues('evento', validate(TEvento_infEvento, infEl));
-    const assinado = await signXml(evento, { id }, options.signer);
+    const assinado = await assinarXml(evento, { id }, options.signer);
     const r = await call('MDFeRecepcaoEvento', assinado, 'retEventoMDFe', p.signal, 'infEvento');
-    const ret = decode(TRetEvento, r.ret, r.doc.source).value.infEvento;
+    const ret = decode(TRetEvento, r.ret, r.doc.texto).value.infEvento;
     logger.info('mdfe.evento', { chMDFe: p.c.chave, tpEvento: p.tpEvento, cStat: ret.cStat });
     const status = { cStat: ret.cStat, xMotivo: ret.xMotivo };
     if (!cstatEm(ret.cStat, 'eventoRegistrado')) return rejeitado(status);
@@ -409,11 +409,11 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
       ] as const
     ).filter(([, veio, enviado]) => veio !== undefined && veio !== enviado);
     if (divergentes.length > 0) {
-      throw new ProtocolError('retEventoMDFe de outro evento', {
-        details: Object.fromEntries(divergentes.map(([k, veio]) => [k, veio])),
+      throw new ErroRespostaInvalida('retEventoMDFe de outro evento', {
+        detalhes: Object.fromEntries(divergentes.map(([k, veio]) => [k, veio])),
       });
     }
-    return authorized(status, {
+    return criarAutorizado(status, {
       chMDFe: p.c.chave,
       tpEvento: p.tpEvento,
       nSeqEvento,
@@ -426,21 +426,21 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
   }
 
   const nProtValido = (nProt: string): string => {
-    if (!/^[0-9]{15}$/.test(nProt)) throw new ConfigError(`nProt inválido: ${nProt}`);
+    if (!/^[0-9]{15}$/.test(nProt)) throw new ErroDeConfiguracao(`nProt inválido: ${nProt}`);
     return nProt;
   };
 
   const client: MdfeClient = {
     options,
 
-    async statusServico(opcoes?: OpcoesEnvio): Promise<SefazOutcome<StatusServico, never>> {
+    async statusServico(opcoes?: OpcoesEnvio): Promise<ResultadoSefaz<StatusServico, never>> {
       const msg = serializeRoot(consStatServMDFeElement, { versao: VERSAO, tpAmb, xServ: 'STATUS' });
       const r = await call('MDFeStatusServico', msg, 'retConsStatServMDFe', opcoes?.signal);
-      const v = decode(TRetConsStatServ, r.ret, r.doc.source).value;
+      const v = decode(TRetConsStatServ, r.ret, r.doc.texto).value;
       const status = { cStat: v.cStat, xMotivo: v.xMotivo };
       logger.info('mdfe.status', { cStat: v.cStat });
       if (!cstatEm(v.cStat, 'servicoEmOperacao')) return rejeitado(status);
-      return authorized(status, {
+      return criarAutorizado(status, {
         cUF: v.cUF,
         verAplic: v.verAplic,
         dhRecbto: v.dhRecbto,
@@ -454,26 +454,26 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
       const a = documentoAssinado(mdfeAssinado, 'MDFe', 'infMDFe');
       conferirAmbiente(a, tpAmb);
       const r = await call('MDFeRecepcaoSinc', a.xml, 'retMDFe', opcoes.signal);
-      const v = decode(TRetMDFe, r.ret, r.doc.source).value;
+      const v = decode(TRetMDFe, r.ret, r.doc.texto).value;
       const chave = a.id.slice(4);
       logger.info('mdfe.autorizacao', { chMDFe: chave, cStat: v.cStat });
-      const protEl = firstChild(r.ret, 'protMDFe', MDFE_NS);
+      const protEl = primeiroFilho(r.ret, 'protMDFe', MDFE_NS);
       if (protEl === undefined) return rejeitado({ cStat: v.cStat, xMotivo: v.xMotivo });
       const lido = lerProtocolo(r.doc, protEl);
       const status = { cStat: lido.p.cStat, xMotivo: lido.p.xMotivo };
       if (!cstatEm(lido.p.cStat, 'autorizado')) return rejeitado(status);
-      return authorized(status, comProc(lido, a));
+      return criarAutorizado(status, comProc(lido, a));
     },
 
     async consultar(chave: string, mdfeAssinado?: string, opcoes?: OpcoesEnvio): Promise<ConsultaOutcome> {
       const c = chaveValida(chave, 'chMDFe');
       const a = mdfeAssinado === undefined ? undefined : documentoAssinado(mdfeAssinado, 'MDFe', 'infMDFe');
-      if (a && a.id !== `MDFe${c.chave}`) throw new ConfigError('o MDF-e assinado não é o da chave consultada');
+      if (a && a.id !== `MDFe${c.chave}`) throw new ErroDeConfiguracao('o MDF-e assinado não é o da chave consultada');
       const msg = serializeRoot(consSitMDFeElement, { versao: VERSAO, tpAmb, xServ: 'CONSULTAR', chMDFe: c.chave });
       const r = await call('MDFeConsulta', msg, 'retConsSitMDFe', opcoes?.signal);
       const txt = (local: string): string => {
-        const el = firstChild(r.ret, local, MDFE_NS);
-        return el === undefined ? '' : textOf(el).trim();
+        const el = primeiroFilho(r.ret, local, MDFE_NS);
+        return el === undefined ? '' : textoDe(el).trim();
       };
       const status = { cStat: txt('cStat'), xMotivo: txt('xMotivo') };
       logger.info('mdfe.consulta', { chMDFe: c.chave, cStat: status.cStat });
@@ -488,10 +488,10 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
       // No retConsSitMDFe, protMDFe e procEventoMDFe são envelopes com `versao` e um `xs:any` que traz o documento da
       // versão correspondente (consSitMDFeTiposBasico_v3.00.xsd): o protMDFe e o procEventoMDFe de dentro. Um retorno
       // com o `infProt` direto no envelope também é aceito.
-      const interno = (el: XmlElement, local: string): XmlElement => firstChild(el, local, MDFE_NS) ?? el;
-      const protWrap = firstChild(r.ret, 'protMDFe', MDFE_NS);
+      const interno = (el: ElementoXml, local: string): ElementoXml => primeiroFilho(el, local, MDFE_NS) ?? el;
+      const protWrap = primeiroFilho(r.ret, 'protMDFe', MDFE_NS);
       const protEl = protWrap === undefined ? undefined : interno(protWrap, 'protMDFe');
-      const eventos = childElements(r.ret)
+      const eventos = elementosFilhos(r.ret)
         .filter((e) => e.local === 'procEventoMDFe' && e.ns === MDFE_NS)
         .map((e) => avulso(r.doc, interno(e, 'procEventoMDFe')));
       let protocolo: ProtocoloMdfe | undefined;
@@ -499,8 +499,8 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
       if (protEl) {
         const lido = lerProtocolo(r.doc, protEl);
         if (lido.p.chMDFe !== c.chave) {
-          throw new ProtocolError('protocolo de outra chave de acesso na consulta', {
-            details: { chMDFe: lido.p.chMDFe },
+          throw new ErroRespostaInvalida('protocolo de outra chave de acesso na consulta', {
+            detalhes: { chMDFe: lido.p.chMDFe },
           });
         }
         protocolo = lido.p;
@@ -509,7 +509,7 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
           if (digValConfere) protocolo = comProc(lido, a);
         }
       }
-      return authorized(status, {
+      return criarAutorizado(status, {
         chMDFe: c.chave,
         situacao,
         eventos,
@@ -521,9 +521,10 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
     async consultarNaoEncerrados(
       autor?: AutorDocumento,
       opcoes?: OpcoesEnvio,
-    ): Promise<SefazOutcome<readonly MdfeNaoEncerrado[], never>> {
+    ): Promise<ResultadoSefaz<readonly MdfeNaoEncerrado[], never>> {
       const quem = autor ?? options.autor;
-      if (!quem) throw new ConfigError('informe o CNPJ ou CPF do emitente (argumento ou MdfeClientOptions.autor)');
+      if (!quem)
+        throw new ErroDeConfiguracao('informe o CNPJ ou CPF do emitente (argumento ou MdfeClientOptions.autor)');
       const doc = documentoAutor(quem, 'autor');
       const msg = serializeRoot(consMDFeNaoEncElement, {
         versao: VERSAO,
@@ -532,12 +533,12 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
         ...doc,
       } as TConsMDFeNaoEnc);
       const r = await call('MDFeConsNaoEnc', msg, 'retConsMDFeNaoEnc', opcoes?.signal);
-      const v = decode(TRetConsMDFeNaoEnc, r.ret, r.doc.source).value;
+      const v = decode(TRetConsMDFeNaoEnc, r.ret, r.doc.texto).value;
       const status = { cStat: v.cStat, xMotivo: v.xMotivo };
       logger.info('mdfe.nao-encerrados', { cStat: v.cStat, quantidade: v.infMDFe?.length ?? 0 });
-      if (cstatEm(v.cStat, 'naoEncerradosNenhum')) return authorized(status, []);
+      if (cstatEm(v.cStat, 'naoEncerradosNenhum')) return criarAutorizado(status, []);
       if (!cstatEm(v.cStat, 'naoEncerradosLocalizados')) return rejeitado(status);
-      return authorized(
+      return criarAutorizado(
         status,
         (v.infMDFe ?? []).map((i) => ({ chMDFe: i.chMDFe, nProt: i.nProt })),
       );
@@ -563,23 +564,27 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
       const cUF = exterior ? '99' : cUFdaUf(p.uf);
       // K04 (689): encerramento no exterior usa o município 9999999; K03 (614): o município é da UF informada.
       if (exterior && p.cMun !== '9999999') {
-        throw new ValidationError('encerramento no exterior usa o município 9999999 (K04, rejeição 689)', [
-          { path: 'cMun', code: 'municipio_uf_divergente', message: 'cUF 99 exige cMun 9999999 (K04, rejeição 689)' },
+        throw new ErroDeValidacao('encerramento no exterior usa o município 9999999 (K04, rejeição 689)', [
+          {
+            caminho: 'cMun',
+            code: 'municipio_uf_divergente',
+            mensagem: 'cUF 99 exige cMun 9999999 (K04, rejeição 689)',
+          },
         ]);
       }
       if (!exterior && p.cMun.slice(0, 2) !== cUF) {
-        throw new ValidationError('município de encerramento fora da UF (K03, rejeição 614)', [
-          { path: 'cMun', code: 'municipio_uf_divergente', message: `cMun fora da UF ${p.uf} (K03, rejeição 614)` },
+        throw new ErroDeValidacao('município de encerramento fora da UF (K03, rejeição 614)', [
+          { caminho: 'cMun', code: 'municipio_uf_divergente', mensagem: `cMun fora da UF ${p.uf} (K03, rejeição 614)` },
         ]);
       }
-      const dtEnc = p.dtEnc ?? dataDe(options.clock.now(), offsetDe(c));
+      const dtEnc = p.dtEnc ?? dataDe(options.clock.agora(), offsetDe(c));
       const terceiro = p.terceiro === undefined ? undefined : documentoAutor(p.terceiro, 'terceiro');
       const emitente = autorDaChave(c);
       if (
         terceiro !== undefined &&
         ('CNPJ' in terceiro ? terceiro.CNPJ : terceiro.CPF) === ('CNPJ' in emitente ? emitente.CNPJ : emitente.CPF)
       ) {
-        throw new ConfigError(
+        throw new ErroDeConfiguracao(
           'o transportador terceiro precisa ser diferente do emitente do MDF-e (K11, rejeição 524)',
         );
       }
@@ -606,17 +611,17 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
     async incluirCondutor(p: InclusaoCondutorPedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome> {
       const c = chaveValida(p.chave, 'chave');
       if (!Number.isInteger(p.nSeqEvento) || p.nSeqEvento < 1 || p.nSeqEvento > 99) {
-        throw new ConfigError(`nSeqEvento da inclusão de condutor vai de 1 a 99 (K01): ${p.nSeqEvento}`);
+        throw new ErroDeConfiguracao(`nSeqEvento da inclusão de condutor vai de 1 a 99 (K01): ${p.nSeqEvento}`);
       }
-      const cpf = parseCpf(p.condutor.CPF, { path: 'condutor.CPF' });
-      if (!cpf.ok) throw new ValidationError('CPF do condutor inválido (K06, rejeição 645)', [cpf.error]);
+      const cpf = lerCpf(p.condutor.CPF, { caminho: 'condutor.CPF' });
+      if (!cpf.ok) throw new ErroDeValidacao('CPF do condutor inválido (K06, rejeição 645)', [cpf.erro]);
       return enviarEvento({
         c,
         tpEvento: '110114',
         nSeqEvento: p.nSeqEvento,
         detalhe: {
           nome: 'evIncCondutorMDFe',
-          valor: { descEvento: 'Inclusao Condutor', condutor: { xNome: p.condutor.xNome, CPF: cpf.value } },
+          valor: { descEvento: 'Inclusao Condutor', condutor: { xNome: p.condutor.xNome, CPF: cpf.valor } },
         },
         signal: opcoes?.signal,
       });
@@ -625,18 +630,18 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
     async incluirDFe(p: InclusaoDfePedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome> {
       const c = chaveValida(p.chave, 'chave');
       if (!Number.isInteger(p.nSeqEvento) || p.nSeqEvento < 1 || p.nSeqEvento > 99) {
-        throw new ConfigError(`nSeqEvento da inclusão de DF-e vai de 1 a 99 (K01): ${p.nSeqEvento}`);
+        throw new ErroDeConfiguracao(`nSeqEvento da inclusão de DF-e vai de 1 a 99 (K01): ${p.nSeqEvento}`);
       }
-      if (p.documentos.length === 0) throw new ConfigError('informe ao menos uma NF-e');
+      if (p.documentos.length === 0) throw new ErroDeConfiguracao('informe ao menos uma NF-e');
       const infDoc = p.documentos.map((d, n) => {
-        const r = parseChaveAcesso(d.chNFe, { path: `documentos[${n}].chNFe` });
-        if (!r.ok || r.value.mod !== '55') {
+        const r = lerChaveAcesso(d.chNFe, { caminho: `documentos[${n}].chNFe` });
+        if (!r.ok || r.valor.mod !== '55') {
           const erro = r.ok
-            ? { path: `documentos[${n}].chNFe`, code: 'chave_invalida', message: 'modelo diferente de 55' }
-            : r.error;
-          throw new ValidationError('chave de NF-e inválida na inclusão (K10, rejeição 709)', [erro]);
+            ? { caminho: `documentos[${n}].chNFe`, code: 'chave_invalida', mensagem: 'modelo diferente de 55' }
+            : r.erro;
+          throw new ErroDeValidacao('chave de NF-e inválida na inclusão (K10, rejeição 709)', [erro]);
         }
-        return { cMunDescarga: d.cMunDescarga, xMunDescarga: d.xMunDescarga, chNFe: r.value.chave };
+        return { cMunDescarga: d.cMunDescarga, xMunDescarga: d.xMunDescarga, chNFe: r.valor.chave };
       });
       return enviarEvento({
         c,
@@ -659,16 +664,16 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
     async pagamentoOperacao(p: PagamentoOperacaoPedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome> {
       const c = chaveValida(p.chave, 'chave');
       const viagem = (n: number, k: string): string => {
-        if (!Number.isInteger(n) || n < 1 || n > 99_999) throw new ConfigError(`${k} de 1 a 99999: ${n}`);
+        if (!Number.isInteger(n) || n < 1 || n > 99_999) throw new ErroDeConfiguracao(`${k} de 1 a 99999: ${n}`);
         return String(n).padStart(5, '0');
       };
-      if (p.pagamentos.length === 0) throw new ConfigError('informe ao menos um pagamento');
+      if (p.pagamentos.length === 0) throw new ErroDeConfiguracao('informe ao menos um pagamento');
       const { infPag, issues } = pagamentosDoLeiaute(
         p.pagamentos,
-        dataDe(options.clock.now(), offsetDe(c)),
+        dataDe(options.clock.agora(), offsetDe(c)),
         'pagamentos',
       );
-      if (issues.length > 0) throw new ValidationError('pagamento da operação inválido', issues);
+      if (issues.length > 0) throw new ErroDeValidacao('pagamento da operação inválido', issues);
       return enviarEvento({
         c,
         tpEvento: '110116',
@@ -694,7 +699,7 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
 
 /** cUF (2 dígitos) da UF de encerramento, pela tabela de UFs do core. */
 function cUFdaUf(uf: string): string {
-  const info = isUf(uf) ? ufBySigla(uf) : undefined;
-  if (info === undefined) throw new ConfigError(`UF de encerramento inválida: ${uf}`);
+  const info = ehUf(uf) ? ufPorSigla(uf) : undefined;
+  if (info === undefined) throw new ErroDeConfiguracao(`UF de encerramento inválida: ${uf}`);
   return info.cUF;
 }

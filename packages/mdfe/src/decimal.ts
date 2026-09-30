@@ -4,7 +4,7 @@
  * não há arredondamento: um valor com mais casas do que o campo aceita é recusado, nunca arredondado em silêncio.
  */
 
-import { ConfigError } from '@sinete/core';
+import { ErroDeConfiguracao } from '@sinete/core';
 
 /** O que as APIs de entrada aceitam como número. Prefira `string` (`'12.34'`): `number` perde dígitos acima de 15 algarismos. */
 export type DecimalInput = string | number | bigint | Decimal;
@@ -29,7 +29,7 @@ export class Decimal {
   /** Converte a entrada; texto com ponto decimal, sem milhar nem vírgula (a forma do XML). */
   static of(input: DecimalInput): Decimal {
     const d = Decimal.tryOf(input);
-    if (d === undefined) throw new ConfigError(`número decimal inválido: ${JSON.stringify(String(input))}`);
+    if (d === undefined) throw new ErroDeConfiguracao(`número decimal inválido: ${JSON.stringify(String(input))}`);
     return d;
   }
 
@@ -113,7 +113,7 @@ export class Decimal {
 
   /** Texto com exatamente `scale` casas; só completa com zeros (valor com mais casas é `ConfigError`). */
   toFixed(scale: number): string {
-    if (this.significantScale() > scale) throw new ConfigError(`${this.toString()} tem mais de ${scale} casas`);
+    if (this.significantScale() > scale) throw new ErroDeConfiguracao(`${this.toString()} tem mais de ${scale} casas`);
     const coef = scale >= this.scale ? this.coef * pow10(scale - this.scale) : this.coef / pow10(this.scale - scale);
     const neg = coef < 0n;
     const digits = (neg ? -coef : coef).toString().padStart(scale + 1, '0');

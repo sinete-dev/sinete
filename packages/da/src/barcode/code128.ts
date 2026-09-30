@@ -47,7 +47,7 @@ function symbolize(vals: number[]): number[] {
 export function code128C(digits: string): number[] {
   if (!/^(\d\d)+$/.test(digits)) {
     throw new DanfeError('codigo_barras_invalido', 'CODE-128C exige quantidade par de dígitos', {
-      details: { comprimento: digits.length },
+      detalhes: { comprimento: digits.length },
     });
   }
   const vals = [START_C];
@@ -69,7 +69,7 @@ export function code128Chave(chave: string): number[] {
 export function valoresChave(chave: string): number[] {
   if (!/^[0-9A-Z]+$/.test(chave)) {
     throw new DanfeError('codigo_barras_invalido', 'chave com caractere fora de 0-9 e A-Z', {
-      details: { comprimento: chave.length },
+      detalhes: { comprimento: chave.length },
     });
   }
   const digit = (i: number): boolean => i < chave.length && chave.charCodeAt(i) >= 48 && chave.charCodeAt(i) <= 57;

@@ -4,7 +4,7 @@
  * lugar (ou testa com alíquotas fixas) injeta a sua em `BuildNfeOptions.ibsCbs`.
  */
 
-import type { Ambiente, Uf, ValidationIssue } from '@sinete/core';
+import type { Ambiente, Ocorrencia, Uf } from '@sinete/core';
 import type { TTribNFe } from '@sinete/schemas/nfe/PL_010f';
 import type { Decimal } from './decimal.ts';
 import type { Instante } from './time.ts';
@@ -81,7 +81,7 @@ export interface IbsCbsResponse {
    * Problemas de classificação ou de dado (`path` relativo ao item, como `itens[2].impostos.ibsCbs`). A ocorrência sem
    * `origem` entra como `montagem` (ADR 0011); marque `entrada` a que aponta um valor da nota.
    */
-  readonly issues?: readonly ValidationIssue[];
+  readonly issues?: readonly Ocorrencia[];
 }
 
 /**

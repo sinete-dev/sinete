@@ -20,11 +20,11 @@
  * produz nota duplicada.
  */
 
-import type { Clock } from '@sinete/core';
+import type { Relogio } from '@sinete/core';
 import type { TipoDocumento } from './desfecho.ts';
 
 /** Instante no tempo, como os relógios do `@sinete/core` o devolvem (o tipo `Date`, sem tocar no global). */
-export type Instante = ReturnType<Clock['now']>;
+export type Instante = ReturnType<Relogio['agora']>;
 
 /** Trava de um documento. `token` identifica o dono: renovar, soltar, descartar e concluir só valem com ele. */
 export interface Trava {

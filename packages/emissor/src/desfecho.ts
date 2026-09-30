@@ -10,8 +10,8 @@
  * consulta, a `NfseOutcome`), para ninguém perder informação.
  */
 
-import type { RejectionHint } from '@sinete/core';
-import { isSineteError } from '@sinete/core';
+import type { DicaRejeicao } from '@sinete/core';
+import { ehErroSinete } from '@sinete/core';
 
 /** Documentos que o emissor conhece. Cada um tem um subpath: `@sinete/emissor/nfe`, `/mdfe`, `/nfse`. */
 export type TipoDocumento = 'nfe' | 'mdfe' | 'nfse';
@@ -92,7 +92,7 @@ export interface DesfechoRecusado<B = unknown> extends DesfechoBase {
   readonly tipo: 'recusado';
   readonly cStat: string;
   readonly xMotivo: string;
-  readonly hint?: RejectionHint;
+  readonly hint?: DicaRejeicao;
   readonly bruto: B;
 }
 
@@ -180,7 +180,7 @@ export type DesfechoEvento<E = unknown, B = unknown> =
       readonly tipo: 'recusado';
       readonly cStat: string;
       readonly xMotivo: string;
-      readonly hint?: RejectionHint;
+      readonly hint?: DicaRejeicao;
       readonly bruto: B;
     }
   | {
@@ -229,5 +229,5 @@ const SEM_RESPOSTA: ReadonlySet<string> = new Set([
 
 /** O erro é de um envio que pode ter chegado (veja `SEM_RESPOSTA`). */
 export function semResposta(e: unknown): boolean {
-  return isSineteError(e) && SEM_RESPOSTA.has(e.code);
+  return ehErroSinete(e) && SEM_RESPOSTA.has(e.code);
 }

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { TimeoutError } from '@sinete/core';
+import { ErroDeTempoEsgotado } from '@sinete/core';
 import { classifyTransportFailure, http403Error } from '../src/index.ts';
 
 const host = 'hom.exemplo.invalid';
@@ -45,7 +45,7 @@ describe('mapa de falhas observadas (ADR 0004, seção 4)', () => {
   ])('%p', (err, code, alert) => {
     const r = c(err);
     expect(r.code).toBe(code);
-    expect(r.details).toMatchObject({ host, alert });
+    expect(r.detalhes).toMatchObject({ host, alert });
     expect(r.cause).toBe(err);
   });
 
@@ -81,7 +81,7 @@ describe('mapa de falhas observadas (ADR 0004, seção 4)', () => {
   });
 
   test('erro do sinete passa direto', () => {
-    const t = new TimeoutError('x', 1);
+    const t = new ErroDeTempoEsgotado('x', 1);
     expect(c(t)).toBe(t);
   });
 
@@ -92,7 +92,7 @@ describe('mapa de falhas observadas (ADR 0004, seção 4)', () => {
   test('403', () => {
     expect(http403Error(host)).toMatchObject({
       code: 'certificado_ausente_ou_recusado',
-      details: { host, status: 403 },
+      detalhes: { host, status: 403 },
     });
   });
 });

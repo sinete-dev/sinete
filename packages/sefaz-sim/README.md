@@ -5,10 +5,10 @@ SEFAZ simulada com estado, para os testes de integração dos pacotes e dos cons
 Status: pré-alfa, API instável até a 1.0. Nada aqui fala com SEFAZ real.
 
 ```ts
-import { manualClock } from '@sinete/core';
+import { relogioManual } from '@sinete/core';
 import { createSefazSim, SIM_BASE_URL, simTransport, syntheticCertificate } from '@sinete/sefaz-sim';
 
-const clock = manualClock('2026-09-26T10:00:00-03:00');
+const clock = relogioManual('2026-09-26T10:00:00-03:00');
 const ac = await syntheticCertificate({ clock, role: 'ac' });
 const emitente = await syntheticCertificate({ clock, role: 'titular', cnpj: '11222333000181', issuer: ac });
 const sim = createSefazSim({ clock, uf: 'SP' });

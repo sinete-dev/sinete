@@ -3,8 +3,8 @@
  * A), compactação (B-0), validação inicial (B), área de dados (C) e o que as regras de negócio dos serviços usam.
  */
 
-import type { XmlDocument } from '@sinete/core/xml';
-import { base64Decode, parseXml, XmlError } from '@sinete/core/xml';
+import type { DocumentoXml } from '@sinete/core/xml';
+import { decodificarBase64, ErroXml, lerXml } from '@sinete/core/xml';
 import type { RootElement } from '@sinete/schemas';
 import { validateRoot } from '@sinete/schemas';
 import type { RequestContext, Status } from '../context.ts';
@@ -44,7 +44,7 @@ export function ativa(ctx: RequestContext, id: string): boolean {
 async function gunzip(b64: string, limite: number): Promise<string | 'grande' | undefined> {
   let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
   try {
-    const bytes = base64Decode(b64);
+    const bytes = decodificarBase64(b64);
     reader = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip')).getReader();
     const partes: Uint8Array[] = [];
     let total = 0;
@@ -72,11 +72,11 @@ async function gunzip(b64: string, limite: number): Promise<string | 'grande' | 
 }
 
 export type PreludeMdfe =
-  | { readonly ok: true; readonly doc: XmlDocument; readonly payload: string }
+  | { readonly ok: true; readonly doc: DocumentoXml; readonly payload: string }
   | {
       readonly ok: false;
       readonly status: Status;
-      readonly doc: XmlDocument | undefined;
+      readonly doc: DocumentoXml | undefined;
       /** Caminhos das ocorrências de schema, quando a rejeição é 215. */
       readonly schemaPaths?: readonly string[];
     };
@@ -99,11 +99,11 @@ export async function preludeMdfe(ctx: RequestContext, root: RootElement<unknown
     return { ok: false, status: statusMdfe('214'), doc: undefined };
   }
   // B02: XML malformado.
-  let doc: XmlDocument;
+  let doc: DocumentoXml;
   try {
-    doc = parseXml(payload);
+    doc = lerXml(payload);
   } catch (e) {
-    if (e instanceof XmlError) return { ok: false, status: statusMdfe('243'), doc: undefined };
+    if (e instanceof ErroXml) return { ok: false, status: statusMdfe('243'), doc: undefined };
     throw e;
   }
   // B03 e B04: serviço paralisado.
@@ -114,9 +114,9 @@ export async function preludeMdfe(ctx: RequestContext, root: RootElement<unknown
   // C01: schema; C04: prefixo de namespace.
   const issues = validateRoot(root, doc);
   if (issues.length > 0) {
-    return { ok: false, status: statusMdfe('215'), doc, schemaPaths: issues.map((i) => i.path) };
+    return { ok: false, status: statusMdfe('215'), doc, schemaPaths: issues.map((i) => i.caminho) };
   }
-  if (hasPrefix(doc.root)) return { ok: false, status: statusMdfe('404'), doc };
+  if (hasPrefix(doc.raiz)) return { ok: false, status: statusMdfe('404'), doc };
   return { ok: true, doc, payload };
 }
 

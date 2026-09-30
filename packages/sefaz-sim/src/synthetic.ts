@@ -10,9 +10,9 @@
  * X.509 v3 montado a partir da RFC 5280 (seção 4.1), com RSA-2048 e sha256WithRSAEncryption.
  */
 
-import type { Clock, DataSigner, SignatureHash } from '@sinete/core';
-import { ConfigError } from '@sinete/core';
-import { base64Encode } from '@sinete/core/xml';
+import type { AssinadorDeDados, HashDaAssinatura, Relogio } from '@sinete/core';
+import { ErroDeConfiguracao } from '@sinete/core';
+import { codificarBase64 } from '@sinete/core/xml';
 import { utcParts } from './time.ts';
 
 const subtle: SubtleCrypto = globalThis.crypto.subtle;
@@ -74,7 +74,7 @@ function extension(id: string, critical: boolean, value: Uint8Array): Uint8Array
 function ipv4Bytes(ip: string): number[] {
   const parts = ip.split('.').map(Number);
   if (parts.length !== 4 || parts.some((n) => !Number.isInteger(n) || n < 0 || n > 255)) {
-    throw new ConfigError(`IP inválido para o SAN: ${ip}`);
+    throw new ErroDeConfiguracao(`IP inválido para o SAN: ${ip}`);
   }
   return parts;
 }
@@ -88,10 +88,10 @@ function ipv6Bytes(ip: string): number[] {
   const zeros = 8 - head.length - tail.length;
   // `::` vale um ou mais grupos zerados (RFC 4291, 2.2); sem `::`, são exatamente oito grupos.
   if (halves.length > 2 || (halves.length === 1 && zeros !== 0) || (halves.length === 2 && zeros < 1)) {
-    throw new ConfigError(`IP inválido para o SAN: ${ip}`);
+    throw new ErroDeConfiguracao(`IP inválido para o SAN: ${ip}`);
   }
   const all = [...head, ...Array.from({ length: halves.length === 2 ? zeros : 0 }, () => '0'), ...tail];
-  if (all.some((g) => !/^[0-9a-fA-F]{1,4}$/.test(g))) throw new ConfigError(`IP inválido para o SAN: ${ip}`);
+  if (all.some((g) => !/^[0-9a-fA-F]{1,4}$/.test(g))) throw new ErroDeConfiguracao(`IP inválido para o SAN: ${ip}`);
   return all.flatMap((g) => {
     const v = Number.parseInt(g, 16);
     return [v >> 8, v & 0xff];
@@ -109,7 +109,7 @@ export type SyntheticRole = 'ac' | 'titular' | 'servidor';
 
 export interface SyntheticCertificateOptions {
   /** Relógio da emissão: a validade começa um dia antes de `clock.now()`. */
-  readonly clock: Clock;
+  readonly clock: Relogio;
   readonly role: SyntheticRole;
   /** CN do titular. Padrão: `SINETE SIM:<documento>` ou `sinete-sim AC`. */
   readonly commonName?: string;
@@ -134,7 +134,7 @@ export interface SyntheticCertificate {
   /** Chave privada PKCS#8 em PEM. */
   readonly keyPem: string;
   /** `DataSigner` do `@sinete/core` (RSASSA-PKCS1-v1_5), para o `signXml` do `@sinete/core/xml`. */
-  readonly signer: DataSigner;
+  readonly signer: AssinadorDeDados;
   /** Identidade `pem` do `@sinete/transport` (certificado seguido da AC, quando houver). */
   readonly tlsIdentity: { readonly kind: 'pem'; readonly certChain: string; readonly key: string };
   readonly commonName: string;
@@ -143,7 +143,7 @@ export interface SyntheticCertificate {
 }
 
 function toPem(label: string, der: Uint8Array): string {
-  const b64 = base64Encode(der).replace(/.{64}/g, '$&\n');
+  const b64 = codificarBase64(der).replace(/.{64}/g, '$&\n');
   return `-----BEGIN ${label}-----\n${b64.trimEnd()}\n-----END ${label}-----\n`;
 }
 
@@ -185,7 +185,7 @@ function extensions(options: SyntheticCertificateOptions): Uint8Array[] {
 /** Gera um certificado sintético com chave RSA-2048 nova. */
 export async function syntheticCertificate(options: SyntheticCertificateOptions): Promise<SyntheticCertificate> {
   if (options.role === 'titular' && options.cnpj === undefined && options.cpf === undefined) {
-    throw new ConfigError('certificado de titular precisa de cnpj ou cpf');
+    throw new ErroDeConfiguracao('certificado de titular precisa de cnpj ou cpf');
   }
   const pair = (await subtle.generateKey(
     { name: 'RSASSA-PKCS1-v1_5', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' },
@@ -197,7 +197,7 @@ export async function syntheticCertificate(options: SyntheticCertificateOptions)
   const doc = options.cnpj ?? options.cpf;
   const commonName =
     options.commonName ?? (options.role === 'titular' ? `SINETE SIM:${doc}` : `sinete-sim ${options.role}`);
-  const now = options.clock.now().getTime();
+  const now = options.clock.agora().getTime();
   const serial = globalThis.crypto.getRandomValues(new Uint8Array(12));
   serial[0] = ((serial[0] ?? 0) & 0x7f) | 0x01;
   const tbs = seq(
@@ -210,7 +210,7 @@ export async function syntheticCertificate(options: SyntheticCertificateOptions)
     spki,
     tlv(0xa3, seq(...extensions(options))),
   );
-  const importFor = (hash: SignatureHash): Promise<CryptoKey> =>
+  const importFor = (hash: HashDaAssinatura): Promise<CryptoKey> =>
     subtle.importKey('pkcs8', pkcs8, { name: 'RSASSA-PKCS1-v1_5', hash }, false, ['sign']);
   const sha256Key = await importFor('SHA-256');
   const signTbs = async (data: Uint8Array<ArrayBuffer>): Promise<Uint8Array> =>
@@ -219,11 +219,11 @@ export async function syntheticCertificate(options: SyntheticCertificateOptions)
   const der = seq(tbs, SHA256_RSA(), tlv(0x03, [0, ...signature]));
   const pem = toPem('CERTIFICATE', der);
   const keyPem = toPem('PRIVATE KEY', pkcs8);
-  const keys = new Map<SignatureHash, Promise<CryptoKey>>();
-  const signer: DataSigner = {
-    kind: 'data',
-    certificateDer: async (): Promise<Uint8Array> => der,
-    async sign(data: Uint8Array, hash: SignatureHash): Promise<Uint8Array> {
+  const keys = new Map<HashDaAssinatura, Promise<CryptoKey>>();
+  const signer: AssinadorDeDados = {
+    tipo: 'dados',
+    certificadoDer: async (): Promise<Uint8Array> => der,
+    async assinar(data: Uint8Array, hash: HashDaAssinatura): Promise<Uint8Array> {
       let key = keys.get(hash);
       if (key === undefined) {
         key = importFor(hash);

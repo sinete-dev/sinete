@@ -4,17 +4,17 @@
  * browsers), sem dependência.
  */
 
-import { ProtocolError, UnsupportedError } from '@sinete/core';
-import { base64Decode, base64Encode } from '@sinete/core/xml';
+import { ErroNaoSuportado, ErroRespostaInvalida } from '@sinete/core';
+import { codificarBase64, decodificarBase64 } from '@sinete/core/xml';
 
 type Streams = { CompressionStream?: typeof CompressionStream; DecompressionStream?: typeof DecompressionStream };
 
 /** Texto UTF-8 para GZip em Base64. */
 export async function gzipBase64(text: string): Promise<string> {
   const Cs = (globalThis as Streams).CompressionStream;
-  if (Cs === undefined) throw new UnsupportedError('CompressionStream indisponível nesta runtime');
+  if (Cs === undefined) throw new ErroNaoSuportado('CompressionStream indisponível nesta runtime');
   const stream = new Blob([new TextEncoder().encode(text)]).stream().pipeThrough(new Cs('gzip'));
-  return base64Encode(new Uint8Array(await new Response(stream).arrayBuffer()));
+  return codificarBase64(new Uint8Array(await new Response(stream).arrayBuffer()));
 }
 
 /**
@@ -23,12 +23,12 @@ export async function gzipBase64(text: string): Promise<string> {
  */
 export async function gunzipBase64(b64: string, limiteBytes?: number): Promise<string> {
   const Ds = (globalThis as Streams).DecompressionStream;
-  if (Ds === undefined) throw new UnsupportedError('DecompressionStream indisponível nesta runtime');
+  if (Ds === undefined) throw new ErroNaoSuportado('DecompressionStream indisponível nesta runtime');
   let bytes: Uint8Array<ArrayBuffer>;
   try {
-    bytes = base64Decode(b64.trim());
+    bytes = decodificarBase64(b64.trim());
   } catch (cause) {
-    throw new ProtocolError('área de dados com Base64 inválido', { cause });
+    throw new ErroRespostaInvalida('área de dados com Base64 inválido', { cause });
   }
   const reader = new Blob([bytes]).stream().pipeThrough(new Ds('gzip')).getReader();
   const partes: Uint8Array[] = [];
@@ -40,13 +40,13 @@ export async function gunzipBase64(b64: string, limiteBytes?: number): Promise<s
       total += value.byteLength;
       if (limiteBytes !== undefined && total > limiteBytes) {
         await reader.cancel();
-        throw new ProtocolError(`área de dados descompactada passa de ${limiteBytes} bytes`);
+        throw new ErroRespostaInvalida(`área de dados descompactada passa de ${limiteBytes} bytes`);
       }
       partes.push(value);
     }
   } catch (cause) {
-    if (cause instanceof ProtocolError) throw cause;
-    throw new ProtocolError('área de dados não é um GZip válido', { cause });
+    if (cause instanceof ErroRespostaInvalida) throw cause;
+    throw new ErroRespostaInvalida('área de dados não é um GZip válido', { cause });
   }
   const junto = new Uint8Array(total);
   let at = 0;

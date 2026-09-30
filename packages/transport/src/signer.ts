@@ -16,8 +16,15 @@
 
 import type { IcpIdentity } from '@sinete/cert';
 import { base64ToBytes, bytesToBase64, encodeDigestInfo, icpIdentity, parseCertificate } from '@sinete/cert';
-import type { DataSigner, DigestSigner, Logger, SignatureHash, SignContext, Signer } from '@sinete/core';
-import { ConfigError, noopLogger, TimeoutError } from '@sinete/core';
+import type {
+  Assinador,
+  AssinadorDeDados,
+  AssinadorDeDigest,
+  ContextoDaAssinatura,
+  HashDaAssinatura,
+  Logger,
+} from '@sinete/core';
+import { ErroDeConfiguracao, ErroDeTempoEsgotado, loggerSilencioso } from '@sinete/core';
 import type { HelperFailureData } from './classify.ts';
 import { classifyHelperFailure } from './classify.ts';
 import { PolicyError, SignerError, TransportError } from './errors.ts';
@@ -112,7 +119,7 @@ export interface SignerIdentity {
    * `DataSigner` do `@sinete/core` que assina XML dos DF-e com a chave do token, pelo `dfe.sign` (só `pkcs11`). Serve
    * de `CertificadoAberto.signer` no `@sinete/emissor`. No `remote` é `undefined`: quem tem a chave assina.
    */
-  readonly documentSigner: DataSigner | undefined;
+  readonly documentSigner: AssinadorDeDados | undefined;
   resetPool(options?: { readonly dropSessions?: boolean }): Promise<void>;
   close(): Promise<void>;
 }
@@ -261,18 +268,18 @@ function toSineteError(wire: WireError, host: string | undefined, timeoutMs: num
       );
     case 'transport':
       if (wire.data?.timeout) {
-        return new TimeoutError(`${where}: sem resposta em ${timeoutMs ?? '?'} ms (helper)`, timeoutMs ?? 0, {
-          details: { host: where, helper: wire.message },
+        return new ErroDeTempoEsgotado(`${where}: sem resposta em ${timeoutMs ?? '?'} ms (helper)`, timeoutMs ?? 0, {
+          detalhes: { host: where, helper: wire.message },
         });
       }
       return classifyHelperFailure(wire.data ?? {}, wire.message, where);
     case 'sign_refused':
       return new SignerError('assinatura_tls_recusada', `${where}: assinatura do handshake recusada: ${wire.message}`, {
-        details: { host: where },
+        detalhes: { host: where },
       });
     case 'sign_timeout':
       return new SignerError('assinatura_tls_expirou', `${where}: quem assina não respondeu: ${wire.message}`, {
-        details: { host: where },
+        detalhes: { host: where },
       });
     case 'pkcs11':
       return new SignerError('pkcs11_falhou', `PKCS#11: ${wire.message}`);
@@ -281,7 +288,7 @@ function toSineteError(wire: WireError, host: string | undefined, timeoutMs: num
     case 'closed':
       return new SignerError('signer_indisponivel', `o helper fechou o canal: ${wire.message}`);
     default:
-      return new SignerError('signer_protocolo', `${wire.code}: ${wire.message}`, { details: { code: wire.code } });
+      return new SignerError('signer_protocolo', `${wire.code}: ${wire.message}`, { detalhes: { code: wire.code } });
   }
 }
 
@@ -293,7 +300,7 @@ export async function connectSignerChannel(
   channel: SignerChannel,
   options: SignerClientOptions = {},
 ): Promise<SignerConnection> {
-  const logger = options.logger ?? noopLogger;
+  const logger = options.logger ?? loggerSilencioso;
   const controlTimeout = options.controlTimeoutMs ?? DEFAULT_CONTROL_TIMEOUT_MS;
   const pending = new Map<string, { resolve: (r: Record<string, unknown>) => void; reject: (e: Error) => void }>();
   const keys = new Map<string, RemoteKey>();
@@ -405,7 +412,7 @@ export async function connectSignerChannel(
         // Com onLate, a resposta que chegar depois do prazo ainda é entregue a ele (para desfazer o que o helper fez).
         if (onLate) pending.set(id, { resolve: onLate, reject: () => {} });
         done();
-        reject(new TimeoutError(`${method}: o helper não respondeu em ${timeoutMs} ms`, timeoutMs));
+        reject(new ErroDeTempoEsgotado(`${method}: o helper não respondeu em ${timeoutMs} ms`, timeoutMs));
       }, timeoutMs);
       if (signal?.aborted) return onAbort();
       signal?.addEventListener('abort', onAbort, { once: true });
@@ -592,14 +599,14 @@ export async function connectSignerChannel(
     async openRemote(o: OpenRemoteOptions): Promise<SignerIdentity> {
       const allowed = new Set([...o.allowedHosts].map(hostKey));
       if (allowed.size === 0)
-        throw new ConfigError('openRemote: allowedHosts vazio; a chave não autenticaria em nenhum host');
+        throw new ErroDeConfiguracao('openRemote: allowedHosts vazio; a chave não autenticaria em nenhum host');
       const chain = await o.signer.certificateChain();
-      if (chain.length === 0) throw new ConfigError('openRemote: o TlsSigner devolveu cadeia vazia');
+      if (chain.length === 0) throw new ErroDeConfiguracao('openRemote: o TlsSigner devolveu cadeia vazia');
       const id = o.id ?? `remote-${++identityCount}`;
       // Id repetido não pode tocar na chave da identidade que já está aberta (nem numa abertura concorrente).
       if (keys.has(id)) {
         throw new SignerError('signer_protocolo', `identity_exists: a identidade ${id} já está aberta neste canal`, {
-          details: { code: 'identity_exists' },
+          detalhes: { code: 'identity_exists' },
         });
       }
       // A chave entra no mapa antes do open: o helper só pede sign depois, mas a ordem evita corrida.
@@ -666,19 +673,23 @@ export async function connectSignerChannel(
     const chain = ((r.chain as string[] | undefined) ?? []).map((c) => base64ToBytes(c));
     const leaf = chain[0];
     if (!leaf) throw new SignerError('signer_protocolo', 'identity.open sem cadeia na resposta');
-    const documentSigner: DataSigner | undefined =
+    const documentSigner: AssinadorDeDados | undefined =
       dfeId !== undefined && r.dfeSign === true
         ? {
-            kind: 'data',
-            certificateDer: (): Promise<Uint8Array> => Promise.resolve(leaf.slice()),
+            tipo: 'dados',
+            certificadoDer: (): Promise<Uint8Array> => Promise.resolve(leaf.slice()),
             // Com o elemento, o helper confere o DigestValue e, em evento, o autor: é o que deixa o destinatário
             // assinar a manifestação, cujo Id traz a chave de outro emitente.
-            sign: async (data: Uint8Array, hash: SignatureHash, context?: SignContext): Promise<Uint8Array> => {
+            assinar: async (
+              data: Uint8Array,
+              hash: HashDaAssinatura,
+              context?: ContextoDaAssinatura,
+            ): Promise<Uint8Array> => {
               const res = await control('dfe.sign', {
                 identity: id,
                 signedInfo: b64(data),
                 hash,
-                ...(context === undefined ? {} : { element: b64(context.referenced) }),
+                ...(context === undefined ? {} : { element: b64(context.referenciado) }),
               });
               return base64ToBytes(String(res.signature));
             },
@@ -714,16 +725,16 @@ export async function connectSignerChannel(
  */
 export function certificadoAberto(
   identity: SignerIdentity,
-  options: { readonly signer?: Signer } = {},
-): { readonly signer: Signer; readonly titular: IcpIdentity; readonly identidade: TlsIdentity } {
+  options: { readonly signer?: Assinador } = {},
+): { readonly signer: Assinador; readonly titular: IcpIdentity; readonly identidade: TlsIdentity } {
   const signer = options.signer ?? identity.documentSigner;
   if (signer === undefined) {
-    throw new ConfigError(
+    throw new ErroDeConfiguracao(
       `a identidade ${identity.id} (${identity.backend}) não assina documento pelo helper: passe o signer de quem tem a chave`,
     );
   }
   const leaf = identity.chain[0];
-  if (leaf === undefined) throw new ConfigError(`a identidade ${identity.id} está sem cadeia`);
+  if (leaf === undefined) throw new ErroDeConfiguracao(`a identidade ${identity.id} está sem cadeia`);
   return { signer, titular: icpIdentity(parseCertificate(leaf)), identidade: identity.tlsIdentity };
 }
 
@@ -735,7 +746,7 @@ export function certificadoAberto(
 export function cryptoKeyTlsSigner(key: CryptoKey, chain: readonly Uint8Array[]): TlsSigner {
   const alg = key.algorithm as { name?: string; hash?: { name?: string } };
   if (alg.name !== 'RSASSA-PKCS1-v1_5' || alg.hash?.name !== 'SHA-256') {
-    throw new ConfigError('cryptoKeyTlsSigner: a chave precisa ser RSASSA-PKCS1-v1_5 com SHA-256');
+    throw new ErroDeConfiguracao('cryptoKeyTlsSigner: a chave precisa ser RSASSA-PKCS1-v1_5 com SHA-256');
   }
   return {
     mode: 'message',
@@ -749,11 +760,11 @@ export function cryptoKeyTlsSigner(key: CryptoKey, chain: readonly Uint8Array[])
  * `TlsSigner` no modo `digest` sobre um `DigestSigner` do `@sinete/core` (PSC em RAW, OpenBao Transit com
  * `prehashed`, HSM): monta o DigestInfo SHA-256 e pede só o RSA.
  */
-export function digestTlsSigner(signer: DigestSigner, chain?: readonly Uint8Array[]): TlsSigner {
+export function digestTlsSigner(signer: AssinadorDeDigest, chain?: readonly Uint8Array[]): TlsSigner {
   return {
     mode: 'digest',
-    certificateChain: async (): Promise<readonly Uint8Array[]> => chain ?? [await signer.certificateDer()],
-    sign: (input: Uint8Array): Promise<Uint8Array> => signer.signDigestInfo(encodeDigestInfo('SHA-256', input)),
+    certificateChain: async (): Promise<readonly Uint8Array[]> => chain ?? [await signer.certificadoDer()],
+    sign: (input: Uint8Array): Promise<Uint8Array> => signer.assinarDigestInfo(encodeDigestInfo('SHA-256', input)),
   };
 }
 

@@ -4,8 +4,8 @@
  * `e2e/sefaz-sim.test.ts`.
  */
 import { beforeAll, describe, expect, test } from 'bun:test';
-import type { ManualClock } from '@sinete/core';
-import { manualClock, TimeoutError, timeContext, ValidationError } from '@sinete/core';
+import type { RelogioManual } from '@sinete/core';
+import { contextoDeTempo, ErroDeTempoEsgotado, ErroDeValidacao, relogioManual } from '@sinete/core';
 import type { SefazSim, SefazSimOptions, SyntheticCertificate } from '@sinete/sefaz-sim';
 import { createSefazSim, redirectToSim, SIM_BASE_URL, simTransport, syntheticCertificate } from '@sinete/sefaz-sim';
 import { PolicyError } from '@sinete/transport';
@@ -40,7 +40,7 @@ interface Certs {
 let c: Certs;
 
 beforeAll(async () => {
-  const clock = manualClock(EMISSAO);
+  const clock = relogioManual(EMISSAO);
   const ac = await syntheticCertificate({ clock, role: 'ac', validDays: 3650 });
   const [produtor, transportadora, terceiro] = await Promise.all([
     syntheticCertificate({ clock, role: 'titular', cpf: CPF_EMIT, issuer: ac }),
@@ -51,7 +51,7 @@ beforeAll(async () => {
 }, 60_000);
 
 interface Cenario {
-  readonly clock: ManualClock;
+  readonly clock: RelogioManual;
   readonly sim: SefazSim;
   readonly client: MdfeClient;
   cliente(canal: SyntheticCertificate, timeoutMs?: number): MdfeClient;
@@ -65,7 +65,7 @@ interface Cenario {
 }
 
 function cenario(simOptions: Partial<SefazSimOptions> = {}, canal: SyntheticCertificate = c.produtor): Cenario {
-  const clock = manualClock(EMISSAO);
+  const clock = relogioManual(EMISSAO);
   const sim = createSefazSim({ clock, uf: 'MT', ...simOptions });
   const cliente = (ch: SyntheticCertificate, timeoutMs?: number): MdfeClient =>
     createMdfeClient({
@@ -79,8 +79,8 @@ function cenario(simOptions: Partial<SefazSimOptions> = {}, canal: SyntheticCert
       autor: ch === c.produtor ? { CPF: CPF_EMIT } : { CNPJ: CNPJ_EMIT },
     });
   const emitir: Cenario['emitir'] = async (input = cargaPropria(), o = {}, assinante = canal) => {
-    const b = buildMdfe(input, { ...opcoes(), time: timeContext({ emissao: clock }), ...o });
-    if (!b.ok) throw new Error(b.issues.map((i) => `${i.path}: ${i.message}`).join('\n'));
+    const b = buildMdfe(input, { ...opcoes(), time: contextoDeTempo({ emissao: clock }), ...o });
+    if (!b.ok) throw new Error(b.issues.map((i) => `${i.caminho}: ${i.mensagem}`).join('\n'));
     return { chave: b.value.chave, xml: await signMdfe(b.value, assinante.signer) };
   };
   const client = cliente(canal);
@@ -93,8 +93,8 @@ function cenario(simOptions: Partial<SefazSimOptions> = {}, canal: SyntheticCert
     async autorizado(input, o) {
       const e = await emitir(input, o);
       const r = await client.autorizar(e.xml);
-      if (r.status !== 'authorized') throw new Error(`não autorizou: ${JSON.stringify(r)}`);
-      return { ...e, nProt: r.value.nProt ?? '' };
+      if (r.tipo !== 'autorizado') throw new Error(`não autorizou: ${JSON.stringify(r)}`);
+      return { ...e, nProt: r.valor.nProt ?? '' };
     },
   };
 }
@@ -105,20 +105,20 @@ describe('status e autorização', () => {
   test('status 107 e paralisação 108', async () => {
     const s = cenario();
     const r = await s.client.statusServico();
-    expect(r.status === 'authorized' && r.cStat).toBe('107');
+    expect(r.tipo === 'autorizado' && r.cStat).toBe('107');
     s.sim.setParalisacaoMdfe('108');
     const p = await s.client.statusServico();
-    expect(p.status === 'rejected' && p.cStat).toBe('108');
+    expect(p.tipo === 'recusado' && p.cStat).toBe('108');
   });
 
   test('autoriza e monta o mdfeProc com o MDF-e assinado byte a byte', async () => {
     const s = cenario();
     const e = await s.emitir();
     const r = await s.client.autorizar(e.xml);
-    if (r.status !== 'authorized') throw new Error(JSON.stringify(r));
+    if (r.tipo !== 'autorizado') throw new Error(JSON.stringify(r));
     expect(r.cStat).toBe('100');
-    expect(r.value.nProt).toMatch(/^95126\d{10}$/);
-    expect(r.value.mdfeProc).toStartWith(
+    expect(r.valor.nProt).toMatch(/^95126\d{10}$/);
+    expect(r.valor.mdfeProc).toStartWith(
       `<mdfeProc xmlns="http://www.portalfiscal.inf.br/mdfe" versao="3.00">${e.xml}<protMDFe`,
     );
     expect(s.sim.inspect.mdfe(e.chave)?.situacao).toBe('autorizado');
@@ -149,12 +149,12 @@ describe('status e autorização', () => {
     const s = cenario();
     const e = await s.emitir(cargaPropria({ nMDF: 40 }));
     const r = await s.client.autorizar(e.xml);
-    if (r.status !== 'authorized' || r.value.mdfeProc === undefined) throw new Error('não autorizou');
-    expect(mdfeAssinadoDoProc(r.value.mdfeProc)).toBe(e.xml);
+    if (r.tipo !== 'autorizado' || r.valor.mdfeProc === undefined) throw new Error('não autorizou');
+    expect(mdfeAssinadoDoProc(r.valor.mdfeProc)).toBe(e.xml);
     expect(mdfeAssinadoDoProc(e.xml)).toBe(e.xml);
     // Proc de outro emissor, com o xmlns só no envelope: a fatia volta a declarar o namespace na raiz.
-    const semXmlns = r.value.mdfeProc.replace(`<MDFe xmlns="${MDFE_NS}">`, '<MDFe>');
-    expect(semXmlns).not.toBe(r.value.mdfeProc);
+    const semXmlns = r.valor.mdfeProc.replace(`<MDFe xmlns="${MDFE_NS}">`, '<MDFe>');
+    expect(semXmlns).not.toBe(r.valor.mdfeProc);
     const recortado = mdfeAssinadoDoProc(semXmlns);
     expect(recortado).toBe(e.xml);
     const res = await resolverEnvioSemResposta(s.client, recortado);
@@ -168,12 +168,12 @@ describe('status e autorização', () => {
     const e = await s.emitir();
     await s.client.autorizar(e.xml);
     const dup = await s.client.autorizar(e.xml);
-    expect(dup.status === 'rejected' && dup.cStat).toBe('204');
-    expect(dup.status === 'rejected' && dup.hint?.source).toContain('F82');
+    expect(dup.tipo === 'recusado' && dup.cStat).toBe('204');
+    expect(dup.tipo === 'recusado' && dup.dica?.fonte).toContain('F82');
     const res = await resolverEnvioSemResposta(s.client, e.xml, dup);
     expect(res.acao).toBe('concluida');
     if (res.acao === 'concluida')
-      expect(res.outcome.status === 'authorized' && res.outcome.value.mdfeProc).toContain(e.xml);
+      expect(res.outcome.tipo === 'autorizado' && res.outcome.valor.mdfeProc).toContain(e.xml);
   });
 
   test('o mesmo número com outro cMDF: 539 com a chave autorizada, e o resolvedor manda descartar', async () => {
@@ -181,7 +181,7 @@ describe('status e autorização', () => {
     const a = await s.autorizado(cargaPropria({ cMDF: '12345678' }));
     const b = await s.emitir(cargaPropria({ cMDF: '87654321' }));
     const r = await s.client.autorizar(b.xml);
-    expect(r.status === 'rejected' && r.cStat).toBe('539');
+    expect(r.tipo === 'recusado' && r.cStat).toBe('539');
     const res = await resolverEnvioSemResposta(s.client, b.xml, r);
     expect(res).toMatchObject({ acao: 'divergente', chMDFe: a.chave });
   });
@@ -191,7 +191,7 @@ describe('status e autorização', () => {
     const lento = s.cliente(c.produtor, 200);
     const e = await s.emitir();
     s.sim.injectFault({ kind: 'hang', phase: 'after' }, { servico: 'MDFeRecepcaoSinc' });
-    await expect(lento.autorizar(e.xml)).rejects.toBeInstanceOf(TimeoutError);
+    await expect(lento.autorizar(e.xml)).rejects.toBeInstanceOf(ErroDeTempoEsgotado);
     const res = await resolverEnvioSemResposta(s.client, e.xml);
     expect(res.acao === 'concluida' && res.situacao).toBe('autorizado');
 
@@ -205,7 +205,7 @@ describe('status e autorização', () => {
     await expect(s.client.autorizar(outro.xml)).rejects.toThrow();
     const r2 = await resolverEnvioSemResposta(s.client, outro.xml);
     expect(r2.acao).toBe('reenviar');
-    if (r2.acao === 'reenviar') expect((await s.client.autorizar(r2.mdfeAssinado)).status).toBe('authorized');
+    if (r2.acao === 'reenviar') expect((await s.client.autorizar(r2.mdfeAssinado)).tipo).toBe('autorizado');
   });
 
   test('protocolo sem digVal na resposta e na consulta: sem mdfeProc, e o resolvedor devolve sem-prova', async () => {
@@ -213,14 +213,14 @@ describe('status e autorização', () => {
     const e = await s.emitir();
     s.sim.setProtocoloSemDigVal('todos');
     const r = await s.client.autorizar(e.xml);
-    expect(r.status === 'authorized' && r.value.digVal).toBeUndefined();
-    expect(r.status === 'authorized' && r.value.mdfeProc).toBeUndefined();
+    expect(r.tipo === 'autorizado' && r.valor.digVal).toBeUndefined();
+    expect(r.tipo === 'autorizado' && r.valor.mdfeProc).toBeUndefined();
     const res = await resolverEnvioSemResposta(s.client, e.xml);
     expect(res).toMatchObject({ acao: 'sem-prova', situacao: 'autorizado' });
     // Só a resposta da autorização sem digVal: a consulta prova o conteúdo e conclui.
     s.sim.setProtocoloSemDigVal('todos', 'autorizacao');
     const res2 = await resolverEnvioSemResposta(s.client, e.xml);
-    expect(res2.acao === 'concluida' && res2.outcome.status === 'authorized' && res2.outcome.value.mdfeProc).toContain(
+    expect(res2.acao === 'concluida' && res2.outcome.tipo === 'autorizado' && res2.outcome.valor.mdfeProc).toContain(
       e.xml,
     );
     // `denegacao` não alcança o MDF-e, que não tem denegação.
@@ -232,16 +232,16 @@ describe('status e autorização', () => {
     const s = cenario();
     const alheio = await s.emitir(cargaPropria(), {}, c.terceiro);
     const r = await s.client.autorizar(alheio.xml);
-    expect(r.status === 'rejected' && r.cStat).toBe('213');
+    expect(r.tipo === 'recusado' && r.cStat).toBe('213');
     const atrasado = await s.emitir(cargaPropria({ nMDF: 5 }));
-    s.clock.advance(25 * HORA);
+    s.clock.avancar(25 * HORA);
     const r2 = await s.client.autorizar(atrasado.xml);
-    expect(r2.status === 'rejected' && r2.cStat).toBe('228');
-    s.clock.advance(-25 * HORA);
+    expect(r2.tipo === 'recusado' && r2.cStat).toBe('228');
+    s.clock.avancar(-25 * HORA);
     const cont = await s.emitir(cargaPropria({ nMDF: 6 }), { tpEmis: '2' });
-    s.clock.advance(100 * HORA);
+    s.clock.avancar(100 * HORA);
     const r3 = await s.client.autorizar(cont.xml);
-    expect(r3.status).toBe('authorized');
+    expect(r3.tipo).toBe('autorizado');
   });
 });
 
@@ -250,26 +250,26 @@ describe('consultas', () => {
     const s = cenario();
     const e = await s.emitir();
     const nao = await s.client.consultar(e.chave);
-    expect(nao.status === 'rejected' && nao.cStat).toBe('217');
+    expect(nao.tipo === 'recusado' && nao.cStat).toBe('217');
     await s.client.autorizar(e.xml);
     const r = await s.client.consultar(e.chave, e.xml);
-    if (r.status !== 'authorized') throw new Error(JSON.stringify(r));
-    expect(r.value).toMatchObject({ situacao: 'autorizado', digValConfere: true, eventos: [] });
-    expect(r.value.protocolo?.mdfeProc).toContain(e.xml);
-    await expect(s.client.consultar(chaveDoc(1))).rejects.toBeInstanceOf(ValidationError);
+    if (r.tipo !== 'autorizado') throw new Error(JSON.stringify(r));
+    expect(r.valor).toMatchObject({ situacao: 'autorizado', digValConfere: true, eventos: [] });
+    expect(r.valor.protocolo?.mdfeProc).toContain(e.xml);
+    await expect(s.client.consultar(chaveDoc(1))).rejects.toBeInstanceOf(ErroDeValidacao);
   });
 
   test('não encerrados: 111 com a lista, 112 depois de encerrar; H04 pelo certificado do canal', async () => {
     const s = cenario();
     const a = await s.autorizado();
     const r = await s.client.consultarNaoEncerrados();
-    expect(r.status === 'authorized' && r.value).toEqual([{ chMDFe: a.chave, nProt: a.nProt }]);
+    expect(r.tipo === 'autorizado' && r.valor).toEqual([{ chMDFe: a.chave, nProt: a.nProt }]);
     await s.client.encerrar({ chave: a.chave, nProt: a.nProt, uf: 'SP', cMun: '3550308' });
     const vazio = await s.client.consultarNaoEncerrados();
-    expect(vazio.status === 'authorized' && vazio.cStat).toBe('112');
+    expect(vazio.tipo === 'autorizado' && vazio.cStat).toBe('112');
     const outroCanal = s.cliente(c.terceiro);
     const h04 = await outroCanal.consultarNaoEncerrados({ CNPJ: CNPJ_EMIT });
-    expect(h04.status === 'rejected' && h04.cStat).toBe('213');
+    expect(h04.tipo === 'recusado' && h04.cStat).toBe('213');
   });
 });
 
@@ -281,10 +281,10 @@ describe('não encerrados bloqueiam a emissão (F85 a F88)', () => {
     const a = await s.autorizado();
     const b = await s.emitir(mesmaPlaca({}));
     const r = await s.client.autorizar(b.xml);
-    expect(r.status === 'rejected' && r.cStat).toBe('611');
-    expect(r.status === 'rejected' && r.xMotivo).toContain(a.chave);
+    expect(r.tipo === 'recusado' && r.cStat).toBe('611');
+    expect(r.tipo === 'recusado' && r.xMotivo).toContain(a.chave);
     await s.client.encerrar({ chave: a.chave, nProt: a.nProt, uf: 'SP', cMun: '3550308' });
-    expect((await s.client.autorizar(b.xml)).status).toBe('authorized');
+    expect((await s.client.autorizar(b.xml)).tipo).toBe('autorizado');
   });
 
   test('662: a volta sem encerrar a ida', async () => {
@@ -297,13 +297,13 @@ describe('não encerrados bloqueiam a emissão (F85 a F88)', () => {
       descarregamentos: [{ cMun: '5103403', xMun: 'CUIABA', nfe: [{ chave: chaveDoc(9) }] }],
     });
     const r = await s.client.autorizar((await s.emitir(volta)).xml);
-    expect(r.status === 'rejected' && r.cStat).toBe('662');
+    expect(r.tipo === 'recusado' && r.cStat).toBe('662');
   });
 
   test('686: MDF-e aberto há mais de 30 dias bloqueia o emitente', async () => {
     const s = cenario({ regrasMdfeDesligadas: ['F85', 'F87'] });
     await s.autorizado();
-    s.clock.advance(31 * 24 * HORA);
+    s.clock.avancar(31 * 24 * HORA);
     const r = await s.client.autorizar(
       (
         await s.emitir(
@@ -315,15 +315,20 @@ describe('não encerrados bloqueiam a emissão (F85 a F88)', () => {
         )
       ).xml,
     );
-    expect(r.status === 'rejected' && r.cStat).toBe('686');
+    expect(r.tipo === 'recusado' && r.cStat).toBe('686');
   });
 });
 
 describe('eventos', () => {
   test('CPF cujo 000 + CPF também forma CNPJ válido: o autor dos eventos sai como CPF (série 920 a 969)', async () => {
     const ambiguo = '00123456797';
-    const ac = await syntheticCertificate({ clock: manualClock(EMISSAO), role: 'ac' });
-    const cert = await syntheticCertificate({ clock: manualClock(EMISSAO), role: 'titular', cpf: ambiguo, issuer: ac });
+    const ac = await syntheticCertificate({ clock: relogioManual(EMISSAO), role: 'ac' });
+    const cert = await syntheticCertificate({
+      clock: relogioManual(EMISSAO),
+      role: 'titular',
+      cpf: ambiguo,
+      issuer: ac,
+    });
     const s = cenario({}, cert);
     const base = cargaPropria();
     const e = base.emitente;
@@ -332,8 +337,8 @@ describe('eventos', () => {
       emitente: { CPF: ambiguo, IE: e.IE, xNome: e.xNome, endereco: e.endereco },
     });
     const r = await s.client.cancelar({ chave: a.chave, nProt: a.nProt, xJust: 'VIAGEM NAO REALIZADA TESTE' });
-    expect(r.status === 'authorized' && r.cStat).toBe('135');
-    expect(r.status === 'authorized' && r.value.procEventoMDFe).toContain(`<CPF>${ambiguo}</CPF>`);
+    expect(r.tipo === 'autorizado' && r.cStat).toBe('135');
+    expect(r.tipo === 'autorizado' && r.valor.procEventoMDFe).toContain(`<CPF>${ambiguo}</CPF>`);
   }, 30_000);
 
   test('encerramento pelo transportador terceiro: o proprietário do veículo assina e é o autor (NT 2024.001)', async () => {
@@ -355,8 +360,8 @@ describe('eventos', () => {
     // O emitente não pode se declarar terceiro (K11).
     await expect(s.client.encerrar({ ...pedido, terceiro: { CPF: CPF_EMIT } })).rejects.toThrow(/K11/);
     const r = await s.cliente(c.terceiro).encerrar({ ...pedido, terceiro: { CNPJ: CNPJ_TERCEIRO } });
-    expect(r.status === 'authorized' && r.cStat).toBe('135');
-    expect(r.status === 'authorized' && r.value.procEventoMDFe).toContain('<indEncPorTerceiro>1</indEncPorTerceiro>');
+    expect(r.tipo === 'autorizado' && r.cStat).toBe('135');
+    expect(r.tipo === 'autorizado' && r.valor.procEventoMDFe).toContain('<indEncPorTerceiro>1</indEncPorTerceiro>');
     expect(s.sim.inspect.mdfe(a.chave)?.situacao).toBe('encerrado');
   });
 
@@ -368,26 +373,26 @@ describe('eventos', () => {
       nProt: '951260000009999',
       xJust: 'JUSTIFICATIVA SINTETICA DE TESTE',
     });
-    expect(errado.status === 'rejected' && errado.cStat).toBe('222');
-    s.clock.advance(HORA);
+    expect(errado.tipo === 'recusado' && errado.cStat).toBe('222');
+    s.clock.avancar(HORA);
     const r = await s.client.cancelar({ chave: a.chave, nProt: a.nProt, xJust: 'JUSTIFICATIVA SINTETICA DE TESTE' });
-    if (r.status !== 'authorized') throw new Error(JSON.stringify(r));
-    expect(r.value.procEventoMDFe).toContain('<evCancMDFe><descEvento>Cancelamento</descEvento>');
+    if (r.tipo !== 'autorizado') throw new Error(JSON.stringify(r));
+    expect(r.valor.procEventoMDFe).toContain('<evCancMDFe><descEvento>Cancelamento</descEvento>');
     const q = await s.client.consultar(a.chave);
-    expect(q.status === 'authorized' && q.cStat).toBe('101');
-    expect(q.status === 'authorized' && q.value.eventos.length).toBe(1);
+    expect(q.tipo === 'autorizado' && q.cStat).toBe('101');
+    expect(q.tipo === 'autorizado' && q.valor.eventos.length).toBe(1);
     const enc = await s.client.encerrar({ chave: a.chave, nProt: a.nProt, uf: 'SP', cMun: '3550308' });
-    expect(enc.status === 'rejected' && enc.cStat).toBe('218');
+    expect(enc.tipo === 'recusado' && enc.cStat).toBe('218');
 
     const b = await s.autorizado(cargaPropria({ nMDF: 3 }));
-    s.clock.advance(25 * HORA);
+    s.clock.avancar(25 * HORA);
     const tarde = await s.client.cancelar({
       chave: b.chave,
       nProt: b.nProt,
       xJust: 'JUSTIFICATIVA SINTETICA DE TESTE',
     });
-    expect(tarde.status === 'rejected' && tarde.cStat).toBe('220');
-    expect(tarde.status === 'rejected' && tarde.hint?.suggestedFix).toContain('encerre');
+    expect(tarde.tipo === 'recusado' && tarde.cStat).toBe('220');
+    expect(tarde.tipo === 'recusado' && tarde.dica?.comoCorrigir).toContain('encerre');
   });
 
   test('recuperarEventoRegistrado: cancelamento sem resposta confirmado pela consulta, nunca pelo cStat', async () => {
@@ -395,26 +400,26 @@ describe('eventos', () => {
     const a = await s.autorizado(cargaPropria({ nMDF: 41 }));
     const antes = await recuperarEventoRegistrado(s.client, a.chave, '110111');
     expect([antes.registrado, antes.consulta.cStat]).toEqual([false, '100']);
-    s.clock.advance(HORA);
+    s.clock.avancar(HORA);
     s.sim.injectFault({ kind: 'hang', phase: 'after' }, { servico: 'MDFeRecepcaoEvento' });
     const curto = s.cliente(c.produtor, 300);
     const pedido = { chave: a.chave, nProt: a.nProt, xJust: 'JUSTIFICATIVA SINTETICA DE TESTE' };
-    expect(await curto.cancelar(pedido).catch((e: unknown) => e)).toBeInstanceOf(TimeoutError);
+    expect(await curto.cancelar(pedido).catch((e: unknown) => e)).toBeInstanceOf(ErroDeTempoEsgotado);
     const rec = await recuperarEventoRegistrado(s.client, a.chave, '110111');
     if (!rec.registrado) throw new Error('evento não recuperado');
     expect([rec.evento.chMDFe, rec.evento.tpEvento, rec.evento.nSeqEvento]).toEqual([a.chave, '110111', '1']);
     expect(rec.evento.nProt).toMatch(/^[0-9]{15}$/);
     expect(rec.evento.procEventoMDFe).toContain('<evCancMDFe><descEvento>Cancelamento</descEvento>');
     expect(rec.evento.retEventoMDFe).toContain('<cStat>135</cStat>');
-    expect(rec.consulta.status === 'authorized' && rec.consulta.value.situacao).toBe('cancelado');
+    expect(rec.consulta.tipo === 'autorizado' && rec.consulta.valor.situacao).toBe('cancelado');
     // O pedido de novo é recusado; a recuperação continua devolvendo o mesmo evento.
-    expect((await s.client.cancelar(pedido)).status).toBe('rejected');
+    expect((await s.client.cancelar(pedido)).tipo).toBe('recusado');
     const outra = await recuperarEventoRegistrado(s.client, a.chave, '110111');
     expect(outra.registrado && outra.evento.procEventoMDFe).toBe(rec.evento.procEventoMDFe);
     expect((await recuperarEventoRegistrado(s.client, a.chave, '110112')).registrado).toBe(false);
     const inedito = await s.emitir(cargaPropria({ nMDF: 42 }));
     const nada = await recuperarEventoRegistrado(s.client, inedito.chave, '110111');
-    expect([nada.registrado, nada.consulta.status]).toEqual([false, 'rejected']);
+    expect([nada.registrado, nada.consulta.tipo]).toEqual([false, 'recusado']);
   });
 
   test('encerramento: 132 na consulta, depois 631 e 609; município e UF conferidos antes de enviar', async () => {
@@ -433,16 +438,16 @@ describe('eventos', () => {
       cMun: '3550308',
       dtEnc: '2026-09-25',
     });
-    expect(antes.status === 'rejected' && antes.cStat).toBe('615');
+    expect(antes.tipo === 'recusado' && antes.cStat).toBe('615');
     const r = await s.client.encerrar({ chave: a.chave, nProt: a.nProt, uf: 'SP', cMun: '3550308' });
-    expect(r.status === 'authorized' && r.value.xEvento).toBe('Encerramento');
+    expect(r.tipo === 'autorizado' && r.valor.xEvento).toBe('Encerramento');
     const q = await s.client.consultar(a.chave);
-    expect(q.status === 'authorized' && q.value.situacao).toBe('encerrado');
+    expect(q.tipo === 'autorizado' && q.valor.situacao).toBe('encerrado');
     // O mesmo evento de novo cai na duplicidade (J08, 631), que o MOC confere antes das regras do tipo (K09, 609).
     const deNovo = await s.client.encerrar({ chave: a.chave, nProt: a.nProt, uf: 'SP', cMun: '3550308' });
-    expect(deNovo.status === 'rejected' && deNovo.cStat).toBe('631');
+    expect(deNovo.tipo === 'recusado' && deNovo.cStat).toBe('631');
     const canc = await s.client.cancelar({ chave: a.chave, nProt: a.nProt, xJust: 'JUSTIFICATIVA SINTETICA DE TESTE' });
-    expect(canc.status === 'rejected' && canc.cStat).toBe('609');
+    expect(canc.tipo === 'recusado' && canc.cStat).toBe('609');
   });
 
   test('inclusão de condutor: sequencial, duplicidade (631) e CPF conferido antes de enviar', async () => {
@@ -450,10 +455,10 @@ describe('eventos', () => {
     const a = await s.autorizado();
     const condutor = { xNome: 'SEGUNDO CONDUTOR', CPF: CPF_EMIT };
     const r = await s.client.incluirCondutor({ chave: a.chave, nSeqEvento: 1, condutor });
-    expect(r.status).toBe('authorized');
+    expect(r.tipo).toBe('autorizado');
     const dup = await s.client.incluirCondutor({ chave: a.chave, nSeqEvento: 1, condutor });
-    expect(dup.status === 'rejected' && dup.cStat).toBe('631');
-    expect((await s.client.incluirCondutor({ chave: a.chave, nSeqEvento: 2, condutor })).status).toBe('authorized');
+    expect(dup.tipo === 'recusado' && dup.cStat).toBe('631');
+    expect((await s.client.incluirCondutor({ chave: a.chave, nSeqEvento: 2, condutor })).tipo).toBe('autorizado');
     await expect(
       s.client.incluirCondutor({ chave: a.chave, nSeqEvento: 3, condutor: { ...condutor, CPF: '1' } }),
     ).rejects.toThrow('645');
@@ -470,7 +475,7 @@ describe('eventos', () => {
     });
     const a = await s.autorizado(posterior);
     const enc = await s.client.encerrar({ chave: a.chave, nProt: a.nProt, uf: 'MT', cMun: '5103403' });
-    expect(enc.status === 'rejected' && enc.cStat).toBe('715');
+    expect(enc.tipo === 'recusado' && enc.cStat).toBe('715');
     const pedido = {
       chave: a.chave,
       nProt: a.nProt,
@@ -478,11 +483,11 @@ describe('eventos', () => {
       carregamento: { cMun: '5103403', xMun: 'CUIABA' },
       documentos: [{ cMunDescarga: '5108402', xMunDescarga: 'VARZEA GRANDE', chNFe: chaveDoc(1) }],
     };
-    expect((await s.client.incluirDFe(pedido)).status).toBe('authorized');
+    expect((await s.client.incluirDFe(pedido)).tipo).toBe('autorizado');
     const repetida = await s.client.incluirDFe({ ...pedido, nSeqEvento: 2 });
-    expect(repetida.status === 'rejected' && repetida.cStat).toBe('711');
-    expect((await s.client.encerrar({ chave: a.chave, nProt: a.nProt, uf: 'MT', cMun: '5108402' })).status).toBe(
-      'authorized',
+    expect(repetida.tipo === 'recusado' && repetida.cStat).toBe('711');
+    expect((await s.client.encerrar({ chave: a.chave, nProt: a.nProt, uf: 'MT', cMun: '5108402' })).tipo).toBe(
+      'autorizado',
     );
 
     const comum = await s.autorizado(
@@ -492,7 +497,7 @@ describe('eventos', () => {
       }),
     );
     const r = await s.client.incluirDFe({ ...pedido, chave: comum.chave, nProt: comum.nProt });
-    expect(r.status === 'rejected' && r.cStat).toBe('708');
+    expect(r.tipo === 'recusado' && r.cStat).toBe('708');
   });
 
   test('pagamento da operação: TAC agregado (135) e sem proprietário TAC agregado (723)', async () => {
@@ -524,7 +529,7 @@ describe('eventos', () => {
       nroViagem: 1,
       pagamentos,
     });
-    expect(r.status === 'authorized' && r.value.tpEvento).toBe('110116');
+    expect(r.tipo === 'autorizado' && r.valor.tpEvento).toBe('110116');
     const b = await s.autorizado({
       ...base,
       nMDF: 11,
@@ -537,7 +542,7 @@ describe('eventos', () => {
       nroViagem: 1,
       pagamentos,
     });
-    expect(sem.status === 'rejected' && sem.cStat).toBe('723');
+    expect(sem.tipo === 'recusado' && sem.cStat).toBe('723');
     await expect(
       s.client.pagamentoOperacao({
         chave: b.chave,
@@ -546,7 +551,7 @@ describe('eventos', () => {
         nroViagem: 1,
         pagamentos: [{ ...pagamentos[0], indPag: '1' as const }] as never,
       }),
-    ).rejects.toBeInstanceOf(ValidationError);
+    ).rejects.toBeInstanceOf(ErroDeValidacao);
   });
 });
 

@@ -8,7 +8,7 @@
  * facetas e ocorrências são do validador, não daqui.
  */
 
-import { escapeC14nAttribute, escapeC14nText } from '@sinete/core/xml';
+import { escaparAtributoC14n, escaparTextoC14n } from '@sinete/core/xml';
 import { SerializeError } from '../errors.ts';
 import type { AttributeDecl, ComplexType, Particle, RootElement, SimpleType } from './desc.ts';
 import { isComplexType, isElementParticle, isWildcard, maxOccurs } from './desc.ts';
@@ -81,9 +81,9 @@ function element(
   path: string,
 ): void {
   let open = `<${name}`;
-  if (ns !== inScopeNs) open += ` xmlns="${escapeC14nAttribute(ns)}"`;
+  if (ns !== inScopeNs) open += ` xmlns="${escaparAtributoC14n(ns)}"`;
   if (!isComplexType(t)) {
-    out.push(open, '>', escapeC14nText(text(v, path)), '</', name, '>');
+    out.push(open, '>', escaparTextoC14n(text(v, path)), '</', name, '>');
     return;
   }
   if (typeof v !== 'object' || v === null || Array.isArray(v)) {
@@ -99,9 +99,9 @@ function element(
     for (const [k, av] of Object.entries(o.$attrs as Obj)) attrs.push([k, text(av, `${path}/@${k}`)]);
     attrs.sort((x, y) => (x[0] < y[0] ? -1 : x[0] > y[0] ? 1 : 0));
   }
-  for (const [k, av] of attrs) open += ` ${k}="${escapeC14nAttribute(av)}"`;
+  for (const [k, av] of attrs) open += ` ${k}="${escaparAtributoC14n(av)}"`;
   out.push(open, '>');
-  if (t.tx) out.push(escapeC14nText(text(o.$text, `${path}/text()`)));
+  if (t.tx) out.push(escaparTextoC14n(text(o.$text, `${path}/text()`)));
   if (t.c) particle(t.c, o, ns, out, -1, path);
   out.push('</', name, '>');
 }

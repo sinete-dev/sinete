@@ -5,13 +5,13 @@ CPF, CNPJ (numérico e alfanumérico), CAEPF, chave de acesso de DF-e e inscriç
 Status: pré-alfa, API instável até a 1.0.
 
 ```ts
-import { parseChaveAcesso, parseCnpj, parseIe } from '@sinete/validators';
+import { lerChaveAcesso, lerCnpj, lerIe } from '@sinete/validators';
 
-parseCnpj('12.ABC.345/01DE-35'); // { ok: true, value: '12ABC34501DE35' }
-parseIe('0013000001-9', 'MT'); // { ok: true, value: { kind: 'numero', value: '00130000019', formatted: '0013000001-9', ... } }
-parseIe('isento', 'SP'); // { ok: true, value: { kind: 'isento', value: 'ISENTO' } }
-const ch = parseChaveAcesso('5206 0433 0099 1100 2506 5501 2000 0007 8002 6730 1615', { layout: '1.10' }); // exemplo do MOC, de 2006
-if (ch.ok) ch.value.uf; // 'GO'
+lerCnpj('12.ABC.345/01DE-35'); // { ok: true, value: '12ABC34501DE35' }
+lerIe('0013000001-9', 'MT'); // { ok: true, value: { kind: 'numero', value: '00130000019', formatted: '0013000001-9', ... } }
+lerIe('isento', 'SP'); // { ok: true, value: { kind: 'isento', value: 'ISENTO' } }
+const ch = lerChaveAcesso('5206 0433 0099 1100 2506 5501 2000 0007 8002 6730 1615', { leiaute: '1.10' }); // exemplo do MOC, de 2006
+if (ch.ok) ch.valor.uf; // 'GO'
 ```
 
 ## Forma da API

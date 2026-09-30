@@ -1,6 +1,6 @@
 /** Montagem do `DesfechoEvento` a partir dos desfechos dos pacotes de documento (uso interno dos subpaths). */
 
-import type { RejectionHint } from '@sinete/core';
+import type { DicaRejeicao } from '@sinete/core';
 import type { DesfechoEvento } from './desfecho.ts';
 
 /** `cStat` e `xMotivo` do retorno de um evento (`retEvento`, `retEventoMDFe`), o primeiro de cada. */
@@ -20,7 +20,7 @@ export function eventoRegistrado<E, B>(
 }
 
 export function eventoRecusado<E, B>(
-  r: { readonly cStat: string; readonly xMotivo: string; readonly hint?: RejectionHint },
+  r: { readonly cStat: string; readonly xMotivo: string; readonly hint?: DicaRejeicao },
   bruto: B,
 ): DesfechoEvento<E, B> {
   return {

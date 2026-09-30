@@ -7,10 +7,10 @@
  * `erro`, lista ou objeto único, e nunca decide pelo texto da mensagem.
  */
 
-import type { Authorized, Rejected, RejectionHint } from '@sinete/core';
-import { ProtocolError } from '@sinete/core';
+import type { Autorizado, DicaRejeicao, Recusado } from '@sinete/core';
+import { ErroRespostaInvalida } from '@sinete/core';
 import type { NfseErro } from '@sinete/rejeicoes/nfse';
-import { nfseErroByCode, nfseRejectionHint } from '@sinete/rejeicoes/nfse';
+import { dicaRejeicaoNfse, nfseErroPorCodigo } from '@sinete/rejeicoes/nfse';
 
 /** Uma mensagem de erro ou alerta da Sefin, com a entrada do catálogo quando o código é conhecido. */
 export interface NfseMensagem {
@@ -25,14 +25,14 @@ export interface NfseMensagem {
  * Rejeição da NFS-e: o `cStat` é o código do primeiro erro (`E0312`), o `xMotivo` a descrição dele, e `erros` traz a
  * lista inteira na ordem da resposta.
  */
-export interface NfseRejeicao extends Rejected {
+export interface NfseRejeicao extends Recusado {
   readonly erros: readonly NfseMensagem[];
   /** Status HTTP da resposta (400 na recusa da DPS). */
   readonly httpStatus: number;
 }
 
 /** Desfecho de uma operação da NFS-e: gerada ou registrada, ou rejeitada. Não há pendente nem denegação na NFS-e. */
-export type NfseOutcome<T> = Authorized<T> | NfseRejeicao;
+export type NfseOutcome<T> = Autorizado<T> | NfseRejeicao;
 
 type Json = Record<string, unknown>;
 
@@ -72,7 +72,7 @@ export function mensagens(json: Json, tipo: 'erros' | 'alertas'): NfseMensagem[]
     if (codigo === undefined || codigo === '') continue;
     const descricao = comoTexto(campo(o, 'descricao')) ?? comoTexto(campo(o, 'mensagem')) ?? '';
     const complemento = comoTexto(campo(o, 'complemento'));
-    const catalogo = nfseErroByCode(codigo);
+    const catalogo = nfseErroPorCodigo(codigo);
     out.push({
       codigo,
       descricao,
@@ -93,16 +93,16 @@ export function rejeicao(json: Json | undefined, httpStatus: number, operacao: s
   const erros = json === undefined ? [] : mensagens(json, 'erros');
   const primeiro = erros.find((e) => CODIGO.test(e.codigo));
   if (primeiro === undefined) {
-    throw new ProtocolError(`${operacao}: HTTP ${httpStatus} sem erro no formato do Anexo I`, {
-      details: { operacao, httpStatus, codigos: erros.map((e) => e.codigo) },
+    throw new ErroRespostaInvalida(`${operacao}: HTTP ${httpStatus} sem erro no formato do Anexo I`, {
+      detalhes: { operacao, httpStatus, codigos: erros.map((e) => e.codigo) },
     });
   }
-  const hint: RejectionHint | undefined = nfseRejectionHint(primeiro.codigo);
+  const hint: DicaRejeicao | undefined = dicaRejeicaoNfse(primeiro.codigo);
   return {
-    status: 'rejected',
+    tipo: 'recusado',
     cStat: primeiro.codigo,
     xMotivo: primeiro.descricao,
-    ...(hint === undefined ? {} : { hint }),
+    ...(hint === undefined ? {} : { dica: hint }),
     erros,
     httpStatus,
   };
@@ -112,7 +112,7 @@ export function rejeicao(json: Json | undefined, httpStatus: number, operacao: s
 export function exigirTexto(json: Json, nome: string, operacao: string): string {
   const v = comoTexto(campo(json, nome));
   if (v === undefined || v === '')
-    throw new ProtocolError(`${operacao}: resposta sem ${nome}`, { details: { operacao } });
+    throw new ErroRespostaInvalida(`${operacao}: resposta sem ${nome}`, { detalhes: { operacao } });
   return v;
 }
 
@@ -138,7 +138,7 @@ export function documentosDosEventos(json: Json, operacao: string): DocumentoEve
   if (!Array.isArray(lista)) {
     const compactados = documentosCompactados(json);
     if (compactados.length === 0)
-      throw new ProtocolError(`${operacao}: resposta sem eventos`, { details: { operacao } });
+      throw new ErroRespostaInvalida(`${operacao}: resposta sem eventos`, { detalhes: { operacao } });
     return compactados.map((b64) => ({ b64, duplo: false }));
   }
   return lista.flatMap((item): DocumentoEvento[] => {
@@ -146,7 +146,7 @@ export function documentosDosEventos(json: Json, operacao: string): DocumentoEve
     if (typeof arquivo === 'string' && arquivo !== '') return [{ b64: arquivo, duplo: true }];
     const compactados = documentosCompactados(item);
     if (compactados.length === 0)
-      throw new ProtocolError(`${operacao}: evento sem arquivoXml`, { details: { operacao } });
+      throw new ErroRespostaInvalida(`${operacao}: evento sem arquivoXml`, { detalhes: { operacao } });
     return compactados.map((b64) => ({ b64, duplo: false }));
   });
 }

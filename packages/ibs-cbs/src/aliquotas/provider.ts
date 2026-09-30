@@ -3,7 +3,7 @@
  * `withOverrides` sobrepõe alíquotas informadas pelo usuário, que saem com estado `user-provided` e o motivo.
  * `requireRate` é a fronteira: devolve o valor ou lança `RateUnknownError`, nunca um default.
  */
-import { ConfigError } from '@sinete/core';
+import { ErroDeConfiguracao } from '@sinete/core';
 import table from './data/rates.json' with { type: 'json' };
 import { RatesDataError, RateUnknownError } from './errors.ts';
 import type {
@@ -32,7 +32,7 @@ const DECIMAL = /^\d{1,3}(\.\d{1,4})?$/;
 
 function checkDate(date: IsoDate): IsoDate {
   if (typeof date !== 'string' || !ISO_DATE.test(date)) {
-    throw new ConfigError(`data inválida: ${JSON.stringify(date)}; use AAAA-MM-DD`, { details: { date } });
+    throw new ErroDeConfiguracao(`data inválida: ${JSON.stringify(date)}; use AAAA-MM-DD`, { detalhes: { date } });
   }
   return date;
 }
@@ -132,12 +132,15 @@ export function officialRates(t: RatesTable = RATES_TABLE): RateProvider {
 
 function validateOverride(o: RateOverride, i: number): void {
   const where = `override[${i}]`;
-  if (!RATE_TRIBUTOS.includes(o.tributo)) throw new ConfigError(`${where}: tributo inválido: ${String(o.tributo)}`);
+  if (!RATE_TRIBUTOS.includes(o.tributo))
+    throw new ErroDeConfiguracao(`${where}: tributo inválido: ${String(o.tributo)}`);
   if (typeof o.value !== 'string' || !DECIMAL.test(o.value) || Number(o.value) > 100) {
-    throw new ConfigError(`${where}: alíquota inválida (percentual de 0 a 100, até 4 casas): ${String(o.value)}`);
+    throw new ErroDeConfiguracao(
+      `${where}: alíquota inválida (percentual de 0 a 100, até 4 casas): ${String(o.value)}`,
+    );
   }
   if (typeof o.reason !== 'string' || o.reason.trim() === '') {
-    throw new ConfigError(`${where}: informe o motivo da alíquota informada (reason)`);
+    throw new ErroDeConfiguracao(`${where}: informe o motivo da alíquota informada (reason)`);
   }
   if (o.validity) {
     checkDate(o.validity.from);
@@ -190,7 +193,7 @@ export function requireRate(rate: Rate, date: IsoDate): string {
       rate.tributo,
       date,
       `alíquota de ${rate.tributo} desconhecida em ${date}${rate.note ? `: ${rate.note}` : ''}; informe-a com withOverrides para simular`,
-      { details: { tributo: rate.tributo, date, legal: rate.legal } },
+      { detalhes: { tributo: rate.tributo, date, legal: rate.legal } },
     );
   }
   return rate.value;

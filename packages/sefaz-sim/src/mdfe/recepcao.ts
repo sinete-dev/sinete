@@ -16,13 +16,13 @@
  * (F119).
  */
 
-import { isUf, ufBySigla } from '@sinete/core';
-import type { XmlElement } from '@sinete/core/xml';
-import { attributeOf } from '@sinete/core/xml';
+import { ehUf, ufPorSigla } from '@sinete/core';
+import type { ElementoXml } from '@sinete/core/xml';
+import { atributoDe } from '@sinete/core/xml';
 import { serializeRoot } from '@sinete/schemas';
 import type { TProtMDFe, TRetMDFe } from '@sinete/schemas/mdfe/3.00b';
 import { MDFeElement, retMDFeElement } from '@sinete/schemas/mdfe/3.00b';
-import { chaveAcessoCheckDigit, isValidCnpj, isValidCpf } from '@sinete/validators';
+import { calcularDvChaveAcesso, cnpjValido, cpfValido } from '@sinete/validators';
 import { checkAssinatura } from '../certs.ts';
 import type { RequestContext, Status } from '../context.ts';
 import { omitirDigVal } from '../context.ts';
@@ -49,7 +49,7 @@ const DIA = 86_400_000;
 /** Idade máxima, em meses, do ano e mês da chave de um documento vinculado (NT 2024.001 v1.02, F30a e F37a). */
 const MESES_CHAVE_ANTIGA = 6;
 
-const cUFDe = (uf: string): string | undefined => (isUf(uf) ? ufBySigla(uf)?.cUF : undefined);
+const cUFDe = (uf: string): string | undefined => (ehUf(uf) ? ufPorSigla(uf)?.cUF : undefined);
 
 function naoEncerrados(ctx: RequestContext): MdfeRecord[] {
   return [...ctx.rt.state.mdfes.values()]
@@ -74,10 +74,10 @@ export async function recepcaoMdfe(ctx: RequestContext): Promise<string> {
   const pre = await preludeMdfe(ctx, MDFeElement);
   if (!pre.ok) return ret(pre.status);
   const doc = pre.doc;
-  const inf = at(doc.root, 'infMDFe') as XmlElement;
-  const ide = at(inf, 'ide') as XmlElement;
-  const emit = at(inf, 'emit') as XmlElement;
-  const id = attributeOf(inf, 'Id') ?? '';
+  const inf = at(doc.raiz, 'infMDFe') as ElementoXml;
+  const ide = at(inf, 'ide') as ElementoXml;
+  const emit = at(inf, 'emit') as ElementoXml;
+  const id = atributoDe(inf, 'Id') ?? '';
   const chave = id.slice(4);
   const emitente = documento(emit);
   const now = ctx.now;
@@ -102,9 +102,9 @@ export async function recepcaoMdfe(ctx: RequestContext): Promise<string> {
   const doc14 = emitente.CNPJ ?? `000${emitente.CPF ?? ''}`;
   const base = `${cUF}${dhEmi.slice(2, 4)}${dhEmi.slice(5, 7)}${doc14}58${serie.padStart(3, '0')}${nMDF.padStart(9, '0')}${tpEmis}${cMDF}`;
   if (ativa(ctx, 'F03') && `${base}${req(ide, 'cDV')}` !== chave) return rej('227');
-  if (ativa(ctx, 'F05') && chaveAcessoCheckDigit(base) !== req(ide, 'cDV')) return rej('253');
-  if (emitente.CNPJ !== undefined && !isValidCnpj(emitente.CNPJ)) return rej('207');
-  if (emitente.CPF !== undefined && !isValidCpf(emitente.CPF)) return rej('210');
+  if (ativa(ctx, 'F05') && calcularDvChaveAcesso(base) !== req(ide, 'cDV')) return rej('253');
+  if (emitente.CNPJ !== undefined && !cnpjValido(emitente.CNPJ)) return rej('207');
+  if (emitente.CPF !== undefined && !cpfValido(emitente.CPF)) return rej('210');
   const serieCpf = Number(serie) >= 920 && Number(serie) <= 969;
   if (ativa(ctx, 'F69') && emitente.CNPJ !== undefined && serieCpf) return rej('232');
   if (ativa(ctx, 'F70') && emitente.CPF !== undefined && !serieCpf) return rej('233');
@@ -137,7 +137,7 @@ export async function recepcaoMdfe(ctx: RequestContext): Promise<string> {
   }
 
   // QR Code (F114 a F118).
-  const qr = text(doc.root, 'infMDFeSupl/qrCodMDFe');
+  const qr = text(doc.raiz, 'infMDFeSupl/qrCodMDFe');
   if (ativa(ctx, 'F114') && qr === undefined) return rej('480');
   if (qr !== undefined) {
     const [url = '', query = ''] = qr.split('?', 2);
@@ -221,7 +221,7 @@ export async function recepcaoMdfe(ctx: RequestContext): Promise<string> {
     cMunCarrega: all(ide, 'infMunCarrega').map((m) => req(m, 'cMunCarrega')),
     dhEmi,
     dhEmiMs,
-    xml: standalone(doc.source, doc.root),
+    xml: standalone(doc.texto, doc.raiz),
     digVal: sig.digestValue,
     nProt,
     dhRecbto,
@@ -229,7 +229,7 @@ export async function recepcaoMdfe(ctx: RequestContext): Promise<string> {
     // O protMDFe sai do mesmo texto da resposta, com o xmlns para viver fora dela (consulta, mdfeProc).
     protMDFe: xml
       .slice(inicioProt, xml.indexOf('</protMDFe>') + '</protMDFe>'.length)
-      .replace('<protMDFe', `<protMDFe xmlns="${doc.root.ns}"`),
+      .replace('<protMDFe', `<protMDFe xmlns="${doc.raiz.ns}"`),
     situacao: 'autorizado',
   };
   ctx.rt.state.mdfes.set(chave, record);

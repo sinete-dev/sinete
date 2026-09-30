@@ -6,7 +6,7 @@
  * atores. Fato desconhecido não exclui nada: sem NCM, a aplicabilidade por NCM não é conferida; sem atores, o vínculo
  * por atores também não.
  */
-import type { TimeContext } from '@sinete/core';
+import type { ContextoDeTempo } from '@sinete/core';
 import type { ClassTribRecord, IbsCbsDataset, TaxContent } from '@sinete/ibs-cbs-dados';
 import { BRASILIA_OFFSET_MINUTES, civilDate } from '@sinete/ibs-cbs-dados';
 import { NT_TABLES } from '../validar/index.ts';
@@ -16,7 +16,7 @@ import type { Candidate, Exclusion, ItemFacts, OperationFacts, PartyFacts } from
 export interface ConstrainOptions {
   readonly dataset: IbsCbsDataset;
   /** O relógio de fato gerador decide a data das tabelas. */
-  readonly time: TimeContext;
+  readonly time: ContextoDeTempo;
   /** Deslocamento do fuso do emitente em minutos (padrão: Brasília). */
   readonly utcOffsetMinutes?: number;
 }
@@ -54,8 +54,8 @@ const ROMAN: readonly string[] = [
 ];
 
 /** Data civil do fato gerador. */
-export function factDate(time: TimeContext, utcOffsetMinutes: number = BRASILIA_OFFSET_MINUTES): string {
-  return civilDate(time.fatoGerador.now(), utcOffsetMinutes);
+export function factDate(time: ContextoDeTempo, utcOffsetMinutes: number = BRASILIA_OFFSET_MINUTES): string {
+  return civilDate(time.fatoGerador.agora(), utcOffsetMinutes);
 }
 
 export function candidateOf(content: TaxContent, ct: ClassTribRecord): Candidate {

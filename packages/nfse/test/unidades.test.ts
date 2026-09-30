@@ -2,9 +2,16 @@
  * Unidades: valores, códigos e identificadores, montagem da DPS e do pedido de evento, gzip e leitura das respostas.
  */
 import { describe, expect, test } from 'bun:test';
-import type { ValidationIssue } from '@sinete/core';
-import { ConfigError, fixedClock, formatarVerProc, ProtocolError, timeContext, UnsupportedError } from '@sinete/core';
-import { base64Encode } from '@sinete/core/xml';
+import type { Ocorrencia } from '@sinete/core';
+import {
+  contextoDeTempo,
+  ErroDeConfiguracao,
+  ErroNaoSuportado,
+  ErroRespostaInvalida,
+  formatarVerProc,
+  relogioFixo,
+} from '@sinete/core';
+import { codificarBase64 } from '@sinete/core/xml';
 import { gunzipBase64Duplo } from '../src/gzip.ts';
 import {
   buildDps,
@@ -25,13 +32,13 @@ import { documentosCompactados, documentosDosEventos, lerJson, mensagens, rejeic
 import { VERSAO_PACOTE } from '../src/versao-gerada.ts';
 import { cpf, dps, PRESTADOR, PRESTADOR_CPF, SAO_PAULO, TOMADOR } from './helpers.ts';
 
-const time = timeContext({ emissao: fixedClock('2026-09-25T10:00:00-03:00') });
+const time = contextoDeTempo({ emissao: relogioFixo('2026-09-25T10:00:00-03:00') });
 const RESTO = `${'1'.padStart(13, '0')}2609${'1'.padStart(9, '0')}7`;
 const CHAVE = `${SAO_PAULO}22${PRESTADOR}${RESTO}`;
 
 describe('valores', () => {
   test('texto e número viram 2 casas; o resto é ocorrência', () => {
-    const issues: ValidationIssue[] = [];
+    const issues: Ocorrencia[] = [];
     expect(formatValor('1500', 'v', issues)).toBe('1500.00');
     expect(formatValor('007.5', 'v', issues)).toBe('7.50');
     expect(formatValor('2.500', 'v', issues)).toBe('2.50');
@@ -43,7 +50,7 @@ describe('valores', () => {
     expect(formatValor(Number.NaN, 'c', issues)).toBeUndefined();
     expect(formatValor('1,50', 'd', issues)).toBeUndefined();
     expect(formatValor('1.505', 'e', issues)).toBeUndefined();
-    expect(issues.map((i) => `${i.path}:${i.code}`)).toEqual([
+    expect(issues.map((i) => `${i.caminho}:${i.code}`)).toEqual([
       'a:valor_casas',
       'b:valor_invalido',
       'c:valor_invalido',
@@ -57,14 +64,14 @@ describe('códigos e identificadores', () => {
   test('cTribNac, código da parametrização e inscrição', () => {
     expect(cTribNacDps('01.01.01')).toBe('010101');
     expect(cTribNacDps(' 170101 ')).toBe('170101');
-    expect(() => cTribNacDps('1.01.01')).toThrow(ConfigError);
+    expect(() => cTribNacDps('1.01.01')).toThrow(ErroDeConfiguracao);
     expect(codigoServicoParametrizacao('010101')).toBe('01.01.01.000');
     expect(codigoServicoParametrizacao('01.01.01', '002')).toBe('01.01.01.002');
-    expect(() => codigoServicoParametrizacao('010101', '2')).toThrow(ConfigError);
+    expect(() => codigoServicoParametrizacao('010101', '2')).toThrow(ErroDeConfiguracao);
     expect(inscricaoId({ CPF: PRESTADOR_CPF })).toEqual({ tpInsc: '1', inscricao: `000${PRESTADOR_CPF}` });
     expect(inscricaoId({ CNPJ: '12ABC34501DE35' })).toEqual({ tpInsc: '2', inscricao: '12ABC34501DE35' });
-    expect(() => inscricaoId({ CNPJ: '123' })).toThrow(ConfigError);
-    expect(() => inscricaoId({ CPF: '123' })).toThrow(ConfigError);
+    expect(() => inscricaoId({ CNPJ: '123' })).toThrow(ErroDeConfiguracao);
+    expect(() => inscricaoId({ CPF: '123' })).toThrow(ErroDeConfiguracao);
   });
 
   test('Id da DPS, chave e Id do pedido de evento', () => {
@@ -78,16 +85,16 @@ describe('códigos e identificadores', () => {
     const comCpf = `${SAO_PAULO}21000${PRESTADOR_CPF}${RESTO}`;
     expect(parseChaveNfse(comCpf).inscricao).toBe(PRESTADOR_CPF);
     expect(() => parseChaveNfse(`${SAO_PAULO}21123${PRESTADOR_CPF}${RESTO}`)).toThrow('CPF');
-    expect(() => parseChaveNfse('123')).toThrow(ConfigError);
+    expect(() => parseChaveNfse('123')).toThrow(ErroDeConfiguracao);
     expect(idPedidoEvento(CHAVE, '101101')).toBe(`PRE${CHAVE}101101`);
     expect(() => idPedidoEvento(CHAVE, '1011')).toThrow('evento');
   });
 
   test('leiaute vigente pela data e pelo ambiente', () => {
-    expect(leiauteVigente('producao', fixedClock('2026-08-01T12:00:00-03:00')).vigencia.modulo).toBe(
+    expect(leiauteVigente('producao', relogioFixo('2026-08-01T12:00:00-03:00')).vigencia.modulo).toBe(
       'nfse/1.01-20260209',
     );
-    expect(leiauteVigente('homologacao', fixedClock('2026-09-25T12:00:00-03:00')).leiaute.schema.pl).toBe(
+    expect(leiauteVigente('homologacao', relogioFixo('2026-09-25T12:00:00-03:00')).leiaute.schema.pl).toBe(
       'NFSe_v1.01_20260727',
     );
   });
@@ -194,7 +201,7 @@ describe('buildDps', () => {
     );
     expect(r.ok).toBe(false);
     if (r.ok) return;
-    expect(r.issues.map((i) => `${i.path}:${i.code}`).sort()).toEqual(
+    expect(r.issues.map((i) => `${i.caminho}:${i.code}`).sort()).toEqual(
       [
         'dCompet:competencia_posterior_emissao',
         'serie:campo_invalido',
@@ -228,7 +235,7 @@ describe('buildDps', () => {
     const mei = regime('2');
     expect(mei.ok && mei.value.xml).toContain('<totTrib><indTotTrib>0</indTotTrib></totTrib>');
     const codigos = (r: ReturnType<typeof regime>): string[] =>
-      r.ok ? [] : r.issues.map((i) => `${i.path}:${i.code}`);
+      r.ok ? [] : r.issues.map((i) => `${i.caminho}:${i.code}`);
     expect(codigos(regime('3'))).toEqual(['tributacao.totTrib:campo_obrigatorio']);
     expect(codigos(regime('1'))).toEqual(['tributacao.totTrib:campo_obrigatorio']);
     expect(codigos(regime('3', { indTotTrib: '0' }))).toEqual(['tributacao.totTrib.indTotTrib:campo_proibido']);
@@ -266,7 +273,7 @@ describe('buildDps', () => {
       },
     );
     expect(!serial.ok && serial.issues[0]).toMatchObject({ code: 'schema' });
-    expect(() => buildDps(dps(), { ambiente: 'homologacao', time, verAplic: '' })).toThrow(ConfigError);
+    expect(() => buildDps(dps(), { ambiente: 'homologacao', time, verAplic: '' })).toThrow(ErroDeConfiguracao);
     const nulo = buildDps(dps({ servico: { ...dps().servico, xDescServ: 'Servico\u0000teste' } }), {
       ambiente: 'homologacao',
       time,
@@ -276,7 +283,7 @@ describe('buildDps', () => {
 });
 
 describe('pedido de evento', () => {
-  const opts = { ambiente: 'homologacao' as const, clock: fixedClock('2026-09-25T10:00:00-03:00') };
+  const opts = { ambiente: 'homologacao' as const, clock: relogioFixo('2026-09-25T10:00:00-03:00') };
 
   test('verAplic padrão é "sinete <versão do pacote>"; override explícito prevalece', () => {
     const esperado = formatarVerProc('sinete', VERSAO_PACOTE);
@@ -326,19 +333,21 @@ describe('pedido de evento', () => {
         { chave: CHAVE, autor: { CNPJ: PRESTADOR }, cMotivo: '1', xMotivo: 'x' },
         { ...opts, verAplic: '' },
       ),
-    ).toThrow(ConfigError);
+    ).toThrow(ErroDeConfiguracao);
   });
 });
 
 describe('gzip e respostas', () => {
   test('gzip em base64 de ida e volta; base64 e gzip inválidos são ProtocolError', async () => {
     expect(await gunzipBase64(await gzipBase64('<a>ção</a>'))).toBe('<a>ção</a>');
-    await expect(gunzipBase64('***')).rejects.toBeInstanceOf(ProtocolError);
-    await expect(gunzipBase64(base64Encode(new TextEncoder().encode('nao e gzip')), 'nfse')).rejects.toThrow('nfse');
-    const duplo = base64Encode(new TextEncoder().encode(await gzipBase64('<a>ção</a>')));
+    await expect(gunzipBase64('***')).rejects.toBeInstanceOf(ErroRespostaInvalida);
+    await expect(gunzipBase64(codificarBase64(new TextEncoder().encode('nao e gzip')), 'nfse')).rejects.toThrow('nfse');
+    const duplo = codificarBase64(new TextEncoder().encode(await gzipBase64('<a>ção</a>')));
     expect(await gunzipBase64Duplo(duplo)).toBe('<a>ção</a>');
     await expect(gunzipBase64Duplo('***', 'arquivoXml')).rejects.toThrow('arquivoXml com base64 inválido');
-    await expect(gunzipBase64Duplo(base64Encode(new Uint8Array([0xff])))).rejects.toBeInstanceOf(ProtocolError);
+    await expect(gunzipBase64Duplo(codificarBase64(new Uint8Array([0xff])))).rejects.toBeInstanceOf(
+      ErroRespostaInvalida,
+    );
   });
 
   test('sem CompressionStream na runtime é UnsupportedError', async () => {
@@ -346,7 +355,7 @@ describe('gzip e respostas', () => {
     const original = g.CompressionStream;
     g.CompressionStream = undefined;
     try {
-      await expect(gzipBase64('x')).rejects.toBeInstanceOf(UnsupportedError);
+      await expect(gzipBase64('x')).rejects.toBeInstanceOf(ErroNaoSuportado);
     } finally {
       g.CompressionStream = original;
     }
@@ -362,7 +371,7 @@ describe('gzip e respostas', () => {
       'erros',
     );
     expect(m[0]).toMatchObject({ codigo: 'E0312', complemento: 'c' });
-    expect(m[0]?.catalogo?.code).toBe('E0312');
+    expect(m[0]?.catalogo?.codigo).toBe('E0312');
     const n = mensagens(
       { Alertas: [null, { Codigo: 1234 }, { Codigo: '' }, { Codigo: 'A1', Mensagem: 'm', Complemento: '' }] },
       'alertas',
@@ -371,11 +380,11 @@ describe('gzip e respostas', () => {
       { codigo: '1234', descricao: '' },
       { codigo: 'A1', descricao: 'm' },
     ]);
-    expect(() => rejeicao({ erros: [{ Codigo: 'X' }] }, 400, 'op')).toThrow(ProtocolError);
-    expect(() => rejeicao(undefined, 400, 'op')).toThrow(ProtocolError);
+    expect(() => rejeicao({ erros: [{ Codigo: 'X' }] }, 400, 'op')).toThrow(ErroRespostaInvalida);
+    expect(() => rejeicao(undefined, 400, 'op')).toThrow(ErroRespostaInvalida);
     const r = rejeicao({ erros: [{ Codigo: 'E9999', Descricao: 'fora do catálogo' }] }, 409, 'op');
-    expect(r).toMatchObject({ status: 'rejected', cStat: 'E9999', httpStatus: 409 });
-    expect(r.hint).toBeUndefined();
+    expect(r).toMatchObject({ tipo: 'recusado', cStat: 'E9999', httpStatus: 409 });
+    expect(r.dica).toBeUndefined();
     expect(
       documentosCompactados({ a: [{ eventoXmlGZipB64: '1' }, { b: { nfseXmlGZipB64: '2', outro: 3 } }], c: 'x' }),
     ).toEqual(['1', '2']);

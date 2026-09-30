@@ -6,38 +6,38 @@
  * `ValidationError` do `@sinete/core`.
  */
 
-export { caepfCheckDigits, formatCaepf, isValidCaepf, parseCaepf } from './caepf.ts';
-export type { ChaveAcesso, ChaveAcessoParts, ChaveParseOptions } from './chave.ts';
+export { caepfValido, calcularDvCaepf, formatarCaepf, lerCaepf } from './caepf.ts';
+export type { ChaveAcesso, LerChaveAcessoOpcoes, PartesChaveAcesso } from './chave.ts';
 export {
-  buildChaveAcesso,
   CNPJ_ALFANUMERICO_VIGENCIA,
-  chaveAcessoCheckDigit,
-  formatChaveAcesso,
-  isValidChaveAcesso,
-  parseChaveAcesso,
+  calcularDvChaveAcesso,
+  chaveAcessoValida,
+  formatarChaveAcesso,
+  lerChaveAcesso,
+  montarChaveAcesso,
 } from './chave.ts';
-export { cnpjCheckDigits, formatCnpj, isAlphanumericCnpj, isValidCnpj, parseCnpj } from './cnpj.ts';
-export type { ParseOptions } from './cpf.ts';
-export { cpfCheckDigits, formatCpf, isValidCpf, parseCpf } from './cpf.ts';
+export { calcularDvCnpj, cnpjAlfanumerico, cnpjValido, formatarCnpj, lerCnpj } from './cnpj.ts';
+export type { LerOpcoes } from './cpf.ts';
+export { calcularDvCpf, cpfValido, formatarCpf, lerCpf } from './cpf.ts';
 export type {
-  IeCheck,
-  IeParseOptions,
-  IeRange,
-  IeTableInfo,
-  IeUfRule,
-  IeVariant,
+  CalculoDvIe,
+  DescricaoTabelaIe,
+  FaixaIe,
   InscricaoEstadual,
+  LerIeOpcoes,
+  RegraIeUf,
+  VarianteIe,
 } from './ie.ts';
 export {
-  completeIe,
-  formatIe,
+  calcularDvIe,
+  completarIe,
+  formatarIe,
   IE_ISENTO,
-  IE_TABLE,
-  ieCheckDigits,
-  ieRule,
-  isIeIsento,
-  isValidIe,
-  parseIe,
+  ieIsenta,
+  ieValida,
+  lerIe,
+  regraIe,
+  TABELA_IE,
 } from './ie.ts';
-export type { ValidationIssueCode } from './issues.ts';
-export { VALIDATION_ISSUE_CODES } from './issues.ts';
+export type { CodigoOcorrencia } from './issues.ts';
+export { CODIGOS_OCORRENCIA } from './issues.ts';

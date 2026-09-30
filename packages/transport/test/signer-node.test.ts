@@ -8,7 +8,7 @@ import { chmodSync, existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:
 import net from 'node:net';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { ConfigError, memoryLogger, TimeoutError } from '@sinete/core';
+import { ErroDeConfiguracao, ErroDeTempoEsgotado, loggerEmMemoria } from '@sinete/core';
 import { SignerError } from '../src/index.node.ts';
 import { connectSigner, startSigner } from '../src/signer.node.ts';
 import { createPki, findOpenssl } from './lab/pki.ts';
@@ -62,8 +62,8 @@ describe('startSigner e connectSigner sem helper utilizável', () => {
   test('fora do laboratório, ambientes é obrigatório', async () => {
     const bin = path.join(dir, 'qualquer');
     writeFileSync(bin, '');
-    await expect(startSigner({ binary: bin })).rejects.toBeInstanceOf(ConfigError);
-    await expect(startSigner({ binary: bin, ambientes: [] })).rejects.toBeInstanceOf(ConfigError);
+    await expect(startSigner({ binary: bin })).rejects.toBeInstanceOf(ErroDeConfiguracao);
+    await expect(startSigner({ binary: bin, ambientes: [] })).rejects.toBeInstanceOf(ErroDeConfiguracao);
   });
 
   test('arquivo sem permissão de execução: o spawn falha e o cliente recusa sem derrubar o processo', async () => {
@@ -80,11 +80,11 @@ describe('startSigner e connectSigner sem helper utilizável', () => {
       const bin = path.join(dir, 'quebrado.sh');
       writeFileSync(bin, "#!/bin/sh\necho 'audit {nao e json' >&2\necho 'falhou ao iniciar' >&2\nexit 3\n");
       chmodSync(bin, 0o755);
-      const logger = memoryLogger();
+      const logger = loggerEmMemoria();
       const e = await rejection(startSigner({ lab: true, binary: bin, logger, controlTimeoutMs: 5_000 }));
       expect(e).toBeInstanceOf(SignerError);
-      for (let i = 0; i < 50 && logger.entries.length < 2; i++) await Bun.sleep(20);
-      const lines = logger.entries.filter((l) => l.msg === 'sinete-signer').map((l) => l.fields.line);
+      for (let i = 0; i < 50 && logger.entradas.length < 2; i++) await Bun.sleep(20);
+      const lines = logger.entradas.filter((l) => l.mensagem === 'sinete-signer').map((l) => l.campos.line);
       expect(lines).toEqual(['audit {nao e json', 'falhou ao iniciar']);
     },
   );
@@ -94,7 +94,7 @@ describe('startSigner e connectSigner sem helper utilizável', () => {
     async () => {
       writeFileSync(path.join(dir, 'relativo.sh'), "#!/bin/sh\necho 'rodou o relativo' >&2\nexit 3\n");
       chmodSync(path.join(dir, 'relativo.sh'), 0o755);
-      const logger = memoryLogger();
+      const logger = loggerEmMemoria();
       const antes = process.cwd();
       process.chdir(dir);
       try {
@@ -103,8 +103,8 @@ describe('startSigner e connectSigner sem helper utilizável', () => {
       } finally {
         process.chdir(antes);
       }
-      for (let i = 0; i < 50 && logger.entries.length < 1; i++) await Bun.sleep(20);
-      expect(logger.entries.map((l) => l.fields.line)).toContain('rodou o relativo');
+      for (let i = 0; i < 50 && logger.entradas.length < 1; i++) await Bun.sleep(20);
+      expect(logger.entradas.map((l) => l.campos.line)).toContain('rodou o relativo');
     },
   );
 
@@ -124,7 +124,7 @@ describe('startSigner e connectSigner sem helper utilizável', () => {
       await new Promise<void>((resolve) => server.listen(sockPath, resolve));
       try {
         const e = await rejection(connectSigner({ socketPath: sockPath, controlTimeoutMs: 100 }));
-        expect(e).toBeInstanceOf(TimeoutError);
+        expect(e).toBeInstanceOf(ErroDeTempoEsgotado);
         for (let i = 0; i < 50 && !fechou; i++) await Bun.sleep(10);
         expect(fechou).toBe(true);
       } finally {

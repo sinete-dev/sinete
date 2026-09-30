@@ -3,7 +3,7 @@
  * `IBSCBSTot` (W34 a W59g) somando exatamente os valores dos itens.
  */
 
-import { firstChild, parseXml } from '@sinete/core/xml';
+import { lerXml, primeiroFilho } from '@sinete/core/xml';
 import type { ComplexType } from '@sinete/schemas';
 import { serialize, validate } from '@sinete/schemas';
 import type { TIBSCBSMonoTot, TTribNFe } from '@sinete/schemas/nfe/PL_010f';
@@ -19,12 +19,16 @@ const NFE_NS = 'http://www.portalfiscal.inf.br/nfe';
 export function grupoInvalido(ct: ComplexType, nome: string, value: unknown, path: string, issues: Issues): boolean {
   if (value === undefined) return false;
   try {
-    const doc = parseXml(`<w xmlns="${NFE_NS}">${serialize(ct, nome, value as never, NFE_NS)}</w>`);
-    const el = firstChild(doc.root, nome, NFE_NS);
+    const doc = lerXml(`<w xmlns="${NFE_NS}">${serialize(ct, nome, value as never, NFE_NS)}</w>`);
+    const el = primeiroFilho(doc.raiz, nome, NFE_NS);
     const erros =
-      el === undefined ? [{ path: '', code: 'modelo_de_conteudo', message: 'grupo vazio' }] : validate(ct, el);
+      el === undefined ? [{ caminho: '', code: 'modelo_de_conteudo', mensagem: 'grupo vazio' }] : validate(ct, el);
     for (const e of erros)
-      issues.add(`${path}${e.path.replace(/^\/[^/]+/, '').replace(/\//g, '.')}`, 'schema', `${e.code}: ${e.message}`);
+      issues.add(
+        `${path}${e.caminho.replace(/^\/[^/]+/, '').replace(/\//g, '.')}`,
+        'schema',
+        `${e.code}: ${e.mensagem}`,
+      );
     return erros.length > 0;
   } catch (e) {
     issues.add(path, 'schema', `grupo malformado: ${(e as Error).message}`);

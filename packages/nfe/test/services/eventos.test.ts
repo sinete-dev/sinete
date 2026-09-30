@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-import { ConfigError, ProtocolError, ValidationError } from '@sinete/core';
-import { parseXml, verifySignature } from '@sinete/core/xml';
+import { ErroDeConfiguracao, ErroDeValidacao, ErroRespostaInvalida } from '@sinete/core';
+import { conferirAssinatura, lerXml } from '@sinete/core/xml';
 import { nfceEndpoint, nfeEndpoint } from '@sinete/transport';
 import {
   CNPJ_DEST,
@@ -37,8 +37,8 @@ describe('cancelar (110111)', () => {
       nProt: '141260000000001',
       xJust: 'Cancelamento por erro de digitação & teste',
     });
-    expect(r.status).toBe('authorized');
-    if (r.status !== 'authorized') return;
+    expect(r.tipo).toBe('autorizado');
+    if (r.tipo !== 'autorizado') return;
     const req = t.requests[0];
     expect(req?.url).toBe(nfeEndpoint({ ambiente: 'homologacao', servico: 'RecepcaoEvento', uf: 'PR' }).url);
     expect(req?.headers['content-type']).toContain('NFeRecepcaoEvento4/nfeRecepcaoEvento');
@@ -62,15 +62,15 @@ describe('cancelar (110111)', () => {
       '<detEvento versao="1.00"><descEvento>Cancelamento</descEvento><nProt>141260000000001</nProt>',
     );
     expect(ev).toContain('&amp; teste');
-    expect((await verifySignature(ev, { id, element: 'infEvento' })).ok).toBe(true);
-    expect(r.value).toMatchObject({ chNFe: ch, tpEvento: '110111', nSeqEvento: '1', nProt: '135260000000002' });
+    expect((await conferirAssinatura(ev, { id, elemento: 'infEvento' })).ok).toBe(true);
+    expect(r.valor).toMatchObject({ chNFe: ch, tpEvento: '110111', nSeqEvento: '1', nProt: '135260000000002' });
     expect(
-      r.value.procEventoNFe.startsWith(`<procEventoNFe xmlns="${NFE_NS}" versao="1.00">${ev}<retEvento versao="1.00">`),
+      r.valor.procEventoNFe.startsWith(`<procEventoNFe xmlns="${NFE_NS}" versao="1.00">${ev}<retEvento versao="1.00">`),
     ).toBe(true);
-    expect(r.value.retEvento.startsWith(`<retEvento xmlns="${NFE_NS}" versao="1.00">`)).toBe(true);
-    const proc = parseXml(r.value.procEventoNFe);
-    expect(proc.root.local).toBe('procEventoNFe');
-    expect((await verifySignature(r.value.procEventoNFe, { id, element: 'infEvento' })).ok).toBe(true);
+    expect(r.valor.retEvento.startsWith(`<retEvento xmlns="${NFE_NS}" versao="1.00">`)).toBe(true);
+    const proc = lerXml(r.valor.procEventoNFe);
+    expect(proc.raiz.local).toBe('procEventoNFe');
+    expect((await conferirAssinatura(r.valor.procEventoNFe, { id, elemento: 'infEvento' })).ok).toBe(true);
   });
 
   test('offsetMinutes sobrepõe o fuso da UF; autor explícito CPF', async () => {
@@ -86,7 +86,7 @@ describe('cancelar (110111)', () => {
     const ev = eventoEnviado(mensagem(t.requests[0] as never));
     expect(campo(ev, 'dhEvento')).toBe('2026-09-10T08:00:00-04:00');
     expect(campo(ev, 'CPF')).toBe(CPF_EMIT);
-    expect(r.status === 'authorized' && r.value.nProt).toBeUndefined();
+    expect(r.tipo === 'autorizado' && r.valor.nProt).toBeUndefined();
   });
 
   test('autor diferente do emitente da chave: recusado antes de enviar (P12-44, rejeição 574)', async () => {
@@ -95,12 +95,15 @@ describe('cancelar (110111)', () => {
     const pedido = { chave: chave(), nProt: '135260000000001', xJust: 'Justificativa de teste longa' };
     for (const autor of [{ CPF: CPF_EMIT }, { CNPJ: '11444777000161' }]) {
       const e = await c.cancelar({ ...pedido, autor }).catch((x: unknown) => x);
-      expect(e).toBeInstanceOf(ValidationError);
-      expect((e as ValidationError).issues[0]).toMatchObject({ code: 'autor_difere_do_emitente', origem: 'entrada' });
+      expect(e).toBeInstanceOf(ErroDeValidacao);
+      expect((e as ErroDeValidacao).ocorrencias[0]).toMatchObject({
+        code: 'autor_difere_do_emitente',
+        origem: 'entrada',
+      });
       const cce = await c
         .cartaCorrecao({ chave: chave(), nSeqEvento: 1, xCorrecao: 'Correcao de teste com texto suficiente', autor })
         .catch((x: unknown) => x);
-      expect(cce).toBeInstanceOf(ValidationError);
+      expect(cce).toBeInstanceOf(ErroDeValidacao);
     }
     expect(t.requests).toHaveLength(0);
   });
@@ -128,16 +131,16 @@ describe('cancelar (110111)', () => {
     const p = { chave: ch, nProt: '135260000000001', xJust: 'Justificativa de teste longa' };
     expect((await c.cancelar(p)).cStat).toBe('489');
     const r2 = await c.cancelar(p);
-    expect(r2.status).toBe('rejected');
+    expect(r2.tipo).toBe('recusado');
     expect(r2.cStat).toBe('573');
-    await expect(c.cancelar(p)).rejects.toBeInstanceOf(ProtocolError);
+    await expect(c.cancelar(p)).rejects.toBeInstanceOf(ErroRespostaInvalida);
   });
 
   test('xJust curta falha no schema antes de enviar; autor com CNPJ inválido', async () => {
     const t = fakeTransport();
     const { c } = await client(t);
     await expect(c.cancelar({ chave: chave(), nProt: '135260000000001', xJust: 'curta' })).rejects.toBeInstanceOf(
-      ValidationError,
+      ErroDeValidacao,
     );
     await expect(
       c.cancelar({
@@ -146,7 +149,7 @@ describe('cancelar (110111)', () => {
         xJust: 'Justificativa longa',
         autor: { CNPJ: '11111111111111' },
       }),
-    ).rejects.toBeInstanceOf(ValidationError);
+    ).rejects.toBeInstanceOf(ErroDeValidacao);
     await expect(
       c.cancelar({
         chave: chave(),
@@ -154,7 +157,7 @@ describe('cancelar (110111)', () => {
         xJust: 'Justificativa longa',
         autor: { CPF: '11111111111' },
       }),
-    ).rejects.toBeInstanceOf(ValidationError);
+    ).rejects.toBeInstanceOf(ErroDeValidacao);
     expect(t.requests).toHaveLength(0);
   });
 });
@@ -167,7 +170,7 @@ describe('cartaCorrecao (110110)', () => {
     );
     const { c } = await client(t);
     const r = await c.cartaCorrecao({ chave: ch, xCorrecao: 'Correção do endereço de entrega', nSeqEvento: 3 });
-    expect(r.status).toBe('authorized');
+    expect(r.tipo).toBe('autorizado');
     const ev = eventoEnviado(mensagem(t.requests[0] as never));
     expect(ev).toContain(`<infEvento Id="ID110110${ch}03">`);
     expect(campo(ev, 'nSeqEvento')).toBe('3');
@@ -175,7 +178,7 @@ describe('cartaCorrecao (110110)', () => {
     expect(campo(ev, 'xCondUso')).toStartWith(
       'A Carta de Correção é disciplinada pelo § 1º-A do art. 7º do Convênio S/N',
     );
-    expect((await verifySignature(ev, { id: `ID110110${ch}03` })).ok).toBe(true);
+    expect((await conferirAssinatura(ev, { id: `ID110110${ch}03` })).ok).toBe(true);
   });
 
   test('nSeqEvento fora de 1 a 20 é ConfigError', async () => {
@@ -183,7 +186,7 @@ describe('cartaCorrecao (110110)', () => {
     for (const n of [0, 21, 1.5]) {
       await expect(
         c.cartaCorrecao({ chave: chave(), xCorrecao: 'Correção qualquer', nSeqEvento: n }),
-      ).rejects.toBeInstanceOf(ConfigError);
+      ).rejects.toBeInstanceOf(ErroDeConfiguracao);
     }
   });
 });
@@ -200,7 +203,7 @@ describe('manifestar (AN, cOrgao 91)', () => {
       const t = fakeTransport(soap(retEnvEvento({ evento: { cStat: '135', tpEvento, chNFe: ch } })));
       const { c } = await client(t, { autor: { CNPJ: CNPJ_DEST } });
       const r = await c.manifestar({ chave: ch, tipo });
-      expect(r.status).toBe('authorized');
+      expect(r.tipo).toBe('autorizado');
       expect(t.requests[0]?.url).toBe(
         nfeEndpoint({ ambiente: 'homologacao', servico: 'RecepcaoEvento', autorizador: 'AN' }).url,
       );
@@ -216,18 +219,18 @@ describe('manifestar (AN, cOrgao 91)', () => {
     const ch = chave();
     const t = fakeTransport(soap(retEnvEvento({ evento: { cStat: '135', tpEvento: '210240', chNFe: ch } })));
     const { c } = await client(t, { autor: { CNPJ: CNPJ_DEST } });
-    await expect(c.manifestar({ chave: ch, tipo: 'nao-realizada' })).rejects.toBeInstanceOf(ValidationError);
+    await expect(c.manifestar({ chave: ch, tipo: 'nao-realizada' })).rejects.toBeInstanceOf(ErroDeValidacao);
     const r = await c.manifestar({ chave: ch, tipo: 'nao-realizada', xJust: 'Mercadoria não entregue no prazo' });
-    expect(r.status).toBe('authorized');
+    expect(r.tipo).toBe('autorizado');
     expect(campo(eventoEnviado(mensagem(t.requests[0] as never)), 'xJust')).toBe('Mercadoria não entregue no prazo');
   });
 
   test('sem autor é ConfigError; tipo desconhecido é ConfigError', async () => {
     const { c } = await client(fakeTransport());
-    await expect(c.manifestar({ chave: chave(), tipo: 'ciencia' })).rejects.toBeInstanceOf(ConfigError);
+    await expect(c.manifestar({ chave: chave(), tipo: 'ciencia' })).rejects.toBeInstanceOf(ErroDeConfiguracao);
     await expect(
       c.manifestar({ chave: chave(), tipo: 'outro' as never, autor: { CNPJ: CNPJ_DEST } }),
-    ).rejects.toBeInstanceOf(ConfigError);
+    ).rejects.toBeInstanceOf(ErroDeConfiguracao);
   });
 });
 
@@ -242,7 +245,7 @@ describe('retEvento de outro evento', () => {
       { cStat: '135', tpEvento: '110111', chNFe: ch, nSeqEvento: '2' },
     ]) {
       const { c } = await client(fakeTransport(soap(retEnvEvento({ evento }), 'NFeRecepcaoEvento4')));
-      await expect(c.cancelar(pedido)).rejects.toBeInstanceOf(ProtocolError);
+      await expect(c.cancelar(pedido)).rejects.toBeInstanceOf(ErroRespostaInvalida);
     }
   });
 });
@@ -272,12 +275,12 @@ describe('cancelarPorSubstituicao (110112)', () => {
       cOrgaoAutor: '35',
       verAplic: 'PDV-1.0',
     });
-    expect(r.status).toBe('authorized');
+    expect(r.tipo).toBe('autorizado');
     const ev = eventoEnviado(mensagem(t.requests[0] as never));
     expect(ev).toContain(
       `<detEvento versao="1.00"><descEvento>Cancelamento por substituicao</descEvento><cOrgaoAutor>35</cOrgaoAutor><tpAutor>1</tpAutor><verAplic>PDV-1.0</verAplic><nProt>135260000000001</nProt><xJust>Substituída por erro &lt;no&gt; total &amp; troco</xJust><chNFeRef>${ref}</chNFeRef></detEvento>`,
     );
-    expect((await verifySignature(ev, { id: `ID110112${ch}01` })).ok).toBe(true);
+    expect((await conferirAssinatura(ev, { id: `ID110112${ch}01` })).ok).toBe(true);
     expect(t.requests[0]?.url).toBe(nfce.url);
     expect(ufs).toEqual(['RecepcaoEvento SP']);
   });
@@ -294,7 +297,7 @@ describe('cancelarPorSubstituicao (110112)', () => {
       cOrgaoAutor: '35',
       verAplic: 'x',
     });
-    expect(r.status).toBe('authorized');
+    expect(r.tipo).toBe('autorizado');
     expect(t.requests[0]?.url).toBe(nfceEndpoint({ ambiente: 'homologacao', servico: 'RecepcaoEvento', uf: 'SP' }).url);
   });
 
@@ -310,7 +313,7 @@ describe('cancelarPorSubstituicao (110112)', () => {
         cOrgaoAutor: '91',
         verAplic: 'x',
       }),
-    ).rejects.toBeInstanceOf(ValidationError);
+    ).rejects.toBeInstanceOf(ErroDeValidacao);
     expect(t.requests).toHaveLength(0);
   });
 
@@ -319,9 +322,9 @@ describe('cancelarPorSubstituicao (110112)', () => {
     const base = { nProt: '135260000000001', xJust: 'Justificativa longa', cOrgaoAutor: '35', verAplic: 'x' };
     await expect(
       c.cancelarPorSubstituicao({ ...base, chave: chave(), chNFeRef: chave({ nNF: 2 }) }),
-    ).rejects.toBeInstanceOf(ValidationError);
+    ).rejects.toBeInstanceOf(ErroDeValidacao);
     await expect(
       c.cancelarPorSubstituicao({ ...base, chave: chave({ mod: '65' }), chNFeRef: '123' }),
-    ).rejects.toBeInstanceOf(ValidationError);
+    ).rejects.toBeInstanceOf(ErroDeValidacao);
   });
 });

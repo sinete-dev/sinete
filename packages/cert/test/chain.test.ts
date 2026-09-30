@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'bun:test';
-import { fixedClock } from '@sinete/core';
+import { relogioFixo } from '@sinete/core';
 import forge from 'node-forge';
 import { buildChain, icpBrasilCertificates, openPfx, parseCertificate, verifyIssuedBy } from '../src/index.ts';
 import { fixture, SENHA } from './helpers.ts';
 
-const clock = fixedClock('2026-09-25T12:00:00Z');
+const clock = relogioFixo('2026-09-25T12:00:00Z');
 
 async function sintetico() {
   const ks = await openPfx(fixture('ecnpj-3des-cadeia.pfx'), { password: SENHA, clock });
@@ -55,7 +55,7 @@ describe('buildChain', () => {
     const r = await buildChain(ks.certificate, {
       intermediates: [inter],
       anchors: [root],
-      clock: fixedClock('2041-01-01T00:00:00Z'),
+      clock: relogioFixo('2041-01-01T00:00:00Z'),
     });
     expect(r.status).toBe('confiavel');
     expect(r.expired.map((c) => c.subject.commonName)).toEqual([

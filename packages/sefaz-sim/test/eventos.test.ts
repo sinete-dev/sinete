@@ -71,7 +71,7 @@ describe('cancelamento', () => {
       await eventoStat(h, await evento({ chave, tpEvento: '110111', dhEvento: depois, det: det.cancelamento(nProt) })),
     ).toBe('578');
     // Emitida às 09:00, autorizada às 10:00: evento às 09:30 é antes da autorização (579, tolerância de 5 minutos).
-    h.clock.advance(3_600_000);
+    h.clock.avancar(3_600_000);
     const tarde = await autorizada(h, 2, { dhEmi: '2026-09-26T10:30:00-03:00' });
     const cedo = '2026-09-26T10:40:00-03:00';
     expect(
@@ -80,7 +80,7 @@ describe('cancelamento', () => {
         await evento({ chave: tarde.chave, tpEvento: '110111', dhEvento: cedo, det: det.cancelamento(tarde.nProt) }),
       ),
     ).toBe('579');
-    h.clock.advance(25 * 3_600_000);
+    h.clock.avancar(25 * 3_600_000);
     const ev = await evento({
       chave,
       tpEvento: '110111',

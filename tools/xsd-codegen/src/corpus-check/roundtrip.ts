@@ -1,15 +1,15 @@
 #!/usr/bin/env bun
-import type { XmlElement } from '../../../../packages/core/src/xml/index.ts';
+import type { ElementoXml } from '../../../../packages/core/src/xml/index.ts';
 import {
-  attributeOf,
-  base64Encode,
+  atributoDe,
   c14n,
-  descendants,
-  findSignatures,
-  parseXml,
-  textOf,
-  verifySignature,
-  XmlError,
+  codificarBase64,
+  conferirAssinatura,
+  descendentes,
+  ErroXml,
+  encontrarAssinaturas,
+  lerXml,
+  textoDe,
 } from '../../../../packages/core/src/xml/index.ts';
 /**
  * Round-trip no corpus local: parse, decode tolerante, serialize canônico do elemento assinado e comparação com o
@@ -59,7 +59,7 @@ const mdfeTarget: Target = {
 };
 
 async function sha1(s: string): Promise<string> {
-  return base64Encode(new Uint8Array(await crypto.subtle.digest('SHA-1', new TextEncoder().encode(s))));
+  return codificarBase64(new Uint8Array(await crypto.subtle.digest('SHA-1', new TextEncoder().encode(s))));
 }
 
 function newStats(): Record<string, unknown> {
@@ -84,26 +84,26 @@ async function processDoc(src: string, t: Target, s: Record<string, unknown>): P
     s[k] = (s[k] as number) + 1;
   };
   n('docs');
-  let doc: ReturnType<typeof parseXml>;
+  let doc: ReturnType<typeof lerXml>;
   try {
-    doc = parseXml(src);
+    doc = lerXml(src);
   } catch (e) {
-    if (e instanceof XmlError) {
+    if (e instanceof ErroXml) {
       n('parseErrors');
       return;
     }
     throw e;
   }
   const d = decodeRoot(t.root, doc);
-  for (const i of d.issues) inc(s.ocorrenciasDecode as Record<string, number>, `${i.code} ${schemaPath(i.path)}`);
-  const vi = validate(t.root.type as ComplexType, doc.root);
+  for (const i of d.issues) inc(s.ocorrenciasDecode as Record<string, number>, `${i.code} ${schemaPath(i.caminho)}`);
+  const vi = validate(t.root.type as ComplexType, doc.raiz);
   if (vi.length === 0) n('validos');
-  for (const k of new Set(vi.map((i) => `${i.code} ${schemaPath(i.path)}`))) {
+  for (const k of new Set(vi.map((i) => `${i.code} ${schemaPath(i.caminho)}`))) {
     inc(s.ocorrenciasValidacao as Record<string, number>, k);
   }
 
-  let signed: XmlElement | undefined;
-  for (const e of descendants(doc.root)) {
+  let signed: ElementoXml | undefined;
+  for (const e of descendentes(doc.raiz)) {
     if (e.local === t.signedName) {
       signed = e;
       break;
@@ -111,25 +111,25 @@ async function processDoc(src: string, t: Target, s: Record<string, unknown>): P
   }
   const value = t.pick(d.value as Record<string, unknown>);
   if (!signed || value === undefined) return;
-  const ours = serialize(t.signedType, t.signedName, value, signed.parent?.ns ?? '');
-  if (ours === src.slice(signed.start, signed.end)) n('igualBytesOriginal');
+  const ours = serialize(t.signedType, t.signedName, value, signed.pai?.ns ?? '');
+  if (ours === src.slice(signed.inicio, signed.fim)) n('igualBytesOriginal');
   const withNs = serialize(t.signedType, t.signedName, value, '');
   if (withNs === c14n(signed)) n('igualC14nOriginal');
 
-  const id = attributeOf(signed, 'Id') ?? '';
-  const sig = findSignatures(doc).find((x) => {
-    for (const r of descendants(x)) if (r.local === 'Reference') return attributeOf(r, 'URI') === `#${id}`;
+  const id = atributoDe(signed, 'Id') ?? '';
+  const sig = encontrarAssinaturas(doc).find((x) => {
+    for (const r of descendentes(x)) if (r.local === 'Reference') return atributoDe(r, 'URI') === `#${id}`;
     return false;
   });
   if (!sig) {
     n('semAssinatura');
     return;
   }
-  const v = await verifySignature(doc, { id, element: t.signedName });
+  const v = await conferirAssinatura(doc, { id, elemento: t.signedName });
   if (v.ok) n('assinaturaOriginalConfere');
-  else inc(s.falhasAssinatura as Record<string, number>, v.failure);
+  else inc(s.falhasAssinatura as Record<string, number>, v.motivo);
   let dv = '';
-  for (const e of descendants(sig)) if (e.local === 'DigestValue') dv = textOf(e).trim();
+  for (const e of descendentes(sig)) if (e.local === 'DigestValue') dv = textoDe(e).trim();
   if ((await sha1(withNs)) === dv) {
     n('digestNossoConfere');
     if (v.ok) n('digestNossoConfereQuandoOriginalConfere');

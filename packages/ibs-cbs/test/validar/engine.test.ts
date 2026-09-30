@@ -5,7 +5,7 @@
  * vínculos entre itens) ou das alíquotas simuladas, listadas abaixo com o motivo.
  */
 import { describe, expect, test } from 'bun:test';
-import { fixedClock, timeContext } from '@sinete/core';
+import { contextoDeTempo, relogioFixo } from '@sinete/core';
 import { loadDataset } from '@sinete/ibs-cbs-dados';
 import { BUNDLED_DATASET } from '@sinete/ibs-cbs-dados/bundled';
 import { officialRates } from '../../src/aliquotas/index.ts';
@@ -67,10 +67,10 @@ describe('motor x regras da NT nos casos gravados', () => {
         finNFe: 1,
         items: c.op.items.map((i) => ({ nItem: i.n, vProd: i.base })),
       });
-      const t = fixedClock(`${c.date}T12:00:00-03:00`);
+      const t = relogioFixo(`${c.date}T12:00:00-03:00`);
       const report = validate(doc, {
         dataset,
-        time: timeContext({ emissao: t }),
+        time: contextoDeTempo({ emissao: t }),
         ambiente: 'producao',
         ignoreActivation: true,
       });
@@ -180,10 +180,10 @@ describe('motor x regras da NT nos casos gravados', () => {
     test(name, () => {
       const roc = calculateAt(op, { dataset, rates, date });
       const doc = documentFromRoc(roc, { modelo: 55, crt: 3, finNFe: 1 });
-      const t = fixedClock(`${date}T12:00:00-03:00`);
+      const t = relogioFixo(`${date}T12:00:00-03:00`);
       const report = validate(doc, {
         dataset,
-        time: timeContext({ emissao: t }),
+        time: contextoDeTempo({ emissao: t }),
         ambiente: 'producao',
         ignoreActivation: true,
       });
@@ -216,7 +216,7 @@ describe('motor x regras da NT nos casos gravados', () => {
       finNFe: 1,
       items: [{ nItem: 1, vProd: '100.00', usedMovableGood: true }],
     });
-    const time = timeContext({ emissao: fixedClock('2027-03-01T12:00:00-03:00') });
+    const time = contextoDeTempo({ emissao: relogioFixo('2027-03-01T12:00:00-03:00') });
     const report = validate(doc, { dataset, time, ambiente: 'producao', ignoreActivation: true });
     expect(report.violations.filter((v) => !(v.rule in OUT_OF_SCOPE))).toEqual([]);
   });
@@ -234,7 +234,7 @@ describe('motor x regras da NT nos casos gravados', () => {
     const one = RULES.filter((r) => r.id === 'UB35-10');
     const report = validate(doc, {
       dataset,
-      time: timeContext({ emissao: fixedClock('2026-10-10T12:00:00-03:00') }),
+      time: contextoDeTempo({ emissao: relogioFixo('2026-10-10T12:00:00-03:00') }),
       ambiente: 'homologacao',
       rules: one,
     });

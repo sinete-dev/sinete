@@ -1,16 +1,16 @@
 {
-  "schemaVersion": 1,
-  "version": "2026.09.25",
-  "sources": [
+  "versaoDoFormato": 1,
+  "versao": "2026.09.25",
+  "fontes": [
     {
-      "title": "Schemas XML NF-e, PL_010f_v1.04, tiposBasico_v4.00.xsd: tipos TCodUfIBGE (cUF) e TUf (sigla)",
+      "titulo": "Schemas XML NF-e, PL_010f_v1.04, tiposBasico_v4.00.xsd: tipos TCodUfIBGE (cUF) e TUf (sigla)",
       "url": "https://www.nfe.fazenda.gov.br/portal/listaConteudo.aspx?tipoConteudo=BMPFMBoln3w=",
-      "retrievedAt": "2026-09-25"
+      "coletadoEm": "2026-09-25"
     },
     {
-      "title": "IBGE, códigos das Unidades da Federação (nome e região)",
+      "titulo": "IBGE, códigos das Unidades da Federação (nome e região)",
       "url": "https://www.ibge.gov.br/explica/codigos-dos-municipios.php",
-      "retrievedAt": "2026-09-25"
+      "coletadoEm": "2026-09-25"
     }
   ],
   "notes": "A sigla EX do TUf (exterior) não é UF e fica fora da tabela. Os cOrgao 90, 91 e 92 do TCOrgaoIBGE também ficam fora: entram com fonte própria no pacote que os usa.",

@@ -11,9 +11,9 @@
  * sozinha o cancelamento por substituição da anterior.
  */
 
-import type { Authorized } from '@sinete/core';
-import { ConfigError, timeContext, ValidationError } from '@sinete/core';
-import { descendants, parseXml } from '@sinete/core/xml';
+import type { Autorizado } from '@sinete/core';
+import { contextoDeTempo, ErroDeConfiguracao, ErroDeValidacao } from '@sinete/core';
+import { descendentes, lerXml } from '@sinete/core/xml';
 import type {
   BuildDpsOptions,
   CancelamentoPedido,
@@ -77,13 +77,13 @@ const MARCAS_DANFSE: readonly { readonly tpEvento: string; readonly opcao: 'canc
  * é bem formado também vai adiante, para o `danfse` recusar com `xml_invalido`.
  */
 function opcaoDoEvento(evento: string): 'cancelamento' | 'substituicao' {
-  let raiz: ReturnType<typeof parseXml>['root'];
+  let raiz: ReturnType<typeof lerXml>['raiz'];
   try {
-    raiz = parseXml(evento).root;
+    raiz = lerXml(evento).raiz;
   } catch {
     return 'cancelamento';
   }
-  for (const e of descendants(raiz)) if (e.local === 'e105102' && e.ns === NFSE_NS) return 'substituicao';
+  for (const e of descendentes(raiz)) if (e.local === 'e105102' && e.ns === NFSE_NS) return 'substituicao';
   return 'cancelamento';
 }
 
@@ -93,7 +93,7 @@ const NFSE_NS = 'http://www.sped.fazenda.gov.br/nfse';
 /** Id da DPS assinada, lido do atributo `Id` do `infDPS`. */
 function idDe(xml: string): string {
   const id = /<infDPS\b[^>]*\bId="(DPS[0-9]+)"/.exec(xml)?.[1];
-  if (id === undefined) throw new ConfigError('DPS assinada sem o Id do infDPS');
+  if (id === undefined) throw new ErroDeConfiguracao('DPS assinada sem o Id do infDPS');
   return id;
 }
 
@@ -107,17 +107,17 @@ export function perfilNfse(
     id,
     cStat: r.cStat,
     xMotivo: r.xMotivo,
-    ...(r.hint === undefined ? {} : { hint: r.hint }),
+    ...(r.dica === undefined ? {} : { hint: r.dica }),
     bruto: r,
   });
-  const gerada = (id: string, r: Authorized<NfseGerada>): DesfechoNfse => ({
+  const gerada = (id: string, r: Autorizado<NfseGerada>): DesfechoNfse => ({
     documento: 'nfse',
     tipo: 'autorizado',
     id,
     cStat: r.cStat,
     xMotivo: r.xMotivo,
-    proc: r.value.xml,
-    protocolo: r.value,
+    proc: r.valor.xml,
+    protocolo: r.valor,
     bruto: r,
   });
 
@@ -130,7 +130,7 @@ export function perfilNfse(
       if (!semResposta(e)) throw e;
       return resolver(cli, xml, undefined, e, reenvia);
     }
-    if (r.status === 'authorized') return gerada(idDe(xml), r);
+    if (r.tipo === 'autorizado') return gerada(idDe(xml), r);
     return CODIGOS.duplicidade.has(r.cStat) ? resolver(cli, xml, r, undefined, reenvia) : recusado(idDe(xml), r);
   }
 
@@ -206,11 +206,11 @@ export function perfilNfse(
     },
     async assinar(dps: DpsInput, ctx: ContextoEmissor): Promise<{ readonly id: string; readonly xml: string }> {
       const r = buildDps(dps, {
-        time: timeContext({ emissao: ctx.clock }),
+        time: contextoDeTempo({ emissao: ctx.clock }),
         ...opcoes.montagem,
         ambiente: ctx.ambiente,
       });
-      if (!r.ok) throw new ValidationError('a DPS não passou na validação', r.issues);
+      if (!r.ok) throw new ErroDeValidacao('a DPS não passou na validação', r.issues);
       return { id: r.value.id, xml: await signDps(r.value, ctx.signer) };
     },
     enviar: (cli: NfseClient, xml: string, modo: 'primeiro' | 'retomada'): Promise<DesfechoNfse> =>
@@ -311,7 +311,7 @@ export async function createNfseEmissor(opcoes: NfseEmissorOptions): Promise<Nfs
   async function cancelar(p: CancelamentoNfseEmissor): Promise<DesfechoCancelamentoNfse> {
     const autor = p.autor ?? titular;
     if (autor === undefined)
-      throw new ConfigError('informe o autor do cancelamento: o certificado não traz CNPJ nem CPF');
+      throw new ErroDeConfiguracao('informe o autor do cancelamento: o certificado não traz CNPJ nem CPF');
     let o: NfseOutcome<EventoRegistrado>;
     try {
       o = await base.cliente.cancelar({ ...p, autor });
@@ -319,7 +319,7 @@ export async function createNfseEmissor(opcoes: NfseEmissorOptions): Promise<Nfs
       if (!semResposta(e)) throw e;
       return recuperar(p.chave, { erro: e });
     }
-    if (o.status === 'authorized') return eventoRegistrado(o.value, o.value.xml, o, false, o);
+    if (o.tipo === 'autorizado') return eventoRegistrado(o.valor, o.valor.xml, o, false, o);
     return CODIGOS.eventoJaRegistrado.has(o.cStat)
       ? recuperar(p.chave, o)
       : eventoRecusado<EventoRegistrado, NfseOutcome<EventoRegistrado>>(o, o);
@@ -337,7 +337,7 @@ export async function createNfseEmissor(opcoes: NfseEmissorOptions): Promise<Nfs
     },
     substituir(ref: string, dps: DpsInput, o?: OpcoesEmitir): Promise<DesfechoNfse> {
       if (dps.substituicao === undefined) {
-        return Promise.reject(new ConfigError('a DPS substituta precisa do grupo substituicao'));
+        return Promise.reject(new ErroDeConfiguracao('a DPS substituta precisa do grupo substituicao'));
       }
       return base.emitir(ref, dps, o);
     },

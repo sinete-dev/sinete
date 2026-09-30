@@ -4,7 +4,7 @@
  * Tinos, Liberation Serif). Serve para pré-visualizar e imprimir no cliente com `window.print()`.
  */
 
-import { base64Encode } from '@sinete/core/xml';
+import { codificarBase64 } from '@sinete/core/xml';
 import type { Doc, Op, Page } from '../model.ts';
 import { PT } from '../model.ts';
 
@@ -79,7 +79,7 @@ function opSvg(op: Op, doc: Doc | undefined): string {
       const img = doc?.images[op.ref];
       if (!img) return '';
       const mime = img.format === 'png' ? 'image/png' : 'image/jpeg';
-      return `<image x="${n(op.x)}" y="${n(op.y)}" width="${n(op.w)}" height="${n(op.h)}" preserveAspectRatio="none" href="data:${mime};base64,${base64Encode(img.bytes)}"/>`;
+      return `<image x="${n(op.x)}" y="${n(op.y)}" width="${n(op.w)}" height="${n(op.h)}" preserveAspectRatio="none" href="data:${mime};base64,${codificarBase64(img.bytes)}"/>`;
     }
   }
 }

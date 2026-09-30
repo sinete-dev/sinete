@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { ConfigError } from '@sinete/core';
+import { ErroDeConfiguracao } from '@sinete/core';
 import type { RatesDataError, RatesTable } from '../../src/aliquotas/index.ts';
 import {
   isSimulated,
@@ -70,8 +70,8 @@ describe('tabela oficial', () => {
   });
 
   test('data inválida é ConfigError', () => {
-    expect(() => official.nominal('2026-1-1')).toThrow(ConfigError);
-    expect(() => official.reference(20260101 as unknown as string)).toThrow(ConfigError);
+    expect(() => official.nominal('2026-1-1')).toThrow(ErroDeConfiguracao);
+    expect(() => official.reference(20260101 as unknown as string)).toThrow(ErroDeConfiguracao);
   });
 
   test('alíquota própria do ente prevalece sobre a de referência (art. 14)', () => {
@@ -196,16 +196,16 @@ describe('alíquotas informadas pelo usuário', () => {
 
   test('sobreposição inválida é ConfigError', () => {
     const bad = (o: object) => () => withOverrides(official, [o as never]);
-    expect(bad({ tributo: 'IS', value: '1', reason: 'x' })).toThrow(ConfigError);
+    expect(bad({ tributo: 'IS', value: '1', reason: 'x' })).toThrow(ErroDeConfiguracao);
     expect(bad({ tributo: 'CBS', value: '1,5', reason: 'x' })).toThrow(/alíquota inválida/);
     expect(bad({ tributo: 'CBS', value: '101', reason: 'x' })).toThrow(/alíquota inválida/);
     expect(bad({ tributo: 'CBS', value: 1, reason: 'x' })).toThrow(/alíquota inválida/);
     expect(bad({ tributo: 'CBS', value: '1', reason: '  ' })).toThrow(/motivo/);
     expect(bad({ tributo: 'CBS', value: '1', reason: 'x', validity: { from: '2027-1-1', to: null } })).toThrow(
-      ConfigError,
+      ErroDeConfiguracao,
     );
     expect(
       bad({ tributo: 'CBS', value: '1', reason: 'x', validity: { from: '2027-01-01', to: '2027-13-01' } }),
-    ).toThrow(ConfigError);
+    ).toThrow(ErroDeConfiguracao);
   });
 });

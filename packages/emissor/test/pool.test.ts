@@ -3,7 +3,7 @@
  * empréstimo termina, e a chave (hash) que nunca aparece fora do pool.
  */
 import { describe, expect, test } from 'bun:test';
-import { manualClock } from '@sinete/core';
+import { relogioManual } from '@sinete/core';
 import type { CertificadoA1 } from '../src/index.ts';
 import { createPoolDeEmissores } from '../src/index.ts';
 
@@ -15,7 +15,7 @@ interface Falso {
 }
 
 function montar(o: { ttlMs?: number; maximo?: number; falhar?: (c: CertificadoA1) => boolean } = {}) {
-  const clock = manualClock('2026-09-27T10:00:00-03:00');
+  const clock = relogioManual('2026-09-27T10:00:00-03:00');
   const criados: Falso[] = [];
   const pool = createPoolDeEmissores<Falso>({
     clock,
@@ -56,7 +56,7 @@ describe('createPoolDeEmissores', () => {
     let soltar = (): void => {};
     const emUso = pool.usar(cert(1), (e) => new Promise<number>((r) => (soltar = () => r(e.n))));
     await Bun.sleep(1);
-    clock.advance(1500);
+    clock.avancar(1500);
     expect(await pool.usar(cert(1), async (e) => e.n)).toBe(2);
     expect(criados[0]?.fechado).toBe(false);
     soltar();
@@ -68,9 +68,9 @@ describe('createPoolDeEmissores', () => {
   test('o vencido de outro certificado sai no próximo empréstimo, mesmo abaixo do máximo', async () => {
     const { clock, criados, pool } = montar({ ttlMs: 1000 });
     await pool.usar(cert(1), async () => undefined);
-    clock.advance(500);
+    clock.avancar(500);
     await pool.usar(cert(2), async () => undefined);
-    clock.advance(600);
+    clock.avancar(600);
     await pool.usar(cert(3), async () => undefined);
     expect(criados.map((e) => e.fechado)).toEqual([true, false, false]);
     expect(await pool.usar(cert(2), async (e) => e.n)).toBe(2);
@@ -105,7 +105,7 @@ describe('createPoolDeEmissores', () => {
     let soltar = (): void => {};
     const emUso = pool.usar(cert(1), (e) => new Promise<number>((r) => (soltar = () => r(e.n))));
     await Bun.sleep(1);
-    clock.advance(1500);
+    clock.avancar(1500);
     await pool.usar(cert(1), async () => undefined);
     expect(criados[0]?.fechado).toBe(false);
     await pool.fechar();

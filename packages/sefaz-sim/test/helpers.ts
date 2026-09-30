@@ -4,9 +4,9 @@
  */
 
 import { expect } from 'bun:test';
-import type { ManualClock, Signer } from '@sinete/core';
-import { manualClock } from '@sinete/core';
-import { base64Decode, base64Encode, childElements, parseXml, signXml } from '@sinete/core/xml';
+import type { Assinador, RelogioManual } from '@sinete/core';
+import { relogioManual } from '@sinete/core';
+import { assinarXml, codificarBase64, decodificarBase64, elementosFilhos, lerXml } from '@sinete/core/xml';
 import type { ElementParticle, GroupParticle, RootElement, SimpleType } from '@sinete/schemas';
 import { validateRoot } from '@sinete/schemas';
 import * as cad from '@sinete/schemas/nfe/consulta-cadastro/PL_010d';
@@ -18,7 +18,7 @@ import * as inut from '@sinete/schemas/nfe/inutilizacao/PL_010d';
 import * as PL_010f from '@sinete/schemas/nfe/PL_010f';
 import * as status from '@sinete/schemas/nfe/status-servico/PL_009q';
 import { soap12ContentType, soap12Envelope, soapBody } from '@sinete/transport';
-import { buildChaveAcesso, cnpjCheckDigits } from '@sinete/validators';
+import { calcularDvCnpj, montarChaveAcesso } from '@sinete/validators';
 import type {
   SefazSim,
   SefazSimOptions,
@@ -50,7 +50,7 @@ export const RET_ROOTS: Readonly<Record<keyof typeof NFE_SERVICES, RootElement<u
   NFeDistribuicaoDFe: dist.retDistDFeIntElement,
 };
 
-export const cnpj = (base12: string): string => base12 + cnpjCheckDigits(base12);
+export const cnpj = (base12: string): string => base12 + calcularDvCnpj(base12);
 
 /** CNPJ sintéticos: emitente, destinatário, transmissor terceiro (contabilidade) e transportador. */
 export const EMITENTE: string = cnpj('112223330001');
@@ -81,7 +81,7 @@ let cached: Promise<Certs> | undefined;
 /** Certificados sintéticos, gerados uma vez por processo de teste (RSA-2048 é lento). */
 export function certs(): Promise<Certs> {
   cached ??= (async (): Promise<Certs> => {
-    const clock = manualClock(INICIO);
+    const clock = relogioManual(INICIO);
     const ac = await syntheticCertificate({ clock, role: 'ac', validDays: 3650 });
     const titular = (cnpjDoc: string): Promise<SyntheticCertificate> =>
       syntheticCertificate({ clock, role: 'titular', cnpj: cnpjDoc, issuer: ac });
@@ -106,7 +106,7 @@ export interface SendOptions {
 }
 
 export interface Harness {
-  readonly clock: ManualClock;
+  readonly clock: RelogioManual;
   readonly sim: SefazSim;
   readonly c: Certs;
   /** Envia a área de dados pelo transporte em processo e devolve o retorno, conferido contra o schema oficial. */
@@ -120,7 +120,7 @@ export async function harness(
   canalPadrao?: SyntheticCertificate,
 ): Promise<Harness> {
   const c = await certs();
-  const clock = manualClock(INICIO);
+  const clock = relogioManual(INICIO);
   const sim = createSefazSim({ clock, ...options });
   const padrao = canalPadrao ?? c.terceiro;
   return {
@@ -156,11 +156,11 @@ export function envelope(servico: keyof typeof NFE_SERVICES, payload: string): s
 /** Retorno (`retEnviNFe`...) de dentro do envelope de resposta, como fatia da string. */
 export function unwrap(servico: keyof typeof NFE_SERVICES, envelopeText: string): string {
   const body = soapBody(envelopeText);
-  const doc = parseXml(body);
-  const holder = NFE_SERVICES[servico].style === 'operacao' ? childElements(doc.root)[0] : doc.root;
-  const el = holder && childElements(holder)[0];
+  const doc = lerXml(body);
+  const holder = NFE_SERVICES[servico].style === 'operacao' ? elementosFilhos(doc.raiz)[0] : doc.raiz;
+  const el = holder && elementosFilhos(holder)[0];
   if (!el) throw new Error(`resposta inesperada: ${body}`);
-  return body.slice(el.start, el.end);
+  return body.slice(el.inicio, el.fim);
 }
 
 /** Texto de um elemento pelo nome local (primeira ocorrência). */
@@ -203,10 +203,10 @@ export interface Nfe {
 }
 
 /** Assinatura RSA-SHA1 em Base64 dos parâmetros do QR Code versão 3 off-line (Manual do DANFE NFC-e 6.0, 4.4.2). */
-export async function assinarQrCode(params: string, signer: Signer): Promise<string> {
+export async function assinarQrCode(params: string, signer: Assinador): Promise<string> {
   const bytes = new TextEncoder().encode(params);
-  if (signer.kind !== 'data') throw new Error('signer de teste sem modo data');
-  return base64Encode(await signer.sign(bytes, 'SHA-1'));
+  if (signer.tipo !== 'dados') throw new Error('signer de teste sem modo data');
+  return codificarBase64(await signer.assinar(bytes, 'SHA-1'));
 }
 
 /** NF-e do PL_010f assinada (modelo da fixture sintética do `@sinete/schemas`). */
@@ -221,7 +221,7 @@ export async function nfe(p: NfeParams = {}): Promise<Nfe> {
   const mod = p.mod ?? '55';
   const emit = p.emitente ?? EMITENTE;
   const aamm = `${dhEmi.slice(2, 4)}${dhEmi.slice(5, 7)}`;
-  const chave = buildChaveAcesso({ cUF, aamm, emitente: emit, mod, serie, nNF, tpEmis, cNF });
+  const chave = montarChaveAcesso({ cUF, aamm, emitente: emit, mod, serie, nNF, tpEmis, cNF });
   const id = p.idErrado ? `NFe${chave.slice(0, 43)}${(Number(chave[43]) + 1) % 10}` : `NFe${chave}`;
   const vNF = p.vNF ?? '10.00';
   const dest = p.destinatario ?? DESTINATARIO;
@@ -265,7 +265,7 @@ export async function nfe(p: NfeParams = {}): Promise<Nfe> {
         '<urlChave>https://www.homologacao.nfce.fazenda.sp.gov.br/consulta</urlChave></infNFeSupl>'
       : '';
   const infFinal = (p.trocas ?? []).reduce((t, [de, para]) => t.replace(de, para), inf);
-  const xml = await signXml(`<NFe xmlns="${NFE_NS}">${infFinal}${supl}</NFe>`, { id }, signer);
+  const xml = await assinarXml(`<NFe xmlns="${NFE_NS}">${infFinal}${supl}</NFe>`, { id }, signer);
   return { chave, xml };
 }
 
@@ -317,7 +317,7 @@ export async function evento(p: EventoParams): Promise<string> {
     `<CNPJ>${autor}</CNPJ><chNFe>${p.chave}</chNFe><dhEvento>${p.dhEvento ?? INICIO}</dhEvento>` +
     `<tpEvento>${p.tpEvento}</tpEvento><nSeqEvento>${seq}</nSeqEvento><verEvento>1.00</verEvento>` +
     `<detEvento versao="1.00">${p.det}</detEvento></infEvento></evento>`;
-  return signXml(xml, { id }, signer.signer);
+  return assinarXml(xml, { id }, signer.signer);
 }
 
 export function envEvento(eventos: readonly string[], idLote = '1'): string {
@@ -363,7 +363,7 @@ export async function inutNFe(p: InutParams): Promise<string> {
     `<inutNFe versao="4.00" xmlns="${NFE_NS}"><infInut Id="${idUsado}"><tpAmb>2</tpAmb><xServ>INUTILIZAR</xServ>` +
     `<cUF>${p.cUF ?? '35'}</cUF><ano>${ano}</ano><CNPJ>${doc}</CNPJ><mod>55</mod><serie>${serie}</serie><nNFIni>${p.ini}</nNFIni>` +
     `<nNFFin>${p.fin}</nNFFin><xJust>NUMERACAO PULADA POR FALHA NO SISTEMA</xJust></infInut></inutNFe>`;
-  return signXml(xml, { id: idUsado }, (p.signer ?? c.emitente).signer);
+  return assinarXml(xml, { id: idUsado }, (p.signer ?? c.emitente).signer);
 }
 
 export function consCad(campo: 'CNPJ' | 'IE' | 'CPF', valor: string, uf = 'SP'): string {
@@ -382,7 +382,7 @@ export const consChNFe = (chave: string): string => `<consChNFe><chNFe>${chave}<
 export async function docZips(ret: string): Promise<{ nsu: string; schema: string; xml: string }[]> {
   const out: { nsu: string; schema: string; xml: string }[] = [];
   for (const m of ret.matchAll(/<docZip NSU="(\d+)" schema="([^"]+)">([^<]+)<\/docZip>/g)) {
-    const bytes = base64Decode(m[3] as string);
+    const bytes = decodificarBase64(m[3] as string);
     const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
     out.push({ nsu: m[1] as string, schema: m[2] as string, xml: await new Response(stream).text() });
   }

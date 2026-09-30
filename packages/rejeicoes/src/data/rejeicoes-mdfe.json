@@ -1,3406 +1,3406 @@
 {
-  "schemaVersion": 1,
-  "version": "2026.09.26",
+  "versaoDoFormato": 1,
+  "versao": "2026.09.26",
   "generatedBy": "tools/rejeicoes-data/mdfe.ts",
-  "sources": [
+  "fontes": [
     {
       "id": "moc300b-anexo1",
-      "title": "MOC MDF-e 3.00b, Anexo I: Leiaute e Regras de Validação do MDF-e",
+      "titulo": "MOC MDF-e 3.00b, Anexo I: Leiaute e Regras de Validação do MDF-e",
       "versao": "3.00b",
-      "citation": "MOC MDF-e 3.00b Anexo I",
+      "citacao": "MOC MDF-e 3.00b Anexo I",
       "url": "https://dfe-portal.svrs.rs.gov.br/MDFE/DownloadArquivoEstatico/?sistema=MDFE&tipoArquivo=1&nomeArquivo=MOC_MDFe_Anexo%20I_Leiaute%20e%20Regras%20Valida%C3%A7%C3%A3o_v3.00b.pdf",
       "sha256": "823ca492144eb928821c8ac6d5440f7625397d7b90a770003256559c6d6abe78",
-      "retrievedAt": "2026-09-26"
+      "coletadoEm": "2026-09-26"
     },
     {
       "id": "moc300b-visao-geral",
-      "title": "MOC MDF-e 3.00b, Visão Geral: Padrões Técnicos de Comunicação do MDF-e",
+      "titulo": "MOC MDF-e 3.00b, Visão Geral: Padrões Técnicos de Comunicação do MDF-e",
       "versao": "3.00b",
-      "citation": "MOC MDF-e 3.00b Visão Geral",
+      "citacao": "MOC MDF-e 3.00b Visão Geral",
       "url": "https://dfe-portal.svrs.rs.gov.br/MDFE/DownloadArquivoEstatico/?sistema=MDFE&tipoArquivo=1&nomeArquivo=MOC_MDFe_VisaoGeral_v3.00b.pdf",
       "sha256": "f8501acf8880c6b6705d286ee56acf59657de491c92e9d45aba7c666119932d7",
-      "retrievedAt": "2026-09-26"
+      "coletadoEm": "2026-09-26"
     },
     {
       "id": "mdfe-nt2024001",
-      "title": "MDF-e NT 2024.001: altera regras de validação do MDF-e (chaves antigas, veículos, encerramento pelo transportador)",
+      "titulo": "MDF-e NT 2024.001: altera regras de validação do MDF-e (chaves antigas, veículos, encerramento pelo transportador)",
       "versao": "1.02",
-      "citation": "MDF-e NT 2024.001 v1.02",
+      "citacao": "MDF-e NT 2024.001 v1.02",
       "url": "https://dfe-portal.svrs.rs.gov.br/MDFE/DownloadArquivoEstatico/?sistema=MDFE&tipoArquivo=3&nomeArquivo=MDFe_Nota_Tecnica_2024_001_1.02.pdf",
       "sha256": "8c4dc7667260605575fd8fc1660f3ea630b0988245bddd7b4d70d6fb3c0a3a81",
-      "retrievedAt": "2026-09-26"
+      "coletadoEm": "2026-09-26"
     },
     {
       "id": "mdfe-nt2024002",
-      "title": "MDF-e NT 2024.002: CT-e Simplificado com entrega parcial e regras do PAA",
+      "titulo": "MDF-e NT 2024.002: CT-e Simplificado com entrega parcial e regras do PAA",
       "versao": "1.01",
-      "citation": "MDF-e NT 2024.002 v1.01",
+      "citacao": "MDF-e NT 2024.002 v1.01",
       "url": "https://dfe-portal.svrs.rs.gov.br/MDFE/DownloadArquivoEstatico/?sistema=MDFE&tipoArquivo=3&nomeArquivo=MDFe_Nota_Tecnica_2024_002_1.01.pdf",
       "sha256": "e32f0ef55f4b6d0e0ebe9a45662de853c27b9e6bdd74000562106243537d171a",
-      "retrievedAt": "2026-09-26"
+      "coletadoEm": "2026-09-26"
     },
     {
       "id": "mdfe-nt2025001",
-      "title": "MDF-e NT 2025.001: altera schema e regras de validação do MDF-e",
+      "titulo": "MDF-e NT 2025.001: altera schema e regras de validação do MDF-e",
       "versao": "1.03",
-      "citation": "MDF-e NT 2025.001 v1.03",
+      "citacao": "MDF-e NT 2025.001 v1.03",
       "url": "https://dfe-portal.svrs.rs.gov.br/MDFE/DownloadArquivoEstatico/?sistema=MDFE&tipoArquivo=3&nomeArquivo=MDFe_Nota_Tecnica_2025_001_1.03.pdf",
       "sha256": "c4b32be94eb484e7806daa280abba88738e156955a941a4ad6fe07b551f28037",
-      "retrievedAt": "2026-09-26"
+      "coletadoEm": "2026-09-26"
     },
     {
       "id": "mdfe-nt2026001",
-      "title": "MDF-e NT 2026.001: regra de validação da exigência do CIOT",
+      "titulo": "MDF-e NT 2026.001: regra de validação da exigência do CIOT",
       "versao": "1.00",
-      "citation": "MDF-e NT 2026.001 v1.00",
+      "citacao": "MDF-e NT 2026.001 v1.00",
       "url": "https://dfe-portal.svrs.rs.gov.br/MDFE/DownloadArquivoEstatico/?sistema=MDFE&tipoArquivo=3&nomeArquivo=MDFe_Nota_Tecnica_2026_001.pdf",
       "sha256": "cf1ecb48d9c1baf9c541d5cf5edee4e44a7b88abdeb3c9d877af5519ae58b1da",
-      "retrievedAt": "2026-09-26"
+      "coletadoEm": "2026-09-26"
     }
   ],
   "notes": "MDF-e (modelo 58): união das regras de validação do MOC 3.00b (Anexo I, grupo F; Visão Geral, grupos A a K e consumo indevido) e das NT 2024.001, 2024.002, 2025.001 e 2026.001. O MDF-e não tem tabela consolidada de rejeições; código que aparece em regras com textos diferentes traz todos em `messages`. Mensagem oficial sem ajuste. Os códigos colidem com os da NF-e com outro significado: use este catálogo só para MDF-e.",
   "rejeicoes": [
     {
-      "code": "108",
-      "effect": "rejeicao",
-      "message": "Serviço Paralisado Momentaneamente (curto prazo)",
+      "codigo": "108",
+      "efeito": "rejeicao",
+      "mensagem": "Serviço Paralisado Momentaneamente (curto prazo)",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra B03",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra B03",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "B03"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "I02"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "109",
-      "effect": "rejeicao",
-      "message": "Serviço Paralisado sem Previsão",
+      "codigo": "109",
+      "efeito": "rejeicao",
+      "mensagem": "Serviço Paralisado sem Previsão",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra B04",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra B04",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "B04"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "I03"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "202",
-      "effect": "rejeicao",
-      "message": "CPF do Emitente difere do CPF do Certificado Digital",
+      "codigo": "202",
+      "efeito": "rejeicao",
+      "mensagem": "CPF do Emitente difere do CPF do Certificado Digital",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra E04",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra E04",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "E04"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "H05"
         }
       ],
-      "category": "certificado"
+      "categoria": "certificado"
     },
     {
-      "code": "203",
-      "effect": "rejeicao",
-      "message": "Emissor não habilitado para emissão do MDFe",
+      "codigo": "203",
+      "efeito": "rejeicao",
+      "mensagem": "Emissor não habilitado para emissão do MDFe",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F74",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F74",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F74"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "H06"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K02"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K05"
         },
         {
-          "doc": "mdfe-nt2024001",
+          "documento": "mdfe-nt2024001",
           "id": "K05"
         },
         {
-          "doc": "mdfe-nt2024002",
+          "documento": "mdfe-nt2024002",
           "id": "K02"
         },
         {
-          "doc": "mdfe-nt2024002",
+          "documento": "mdfe-nt2024002",
           "id": "K05"
         }
       ],
-      "category": "cadastro"
+      "categoria": "cadastro"
     },
     {
-      "code": "204",
-      "effect": "rejeicao",
-      "message": "Duplicidade de MDFe [nProt:999999999999999][dhAut: AAAA-MM-DDTHH:MM:SS TZD].",
+      "codigo": "204",
+      "efeito": "rejeicao",
+      "mensagem": "Duplicidade de MDFe [nProt:999999999999999][dhAut: AAAA-MM-DDTHH:MM:SS TZD].",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F82",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F82",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F82"
         }
       ],
-      "category": "duplicidade",
+      "categoria": "duplicidade",
       "causaProvavel": "Já existe MDF-e autorizado com a mesma chave natural (UF, CNPJ/CPF do emitente, modelo, série e número). Caso típico: reenvio depois de um envio sem resposta.",
       "comoCorrigir": "Consulte a situação da chave (MDFeConsulta). Se estiver autorizada com o mesmo digVal, recupere o protocolo e monte o mdfeProc em vez de reenviar. Se o conteúdo mudou, emita com outro número.",
       "referencia": "MOC MDF-e 3.00b Anexo I, regra F82"
     },
     {
-      "code": "207",
-      "effect": "rejeicao",
-      "message": "CNPJ do emitente inválido",
+      "codigo": "207",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ do emitente inválido",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F67",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F67",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F67"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "H02"
         }
       ],
-      "category": "cadastro"
+      "categoria": "cadastro"
     },
     {
-      "code": "209",
-      "effect": "rejeicao",
-      "message": "IE do emitente inválida",
+      "codigo": "209",
+      "efeito": "rejeicao",
+      "mensagem": "IE do emitente inválida",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F73",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F73",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F73"
         }
       ],
-      "category": "cadastro"
+      "categoria": "cadastro"
     },
     {
-      "code": "210",
-      "effect": "rejeicao",
-      "message": "CPF do emitente inválido",
+      "codigo": "210",
+      "efeito": "rejeicao",
+      "mensagem": "CPF do emitente inválido",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F68",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F68",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F68"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "H03"
         }
       ],
-      "category": "cadastro"
+      "categoria": "cadastro"
     },
     {
-      "code": "212",
-      "effect": "rejeicao",
-      "message": "Data/hora de emissão MDFe posterior a data/hora de recebimento",
+      "codigo": "212",
+      "efeito": "rejeicao",
+      "mensagem": "Data/hora de emissão MDFe posterior a data/hora de recebimento",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F79",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F79",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F79"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "213",
-      "effect": "rejeicao",
-      "message": "CNPJ-Base do Emitente difere do CNPJ-Base do Certificado Digital",
+      "codigo": "213",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ-Base do Emitente difere do CNPJ-Base do Certificado Digital",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra E03",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra E03",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "E03"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "H04"
         }
       ],
-      "category": "certificado"
+      "categoria": "certificado"
     },
     {
-      "code": "214",
-      "effect": "rejeicao",
-      "message": "Tamanho da mensagem excedeu o limite estabelecido",
+      "codigo": "214",
+      "efeito": "rejeicao",
+      "mensagem": "Tamanho da mensagem excedeu o limite estabelecido",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra B01",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra B01",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "B01"
         }
       ],
-      "category": "schema"
+      "categoria": "schema"
     },
     {
-      "code": "215",
-      "effect": "rejeicao",
-      "message": "Falha no schema XML",
+      "codigo": "215",
+      "efeito": "rejeicao",
+      "mensagem": "Falha no schema XML",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra C01",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra C01",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "C01"
         }
       ],
-      "category": "schema"
+      "categoria": "schema"
     },
     {
-      "code": "216",
-      "effect": "rejeicao",
-      "message": "Chave de Acesso difere da cadastrada",
+      "codigo": "216",
+      "efeito": "rejeicao",
+      "mensagem": "Chave de Acesso difere da cadastrada",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra G05",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra G05",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "G05"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "217",
-      "effect": "rejeicao",
-      "message": "MDFe não consta na base de dados da SEFAZ",
+      "codigo": "217",
+      "efeito": "rejeicao",
+      "mensagem": "MDFe não consta na base de dados da SEFAZ",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra G04",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra G04",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "G04"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "J12"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "218",
-      "effect": "rejeicao",
-      "message": "MDFe já está cancelado na base de dados da SEFAZ. [nProt:999999999999999][dhCanc: AAAA-MM-DDTHH:MM:SS TZD].",
+      "codigo": "218",
+      "efeito": "rejeicao",
+      "mensagem": "MDFe já está cancelado na base de dados da SEFAZ. [nProt:999999999999999][dhCanc: AAAA-MM-DDTHH:MM:SS TZD].",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F83",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F83",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F83"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K03"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K06"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K04"
         }
       ],
-      "category": "duplicidade"
+      "categoria": "duplicidade"
     },
     {
-      "code": "219",
-      "effect": "rejeicao",
-      "message": "Circulação do MDFe verificada",
+      "codigo": "219",
+      "efeito": "rejeicao",
+      "mensagem": "Circulação do MDFe verificada",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra K07",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra K07",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K07"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "220",
-      "effect": "rejeicao",
-      "message": "MDFe autorizado há mais de 24 horas",
+      "codigo": "220",
+      "efeito": "rejeicao",
+      "mensagem": "MDFe autorizado há mais de 24 horas",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra K04",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra K04",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K04"
         },
         {
-          "doc": "mdfe-nt2024001",
+          "documento": "mdfe-nt2024001",
           "id": "K04"
         }
       ],
-      "category": "regra-negocio",
+      "categoria": "regra-negocio",
       "causaProvavel": "O cancelamento só é aceito até 24 horas depois da autorização.",
       "comoCorrigir": "Depois do prazo, encerre o MDF-e (evento 110112). A liberação do prazo é feita só pelo fisco (evento 240170).",
       "referencia": "MOC MDF-e 3.00b Visão Geral, item 6.1.1, regra K04"
     },
     {
-      "code": "222",
-      "effect": "rejeicao",
-      "message": "Protocolo de Autorização de Uso difere do cadastrado",
+      "codigo": "222",
+      "efeito": "rejeicao",
+      "mensagem": "Protocolo de Autorização de Uso difere do cadastrado",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra K05",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra K05",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K05"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K08"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K03"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K02"
         }
       ],
-      "category": "regra-negocio",
+      "categoria": "regra-negocio",
       "causaProvavel": "O nProt informado no evento não é o protocolo de autorização do MDF-e.",
       "comoCorrigir": "Use o nProt do protMDFe gravado no mdfeProc (ou devolvido pela consulta da chave).",
       "referencia": "MOC MDF-e 3.00b Visão Geral, item 6.1.1, regra K05"
     },
     {
-      "code": "227",
-      "effect": "rejeicao",
-      "message": "Erro na composição do Campo ID",
+      "codigo": "227",
+      "efeito": "rejeicao",
+      "mensagem": "Erro na composição do Campo ID",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F03",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F03",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F03"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "228",
-      "effect": "rejeicao",
-      "message": "Data de emissão muito atrasada",
+      "codigo": "228",
+      "efeito": "rejeicao",
+      "mensagem": "Data de emissão muito atrasada",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F80",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F80",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F80"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "229",
-      "effect": "rejeicao",
-      "message": "IE do emitente não informada",
+      "codigo": "229",
+      "efeito": "rejeicao",
+      "mensagem": "IE do emitente não informada",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F72",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F72",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F72"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "230",
-      "effect": "rejeicao",
-      "message": "IE do emitente não cadastrada",
+      "codigo": "230",
+      "efeito": "rejeicao",
+      "mensagem": "IE do emitente não cadastrada",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F75",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F75",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F75"
         }
       ],
-      "category": "cadastro"
+      "categoria": "cadastro"
     },
     {
-      "code": "231",
-      "effect": "rejeicao",
-      "message": "IE do emitente não vinculada ao CNPJ / CPF",
+      "codigo": "231",
+      "efeito": "rejeicao",
+      "mensagem": "IE do emitente não vinculada ao CNPJ / CPF",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F76",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F76",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F76"
         }
       ],
-      "category": "cadastro"
+      "categoria": "cadastro"
     },
     {
-      "code": "232",
-      "effect": "rejeicao",
-      "message": "CNPJ do emitente com série incompatível",
+      "codigo": "232",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ do emitente com série incompatível",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F69",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F69",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F69"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "233",
-      "effect": "rejeicao",
-      "message": "CPF do emitente com série incompatível",
+      "codigo": "233",
+      "efeito": "rejeicao",
+      "mensagem": "CPF do emitente com série incompatível",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F70",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F70",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F70"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "234",
-      "effect": "rejeicao",
-      "message": "Tipo de emitente inválido para emitente pessoa física",
+      "codigo": "234",
+      "efeito": "rejeicao",
+      "mensagem": "Tipo de emitente inválido para emitente pessoa física",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F71",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F71",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F71"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "236",
-      "effect": "rejeicao",
-      "message": "Chave de Acesso inválida [Motivo: XXXXXXXXX]",
+      "codigo": "236",
+      "efeito": "rejeicao",
+      "mensagem": "Chave de Acesso inválida [Motivo: XXXXXXXXX]",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra G03",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra G03",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "G03"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "J07"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "239",
-      "effect": "rejeicao",
-      "message": "Versão informada para o MDFe não suportada",
+      "codigo": "239",
+      "efeito": "rejeicao",
+      "mensagem": "Versão informada para o MDFe não suportada",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra C06",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra C06",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "C06"
         }
       ],
-      "category": "schema"
+      "categoria": "schema"
     },
     {
-      "code": "243",
-      "effect": "rejeicao",
-      "message": "XML Mal-formado",
+      "codigo": "243",
+      "efeito": "rejeicao",
+      "mensagem": "XML Mal-formado",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra B02",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra B02",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "B02"
         }
       ],
-      "category": "schema"
+      "categoria": "schema"
     },
     {
-      "code": "244",
-      "effect": "rejeicao",
-      "message": "Falha na descompactação da área de dados",
+      "codigo": "244",
+      "efeito": "rejeicao",
+      "mensagem": "Falha na descompactação da área de dados",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra B00",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra B00",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "B00"
         }
       ],
-      "category": "schema"
+      "categoria": "schema"
     },
     {
-      "code": "247",
-      "effect": "rejeicao",
-      "message": "Sigla da UF do Emitente diverge da UF autorizadora",
+      "codigo": "247",
+      "efeito": "rejeicao",
+      "mensagem": "Sigla da UF do Emitente diverge da UF autorizadora",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F02",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F02",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F02"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "252",
-      "effect": "rejeicao",
-      "message": "Ambiente informado diverge do Ambiente de recebimento",
+      "codigo": "252",
+      "efeito": "rejeicao",
+      "mensagem": "Ambiente informado diverge do Ambiente de recebimento",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F01",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F01",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F01"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "G01"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "H01"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "I01"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "J01"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "253",
-      "effect": "rejeicao",
-      "message": "Digito Verificador da chave de acesso composta inválido",
+      "codigo": "253",
+      "efeito": "rejeicao",
+      "mensagem": "Digito Verificador da chave de acesso composta inválido",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F05",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F05",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F05"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "280",
-      "effect": "rejeicao",
-      "message": "Certificado Transmissor inválido",
+      "codigo": "280",
+      "efeito": "rejeicao",
+      "mensagem": "Certificado Transmissor inválido",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra A01",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra A01",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "A01"
         }
       ],
-      "category": "certificado"
+      "categoria": "certificado"
     },
     {
-      "code": "281",
-      "effect": "rejeicao",
-      "message": "Certificado Transmissor Data Validade",
+      "codigo": "281",
+      "efeito": "rejeicao",
+      "mensagem": "Certificado Transmissor Data Validade",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra A02",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra A02",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "A02"
         }
       ],
-      "category": "certificado"
+      "categoria": "certificado"
     },
     {
-      "code": "282",
-      "effect": "rejeicao",
-      "message": "Certificado Transmissor sem CNPJ / CPF",
+      "codigo": "282",
+      "efeito": "rejeicao",
+      "mensagem": "Certificado Transmissor sem CNPJ / CPF",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra A07",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra A07",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "A07"
         }
       ],
-      "category": "certificado"
+      "categoria": "certificado"
     },
     {
-      "code": "283",
-      "effect": "rejeicao",
-      "message": "Certificado Transmissor - erro Cadeia de Certificação",
+      "codigo": "283",
+      "efeito": "rejeicao",
+      "mensagem": "Certificado Transmissor - erro Cadeia de Certificação",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra A03",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra A03",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "A03"
         }
       ],
-      "category": "certificado"
+      "categoria": "certificado"
     },
     {
-      "code": "284",
-      "effect": "rejeicao",
-      "message": "Certificado Transmissor revogado",
+      "codigo": "284",
+      "efeito": "rejeicao",
+      "mensagem": "Certificado Transmissor revogado",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra A05",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra A05",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "A05"
         }
       ],
-      "category": "certificado"
+      "categoria": "certificado"
     },
     {
-      "code": "285",
-      "effect": "rejeicao",
-      "message": "Certificado Transmissor difere ICP-Brasil",
+      "codigo": "285",
+      "efeito": "rejeicao",
+      "mensagem": "Certificado Transmissor difere ICP-Brasil",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra A06",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra A06",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "A06"
         }
       ],
-      "category": "certificado"
+      "categoria": "certificado"
     },
     {
-      "code": "286",
-      "effect": "rejeicao",
-      "message": "Certificado Transmissor erro no acesso a LCR",
+      "codigo": "286",
+      "efeito": "rejeicao",
+      "mensagem": "Certificado Transmissor erro no acesso a LCR",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra A04",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra A04",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "A04"
         }
       ],
-      "category": "certificado"
+      "categoria": "certificado"
     },
     {
-      "code": "290",
-      "effect": "rejeicao",
-      "message": "Certificado Assinatura inválido",
+      "codigo": "290",
+      "efeito": "rejeicao",
+      "mensagem": "Certificado Assinatura inválido",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra D01",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra D01",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "D01"
         }
       ],
-      "category": "certificado"
+      "categoria": "certificado"
     },
     {
-      "code": "291",
-      "effect": "rejeicao",
-      "message": "Certificado Assinatura Data Validade",
+      "codigo": "291",
+      "efeito": "rejeicao",
+      "mensagem": "Certificado Assinatura Data Validade",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra D02",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra D02",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "D02"
         }
       ],
-      "category": "certificado"
+      "categoria": "certificado"
     },
     {
-      "code": "292",
-      "effect": "rejeicao",
-      "message": "Certificado Assinatura sem CNPJ / CPF",
+      "codigo": "292",
+      "efeito": "rejeicao",
+      "mensagem": "Certificado Assinatura sem CNPJ / CPF",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra D03",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra D03",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "D03"
         }
       ],
-      "category": "certificado"
+      "categoria": "certificado"
     },
     {
-      "code": "293",
-      "effect": "rejeicao",
-      "message": "Certificado Assinatura - erro Cadeia de Certificação",
+      "codigo": "293",
+      "efeito": "rejeicao",
+      "mensagem": "Certificado Assinatura - erro Cadeia de Certificação",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra D04",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra D04",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "D04"
         }
       ],
-      "category": "certificado"
+      "categoria": "certificado"
     },
     {
-      "code": "294",
-      "effect": "rejeicao",
-      "message": "Certificado Assinatura revogado",
+      "codigo": "294",
+      "efeito": "rejeicao",
+      "mensagem": "Certificado Assinatura revogado",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra D06",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra D06",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "D06"
         }
       ],
-      "category": "certificado"
+      "categoria": "certificado"
     },
     {
-      "code": "295",
-      "effect": "rejeicao",
-      "message": "Certificado Assinatura difere ICP-Brasil",
+      "codigo": "295",
+      "efeito": "rejeicao",
+      "mensagem": "Certificado Assinatura difere ICP-Brasil",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra D07",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra D07",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "D07"
         }
       ],
-      "category": "certificado"
+      "categoria": "certificado"
     },
     {
-      "code": "296",
-      "effect": "rejeicao",
-      "message": "Certificado Assinatura erro no acesso a LCR",
+      "codigo": "296",
+      "efeito": "rejeicao",
+      "mensagem": "Certificado Assinatura erro no acesso a LCR",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra D05",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra D05",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "D05"
         }
       ],
-      "category": "certificado"
+      "categoria": "certificado"
     },
     {
-      "code": "297",
-      "effect": "rejeicao",
-      "message": "Assinatura difere do calculado",
+      "codigo": "297",
+      "efeito": "rejeicao",
+      "mensagem": "Assinatura difere do calculado",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra E02",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra E02",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "E02"
         }
       ],
-      "category": "assinatura"
+      "categoria": "assinatura"
     },
     {
-      "code": "298",
-      "effect": "rejeicao",
-      "message": "Assinatura difere do padrão do Projeto",
+      "codigo": "298",
+      "efeito": "rejeicao",
+      "mensagem": "Assinatura difere do padrão do Projeto",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra E01",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra E01",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "E01"
         }
       ],
-      "category": "assinatura"
+      "categoria": "assinatura"
     },
     {
-      "code": "301",
-      "effect": "rejeicao",
-      "message": "O NCM do produto predominante da carga lotação deve ser informado",
+      "codigo": "301",
+      "efeito": "rejeicao",
+      "mensagem": "O NCM do produto predominante da carga lotação deve ser informado",
       "modelos": ["58"],
-      "source": "MDF-e NT 2025.001 v1.03, regra F55a",
-      "rules": [
+      "fonte": "MDF-e NT 2025.001 v1.03, regra F55a",
+      "regras": [
         {
-          "doc": "mdfe-nt2025001",
+          "documento": "mdfe-nt2025001",
           "id": "F55a"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "302",
-      "effect": "rejeicao",
-      "message": "As informações de pagamento devem ser informadas para carga lotação",
+      "codigo": "302",
+      "efeito": "rejeicao",
+      "mensagem": "As informações de pagamento devem ser informadas para carga lotação",
       "modelos": ["58"],
-      "source": "MDF-e NT 2025.001 v1.03, regra F55b",
-      "rules": [
+      "fonte": "MDF-e NT 2025.001 v1.03, regra F55b",
+      "regras": [
         {
-          "doc": "mdfe-nt2025001",
+          "documento": "mdfe-nt2025001",
           "id": "F55b"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "303",
-      "effect": "rejeicao",
-      "message": "Dados Bancários e de pagamento devem ser informados para TAC e equiparado a TAC",
+      "codigo": "303",
+      "efeito": "rejeicao",
+      "mensagem": "Dados Bancários e de pagamento devem ser informados para TAC e equiparado a TAC",
       "modelos": ["58"],
-      "source": "MDF-e NT 2025.001 v1.03, regra F113a",
-      "rules": [
+      "fonte": "MDF-e NT 2025.001 v1.03, regra F113a",
+      "regras": [
         {
-          "doc": "mdfe-nt2025001",
+          "documento": "mdfe-nt2025001",
           "id": "F113a"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "304",
-      "effect": "rejeicao",
-      "message": "CIOT deve ser informado para TAC e equiparado a TAC",
+      "codigo": "304",
+      "efeito": "rejeicao",
+      "mensagem": "CIOT deve ser informado para TAC e equiparado a TAC",
       "modelos": ["58"],
-      "source": "MDF-e NT 2025.001 v1.03, regra F113b",
-      "rules": [
+      "fonte": "MDF-e NT 2025.001 v1.03, regra F113b",
+      "regras": [
         {
-          "doc": "mdfe-nt2025001",
+          "documento": "mdfe-nt2025001",
           "id": "F113b"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "402",
-      "effect": "rejeicao",
-      "message": "XML da área de dados com codificação diferente de UTF-8",
+      "codigo": "402",
+      "efeito": "rejeicao",
+      "mensagem": "XML da área de dados com codificação diferente de UTF-8",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra C05",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra C05",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "C05"
         }
       ],
-      "category": "schema"
+      "categoria": "schema"
     },
     {
-      "code": "404",
-      "effect": "rejeicao",
-      "message": "Uso de prefixo de namespace não permitido",
+      "codigo": "404",
+      "efeito": "rejeicao",
+      "mensagem": "Uso de prefixo de namespace não permitido",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra C04",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra C04",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "C04"
         }
       ],
-      "category": "schema"
+      "categoria": "schema"
     },
     {
-      "code": "405",
-      "effect": "rejeicao",
-      "message": "Município de Carregamento inexistente",
+      "codigo": "405",
+      "efeito": "rejeicao",
+      "mensagem": "Município de Carregamento inexistente",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F09",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F09",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F09"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K07"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "406",
-      "effect": "rejeicao",
-      "message": "Município de Descarregamento inexistente",
+      "codigo": "406",
+      "efeito": "rejeicao",
+      "mensagem": "Município de Descarregamento inexistente",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F12",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F12",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F12"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K09"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "407",
-      "effect": "rejeicao",
-      "message": "Código de Município diverge da UF do Emitente do MDFe",
+      "codigo": "407",
+      "efeito": "rejeicao",
+      "mensagem": "Código de Município diverge da UF do Emitente do MDFe",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F77",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F77",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F77"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "408",
-      "effect": "rejeicao",
-      "message": "Município do Emitente inexistente",
+      "codigo": "408",
+      "efeito": "rejeicao",
+      "mensagem": "Município do Emitente inexistente",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F78",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F78",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F78"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "456",
-      "effect": "rejeicao",
-      "message": "Código de Município diverge da UF de Carregamento do MDFe",
+      "codigo": "456",
+      "efeito": "rejeicao",
+      "mensagem": "Código de Município diverge da UF de Carregamento do MDFe",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F08",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F08",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F08"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K06"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "459",
-      "effect": "rejeicao",
-      "message": "Documento autorizado ao XML duplicado no MDFe",
+      "codigo": "459",
+      "efeito": "rejeicao",
+      "mensagem": "Documento autorizado ao XML duplicado no MDFe",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F107",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F107",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F107"
         }
       ],
-      "category": "duplicidade"
+      "categoria": "duplicidade"
     },
     {
-      "code": "460",
-      "effect": "rejeicao",
-      "message": "Consulta a uma Chave de Acesso muito antiga",
+      "codigo": "460",
+      "efeito": "rejeicao",
+      "mensagem": "Consulta a uma Chave de Acesso muito antiga",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra G02",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra G02",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "G02"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "462",
-      "effect": "rejeicao",
-      "message": "Existe MDFe não encerrado há mais de 5 dias para placa com até 2 UF de percurso informadas [chMDFe: 99999999999999999999999999999999999999999999][nProt:999999999999999]",
+      "codigo": "462",
+      "efeito": "rejeicao",
+      "mensagem": "Existe MDFe não encerrado há mais de 5 dias para placa com até 2 UF de percurso informadas [chMDFe: 99999999999999999999999999999999999999999999][nProt:999999999999999]",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F87",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F87",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F87"
         }
       ],
-      "category": "regra-negocio",
+      "categoria": "regra-negocio",
       "causaProvavel": "Existe MDF-e não encerrado há mais de 5 dias para a placa, com até duas UF de percurso além do carregamento e do descarregamento.",
       "comoCorrigir": "Encerre o MDF-e anterior da placa antes de emitir o novo.",
       "referencia": "MOC MDF-e 3.00b Anexo I, regra F87"
     },
     {
-      "code": "479",
-      "effect": "rejeicao",
-      "message": "Endereço do site da UF da Consulta via QR Code diverge do previsto",
+      "codigo": "479",
+      "efeito": "rejeicao",
+      "mensagem": "Endereço do site da UF da Consulta via QR Code diverge do previsto",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F115",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F115",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F115"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "480",
-      "effect": "rejeicao",
-      "message": "Consulta a uma Chave de Acesso muito antiga",
+      "codigo": "480",
+      "efeito": "rejeicao",
+      "mensagem": "Consulta a uma Chave de Acesso muito antiga",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F114",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F114",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F114"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "481",
-      "effect": "rejeicao",
-      "message": "Parâmetro chave de acesso do QR Code divergente do MDFe",
+      "codigo": "481",
+      "efeito": "rejeicao",
+      "mensagem": "Parâmetro chave de acesso do QR Code divergente do MDFe",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F116",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F116",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F116"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "482",
-      "effect": "rejeicao",
-      "message": "Parâmetro sign não informado no QR Code para emissão em contingência",
+      "codigo": "482",
+      "efeito": "rejeicao",
+      "mensagem": "Parâmetro sign não informado no QR Code para emissão em contingência",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F117",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F117",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F117"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "488",
-      "effect": "rejeicao",
-      "message": "Parâmetro sign não deve ser informado no QR Code para emissão Normal",
+      "codigo": "488",
+      "efeito": "rejeicao",
+      "mensagem": "Parâmetro sign não deve ser informado no QR Code para emissão Normal",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F118",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F118",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F118"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "496",
-      "effect": "rejeicao",
-      "message": "Assinatura do QR-Code difere do calculado",
+      "codigo": "496",
+      "efeito": "rejeicao",
+      "mensagem": "Assinatura do QR-Code difere do calculado",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F119",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F119",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F119"
         }
       ],
-      "category": "assinatura"
+      "categoria": "assinatura"
     },
     {
-      "code": "518",
-      "effect": "rejeicao",
-      "message": "Chave de acesso do CTe muito antiga [chCTe: 99999999999999999999999999999999999999999999]",
+      "codigo": "518",
+      "efeito": "rejeicao",
+      "mensagem": "Chave de acesso do CTe muito antiga [chCTe: 99999999999999999999999999999999999999999999]",
       "modelos": ["58"],
-      "source": "MDF-e NT 2024.001 v1.02, regra F30a",
-      "rules": [
+      "fonte": "MDF-e NT 2024.001 v1.02, regra F30a",
+      "regras": [
         {
-          "doc": "mdfe-nt2024001",
+          "documento": "mdfe-nt2024001",
           "id": "F30a"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "519",
-      "effect": "rejeicao",
-      "message": "Chave de acesso da NFe informada muito antiga [chNFe: 99999999999999999999999999999999999999999999]",
+      "codigo": "519",
+      "efeito": "rejeicao",
+      "mensagem": "Chave de acesso da NFe informada muito antiga [chNFe: 99999999999999999999999999999999999999999999]",
       "modelos": ["58"],
-      "source": "MDF-e NT 2024.001 v1.02, regra F37a",
-      "rules": [
+      "fonte": "MDF-e NT 2024.001 v1.02, regra F37a",
+      "regras": [
         {
-          "doc": "mdfe-nt2024001",
+          "documento": "mdfe-nt2024001",
           "id": "F37a"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "520",
-      "effect": "rejeicao",
-      "message": "Chave de acesso de MDFe informada muito antiga [chMDFe: 99999999999999999999999999999999999999999999]",
+      "codigo": "520",
+      "efeito": "rejeicao",
+      "mensagem": "Chave de acesso de MDFe informada muito antiga [chMDFe: 99999999999999999999999999999999999999999999]",
       "modelos": ["58"],
-      "source": "MDF-e NT 2024.001 v1.02, regra F45a",
-      "rules": [
+      "fonte": "MDF-e NT 2024.001 v1.02, regra F45a",
+      "regras": [
         {
-          "doc": "mdfe-nt2024001",
+          "documento": "mdfe-nt2024001",
           "id": "F45a"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "521",
-      "effect": "rejeicao",
-      "message": "Placa de veículo inválida conforme SENATRAN",
+      "codigo": "521",
+      "efeito": "rejeicao",
+      "mensagem": "Placa de veículo inválida conforme SENATRAN",
       "modelos": ["58"],
-      "source": "MDF-e NT 2024.001 v1.02, regra F89a",
-      "rules": [
+      "fonte": "MDF-e NT 2024.001 v1.02, regra F89a",
+      "regras": [
         {
-          "doc": "mdfe-nt2024001",
+          "documento": "mdfe-nt2024001",
           "id": "F89a"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "522",
-      "effect": "rejeicao",
-      "message": "Placa informada no veículo de tração pertence a um veículo rebocável",
+      "codigo": "522",
+      "efeito": "rejeicao",
+      "mensagem": "Placa informada no veículo de tração pertence a um veículo rebocável",
       "modelos": ["58"],
-      "source": "MDF-e NT 2024.001 v1.02, regra F89b",
-      "rules": [
+      "fonte": "MDF-e NT 2024.001 v1.02, regra F89b",
+      "regras": [
         {
-          "doc": "mdfe-nt2024001",
+          "documento": "mdfe-nt2024001",
           "id": "F89b"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "523",
-      "effect": "rejeicao",
-      "message": "Pelo menos um reboque deve ser colocado na composição em um transporte com cavalo mecânico.",
+      "codigo": "523",
+      "efeito": "rejeicao",
+      "mensagem": "Pelo menos um reboque deve ser colocado na composição em um transporte com cavalo mecânico.",
       "modelos": ["58"],
-      "source": "MDF-e NT 2024.001 v1.02, regra F89c",
-      "rules": [
+      "fonte": "MDF-e NT 2024.001 v1.02, regra F89c",
+      "regras": [
         {
-          "doc": "mdfe-nt2024001",
+          "documento": "mdfe-nt2024001",
           "id": "F89c"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "524",
-      "effect": "rejeicao",
-      "message": "Autor inválido para encerramento por terceiro",
-      "messages": [
+      "codigo": "524",
+      "efeito": "rejeicao",
+      "mensagem": "Autor inválido para encerramento por terceiro",
+      "mensagens": [
         "Autor inválido para encerramento por terceiro",
         "Prestação parcial só pode ser informado para CTe Simplificado"
       ],
       "modelos": ["58"],
-      "source": "MDF-e NT 2024.001 v1.02, regra K11",
-      "rules": [
+      "fonte": "MDF-e NT 2024.001 v1.02, regra K11",
+      "regras": [
         {
-          "doc": "mdfe-nt2024001",
+          "documento": "mdfe-nt2024001",
           "id": "K11"
         },
         {
-          "doc": "mdfe-nt2024002",
+          "documento": "mdfe-nt2024002",
           "id": "F36a"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "525",
-      "effect": "rejeicao",
-      "message": "Autor inválido para encerramento",
-      "messages": ["Autor inválido para encerramento", "Chave de acesso da NFe de prestação parcial muito antiga"],
+      "codigo": "525",
+      "efeito": "rejeicao",
+      "mensagem": "Autor inválido para encerramento",
+      "mensagens": ["Autor inválido para encerramento", "Chave de acesso da NFe de prestação parcial muito antiga"],
       "modelos": ["58"],
-      "source": "MDF-e NT 2024.001 v1.02, regra K12",
-      "rules": [
+      "fonte": "MDF-e NT 2024.001 v1.02, regra K12",
+      "regras": [
         {
-          "doc": "mdfe-nt2024001",
+          "documento": "mdfe-nt2024001",
           "id": "K12"
         },
         {
-          "doc": "mdfe-nt2024002",
+          "documento": "mdfe-nt2024002",
           "id": "F36b"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "526",
-      "effect": "rejeicao",
-      "message": "Chave de acesso da NFe em prestação parcial duplicada. [chNFe: 99999999999999999999999999999999999999999999] [Motivo: XXXXXXXXXXXX]",
+      "codigo": "526",
+      "efeito": "rejeicao",
+      "mensagem": "Chave de acesso da NFe em prestação parcial duplicada. [chNFe: 99999999999999999999999999999999999999999999] [Motivo: XXXXXXXXXXXX]",
       "modelos": ["58"],
-      "source": "MDF-e NT 2024.002 v1.01, regra F36c",
-      "rules": [
+      "fonte": "MDF-e NT 2024.002 v1.01, regra F36c",
+      "regras": [
         {
-          "doc": "mdfe-nt2024002",
+          "documento": "mdfe-nt2024002",
           "id": "F36c"
         }
       ],
-      "category": "duplicidade"
+      "categoria": "duplicidade"
     },
     {
-      "code": "527",
-      "effect": "rejeicao",
-      "message": "Chave de acesso da NFe em prestação parcial informada inválida [chNFe: 99999999999999999999999999999999999999999999] [Motivo: XXXXXXXXXXXX]",
+      "codigo": "527",
+      "efeito": "rejeicao",
+      "mensagem": "Chave de acesso da NFe em prestação parcial informada inválida [chNFe: 99999999999999999999999999999999999999999999] [Motivo: XXXXXXXXXXXX]",
       "modelos": ["58"],
-      "source": "MDF-e NT 2024.002 v1.01, regra F36d",
-      "rules": [
+      "fonte": "MDF-e NT 2024.002 v1.01, regra F36d",
+      "regras": [
         {
-          "doc": "mdfe-nt2024002",
+          "documento": "mdfe-nt2024002",
           "id": "F36d"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "528",
-      "effect": "rejeicao",
-      "message": "NFe informada em prestação parcial não existe na base de dados da SEFAZ [chNFe: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]",
+      "codigo": "528",
+      "efeito": "rejeicao",
+      "mensagem": "NFe informada em prestação parcial não existe na base de dados da SEFAZ [chNFe: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]",
       "modelos": ["58"],
-      "source": "MDF-e NT 2024.002 v1.01, regra F36e",
-      "rules": [
+      "fonte": "MDF-e NT 2024.002 v1.01, regra F36e",
+      "regras": [
         {
-          "doc": "mdfe-nt2024002",
+          "documento": "mdfe-nt2024002",
           "id": "F36e"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "529",
-      "effect": "rejeicao",
-      "message": "NFe de prestação parcial informada com diferença de chave de acesso [chNFe: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]",
+      "codigo": "529",
+      "efeito": "rejeicao",
+      "mensagem": "NFe de prestação parcial informada com diferença de chave de acesso [chNFe: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]",
       "modelos": ["58"],
-      "source": "MDF-e NT 2024.002 v1.01, regra F36f",
-      "rules": [
+      "fonte": "MDF-e NT 2024.002 v1.01, regra F36f",
+      "regras": [
         {
-          "doc": "mdfe-nt2024002",
+          "documento": "mdfe-nt2024002",
           "id": "F36f"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "530",
-      "effect": "rejeicao",
-      "message": "NFe informada em prestação parcial não pode estar cancelada/denegada na base da SEFAZ [chNFe: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]",
+      "codigo": "530",
+      "efeito": "rejeicao",
+      "mensagem": "NFe informada em prestação parcial não pode estar cancelada/denegada na base da SEFAZ [chNFe: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]",
       "modelos": ["58"],
-      "source": "MDF-e NT 2024.002 v1.01, regra F36g",
-      "rules": [
+      "fonte": "MDF-e NT 2024.002 v1.01, regra F36g",
+      "regras": [
         {
-          "doc": "mdfe-nt2024002",
+          "documento": "mdfe-nt2024002",
           "id": "F36g"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "539",
-      "effect": "rejeicao",
-      "message": "Duplicidade de MDFe, com diferença na Chave de Acesso [chMDFe: 99999999999999999999999999999999999999999999] [nProt:999999999999999] [dhAut: AAAA-MM-DDTHH:MM:SS TZD].",
+      "codigo": "539",
+      "efeito": "rejeicao",
+      "mensagem": "Duplicidade de MDFe, com diferença na Chave de Acesso [chMDFe: 99999999999999999999999999999999999999999999] [nProt:999999999999999] [dhAut: AAAA-MM-DDTHH:MM:SS TZD].",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F81",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F81",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F81"
         }
       ],
-      "category": "duplicidade",
+      "categoria": "duplicidade",
       "causaProvavel": "O número já foi autorizado com outra chave de acesso (outro cMDF ou outro dhEmi): o MDF-e foi remontado depois de um envio sem resposta.",
       "comoCorrigir": "Não reenvie. Recupere o MDF-e autorizado pela chave informada no xMotivo e descarte o local; para uma nova viagem, use outro número.",
       "referencia": "MOC MDF-e 3.00b Anexo I, regra F81"
     },
     {
-      "code": "540",
-      "effect": "rejeicao",
-      "message": "Não deve ser informado Conhecimento de Transporte para tipo de emitente Prestador Serviço de Transporte que emitirá CTe Globalizado",
+      "codigo": "540",
+      "efeito": "rejeicao",
+      "mensagem": "Não deve ser informado Conhecimento de Transporte para tipo de emitente Prestador Serviço de Transporte que emitirá CTe Globalizado",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F16",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F16",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F16"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "541",
-      "effect": "rejeicao",
-      "message": "Tipo de emitente inválido para operações interestaduais ou com exterior",
+      "codigo": "541",
+      "efeito": "rejeicao",
+      "mensagem": "Tipo de emitente inválido para operações interestaduais ou com exterior",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F17",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F17",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F17"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "542",
-      "effect": "rejeicao",
-      "message": "CNPJ/CPF do responsável pelo seguro deve ser informado para o tipo de responsável informado",
+      "codigo": "542",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ/CPF do responsável pelo seguro deve ser informado para o tipo de responsável informado",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F93",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F93",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F93"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "577",
-      "effect": "rejeicao",
-      "message": "Duplicidade de condutor",
+      "codigo": "577",
+      "efeito": "rejeicao",
+      "mensagem": "Duplicidade de condutor",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F99",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F99",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F99"
         }
       ],
-      "category": "duplicidade"
+      "categoria": "duplicidade"
     },
     {
-      "code": "578",
-      "effect": "rejeicao",
-      "message": "Informações dos tomadores é obrigatória para esta operação",
+      "codigo": "578",
+      "efeito": "rejeicao",
+      "mensagem": "Informações dos tomadores é obrigatória para esta operação",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F94",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F94",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F94"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "579",
-      "effect": "rejeicao",
-      "message": "Versão informada para o modal não suportada",
+      "codigo": "579",
+      "efeito": "rejeicao",
+      "mensagem": "Versão informada para o modal não suportada",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F06",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F06",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F06"
         }
       ],
-      "category": "schema"
+      "categoria": "schema"
     },
     {
-      "code": "580",
-      "effect": "rejeicao",
-      "message": "Falha no Schema XML específico para o modal",
+      "codigo": "580",
+      "efeito": "rejeicao",
+      "mensagem": "Falha no Schema XML específico para o modal",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F07",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F07",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F07"
         }
       ],
-      "category": "schema"
+      "categoria": "schema"
     },
     {
-      "code": "598",
-      "effect": "rejeicao",
-      "message": "Usar somente o namespace padrão do MDFe",
+      "codigo": "598",
+      "efeito": "rejeicao",
+      "mensagem": "Usar somente o namespace padrão do MDFe",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra C02",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra C02",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "C02"
         }
       ],
-      "category": "schema"
+      "categoria": "schema"
     },
     {
-      "code": "599",
-      "effect": "rejeicao",
-      "message": "Não é permitida a presença de caracteres de edição no início/fim da mensagem ou entre as tags da mensagem",
+      "codigo": "599",
+      "efeito": "rejeicao",
+      "mensagem": "Não é permitida a presença de caracteres de edição no início/fim da mensagem ou entre as tags da mensagem",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra C03",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra C03",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "C03"
         }
       ],
-      "category": "schema"
+      "categoria": "schema"
     },
     {
-      "code": "600",
-      "effect": "rejeicao",
-      "message": "Chave de Acesso difere da existente em BD",
+      "codigo": "600",
+      "efeito": "rejeicao",
+      "mensagem": "Chave de Acesso difere da existente em BD",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra G06",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra G06",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "G06"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "J13"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "601",
-      "effect": "rejeicao",
-      "message": "Chave de acesso do CTe informado inválida [chCTe: 99999999999999999999999999999999999999999999] [Motivo: XXXXXXXXXXXX]",
+      "codigo": "601",
+      "efeito": "rejeicao",
+      "mensagem": "Chave de acesso do CTe informado inválida [chCTe: 99999999999999999999999999999999999999999999] [Motivo: XXXXXXXXXXXX]",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F30",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F30",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F30"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "602",
-      "effect": "rejeicao",
-      "message": "Segundo Código de Barras deve ser informado para CTe em contingência FS-DA",
+      "codigo": "602",
+      "efeito": "rejeicao",
+      "mensagem": "Segundo Código de Barras deve ser informado para CTe em contingência FS-DA",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F35",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F35",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F35"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "603",
-      "effect": "rejeicao",
-      "message": "Segundo Código de Barras não deve ser informado para CTe com este tipo de emissão",
+      "codigo": "603",
+      "efeito": "rejeicao",
+      "mensagem": "Segundo Código de Barras não deve ser informado para CTe com este tipo de emissão",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F36",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F36",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F36"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "604",
-      "effect": "rejeicao",
-      "message": "Chave de acesso da NFe informada inválida [chNFe: 99999999999999999999999999999999999999999999] [Motivo: XXXXXXXXXXXX]",
+      "codigo": "604",
+      "efeito": "rejeicao",
+      "mensagem": "Chave de acesso da NFe informada inválida [chNFe: 99999999999999999999999999999999999999999999] [Motivo: XXXXXXXXXXXX]",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F37",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F37",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F37"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "606",
-      "effect": "rejeicao",
-      "message": "Segundo Código de Barras deve ser informado para NFe em contingência (FS-DA e FS-IA)",
+      "codigo": "606",
+      "efeito": "rejeicao",
+      "mensagem": "Segundo Código de Barras deve ser informado para NFe em contingência (FS-DA e FS-IA)",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F41",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F41",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F41"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "607",
-      "effect": "rejeicao",
-      "message": "Segundo Código de Barras não deve ser informado para NFe com este tipo de emissão",
+      "codigo": "607",
+      "efeito": "rejeicao",
+      "mensagem": "Segundo Código de Barras não deve ser informado para NFe com este tipo de emissão",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F42",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F42",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F42"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "609",
-      "effect": "rejeicao",
-      "message": "MDFe já está encerrado na base de dados da SEFAZ [nProt:999999999999999][dhEnc: AAAA-MM-DDTHH:MM:SS TZD].",
+      "codigo": "609",
+      "efeito": "rejeicao",
+      "mensagem": "MDFe já está encerrado na base de dados da SEFAZ [nProt:999999999999999][dhEnc: AAAA-MM-DDTHH:MM:SS TZD].",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F84",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F84",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F84"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K06"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K09"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K04"
         }
       ],
-      "category": "duplicidade",
+      "categoria": "duplicidade",
       "causaProvavel": "O MDF-e já foi encerrado; depois do encerramento não se cancela, não se encerra de novo e não se inclui condutor nem DF-e.",
       "comoCorrigir": "Consulte a chave para obter o evento de encerramento registrado. Para nova viagem, emita outro MDF-e.",
       "referencia": "MOC MDF-e 3.00b Anexo I, regra F84; Visão Geral, item 6.2.1, regra K09"
     },
     {
-      "code": "611",
-      "effect": "rejeicao",
-      "message": "Existe MDFe não encerrado para esta placa, tipo de emitente e UF descarregamento [chMDFe: 99999999999999999999999999999999999999999999][nProt:999999999999999]",
+      "codigo": "611",
+      "efeito": "rejeicao",
+      "mensagem": "Existe MDFe não encerrado para esta placa, tipo de emitente e UF descarregamento [chMDFe: 99999999999999999999999999999999999999999999][nProt:999999999999999]",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F85",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F85",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F85"
         }
       ],
-      "category": "regra-negocio",
+      "categoria": "regra-negocio",
       "causaProvavel": "Existe MDF-e não encerrado para a mesma placa, o mesmo tipo de emitente e a mesma UF de descarregamento.",
       "comoCorrigir": "Encerre o MDF-e anterior (a consulta de não encerrados lista chave e protocolo) antes de emitir o novo.",
       "referencia": "MOC MDF-e 3.00b Anexo I, regra F85"
     },
     {
-      "code": "612",
-      "effect": "rejeicao",
-      "message": "Código de Município diverge da UF de descarregamento do MDFe",
+      "codigo": "612",
+      "efeito": "rejeicao",
+      "mensagem": "Código de Município diverge da UF de descarregamento do MDFe",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F11",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F11",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F11"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K08"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "614",
-      "effect": "rejeicao",
-      "message": "Código de Município diverge da UF de encerramento do MDFe",
+      "codigo": "614",
+      "efeito": "rejeicao",
+      "mensagem": "Código de Município diverge da UF de encerramento do MDFe",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra K03",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra K03",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K03"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "615",
-      "effect": "rejeicao",
-      "message": "Data de encerramento anterior à data de autorização do MDFe",
+      "codigo": "615",
+      "efeito": "rejeicao",
+      "mensagem": "Data de encerramento anterior à data de autorização do MDFe",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra K07",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra K07",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K07"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "616",
-      "effect": "rejeicao",
-      "message": "Nenhum grupo de documentos foi informado (CTe, CT, NFe, MDFe)",
+      "codigo": "616",
+      "efeito": "rejeicao",
+      "mensagem": "Nenhum grupo de documentos foi informado (CTe, CT, NFe, MDFe)",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F26",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F26",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F26"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "627",
-      "effect": "rejeicao",
-      "message": "CNPJ do autor do evento inválido",
+      "codigo": "627",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ do autor do evento inválido",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra J02",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra J02",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "J02"
         }
       ],
-      "category": "cadastro"
+      "categoria": "cadastro"
     },
     {
-      "code": "628",
-      "effect": "rejeicao",
-      "message": "Erro Atributo ID do evento não corresponde à concatenação dos campos (“ID” + tpEvento + chMDFe + nSeqEvento)",
+      "codigo": "628",
+      "efeito": "rejeicao",
+      "mensagem": "Erro Atributo ID do evento não corresponde à concatenação dos campos (“ID” + tpEvento + chMDFe + nSeqEvento)",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra J04",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra J04",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "J04"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "629",
-      "effect": "rejeicao",
-      "message": "O tpEvento informado inválido",
+      "codigo": "629",
+      "efeito": "rejeicao",
+      "mensagem": "O tpEvento informado inválido",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra J05",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra J05",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "J05"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "630",
-      "effect": "rejeicao",
-      "message": "Falha no Schema XML específico para o evento",
+      "codigo": "630",
+      "efeito": "rejeicao",
+      "mensagem": "Falha no Schema XML específico para o evento",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra J06",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra J06",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "J06"
         }
       ],
-      "category": "schema"
+      "categoria": "schema"
     },
     {
-      "code": "631",
-      "effect": "rejeicao",
-      "message": "Duplicidade de evento [nProt:999999999999999][dhRegEvento: AAAA-MM-DDTHH:MM:SS TZD]",
+      "codigo": "631",
+      "efeito": "rejeicao",
+      "mensagem": "Duplicidade de evento [nProt:999999999999999][dhRegEvento: AAAA-MM-DDTHH:MM:SS TZD]",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra J08",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra J08",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "J08"
         }
       ],
-      "category": "duplicidade"
+      "categoria": "duplicidade"
     },
     {
-      "code": "632",
-      "effect": "rejeicao",
-      "message": "O autor do evento diverge do emissor do MDFe",
+      "codigo": "632",
+      "efeito": "rejeicao",
+      "mensagem": "O autor do evento diverge do emissor do MDFe",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra J09",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra J09",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "J09"
         },
         {
-          "doc": "mdfe-nt2024001",
+          "documento": "mdfe-nt2024001",
           "id": "J09"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "633",
-      "effect": "rejeicao",
-      "message": "O autor do evento não é um órgão autorizado a gerar o evento",
+      "codigo": "633",
+      "efeito": "rejeicao",
+      "mensagem": "O autor do evento não é um órgão autorizado a gerar o evento",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra J11",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra J11",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "J11"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "634",
-      "effect": "rejeicao",
-      "message": "A data do evento não pode ser menor que a data de emissão do MDFe",
+      "codigo": "634",
+      "efeito": "rejeicao",
+      "mensagem": "A data do evento não pode ser menor que a data de emissão do MDFe",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra J14",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra J14",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "J14"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "635",
-      "effect": "rejeicao",
-      "message": "A data do evento não pode ser maior que a data do processamento",
+      "codigo": "635",
+      "efeito": "rejeicao",
+      "mensagem": "A data do evento não pode ser maior que a data do processamento",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra J16",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra J16",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "J16"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "636",
-      "effect": "rejeicao",
-      "message": "O número sequencial do evento é maior que o permitido",
+      "codigo": "636",
+      "efeito": "rejeicao",
+      "mensagem": "O número sequencial do evento é maior que o permitido",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra K01",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra K01",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K01"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "637",
-      "effect": "rejeicao",
-      "message": "A data do evento não pode ser menor que a data de autorização do MDFe",
+      "codigo": "637",
+      "efeito": "rejeicao",
+      "mensagem": "A data do evento não pode ser menor que a data de autorização do MDFe",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra J15",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra J15",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "J15"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "638",
-      "effect": "rejeicao",
-      "message": "Não deve ser informada Nota Fiscal para tipo de emitente Prestador Serviço de Transporte",
+      "codigo": "638",
+      "efeito": "rejeicao",
+      "mensagem": "Não deve ser informada Nota Fiscal para tipo de emitente Prestador Serviço de Transporte",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F14",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F14",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F14"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "639",
-      "effect": "rejeicao",
-      "message": "Não deve ser informado Conhecimento de Transporte Eletrônico para tipo de emitente Transporte de Carga Própria.",
+      "codigo": "639",
+      "efeito": "rejeicao",
+      "mensagem": "Não deve ser informado Conhecimento de Transporte Eletrônico para tipo de emitente Transporte de Carga Própria.",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F15",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F15",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F15"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "644",
-      "effect": "rejeicao",
-      "message": "Evento de inclusão de condutor só pode ser registrado para o modal rodoviário",
+      "codigo": "644",
+      "efeito": "rejeicao",
+      "mensagem": "Evento de inclusão de condutor só pode ser registrado para o modal rodoviário",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra K05",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra K05",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K05"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "645",
-      "effect": "rejeicao",
-      "message": "CPF do condutor inválido",
+      "codigo": "645",
+      "efeito": "rejeicao",
+      "mensagem": "CPF do condutor inválido",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F100",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F100",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F100"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K06"
         }
       ],
-      "category": "cadastro"
+      "categoria": "cadastro"
     },
     {
-      "code": "646",
-      "effect": "rejeicao",
-      "message": "Placa de veículo formato inválido (UF Carregamento e Descarregamento <> ‘EX’)",
+      "codigo": "646",
+      "efeito": "rejeicao",
+      "mensagem": "Placa de veículo formato inválido (UF Carregamento e Descarregamento <> ‘EX’)",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F89",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F89",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F89"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "647",
-      "effect": "rejeicao",
-      "message": "MDFe só pode ser referenciado por manifesto do modal aquaviário",
+      "codigo": "647",
+      "efeito": "rejeicao",
+      "mensagem": "MDFe só pode ser referenciado por manifesto do modal aquaviário",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F43",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F43",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F43"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "648",
-      "effect": "rejeicao",
-      "message": "MDFe só pode ser referenciado quando UF de Carregamento/Descarregamento for igual a AM ou AP",
+      "codigo": "648",
+      "efeito": "rejeicao",
+      "mensagem": "MDFe só pode ser referenciado quando UF de Carregamento/Descarregamento for igual a AM ou AP",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F44",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F44",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F44"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "649",
-      "effect": "rejeicao",
-      "message": "Chave de acesso de MDFe informada inválida [chMDFe: 99999999999999999999999999999999999999999999] [Motivo: XXXXXXXXXXXX]",
+      "codigo": "649",
+      "efeito": "rejeicao",
+      "mensagem": "Chave de acesso de MDFe informada inválida [chMDFe: 99999999999999999999999999999999999999999999] [Motivo: XXXXXXXXXXXX]",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F45",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F45",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F45"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "655",
-      "effect": "rejeicao",
-      "message": "MDFe referenciado não existe na base de dados da SEFAZ",
+      "codigo": "655",
+      "efeito": "rejeicao",
+      "mensagem": "MDFe referenciado não existe na base de dados da SEFAZ",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F46",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F46",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F46"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "656",
-      "effect": "rejeicao",
-      "message": "Chave de Acesso do MDFe referenciado difere da existente em BD",
+      "codigo": "656",
+      "efeito": "rejeicao",
+      "mensagem": "Chave de Acesso do MDFe referenciado difere da existente em BD",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F47",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F47",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F47"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "657",
-      "effect": "rejeicao",
-      "message": "MDFe referenciado já está cancelado na base de dados da SEFAZ",
+      "codigo": "657",
+      "efeito": "rejeicao",
+      "mensagem": "MDFe referenciado já está cancelado na base de dados da SEFAZ",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F48",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F48",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F48"
         }
       ],
-      "category": "duplicidade"
+      "categoria": "duplicidade"
     },
     {
-      "code": "658",
-      "effect": "rejeicao",
-      "message": "Modal do MDFe referenciado diferente de Rodoviário",
+      "codigo": "658",
+      "efeito": "rejeicao",
+      "mensagem": "Modal do MDFe referenciado diferente de Rodoviário",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F49",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F49",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F49"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "659",
-      "effect": "rejeicao",
-      "message": "Tipo do Emitente do MDFe referenciado difere de Transportador de Carga Própria",
+      "codigo": "659",
+      "efeito": "rejeicao",
+      "mensagem": "Tipo do Emitente do MDFe referenciado difere de Transportador de Carga Própria",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F50",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F50",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F50"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "660",
-      "effect": "rejeicao",
-      "message": "CNPJ autorizado para download inválido",
+      "codigo": "660",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ autorizado para download inválido",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F105",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F105",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F105"
         }
       ],
-      "category": "cadastro"
+      "categoria": "cadastro"
     },
     {
-      "code": "661",
-      "effect": "rejeicao",
-      "message": "CPF autorizado para download inválido",
+      "codigo": "661",
+      "efeito": "rejeicao",
+      "mensagem": "CPF autorizado para download inválido",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F106",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F106",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F106"
         }
       ],
-      "category": "cadastro"
+      "categoria": "cadastro"
     },
     {
-      "code": "662",
-      "effect": "rejeicao",
-      "message": "Existe MDFe não encerrado para esta placa, tipo de emitente no sentido oposto da viagem",
+      "codigo": "662",
+      "efeito": "rejeicao",
+      "mensagem": "Existe MDFe não encerrado para esta placa, tipo de emitente no sentido oposto da viagem",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F88",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F88",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F88"
         }
       ],
-      "category": "regra-negocio",
+      "categoria": "regra-negocio",
       "causaProvavel": "Existe MDF-e não encerrado para a mesma placa com o par de UF de carregamento e descarregamento no sentido oposto (a volta foi emitida sem encerrar a ida).",
       "comoCorrigir": "Encerre o MDF-e da ida antes de autorizar o da volta.",
       "referencia": "MOC MDF-e 3.00b Anexo I, regra F88"
     },
     {
-      "code": "663",
-      "effect": "rejeicao",
-      "message": "Percurso informado inválido",
+      "codigo": "663",
+      "efeito": "rejeicao",
+      "mensagem": "Percurso informado inválido",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F90",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F90",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F90"
         }
       ],
-      "category": "regra-negocio",
+      "categoria": "regra-negocio",
       "causaProvavel": "As UF de percurso não formam um caminho por divisas entre a UF de carregamento e a de descarregamento, na ordem da viagem.",
       "comoCorrigir": "Informe em infPercurso, na ordem, cada UF atravessada entre UFIni e UFFim, de modo que cada par consecutivo faça divisa.",
       "referencia": "MOC MDF-e 3.00b Anexo I, regra F90"
     },
     {
-      "code": "666",
-      "effect": "rejeicao",
-      "message": "Ano do MDFe informado na chave de acesso inválido",
+      "codigo": "666",
+      "efeito": "rejeicao",
+      "mensagem": "Ano do MDFe informado na chave de acesso inválido",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F04",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F04",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F04"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "667",
-      "effect": "rejeicao",
-      "message": "Quantidade informada no grupo de totalizadores não confere com a quantidade de documentos relacionada",
+      "codigo": "667",
+      "efeito": "rejeicao",
+      "mensagem": "Quantidade informada no grupo de totalizadores não confere com a quantidade de documentos relacionada",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F51",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F51",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F51"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "668",
-      "effect": "rejeicao",
-      "message": "Chave de Acesso de CTe duplicada [chCTe: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]",
+      "codigo": "668",
+      "efeito": "rejeicao",
+      "mensagem": "Chave de Acesso de CTe duplicada [chCTe: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F28",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F28",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F28"
         }
       ],
-      "category": "duplicidade"
+      "categoria": "duplicidade"
     },
     {
-      "code": "669",
-      "effect": "rejeicao",
-      "message": "Chave de Acesso de NFe duplicada [chNFe: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]",
+      "codigo": "669",
+      "efeito": "rejeicao",
+      "mensagem": "Chave de Acesso de NFe duplicada [chNFe: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F29",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F29",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F29"
         }
       ],
-      "category": "duplicidade"
+      "categoria": "duplicidade"
     },
     {
-      "code": "671",
-      "effect": "rejeicao",
-      "message": "CTe informado não existe na base de dados da SEFAZ [chCTe: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]",
+      "codigo": "671",
+      "efeito": "rejeicao",
+      "mensagem": "CTe informado não existe na base de dados da SEFAZ [chCTe: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F31",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F31",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F31"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "672",
-      "effect": "rejeicao",
-      "message": "CTe informado com diferença de chave de acesso [chCTe: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]",
+      "codigo": "672",
+      "efeito": "rejeicao",
+      "mensagem": "CTe informado com diferença de chave de acesso [chCTe: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F32",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F32",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F32"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "673",
-      "effect": "rejeicao",
-      "message": "CTe informado não pode estar cancelado na base da SEFAZ [chCTe: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]",
+      "codigo": "673",
+      "efeito": "rejeicao",
+      "mensagem": "CTe informado não pode estar cancelado na base da SEFAZ [chCTe: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F33",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F33",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F33"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "675",
-      "effect": "rejeicao",
-      "message": "NFe informada não existe na base de dados da SEFAZ [chNFe: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]",
+      "codigo": "675",
+      "efeito": "rejeicao",
+      "mensagem": "NFe informada não existe na base de dados da SEFAZ [chNFe: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F38",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F38",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F38"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K11"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "676",
-      "effect": "rejeicao",
-      "message": "NFe informada com diferença de chave de acesso [chNFe: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]",
+      "codigo": "676",
+      "efeito": "rejeicao",
+      "mensagem": "NFe informada com diferença de chave de acesso [chNFe: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F39",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F39",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F39"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K12"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "677",
-      "effect": "rejeicao",
-      "message": "NFe informada não pode estar cancelada/denegada na base da SEFAZ [chNFe: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]",
+      "codigo": "677",
+      "efeito": "rejeicao",
+      "mensagem": "NFe informada não pode estar cancelada/denegada na base da SEFAZ [chNFe: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F40",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F40",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F40"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K13"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "678",
-      "effect": "rejeicao",
-      "message": "Consumo Indevido",
+      "codigo": "678",
+      "efeito": "rejeicao",
+      "mensagem": "Consumo Indevido",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, item 8 (as regras CI01 a CI04 dão só o código; a mensagem está no texto do item 8)",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, item 8 (as regras CI01 a CI04 dão só o código; a mensagem está no texto do item 8)",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "CI01"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "680",
-      "effect": "rejeicao",
-      "message": "Município de descarregamento duplicado no MDFe",
+      "codigo": "680",
+      "efeito": "rejeicao",
+      "mensagem": "Município de descarregamento duplicado no MDFe",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F13",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F13",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F13"
         }
       ],
-      "category": "duplicidade"
+      "categoria": "duplicidade"
     },
     {
-      "code": "681",
-      "effect": "rejeicao",
-      "message": "RNTRC informado inexistente.",
+      "codigo": "681",
+      "efeito": "rejeicao",
+      "mensagem": "RNTRC informado inexistente.",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F109",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F109",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F109"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "682",
-      "effect": "rejeicao",
-      "message": "RNTRC situação inválida.",
+      "codigo": "682",
+      "efeito": "rejeicao",
+      "mensagem": "RNTRC situação inválida.",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F110",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F110",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F110"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "683",
-      "effect": "rejeicao",
-      "message": "Placa do veículo de tração não vinculada ao RNTRC informado.",
+      "codigo": "683",
+      "efeito": "rejeicao",
+      "mensagem": "Placa do veículo de tração não vinculada ao RNTRC informado.",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F112",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F112",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F112"
         }
       ],
-      "category": "cadastro"
+      "categoria": "cadastro"
     },
     {
-      "code": "684",
-      "effect": "rejeicao",
-      "message": "CIOT obrigatório para RNTRC informado.",
-      "messages": ["CIOT obrigatório para RNTRC informado.", "CIOT deverá ser informado"],
+      "codigo": "684",
+      "efeito": "rejeicao",
+      "mensagem": "CIOT obrigatório para RNTRC informado.",
+      "mensagens": ["CIOT obrigatório para RNTRC informado.", "CIOT deverá ser informado"],
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F113",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F113",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F113"
         },
         {
-          "doc": "mdfe-nt2024001",
+          "documento": "mdfe-nt2024001",
           "id": "F113"
         }
       ],
-      "category": "regra-negocio",
+      "categoria": "regra-negocio",
       "causaProvavel": "Prestação por conta de terceiros no modal rodoviário (tpEmit 1 ou 3, ou tpEmit 2 com tpTransp) sem o grupo infCIOT. A NT 2026.001 torna a exigência geral a partir de 23/11/2026 em produção.",
       "comoCorrigir": "Informe infANTT/infCIOT com o CIOT e o CPF ou CNPJ do responsável pela geração.",
       "referencia": "MDF-e NT 2026.001 v1.00, item 1; MOC MDF-e 3.00b Anexo I, regra F113"
     },
     {
-      "code": "685",
-      "effect": "rejeicao",
-      "message": "Município de carregamento duplicado no MDFe",
+      "codigo": "685",
+      "efeito": "rejeicao",
+      "mensagem": "Município de carregamento duplicado no MDFe",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F10",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F10",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F10"
         }
       ],
-      "category": "duplicidade"
+      "categoria": "duplicidade"
     },
     {
-      "code": "686",
-      "effect": "rejeicao",
-      "message": "Existe MDFe não encerrado há mais de 30 dias para o emitente [chMDFe: 99999999999999999999999999999999999999999999][nProt:999999999999999]",
+      "codigo": "686",
+      "efeito": "rejeicao",
+      "mensagem": "Existe MDFe não encerrado há mais de 30 dias para o emitente [chMDFe: 99999999999999999999999999999999999999999999][nProt:999999999999999]",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F86",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F86",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F86"
         }
       ],
-      "category": "regra-negocio",
+      "categoria": "regra-negocio",
       "causaProvavel": "O emitente tem MDF-e autorizado há mais de 30 dias sem encerramento.",
       "comoCorrigir": "Liste os não encerrados (MDFeConsNaoEnc) e encerre cada um com a data e o município reais do fim da viagem.",
       "referencia": "MOC MDF-e 3.00b Anexo I, regra F86"
     },
     {
-      "code": "687",
-      "effect": "rejeicao",
-      "message": "RNTRC deve estar associado ao transportador indicado",
+      "codigo": "687",
+      "efeito": "rejeicao",
+      "mensagem": "RNTRC deve estar associado ao transportador indicado",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F111",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F111",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F111"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "688",
-      "effect": "rejeicao",
-      "message": "RNTRC deve ser informado para Prestador de Serviço de Transporte",
+      "codigo": "688",
+      "efeito": "rejeicao",
+      "mensagem": "RNTRC deve ser informado para Prestador de Serviço de Transporte",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F108",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F108",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F108"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "689",
-      "effect": "rejeicao",
-      "message": "Município de encerramento deve ser 9999999 para encerramento no exterior",
+      "codigo": "689",
+      "efeito": "rejeicao",
+      "mensagem": "Município de encerramento deve ser 9999999 para encerramento no exterior",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra K04",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra K04",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K04"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "698",
-      "effect": "rejeicao",
-      "message": "Seguro da carga é obrigatório para modal Prestador de Serviço de Transporte no modal rodoviário",
+      "codigo": "698",
+      "efeito": "rejeicao",
+      "mensagem": "Seguro da carga é obrigatório para modal Prestador de Serviço de Transporte no modal rodoviário",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F91",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F91",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F91"
         }
       ],
-      "category": "regra-negocio",
+      "categoria": "regra-negocio",
       "causaProvavel": "Prestador de serviço de transporte (tpEmit 1 ou 3) no modal rodoviário sem o grupo de seguro da carga.",
       "comoCorrigir": "Informe seg com o responsável, a seguradora, a apólice e as averbações.",
       "referencia": "MOC MDF-e 3.00b Anexo I, regra F91"
     },
     {
-      "code": "699",
-      "effect": "rejeicao",
-      "message": "Dados do seguro de carga incompletos para o modal rodoviário",
+      "codigo": "699",
+      "efeito": "rejeicao",
+      "mensagem": "Dados do seguro de carga incompletos para o modal rodoviário",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F92",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F92",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F92"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "700",
-      "effect": "rejeicao",
-      "message": "CPF do autor do evento inválido",
+      "codigo": "700",
+      "efeito": "rejeicao",
+      "mensagem": "CPF do autor do evento inválido",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra J03",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra J03",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "J03"
         }
       ],
-      "category": "cadastro"
+      "categoria": "cadastro"
     },
     {
-      "code": "701",
-      "effect": "rejeicao",
-      "message": "Tipo de evento incompatível com emitente pessoa física",
+      "codigo": "701",
+      "efeito": "rejeicao",
+      "mensagem": "Tipo de evento incompatível com emitente pessoa física",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra J10",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra J10",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "J10"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "702",
-      "effect": "rejeicao",
-      "message": "Modal inválido para entrega parcial (apenas modal aéreo)",
+      "codigo": "702",
+      "efeito": "rejeicao",
+      "mensagem": "Modal inválido para entrega parcial (apenas modal aéreo)",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F34",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F34",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F34"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "703",
-      "effect": "rejeicao",
-      "message": "Carregamento e Descarregamento inválidos para MDFe com indicação de carregamento posterior",
+      "codigo": "703",
+      "efeito": "rejeicao",
+      "mensagem": "Carregamento e Descarregamento inválidos para MDFe com indicação de carregamento posterior",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F21",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F21",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F21"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "704",
-      "effect": "rejeicao",
-      "message": "MDFe com indicação de carregamento posterior não permitido para operações interestaduais ou com o exterior",
+      "codigo": "704",
+      "efeito": "rejeicao",
+      "mensagem": "MDFe com indicação de carregamento posterior não permitido para operações interestaduais ou com o exterior",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F22",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F22",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F22"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "705",
-      "effect": "rejeicao",
-      "message": "Modal inválido para MDFe com indicação de carregamento posterior (apenas modal rodoviário)",
+      "codigo": "705",
+      "efeito": "rejeicao",
+      "mensagem": "Modal inválido para MDFe com indicação de carregamento posterior (apenas modal rodoviário)",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F23",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F23",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F23"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "706",
-      "effect": "rejeicao",
-      "message": "Não informar documentos transportados para MDFe com indicação de carregamento posterior (usar evento inclusão de DF-e)",
+      "codigo": "706",
+      "efeito": "rejeicao",
+      "mensagem": "Não informar documentos transportados para MDFe com indicação de carregamento posterior (usar evento inclusão de DF-e)",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F27",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F27",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F27"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "707",
-      "effect": "rejeicao",
-      "message": "MDFe com indicação de carregamento posterior com tipo de emitente diferente de transporte próprio",
+      "codigo": "707",
+      "efeito": "rejeicao",
+      "mensagem": "MDFe com indicação de carregamento posterior com tipo de emitente diferente de transporte próprio",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F24",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F24",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F24"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "708",
-      "effect": "rejeicao",
-      "message": "MDFe deve possui indicação de carregamento posterior para inclusão de DF-e",
+      "codigo": "708",
+      "efeito": "rejeicao",
+      "mensagem": "MDFe deve possui indicação de carregamento posterior para inclusão de DF-e",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra K05",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra K05",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K05"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "709",
-      "effect": "rejeicao",
-      "message": "Chave de acesso de NFe inválida no evento de inclusão [Motivo: CNPJ/CPF inválido / Modelo diferente de 55 / Ano inválido (< 2006) / Mês inválido (0 ou > 12) / Tipo de emissão inválido / UF inválida / Número zerado / DV inválido]",
+      "codigo": "709",
+      "efeito": "rejeicao",
+      "mensagem": "Chave de acesso de NFe inválida no evento de inclusão [Motivo: CNPJ/CPF inválido / Modelo diferente de 55 / Ano inválido (< 2006) / Mês inválido (0 ou > 12) / Tipo de emissão inválido / UF inválida / Número zerado / DV inválido]",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra K10",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra K10",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K10"
         }
       ],
-      "category": "cadastro"
+      "categoria": "cadastro"
     },
     {
-      "code": "710",
-      "effect": "rejeicao",
-      "message": "Cancelamento não é permitido para MDFe com indicação de carregamento posterior que já realizou inserção de DF-e",
+      "codigo": "710",
+      "efeito": "rejeicao",
+      "mensagem": "Cancelamento não é permitido para MDFe com indicação de carregamento posterior que já realizou inserção de DF-e",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra K08",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra K08",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K08"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "711",
-      "effect": "rejeicao",
-      "message": "NFe já está vinculada ao MDFe por outro evento",
+      "codigo": "711",
+      "efeito": "rejeicao",
+      "mensagem": "NFe já está vinculada ao MDFe por outro evento",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra K14",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra K14",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K14"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "712",
-      "effect": "rejeicao",
-      "message": "Existe MDFe com indicação de carregamento posterior sem inclusão de DF-e para o emitente há mais de 168 horas",
+      "codigo": "712",
+      "efeito": "rejeicao",
+      "mensagem": "Existe MDFe com indicação de carregamento posterior sem inclusão de DF-e para o emitente há mais de 168 horas",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F25",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F25",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F25"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "713",
-      "effect": "rejeicao",
-      "message": "CNPJ do desenvolvedor do sistema inválido (zerado ou dígito inválido)",
+      "codigo": "713",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ do desenvolvedor do sistema inválido (zerado ou dígito inválido)",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F121",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F121",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F121"
         }
       ],
-      "category": "cadastro"
+      "categoria": "cadastro"
     },
     {
-      "code": "714",
-      "effect": "rejeicao",
-      "message": "Município de encerramento inexistente",
+      "codigo": "714",
+      "efeito": "rejeicao",
+      "mensagem": "Município de encerramento inexistente",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra K02",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra K02",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K02"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "715",
-      "effect": "rejeicao",
-      "message": "Não é permitido encerrar MDFe com indicação de carregamento posterior sem inclusão de DF-e associada",
+      "codigo": "715",
+      "efeito": "rejeicao",
+      "mensagem": "Não é permitido encerrar MDFe com indicação de carregamento posterior sem inclusão de DF-e associada",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra K10",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra K10",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K10"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "716",
-      "effect": "rejeicao",
-      "message": "CNPJ / CPF do responsável pela geração do CIOT inválido",
+      "codigo": "716",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ / CPF do responsável pela geração do CIOT inválido",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F101",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F101",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F101"
         }
       ],
-      "category": "cadastro"
+      "categoria": "cadastro"
     },
     {
-      "code": "717",
-      "effect": "rejeicao",
-      "message": "CNPJ / CPF do contratante do transporte inválido",
+      "codigo": "717",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ / CPF do contratante do transporte inválido",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F102",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F102",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F102"
         }
       ],
-      "category": "cadastro"
+      "categoria": "cadastro"
     },
     {
-      "code": "718",
-      "effect": "rejeicao",
-      "message": "CNPJ / CPF do proprietário do veículo de tração inválido",
+      "codigo": "718",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ / CPF do proprietário do veículo de tração inválido",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F103",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F103",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F103"
         }
       ],
-      "category": "cadastro"
+      "categoria": "cadastro"
     },
     {
-      "code": "719",
-      "effect": "rejeicao",
-      "message": "CNPJ / CPF do proprietário do veículo reboque inválido",
+      "codigo": "719",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ / CPF do proprietário do veículo reboque inválido",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F104",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F104",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F104"
         }
       ],
-      "category": "cadastro"
+      "categoria": "cadastro"
     },
     {
-      "code": "720",
-      "effect": "rejeicao",
-      "message": "Obrigatória as informações do responsável técnico",
+      "codigo": "720",
+      "efeito": "rejeicao",
+      "mensagem": "Obrigatória as informações do responsável técnico",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F120",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F120",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F120"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "721",
-      "effect": "rejeicao",
-      "message": "Obrigatória a informação do identificador do CSRT e do Hash do CSRT",
+      "codigo": "721",
+      "efeito": "rejeicao",
+      "mensagem": "Obrigatória a informação do identificador do CSRT e do Hash do CSRT",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F122",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F122",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F122"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "722",
-      "effect": "rejeicao",
-      "message": "MDFe deve ser do modal rodoviário para o evento Pagamento de MDFe",
+      "codigo": "722",
+      "efeito": "rejeicao",
+      "mensagem": "MDFe deve ser do modal rodoviário para o evento Pagamento de MDFe",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra K05",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra K05",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K05"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "723",
-      "effect": "rejeicao",
-      "message": "O tipo do proprietário do MDFe deve ser do tipo TAC Agregado",
+      "codigo": "723",
+      "efeito": "rejeicao",
+      "mensagem": "O tipo do proprietário do MDFe deve ser do tipo TAC Agregado",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra K06",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra K06",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K06"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "724",
-      "effect": "rejeicao",
-      "message": "Grupo de informações do pagamento a prazo deve ser informado",
+      "codigo": "724",
+      "efeito": "rejeicao",
+      "mensagem": "Grupo de informações do pagamento a prazo deve ser informado",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F52",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F52",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F52"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K07"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K05"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "725",
-      "effect": "rejeicao",
-      "message": "Grupo produto predominante deve ser informado para modal rodoviário",
+      "codigo": "725",
+      "efeito": "rejeicao",
+      "mensagem": "Grupo produto predominante deve ser informado para modal rodoviário",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F54",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F54",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F54"
         }
       ],
-      "category": "regra-negocio",
+      "categoria": "regra-negocio",
       "causaProvavel": "Prestador de serviço de transporte (tpEmit 1 ou 3), ou carga própria com tpTransp informado, sem o grupo do produto predominante.",
       "comoCorrigir": "Informe prodPred com tpCarga e xProd (e NCM na carga lotação, NT 2025.001).",
       "referencia": "MOC MDF-e 3.00b Anexo I, regra F54"
     },
     {
-      "code": "726",
-      "effect": "rejeicao",
-      "message": "O grupo de informações da carga lotação deve ser informado",
+      "codigo": "726",
+      "efeito": "rejeicao",
+      "mensagem": "O grupo de informações da carga lotação deve ser informado",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F55",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F55",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F55"
         }
       ],
-      "category": "regra-negocio",
+      "categoria": "regra-negocio",
       "causaProvavel": "MDF-e com um único DF-e transportado (carga lotação) sem o grupo infLotacao do produto predominante.",
       "comoCorrigir": "Informe prodPred/infLotacao com o CEP ou as coordenadas do local de carregamento e de descarregamento.",
       "referencia": "MOC MDF-e 3.00b Anexo I, regra F55"
     },
     {
-      "code": "727",
-      "effect": "rejeicao",
-      "message": "CNPJ/CPF do responsável pelo pagamento do frete inválido",
+      "codigo": "727",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ/CPF do responsável pelo pagamento do frete inválido",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F56",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F56",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F56"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K09"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K07"
         }
       ],
-      "category": "cadastro"
+      "categoria": "cadastro"
     },
     {
-      "code": "728",
-      "effect": "rejeicao",
-      "message": "CNPJ da instituição de pagamento eletrônico do frete inválido",
+      "codigo": "728",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ da instituição de pagamento eletrônico do frete inválido",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F57",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F57",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F57"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K10"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K08"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "729",
-      "effect": "rejeicao",
-      "message": "Grupo de informações do pagamento a prazo não deve ser informado",
+      "codigo": "729",
+      "efeito": "rejeicao",
+      "mensagem": "Grupo de informações do pagamento a prazo não deve ser informado",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F53",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F53",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F53"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K08"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K06"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "731",
-      "effect": "rejeicao",
-      "message": "A categoria de combinação veicular deve ser preenchida para o grupo vale pedágio",
+      "codigo": "731",
+      "efeito": "rejeicao",
+      "mensagem": "A categoria de combinação veicular deve ser preenchida para o grupo vale pedágio",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F95",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F95",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F95"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "732",
-      "effect": "rejeicao",
-      "message": "CNPJ do fornecedor do vale pedágio inválido.",
+      "codigo": "732",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ do fornecedor do vale pedágio inválido.",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F96",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F96",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F96"
         }
       ],
-      "category": "cadastro"
+      "categoria": "cadastro"
     },
     {
-      "code": "733",
-      "effect": "rejeicao",
-      "message": "CNPJ do Fornecedor do Vale Pedágio inexistente na base da ANTT. Em caso de rejeição ligue para Ouvidoria ANTT pelo número 166",
+      "codigo": "733",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ do Fornecedor do Vale Pedágio inexistente na base da ANTT. Em caso de rejeição ligue para Ouvidoria ANTT pelo número 166",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F97",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F97",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F97"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "734",
-      "effect": "rejeicao",
-      "message": "CNPJ / CPF do responsável pelo pagamento do vale pedágio inválido",
+      "codigo": "734",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ / CPF do responsável pelo pagamento do vale pedágio inválido",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F98",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F98",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F98"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "735",
-      "effect": "rejeicao",
-      "message": "Número da parcela inválido [nParcela:999]",
+      "codigo": "735",
+      "efeito": "rejeicao",
+      "mensagem": "Número da parcela inválido [nParcela:999]",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F59",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F59",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F59"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K12"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K10"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "736",
-      "effect": "rejeicao",
-      "message": "Data de vencimento da parcela menor que a data de emissão [nParcela:999]",
+      "codigo": "736",
+      "efeito": "rejeicao",
+      "mensagem": "Data de vencimento da parcela menor que a data de emissão [nParcela:999]",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F60",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F60",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F60"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K13"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K11"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "737",
-      "effect": "rejeicao",
-      "message": "Data de vencimento da parcela menor que a data da parcela anterior [nParcela: 999]",
+      "codigo": "737",
+      "efeito": "rejeicao",
+      "mensagem": "Data de vencimento da parcela menor que a data da parcela anterior [nParcela: 999]",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F61",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F61",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F61"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K14"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K12"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "738",
-      "effect": "rejeicao",
-      "message": "Somatório do valor das parcelas diferente do valor do contrato",
+      "codigo": "738",
+      "efeito": "rejeicao",
+      "mensagem": "Somatório do valor das parcelas diferente do valor do contrato",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F62",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F62",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F62"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K15"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K13"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "739",
-      "effect": "rejeicao",
-      "message": "Valor do adiantamento não pode ser informado para pagamento a vista",
+      "codigo": "739",
+      "efeito": "rejeicao",
+      "mensagem": "Valor do adiantamento não pode ser informado para pagamento a vista",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F63",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F63",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F63"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K16"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K14"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "740",
-      "effect": "rejeicao",
-      "message": "O proprietário do veículo quando informado deve ser diferente do emitente do MDFe",
+      "codigo": "740",
+      "efeito": "rejeicao",
+      "mensagem": "O proprietário do veículo quando informado deve ser diferente do emitente do MDFe",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F64",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F64",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F64"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "741",
-      "effect": "rejeicao",
-      "message": "O contratante deve ser igual ao emitente do MDFe quando indicado proprietário do veículo",
+      "codigo": "741",
+      "efeito": "rejeicao",
+      "mensagem": "O contratante deve ser igual ao emitente do MDFe quando indicado proprietário do veículo",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F65",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F65",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F65"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "742",
-      "effect": "rejeicao",
-      "message": "Contratante informado duplicado [Contratante: 99999999999]",
+      "codigo": "742",
+      "efeito": "rejeicao",
+      "mensagem": "Contratante informado duplicado [Contratante: 99999999999]",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F66",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F66",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F66"
         }
       ],
-      "category": "duplicidade"
+      "categoria": "duplicidade"
     },
     {
-      "code": "743",
-      "effect": "rejeicao",
-      "message": "O tipo de transportador deve ser TAC quando informado CPF do proprietário do veículo de tração",
+      "codigo": "743",
+      "efeito": "rejeicao",
+      "mensagem": "O tipo de transportador deve ser TAC quando informado CPF do proprietário do veículo de tração",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F18",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F18",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F18"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "744",
-      "effect": "rejeicao",
-      "message": "O tipo de transportador deve ser ETC ou CTE quando informado CNPJ do proprietário do veículo de tração",
+      "codigo": "744",
+      "efeito": "rejeicao",
+      "mensagem": "O tipo de transportador deve ser ETC ou CTE quando informado CNPJ do proprietário do veículo de tração",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F19",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F19",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F19"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "745",
-      "effect": "rejeicao",
-      "message": "O tipo de transportador não ser informado quando não estiver informado proprietário do veículo de tração",
+      "codigo": "745",
+      "efeito": "rejeicao",
+      "mensagem": "O tipo de transportador não ser informado quando não estiver informado proprietário do veículo de tração",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F20",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F20",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F20"
         }
       ],
-      "category": "regra-negocio",
+      "categoria": "regra-negocio",
       "causaProvavel": "tpTransp informado sem o proprietário do veículo de tração. No transporte de carga própria em veículo próprio, o tipo de transportador não vai.",
       "comoCorrigir": "Retire tpTransp, ou informe veicTracao/prop quando o veículo for de terceiro.",
       "referencia": "MOC MDF-e 3.00b Anexo I, regra F20"
     },
     {
-      "code": "746",
-      "effect": "rejeicao",
-      "message": "A soma dos componentes do pagamento deve ser igual ao valor do contrato",
+      "codigo": "746",
+      "efeito": "rejeicao",
+      "mensagem": "A soma dos componentes do pagamento deve ser igual ao valor do contrato",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F58",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F58",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F58"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K11"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K09"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "747",
-      "effect": "rejeicao",
-      "message": "MDFe deve ser do modal rodoviário para o evento Confirmação da operação de transporte",
+      "codigo": "747",
+      "efeito": "rejeicao",
+      "mensagem": "MDFe deve ser do modal rodoviário para o evento Confirmação da operação de transporte",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra K04",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra K04",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K04"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "748",
-      "effect": "rejeicao",
-      "message": "Contratante não relacionado no MDFe",
+      "codigo": "748",
+      "efeito": "rejeicao",
+      "mensagem": "Contratante não relacionado no MDFe",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra K05",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra K05",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K05"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "749",
-      "effect": "rejeicao",
-      "message": "MDFe deve ser do modal rodoviário para o evento de Alteração do Pagamento de MDFe",
+      "codigo": "749",
+      "efeito": "rejeicao",
+      "mensagem": "MDFe deve ser do modal rodoviário para o evento de Alteração do Pagamento de MDFe",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra K04",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra K04",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "K04"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "900",
-      "effect": "rejeicao",
-      "message": "MDFe do Regime Especial da Nota fiscal fácil deve ser transmitido exclusivamente pelo e-CNPJ da SVRS",
+      "codigo": "900",
+      "efeito": "rejeicao",
+      "mensagem": "MDFe do Regime Especial da Nota fiscal fácil deve ser transmitido exclusivamente pelo e-CNPJ da SVRS",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra A08",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra A08",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "A08"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "901",
-      "effect": "rejeicao",
-      "message": "MDFe do Regime Especial da Nota fiscal fácil deve ser assinado exclusivamente pelo e-CNPJ da SVRS",
+      "codigo": "901",
+      "efeito": "rejeicao",
+      "mensagem": "MDFe do Regime Especial da Nota fiscal fácil deve ser assinado exclusivamente pelo e-CNPJ da SVRS",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra E05",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra E05",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "E05"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "902",
-      "effect": "rejeicao",
-      "message": "Grupo de informações do pedido de emissão da NFF deve ser preenchido apenas para forma de emissão NFF",
+      "codigo": "902",
+      "efeito": "rejeicao",
+      "mensagem": "Grupo de informações do pedido de emissão da NFF deve ser preenchido apenas para forma de emissão NFF",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F123",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F123",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F123"
         },
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "J17"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "904",
-      "effect": "rejeicao",
-      "message": "Evento de emitente do MDFe do Regime Especial da Nota fiscal fácil deve ser transmitido exclusivamente pelo e-CNPJ da SVRS",
+      "codigo": "904",
+      "efeito": "rejeicao",
+      "mensagem": "Evento de emitente do MDFe do Regime Especial da Nota fiscal fácil deve ser transmitido exclusivamente pelo e-CNPJ da SVRS",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra A09",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra A09",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "A09"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "909",
-      "effect": "rejeicao",
-      "message": "CNPJ do PAA inválido",
+      "codigo": "909",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ do PAA inválido",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra E06",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra E06",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "E06"
         }
       ],
-      "category": "cadastro"
+      "categoria": "cadastro"
     },
     {
-      "code": "910",
-      "effect": "rejeicao",
-      "message": "CNPJ do PAA difere do CNPJ de assinatura",
-      "messages": [
+      "codigo": "910",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ do PAA difere do CNPJ de assinatura",
+      "mensagens": [
         "CNPJ do PAA difere do CNPJ de assinatura",
         "Emissão por PAA deve ser do tipo e emissão Nota Fiscal Fácil quando gerado pela Plataforma de Emissão"
       ],
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra E07",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra E07",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "E07"
         }
       ],
-      "category": "assinatura"
+      "categoria": "assinatura"
     },
     {
-      "code": "911",
-      "effect": "rejeicao",
-      "message": "Provedor de Assinatura e Autorização não existe na base da SEFAZ",
+      "codigo": "911",
+      "efeito": "rejeicao",
+      "mensagem": "Provedor de Assinatura e Autorização não existe na base da SEFAZ",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra E08",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra E08",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "E08"
         }
       ],
-      "category": "assinatura"
+      "categoria": "assinatura"
     },
     {
-      "code": "912",
-      "effect": "rejeicao",
-      "message": "Emitente não associado ao PAA",
+      "codigo": "912",
+      "efeito": "rejeicao",
+      "mensagem": "Emitente não associado ao PAA",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra E09",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra E09",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "E09"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "913",
-      "effect": "rejeicao",
-      "message": "Chave RSA não corresponde a relação contribuinte x PAA",
+      "codigo": "913",
+      "efeito": "rejeicao",
+      "mensagem": "Chave RSA não corresponde a relação contribuinte x PAA",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra E10",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra E10",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "E10"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "914",
-      "effect": "rejeicao",
-      "message": "Assinatura RSA do MEI inválida",
-      "messages": ["Assinatura RSA do MEI inválida", "Assinatura RSA inválida"],
+      "codigo": "914",
+      "efeito": "rejeicao",
+      "mensagem": "Assinatura RSA do MEI inválida",
+      "mensagens": ["Assinatura RSA do MEI inválida", "Assinatura RSA inválida"],
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Visão Geral, regra E11",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Visão Geral, regra E11",
+      "regras": [
         {
-          "doc": "moc300b-visao-geral",
+          "documento": "moc300b-visao-geral",
           "id": "E11"
         }
       ],
-      "category": "assinatura"
+      "categoria": "assinatura"
     },
     {
-      "code": "915",
-      "effect": "rejeicao",
-      "message": "CNPJ MEI inexistente na base de dados para emissão pelo PAA",
+      "codigo": "915",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ MEI inexistente na base de dados para emissão pelo PAA",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F76a",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F76a",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F76a"
         }
       ],
-      "category": "regra-negocio"
+      "categoria": "regra-negocio"
     },
     {
-      "code": "916",
-      "effect": "rejeicao",
-      "message": "CNPJ MEI não habilitado para emissão de MDFe através de PAA",
+      "codigo": "916",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ MEI não habilitado para emissão de MDFe através de PAA",
       "modelos": ["58"],
-      "source": "MOC MDF-e 3.00b Anexo I, regra F76b",
-      "rules": [
+      "fonte": "MOC MDF-e 3.00b Anexo I, regra F76b",
+      "regras": [
         {
-          "doc": "moc300b-anexo1",
+          "documento": "moc300b-anexo1",
           "id": "F76b"
         }
       ],
-      "category": "cadastro"
+      "categoria": "cadastro"
     }
   ]
 }

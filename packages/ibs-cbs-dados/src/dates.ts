@@ -2,8 +2,8 @@
  * Datas civis e vigência. O dataset trabalha com a data civil do fato gerador (`AAAA-MM-DD`); o instante vem do
  * `Clock` de fato gerador do `@sinete/core` e vira data no fuso do local da operação, informado pelo chamador.
  */
-import type { Clock } from '@sinete/core';
-import { ConfigError, formatDateTimeOffset } from '@sinete/core';
+import type { Relogio } from '@sinete/core';
+import { ErroDeConfiguracao, formatarDataHoraComFuso } from '@sinete/core';
 import type { IsoDate, Validity } from './types.ts';
 
 const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
@@ -22,7 +22,7 @@ export function isIsoDate(value: unknown): value is IsoDate {
 /** Valida e devolve a data, ou lança `ConfigError`. */
 export function requireIsoDate(value: unknown, what = 'data'): IsoDate {
   if (!isIsoDate(value)) {
-    throw new ConfigError(`${what} inválida: ${JSON.stringify(value)}; use AAAA-MM-DD`, { details: { value } });
+    throw new ErroDeConfiguracao(`${what} inválida: ${JSON.stringify(value)}; use AAAA-MM-DD`, { detalhes: { value } });
   }
   return value;
 }
@@ -39,6 +39,9 @@ export const BRASILIA_OFFSET_MINUTES = -180;
  * Data civil de um instante no deslocamento informado. O deslocamento depende do local da operação (UTC-4 no Amazonas
  * e em Rondônia, UTC-5 no Acre), então vem do chamador; o padrão é Brasília.
  */
-export function civilDate(instant: ReturnType<Clock['now']>, offsetMinutes: number = BRASILIA_OFFSET_MINUTES): IsoDate {
-  return formatDateTimeOffset(instant, offsetMinutes).slice(0, 10);
+export function civilDate(
+  instant: ReturnType<Relogio['agora']>,
+  offsetMinutes: number = BRASILIA_OFFSET_MINUTES,
+): IsoDate {
+  return formatarDataHoraComFuso(instant, offsetMinutes).slice(0, 10);
 }

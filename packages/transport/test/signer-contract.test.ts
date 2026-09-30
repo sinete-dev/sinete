@@ -9,7 +9,7 @@ import { X509Certificate } from 'node:crypto';
 import path from 'node:path';
 import { icpBrasilCertificates } from '@sinete/cert';
 import type { Ambiente } from '@sinete/core';
-import { memoryLogger, TimeoutError } from '@sinete/core';
+import { ErroDeTempoEsgotado, loggerEmMemoria } from '@sinete/core';
 import { prepareRequest } from '../src/common.ts';
 import { ambienteHosts } from '../src/endpoints.ts';
 import { PolicyError, SignerError, TransportError } from '../src/errors.ts';
@@ -352,7 +352,7 @@ describe('cliente contra as conversas das fixtures', () => {
       details: { alert: 'handshake_failure', stage: 'handshake' },
     });
     expect(await send('https://sign.invalid/')).toMatchObject({ name: 'SignerError', code: 'assinatura_tls_recusada' });
-    expect(await send('https://timeout.invalid/')).toBeInstanceOf(TimeoutError);
+    expect(await send('https://timeout.invalid/')).toBeInstanceOf(ErroDeTempoEsgotado);
     expect(await send('https://p11.invalid/')).toMatchObject({ code: 'pkcs11_falhou' });
     expect(await send('https://stimeout.invalid/')).toMatchObject({ code: 'assinatura_tls_expirou' });
     expect(await send('https://reset.invalid/')).toMatchObject({ code: 'conexao_recusada' });
@@ -566,17 +566,19 @@ test('identity.open que responde depois do prazo: o cliente fecha a identidade q
     } else if (f.method === 'identity.open') reply({ v: 1, id: f.id, result: { ...OPENED, id: params.id } });
     else if (f.method === 'identity.close') reply({ v: 1, id: f.id, result: { closed: true } });
   });
-  const logger = memoryLogger();
+  const logger = loggerEmMemoria();
   const c = await connectSignerChannel(channel, { controlTimeoutMs: 20, logger });
   const signer = {
     mode: 'digest' as const,
     certificateChain: async () => [new Uint8Array([0x30])],
     sign: async () => new Uint8Array([1]),
   };
-  await expect(c.openRemote({ id: 'a', signer, allowedHosts: ['localhost'] })).rejects.toBeInstanceOf(TimeoutError);
+  await expect(c.openRemote({ id: 'a', signer, allowedHosts: ['localhost'] })).rejects.toBeInstanceOf(
+    ErroDeTempoEsgotado,
+  );
   await expect(
     c.openPkcs11({ id: 'p', module: '/lab/libsofthsm2.so', token: 'lab', pin: async () => '0000' }),
-  ).rejects.toBeInstanceOf(TimeoutError);
+  ).rejects.toBeInstanceOf(ErroDeTempoEsgotado);
   expect(sent.some((f) => f.method === 'identity.close')).toBe(false);
 
   for (const r of atrasados) r();
@@ -584,7 +586,7 @@ test('identity.open que responde depois do prazo: o cliente fecha a identidade q
   await Bun.sleep(0);
   const closes = sent.filter((f) => f.method === 'identity.close').map((f) => f.params);
   expect(closes).toEqual([{ identity: 'a' }, { identity: 'p' }]);
-  expect(logger.entries.filter((e) => e.level === 'warn')).toHaveLength(2);
+  expect(logger.entradas.filter((e) => e.nivel === 'warn')).toHaveLength(2);
 
   // Fechada a identidade atrasada, o mesmo id abre de novo no canal.
   expect((await c.openRemote({ id: 'a', signer, allowedHosts: ['localhost'] })).id).toBe('a');
@@ -640,7 +642,7 @@ test('chamador que desiste: o cliente manda cancel com o id da requisição ao h
 
 test('linha com JSON que não é objeto (null, número, lista) vira aviso, não exceção', async () => {
   let listener: (line: string) => void = () => {};
-  const logger = memoryLogger();
+  const logger = loggerEmMemoria();
   const c = connectSignerChannel(
     {
       send: (line) => {
@@ -659,7 +661,7 @@ test('linha com JSON que não é objeto (null, número, lista) vira aviso, não 
     { logger },
   );
   await expect(c).resolves.toMatchObject({ protocolVersion: 1 });
-  expect(logger.entries.filter((e) => e.msg === 'sinete-signer: linha que não é frame')).toHaveLength(4);
+  expect(logger.entradas.filter((e) => e.mensagem === 'sinete-signer: linha que não é frame')).toHaveLength(4);
 });
 
 test('canal que fecha (ou cujo send lança) no meio de um sign: a resposta não sai e nada escapa', async () => {
@@ -674,7 +676,7 @@ test('canal que fecha (ou cujo send lança) no meio de um sign: a resposta não 
       const closers: ((r: string) => void)[] = [];
       let quebrado = false;
       let liberar: () => void = () => {};
-      const logger = memoryLogger();
+      const logger = loggerEmMemoria();
       const channel: SignerChannel = {
         send: (line) => {
           if (quebrado) throw new Error('canal fechado');
@@ -727,7 +729,7 @@ test('canal que fecha (ou cujo send lança) no meio de um sign: a resposta não 
       liberar();
       await Bun.sleep(20);
       if (!fecharAntes) {
-        expect(logger.entries.some((e) => e.msg === 'sinete-signer: resposta ao helper não saiu')).toBe(true);
+        expect(logger.entradas.some((e) => e.mensagem === 'sinete-signer: resposta ao helper não saiu')).toBe(true);
       }
     }
     expect(soltas).toEqual([]);

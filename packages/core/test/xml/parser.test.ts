@@ -1,24 +1,24 @@
 import { describe, expect, test } from 'bun:test';
-import { isSineteError } from '../../src/index.ts';
+import { ehErroSinete } from '../../src/index.ts';
 import {
-  attributeOf,
-  childElements,
-  descendants,
-  firstChild,
-  inScopeNamespaces,
-  parseXml,
-  textOf,
+  atributoDe,
+  descendentes,
+  ErroXml,
+  elementosFilhos,
+  lerXml,
+  namespacesEmEscopo,
+  primeiroFilho,
+  textoDe,
   XML_NS,
-  XmlError,
 } from '../../src/xml/index.ts';
 
 const NFE = 'http://www.portalfiscal.inf.br/nfe';
 
-function parseError(xml: string): XmlError {
+function parseError(xml: string): ErroXml {
   try {
-    parseXml(xml);
+    lerXml(xml);
   } catch (e) {
-    if (e instanceof XmlError) return e;
+    if (e instanceof ErroXml) return e;
     throw e;
   }
   throw new Error(`deveria recusar: ${xml}`);
@@ -27,96 +27,96 @@ function parseError(xml: string): XmlError {
 describe('parseXml: estrutura e offsets', () => {
   test('guarda offsets de abertura, conteúdo e fechamento', () => {
     const src = `<?xml version="1.0" encoding="UTF-8"?><NFe xmlns="${NFE}"><infNFe Id="NFe1" versao="4.00"><a>x</a><b/></infNFe></NFe>`;
-    const doc = parseXml(src);
-    expect(doc.source).toBe(src);
-    const inf = firstChild(doc.root, 'infNFe', NFE);
+    const doc = lerXml(src);
+    expect(doc.texto).toBe(src);
+    const inf = primeiroFilho(doc.raiz, 'infNFe', NFE);
     if (!inf) throw new Error('sem infNFe');
-    expect(src.slice(inf.start, inf.openEnd)).toBe('<infNFe Id="NFe1" versao="4.00">');
-    expect(src.slice(inf.contentEnd, inf.end)).toBe('</infNFe>');
-    const b = firstChild(inf, 'b');
-    expect(b?.selfClosing).toBe(true);
-    expect(b && src.slice(b.start, b.end)).toBe('<b/>');
-    expect(b?.contentEnd).toBe(b?.end);
+    expect(src.slice(inf.inicio, inf.fimDaAbertura)).toBe('<infNFe Id="NFe1" versao="4.00">');
+    expect(src.slice(inf.fimDoConteudo, inf.fim)).toBe('</infNFe>');
+    const b = primeiroFilho(inf, 'b');
+    expect(b?.autoFechado).toBe(true);
+    expect(b && src.slice(b.inicio, b.fim)).toBe('<b/>');
+    expect(b?.fimDoConteudo).toBe(b?.fim);
     expect(doc.ids.get('NFe1')).toEqual([inf]);
     expect(inf.ns).toBe(NFE);
-    expect(attributeOf(inf, 'versao')).toBe('4.00');
-    expect(attributeOf(inf, 'inexistente')).toBeUndefined();
-    const a = firstChild(inf, 'a');
-    const t = a?.children[0];
-    expect(t?.type === 'text' && src.slice(t.start, t.end)).toBe('x');
+    expect(atributoDe(inf, 'versao')).toBe('4.00');
+    expect(atributoDe(inf, 'inexistente')).toBeUndefined();
+    const a = primeiroFilho(inf, 'a');
+    const t = a?.filhos[0];
+    expect(t?.tipo === 'texto' && src.slice(t.inicio, t.fim)).toBe('x');
   });
 
   test('BOM, prólogo com comentário e PI, epílogo com whitespace', () => {
-    const doc = parseXml('﻿<?xml version="1.0"?>\n<!-- c --><?proc x?>\n<r/>\n<!-- fim -->\n');
-    expect(doc.root.name).toBe('r');
-    expect(doc.root.children).toEqual([]);
+    const doc = lerXml('﻿<?xml version="1.0"?>\n<!-- c --><?proc x?>\n<r/>\n<!-- fim -->\n');
+    expect(doc.raiz.nome).toBe('r');
+    expect(doc.raiz.filhos).toEqual([]);
   });
 
   test('fim de linha e normalização de atributo (XML 1.0 2.11 e 3.3.3)', () => {
-    const doc = parseXml('<r a="x\ty\r\nz&#9;w&#10;">l1\r\nl2\rl3&#13;</r>');
-    expect(attributeOf(doc.root, 'a')).toBe('x y z\tw\n');
-    expect(textOf(doc.root)).toBe('l1\nl2\nl3\r');
+    const doc = lerXml('<r a="x\ty\r\nz&#9;w&#10;">l1\r\nl2\rl3&#13;</r>');
+    expect(atributoDe(doc.raiz, 'a')).toBe('x y z\tw\n');
+    expect(textoDe(doc.raiz)).toBe('l1\nl2\nl3\r');
   });
 
   test('par de surrogates (emoji) é caractere válido', () => {
-    expect(textOf(parseXml('<a>\u{1F600}</a>').root)).toBe('\u{1F600}');
+    expect(textoDe(lerXml('<a>\u{1F600}</a>').raiz)).toBe('\u{1F600}');
   });
 
   test('profundidade: 256 níveis passam, 257 são XmlError (limite do libxml2)', () => {
     const nest = (n: number): string => '<r>'.repeat(n) + '</r>'.repeat(n);
-    expect(descendants(parseXml(nest(256)).root).next().value?.local).toBe('r');
-    expect(() => parseXml(nest(257))).toThrow(XmlError);
-    expect(() => parseXml(nest(12000))).toThrow(XmlError);
+    expect(descendentes(lerXml(nest(256)).raiz).next().value?.local).toBe('r');
+    expect(() => lerXml(nest(257))).toThrow(ErroXml);
+    expect(() => lerXml(nest(12000))).toThrow(ErroXml);
   });
 
   test('nome com caractere do plano suplementar (NameStartChar #x10000-#xEFFFF)', () => {
-    const doc = parseXml('<p:\u{10400}x xmlns:p="urn:p" \u{10400}a="1"/>');
-    expect(doc.root.local).toBe('\u{10400}x');
-    expect(doc.root.attributes[0]?.local).toBe('\u{10400}a');
+    const doc = lerXml('<p:\u{10400}x xmlns:p="urn:p" \u{10400}a="1"/>');
+    expect(doc.raiz.local).toBe('\u{10400}x');
+    expect(doc.raiz.atributos[0]?.local).toBe('\u{10400}a');
   });
 
   test('entidades predefinidas, referências e CDATA unidos num texto só', () => {
-    const doc = parseXml('<r>&lt;&gt;&amp;&quot;&apos;&#x41;&#66;<![CDATA[<&]]>fim</r>');
-    expect(doc.root.children.length).toBe(1);
-    expect(textOf(doc.root)).toBe('<>&"\'AB<&fim');
+    const doc = lerXml('<r>&lt;&gt;&amp;&quot;&apos;&#x41;&#66;<![CDATA[<&]]>fim</r>');
+    expect(doc.raiz.filhos.length).toBe(1);
+    expect(textoDe(doc.raiz)).toBe('<>&"\'AB<&fim');
   });
 
   test('namespaces: prefixo, default, desdeclaração e xml:', () => {
-    const doc = parseXml(`<a xmlns="${NFE}" xmlns:ds="urn:ds" xml:lang="pt"><ds:b ds:x="1"/><c xmlns=""><d/></c></a>`);
-    const [b, c] = childElements(doc.root);
+    const doc = lerXml(`<a xmlns="${NFE}" xmlns:ds="urn:ds" xml:lang="pt"><ds:b ds:x="1"/><c xmlns=""><d/></c></a>`);
+    const [b, c] = elementosFilhos(doc.raiz);
     expect(b?.ns).toBe('urn:ds');
-    expect(b?.attributes[0]?.ns).toBe('urn:ds');
+    expect(b?.atributos[0]?.ns).toBe('urn:ds');
     expect(c?.ns).toBe('');
-    expect(c && firstChild(c, 'd')?.ns).toBe('');
-    expect(doc.root.attributes[0]?.ns).toBe(XML_NS);
-    expect(inScopeNamespaces(b ?? doc.root)).toEqual(
+    expect(c && primeiroFilho(c, 'd')?.ns).toBe('');
+    expect(doc.raiz.atributos[0]?.ns).toBe(XML_NS);
+    expect(namespacesEmEscopo(b ?? doc.raiz)).toEqual(
       new Map([
         ['', NFE],
         ['ds', 'urn:ds'],
       ]),
     );
-    expect([...descendants(doc.root)].map((e) => e.local)).toEqual(['a', 'b', 'c', 'd']);
+    expect([...descendentes(doc.raiz)].map((e) => e.local)).toEqual(['a', 'b', 'c', 'd']);
   });
 
   test('PI dentro da raiz vira nó; comentário some', () => {
-    const doc = parseXml('<r><!-- x --><?alvo dado  final?><?vazio?></r>');
-    expect(doc.root.children).toMatchObject([
-      { type: 'pi', target: 'alvo', data: 'dado  final' },
-      { type: 'pi', target: 'vazio', data: '' },
+    const doc = lerXml('<r><!-- x --><?alvo dado  final?><?vazio?></r>');
+    expect(doc.raiz.filhos).toMatchObject([
+      { tipo: 'instrucao', alvo: 'alvo', dados: 'dado  final' },
+      { tipo: 'instrucao', alvo: 'vazio', dados: '' },
     ]);
   });
 
   test('Id duplicado fica registrado para o verificador recusar', () => {
-    const doc = parseXml('<r><a Id="x"/><b Id="x"/></r>');
+    const doc = lerXml('<r><a Id="x"/><b Id="x"/></r>');
     expect(doc.ids.get('x')?.length).toBe(2);
   });
 
   test('erro é XmlError com code e offset', () => {
     const e = parseError('<r>a & b</r>');
     expect(e.code).toBe('xml_malformado');
-    expect(e.offset).toBe(5);
-    expect(isSineteError(e, 'xml_malformado')).toBe(true);
-    expect(e.details).toEqual({ offset: 5 });
+    expect(e.posicao).toBe(5);
+    expect(ehErroSinete(e, 'xml_malformado')).toBe(true);
+    expect(e.detalhes).toEqual({ offset: 5 });
   });
 });
 

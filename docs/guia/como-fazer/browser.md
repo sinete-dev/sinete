@@ -9,12 +9,12 @@ Também é possível usar o helper nativo `sinete-signer`, distribuído no npm c
 É o arranjo mais simples. O servidor tem o PFX do emitente, arquivo que contém o certificado e a chave privada, e o emissor completo (`sinete/emissor/nfe`, com o `TransmissaoStore`, que guarda os documentos assinados durante a transmissão). O browser monta a Nota Fiscal Eletrônica (NF-e) para mostrar as ocorrências enquanto a pessoa preenche e manda os dados de entrada para o servidor emitir.
 
 ```ts
-import { systemClock, timeContext } from 'sinete/core';
+import { relogioDoSistema, contextoDeTempo } from 'sinete/core';
 import { buildNfe, rotuloDoCaminho } from 'sinete/nfe';
 
-const r = await buildNfe(nota, { ambiente: 'homologacao', time: timeContext({ emissao: systemClock }) });
+const r = await buildNfe(nota, { ambiente: 'homologacao', time: contextoDeTempo({ emissao: relogioDoSistema }) });
 if (!r.ok) {
-  for (const i of r.issues.filter((x) => x.origem === 'entrada')) mostrarNoCampo(i.path, rotuloDoCaminho(i.path), i.message);
+  for (const i of r.issues.filter((x) => x.origem === 'entrada')) mostrarNoCampo(i.caminho, rotuloDoCaminho(i.caminho), i.mensagem);
 } else {
   await fetch(`/api/pedidos/${pedido.id}/nfe`, { method: 'POST', body: JSON.stringify(nota) });
 }
@@ -30,11 +30,11 @@ No browser:
 
 ```ts
 import { openPfx } from 'sinete/cert';
-import { systemClock, timeContext } from 'sinete/core';
+import { relogioDoSistema, contextoDeTempo } from 'sinete/core';
 import { buildNfe, signNfe } from 'sinete/nfe';
 
-const ks = await openPfx(new Uint8Array(await arquivoPfx.arrayBuffer()), { password: senha, clock: systemClock });
-const r = await buildNfe(nota, { ambiente: 'homologacao', time: timeContext({ emissao: systemClock }) });
+const ks = await openPfx(new Uint8Array(await arquivoPfx.arrayBuffer()), { password: senha, clock: relogioDoSistema });
+const r = await buildNfe(nota, { ambiente: 'homologacao', time: contextoDeTempo({ emissao: relogioDoSistema }) });
 if (r.ok) {
   const assinada = await signNfe(r.value, await ks.signer());
   await fetch(`/api/pedidos/${pedido.id}/nfe-assinada`, {
@@ -48,7 +48,7 @@ if (r.ok) {
 No servidor, confira a assinatura e se a chave de acesso corresponde ao emitente autenticado, à série e ao número reservado para o pedido. `verifySignature` verifica a assinatura criptográfica com o certificado incluído no XML; a validação da cadeia de confiança e do vínculo desse certificado com o emitente precisa ser feita pela aplicação, com os recursos de `@sinete/cert`. Depois das conferências, grave os bytes com a trava do próprio `store` e retome: `retomar` consulta a chave antes e, se a consulta confirmar que a nota não consta, pode transmitir os mesmos bytes.
 
 ```ts
-import { verifySignature } from 'sinete/core/xml';
+import { conferirAssinatura } from 'sinete/core/xml';
 import { TransmissaoEmAndamentoError } from 'sinete/emissor';
 import { createNfeEmissor } from 'sinete/emissor/nfe';
 import { documentoAssinado } from 'sinete/nfe';
@@ -57,8 +57,8 @@ const transmissor = await createNfeEmissor({ pfx: pfxDoTransmissor, senha: senha
 
 async function receberAssinada(ref: string, xml: string) {
   const { id } = documentoAssinado(xml, 'NFe', 'infNFe'); // 'NFe' + chave de acesso
-  const v = await verifySignature(xml, { id, element: 'infNFe' });
-  if (!v.ok) throw new Error(`assinatura não confere: ${v.failure}`);
+  const v = await conferirAssinatura(xml, { id, elemento: 'infNFe' });
+  if (!v.ok) throw new Error(`assinatura não confere: ${v.motivo}`);
   conferirChaveDoPedido(ref, id.slice(3)); // emitente, série e número do pedido
   const trava = await store.travar('nfe', ref, 60_000);
   if (trava === undefined) throw new TransmissaoEmAndamentoError('outra transmissão deste pedido está em curso');

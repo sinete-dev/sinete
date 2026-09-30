@@ -4,8 +4,8 @@
  * uma tentativa. Os dois módulos têm a mesma forma de tipos; a diferença é de pattern (CNPJ, chave, série).
  */
 
-import type { Ambiente, Clock } from '@sinete/core';
-import { ConfigError } from '@sinete/core';
+import type { Ambiente, Relogio } from '@sinete/core';
+import { ErroDeConfiguracao } from '@sinete/core';
 import type { RootElement, SchemaModuleInfo, VigenciaEntry } from '@sinete/schemas';
 import { selecionarPl } from '@sinete/schemas';
 import * as v20260209 from '@sinete/schemas/nfse/1.01-20260209';
@@ -34,10 +34,10 @@ const MODULOS: Readonly<Record<string, LeiauteNfse>> = {
 /** O pacote de esquemas vigente no ambiente e no dia do relógio (fuso de Brasília). */
 export function leiauteVigente(
   ambiente: Ambiente,
-  relogio: Clock,
+  relogio: Relogio,
 ): { readonly vigencia: VigenciaEntry; readonly leiaute: LeiauteNfse } {
   const vigencia = selecionarPl('nfse', ambiente, relogio);
   const leiaute = MODULOS[vigencia.modulo];
-  if (leiaute === undefined) throw new ConfigError(`módulo de schema da NFS-e sem código: ${vigencia.modulo}`);
+  if (leiaute === undefined) throw new ErroDeConfiguracao(`módulo de schema da NFS-e sem código: ${vigencia.modulo}`);
   return { vigencia, leiaute };
 }

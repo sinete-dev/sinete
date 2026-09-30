@@ -1,5 +1,5 @@
-import type { ErrorDetails, SineteErrorOptions } from '@sinete/core';
-import { SineteError, UnsupportedError } from '@sinete/core';
+import type { DetalhesDoErro, ErroSineteOpcoes } from '@sinete/core';
+import { ErroNaoSuportado, ErroSinete } from '@sinete/core';
 
 /**
  * Códigos estáveis do `@sinete/transport`, mapeados do que a SEFAZ faz de fato (ADR 0004, seção 4 e decisão 4).
@@ -29,8 +29,8 @@ export type TransportErrorCode =
   /** O chamador cancelou pelo `AbortSignal`. */
   | 'cancelado';
 
-export class TransportError extends SineteError<TransportErrorCode> {
-  constructor(code: TransportErrorCode, message: string, options?: SineteErrorOptions) {
+export class TransportError extends ErroSinete<TransportErrorCode> {
+  constructor(code: TransportErrorCode, message: string, options?: ErroSineteOpcoes) {
     super(code, message, options);
     this.name = 'TransportError';
   }
@@ -38,8 +38,8 @@ export class TransportError extends SineteError<TransportErrorCode> {
 
 /** Recusa da `HostPolicy`. Sempre antes de qualquer socket. */
 export class PolicyError extends TransportError {
-  constructor(message: string, details?: ErrorDetails) {
-    super('politica_recusou', message, details === undefined ? undefined : { details });
+  constructor(message: string, details?: DetalhesDoErro) {
+    super('politica_recusou', message, details === undefined ? undefined : { detalhes: details });
     this.name = 'PolicyError';
   }
 }
@@ -49,14 +49,14 @@ export class PolicyError extends TransportError {
  * pede o certificado numa renegociação ou que só oferece CBC ou DHE. `details` traz `host`, `reasons` e
  * `alternative`. O código é o `nao_suportado` do core.
  */
-export class TransportUnsupportedError extends UnsupportedError {
+export class TransportUnsupportedError extends ErroNaoSuportado {
   readonly host: string;
   readonly reasons: readonly string[];
 
-  constructor(host: string, reasons: readonly string[], alternative: string, options?: SineteErrorOptions) {
+  constructor(host: string, reasons: readonly string[], alternative: string, options?: ErroSineteOpcoes) {
     super(`${host}: esta runtime não suporta o que o host exige (${reasons.join('; ')}). ${alternative}`, {
       ...options,
-      details: { host, reasons, alternative },
+      detalhes: { host, reasons, alternative },
     });
     this.name = 'TransportUnsupportedError';
     this.host = host;
@@ -82,8 +82,8 @@ export type SignerErrorCode =
   /** O helper recusou assinar o documento (`dfe.sign`): o SignedInfo ou o Id não são de documento do titular. */
   | 'assinatura_documento_recusada';
 
-export class SignerError extends SineteError<SignerErrorCode> {
-  constructor(code: SignerErrorCode, message: string, options?: SineteErrorOptions) {
+export class SignerError extends ErroSinete<SignerErrorCode> {
+  constructor(code: SignerErrorCode, message: string, options?: ErroSineteOpcoes) {
     super(code, message, options);
     this.name = 'SignerError';
   }

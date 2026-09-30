@@ -11,81 +11,81 @@
  * raiz são mantidas, porque o C14N as inclui.
  */
 
-import { XmlError } from './errors.ts';
+import { ErroXml } from './errors.ts';
 
 /** Namespace fixo do prefixo `xml` (Namespaces in XML 1.0, seção 3). */
 export const XML_NS = 'http://www.w3.org/XML/1998/namespace';
 /** Namespace reservado das declarações `xmlns`. */
 export const XMLNS_NS = 'http://www.w3.org/2000/xmlns/';
 
-export interface XmlAttribute {
+export interface AtributoXml {
   /** Nome qualificado como escrito na fonte (`Id`, `xsi:nil`). */
-  readonly name: string;
-  readonly prefix: string;
+  readonly nome: string;
+  readonly prefixo: string;
   readonly local: string;
   /** URI do namespace; vazio para atributo sem prefixo. */
   readonly ns: string;
   /** Valor normalizado (XML 1.0 3.3.3) e com as referências resolvidas. */
-  readonly value: string;
+  readonly valor: string;
 }
 
-export interface XmlElement {
-  readonly type: 'element';
+export interface ElementoXml {
+  readonly tipo: 'elemento';
   /** Nome qualificado como escrito na fonte. */
-  readonly name: string;
-  readonly prefix: string;
+  readonly nome: string;
+  readonly prefixo: string;
   readonly local: string;
   /** URI do namespace do elemento; vazio quando não há namespace. */
   readonly ns: string;
   /** Atributos comuns, na ordem da fonte (sem as declarações `xmlns`). */
-  readonly attributes: readonly XmlAttribute[];
+  readonly atributos: readonly AtributoXml[];
   /** Declarações de namespace feitas neste elemento, na ordem da fonte: prefixo (`''` = default) para URI. */
   readonly namespaces: ReadonlyMap<string, string>;
-  readonly children: readonly XmlNode[];
-  readonly parent: XmlElement | null;
+  readonly filhos: readonly NoXml[];
+  readonly pai: ElementoXml | null;
   /** Offset do `<` da tag de abertura. */
-  readonly start: number;
+  readonly inicio: number;
   /** Offset logo depois do `>` da tag de abertura. */
-  readonly openEnd: number;
+  readonly fimDaAbertura: number;
   /** Offset do `<` da tag de fechamento; igual a `end` quando a tag é autofechada. */
-  readonly contentEnd: number;
+  readonly fimDoConteudo: number;
   /** Offset logo depois do `>` da tag de fechamento (ou da tag autofechada). */
-  readonly end: number;
-  readonly selfClosing: boolean;
+  readonly fim: number;
+  readonly autoFechado: boolean;
 }
 
 /** Texto (inclusive CDATA) já com fim de linha normalizado e referências resolvidas. Trechos vizinhos são unidos. */
-export interface XmlText {
-  readonly type: 'text';
-  readonly value: string;
-  readonly start: number;
-  readonly end: number;
+export interface TextoXml {
+  readonly tipo: 'texto';
+  readonly valor: string;
+  readonly inicio: number;
+  readonly fim: number;
 }
 
 /** Instrução de processamento dentro do elemento raiz. */
-export interface XmlProcessingInstruction {
-  readonly type: 'pi';
-  readonly target: string;
-  readonly data: string;
-  readonly start: number;
-  readonly end: number;
+export interface InstrucaoDeProcessamentoXml {
+  readonly tipo: 'instrucao';
+  readonly alvo: string;
+  readonly dados: string;
+  readonly inicio: number;
+  readonly fim: number;
 }
 
-export type XmlNode = XmlElement | XmlText | XmlProcessingInstruction;
+export type NoXml = ElementoXml | TextoXml | InstrucaoDeProcessamentoXml;
 
-export interface XmlDocument {
+export interface DocumentoXml {
   /** A string recebida, sem nenhuma alteração. Os offsets dos nós apontam para ela. */
-  readonly source: string;
-  readonly root: XmlElement;
+  readonly texto: string;
+  readonly raiz: ElementoXml;
   /** Valor do atributo `Id` (sem prefixo) para os elementos que o declaram. Mais de um elemento indica Id duplicado. */
-  readonly ids: ReadonlyMap<string, readonly XmlElement[]>;
+  readonly ids: ReadonlyMap<string, readonly ElementoXml[]>;
 }
 
 type MutableElement = {
-  -readonly [K in keyof XmlElement]: XmlElement[K];
-} & { attributes: XmlAttribute[]; children: XmlNode[]; namespaces: Map<string, string> };
+  -readonly [K in keyof ElementoXml]: ElementoXml[K];
+} & { atributos: AtributoXml[]; filhos: NoXml[]; namespaces: Map<string, string> };
 
-type MutableText = { -readonly [K in keyof XmlText]: XmlText[K] };
+type MutableText = { -readonly [K in keyof TextoXml]: TextoXml[K] };
 
 // NameStartChar do XML 1.0 (5ª edição) sem o ':', que o Namespaces in XML reserva para separar prefixo e nome local.
 const NCNAME_START =
@@ -154,15 +154,15 @@ function decodeReferences(raw: string, offset: number): string {
   while (amp !== -1) {
     REF_RE.lastIndex = amp;
     const m = REF_RE.exec(raw);
-    if (!m) throw new XmlError("'&' sem escape ou referência malformada", offset + amp);
+    if (!m) throw new ErroXml("'&' sem escape ou referência malformada", offset + amp);
     let value: string;
     if (m[3] !== undefined) {
       const v = Object.hasOwn(PREDEFINED, m[3]) ? PREDEFINED[m[3]] : undefined;
-      if (v === undefined) throw new XmlError(`entidade não suportada &${m[3]};`, offset + amp);
+      if (v === undefined) throw new ErroXml(`entidade não suportada &${m[3]};`, offset + amp);
       value = v;
     } else {
       const cp = m[1] !== undefined ? Number.parseInt(m[1], 16) : Number.parseInt(m[2] ?? '', 10);
-      if (!isXmlChar(cp)) throw new XmlError(`referência a caractere proibido pelo XML 1.0 (${m[0]})`, offset + amp);
+      if (!isXmlChar(cp)) throw new ErroXml(`referência a caractere proibido pelo XML 1.0 (${m[0]})`, offset + amp);
       value = String.fromCodePoint(cp);
     }
     out += raw.slice(last, amp) + value;
@@ -177,7 +177,7 @@ function splitQName(q: string, offset: number): [string, string] {
   if (i === -1) return ['', q];
   // Prefixo e nome local são NCName: o local também precisa começar por NameStartChar (`p:1` não é nome).
   if (i === 0 || q.indexOf(':', i + 1) !== -1 || !NCNAME_START_RE.test(q.slice(i + 1))) {
-    throw new XmlError(`nome qualificado inválido: ${q}`, offset);
+    throw new ErroXml(`nome qualificado inválido: ${q}`, offset);
   }
   return [q.slice(0, i), q.slice(i + 1)];
 }
@@ -186,22 +186,22 @@ function splitQName(q: string, offset: number): [string, string] {
  * Lê `source` como XML 1.0 bem formado com namespaces. A string não é alterada e fica em `document.source`.
  * Lança `XmlError` (`xml_malformado`) com o offset do problema.
  */
-export function parseXml(source: string): XmlDocument {
+export function lerXml(source: string): DocumentoXml {
   const bad = invalidCharAt(source);
-  if (bad !== -1) throw new XmlError('caractere proibido pelo XML 1.0', bad);
+  if (bad !== -1) throw new ErroXml('caractere proibido pelo XML 1.0', bad);
 
   const n = source.length;
   let i = source.charCodeAt(0) === 0xfeff ? 1 : 0;
   if (source.startsWith('<?xml', i) && isWs(source.charCodeAt(i + 5))) {
     const decl = XML_DECL.exec(source.slice(i));
-    if (!decl) throw new XmlError('declaração XML malformada', i);
+    if (!decl) throw new ErroXml('declaração XML malformada', i);
     i += decl[0].length;
   }
 
   let root: MutableElement | null = null;
   let cur: MutableElement | null = null;
   let rootClosed = false;
-  const ids = new Map<string, XmlElement[]>();
+  const ids = new Map<string, ElementoXml[]>();
   const scopes: Map<string, string>[] = [
     new Map([
       ['xml', XML_NS],
@@ -214,25 +214,25 @@ export function parseXml(source: string): XmlDocument {
       const v = scopes[k]?.get(prefix);
       if (v !== undefined) return v;
     }
-    throw new XmlError(`prefixo de namespace não declarado: ${prefix}`, offset);
+    throw new ErroXml(`prefixo de namespace não declarado: ${prefix}`, offset);
   };
 
   const pushText = (value: string, start: number, end: number): void => {
     if (!cur) return;
-    const last = cur.children[cur.children.length - 1];
-    if (last && last.type === 'text') {
+    const last = cur.filhos[cur.filhos.length - 1];
+    if (last && last.tipo === 'texto') {
       const t = last as MutableText;
-      t.value += value;
-      t.end = end;
+      t.valor += value;
+      t.fim = end;
     } else {
-      cur.children.push({ type: 'text', value, start, end });
+      cur.filhos.push({ tipo: 'texto', valor: value, inicio: start, fim: end });
     }
   };
 
   const readName = (at: number): string => {
     NAME_RE.lastIndex = at;
     const m = NAME_RE.exec(source);
-    if (!m) throw new XmlError('nome XML inválido', at);
+    if (!m) throw new ErroXml('nome XML inválido', at);
     return m[0];
   };
 
@@ -243,11 +243,11 @@ export function parseXml(source: string): XmlDocument {
       const raw = source.slice(i, textEnd);
       if (cur) {
         const cdataEnd = raw.indexOf(']]>');
-        if (cdataEnd !== -1) throw new XmlError("']]>' não pode aparecer em texto", i + cdataEnd);
+        if (cdataEnd !== -1) throw new ErroXml("']]>' não pode aparecer em texto", i + cdataEnd);
         pushText(decodeReferences(normalizeEol(raw), i), i, textEnd);
       } else {
         for (let k = i; k < textEnd; k++) {
-          if (!isWs(source.charCodeAt(k))) throw new XmlError('texto fora do elemento raiz', k);
+          if (!isWs(source.charCodeAt(k))) throw new ErroXml('texto fora do elemento raiz', k);
         }
       }
     }
@@ -256,16 +256,23 @@ export function parseXml(source: string): XmlDocument {
 
     if (c1 === 0x3f /* ? */) {
       const e = source.indexOf('?>', lt + 2);
-      if (e === -1) throw new XmlError('instrução de processamento sem fechamento', lt);
+      if (e === -1) throw new ErroXml('instrução de processamento sem fechamento', lt);
       const target = readName(lt + 2);
-      if (target.toLowerCase() === 'xml') throw new XmlError('declaração XML fora do início do documento', lt);
-      if (target.includes(':')) throw new XmlError(`alvo de instrução com ':' : ${target}`, lt);
+      if (target.toLowerCase() === 'xml') throw new ErroXml('declaração XML fora do início do documento', lt);
+      if (target.includes(':')) throw new ErroXml(`alvo de instrução com ':' : ${target}`, lt);
       const after = lt + 2 + target.length;
       if (after < e && !isWs(source.charCodeAt(after)))
-        throw new XmlError('instrução de processamento malformada', after);
+        throw new ErroXml('instrução de processamento malformada', after);
       let d = after;
       while (d < e && isWs(source.charCodeAt(d))) d++;
-      if (cur) cur.children.push({ type: 'pi', target, data: normalizeEol(source.slice(d, e)), start: lt, end: e + 2 });
+      if (cur)
+        cur.filhos.push({
+          tipo: 'instrucao',
+          alvo: target,
+          dados: normalizeEol(source.slice(d, e)),
+          inicio: lt,
+          fim: e + 2,
+        });
       i = e + 2;
       continue;
     }
@@ -274,46 +281,46 @@ export function parseXml(source: string): XmlDocument {
       if (source.startsWith('<!--', lt)) {
         const e = source.indexOf('--', lt + 4);
         if (e === -1 || source.charCodeAt(e + 2) !== 0x3e) {
-          throw new XmlError("comentário sem fechamento ou com '--' no meio", e === -1 ? lt : e);
+          throw new ErroXml("comentário sem fechamento ou com '--' no meio", e === -1 ? lt : e);
         }
         i = e + 3;
         continue;
       }
       if (source.startsWith('<![CDATA[', lt)) {
-        if (!cur) throw new XmlError('CDATA fora do elemento raiz', lt);
+        if (!cur) throw new ErroXml('CDATA fora do elemento raiz', lt);
         const e = source.indexOf(']]>', lt + 9);
-        if (e === -1) throw new XmlError('CDATA sem fechamento', lt);
+        if (e === -1) throw new ErroXml('CDATA sem fechamento', lt);
         pushText(normalizeEol(source.slice(lt + 9, e)), lt, e + 3);
         i = e + 3;
         continue;
       }
-      if (source.startsWith('<!DOCTYPE', lt)) throw new XmlError('DTD (DOCTYPE) não é suportado', lt);
-      throw new XmlError('declaração de marcação não suportada', lt);
+      if (source.startsWith('<!DOCTYPE', lt)) throw new ErroXml('DTD (DOCTYPE) não é suportado', lt);
+      throw new ErroXml('declaração de marcação não suportada', lt);
     }
 
     if (c1 === 0x2f /* / */) {
       const e = source.indexOf('>', lt + 2);
-      if (e === -1) throw new XmlError('tag de fechamento sem >', lt);
+      if (e === -1) throw new ErroXml('tag de fechamento sem >', lt);
       const name = readName(lt + 2);
       for (let k = lt + 2 + name.length; k < e; k++) {
-        if (!isWs(source.charCodeAt(k))) throw new XmlError('tag de fechamento malformada', k);
+        if (!isWs(source.charCodeAt(k))) throw new ErroXml('tag de fechamento malformada', k);
       }
-      if (!cur || cur.name !== name) {
-        throw new XmlError(`tag de fechamento </${name}> não corresponde à aberta`, lt);
+      if (!cur || cur.nome !== name) {
+        throw new ErroXml(`tag de fechamento </${name}> não corresponde à aberta`, lt);
       }
-      cur.contentEnd = lt;
-      cur.end = e + 1;
+      cur.fimDoConteudo = lt;
+      cur.fim = e + 1;
       scopes.pop();
-      if (cur.parent === null) rootClosed = true;
-      cur = cur.parent as MutableElement | null;
+      if (cur.pai === null) rootClosed = true;
+      cur = cur.pai as MutableElement | null;
       i = e + 1;
       continue;
     }
 
     // tag de abertura
-    if (rootClosed || (root && !cur)) throw new XmlError('mais de um elemento raiz', lt);
+    if (rootClosed || (root && !cur)) throw new ErroXml('mais de um elemento raiz', lt);
     // scopes tem a base mais um por elemento aberto: este seria o de profundidade scopes.length.
-    if (scopes.length > MAX_DEPTH) throw new XmlError(`aninhamento acima de ${MAX_DEPTH} níveis`, lt);
+    if (scopes.length > MAX_DEPTH) throw new ErroXml(`aninhamento acima de ${MAX_DEPTH} níveis`, lt);
     const name = readName(lt + 1);
     let j = lt + 1 + name.length;
     const raws: [string, string, number][] = [];
@@ -321,36 +328,36 @@ export function parseXml(source: string): XmlDocument {
     for (;;) {
       const wsStart = j;
       while (j < n && isWs(source.charCodeAt(j))) j++;
-      if (j >= n) throw new XmlError('tag de abertura sem >', lt);
+      if (j >= n) throw new ErroXml('tag de abertura sem >', lt);
       const c = source.charCodeAt(j);
       if (c === 0x3e /* > */) {
         j++;
         break;
       }
       if (c === 0x2f /* / */) {
-        if (source.charCodeAt(j + 1) !== 0x3e) throw new XmlError("'/' solto na tag", j);
+        if (source.charCodeAt(j + 1) !== 0x3e) throw new ErroXml("'/' solto na tag", j);
         selfClosing = true;
         j += 2;
         break;
       }
-      if (j === wsStart) throw new XmlError('falta espaço antes do atributo', j);
+      if (j === wsStart) throw new ErroXml('falta espaço antes do atributo', j);
       const attrAt = j;
       const an = readName(j);
       j += an.length;
       while (j < n && isWs(source.charCodeAt(j))) j++;
-      if (source.charCodeAt(j) !== 0x3d /* = */) throw new XmlError(`atributo ${an} sem '='`, j);
+      if (source.charCodeAt(j) !== 0x3d /* = */) throw new ErroXml(`atributo ${an} sem '='`, j);
       j++;
       while (j < n && isWs(source.charCodeAt(j))) j++;
       const q = source[j];
-      if (q !== '"' && q !== "'") throw new XmlError(`valor do atributo ${an} sem aspas`, j);
+      if (q !== '"' && q !== "'") throw new ErroXml(`valor do atributo ${an} sem aspas`, j);
       const qe = source.indexOf(q, j + 1);
-      if (qe === -1) throw new XmlError(`valor do atributo ${an} sem aspas de fechamento`, j);
+      if (qe === -1) throw new ErroXml(`valor do atributo ${an} sem aspas de fechamento`, j);
       const raw = source.slice(j + 1, qe);
       const ltIn = raw.indexOf('<');
-      if (ltIn !== -1) throw new XmlError(`'<' no valor do atributo ${an}`, j + 1 + ltIn);
+      if (ltIn !== -1) throw new ErroXml(`'<' no valor do atributo ${an}`, j + 1 + ltIn);
       // XML 1.0 3.3.3: fim de linha normalizado, whitespace literal vira espaço, depois as referências.
       const value = decodeReferences(normalizeEol(raw).replace(/[\t\n]/g, ' '), j + 1);
-      for (const r of raws) if (r[0] === an) throw new XmlError(`atributo duplicado: ${an}`, attrAt);
+      for (const r of raws) if (r[0] === an) throw new ErroXml(`atributo duplicado: ${an}`, attrAt);
       raws.push([an, value, attrAt]);
       j = qe + 1;
     }
@@ -358,37 +365,37 @@ export function parseXml(source: string): XmlDocument {
     const declared = new Map<string, string>();
     for (const [an, av, at] of raws) {
       if (an === 'xmlns') {
-        if (av === XML_NS || av === XMLNS_NS) throw new XmlError('namespace reservado como default', at);
+        if (av === XML_NS || av === XMLNS_NS) throw new ErroXml('namespace reservado como default', at);
         declared.set('', av);
       } else if (an.startsWith('xmlns:')) {
         const p = an.slice(6);
         splitQName(`x:${p}`, at);
-        if (p === 'xmlns') throw new XmlError('o prefixo xmlns não pode ser declarado', at);
+        if (p === 'xmlns') throw new ErroXml('o prefixo xmlns não pode ser declarado', at);
         if (p === 'xml' ? av !== XML_NS : av === XML_NS || av === XMLNS_NS) {
-          throw new XmlError(`declaração inválida do prefixo ${p}`, at);
+          throw new ErroXml(`declaração inválida do prefixo ${p}`, at);
         }
-        if (av === '') throw new XmlError(`prefixo ${p} não pode ser associado a namespace vazio`, at);
+        if (av === '') throw new ErroXml(`prefixo ${p} não pode ser associado a namespace vazio`, at);
         declared.set(p, av);
       }
     }
     scopes.push(declared);
     const [prefix, local] = splitQName(name, lt + 1);
-    if (prefix === 'xmlns') throw new XmlError('elemento com prefixo xmlns', lt);
+    if (prefix === 'xmlns') throw new ErroXml('elemento com prefixo xmlns', lt);
     const el: MutableElement = {
-      type: 'element',
-      name,
-      prefix,
+      tipo: 'elemento',
+      nome: name,
+      prefixo: prefix,
       local,
       ns: lookup(prefix, lt + 1),
-      attributes: [],
+      atributos: [],
       namespaces: declared,
-      children: [],
-      parent: cur,
-      start: lt,
-      openEnd: j,
-      contentEnd: j,
-      end: j,
-      selfClosing,
+      filhos: [],
+      pai: cur,
+      inicio: lt,
+      fimDaAbertura: j,
+      fimDoConteudo: j,
+      fim: j,
+      autoFechado: selfClosing,
     };
     const expanded = new Set<string>();
     for (const [an, av, at] of raws) {
@@ -396,16 +403,16 @@ export function parseXml(source: string): XmlDocument {
       const [ap, al] = splitQName(an, at);
       const ans = ap === '' ? '' : lookup(ap, at);
       const key = `{${ans}}${al}`;
-      if (expanded.has(key)) throw new XmlError(`atributo duplicado por namespace: ${an}`, at);
+      if (expanded.has(key)) throw new ErroXml(`atributo duplicado por namespace: ${an}`, at);
       expanded.add(key);
-      el.attributes.push({ name: an, prefix: ap, local: al, ns: ans, value: av });
+      el.atributos.push({ nome: an, prefixo: ap, local: al, ns: ans, valor: av });
       if (an === 'Id') {
         const list = ids.get(av);
         if (list) list.push(el);
         else ids.set(av, [el]);
       }
     }
-    if (cur) cur.children.push(el);
+    if (cur) cur.filhos.push(el);
     else root = el;
     if (selfClosing) {
       scopes.pop();
@@ -416,49 +423,49 @@ export function parseXml(source: string): XmlDocument {
     i = j;
   }
 
-  if (!root) throw new XmlError('documento sem elemento raiz', n);
-  if (cur) throw new XmlError(`elemento <${cur.name}> não fechado`, cur.start);
-  return { source, root, ids };
+  if (!root) throw new ErroXml('documento sem elemento raiz', n);
+  if (cur) throw new ErroXml(`elemento <${cur.nome}> não fechado`, cur.inicio);
+  return { texto: source, raiz: root, ids };
 }
 
 /** Filhos que são elementos, na ordem do documento. */
-export function childElements(el: XmlElement): XmlElement[] {
-  const out: XmlElement[] = [];
-  for (const c of el.children) if (c.type === 'element') out.push(c);
+export function elementosFilhos(el: ElementoXml): ElementoXml[] {
+  const out: ElementoXml[] = [];
+  for (const c of el.filhos) if (c.tipo === 'elemento') out.push(c);
   return out;
 }
 
 /** Primeiro filho direto com o nome local (e o namespace, quando informado). */
-export function firstChild(el: XmlElement, local: string, ns?: string): XmlElement | undefined {
-  for (const c of el.children) {
-    if (c.type === 'element' && c.local === local && (ns === undefined || c.ns === ns)) return c;
+export function primeiroFilho(el: ElementoXml, local: string, ns?: string): ElementoXml | undefined {
+  for (const c of el.filhos) {
+    if (c.tipo === 'elemento' && c.local === local && (ns === undefined || c.ns === ns)) return c;
   }
   return undefined;
 }
 
 /** O elemento e todos os descendentes, em ordem de documento. */
-export function* descendants(el: XmlElement): Generator<XmlElement, void, undefined> {
+export function* descendentes(el: ElementoXml): Generator<ElementoXml, void, undefined> {
   yield el;
-  for (const c of el.children) if (c.type === 'element') yield* descendants(c);
+  for (const c of el.filhos) if (c.tipo === 'elemento') yield* descendentes(c);
 }
 
 /** Texto direto do elemento (só os nós de texto filhos, sem descer nos elementos). */
-export function textOf(el: XmlElement): string {
+export function textoDe(el: ElementoXml): string {
   let s = '';
-  for (const c of el.children) if (c.type === 'text') s += c.value;
+  for (const c of el.filhos) if (c.tipo === 'texto') s += c.valor;
   return s;
 }
 
 /** Valor do atributo sem namespace com o nome local dado. */
-export function attributeOf(el: XmlElement, local: string): string | undefined {
-  for (const a of el.attributes) if (a.local === local && a.ns === '') return a.value;
+export function atributoDe(el: ElementoXml, local: string): string | undefined {
+  for (const a of el.atributos) if (a.local === local && a.ns === '') return a.valor;
   return undefined;
 }
 
 /** Namespaces em escopo no elemento, incluindo os declarados nos ancestrais (o mais próximo vence). */
-export function inScopeNamespaces(el: XmlElement): Map<string, string> {
-  const chain: XmlElement[] = [];
-  for (let e: XmlElement | null = el; e; e = e.parent) chain.push(e);
+export function namespacesEmEscopo(el: ElementoXml): Map<string, string> {
+  const chain: ElementoXml[] = [];
+  for (let e: ElementoXml | null = el; e; e = e.pai) chain.push(e);
   const m = new Map<string, string>();
   for (let k = chain.length - 1; k >= 0; k--) {
     for (const [p, u] of chain[k]?.namespaces ?? []) m.set(p, u);

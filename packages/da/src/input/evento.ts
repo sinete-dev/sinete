@@ -43,7 +43,7 @@ export function readEvento(xml: string, tipos: readonly string[]): EventoView {
   const tpEvento = str(inf, 'tpEvento') ?? '';
   if (!tipos.includes(tpEvento)) {
     throw new DanfeError('evento_incompativel', `evento ${tpEvento || 'sem tipo'} não é ${tipos.join(' nem ')}`, {
-      details: { tpEvento, esperado: tipos },
+      detalhes: { tpEvento, esperado: tipos },
     });
   }
   const ret = ((value.retEvento as Rec | undefined)?.infEvento ?? undefined) as Rec | undefined;

@@ -7,10 +7,10 @@
  * UF decide, e recusar localmente bloquearia a venda onde a regra não vale.
  */
 
-import type { Ambiente, Signer, Uf } from '@sinete/core';
-import { tpAmbOf } from '@sinete/core';
-import { base64Encode, c14n, firstChild, parseXml, SHA1_DIGEST_INFO_PREFIX } from '@sinete/core/xml';
-import { parseCnpj } from '@sinete/validators';
+import type { Ambiente, Assinador, Uf } from '@sinete/core';
+import { tpAmbDoAmbiente } from '@sinete/core';
+import { c14n, codificarBase64, lerXml, PREFIXO_DIGEST_INFO_SHA1, primeiroFilho } from '@sinete/core/xml';
+import { lerCnpj } from '@sinete/validators';
 import urls from '../data/nfce-urls.json' with { type: 'json' };
 import { Decimal } from '../decimal.ts';
 import type { Issues } from '../issues.ts';
@@ -87,10 +87,10 @@ const hex = (b: Uint8Array): string => Array.from(b, (x) => x.toString(16).padSt
  * `797a4759...`).
  */
 async function digValHex(xml: string): Promise<string> {
-  const doc = parseXml(xml);
-  const inf = firstChild(doc.root, 'infNFe', NFE_NS);
+  const doc = lerXml(xml);
+  const inf = primeiroFilho(doc.raiz, 'infNFe', NFE_NS);
   if (inf === undefined) throw new Error('NF-e montada sem infNFe');
-  return hexDoDigestValue(base64Encode(await sha1(te.encode(c14n(inf)))));
+  return hexDoDigestValue(codificarBase64(await sha1(te.encode(c14n(inf)))));
 }
 
 /** O DigestValue em Base64 convertido para hexadecimal, caractere a caractere (Manual 6.0, 4.3.5, passo 1). */
@@ -128,7 +128,7 @@ export async function parametrosQrCode(
   d: DadosQrCode,
   qr: QrCodeNfceOpcoes,
 ): Promise<{ readonly parametros: string; readonly assinar: boolean }> {
-  const tpAmb = tpAmbOf(d.ambiente);
+  const tpAmb = tpAmbDoAmbiente(d.ambiente);
   const offline = d.tpEmis === '9';
   const dia = d.dhEmi.slice(8, 10);
   if (qr.versao === '3') {
@@ -155,14 +155,14 @@ export async function parametrosQrCode(
  * Assinatura dos parâmetros 1 a 7 do QR Code versão 3 off-line: RSA com SHA-1 (PKCS#1 v1.5), em Base64, com o mesmo
  * certificado que assina a NFC-e (Manual 6.0, 4.4.2, parâmetro 8).
  */
-export async function assinarParametros(parametros: string, signer: Signer): Promise<string> {
+export async function assinarParametros(parametros: string, signer: Assinador): Promise<string> {
   const bytes = te.encode(parametros);
-  if (signer.kind === 'data') return base64Encode(await signer.sign(bytes, 'SHA-1'));
+  if (signer.tipo === 'dados') return codificarBase64(await signer.assinar(bytes, 'SHA-1'));
   const h = await sha1(bytes);
-  const di = new Uint8Array(SHA1_DIGEST_INFO_PREFIX.length + h.length);
-  di.set(SHA1_DIGEST_INFO_PREFIX);
-  di.set(h, SHA1_DIGEST_INFO_PREFIX.length);
-  return base64Encode(await signer.signDigestInfo(di));
+  const di = new Uint8Array(PREFIXO_DIGEST_INFO_SHA1.length + h.length);
+  di.set(PREFIXO_DIGEST_INFO_SHA1);
+  di.set(h, PREFIXO_DIGEST_INFO_SHA1.length);
+  return codificarBase64(await signer.assinarDigestInfo(di));
 }
 
 /** CFOP da prestação de serviço tributada pelo ISSQN na NFC-e (MOC 7.0 Anexo I, RV I08-150 a I08-170). */
@@ -416,8 +416,8 @@ export function pagamentoNfce(pag: PagMontado, vNF: Decimal, issues: Issues): vo
       );
     }
     if (c.CNPJ !== undefined) {
-      const r = parseCnpj(c.CNPJ, { path: `${path}.CNPJ` });
-      if (!r.ok) issues.list.push(r.error);
+      const r = lerCnpj(c.CNPJ, { caminho: `${path}.CNPJ` });
+      if (!r.ok) issues.list.push(r.erro);
     }
   });
 }

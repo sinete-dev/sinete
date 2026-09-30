@@ -11,8 +11,8 @@
  * Conteúdo nunca abaixo de 7 pt (2.4.3 e 2.4.4); campo sem dado no XML sai com traço (nota 12).
  */
 
-import { ufByCUf } from '@sinete/core';
-import { base64Decode } from '@sinete/core/xml';
+import { ufPorCUf } from '@sinete/core';
+import { decodificarBase64 } from '@sinete/core/xml';
 import { qrMatrix } from '../barcode/qr.ts';
 import {
   CABECALHO_DANFSE,
@@ -108,7 +108,7 @@ function endereco(e: EnderecoNfseView | undefined): string {
 }
 
 export function danfseLayout(n: NfseView, options: DanfseOptions, marca: MarcaDanfse | undefined): Doc {
-  const b = new DocBuilder({ logo: base64Decode(LOGO_NFSE_PNG_B64) });
+  const b = new DocBuilder({ logo: decodificarBase64(LOGO_NFSE_PNG_B64) });
   const c = new Canvas('Helvetica', 'Helvetica-Bold');
   const d = n.dps;
   const ibs = n.ibscbs;
@@ -122,7 +122,7 @@ export function danfseLayout(n: NfseView, options: DanfseOptions, marca: MarcaDa
   nome(d.serv.cLocPrestacao, n.xLocPrestacao);
   nome(n.cLocIncid, n.xLocIncid);
   if (ibs) nome(ibs.cLocalidadeIncid, ibs.xLocalidadeIncid);
-  const uf = (cod: string): string => ufByCUf(cod.slice(0, 2))?.sigla ?? '';
+  const uf = (cod: string): string => ufPorCUf(cod.slice(0, 2))?.sigla ?? '';
   const municipio = (cod: string): string => {
     if (!cod) return '';
     return [nomes.get(cod) ?? options.nomeMunicipio?.(cod) ?? cod, uf(cod)].filter(Boolean).join(' / ');

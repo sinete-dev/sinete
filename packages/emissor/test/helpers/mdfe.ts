@@ -4,7 +4,7 @@
  */
 
 import type { MdfeInput } from '@sinete/mdfe';
-import { buildChaveAcesso } from '@sinete/validators';
+import { montarChaveAcesso } from '@sinete/validators';
 
 export const CNPJ_EMIT = '11222333000181';
 export const CNPJ_TERCEIRO = '11444777000161';
@@ -17,7 +17,7 @@ export const EMISSAO = '2026-09-26T10:00:00-04:00';
 
 /** Chave sintética de NF-e (55) ou CT-e (57) de MT, emitida pelo CNPJ de teste. */
 export function chaveDoc(n: number, mod: '55' | '57' = '55', tpEmis = '1'): string {
-  return buildChaveAcesso({
+  return montarChaveAcesso({
     cUF: '51',
     aamm: '2609',
     emitente: CNPJ_EMIT,

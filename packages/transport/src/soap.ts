@@ -5,7 +5,7 @@
  * Por isso um corpo com declaração XML é recusado em vez de "limpo": quem montou a string tira a declaração antes.
  */
 
-import { ConfigError, ProtocolError } from '@sinete/core';
+import { ErroDeConfiguracao, ErroRespostaInvalida } from '@sinete/core';
 
 export const SOAP12_NS = 'http://www.w3.org/2003/05/soap-envelope';
 
@@ -16,7 +16,7 @@ export function soap12Envelope(body: string, options: { readonly header?: string
     ['cabeçalho', options.header ?? ''],
   ] as const) {
     if (/^\s*<\?xml/.test(xml)) {
-      throw new ConfigError(`o ${part} SOAP não pode ter declaração XML; tire-a antes de assinar e envelopar`);
+      throw new ErroDeConfiguracao(`o ${part} SOAP não pode ter declaração XML; tire-a antes de assinar e envelopar`);
     }
   }
   const header = options.header === undefined ? '' : `<soap12:Header>${options.header}</soap12:Header>`;
@@ -25,7 +25,7 @@ export function soap12Envelope(body: string, options: { readonly header?: string
 
 /** `Content-Type` do SOAP 1.2, com a `action` do WSDL quando houver (`<namespace do WSDL>/<operação>`). */
 export function soap12ContentType(action?: string): string {
-  if (action !== undefined && /["\r\n]/.test(action)) throw new ConfigError('action SOAP inválida');
+  if (action !== undefined && /["\r\n]/.test(action)) throw new ErroDeConfiguracao('action SOAP inválida');
   return `application/soap+xml; charset=utf-8${action === undefined ? '' : `; action="${action}"`}`;
 }
 
@@ -37,11 +37,11 @@ const BODY_OPEN = /<(?:([\w.-]+):)?Body(?:\s[^>]*)?>/;
  */
 export function soapBody(envelope: string): string {
   const open = BODY_OPEN.exec(envelope);
-  if (!open) throw new ProtocolError('resposta SOAP sem Body');
+  if (!open) throw new ErroRespostaInvalida('resposta SOAP sem Body');
   const prefix = open[1] === undefined ? '' : `${open[1]}:`;
   const start = open.index + open[0].length;
   const end = envelope.lastIndexOf(`</${prefix}Body>`);
-  if (end < start) throw new ProtocolError('resposta SOAP com Body sem fechamento');
+  if (end < start) throw new ErroRespostaInvalida('resposta SOAP com Body sem fechamento');
   return envelope.slice(start, end);
 }
 

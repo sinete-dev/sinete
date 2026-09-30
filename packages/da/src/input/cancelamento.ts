@@ -18,12 +18,12 @@ export function cancelamentoNfe(nota: NotaView, c: string | true | undefined): C
   const ev = readEvento(c, ['110111', '110112']);
   if (ev.chNFe !== nota.chave) {
     throw new DanfeError('evento_incompativel', 'o cancelamento é de outra NF-e', {
-      details: { chave: nota.chave, chaveEvento: ev.chNFe },
+      detalhes: { chave: nota.chave, chaveEvento: ev.chNFe },
     });
   }
   if (!ev.ret || !REGISTRADO.has(ev.ret.cStat)) {
     throw new DanfeError('evento_incompativel', 'cancelamento sem retorno de evento registrado', {
-      details: { cStat: ev.ret?.cStat ?? '' },
+      detalhes: { cStat: ev.ret?.cStat ?? '' },
     });
   }
   return { nProt: ev.ret.nProt, dhRegEvento: ev.ret.dhRegEvento };

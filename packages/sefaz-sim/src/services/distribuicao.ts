@@ -8,14 +8,14 @@
  * destinatário; `autXML` e transportador recebem a NF-e e os eventos completos. A NF-e não vai para o próprio emitente.
  */
 
-import { base64Encode } from '@sinete/core/xml';
+import { codificarBase64 } from '@sinete/core/xml';
 import { serializeRoot } from '@sinete/schemas';
 import type {
   retDistDFeInt,
   retDistDFeInt_loteDistDFeInt_docZip,
 } from '@sinete/schemas/nfe/dist-dfe/PL_NFeDistDFe_104';
 import { distDFeIntElement, retDistDFeIntElement } from '@sinete/schemas/nfe/dist-dfe/PL_NFeDistDFe_104';
-import { parseCnpj, parseCpf } from '@sinete/validators';
+import { lerCnpj, lerCpf } from '@sinete/validators';
 import type { RequestContext, Status } from '../context.ts';
 import { dh, prelude, status, verAplic } from '../context.ts';
 import { nfeProcXml, procEventoXml, resEventoXml, resNFeXml } from '../docs.ts';
@@ -85,7 +85,7 @@ const nsu = (n: number): string => String(n).padStart(15, '0');
 
 async function gzipBase64(xml: string): Promise<string> {
   const stream = new Blob([xml]).stream().pipeThrough(new CompressionStream('gzip'));
-  return base64Encode(new Uint8Array(await new Response(stream).arrayBuffer()));
+  return codificarBase64(new Uint8Array(await new Response(stream).arrayBuffer()));
 }
 
 async function docZip(d: DistDoc): Promise<retDistDFeInt_loteDistDFeInt_docZip> {
@@ -95,7 +95,7 @@ async function docZip(d: DistDoc): Promise<retDistDFeInt_loteDistDFeInt_docZip> 
 /** NFeDistribuicaoDFe (nfeDistDFeInteresse), no Ambiente Nacional. */
 export async function distribuicao(ctx: RequestContext): Promise<string> {
   const pre = prelude(ctx, { roots: [distDFeIntElement], lote: false });
-  const root = pre.doc?.root;
+  const root = pre.doc?.raiz;
   const interessadoDoc = documento(root);
   const interessado = docKey(interessadoDoc) ?? '';
   const fila = ctx.rt.state.distribuicao.get(interessado) ?? [];
@@ -116,8 +116,8 @@ export async function distribuicao(ctx: RequestContext): Promise<string> {
   if (!pre.ok) return ret(pre.status, 0);
   // H01 a H05 (MOC 7.0 Visão Geral, tabela 5-29): ambiente, documento válido e raiz do certificado de transmissão.
   if (text(root, 'tpAmb') !== ctx.rt.config.tpAmb) return ret(status('252'), 0);
-  if (interessadoDoc.CNPJ !== undefined && !parseCnpj(interessadoDoc.CNPJ).ok) return ret(status('489'), 0);
-  if (interessadoDoc.CPF !== undefined && !parseCpf(interessadoDoc.CPF).ok) return ret(status('490'), 0);
+  if (interessadoDoc.CNPJ !== undefined && !lerCnpj(interessadoDoc.CNPJ).ok) return ret(status('489'), 0);
+  if (interessadoDoc.CPF !== undefined && !lerCpf(interessadoDoc.CPF).ok) return ret(status('490'), 0);
   const t = ctx.transmissor;
   if (interessadoDoc.CNPJ !== undefined && t !== undefined && docBase(t) !== docBase(interessadoDoc)) {
     return ret(status('593'), 0);

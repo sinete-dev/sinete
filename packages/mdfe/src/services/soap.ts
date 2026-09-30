@@ -6,9 +6,9 @@
  */
 
 import type { Logger } from '@sinete/core';
-import { ProtocolError } from '@sinete/core';
-import type { XmlDocument, XmlElement } from '@sinete/core/xml';
-import { descendants, firstChild, parseXml } from '@sinete/core/xml';
+import { ErroRespostaInvalida } from '@sinete/core';
+import type { DocumentoXml, ElementoXml } from '@sinete/core/xml';
+import { descendentes, lerXml, primeiroFilho } from '@sinete/core/xml';
 import type { EndpointRef, MdfeServico, Transport } from '@sinete/transport';
 import { soap12ContentType, soap12Envelope, soapFault } from '@sinete/transport';
 import servicos from '../data/servicos.json' with { type: 'json' };
@@ -28,7 +28,7 @@ const SERVICOS: Readonly<Record<string, ServicoInfo>> = servicos.servicos;
 
 export function servicoInfo(servico: MdfeServicoCliente): ServicoInfo {
   const s = SERVICOS[servico];
-  if (!s) throw new ProtocolError(`serviço sem descrição em data/servicos.json: ${servico}`);
+  if (!s) throw new ErroRespostaInvalida(`serviço sem descrição em data/servicos.json: ${servico}`);
   return s;
 }
 
@@ -40,8 +40,8 @@ export async function soapBodyFor(servico: MdfeServicoCliente, mensagem: string)
 }
 
 export interface RespostaSoap {
-  readonly doc: XmlDocument;
-  readonly ret: XmlElement;
+  readonly doc: DocumentoXml;
+  readonly ret: ElementoXml;
   readonly status: number;
 }
 
@@ -79,36 +79,36 @@ export async function chamar(c: ChamadaSoap): Promise<RespostaSoap> {
   const fault = soapFault(text);
   if (fault) {
     c.logger.warn('mdfe.soap.fault', { ...started, status: res.status, code: fault.code });
-    throw new ProtocolError(`SOAP fault de ${c.endpoint.host}: ${fault.reason ?? fault.code ?? 'sem motivo'}`, {
-      details: { status: res.status, code: fault.code, reason: fault.reason, servico: c.servico },
+    throw new ErroRespostaInvalida(`SOAP fault de ${c.endpoint.host}: ${fault.reason ?? fault.code ?? 'sem motivo'}`, {
+      detalhes: { status: res.status, code: fault.code, reason: fault.reason, servico: c.servico },
     });
   }
-  let doc: XmlDocument;
+  let doc: DocumentoXml;
   try {
-    doc = parseXml(text.replace(/^﻿/, ''));
+    doc = lerXml(text.replace(/^﻿/, ''));
   } catch (cause) {
-    throw new ProtocolError(`resposta de ${c.endpoint.host} não é XML (HTTP ${res.status})`, {
+    throw new ErroRespostaInvalida(`resposta de ${c.endpoint.host} não é XML (HTTP ${res.status})`, {
       cause,
-      details: { status: res.status, servico: c.servico },
+      detalhes: { status: res.status, servico: c.servico },
     });
   }
-  let ret: XmlElement | undefined;
-  for (const el of descendants(doc.root)) {
+  let ret: ElementoXml | undefined;
+  for (const el of descendentes(doc.raiz)) {
     if (el.local === c.retorno && el.ns === MDFE_NS) {
       ret = el;
       break;
     }
   }
   if (!ret) {
-    throw new ProtocolError(`resposta de ${c.endpoint.host} sem <${c.retorno}> (HTTP ${res.status})`, {
-      details: { status: res.status, servico: c.servico },
+    throw new ErroRespostaInvalida(`resposta de ${c.endpoint.host} sem <${c.retorno}> (HTTP ${res.status})`, {
+      detalhes: { status: res.status, servico: c.servico },
     });
   }
-  const grupo = c.cStatEm === undefined ? ret : firstChild(ret, c.cStatEm, MDFE_NS);
-  if (grupo === undefined || firstChild(grupo, 'cStat', MDFE_NS) === undefined) {
+  const grupo = c.cStatEm === undefined ? ret : primeiroFilho(ret, c.cStatEm, MDFE_NS);
+  if (grupo === undefined || primeiroFilho(grupo, 'cStat', MDFE_NS) === undefined) {
     const onde = c.cStatEm === undefined ? '' : `/${c.cStatEm}`;
-    throw new ProtocolError(`<${c.retorno}${onde}> de ${c.endpoint.host} sem cStat (HTTP ${res.status})`, {
-      details: { status: res.status, servico: c.servico },
+    throw new ErroRespostaInvalida(`<${c.retorno}${onde}> de ${c.endpoint.host} sem cStat (HTTP ${res.status})`, {
+      detalhes: { status: res.status, servico: c.servico },
     });
   }
   c.logger.debug('mdfe.soap.resposta', { ...started, status: res.status });

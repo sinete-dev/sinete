@@ -1,5 +1,5 @@
-import type { SineteErrorOptions } from '@sinete/core';
-import { SineteError } from '@sinete/core';
+import type { ErroSineteOpcoes } from '@sinete/core';
+import { ErroSinete } from '@sinete/core';
 
 /** Códigos estáveis dos erros do `@sinete/da`. */
 export type DanfeErrorCode =
@@ -18,8 +18,8 @@ export type DanfeErrorCode =
   /** Conteúdo que não cabe na simbologia (CODE-128C ímpar, QR maior que a versão 40). */
   | 'codigo_barras_invalido';
 
-export class DanfeError extends SineteError<DanfeErrorCode> {
-  constructor(code: DanfeErrorCode, message: string, options?: SineteErrorOptions) {
+export class DanfeError extends ErroSinete<DanfeErrorCode> {
+  constructor(code: DanfeErrorCode, message: string, options?: ErroSineteOpcoes) {
     super(code, message, options);
     this.name = 'DanfeError';
   }

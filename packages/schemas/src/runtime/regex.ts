@@ -8,12 +8,12 @@
  * `\D` em classe negada) lançam erro, e o gerador aborta em vez de gerar um validador frouxo.
  */
 
-import { UnsupportedError } from '@sinete/core';
+import { ErroNaoSuportado } from '@sinete/core';
 
 /** Construção de regex do XSD que o tradutor não implementa: `nao_suportado`, com o `pattern` em `details`. */
-export class XsdRegexError extends UnsupportedError {
+export class XsdRegexError extends ErroNaoSuportado {
   constructor(message: string, pattern?: string) {
-    super(`regex do XSD: ${message}`, pattern === undefined ? undefined : { details: { pattern } });
+    super(`regex do XSD: ${message}`, pattern === undefined ? undefined : { detalhes: { pattern } });
     this.name = 'XsdRegexError';
   }
 }

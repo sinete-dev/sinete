@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'bun:test';
-import { fixedClock } from '@sinete/core';
+import { relogioFixo } from '@sinete/core';
 import type { CertificateInfo } from '../src/index.ts';
 import { icpIdentity, openPfx } from '../src/index.ts';
 import { fixture, SENHA, SENHA_ACENTUADA } from './helpers.ts';
 
-const clock = fixedClock('2026-09-25T12:00:00Z');
+const clock = relogioFixo('2026-09-25T12:00:00Z');
 
 function fake(cn: string | undefined, otherNames: { oid: string; value: string }[] = []): CertificateInfo {
   return {

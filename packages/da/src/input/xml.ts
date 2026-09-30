@@ -4,15 +4,15 @@
  * ou mais novo) não impedem o documento auxiliar: ele só mostra o que o leiaute conhece.
  */
 
-import type { XmlDocument } from '@sinete/core/xml';
-import { parseXml } from '@sinete/core/xml';
+import type { DocumentoXml } from '@sinete/core/xml';
+import { lerXml } from '@sinete/core/xml';
 import type { RootElement } from '@sinete/schemas';
 import { decodeRoot } from '@sinete/schemas';
 import { DanfeError } from '../errors.ts';
 
-export function parse(xml: string): XmlDocument {
+export function parse(xml: string): DocumentoXml {
   try {
-    return parseXml(xml);
+    return lerXml(xml);
   } catch (e) {
     throw new DanfeError('xml_invalido', 'XML malformado', { cause: e });
   }
@@ -20,14 +20,14 @@ export function parse(xml: string): XmlDocument {
 
 /** Decodifica pela raiz esperada entre as aceitas; outra raiz é `documento_inesperado`. */
 export function decodeAs<T>(
-  doc: XmlDocument,
+  doc: DocumentoXml,
   roots: readonly RootElement<T>[],
   what: string,
 ): { root: string; value: T } {
-  const root = roots.find((r) => r.name === doc.root.local && r.ns === doc.root.ns);
+  const root = roots.find((r) => r.name === doc.raiz.local && r.ns === doc.raiz.ns);
   if (!root) {
-    throw new DanfeError('documento_inesperado', `esperado ${what}, recebido <${doc.root.local}>`, {
-      details: { raiz: doc.root.local, esperado: roots.map((r) => r.name) },
+    throw new DanfeError('documento_inesperado', `esperado ${what}, recebido <${doc.raiz.local}>`, {
+      detalhes: { raiz: doc.raiz.local, esperado: roots.map((r) => r.name) },
     });
   }
   return { root: root.name, value: decodeRoot(root, doc).value };

@@ -9,37 +9,37 @@
  * conferida contra uma implementação anterior em produção, com os mesmos titulares.
  */
 
-import type { Result, ValidationIssue } from '@sinete/core';
-import { err, ok } from '@sinete/core';
-import { cnpjCheckDigits } from './cnpj.ts';
-import type { ParseOptions } from './cpf.ts';
+import type { Ocorrencia, Resultado } from '@sinete/core';
+import { falha, ok } from '@sinete/core';
+import { calcularDvCnpj } from './cnpj.ts';
+import type { LerOpcoes } from './cpf.ts';
 import { allSame, applyMask, issue, stripMask, throwInvalid } from './digits.ts';
 
 /** Os 2 dígitos de controle do CAEPF para uma base de 12 algarismos. */
-export function caepfCheckDigits(base: string): string {
+export function calcularDvCaepf(base: string): string {
   if (!/^\d{12}$/.test(base)) throwInvalid('CAEPF', 'caepf_base_invalida', 'A base do CAEPF tem 12 algarismos');
-  const n = (Number(cnpjCheckDigits(base)) + 12) % 100;
+  const n = (Number(calcularDvCnpj(base)) + 12) % 100;
   return String(n).padStart(2, '0');
 }
 
 /** Valida e normaliza um CAEPF (aceita máscara); devolve os 14 algarismos. */
-export function parseCaepf(input: string, options: ParseOptions = {}): Result<string, ValidationIssue> {
-  const path = options.path ?? 'CAEPF';
+export function lerCaepf(input: string, options: LerOpcoes = {}): Resultado<string, Ocorrencia> {
+  const path = options.caminho ?? 'CAEPF';
   const value = stripMask(input.trim());
-  if (!/^\d*$/.test(value)) return err(issue(path, 'caepf_caractere_invalido', 'CAEPF só tem algarismos'));
-  if (value.length !== 14) return err(issue(path, 'caepf_tamanho_invalido', 'CAEPF tem 14 algarismos'));
-  if (allSame(value)) return err(issue(path, 'caepf_digitos_repetidos', 'CAEPF com todos os algarismos iguais'));
-  if (caepfCheckDigits(value.slice(0, 12)) !== value.slice(12)) {
-    return err(issue(path, 'caepf_dv_invalido', 'Dígitos de controle do CAEPF não conferem'));
+  if (!/^\d*$/.test(value)) return falha(issue(path, 'caepf_caractere_invalido', 'CAEPF só tem algarismos'));
+  if (value.length !== 14) return falha(issue(path, 'caepf_tamanho_invalido', 'CAEPF tem 14 algarismos'));
+  if (allSame(value)) return falha(issue(path, 'caepf_digitos_repetidos', 'CAEPF com todos os algarismos iguais'));
+  if (calcularDvCaepf(value.slice(0, 12)) !== value.slice(12)) {
+    return falha(issue(path, 'caepf_dv_invalido', 'Dígitos de controle do CAEPF não conferem'));
   }
   return ok(value);
 }
 
-export function isValidCaepf(input: string): boolean {
-  return parseCaepf(input).ok;
+export function caepfValido(input: string): boolean {
+  return lerCaepf(input).ok;
 }
 
 /** `000.000.000/000-00`. Não valida. */
-export function formatCaepf(value: string): string {
+export function formatarCaepf(value: string): string {
   return applyMask(stripMask(value), '###.###.###/###-##');
 }

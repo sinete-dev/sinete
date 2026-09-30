@@ -10,8 +10,8 @@ import { constants, createPrivateKey, privateEncrypt, X509Certificate } from 'no
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { memoryLogger } from '@sinete/core';
-import { prepareSignature, signXml } from '@sinete/core/xml';
+import { loggerEmMemoria } from '@sinete/core';
+import { assinarXml, prepararAssinatura } from '@sinete/core/xml';
 import { allowlistPolicy, createNodeTransport, SignerError, TransportError } from '../src/index.node.ts';
 import type { SignerConnection } from '../src/signer.node.ts';
 import { connectSigner, cryptoKeyTlsSigner, digestTlsSigner, startSigner } from '../src/signer.node.ts';
@@ -33,7 +33,7 @@ describe.skipIf(!bins || !openssl)('sinete-signer de verdade no laboratório TLS
   const b = bins as SignerBinaries;
   let pki: Pki;
   let signer: SignerConnection;
-  const logger = memoryLogger();
+  const logger = loggerEmMemoria();
   const handshakeArgs = (): string[] => [
     '-tls1_2',
     '-Verify',
@@ -48,9 +48,10 @@ describe.skipIf(!bins || !openssl)('sinete-signer de verdade no laboratório TLS
     const key = createPrivateKey(pki.clientKeyPem);
     return digestTlsSigner(
       {
-        kind: 'digest',
-        certificateDer: async () => der(pki.clientCertPem),
-        signDigestInfo: async (di) => new Uint8Array(privateEncrypt({ key, padding: constants.RSA_PKCS1_PADDING }, di)),
+        tipo: 'digest',
+        certificadoDer: async () => der(pki.clientCertPem),
+        assinarDigestInfo: async (di) =>
+          new Uint8Array(privateEncrypt({ key, padding: constants.RSA_PKCS1_PADDING }, di)),
       },
       [der(pki.clientCertPem)],
     );
@@ -280,14 +281,14 @@ describe.skipIf(!bins || !openssl)('sinete-signer de verdade no laboratório TLS
       const chave = (doc: string): string => `352609${doc}550010000000011000000011`;
       const xml = (doc: string): string =>
         `<NFe xmlns="http://www.portalfiscal.inf.br/nfe"><infNFe Id="NFe${chave(doc)}" versao="4.00"><emit><CNPJ>${doc}</CNPJ></emit></infNFe></NFe>`;
-      const ok = await prepareSignature(xml(CNPJ), {
+      const ok = await prepararAssinatura(xml(CNPJ), {
         id: `NFe${chave(CNPJ)}`,
-        certificateDer: await ds.certificateDer(),
+        certificadoDer: await ds.certificadoDer(),
       });
-      const sig = await ds.sign(ok.signedInfo, 'SHA-1');
+      const sig = await ds.assinar(ok.signedInfo, 'SHA-1');
       const pub = await crypto.subtle.importKey(
         'spki',
-        new X509Certificate(Buffer.from(await ds.certificateDer())).publicKey.export({ format: 'der', type: 'spki' }),
+        new X509Certificate(Buffer.from(await ds.certificadoDer())).publicKey.export({ format: 'der', type: 'spki' }),
         { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-1' },
         false,
         ['verify'],
@@ -295,11 +296,13 @@ describe.skipIf(!bins || !openssl)('sinete-signer de verdade no laboratório TLS
       expect(await crypto.subtle.verify('RSASSA-PKCS1-v1_5', pub, sig as Uint8Array<ArrayBuffer>, ok.signedInfo)).toBe(
         true,
       );
-      const outro = await prepareSignature(xml('44555666000181'), {
+      const outro = await prepararAssinatura(xml('44555666000181'), {
         id: `NFe${chave('44555666000181')}`,
-        certificateDer: await ds.certificateDer(),
+        certificadoDer: await ds.certificadoDer(),
       });
-      await expect(ds.sign(outro.signedInfo, 'SHA-1')).rejects.toMatchObject({ code: 'assinatura_documento_recusada' });
+      await expect(ds.assinar(outro.signedInfo, 'SHA-1')).rejects.toMatchObject({
+        code: 'assinatura_documento_recusada',
+      });
       expect((await p11.stats())[id.id]).toMatchObject({ signatures: 1, backend: 'pkcs11' });
       await id.close();
     });
@@ -318,14 +321,16 @@ describe.skipIf(!bins || !openssl)('sinete-signer de verdade no laboratório TLS
       const xml = (autor: string): string =>
         `<evento xmlns="http://www.portalfiscal.inf.br/nfe" versao="1.00"><infEvento Id="${evId}"><cOrgao>91</cOrgao><tpAmb>2</tpAmb><CNPJ>${autor}</CNPJ><chNFe>${chave}</chNFe><dhEvento>2026-09-28T10:00:00-03:00</dhEvento><tpEvento>210210</tpEvento><nSeqEvento>1</nSeqEvento><verEvento>1.00</verEvento><detEvento versao="1.00"><descEvento>Ciencia da Operacao</descEvento></detEvento></infEvento></evento>`;
       // signXml passa o elemento canonicalizado no SignContext, e o helper confere o autor nele.
-      const assinado = await signXml(xml(CNPJ), { id: evId }, ds);
+      const assinado = await assinarXml(xml(CNPJ), { id: evId }, ds);
       expect(assinado).toContain('<SignatureValue>');
       expect(assinado).not.toContain('@@SINETE');
       // Sem o elemento, a referência é só a chave de outro emitente: recusa.
-      const prep = await prepareSignature(xml(CNPJ), { id: evId, certificateDer: await ds.certificateDer() });
-      await expect(ds.sign(prep.signedInfo, 'SHA-1')).rejects.toMatchObject({ code: 'assinatura_documento_recusada' });
+      const prep = await prepararAssinatura(xml(CNPJ), { id: evId, certificadoDer: await ds.certificadoDer() });
+      await expect(ds.assinar(prep.signedInfo, 'SHA-1')).rejects.toMatchObject({
+        code: 'assinatura_documento_recusada',
+      });
       // Autor que não é o titular: recusa mesmo com o elemento.
-      await expect(signXml(xml('44555666000181'), { id: evId }, ds)).rejects.toMatchObject({
+      await expect(assinarXml(xml('44555666000181'), { id: evId }, ds)).rejects.toMatchObject({
         code: 'assinatura_documento_recusada',
       });
       await id.close();

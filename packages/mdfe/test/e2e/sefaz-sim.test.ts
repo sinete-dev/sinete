@@ -5,9 +5,9 @@
  * troca só a URL de cada pedido.
  */
 import { afterEach, beforeAll, describe, expect, test } from 'bun:test';
-import type { ManualClock } from '@sinete/core';
-import { manualClock, TimeoutError, timeContext } from '@sinete/core';
-import { verifySignature } from '@sinete/core/xml';
+import type { RelogioManual } from '@sinete/core';
+import { contextoDeTempo, ErroDeTempoEsgotado, relogioManual } from '@sinete/core';
+import { conferirAssinatura } from '@sinete/core/xml';
 import type { SefazSim, SyntheticCertificate } from '@sinete/sefaz-sim';
 import { createSefazSim, redirectToSim, startSefazSimServer, syntheticCertificate } from '@sinete/sefaz-sim';
 import type { Transport } from '@sinete/transport';
@@ -27,7 +27,7 @@ let c: Certs;
 const fechar: (() => Promise<void>)[] = [];
 
 beforeAll(async () => {
-  const clock = manualClock(EMISSAO);
+  const clock = relogioManual(EMISSAO);
   const ac = await syntheticCertificate({ clock, role: 'ac', validDays: 3650 });
   const [servidor, produtor, transportadora] = await Promise.all([
     syntheticCertificate({ clock, role: 'servidor', issuer: ac }),
@@ -42,7 +42,7 @@ afterEach(async () => {
 });
 
 interface Cenario {
-  readonly clock: ManualClock;
+  readonly clock: RelogioManual;
   readonly sim: SefazSim;
   /** Caminhos pedidos ao simulador, na ordem. */
   readonly caminhos: string[];
@@ -55,7 +55,7 @@ interface Cenario {
 }
 
 async function cenario(): Promise<Cenario> {
-  const clock = manualClock(EMISSAO);
+  const clock = relogioManual(EMISSAO);
   const sim = createSefazSim({ clock, uf: 'MT' });
   const server = await startSefazSimServer(sim, { cert: c.servidor.pem, key: c.servidor.keyPem });
   const caminhos: string[] = [];
@@ -85,8 +85,8 @@ async function cenario(): Promise<Cenario> {
     });
   };
   const emitir: Cenario['emitir'] = async (input, assinante, o = {}) => {
-    const b = buildMdfe(input, { ...opcoes(), time: timeContext({ emissao: clock }), ...o });
-    if (!b.ok) throw new Error(b.issues.map((i) => `${i.path}: ${i.message}`).join('\n'));
+    const b = buildMdfe(input, { ...opcoes(), time: contextoDeTempo({ emissao: clock }), ...o });
+    if (!b.ok) throw new Error(b.issues.map((i) => `${i.caminho}: ${i.mensagem}`).join('\n'));
     return { chave: b.value.chave, xml: await signMdfe(b.value, assinante.signer) };
   };
   return { clock, sim, caminhos, cliente, emitir };
@@ -99,23 +99,23 @@ describe('MDF-e contra a SEFAZ simulada, HTTPS com mTLS', () => {
     expect((await client.statusServico()).cStat).toBe('107');
     const mdfe = await cen.emitir(cargaPropria(), c.produtor);
     const r = await client.autorizar(mdfe.xml);
-    if (r.status !== 'authorized') throw new Error(JSON.stringify(r));
+    if (r.tipo !== 'autorizado') throw new Error(JSON.stringify(r));
     // O mdfeProc leva o MDF-e byte a byte e a assinatura continua conferindo dentro do envelope.
-    expect(r.value.mdfeProc).toContain(mdfe.xml);
-    expect((await verifySignature(r.value.mdfeProc ?? '', { id: `MDFe${mdfe.chave}`, element: 'infMDFe' })).ok).toBe(
-      true,
-    );
+    expect(r.valor.mdfeProc).toContain(mdfe.xml);
+    expect(
+      (await conferirAssinatura(r.valor.mdfeProc ?? '', { id: `MDFe${mdfe.chave}`, elemento: 'infMDFe' })).ok,
+    ).toBe(true);
     const q = await client.consultar(mdfe.chave, mdfe.xml);
-    expect(q.status === 'authorized' && q.value.digValConfere).toBe(true);
+    expect(q.tipo === 'autorizado' && q.valor.digValConfere).toBe(true);
     const abertos = await client.consultarNaoEncerrados();
-    expect(abertos.status === 'authorized' && abertos.value.map((m) => m.chMDFe)).toEqual([mdfe.chave]);
-    cen.clock.advance(6 * 3_600_000);
-    const enc = await client.encerrar({ chave: mdfe.chave, nProt: r.value.nProt ?? '', uf: 'SP', cMun: '3550308' });
-    if (enc.status !== 'authorized') throw new Error(JSON.stringify(enc));
-    expect(enc.value.procEventoMDFe).toContain('<evEncMDFe>');
+    expect(abertos.tipo === 'autorizado' && abertos.valor.map((m) => m.chMDFe)).toEqual([mdfe.chave]);
+    cen.clock.avancar(6 * 3_600_000);
+    const enc = await client.encerrar({ chave: mdfe.chave, nProt: r.valor.nProt ?? '', uf: 'SP', cMun: '3550308' });
+    if (enc.tipo !== 'autorizado') throw new Error(JSON.stringify(enc));
+    expect(enc.valor.procEventoMDFe).toContain('<evEncMDFe>');
     const fim = await client.consultar(mdfe.chave);
-    expect(fim.status === 'authorized' && fim.value.situacao).toBe('encerrado');
-    expect(fim.status === 'authorized' && fim.value.eventos.length).toBe(1);
+    expect(fim.tipo === 'autorizado' && fim.valor.situacao).toBe('encerrado');
+    expect(fim.tipo === 'autorizado' && fim.valor.eventos.length).toBe(1);
     expect(cen.caminhos).toEqual([
       '/uf/ws/MDFeStatusServico',
       '/uf/ws/MDFeRecepcaoSinc',
@@ -131,17 +131,17 @@ describe('MDF-e contra a SEFAZ simulada, HTTPS com mTLS', () => {
     const client = cen.cliente(c.transportadora);
     const mdfe = await cen.emitir(prestador(), c.transportadora, { tpEmis: '2' });
     expect(mdfe.xml).toContain('&amp;sign=');
-    cen.clock.advance(48 * 3_600_000);
+    cen.clock.avancar(48 * 3_600_000);
     const r = await client.autorizar(mdfe.xml);
-    if (r.status !== 'authorized') throw new Error(JSON.stringify(r));
+    if (r.tipo !== 'autorizado') throw new Error(JSON.stringify(r));
     const canc = await client.cancelar({
       chave: mdfe.chave,
-      nProt: r.value.nProt ?? '',
+      nProt: r.valor.nProt ?? '',
       xJust: 'VIAGEM NAO REALIZADA TESTE',
     });
-    expect(canc.status === 'authorized' && canc.cStat).toBe('135');
+    expect(canc.tipo === 'autorizado' && canc.cStat).toBe('135');
     const q = await client.consultar(mdfe.chave);
-    expect(q.status === 'authorized' && q.value.situacao).toBe('cancelado');
+    expect(q.tipo === 'autorizado' && q.valor.situacao).toBe('cancelado');
   });
 
   test('processou e não respondeu: timeout, e o resolvedor recupera o mdfeProc pela consulta', async () => {
@@ -149,11 +149,11 @@ describe('MDF-e contra a SEFAZ simulada, HTTPS com mTLS', () => {
     const mdfe = await cen.emitir(cargaPropria(), c.produtor);
     cen.sim.injectFault({ kind: 'hang', phase: 'after' }, { servico: 'MDFeRecepcaoSinc' });
     const apressado = cen.cliente(c.produtor, 400);
-    expect(await apressado.autorizar(mdfe.xml).catch((e: unknown) => e)).toBeInstanceOf(TimeoutError);
+    expect(await apressado.autorizar(mdfe.xml).catch((e: unknown) => e)).toBeInstanceOf(ErroDeTempoEsgotado);
     expect(cen.sim.inspect.mdfe(mdfe.chave)?.situacao).toBe('autorizado');
     const res = await resolverEnvioSemResposta(cen.cliente(c.produtor), mdfe.xml);
     expect(res.acao).toBe('concluida');
     if (res.acao === 'concluida')
-      expect(res.outcome.status === 'authorized' && res.outcome.value.mdfeProc).toContain(mdfe.xml);
+      expect(res.outcome.tipo === 'autorizado' && res.outcome.valor.mdfeProc).toContain(mdfe.xml);
   });
 });

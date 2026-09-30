@@ -15,9 +15,9 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
-import { fixedClock, timeContext } from '@sinete/core';
-import type { XmlElement } from '@sinete/core/xml';
-import { attributeOf, c14n, childElements, firstChild, parseXml, textOf } from '@sinete/core/xml';
+import { contextoDeTempo, relogioFixo } from '@sinete/core';
+import type { ElementoXml } from '@sinete/core/xml';
+import { atributoDe, c14n, elementosFilhos, lerXml, primeiroFilho, textoDe } from '@sinete/core/xml';
 import { decode } from '@sinete/schemas';
 import type { TMDFe_infMDFe } from '@sinete/schemas/mdfe/3.00b';
 import { TMDFe_infMDFe as InfMDFe } from '@sinete/schemas/mdfe/3.00b';
@@ -81,7 +81,7 @@ function entradaDoXml(inf: TMDFe_infMDFe): MdfeInput {
     ufFim: ide.UFFim as UfMdfe,
     carregamento: ide.infMunCarrega.map((m) => ({ cMun: m.cMunCarrega, xMun: m.xMunCarrega })),
     percurso: ide.infPercurso?.map((p) => p.UFPer as UfMdfe),
-    dhIniViagem: ide.dhIniViagem === undefined ? undefined : fixedClock(ide.dhIniViagem).now(),
+    dhIniViagem: ide.dhIniViagem === undefined ? undefined : relogioFixo(ide.dhIniViagem).agora(),
     indCanalVerde: ide.indCanalVerde === '1' ? true : undefined,
     indCarregaPosterior: ide.indCarregaPosterior === '1' ? true : undefined,
     rodoviario: def({
@@ -217,11 +217,11 @@ function entradaDoXml(inf: TMDFe_infMDFe): MdfeInput {
 }
 
 /** Primeira diferença entre dois elementos, como caminho sem índice e o tipo da diferença. */
-function diferenca(a: XmlElement, b: XmlElement, p: string, ignorar: ReadonlySet<string>): string | undefined {
-  const aa = childElements(a).filter((x) => !ignorar.has(x.local));
-  const bb = childElements(b).filter((x) => !ignorar.has(x.local));
+function diferenca(a: ElementoXml, b: ElementoXml, p: string, ignorar: ReadonlySet<string>): string | undefined {
+  const aa = elementosFilhos(a).filter((x) => !ignorar.has(x.local));
+  const bb = elementosFilhos(b).filter((x) => !ignorar.has(x.local));
   if (aa.length === 0 && bb.length === 0) {
-    return textOf(a).trim() === textOf(b).trim() ? undefined : `${p}: texto`;
+    return textoDe(a).trim() === textoDe(b).trim() ? undefined : `${p}: texto`;
   }
   const n = Math.max(aa.length, bb.length);
   for (let i = 0; i < n; i++) {
@@ -275,41 +275,41 @@ for (const nome of readdirSync(dir).sort()) {
   if (!nome.endsWith('.xml')) continue;
   r.arquivos++;
   const texto = readFileSync(path.join(dir, nome), 'utf8');
-  const docXml = parseXml(texto.replace(/^﻿?<\?xml[^?]*\?>\s*/, ''));
-  if (docXml.root.local === 'procEventoMDFe') {
+  const docXml = lerXml(texto.replace(/^﻿?<\?xml[^?]*\?>\s*/, ''));
+  if (docXml.raiz.local === 'procEventoMDFe') {
     r.eventos++;
-    const ev = firstChild(docXml.root, 'eventoMDFe', MDFE_NS);
-    const inf = ev && firstChild(ev, 'infEvento', MDFE_NS);
+    const ev = primeiroFilho(docXml.raiz, 'eventoMDFe', MDFE_NS);
+    const inf = ev && primeiroFilho(ev, 'infEvento', MDFE_NS);
     if (inf) {
-      const seq = firstChild(inf, 'nSeqEvento', MDFE_NS);
-      if (seq) inc(r.eventosForma.nSeqEvento, forma(textOf(seq)));
-      inc(r.eventosForma.idComprimento, String((attributeOf(inf, 'Id') ?? '').length));
-      const tp = firstChild(inf, 'tpEvento', MDFE_NS);
-      if (tp) inc(r.eventosForma.tpEvento, textOf(tp));
+      const seq = primeiroFilho(inf, 'nSeqEvento', MDFE_NS);
+      if (seq) inc(r.eventosForma.nSeqEvento, forma(textoDe(seq)));
+      inc(r.eventosForma.idComprimento, String((atributoDe(inf, 'Id') ?? '').length));
+      const tp = primeiroFilho(inf, 'tpEvento', MDFE_NS);
+      if (tp) inc(r.eventosForma.tpEvento, textoDe(tp));
     }
-    const ret = firstChild(docXml.root, 'retEventoMDFe', MDFE_NS);
-    const rinf = ret && firstChild(ret, 'infEvento', MDFE_NS);
-    const cs = rinf && firstChild(rinf, 'cStat', MDFE_NS);
-    if (cs) inc(r.eventosForma.cStat, textOf(cs));
+    const ret = primeiroFilho(docXml.raiz, 'retEventoMDFe', MDFE_NS);
+    const rinf = ret && primeiroFilho(ret, 'infEvento', MDFE_NS);
+    const cs = rinf && primeiroFilho(rinf, 'cStat', MDFE_NS);
+    if (cs) inc(r.eventosForma.cStat, textoDe(cs));
     continue;
   }
-  if (docXml.root.local !== 'mdfeProc') continue;
+  if (docXml.raiz.local !== 'mdfeProc') continue;
   r.mdfeProc++;
-  const mdfe = firstChild(docXml.root, 'MDFe', MDFE_NS);
-  const infEl = mdfe && firstChild(mdfe, 'infMDFe', MDFE_NS);
+  const mdfe = primeiroFilho(docXml.raiz, 'MDFe', MDFE_NS);
+  const infEl = mdfe && primeiroFilho(mdfe, 'infMDFe', MDFE_NS);
   if (!mdfe || !infEl) {
     r.semInfMDFe++;
     continue;
   }
-  const supl = firstChild(mdfe, 'infMDFeSupl', MDFE_NS);
-  const qr = supl && firstChild(supl, 'qrCodMDFe', MDFE_NS);
+  const supl = primeiroFilho(mdfe, 'infMDFeSupl', MDFE_NS);
+  const qr = supl && primeiroFilho(supl, 'qrCodMDFe', MDFE_NS);
   if (qr) {
     r.qrCode.total++;
-    const t = textOf(qr).trim();
+    const t = textoDe(qr).trim();
     if (t.toLowerCase().startsWith(`${QR_BASE.toLowerCase()}?`)) r.qrCode.enderecoIgualAoDado++;
     if (t.includes('&sign=')) r.qrCode.comSign++;
   }
-  const inf = decode(InfMDFe, infEl, docXml.source).value;
+  const inf = decode(InfMDFe, infEl, docXml.texto).value;
   inc(r.formas.qCarga, forma(inf.tot.qCarga));
   inc(r.formas.vCarga, forma(inf.tot.vCarga).replace(/^9+/, 'N'));
   const perc = (inf.ide.infPercurso ?? []).map((p) => p.UFPer as UfMdfe);
@@ -335,22 +335,22 @@ for (const nome of readdirSync(dir).sort()) {
   const entrada = entradaDoXml(inf);
   const b = buildMdfe(entrada, {
     ambiente,
-    time: timeContext({ emissao: fixedClock(quando) }),
+    time: contextoDeTempo({ emissao: relogioFixo(quando) }),
     offsetMinutes: offset,
     verProc: inf.ide.verProc,
     tpEmis: inf.ide.tpEmis as '1' | '2',
   });
   if (!b.ok) {
-    if (!vigente && b.issues.every((i) => /\(F(30|37)a, /.test(i.message))) {
+    if (!vigente && b.issues.every((i) => /\(F(30|37)a, /.test(i.mensagem))) {
       r.rejeitadosSoPelaDataDeslocada++;
       continue;
     }
     r.rejeitadosPeloBuilder++;
-    for (const i of b.issues) inc(r.ocorrencias, `${i.code} ${semIndice(i.path)}`);
+    for (const i of b.issues) inc(r.ocorrencias, `${i.code} ${semIndice(i.caminho)}`);
     continue;
   }
   r.montados++;
-  const montadoEl = firstChild(parseXml(b.value.xml).root, 'infMDFe', MDFE_NS) as XmlElement;
+  const montadoEl = primeiroFilho(lerXml(b.value.xml).raiz, 'infMDFe', MDFE_NS) as ElementoXml;
   if (c14n(montadoEl) === c14n(infEl)) {
     r.identicosC14n++;
     r.identicosNormalizados++;

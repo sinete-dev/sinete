@@ -27,12 +27,12 @@ import {
   syntheticCertificate,
   syntheticPfx,
 } from '@sinete/sefaz-sim';
-import { manualClock } from 'sinete/core';
+import { relogioManual } from 'sinete/core';
 import { createMemoriaStore } from 'sinete/emissor/memoria';
 import { createNfeEmissor } from 'sinete/emissor/nfe';
 import type { NfeInput } from 'sinete/nfe';
 
-const clock = manualClock('2026-09-26T10:00:00-03:00');
+const clock = relogioManual('2026-09-26T10:00:00-03:00');
 const ac = await syntheticCertificate({ clock, role: 'ac' });
 const titular = await syntheticCertificate({ clock, role: 'titular', cnpj: '11222333000181', issuer: ac });
 const sim = createSefazSim({ clock });
@@ -130,7 +130,7 @@ switch (d1.tipo) {
     console.log('autorizada', d1.id, d1.cStat, 'guardada:', notas.has('pedido-1'));
     break;
   case 'recusado':
-    console.log('recusada', d1.cStat, d1.xMotivo, d1.hint?.suggestedFix);
+    console.log('recusada', d1.cStat, d1.xMotivo, d1.hint?.comoCorrigir);
     break;
   default:
     console.log(d1.tipo);

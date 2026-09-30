@@ -29,7 +29,7 @@ function conferir(n: NfseView, evento: string | true | undefined, tipos: readonl
   const ev = readEventoNfse(evento, tipos);
   if (ev.chNFSe !== n.chave) {
     throw new DanfeError('evento_incompativel', `o evento de ${doQue} é de outra NFS-e`, {
-      details: { chave: n.chave, chaveEvento: ev.chNFSe },
+      detalhes: { chave: n.chave, chaveEvento: ev.chNFSe },
     });
   }
   return true;
@@ -46,7 +46,7 @@ export function danfse(xml: string, options: DanfseOptions = {}): Doc {
   const substituida = conferir(n, options.substituicao, EVENTOS_DANFSE.substituicao, 'substituição');
   if (cancelada && substituida) {
     throw new DanfeError('evento_incompativel', 'NFS-e cancelada e substituída ao mesmo tempo', {
-      details: { chave: n.chave },
+      detalhes: { chave: n.chave },
     });
   }
   const marca: MarcaDanfse | undefined = cancelada ? 'cancelada' : substituida ? 'substituida' : undefined;

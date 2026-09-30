@@ -4,7 +4,7 @@
  * `nfe.test.ts`, `mdfe.test.ts` e `nfse.test.ts`.
  */
 import { beforeAll, describe, expect, test } from 'bun:test';
-import { ConfigError, manualClock, memoryLogger, TimeoutError, ValidationError } from '@sinete/core';
+import { ErroDeConfiguracao, ErroDeTempoEsgotado, ErroDeValidacao, loggerEmMemoria, relogioManual } from '@sinete/core';
 import { syntheticCertificate, syntheticPfx } from '@sinete/sefaz-sim';
 import type { Desfecho, OpcoesEmissor, PerfilDocumento, RegistroTransmissao, TransmissaoStore } from '../src/index.ts';
 import {
@@ -22,7 +22,7 @@ const EMISSAO = '2026-09-27T10:00:00-03:00';
 let pfx: Uint8Array;
 
 beforeAll(async () => {
-  const clock = manualClock(EMISSAO);
+  const clock = relogioManual(EMISSAO);
   const ac = await syntheticCertificate({ clock, role: 'ac', validDays: 3650 });
   const titular = await syntheticCertificate({ clock, role: 'titular', cnpj: '11222333000181', issuer: ac });
   pfx = syntheticPfx(titular, SENHA, { chain: [ac] });
@@ -41,7 +41,8 @@ function perfil(respostas: (Desfecho | Error)[], log: string[] = []): PerfilDocu
       return { c: 1 };
     },
     async assinar(e) {
-      if (e.invalida) throw new ValidationError('inválida', [{ path: 'n', code: 'campo_obrigatorio', message: 'x' }]);
+      if (e.invalida)
+        throw new ErroDeValidacao('inválida', [{ caminho: 'n', code: 'campo_obrigatorio', mensagem: 'x' }]);
       assinaturas++;
       log.push(`assinar ${e.n}`);
       return { id: `chave-${e.n}`, xml: `<doc n="${e.n}" a="${assinaturas}"/>` };
@@ -83,7 +84,7 @@ interface Montagem {
 }
 
 function montar(extra: Partial<OpcoesEmissor> = {}): Montagem {
-  const clock = manualClock(EMISSAO);
+  const clock = relogioManual(EMISSAO);
   const store = createMemoriaStore({ clock });
   const decididos: Montagem['decididos'] = [];
   return {
@@ -172,7 +173,7 @@ describe('createEmissor: ciclo dos bytes', () => {
   });
 
   test('trava perdida antes de guardar: não chama o aoDecidir e os bytes ficam para quem assumiu', async () => {
-    const clock = manualClock(EMISSAO);
+    const clock = relogioManual(EMISSAO);
     const banco = createBancoMemoria();
     const store = createMemoriaStore({ clock, banco });
     const outro = createMemoriaStore({ clock, banco });
@@ -183,7 +184,7 @@ describe('createEmissor: ciclo dos bytes', () => {
         ...lento,
         async enviar(c, xml, modo) {
           // A SEFAZ demorou mais que o prazo e outro processo assumiu.
-          clock.advance(1500);
+          clock.avancar(1500);
           expect(await outro.travar('nfe', 'r', 60_000)).toBeDefined();
           return lento.enviar(c, xml, modo);
         },
@@ -196,7 +197,7 @@ describe('createEmissor: ciclo dos bytes', () => {
   });
 
   test('trava perdida com desfecho que mantém os bytes: lança, e quem assumiu responde pela transmissão', async () => {
-    const clock = manualClock(EMISSAO);
+    const clock = relogioManual(EMISSAO);
     const banco = createBancoMemoria();
     const store = createMemoriaStore({ clock, banco });
     const outro = createMemoriaStore({ clock, banco });
@@ -206,7 +207,7 @@ describe('createEmissor: ciclo dos bytes', () => {
       {
         ...lento,
         async enviar(c, xml, modo) {
-          clock.advance(1500);
+          clock.avancar(1500);
           expect(await outro.travar('nfe', 'r', 60_000)).toBeDefined();
           return lento.enviar(c, xml, modo);
         },
@@ -248,7 +249,7 @@ describe('createEmissor: ciclo dos bytes', () => {
   test('entrada inválida lança antes de gravar e solta a trava', async () => {
     const m = montar();
     const e = await createEmissor(perfil([]), m.opcoes);
-    await expect(e.emitir('r', { n: 1, invalida: true })).rejects.toBeInstanceOf(ValidationError);
+    await expect(e.emitir('r', { n: 1, invalida: true })).rejects.toBeInstanceOf(ErroDeValidacao);
     expect(await m.store.ler('nfe', 'r')).toBeUndefined();
     expect(await m.store.travar('nfe', 'r', 1000)).toBeDefined();
   });
@@ -276,8 +277,8 @@ describe('createEmissor: ciclo dos bytes', () => {
   });
 
   test('soltar que falha não esconde o desfecho; a renovação que falha vai ao log', async () => {
-    const logger = memoryLogger();
-    const clock = manualClock(EMISSAO);
+    const logger = loggerEmMemoria();
+    const clock = relogioManual(EMISSAO);
     const real = createMemoriaStore({ clock });
     const store: TransmissaoStore = {
       ...real,
@@ -302,7 +303,7 @@ describe('createEmissor: ciclo dos bytes', () => {
       m.opcoes,
     );
     expect((await e.emitir('r', { n: 1 })).tipo).toBe('pendente');
-    const msgs = logger.entries.map((x) => x.msg);
+    const msgs = logger.entradas.map((x) => x.mensagem);
     expect(msgs).toContain('emissor: soltar a trava falhou');
     expect(msgs).toContain('emissor: renovação da trava falhou');
   });
@@ -352,10 +353,10 @@ describe('createEmissor: ciclo dos bytes', () => {
     expect(await m.store.ler('nfe', 'r')).toBeUndefined();
     await expect(sem({ pfx: undefined, senha: undefined })).rejects.toThrow('um dos dois');
     await expect(sem({ senha: undefined })).rejects.toThrow('o pfx vai com a senha');
-    const aberto = await abrirCertificado({ pfx, senha: SENHA }, { clock: manualClock(EMISSAO) });
+    const aberto = await abrirCertificado({ pfx, senha: SENHA }, { clock: relogioManual(EMISSAO) });
     await expect(sem({ certificado: aberto })).rejects.toThrow('um dos dois');
-    await expect(sem({ trava: { prazoMs: 0 } })).rejects.toBeInstanceOf(ConfigError);
-    await expect(sem({ trava: { prazoMs: 1000, renovarACadaMs: 1000 } })).rejects.toBeInstanceOf(ConfigError);
+    await expect(sem({ trava: { prazoMs: 0 } })).rejects.toBeInstanceOf(ErroDeConfiguracao);
+    await expect(sem({ trava: { prazoMs: 1000, renovarACadaMs: 1000 } })).rejects.toBeInstanceOf(ErroDeConfiguracao);
     await expect(sem({ senha: 'errada' })).rejects.toMatchObject({ code: 'pfx_senha_incorreta' });
   });
 });
@@ -451,7 +452,7 @@ describe('createEmissor: guarda por chamada, preparação, já guardado, situaç
 
   test('certificado aberto no lugar do PFX', async () => {
     const m = montar();
-    const certificado = await abrirCertificado({ pfx, senha: SENHA }, { clock: manualClock(EMISSAO) });
+    const certificado = await abrirCertificado({ pfx, senha: SENHA }, { clock: relogioManual(EMISSAO) });
     const { pfx: _p, senha: _s, ...resto } = m.opcoes;
     const e = await createEmissor(perfil([autorizado()]), { ...resto, certificado });
     expect(e.titular.cnpj).toBe('11222333000181');
@@ -460,7 +461,7 @@ describe('createEmissor: guarda por chamada, preparação, já guardado, situaç
     // Com a cadeia completada (a AC sintética é raiz, e a raiz não vai no mTLS), o titular continua lá.
     const completo = await abrirCertificado(
       { pfx, senha: SENHA },
-      { clock: manualClock(EMISSAO), completarCadeia: true },
+      { clock: relogioManual(EMISSAO), completarCadeia: true },
     );
     const pem = completo.identidade.kind === 'pem' ? completo.identidade.certChain : '';
     expect(pem.match(/BEGIN CERTIFICATE/g)?.length).toBeGreaterThanOrEqual(1);
@@ -480,8 +481,8 @@ describe('política dos bytes e erros sem resposta', () => {
   });
 
   test('semResposta', () => {
-    expect(semResposta(new TimeoutError('t', 1))).toBe(true);
-    expect(semResposta(new ConfigError('c'))).toBe(false);
+    expect(semResposta(new ErroDeTempoEsgotado('t', 1))).toBe(true);
+    expect(semResposta(new ErroDeConfiguracao('c'))).toBe(false);
     expect(semResposta(new Error('x'))).toBe(false);
   });
 });

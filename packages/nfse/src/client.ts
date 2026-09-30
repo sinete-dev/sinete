@@ -18,10 +18,25 @@
  * os mesmos bytes.
  */
 
-import type { Ambiente, Authorized, Clock, Logger, Signer } from '@sinete/core';
-import { authorized, ConfigError, noopLogger, ProtocolError, tpAmbOf, ValidationError } from '@sinete/core';
-import type { XmlElement } from '@sinete/core/xml';
-import { attributeOf, childElements, descendants, firstChild, parseXml, textOf, XMLDSIG_NS } from '@sinete/core/xml';
+import type { Ambiente, Assinador, Autorizado, Logger, Relogio } from '@sinete/core';
+import {
+  criarAutorizado,
+  ErroDeConfiguracao,
+  ErroDeValidacao,
+  ErroRespostaInvalida,
+  loggerSilencioso,
+  tpAmbDoAmbiente,
+} from '@sinete/core';
+import type { ElementoXml } from '@sinete/core/xml';
+import {
+  atributoDe,
+  descendentes,
+  elementosFilhos,
+  lerXml,
+  primeiroFilho,
+  textoDe,
+  XMLDSIG_NS,
+} from '@sinete/core/xml';
 import { decodeXml } from '@sinete/schemas';
 import type { TCNFSe } from '@sinete/schemas/nfse/1.01-20260727';
 import { NFSeElement } from '@sinete/schemas/nfse/1.01-20260727';
@@ -44,9 +59,9 @@ export interface NfseClientOptions {
   /** `homologacao` é a produção restrita. */
   readonly ambiente: Ambiente;
   /** Relógio de emissão: `dhEvento` e validade do cache de parâmetros. */
-  readonly clock: Clock;
+  readonly clock: Relogio;
   /** Assina os pedidos de evento em `cancelar` e `solicitarAnaliseFiscal`. */
-  readonly signer?: Signer;
+  readonly signer?: Assinador;
   readonly logger?: Logger;
   /** Prazo por requisição; padrão o do transporte. */
   readonly timeoutMs?: number;
@@ -145,48 +160,48 @@ interface DpsLida {
 
 function lerDps(xml: string): DpsLida {
   if (!xml.startsWith('<?xml')) {
-    throw new ConfigError(
+    throw new ErroDeConfiguracao(
       'DPS sem a declaração XML: a Sefin recusa com E1229; monte com buildDps, que já a inclui, e assine a string dele',
     );
   }
-  let root: XmlElement;
+  let root: ElementoXml;
   try {
-    root = parseXml(xml).root;
+    root = lerXml(xml).raiz;
   } catch (cause) {
-    throw new ConfigError('DPS não é XML bem formado', { cause });
+    throw new ErroDeConfiguracao('DPS não é XML bem formado', { cause });
   }
-  const inf = firstChild(root, 'infDPS', NFSE_NS);
+  const inf = primeiroFilho(root, 'infDPS', NFSE_NS);
   if (root.local !== 'DPS' || root.ns !== NFSE_NS || inf === undefined)
-    throw new ConfigError('o documento não é uma DPS');
-  const tpAmb = firstChild(inf, 'tpAmb', NFSE_NS);
+    throw new ErroDeConfiguracao('o documento não é uma DPS');
+  const tpAmb = primeiroFilho(inf, 'tpAmb', NFSE_NS);
   return {
-    id: attributeOf(inf, 'Id') ?? '',
-    tpAmb: tpAmb === undefined ? '' : textOf(tpAmb),
-    substituta: firstChild(inf, 'subst', NFSE_NS) !== undefined,
+    id: atributoDe(inf, 'Id') ?? '',
+    tpAmb: tpAmb === undefined ? '' : textoDe(tpAmb),
+    substituta: primeiroFilho(inf, 'subst', NFSE_NS) !== undefined,
   };
 }
 
 function lerEvento(xml: string, operacao: string): EventoRegistrado {
-  let root: XmlElement;
+  let root: ElementoXml;
   try {
-    root = parseXml(xml).root;
+    root = lerXml(xml).raiz;
   } catch (cause) {
-    throw new ProtocolError(`${operacao}: evento não é XML bem formado`, { cause });
+    throw new ErroRespostaInvalida(`${operacao}: evento não é XML bem formado`, { cause });
   }
-  const inf = firstChild(root, 'infEvento', NFSE_NS);
-  const ped = inf && firstChild(inf, 'pedRegEvento', NFSE_NS);
-  const infPed = ped && firstChild(ped, 'infPedReg', NFSE_NS);
+  const inf = primeiroFilho(root, 'infEvento', NFSE_NS);
+  const ped = inf && primeiroFilho(inf, 'pedRegEvento', NFSE_NS);
+  const infPed = ped && primeiroFilho(ped, 'infPedReg', NFSE_NS);
   if (root.local !== 'evento' || inf === undefined || infPed === undefined) {
-    throw new ProtocolError(`${operacao}: resposta sem evento`, { details: { operacao, raiz: root.local } });
+    throw new ErroRespostaInvalida(`${operacao}: resposta sem evento`, { detalhes: { operacao, raiz: root.local } });
   }
-  const grupo = childElements(infPed).find((e) => /^e\d{6}$/.test(e.local));
-  const val = (el: XmlElement, nome: string): string => {
-    const c = firstChild(el, nome, NFSE_NS);
-    return c === undefined ? '' : textOf(c);
+  const grupo = elementosFilhos(infPed).find((e) => /^e\d{6}$/.test(e.local));
+  const val = (el: ElementoXml, nome: string): string => {
+    const c = primeiroFilho(el, nome, NFSE_NS);
+    return c === undefined ? '' : textoDe(c);
   };
   return {
     xml,
-    id: attributeOf(inf, 'Id') ?? '',
+    id: atributoDe(inf, 'Id') ?? '',
     chaveAcesso: val(infPed, 'chNFSe'),
     tpEvento: grupo === undefined ? '' : grupo.local.slice(1),
     nSeqEvento: val(inf, 'nSeqEvento'),
@@ -199,23 +214,23 @@ function conferirChave(chave: string): void {
 }
 
 /** Desfecho `authorized` da NFS-e gerada, com o `cStat` do documento e o texto da tabela de situações. */
-function geradaAutorizada(nfse: TCNFSe, v: Omit<NfseGerada, 'nfse' | 'nNFSe' | 'dhProc'>): Authorized<NfseGerada> {
+function geradaAutorizada(nfse: TCNFSe, v: Omit<NfseGerada, 'nfse' | 'nNFSe' | 'dhProc'>): Autorizado<NfseGerada> {
   const inf = nfse.infNFSe;
   const cStat = inf.cStat;
   const xMotivo = (situacoes.nfse as Record<string, string>)[cStat] ?? 'NFS-e gerada';
-  return authorized({ cStat, xMotivo }, { ...v, nfse, nNFSe: inf.nNFSe, dhProc: inf.dhProc });
+  return criarAutorizado({ cStat, xMotivo }, { ...v, nfse, nNFSe: inf.nNFSe, dhProc: inf.dhProc });
 }
 
 /** Cria o cliente. Nada é enviado até a primeira operação. */
 export function createNfseClient(options: NfseClientOptions): NfseClient {
   const { transport, ambiente } = options;
-  const logger = options.logger ?? noopLogger;
+  const logger = options.logger ?? loggerSilencioso;
   const endpointDe = (api: NfseApi): EndpointRef =>
     (options.endpoint ?? ((a: NfseApi, amb: Ambiente): EndpointRef => nfseEndpoint({ ambiente: amb, api: a })))(
       api,
       ambiente,
     );
-  const tpAmb = tpAmbOf(ambiente);
+  const tpAmb = tpAmbDoAmbiente(ambiente);
 
   async function enviar(
     api: NfseApi,
@@ -226,7 +241,7 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
   ): Promise<TransportResponse> {
     const endpoint = endpointDe(api);
     const url = `${endpoint.url.replace(/\/+$/, '')}${caminho}`;
-    const started = options.clock.now().getTime();
+    const started = options.clock.agora().getTime();
     const res = await transport.send({
       url,
       method: corpo === undefined ? 'GET' : 'POST',
@@ -239,14 +254,14 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
       ...(opcoes?.signal === undefined ? {} : { signal: opcoes.signal }),
       ...(options.timeoutMs === undefined ? {} : { timeoutMs: options.timeoutMs }),
     });
-    logger.debug('nfse.envio', { operacao, status: res.status, ms: options.clock.now().getTime() - started });
+    logger.debug('nfse.envio', { operacao, status: res.status, ms: options.clock.agora().getTime() - started });
     return res;
   }
 
-  function foraDoContrato(operacao: string, res: TransportResponse): ProtocolError {
+  function foraDoContrato(operacao: string, res: TransportResponse): ErroRespostaInvalida {
     const json = lerJson(res.text());
-    return new ProtocolError(`${operacao}: HTTP ${res.status} inesperado`, {
-      details: {
+    return new ErroRespostaInvalida(`${operacao}: HTTP ${res.status} inesperado`, {
+      detalhes: {
         operacao,
         status: res.status,
         codigos: json === undefined ? [] : mensagens(json, 'erros').map((e) => e.codigo),
@@ -260,10 +275,10 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
     try {
       decoded = decodeXml(NFSeElement, xml);
     } catch (cause) {
-      throw new ProtocolError(`${operacao}: NFS-e não é XML bem formado`, { cause });
+      throw new ErroRespostaInvalida(`${operacao}: NFS-e não é XML bem formado`, { cause });
     }
     if (decoded.issues.some((i) => i.code === 'raiz_inesperada')) {
-      throw new ProtocolError(`${operacao}: o documento devolvido não é uma NFS-e`);
+      throw new ErroRespostaInvalida(`${operacao}: o documento devolvido não é uma NFS-e`);
     }
     return { xml, nfse: decoded.value };
   }
@@ -275,11 +290,11 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
   ): Promise<NfseOutcome<NfseGerada>> {
     const lida = lerDps(dps);
     if (lida.tpAmb !== tpAmb) {
-      throw new ConfigError(`DPS com tpAmb ${lida.tpAmb} num cliente de ${ambiente} (tpAmb ${tpAmb})`, {
-        details: { tpAmb: lida.tpAmb, ambiente },
+      throw new ErroDeConfiguracao(`DPS com tpAmb ${lida.tpAmb} num cliente de ${ambiente} (tpAmb ${tpAmb})`, {
+        detalhes: { tpAmb: lida.tpAmb, ambiente },
       });
     }
-    if (operacao === 'substituir' && !lida.substituta) throw new ConfigError('DPS substituta sem o grupo subst');
+    if (operacao === 'substituir' && !lida.substituta) throw new ErroDeConfiguracao('DPS substituta sem o grupo subst');
     const res = await enviar('sefin', '/nfse', { dpsXmlGZipB64: await gzipBase64(dps) }, opcoes, operacao);
     const json = lerJson(res.text());
     if (res.status >= 400 && res.status < 500) return rejeicao(json, res.status, operacao);
@@ -289,8 +304,8 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
     const inf = nfse.infNFSe;
     // A NFS-e tem de ser a desta DPS: chave igual à do Id e DPS embutida com o mesmo Id.
     if (inf?.Id !== `NFS${chaveAcesso}` || inf.DPS?.infDPS?.Id !== lida.id) {
-      throw new ProtocolError(`${operacao}: a NFS-e devolvida não corresponde à DPS enviada`, {
-        details: { operacao, chaveAcesso, idDps: lida.id },
+      throw new ErroRespostaInvalida(`${operacao}: a NFS-e devolvida não corresponde à DPS enviada`, {
+        detalhes: { operacao, chaveAcesso, idDps: lida.id },
       });
     }
     return geradaAutorizada(nfse, {
@@ -304,22 +319,22 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
   }
 
   async function registrar(pedido: string, opcoes: OpcoesEnvio | undefined): Promise<NfseOutcome<EventoRegistrado>> {
-    let root: XmlElement;
+    let root: ElementoXml;
     try {
-      root = parseXml(pedido).root;
+      root = lerXml(pedido).raiz;
     } catch (cause) {
-      throw new ConfigError('pedido de evento não é XML bem formado', { cause });
+      throw new ErroDeConfiguracao('pedido de evento não é XML bem formado', { cause });
     }
-    const inf = firstChild(root, 'infPedReg', NFSE_NS);
-    const ch = inf && firstChild(inf, 'chNFSe', NFSE_NS);
-    const amb = inf && firstChild(inf, 'tpAmb', NFSE_NS);
+    const inf = primeiroFilho(root, 'infPedReg', NFSE_NS);
+    const ch = inf && primeiroFilho(inf, 'chNFSe', NFSE_NS);
+    const amb = inf && primeiroFilho(inf, 'tpAmb', NFSE_NS);
     if (root.local !== 'pedRegEvento' || ch === undefined || amb === undefined) {
-      throw new ConfigError('o documento não é um pedido de registro de evento');
+      throw new ErroDeConfiguracao('o documento não é um pedido de registro de evento');
     }
-    if (textOf(amb) !== tpAmb)
-      throw new ConfigError(`pedido de evento com tpAmb ${textOf(amb)} num cliente de ${ambiente}`);
-    if (!pedido.startsWith('<?xml')) throw new ConfigError('pedido de evento sem a declaração XML UTF-8');
-    const chave = textOf(ch);
+    if (textoDe(amb) !== tpAmb)
+      throw new ErroDeConfiguracao(`pedido de evento com tpAmb ${textoDe(amb)} num cliente de ${ambiente}`);
+    if (!pedido.startsWith('<?xml')) throw new ErroDeConfiguracao('pedido de evento sem a declaração XML UTF-8');
+    const chave = textoDe(ch);
     conferirChave(chave);
     const body = { pedidoRegistroEventoXmlGZipB64: await gzipBase64(pedido) };
     const res = await enviar('sefin', `/nfse/${chave}/eventos`, body, opcoes, 'evento');
@@ -328,13 +343,13 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
     if ((res.status !== 200 && res.status !== 201) || json === undefined) throw foraDoContrato('evento', res);
     const xml = await gunzipBase64(exigirTexto(json, 'eventoXmlGZipB64', 'evento'), 'eventoXmlGZipB64');
     const ev = lerEvento(xml, 'evento');
-    if (ev.chaveAcesso !== chave) throw new ProtocolError('evento: o evento devolvido é de outra NFS-e');
-    return authorized({ cStat: situacoes.evento.cStat, xMotivo: situacoes.evento.xMotivo }, ev);
+    if (ev.chaveAcesso !== chave) throw new ErroRespostaInvalida('evento: o evento devolvido é de outra NFS-e');
+    return criarAutorizado({ cStat: situacoes.evento.cStat, xMotivo: situacoes.evento.xMotivo }, ev);
   }
 
-  function assinante(): Signer {
+  function assinante(): Assinador {
     if (options.signer === undefined)
-      throw new ConfigError('cancelar e solicitarAnaliseFiscal precisam de options.signer');
+      throw new ErroDeConfiguracao('cancelar e solicitarAnaliseFiscal precisam de options.signer');
     return options.signer;
   }
 
@@ -368,7 +383,8 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
       const json = lerJson(res.text());
       if (res.status !== 200 || json === undefined) throw foraDoContrato('consultar', res);
       const { xml, nfse } = await nfseDe(json, 'consultar');
-      if (nfse.infNFSe?.Id !== `NFS${chave}`) throw new ProtocolError('consultar: a NFS-e devolvida é de outra chave');
+      if (nfse.infNFSe?.Id !== `NFS${chave}`)
+        throw new ErroRespostaInvalida('consultar: a NFS-e devolvida é de outra chave');
       return { chaveAcesso: chave, xml, nfse };
     },
 
@@ -376,7 +392,7 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
       idDps: string,
       opcoes?: OpcoesEnvio,
     ): Promise<{ readonly idDps: string; readonly chaveAcesso: string } | undefined> {
-      if (!/^DPS\d{8}[0-9A-Z]{14}\d{20}$/.test(idDps)) throw new ConfigError(`Id de DPS inválido: ${idDps}`);
+      if (!/^DPS\d{8}[0-9A-Z]{14}\d{20}$/.test(idDps)) throw new ErroDeConfiguracao(`Id de DPS inválido: ${idDps}`);
       const res = await enviar('sefin', `/dps/${idDps}`, undefined, opcoes, 'consultarDps');
       if (res.status === 404) return undefined;
       const json = lerJson(res.text());
@@ -390,7 +406,7 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
 
     async cancelar(pedido: CancelamentoPedido, opcoes?: OpcoesEnvio): Promise<NfseOutcome<EventoRegistrado>> {
       const r = buildPedidoCancelamento(pedido, eventoOpts);
-      if (!r.ok) throw new ValidationError('pedido de cancelamento inválido', r.issues);
+      if (!r.ok) throw new ErroDeValidacao('pedido de cancelamento inválido', r.issues);
       return registrar(await signPedidoEvento(r.value, assinante()), opcoes);
     },
 
@@ -399,7 +415,7 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
       opcoes?: OpcoesEnvio,
     ): Promise<NfseOutcome<EventoRegistrado>> {
       const r = buildPedidoAnaliseFiscal(pedido, eventoOpts);
-      if (!r.ok) throw new ValidationError('pedido de análise fiscal inválido', r.issues);
+      if (!r.ok) throw new ErroDeValidacao('pedido de análise fiscal inválido', r.issues);
       return registrar(await signPedidoEvento(r.value, assinante()), opcoes);
     },
 
@@ -411,14 +427,14 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
       conferirChave(chave);
       const { tpEvento, nSeqEvento } = filtro ?? ({} as Partial<FiltroEventos>);
       if (tpEvento === undefined || nSeqEvento === undefined) {
-        throw new ConfigError(
+        throw new ErroDeConfiguracao(
           'consultarEventos precisa de tpEvento e nSeqEvento: a Sefin responde 405 sem o tipo e 404 sem a sequência ' +
             '(GET /nfse/{chave}/eventos/{tipo}/{seq}, observado na produção restrita em 28/09/2026)',
         );
       }
-      if (!/^\d{6}$/.test(tpEvento)) throw new ConfigError(`código de evento inválido: ${tpEvento}`);
+      if (!/^\d{6}$/.test(tpEvento)) throw new ErroDeConfiguracao(`código de evento inválido: ${tpEvento}`);
       if (!Number.isSafeInteger(nSeqEvento) || nSeqEvento < 1) {
-        throw new ConfigError(`nSeqEvento inválido: ${nSeqEvento}`);
+        throw new ErroDeConfiguracao(`nSeqEvento inválido: ${nSeqEvento}`);
       }
       const res = await enviar(
         'sefin',
@@ -440,7 +456,8 @@ export function createNfseClient(options: NfseClientOptions): NfseClient {
           ? await gunzipBase64Duplo(d.b64, 'arquivoXml')
           : await gunzipBase64(d.b64, 'eventoXmlGZipB64');
         const ev = lerEvento(xml, 'consultarEventos');
-        if (ev.chaveAcesso !== chave) throw new ProtocolError('consultarEventos: o evento devolvido é de outra NFS-e');
+        if (ev.chaveAcesso !== chave)
+          throw new ErroRespostaInvalida('consultarEventos: o evento devolvido é de outra NFS-e');
         out.push(ev);
       }
       return out;
@@ -457,7 +474,7 @@ export type ResolucaoEnvio =
       readonly acao: 'concluida';
       readonly chaveAcesso: string;
       readonly nfse: NfseConsultada;
-      readonly outcome: Authorized<NfseGerada>;
+      readonly outcome: Autorizado<NfseGerada>;
     }
   /** A Sefin não tem NFS-e para esta DPS: reenvie `dpsAssinada`, exatamente os mesmos bytes. */
   | { readonly acao: 'reenviar'; readonly dpsAssinada: string }
@@ -469,22 +486,22 @@ export type ResolucaoEnvio =
 
 /** DigestValue da assinatura de um elemento `DPS` (a própria raiz ou o primeiro descendente). */
 function digestDaDps(xml: string): string | undefined {
-  let root: XmlElement;
+  let root: ElementoXml;
   try {
-    root = parseXml(xml.replace(/^<\?xml[^?]*\?>/, '')).root;
+    root = lerXml(xml.replace(/^<\?xml[^?]*\?>/, '')).raiz;
   } catch {
     return undefined;
   }
-  let dps: XmlElement | undefined;
-  for (const d of descendants(root)) {
+  let dps: ElementoXml | undefined;
+  for (const d of descendentes(root)) {
     if (d.local === 'DPS' && d.ns === NFSE_NS) {
       dps = d;
       break;
     }
   }
-  const sig = dps && firstChild(dps, 'Signature', XMLDSIG_NS);
+  const sig = dps && primeiroFilho(dps, 'Signature', XMLDSIG_NS);
   if (sig === undefined) return undefined;
-  for (const d of descendants(sig)) if (d.local === 'DigestValue' && d.ns === XMLDSIG_NS) return textOf(d).trim();
+  for (const d of descendentes(sig)) if (d.local === 'DigestValue' && d.ns === XMLDSIG_NS) return textoDe(d).trim();
   return undefined;
 }
 
@@ -496,15 +513,20 @@ function digestDaDps(xml: string): string | undefined {
 export async function resolverEnvioSemResposta(client: NfseClient, dpsAssinada: string): Promise<ResolucaoEnvio> {
   const { id, tpAmb } = lerDps(dpsAssinada);
   // O Id da DPS não carrega o ambiente: série e número repetidos em produção e em homologação dariam outra NFS-e.
-  if (tpAmb !== tpAmbOf(client.ambiente)) {
-    throw new ConfigError(`DPS com tpAmb ${tpAmb} num cliente de ${client.ambiente}: consulte no ambiente da DPS`);
+  if (tpAmb !== tpAmbDoAmbiente(client.ambiente)) {
+    throw new ErroDeConfiguracao(
+      `DPS com tpAmb ${tpAmb} num cliente de ${client.ambiente}: consulte no ambiente da DPS`,
+    );
   }
   const dps = await client.consultarDps(id);
   if (dps === undefined) return { acao: 'reenviar', dpsAssinada };
   const nfse = await client.consultar(dps.chaveAcesso);
-  if (nfse === undefined) throw new ProtocolError('a DPS consta como processada, mas a NFS-e não foi encontrada');
+  if (nfse === undefined)
+    throw new ErroRespostaInvalida('a DPS consta como processada, mas a NFS-e não foi encontrada');
   if (nfse.nfse.infNFSe?.DPS?.infDPS?.Id !== id) {
-    throw new ProtocolError('a NFS-e da consulta não corresponde à DPS', { details: { chaveAcesso: dps.chaveAcesso } });
+    throw new ErroRespostaInvalida('a NFS-e da consulta não corresponde à DPS', {
+      detalhes: { chaveAcesso: dps.chaveAcesso },
+    });
   }
   // Mesmo Id não prova o mesmo conteúdo: série e número repetidos com outra DPS também caem aqui. Só um DigestValue
   // presente dos dois lados e diferente prova outra DPS; sem ele (a Sefin não devolver a assinatura), vale o Id.

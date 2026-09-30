@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { ConfigError } from '@sinete/core';
+import { ErroDeConfiguracao } from '@sinete/core';
 import { Decimal, dec, sum } from '../src/index.ts';
 
 describe('Decimal', () => {
@@ -13,7 +13,7 @@ describe('Decimal', () => {
   test('toFixed completa zeros e recusa perder casas', () => {
     expect(dec('30000').toFixed(4)).toBe('30000.0000');
     expect(dec('0').toFixed(2)).toBe('0.00');
-    expect(() => dec('1.234').toFixed(2)).toThrow(ConfigError);
+    expect(() => dec('1.234').toFixed(2)).toThrow(ErroDeConfiguracao);
   });
 
   test('aceita texto, number e bigint; recusa vírgula e expoente', () => {
@@ -24,6 +24,6 @@ describe('Decimal', () => {
     expect(Decimal.tryOf('12,34')).toBeUndefined();
     expect(Decimal.tryOf(1e21)).toBeUndefined();
     expect(Decimal.tryOf(Number.NaN)).toBeUndefined();
-    expect(() => Decimal.of('x')).toThrow(ConfigError);
+    expect(() => Decimal.of('x')).toThrow(ErroDeConfiguracao);
   });
 });

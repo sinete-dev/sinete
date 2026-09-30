@@ -1,5 +1,5 @@
-import type { SineteErrorOptions } from '@sinete/core';
-import { SineteError } from '@sinete/core';
+import type { ErroSineteOpcoes } from '@sinete/core';
+import { ErroSinete } from '@sinete/core';
 
 /**
  * Códigos estáveis do `@sinete/cert`. Os detalhes nunca trazem senha, chave ou o PFX: só metadados públicos do
@@ -25,8 +25,8 @@ export type CertErrorCode =
   /** Algoritmo de chave ou de assinatura fora do escopo (só RSA com PKCS#1 v1.5). */
   | 'algoritmo_nao_suportado';
 
-export class CertError extends SineteError<CertErrorCode> {
-  constructor(code: CertErrorCode, message: string, options?: SineteErrorOptions) {
+export class CertError extends ErroSinete<CertErrorCode> {
+  constructor(code: CertErrorCode, message: string, options?: ErroSineteOpcoes) {
     super(code, message, options);
     this.name = 'CertError';
   }

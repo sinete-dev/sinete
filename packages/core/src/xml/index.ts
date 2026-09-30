@@ -5,38 +5,44 @@
  * Bun, Deno e browser. A assinatura insere texto por splice e nunca reserializa o documento (ADR 0003).
  */
 
-export type { C14nOptions } from './c14n.ts';
-export { c14n, escapeC14nAttribute, escapeC14nText } from './c14n.ts';
-export type { VerifyExpectation, VerifyFailed, VerifyFailure, VerifyResult, VerifySuccess } from './dsig.ts';
-export { findSignatures, verifySignature, XMLDSIG_ALGORITHMS, XMLDSIG_NS } from './dsig.ts';
-export { base64Decode, base64Encode, spkiFromCertificate } from './encoding.ts';
-export type { XmlErrorCode, XmlSignatureFailure } from './errors.ts';
-export { XmlError, XmlSignatureError } from './errors.ts';
+export type { C14nOpcoes } from './c14n.ts';
+export { c14n, escaparAtributoC14n, escaparTextoC14n } from './c14n.ts';
 export type {
-  XmlAttribute,
-  XmlDocument,
-  XmlElement,
-  XmlNode,
-  XmlProcessingInstruction,
-  XmlText,
+  AssinaturaEsperada,
+  ConferenciaInvalida,
+  ConferenciaValida,
+  MotivoFalhaConferencia,
+  ResultadoConferencia,
+} from './dsig.ts';
+export { ALGORITMOS_XMLDSIG, conferirAssinatura, encontrarAssinaturas, XMLDSIG_NS } from './dsig.ts';
+export { codificarBase64, decodificarBase64, extrairSpki } from './encoding.ts';
+export type { CodigoErroXml, MotivoFalhaAssinaturaXml } from './errors.ts';
+export { ErroAssinaturaXml, ErroXml } from './errors.ts';
+export type {
+  AtributoXml,
+  DocumentoXml,
+  ElementoXml,
+  InstrucaoDeProcessamentoXml,
+  NoXml,
+  TextoXml,
 } from './parser.ts';
 export {
-  attributeOf,
-  childElements,
-  descendants,
-  firstChild,
-  inScopeNamespaces,
-  parseXml,
-  textOf,
+  atributoDe,
+  descendentes,
+  elementosFilhos,
+  lerXml,
+  namespacesEmEscopo,
+  primeiroFilho,
+  textoDe,
   XML_NS,
   XMLNS_NS,
 } from './parser.ts';
-export type { PreparedSignature, PrepareOptions } from './sign.ts';
+export type { AssinaturaPreparada, PrepararAssinaturaOpcoes } from './sign.ts';
 export {
-  assembleSignature,
-  prepareSignature,
-  SHA1_DIGEST_INFO_PREFIX,
-  signedInfoDigestInfo,
-  signPrepared,
-  signXml,
+  assinarPreparada,
+  assinarXml,
+  digestInfoDoSignedInfo,
+  montarAssinatura,
+  PREFIXO_DIGEST_INFO_SHA1,
+  prepararAssinatura,
 } from './sign.ts';

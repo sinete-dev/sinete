@@ -43,11 +43,11 @@ Quando a chave é acessada pelo seu código, localmente ou por um serviço remot
 No modo `message`, seu código recebe as mensagens completas do handshake para assinar com WebCrypto. `cryptoKeyTlsSigner` recebe uma `CryptoKey` configurada para `RSASSA-PKCS1-v1_5` com SHA-256 e a cadeia de certificados em DER. A chave pode ser não exportável.
 
 ```ts
-import type { DigestSigner } from 'sinete/core';
+import type { AssinadorDeDigest } from 'sinete/core';
 import { ambienteHosts, createTransport } from 'sinete/transport';
 import { certificadoAberto, digestTlsSigner, startSigner } from 'sinete/transport/signer';
 
-declare const psc: DigestSigner; // o seu cliente do PSC ou do OpenBao
+declare const psc: AssinadorDeDigest; // o seu cliente do PSC ou do OpenBao
 
 const signer = await startSigner({ ambientes: ['producao'] });
 const nuvem = await signer.openRemote({

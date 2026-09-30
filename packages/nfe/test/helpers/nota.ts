@@ -2,7 +2,7 @@
  * Notas sintéticas para os testes do builder. Documentos são exemplos públicos de dígito verificador válido
  * (11.222.333/0001-81, 111.444.777-35, IE SP 110.042.490.114); nomes e endereços são inventados.
  */
-import { fixedClock, timeContext } from '@sinete/core';
+import { contextoDeTempo, relogioFixo } from '@sinete/core';
 import type { BuildNfeOptions, IbsCbsCalculator, Item, NfeInput } from '../../src/index.ts';
 import { Decimal } from '../../src/index.ts';
 
@@ -18,7 +18,7 @@ export function opcoes(extra: Partial<BuildNfeOptions> = {}, at: string = EMISSA
   let seed = 12345;
   return {
     ambiente: 'homologacao',
-    time: timeContext({ emissao: fixedClock(at) }),
+    time: contextoDeTempo({ emissao: relogioFixo(at) }),
     random: (b: Uint8Array): Uint8Array => {
       for (let i = 0; i < b.length; i++) {
         seed = (seed * 1103515245 + 12345) % 2 ** 31;

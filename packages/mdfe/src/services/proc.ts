@@ -4,15 +4,15 @@
  * para gerar saída nem reserializado (invariante do repositório, ADR 0003).
  */
 
-import { ConfigError, ProtocolError } from '@sinete/core';
-import type { XmlDocument, XmlElement } from '@sinete/core/xml';
+import { ErroDeConfiguracao, ErroRespostaInvalida } from '@sinete/core';
+import type { DocumentoXml, ElementoXml } from '@sinete/core/xml';
 import {
-  attributeOf,
-  descendants,
-  firstChild,
-  inScopeNamespaces,
-  parseXml,
-  textOf,
+  atributoDe,
+  descendentes,
+  lerXml,
+  namespacesEmEscopo,
+  primeiroFilho,
+  textoDe,
   XMLDSIG_NS,
 } from '@sinete/core/xml';
 
@@ -26,8 +26,8 @@ const XML_DECL = /^﻿?<\?xml[^?]*\?>\s*/;
  * estão em ancestrais fora do recorte. O default entra apenas quando difere de `parentDefaultNs` (o default do
  * envelope onde a fatia vai morar).
  */
-export function sliceElement(doc: XmlDocument, el: XmlElement, parentDefaultNs: string = MDFE_NS): string {
-  const slice = doc.source.slice(el.start, el.end);
+export function sliceElement(doc: DocumentoXml, el: ElementoXml, parentDefaultNs: string = MDFE_NS): string {
+  const slice = doc.texto.slice(el.inicio, el.fim);
   // Só os prefixos usados por algum elemento ou atributo cuja declaração está fora do recorte: um prefixo redeclarado
   // dentro dele não pode ganhar outra declaração na raiz, que mudaria o C14N inclusivo de um irmão assinado.
   //
@@ -37,17 +37,17 @@ export function sliceElement(doc: XmlDocument, el: XmlElement, parentDefaultNs: 
   // namespace em escopo mudaria o C14N inclusivo do documento assinado pelo emitente, que nunca viu o envelope. No
   // corpus de MDF-e autorizados, nenhum protMDFe traz Signature; o infProt é conferido pelo digVal, não por assinatura.
   const used = new Set<string>();
-  const cobertoDentro = (d: XmlElement, p: string): boolean => {
-    for (let e: XmlElement | null = d; e; e = e === el ? null : e.parent) if (e.namespaces.has(p)) return true;
+  const cobertoDentro = (d: ElementoXml, p: string): boolean => {
+    for (let e: ElementoXml | null = d; e; e = e === el ? null : e.pai) if (e.namespaces.has(p)) return true;
     return false;
   };
-  for (const d of descendants(el)) {
-    const prefixos = [d.prefix, ...d.attributes.map((a) => a.prefix)].filter((p) => p !== '' && p !== 'xml');
+  for (const d of descendentes(el)) {
+    const prefixos = [d.prefixo, ...d.atributos.map((a) => a.prefixo)].filter((p) => p !== '' && p !== 'xml');
     for (const p of prefixos) if (!cobertoDentro(d, p)) used.add(p);
   }
   const extra: string[] = [];
   const inScope = new Map<string, string>();
-  for (let e: XmlElement | null = el.parent; e; e = e.parent) {
+  for (let e: ElementoXml | null = el.pai; e; e = e.pai) {
     for (const [p, u] of e.namespaces) if (!inScope.has(p)) inScope.set(p, u);
   }
   // O default herdado de fora entra quando algum elemento sem prefixo do recorte (a raiz ou um descendente, inclusive
@@ -56,20 +56,20 @@ export function sliceElement(doc: XmlDocument, el: XmlElement, parentDefaultNs: 
   if (herdado !== parentDefaultNs && usaDefaultHerdado(el)) extra.push(` xmlns="${herdado}"`);
   for (const p of [...used].sort()) {
     const uri = inScope.get(p);
-    if (uri === undefined) throw new ProtocolError(`prefixo ${p} sem declaração no recorte de ${el.name}`);
+    if (uri === undefined) throw new ErroRespostaInvalida(`prefixo ${p} sem declaração no recorte de ${el.nome}`);
     extra.push(` xmlns:${p}="${uri}"`);
   }
   if (extra.length === 0) return slice;
-  const at = 1 + el.name.length;
+  const at = 1 + el.nome.length;
   return slice.slice(0, at) + extra.join('') + slice.slice(at);
 }
 
 /** Algum elemento sem prefixo do recorte resolve o default por uma declaração de fora do recorte. */
-function usaDefaultHerdado(raiz: XmlElement): boolean {
-  for (const d of descendants(raiz)) {
-    if (d.prefix !== '') continue;
+function usaDefaultHerdado(raiz: ElementoXml): boolean {
+  for (const d of descendentes(raiz)) {
+    if (d.prefixo !== '') continue;
     let coberto = false;
-    for (let e: XmlElement | null = d; e; e = e === raiz ? null : e.parent) {
+    for (let e: ElementoXml | null = d; e; e = e === raiz ? null : e.pai) {
       if (e.namespaces.has('')) {
         coberto = true;
         break;
@@ -88,7 +88,7 @@ export interface DocumentoAssinado {
   readonly id: string;
   /** DigestValue da assinatura (base64). */
   readonly digestValue: string;
-  readonly doc: XmlDocument;
+  readonly doc: DocumentoXml;
 }
 
 /**
@@ -98,31 +98,32 @@ export interface DocumentoAssinado {
  */
 export function documentoAssinado(xml: string, raiz: string, elemento: string): DocumentoAssinado {
   const text = xml.replace(XML_DECL, '');
-  let doc: XmlDocument;
+  let doc: DocumentoXml;
   try {
-    doc = parseXml(text);
+    doc = lerXml(text);
   } catch (cause) {
-    throw new ConfigError(`${raiz} assinado malformado`, { cause });
+    throw new ErroDeConfiguracao(`${raiz} assinado malformado`, { cause });
   }
-  if (doc.root.local !== raiz || doc.root.ns !== MDFE_NS) {
-    throw new ConfigError(`esperado <${raiz}> no namespace do MDF-e, veio <${doc.root.name}>`);
+  if (doc.raiz.local !== raiz || doc.raiz.ns !== MDFE_NS) {
+    throw new ErroDeConfiguracao(`esperado <${raiz}> no namespace do MDF-e, veio <${doc.raiz.nome}>`);
   }
   // O envelope (mdfeProc, procEventoMDFe) declara o default do MDF-e; o C14N inclusivo herda os namespaces dos
   // ancestrais, então a raiz assinada precisa declarar ela mesma esse default, ou a assinatura deixa de conferir
   // dentro do envelope. Não se conserta o documento de quem chama: recusa.
-  if (doc.root.namespaces.get('') !== MDFE_NS) {
-    throw new ConfigError(`<${raiz}> assinado precisa declarar xmlns="${MDFE_NS}" na própria raiz`);
+  if (doc.raiz.namespaces.get('') !== MDFE_NS) {
+    throw new ErroDeConfiguracao(`<${raiz}> assinado precisa declarar xmlns="${MDFE_NS}" na própria raiz`);
   }
-  const alvo = firstChild(doc.root, elemento, MDFE_NS);
-  const id = alvo ? attributeOf(alvo, 'Id') : undefined;
-  const sig = firstChild(doc.root, 'Signature', XMLDSIG_NS);
+  const alvo = primeiroFilho(doc.raiz, elemento, MDFE_NS);
+  const id = alvo ? atributoDe(alvo, 'Id') : undefined;
+  const sig = primeiroFilho(doc.raiz, 'Signature', XMLDSIG_NS);
   const digest = sig && descendantText(sig, 'DigestValue');
-  if (!id || digest === undefined) throw new ConfigError(`${raiz} sem ${elemento} identificado ou sem assinatura`);
+  if (!id || digest === undefined)
+    throw new ErroDeConfiguracao(`${raiz} sem ${elemento} identificado ou sem assinatura`);
   return { xml: text, id, digestValue: digest, doc };
 }
 
-function descendantText(el: XmlElement, local: string): string | undefined {
-  for (const d of descendants(el)) if (d.local === local && d.ns === XMLDSIG_NS) return textOf(d).trim();
+function descendantText(el: ElementoXml, local: string): string | undefined {
+  for (const d of descendentes(el)) if (d.local === local && d.ns === XMLDSIG_NS) return textoDe(d).trim();
   return undefined;
 }
 
@@ -135,25 +136,25 @@ function descendantText(el: XmlElement, local: string): string | undefined {
  */
 export function mdfeAssinadoDoProc(xml: string): string {
   const text = xml.replace(XML_DECL, '');
-  let doc: XmlDocument;
+  let doc: DocumentoXml;
   try {
-    doc = parseXml(text);
+    doc = lerXml(text);
   } catch (cause) {
-    throw new ConfigError('mdfeProc malformado', { cause });
+    throw new ErroDeConfiguracao('mdfeProc malformado', { cause });
   }
   const noProc =
-    doc.root.local === 'mdfeProc' && doc.root.ns === MDFE_NS ? firstChild(doc.root, 'MDFe', MDFE_NS) : undefined;
-  const el = noProc ?? (doc.root.local === 'MDFe' && doc.root.ns === MDFE_NS ? doc.root : undefined);
-  if (el === undefined) throw new ConfigError(`esperado <mdfeProc> ou <MDFe> assinado, veio <${doc.root.name}>`);
-  const fatia = doc.source.slice(el.start, el.end);
-  const herdados = [...inScopeNamespaces(el)].filter(([p]) => p !== 'xml' && !el.namespaces.has(p));
+    doc.raiz.local === 'mdfeProc' && doc.raiz.ns === MDFE_NS ? primeiroFilho(doc.raiz, 'MDFe', MDFE_NS) : undefined;
+  const el = noProc ?? (doc.raiz.local === 'MDFe' && doc.raiz.ns === MDFE_NS ? doc.raiz : undefined);
+  if (el === undefined) throw new ErroDeConfiguracao(`esperado <mdfeProc> ou <MDFe> assinado, veio <${doc.raiz.nome}>`);
+  const fatia = doc.texto.slice(el.inicio, el.fim);
+  const herdados = [...namespacesEmEscopo(el)].filter(([p]) => p !== 'xml' && !el.namespaces.has(p));
   const decl = herdados
     .map(
       ([p, uri]) =>
         ` ${p === '' ? 'xmlns' : `xmlns:${p}`}="${uri.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;')}"`,
     )
     .join('');
-  const at = 1 + el.name.length;
+  const at = 1 + el.nome.length;
   const assinado = decl === '' ? fatia : fatia.slice(0, at) + decl + fatia.slice(at);
   // Confere raiz, Id e assinatura como a retomada vai conferir: o que sai daqui serve direto nela.
   return documentoAssinado(assinado, 'MDFe', 'infMDFe').xml;

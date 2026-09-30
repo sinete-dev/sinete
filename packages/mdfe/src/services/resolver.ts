@@ -18,8 +18,8 @@
  * Fontes: MOC MDF-e 3.00b Anexo I, regras F81 (539) e F82 (204); Visão Geral, item 4.3.5 (G04, 217).
  */
 
-import type { Rejected } from '@sinete/core';
-import { authorized } from '@sinete/core';
+import type { Recusado } from '@sinete/core';
+import { criarAutorizado } from '@sinete/core';
 import type { AutorizacaoOutcome, ConsultaOutcome, MdfeClient } from './client.ts';
 import { cstatEm } from './outcome.ts';
 import { documentoAssinado } from './proc.ts';
@@ -41,7 +41,7 @@ export type ResolucaoEnvio =
       readonly acao: 'divergente';
       readonly chMDFe?: string;
       readonly consulta?: ConsultaOutcome;
-      readonly motivo: Rejected | ConsultaOutcome;
+      readonly motivo: Recusado | ConsultaOutcome;
     }
   /**
    * A chave consta (autorizada, cancelada ou encerrada), mas o protocolo não traz `digVal`: nada prova que o conteúdo
@@ -74,17 +74,17 @@ export async function resolverEnvioSemResposta(
 ): Promise<ResolucaoEnvio> {
   const a = documentoAssinado(mdfeAssinado, 'MDFe', 'infMDFe');
   const chave = a.id.slice(4);
-  if (anterior && anterior.status === 'rejected' && cstatEm(anterior.cStat, 'duplicidadeChaveDiferente')) {
+  if (anterior && anterior.tipo === 'recusado' && cstatEm(anterior.cStat, 'duplicidadeChaveDiferente')) {
     const outra = chaveDaDuplicidade(anterior.xMotivo);
     return { acao: 'divergente', motivo: anterior, ...(outra === undefined ? {} : { chMDFe: outra }) };
   }
   const consulta = await client.consultar(chave, mdfeAssinado);
-  if (consulta.status === 'rejected') {
+  if (consulta.tipo === 'recusado') {
     if (cstatEm(consulta.cStat, 'naoConsta')) return { acao: 'reenviar', mdfeAssinado: a.xml };
     return { acao: 'indefinida', outcome: consulta };
   }
-  if (consulta.status !== 'authorized') return { acao: 'indefinida', outcome: consulta };
-  const v = consulta.value;
+  if (consulta.tipo !== 'autorizado') return { acao: 'indefinida', outcome: consulta };
+  const v = consulta.valor;
   const p = v.protocolo;
   if (p?.digVal !== undefined && v.digValConfere === false) {
     return { acao: 'divergente', chMDFe: chave, consulta, motivo: consulta };
@@ -94,6 +94,6 @@ export async function resolverEnvioSemResposta(
   return {
     acao: 'concluida',
     situacao: v.situacao,
-    outcome: authorized({ cStat: p.cStat, xMotivo: p.xMotivo }, p),
+    outcome: criarAutorizado({ cStat: p.cStat, xMotivo: p.xMotivo }, p),
   };
 }

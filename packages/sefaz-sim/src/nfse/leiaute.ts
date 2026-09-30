@@ -3,10 +3,10 @@
  * emissor usa: o relógio da Sefin simulada e o ambiente escolhem o pacote (20260209 ou 20260727).
  */
 
-import type { Ambiente, Signer } from '@sinete/core';
-import { fixedClock } from '@sinete/core';
-import type { XmlDocument } from '@sinete/core/xml';
-import { signXml } from '@sinete/core/xml';
+import type { Ambiente, Assinador } from '@sinete/core';
+import { relogioFixo } from '@sinete/core';
+import type { DocumentoXml } from '@sinete/core/xml';
+import { assinarXml } from '@sinete/core/xml';
 import type { RootElement } from '@sinete/schemas';
 import { decodeRoot, selecionarPl, serializeRoot, validateRoot } from '@sinete/schemas';
 import * as v20260209 from '@sinete/schemas/nfse/1.01-20260209';
@@ -29,30 +29,30 @@ export interface PedidoDaSefin {
   readonly detalhe: { readonly chSubstituta: string; readonly cMotivo: string; readonly xMotivo?: string };
   readonly dhEvento: string;
   readonly tpAmb: '1' | '2';
-  readonly signer: Signer;
+  readonly signer: Assinador;
 }
 
 export interface LeiauteSim {
   readonly modulo: string;
   /** Ocorrências de schema (`caminho: código`), vazio quando válido. */
-  validar(tipo: 'dps' | 'pedRegEvento', doc: XmlDocument): string[];
-  lerDps(doc: XmlDocument): TCDPS;
-  lerPedido(doc: XmlDocument): TCPedRegEvt;
+  validar(tipo: 'dps' | 'pedRegEvento', doc: DocumentoXml): string[];
+  lerDps(doc: DocumentoXml): TCDPS;
+  lerPedido(doc: DocumentoXml): TCPedRegEvt;
   /** Pedido do cancelamento por substituição (e105102) que a Sefin registra sozinha, assinado pelo simulador. */
   pedidoDaSefin(p: PedidoDaSefin): Promise<string>;
 }
 
 export function leiauteNfseEm(ambiente: Ambiente, ms: number): LeiauteSim {
-  const modulo = selecionarPl('nfse', ambiente, fixedClock(ms)).modulo;
+  const modulo = selecionarPl('nfse', ambiente, relogioFixo(ms)).modulo;
   const m = MODULOS[modulo] as Modulo;
   const raiz = (tipo: 'dps' | 'pedRegEvento'): RootElement<unknown> =>
     tipo === 'dps' ? m.DPSElement : m.pedRegEventoElement;
   return {
     modulo,
-    validar: (tipo: 'dps' | 'pedRegEvento', doc: XmlDocument): string[] =>
-      validateRoot(raiz(tipo), doc).map((i) => `${i.path}: ${i.code}`),
-    lerDps: (doc: XmlDocument): TCDPS => decodeRoot(m.DPSElement, doc).value,
-    lerPedido: (doc: XmlDocument): TCPedRegEvt => decodeRoot(m.pedRegEventoElement, doc).value,
+    validar: (tipo: 'dps' | 'pedRegEvento', doc: DocumentoXml): string[] =>
+      validateRoot(raiz(tipo), doc).map((i) => `${i.caminho}: ${i.code}`),
+    lerDps: (doc: DocumentoXml): TCDPS => decodeRoot(m.DPSElement, doc).value,
+    lerPedido: (doc: DocumentoXml): TCPedRegEvt => decodeRoot(m.pedRegEventoElement, doc).value,
     async pedidoDaSefin(p: PedidoDaSefin): Promise<string> {
       const id = `PRE${p.chave}105102`;
       const autor = p.autor.CNPJ !== undefined ? { CNPJAutor: p.autor.CNPJ } : { CPFAutor: p.autor.CPF ?? '' };
@@ -73,7 +73,7 @@ export function leiauteNfseEm(ambiente: Ambiente, ms: number): LeiauteSim {
           },
         } as TCPedRegEvt['infPedReg'],
       });
-      return signXml(xml, { id }, p.signer);
+      return assinarXml(xml, { id }, p.signer);
     },
   };
 }

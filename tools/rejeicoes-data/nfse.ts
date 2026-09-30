@@ -19,8 +19,8 @@
  */
 import path from 'node:path';
 import { $ } from 'bun';
-import type { XmlElement } from '../../packages/core/src/xml/index.ts';
-import { attributeOf, childElements, descendants, parseXml, textOf } from '../../packages/core/src/xml/index.ts';
+import type { ElementoXml } from '../../packages/core/src/xml/index.ts';
+import { atributoDe, descendentes, elementosFilhos, lerXml, textoDe } from '../../packages/core/src/xml/index.ts';
 
 type Nivel = '1' | '2' | '3';
 type Categoria =
@@ -106,12 +106,12 @@ const unzip = async (file: string, entry: string): Promise<string> =>
   (await $`unzip -p ${file} ${entry}`.quiet()).stdout.toString('utf8');
 
 /** Texto de um `<si>` ou `<is>`: os `<t>` na ordem, fora da leitura fonética (`<rPh>`). */
-function richText(el: XmlElement): string {
+function richText(el: ElementoXml): string {
   let s = '';
-  const walk = (e: XmlElement): void => {
-    for (const c of childElements(e)) {
+  const walk = (e: ElementoXml): void => {
+    for (const c of elementosFilhos(e)) {
       if (c.local === 'rPh') continue;
-      if (c.local === 't') s += textOf(c);
+      if (c.local === 't') s += textoDe(c);
       else walk(c);
     }
   };
@@ -124,38 +124,38 @@ type Row = { n: number; cells: Map<string, string> };
 async function readSheets(file: string, wanted: readonly string[]): Promise<Map<string, Row[]>> {
   const shared: string[] = [];
   const ssXml = await unzip(file, 'xl/sharedStrings.xml').catch(() => '');
-  if (ssXml) for (const si of childElements(parseXml(ssXml).root)) shared.push(richText(si));
+  if (ssXml) for (const si of elementosFilhos(lerXml(ssXml).raiz)) shared.push(richText(si));
   const rels = new Map<string, string>();
-  for (const r of childElements(parseXml(await unzip(file, 'xl/_rels/workbook.xml.rels')).root)) {
-    rels.set(attributeOf(r, 'Id') ?? '', attributeOf(r, 'Target') ?? '');
+  for (const r of elementosFilhos(lerXml(await unzip(file, 'xl/_rels/workbook.xml.rels')).raiz)) {
+    rels.set(atributoDe(r, 'Id') ?? '', atributoDe(r, 'Target') ?? '');
   }
-  const wb = parseXml(await unzip(file, 'xl/workbook.xml')).root;
+  const wb = lerXml(await unzip(file, 'xl/workbook.xml')).raiz;
   const result = new Map<string, Row[]>();
-  for (const s of descendants(wb)) {
+  for (const s of descendentes(wb)) {
     if (s.local !== 'sheet') continue;
-    const name = attributeOf(s, 'name') ?? '';
+    const name = atributoDe(s, 'name') ?? '';
     if (!wanted.includes(name)) continue;
-    const rid = s.attributes.find((a) => a.local === 'id')?.value ?? '';
+    const rid = s.atributos.find((a) => a.local === 'id')?.valor ?? '';
     const target = (rels.get(rid) ?? '').replace(/^\//, '');
     const entry = target.startsWith('xl/') ? target : `xl/${target}`;
     const rows: Row[] = [];
-    for (const row of descendants(parseXml(await unzip(file, entry)).root)) {
+    for (const row of descendentes(lerXml(await unzip(file, entry)).raiz)) {
       if (row.local !== 'row') continue;
       const cells = new Map<string, string>();
-      for (const c of childElements(row)) {
+      for (const c of elementosFilhos(row)) {
         if (c.local !== 'c') continue;
-        const col = /^[A-Z]+/.exec(attributeOf(c, 'r') ?? '')?.[0] ?? '';
-        const t = attributeOf(c, 't');
-        const v = childElements(c).find((x) => x.local === 'v');
+        const col = /^[A-Z]+/.exec(atributoDe(c, 'r') ?? '')?.[0] ?? '';
+        const t = atributoDe(c, 't');
+        const v = elementosFilhos(c).find((x) => x.local === 'v');
         let val: string | undefined;
-        if (t === 's' && v) val = shared[Number(textOf(v))];
+        if (t === 's' && v) val = shared[Number(textoDe(v))];
         else if (t === 'inlineStr') {
-          const is = childElements(c).find((x) => x.local === 'is');
+          const is = elementosFilhos(c).find((x) => x.local === 'is');
           val = is ? richText(is) : undefined;
-        } else if (v) val = textOf(v);
+        } else if (v) val = textoDe(v);
         if (val !== undefined && val.trim() !== '') cells.set(col, val);
       }
-      rows.push({ n: Number(attributeOf(row, 'r')), cells });
+      rows.push({ n: Number(atributoDe(row, 'r')), cells });
     }
     result.set(name, rows);
   }

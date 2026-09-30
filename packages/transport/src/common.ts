@@ -1,7 +1,7 @@
 /** Partes comuns às implementações: preparo da requisição, política, capacidade da runtime, auditoria e helper. */
 
 import type { Logger } from '@sinete/core';
-import { ConfigError, isSineteError, noopLogger } from '@sinete/core';
+import { ErroDeConfiguracao, ehErroSinete, loggerSilencioso } from '@sinete/core';
 import type { TlsProfile } from './endpoints.ts';
 import { tlsProfileForHost } from './endpoints.ts';
 import { PolicyError, TransportUnsupportedError } from './errors.ts';
@@ -47,10 +47,10 @@ export async function prepareRequest(req: TransportRequest, options: TransportOp
   try {
     url = new URL(req.url);
   } catch (cause) {
-    throw new ConfigError(`URL inválida: ${JSON.stringify(req.url)}`, { cause });
+    throw new ErroDeConfiguracao(`URL inválida: ${JSON.stringify(req.url)}`, { cause });
   }
   if (url.protocol !== 'https:')
-    throw new ConfigError(`só https é aceito: ${url.protocol}`, { details: { url: url.origin } });
+    throw new ErroDeConfiguracao(`só https é aceito: ${url.protocol}`, { detalhes: { url: url.origin } });
   if (url.username !== '' || url.password !== '') throw new PolicyError('credencial na URL', { host: url.hostname });
   const method = req.method ?? (req.body === undefined ? 'GET' : 'POST');
   const body = typeof req.body === 'string' ? new TextEncoder().encode(req.body) : req.body;
@@ -66,7 +66,7 @@ export async function prepareRequest(req: TransportRequest, options: TransportOp
   if (options.policy) await options.policy.check({ url, method, body: req.body, endpoint: req.endpoint });
   const host = url.hostname.toLowerCase();
   const timeoutMs = req.timeoutMs ?? options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
-  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) throw new ConfigError(`prazo inválido: ${timeoutMs} ms`);
+  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) throw new ErroDeConfiguracao(`prazo inválido: ${timeoutMs} ms`);
   return { url, host, method, headers, body, timeoutMs, profile: req.endpoint?.tls ?? tlsProfileForHost(host) };
 }
 
@@ -112,7 +112,7 @@ export async function audited(
   options: TransportOptions,
   run: () => Promise<TransportResponse>,
 ): Promise<TransportResponse> {
-  const logger: Logger = options.logger ?? noopLogger;
+  const logger: Logger = options.logger ?? loggerSilencioso;
   const started = performance.now();
   const base = { runtime, host: prepared.host, path: prepared.url.pathname, method: prepared.method };
   try {
@@ -123,7 +123,7 @@ export async function audited(
     return res;
   } catch (e) {
     const durationMs = Math.round(performance.now() - started);
-    const errorCode = isSineteError(e) ? e.code : 'desconhecido';
+    const errorCode = ehErroSinete(e) ? e.code : 'desconhecido';
     options.audit?.({ ...base, status: undefined, errorCode, durationMs });
     logger.warn('transporte: falha', { ...base, errorCode, durationMs });
     throw e;
@@ -137,7 +137,7 @@ export function sendViaHelper(
   signal: AbortSignal | undefined,
 ): Promise<TransportResponse> {
   const id = options.identity;
-  if (id.kind !== 'helper') throw new ConfigError('identidade não é helper');
+  if (id.kind !== 'helper') throw new ErroDeConfiguracao('identidade não é helper');
   return id.helper.request(
     id.identity,
     {

@@ -373,7 +373,7 @@ export function qrMatrix(text: string, options: QrOptions = {}): boolean[][] {
   while (ver <= 40 && Math.ceil((header(ver) + bytes.length * 8) / 8) > dataCodewords(ver, ecc)) ver++;
   if (ver > 40) {
     throw new DanfeError('codigo_barras_invalido', 'conteúdo grande demais para um QR Code', {
-      details: { bytes: bytes.length, ecc },
+      detalhes: { bytes: bytes.length, ecc },
     });
   }
   const m = new Matrix(ver);

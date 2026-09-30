@@ -12,8 +12,8 @@
  * chunk à parte.
  */
 
-import type { ValidationIssue } from '@sinete/core';
-import { fixedClock, isUf, timeContext, ufByCUf } from '@sinete/core';
+import type { Ocorrencia } from '@sinete/core';
+import { contextoDeTempo, ehUf, relogioFixo, ufPorCUf } from '@sinete/core';
 import type { RateProvider } from '@sinete/ibs-cbs/aliquotas';
 import { officialRates, RateUnknownError } from '@sinete/ibs-cbs/aliquotas';
 import type {
@@ -71,7 +71,7 @@ const caminho = (nItem: number): string => `itens[${nItem - 1}].impostos.ibsCbs`
 
 /** UF do município pelo código IBGE (os dois primeiros dígitos são o cUF). */
 function ufDoMunicipio(cMun: string): string | undefined {
-  return ufByCUf(cMun.slice(0, 2))?.sigla;
+  return ufPorCUf(cMun.slice(0, 2))?.sigla;
 }
 
 /**
@@ -85,7 +85,7 @@ export function localDaOperacao(nota: IbsCbsNotaRequest): OperationPlace {
     if (uf !== undefined) return { uf, cMun: nota.cMunFGIBS };
   }
   const d = nota.destino;
-  if (d !== undefined && d.UF !== 'EX' && isUf(d.UF)) return { uf: d.UF, cMun: d.cMun };
+  if (d !== undefined && d.UF !== 'EX' && ehUf(d.UF)) return { uf: d.UF, cMun: d.cMun };
   return { uf: nota.emitente.UF, cMun: nota.emitente.cMun };
 }
 
@@ -110,14 +110,14 @@ function grupoDoLeiaute(g: IBSCBS, indDoacao: '1' | undefined): GrupoIbsCbs {
 }
 
 /** Erro do motor ou das alíquotas como ocorrência no item (ou na nota, quando o erro não diz o item). */
-function ocorrenciaDoMotor(e: unknown, itens: readonly IbsCbsItemRequest[]): ValidationIssue | undefined {
+function ocorrenciaDoMotor(e: unknown, itens: readonly IbsCbsItemRequest[]): Ocorrencia | undefined {
   if (e instanceof ClassificationError || e instanceof UnsupportedRegimeError) {
     const path = e.item !== undefined ? caminho(e.item) : caminho(itens[0]?.nItem ?? 1);
-    return { path, code: e.code, message: e.message, origem: 'entrada' };
+    return { caminho: path, code: e.code, mensagem: e.message, origem: 'entrada' };
   }
   // Alíquota que o sinete não conhece para a data: falta de dado do pacote, não da nota.
   if (e instanceof RateUnknownError)
-    return { path: 'impostos.ibsCbs', code: e.code, message: e.message, origem: 'montagem' };
+    return { caminho: 'impostos.ibsCbs', code: e.code, mensagem: e.message, origem: 'montagem' };
   return undefined;
 }
 
@@ -170,15 +170,15 @@ function calcularCom(
     readonly itens: readonly IbsCbsItemRequest[];
   },
 ): IbsCbsResponse {
-  const issues: ValidationIssue[] = [];
+  const issues: Ocorrencia[] = [];
   const classificados: ClassifiedItem[] = [];
   for (const it of itens) {
     if (it.cCredPres !== undefined) {
       // O crédito presumido pede os percentuais por tributo (pCredPres), que a porta não traz.
       issues.push({
-        path: caminho(it.nItem),
+        caminho: caminho(it.nItem),
         code: 'ibscbs_nao_suportado',
-        message: 'crédito presumido (cCredPres) precisa do grupo gCredPresOper pronto (ibsCbs.grupo)',
+        mensagem: 'crédito presumido (cCredPres) precisa do grupo gCredPresOper pronto (ibsCbs.grupo)',
         origem: 'entrada',
       });
       continue;
@@ -186,9 +186,9 @@ function calcularCom(
     const base = it.vBC !== undefined ? it.vBC.toFixed(2) : options.base?.(it, nota);
     if (base === undefined) {
       issues.push({
-        path: `${caminho(it.nItem)}.classificacao.vBC`,
+        caminho: `${caminho(it.nItem)}.classificacao.vBC`,
         code: 'ibscbs_base_ausente',
-        message:
+        mensagem:
           'informe vBC do IBS/CBS ou IbsCbsCalculatorOptions.base: a composição da base (UB16-10) ainda não tem regra publicada',
         origem: 'entrada',
       });
@@ -197,9 +197,9 @@ function calcularCom(
     if (!BASE.test(base)) {
       // Da entrada quando é o vBC do item; da montagem quando veio da função `base` das opções.
       issues.push({
-        path: `${caminho(it.nItem)}.classificacao.vBC`,
+        caminho: `${caminho(it.nItem)}.classificacao.vBC`,
         code: 'decimal_invalido',
-        message: base,
+        mensagem: base,
         origem: it.vBC !== undefined ? 'entrada' : 'montagem',
       });
       continue;
@@ -233,7 +233,7 @@ function calcularCom(
         }),
     items: classificados,
   };
-  const time = timeContext({ emissao: fixedClock(nota.emissao), fatoGerador: fixedClock(nota.fatoGerador) });
+  const time = contextoDeTempo({ emissao: relogioFixo(nota.emissao), fatoGerador: relogioFixo(nota.fatoGerador) });
   let roc: Roc;
   try {
     roc = calculate(op, {
@@ -257,9 +257,9 @@ function calcularCom(
     normalizado(nota.compraGov.pRedutor.toString()) !== normalizado(redutor)
   ) {
     issues.push({
-      path: 'gCompraGov.pRedutor',
+      caminho: 'gCompraGov.pRedutor',
       code: 'ibscbs_redutor_divergente',
-      message: `pRedutor informado (${nota.compraGov.pRedutor.toString()}) difere do vigente no fato gerador (${redutor})`,
+      mensagem: `pRedutor informado (${nota.compraGov.pRedutor.toString()}) difere do vigente no fato gerador (${redutor})`,
       origem: 'entrada',
     });
   }
@@ -286,9 +286,9 @@ function calcularCom(
     });
     for (const v of report.violations) {
       issues.push({
-        path: v.item === undefined ? 'total.IBSCBSTot' : caminho(v.item),
+        caminho: v.item === undefined ? 'total.IBSCBSTot' : caminho(v.item),
         code: 'ibscbs_regra_nt',
-        message: `${v.rule} (rejeição ${v.cStat}): ${v.message} [${v.source}]`,
+        mensagem: `${v.rule} (rejeição ${v.cStat}): ${v.message} [${v.source}]`,
         origem: 'montagem',
       });
     }

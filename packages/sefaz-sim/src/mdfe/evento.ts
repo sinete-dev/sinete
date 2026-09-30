@@ -8,12 +8,12 @@
  * encerramento com carregamento posterior).
  */
 
-import type { XmlElement } from '@sinete/core/xml';
-import { attributeOf, childElements, textOf } from '@sinete/core/xml';
+import type { ElementoXml } from '@sinete/core/xml';
+import { atributoDe, elementosFilhos, textoDe } from '@sinete/core/xml';
 import { serialize, serializeRoot } from '@sinete/schemas';
 import type { TRetEvento } from '@sinete/schemas/mdfe/eventos/3.00b';
 import { eventoMDFeElement, TRetEvento as RetEvento, retEventoMDFeElement } from '@sinete/schemas/mdfe/eventos/3.00b';
-import { isValidCnpj, isValidCpf, parseChaveAcesso } from '@sinete/validators';
+import { cnpjValido, cpfValido, lerChaveAcesso } from '@sinete/validators';
 import { checkAssinatura } from '../certs.ts';
 import type { RequestContext } from '../context.ts';
 import type { MdfeEventoRecord, MdfeRecord } from '../state.ts';
@@ -53,7 +53,7 @@ const centavos = (v: string | undefined): bigint => {
  * Regras de pagamento do evento 110116 (Visão Geral, item 6.5, K07 a K16, as mesmas do grupo infPag do MDF-e), cada
  * uma desligável pelo próprio id, na ordem da tabela.
  */
-function regraPagamento(ctx: RequestContext, det: XmlElement, dataEvento: string): string | undefined {
+function regraPagamento(ctx: RequestContext, det: ElementoXml, dataEvento: string): string | undefined {
   const dif = (a: bigint, b: bigint): bigint => (a > b ? a - b : b - a);
   for (const pag of all(det, 'infPag')) {
     const indPag = req(pag, 'indPag');
@@ -62,10 +62,10 @@ function regraPagamento(ctx: RequestContext, det: XmlElement, dataEvento: string
     if (ativa(ctx, 'K08') && indPag === '0' && prazo.length > 0) return '729';
     const doc = documento(pag);
     const docInvalido =
-      (doc.CNPJ !== undefined && !isValidCnpj(doc.CNPJ)) || (doc.CPF !== undefined && !isValidCpf(doc.CPF));
+      (doc.CNPJ !== undefined && !cnpjValido(doc.CNPJ)) || (doc.CPF !== undefined && !cpfValido(doc.CPF));
     if (ativa(ctx, 'K09') && docInvalido) return '727';
     const ipef = text(pag, 'infBanc/CNPJIPEF');
-    if (ativa(ctx, 'K10') && ipef !== undefined && !isValidCnpj(ipef)) return '728';
+    if (ativa(ctx, 'K10') && ipef !== undefined && !cnpjValido(ipef)) return '728';
     const vContrato = centavos(text(pag, 'vContrato'));
     const comps = all(pag, 'Comp').reduce((s, c) => s + centavos(text(c, 'vComp')), 0n);
     if (ativa(ctx, 'K11') && dif(comps, vContrato) > TOLERANCIA) return '746';
@@ -91,7 +91,7 @@ function regraPagamento(ctx: RequestContext, det: XmlElement, dataEvento: string
 function regrasDoTipo(
   ctx: RequestContext,
   tpEvento: string,
-  det: XmlElement,
+  det: ElementoXml,
   m: MdfeRecord,
   eventos: readonly MdfeEventoRecord[],
   dhEvento: string,
@@ -136,7 +136,7 @@ function regrasDoTipo(
       if (ativa(ctx, 'K03') && r218) return r218;
       if (ativa(ctx, 'K04') && r609) return r609;
       if (ativa(ctx, 'K05') && m.modal !== '1') return { cStat: '644' };
-      if (ativa(ctx, 'K06') && !isValidCpf(req(det, 'condutor/CPF'))) return { cStat: '645' };
+      if (ativa(ctx, 'K06') && !cpfValido(req(det, 'condutor/CPF'))) return { cStat: '645' };
       return undefined;
     }
     case '110115': {
@@ -149,9 +149,9 @@ function regrasDoTipo(
       for (const d of all(det, 'infDoc')) {
         if (ativa(ctx, 'K08') && req(d, 'cMunDescarga').slice(0, 2) !== cUFIni) return { cStat: '612' };
         const ch = req(d, 'chNFe');
-        const c = parseChaveAcesso(ch);
-        if (ativa(ctx, 'K10') && (!c.ok || c.value.mod !== '55')) {
-          return { cStat: '709', params: { Motivo: c.ok ? 'Modelo diferente de 55' : c.error.message } };
+        const c = lerChaveAcesso(ch);
+        if (ativa(ctx, 'K10') && (!c.ok || c.valor.mod !== '55')) {
+          return { cStat: '709', params: { Motivo: c.ok ? 'Modelo diferente de 55' : c.erro.mensagem } };
         }
         if (ativa(ctx, 'K14') && jaIncluidas.has(ch)) return { cStat: '711' };
       }
@@ -174,7 +174,7 @@ function regrasDoTipo(
 export async function recepcaoEventoMdfe(ctx: RequestContext): Promise<string> {
   const pre = await preludeMdfe(ctx, eventoMDFeElement);
   const doc = pre.doc;
-  const inf = doc === undefined ? undefined : at(doc.root, 'infEvento');
+  const inf = doc === undefined ? undefined : at(doc.raiz, 'infEvento');
   const lido = (local: string): string | undefined => (inf === undefined ? undefined : text(inf, local));
   const chMDFe = lido('chMDFe');
   const tpEvento = lido('tpEvento');
@@ -203,8 +203,8 @@ export async function recepcaoEventoMdfe(ctx: RequestContext): Promise<string> {
     const soDetalhe = pre.schemaPaths?.every((p) => /\/detEvento(?:\/|\[|$)/.test(p));
     return rejeitado(pre.status.cStat === '215' && soDetalhe === true ? '630' : pre.status.cStat);
   }
-  const infEl = inf as XmlElement;
-  const id = attributeOf(infEl, 'Id') ?? '';
+  const infEl = inf as ElementoXml;
+  const id = atributoDe(infEl, 'Id') ?? '';
   const autor = documento(infEl);
   const sig = await checkAssinatura({ doc: pre.doc, id, element: 'infEvento', now: ctx.now, titular: autor });
   if (!sig.ok) return rejeitado(sig.cStat === '227' ? '202' : sig.cStat);
@@ -213,19 +213,19 @@ export async function recepcaoEventoMdfe(ctx: RequestContext): Promise<string> {
   const nSeq = Number(nSeqEvento);
   // J01 a J09
   if (ativa(ctx, 'J01') && lido('tpAmb') !== ctx.rt.config.tpAmb) return rejeitado('252');
-  if (ativa(ctx, 'J02') && autor.CNPJ !== undefined && !isValidCnpj(autor.CNPJ)) return rejeitado('627');
-  if (ativa(ctx, 'J03') && autor.CPF !== undefined && !isValidCpf(autor.CPF)) return rejeitado('700');
+  if (ativa(ctx, 'J02') && autor.CNPJ !== undefined && !cnpjValido(autor.CNPJ)) return rejeitado('627');
+  if (ativa(ctx, 'J03') && autor.CPF !== undefined && !cpfValido(autor.CPF)) return rejeitado('700');
   const idEsperado = `ID${tp}${ch}${String(nSeq).padStart(nSeq > 99 ? 3 : 2, '0')}`;
   if (ativa(ctx, 'J04') && id !== idEsperado) return rejeitado('628');
   const tipo = TIPOS[tp];
   if (ativa(ctx, 'J05') && tipo === undefined) return rejeitado('629');
-  const det = at(infEl, 'detEvento') as XmlElement;
-  const detEv = childElements(det)[0] as XmlElement;
+  const det = at(infEl, 'detEvento') as ElementoXml;
+  const detEv = elementosFilhos(det)[0] as ElementoXml;
   // J06: o schema combinado aceita qualquer detalhe conhecido; o do tipo declarado é o que vale (630).
   if (ativa(ctx, 'J06') && tipo !== undefined && detEv.local !== tipo.det) return rejeitado('630');
-  const c = parseChaveAcesso(ch);
-  if (ativa(ctx, 'J07') && (!c.ok || c.value.mod !== '58')) {
-    return rejeitado('236', { Motivo: c.ok ? 'Modelo diferente de 58' : c.error.message });
+  const c = lerChaveAcesso(ch);
+  if (ativa(ctx, 'J07') && (!c.ok || c.valor.mod !== '58')) {
+    return rejeitado('236', { Motivo: c.ok ? 'Modelo diferente de 58' : c.erro.mensagem });
   }
   const eventos = ctx.rt.state.eventosDoMdfe(ch);
   const duplicado = eventos.find((e) => e.cOrgao === cOrgao && e.tpEvento === tp && e.nSeqEvento === nSeq);
@@ -279,7 +279,7 @@ export async function recepcaoEventoMdfe(ctx: RequestContext): Promise<string> {
     },
   };
   const detalhe: Record<string, string> = {};
-  for (const x of childElements(detEv)) if (childElements(x).length === 0) detalhe[x.local] = textOf(x);
+  for (const x of elementosFilhos(detEv)) if (elementosFilhos(x).length === 0) detalhe[x.local] = textoDe(x);
   ctx.rt.state.eventosMdfe.push({
     chave: ch,
     tpEvento: tp,
@@ -291,7 +291,7 @@ export async function recepcaoEventoMdfe(ctx: RequestContext): Promise<string> {
     det: detalhe,
     chNFe: tp === '110115' ? all(detEv, 'infDoc').map((d) => req(d, 'chNFe')) : [],
     xml: pre.payload,
-    retEvento: serialize(RetEvento, 'retEventoMDFe', valor, pre.doc.root.ns),
+    retEvento: serialize(RetEvento, 'retEventoMDFe', valor, pre.doc.raiz.ns),
   });
   if (tp === '110111') m.situacao = 'cancelado';
   if (tp === '110112') m.situacao = 'encerrado';

@@ -9,8 +9,8 @@
  * contingência o número transmitido em emissão normal).
  */
 
-import type { Clock, Logger } from '@sinete/core';
-import { ConfigError } from '@sinete/core';
+import type { Logger, Relogio } from '@sinete/core';
+import { ErroDeConfiguracao } from '@sinete/core';
 import type { Desfecho, TipoDocumento } from './desfecho.ts';
 import type { EstadoContingencia, Instante, TransmissaoStore } from './store.ts';
 
@@ -168,14 +168,14 @@ export function dadosContingenciaMemoria(): DadosContingenciaMemoria {
  * implementa os métodos da contingência.
  */
 export function contingenciaEmMemoria(
-  clock: Clock,
+  clock: Relogio,
   dados: DadosContingenciaMemoria = dadosContingenciaMemoria(),
 ): ContingenciaStore {
   const { falhas, estados, sondas } = dados;
-  const agora = (): number => clock.now().getTime();
+  const agora = (): number => clock.agora().getTime();
   /** Instante sem o global `Date` (relógio injetado): uma cópia do `Date` do relógio. */
   const instante = (ms: number): Instante => {
-    const d = clock.now();
+    const d = clock.agora();
     d.setTime(ms);
     return d;
   };
@@ -263,35 +263,37 @@ export function criarContingencia<Entrada, C>(deps: {
   readonly tipo: TipoDocumento;
   readonly ambiente: string;
   readonly store: TransmissaoStore;
-  readonly clock: Clock;
+  readonly clock: Relogio;
   readonly logger: Logger;
   readonly aoMudar: ((m: MudancaContingencia) => void | Promise<void>) | undefined;
 }): Contingencia<Entrada, C> | undefined {
   const { opcoes, perfil, store, clock, logger, aoMudar } = deps;
   const implementados = METODOS.filter((m) => typeof store[m] === 'function').length;
   if (implementados !== 0 && implementados !== METODOS.length) {
-    throw new ConfigError(
+    throw new ErroDeConfiguracao(
       `o store implementa os métodos da contingência todos juntos, ou nenhum: ${METODOS.join(', ')}`,
     );
   }
   if (aoMudar !== undefined && typeof aoMudar !== 'function') {
-    throw new ConfigError('aoMudarContingencia precisa ser uma função');
+    throw new ErroDeConfiguracao('aoMudarContingencia precisa ser uma função');
   }
   if (opcoes?.automatica !== true) return undefined;
   if (perfil === undefined) {
-    throw new ConfigError(`o emissor de ${deps.tipo} não tem contingência automática (ADR 0013: só NF-e e NFC-e)`);
+    throw new ErroDeConfiguracao(
+      `o emissor de ${deps.tipo} não tem contingência automática (ADR 0013: só NF-e e NFC-e)`,
+    );
   }
   const doPerfil: ContingenciaDoPerfil<Entrada, C> = perfil;
   const limite = opcoes.limiteFalhas ?? LIMITE_PADRAO;
-  if (!Number.isInteger(limite) || limite < 1) throw new ConfigError(`limiteFalhas inválido: ${limite}`);
+  if (!Number.isInteger(limite) || limite < 1) throw new ErroDeConfiguracao(`limiteFalhas inválido: ${limite}`);
   const janelaMs = opcoes.janelaMs ?? JANELA_PADRAO_MS;
-  if (!Number.isFinite(janelaMs) || janelaMs <= 0) throw new ConfigError(`janelaMs inválido: ${janelaMs}`);
+  if (!Number.isFinite(janelaMs) || janelaMs <= 0) throw new ErroDeConfiguracao(`janelaMs inválido: ${janelaMs}`);
   const sondaMs = opcoes.sondaMs ?? SONDA_PADRAO_MS;
-  if (!Number.isFinite(sondaMs) || sondaMs <= 0) throw new ConfigError(`sondaMs inválido: ${sondaMs}`);
+  if (!Number.isFinite(sondaMs) || sondaMs <= 0) throw new ErroDeConfiguracao(`sondaMs inválido: ${sondaMs}`);
   const xJust = opcoes.xJust ?? XJUST_PADRAO;
   // MOC 7.0 Anexo I, campo B29: 15 a 256 caracteres.
   if (xJust.trim().length < 15 || xJust.length > 256) {
-    throw new ConfigError('xJust da contingência com 15 a 256 caracteres (MOC 7.0 Anexo I, campo B29)');
+    throw new ErroDeConfiguracao('xJust da contingência com 15 a 256 caracteres (MOC 7.0 Anexo I, campo B29)');
   }
   const estado: ContingenciaStore =
     implementados === METODOS.length ? (store as ContingenciaStore) : contingenciaEmMemoria(clock);
@@ -334,7 +336,7 @@ export function criarContingencia<Entrada, C>(deps: {
       return false;
     }
     if (v.situacao === 'desativando') {
-      if (v.fim === undefined || v.fim.getTime() <= clock.now().getTime()) {
+      if (v.fim === undefined || v.fim.getTime() <= clock.agora().getTime()) {
         await sair(escopo, `SVC em desativação para a UF (status da SVC: ${v.detalhe})`);
         return false;
       }
@@ -358,7 +360,7 @@ export function criarContingencia<Entrada, C>(deps: {
       if (ativo === undefined) return undefined;
     }
     // 113: a partir da hora informada, a SVC não atende mais a UF, e a nota nova não vai a ela.
-    if (ativo.fimDaSvc !== undefined && ativo.fimDaSvc.getTime() <= clock.now().getTime()) {
+    if (ativo.fimDaSvc !== undefined && ativo.fimDaSvc.getTime() <= clock.agora().getTime()) {
       await sair(escopo, `SVC desabilitada para a UF desde ${ativo.fimDaSvc.toISOString()} (status 113 da SVC)`);
       return undefined;
     }

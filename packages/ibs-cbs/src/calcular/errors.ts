@@ -1,6 +1,6 @@
 /** Erros do `@sinete/ibs-cbs/calcular`. Todos carregam o item (`nItem`) em `details.item` quando o erro é de um item. */
-import type { SineteErrorOptions } from '@sinete/core';
-import { SineteError } from '@sinete/core';
+import type { ErroSineteOpcoes } from '@sinete/core';
+import { ErroSinete } from '@sinete/core';
 
 /** Motivo de uma classificação recusada pelo motor, estável como o `code`. */
 export type ClassificationReason =
@@ -23,14 +23,14 @@ export type ClassificationReason =
  * A classificação informada não pode ser calculada: código inexistente ou fora de vigência na data do fato gerador,
  * cClassTrib fora da CST, não habilitado no modelo de DF-e, grupo exigido ausente ou vedado presente. `reason` diz qual.
  */
-export class ClassificationError extends SineteError<'ibscbs_classificacao_invalida'> {
+export class ClassificationError extends ErroSinete<'ibscbs_classificacao_invalida'> {
   readonly reason: ClassificationReason;
   readonly item: number | undefined;
 
-  constructor(reason: ClassificationReason, message: string, item?: number, options: SineteErrorOptions = {}) {
+  constructor(reason: ClassificationReason, message: string, item?: number, options: ErroSineteOpcoes = {}) {
     super('ibscbs_classificacao_invalida', message, {
       ...options,
-      details: { ...options.details, reason, ...(item === undefined ? {} : { item }) },
+      detalhes: { ...options.detalhes, reason, ...(item === undefined ? {} : { item }) },
     });
     this.name = 'ClassificationError';
     this.reason = reason;
@@ -41,14 +41,14 @@ export class ClassificationError extends SineteError<'ibscbs_classificacao_inval
 /** Regime que o motor ainda não calcula. Nunca sai um valor preenchido com zero no lugar. */
 export type UnsupportedRegime = 'monofasia' | 'imposto-seletivo' | 'aliquotas-combinadas' | 'ajuste';
 
-export class UnsupportedRegimeError extends SineteError<'ibscbs_regime_nao_suportado'> {
+export class UnsupportedRegimeError extends ErroSinete<'ibscbs_regime_nao_suportado'> {
   readonly regime: UnsupportedRegime;
   readonly item: number | undefined;
 
-  constructor(regime: UnsupportedRegime, message: string, item?: number, options: SineteErrorOptions = {}) {
+  constructor(regime: UnsupportedRegime, message: string, item?: number, options: ErroSineteOpcoes = {}) {
     super('ibscbs_regime_nao_suportado', message, {
       ...options,
-      details: { ...options.details, regime, ...(item === undefined ? {} : { item }) },
+      detalhes: { ...options.detalhes, regime, ...(item === undefined ? {} : { item }) },
     });
     this.name = 'UnsupportedRegimeError';
     this.regime = regime;
@@ -57,11 +57,11 @@ export class UnsupportedRegimeError extends SineteError<'ibscbs_regime_nao_supor
 }
 
 /** Expressão de cálculo do dataset fora da gramática conhecida: mudança de dado que precisa de revisão. */
-export class ExpressionError extends SineteError<'ibscbs_expressao_invalida'> {
+export class ExpressionError extends ErroSinete<'ibscbs_expressao_invalida'> {
   readonly expression: string;
 
   constructor(expression: string, message: string) {
-    super('ibscbs_expressao_invalida', `expressão "${expression}": ${message}`, { details: { expression } });
+    super('ibscbs_expressao_invalida', `expressão "${expression}": ${message}`, { detalhes: { expression } });
     this.name = 'ExpressionError';
     this.expression = expression;
   }

@@ -10,8 +10,15 @@
  */
 
 import { afterEach, beforeAll, describe, expect, test } from 'bun:test';
-import type { ManualClock } from '@sinete/core';
-import { ConfigError, fixedClock, isSineteError, manualClock, timeContext, ValidationError } from '@sinete/core';
+import type { RelogioManual } from '@sinete/core';
+import {
+  contextoDeTempo,
+  ErroDeConfiguracao,
+  ErroDeValidacao,
+  ehErroSinete,
+  relogioFixo,
+  relogioManual,
+} from '@sinete/core';
 import * as da from '@sinete/da/nfe';
 import type { NfeInput } from '@sinete/nfe';
 import type { Contribuinte, SefazSim, SefazSimOptions, SyntheticCertificate } from '@sinete/sefaz-sim';
@@ -46,7 +53,7 @@ let pfx: Uint8Array;
 const fechar: (() => Promise<void>)[] = [];
 
 beforeAll(async () => {
-  const clock = manualClock(EMISSAO);
+  const clock = relogioManual(EMISSAO);
   ac = await syntheticCertificate({ clock, role: 'ac', validDays: 3650 });
   const emitente = await syntheticCertificate({ clock, role: 'titular', cnpj: CNPJ_EMIT, issuer: ac });
   servidor = await syntheticCertificate({ clock, role: 'servidor', issuer: ac });
@@ -67,7 +74,7 @@ const DEST: NonNullable<NfeInput['destinatario']> = {
 const n = (nNF: number, extra: Partial<NfeInput> = {}): NfeInput => nota({ nNF, destinatario: DEST, ...extra });
 
 interface Cenario {
-  readonly clock: ManualClock;
+  readonly clock: RelogioManual;
   readonly sim: SefazSim;
   readonly banco: BancoMemoria;
   readonly store: TransmissaoStore;
@@ -92,7 +99,7 @@ interface OpcoesCenario {
 }
 
 async function cenario(extra: Partial<NfeEmissorOptions> = {}, opcoes: OpcoesCenario = {}): Promise<Cenario> {
-  const clock = manualClock(EMISSAO);
+  const clock = relogioManual(EMISSAO);
   const sim = createSefazSim({
     clock,
     uf: 'SP',
@@ -133,7 +140,7 @@ async function cenario(extra: Partial<NfeEmissorOptions> = {}, opcoes: OpcoesCen
         ? {
             cliente: {
               sleep: async (ms: number): Promise<void> => {
-                clock.advance(ms);
+                clock.avancar(ms);
               },
             },
           }
@@ -224,10 +231,10 @@ describe('createNfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
 
     const chave = d.id;
     const consulta = await c.emissor.consultar(chave);
-    expect(consulta.status).toBe('authorized');
-    c.clock.advance(60_000);
+    expect(consulta.tipo).toBe('autorizado');
+    c.clock.avancar(60_000);
     const cce = await c.emissor.cartaCorrecao({ chave, xCorrecao: 'CORRECAO DE TESTE', nSeqEvento: 1 });
-    expect([cce.status, cce.cStat]).toEqual(['authorized', '135']);
+    expect([cce.tipo, cce.cStat]).toEqual(['autorizado', '135']);
     const canc = await c.emissor.cancelar({
       chave,
       nProt: d.protocolo.nProt,
@@ -243,7 +250,7 @@ describe('createNfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
     expect(new TextDecoder().decode(cancelado.subarray(0, 5))).toBe('%PDF-');
     expect(cancelado).toEqual(da.toPdf(da.danfe(d.proc, { cancelamento: canc.procEvento })));
     expect(cancelado).not.toEqual(pdf);
-    expect((await c.emissor.cliente.statusServico()).status).toBe('authorized');
+    expect((await c.emissor.cliente.statusServico()).tipo).toBe('autorizado');
   });
 
   test('a SEFAZ autoriza e a rede cai: a retomada, depois de reiniciar, guarda a nota com os mesmos bytes', async () => {
@@ -265,7 +272,7 @@ describe('createNfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
 
     // "Reinício": emissor novo, rede de volta, relógio adiantado. A nota "editada" pede outro número: vale o gravado.
     c.sim.clearFaults();
-    c.clock.advance(10 * 60_000);
+    c.clock.avancar(10 * 60_000);
     const depois = await c.novoEmissor();
     const r = autorizado(await depois.emitir('nota-2', n(9)));
     expect(r.id).toBe(gravado?.id as string);
@@ -322,7 +329,7 @@ describe('createNfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
     expect(d.nRec).toMatch(/^[0-9]{15}$/);
     expect(await lento.store.ler('nfe', 'nota-6')).toBeDefined();
     // Com o lote processado, a retomada consulta a chave e guarda.
-    lento.clock.advance(60_000);
+    lento.clock.avancar(60_000);
     await lento.sim.settle();
     autorizado(await lento.emissor.retomar('nota-6'));
     expect(await lento.store.ler('nfe', 'nota-6')).toBeUndefined();
@@ -343,7 +350,7 @@ describe('createNfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
   test('204 no envio: a consulta da chave conclui com os bytes que a SEFAZ já tem', async () => {
     const c = await cenario();
     const a = await c.emissor.assinar(n(8));
-    expect((await c.emissor.cliente.autorizar(a.xml)).status).toBe('authorized');
+    expect((await c.emissor.cliente.autorizar(a.xml)).tipo).toBe('autorizado');
     const d = autorizado(await perfilNfe().enviar(c.emissor.cliente, a.xml, 'primeiro'));
     expect(d.proc).toContain(a.xml);
     expect(c.caminhos.slice(-2)).toEqual(['/uf/ws/NFeAutorizacao4', '/uf/ws/NFeConsultaProtocolo4']);
@@ -374,7 +381,7 @@ describe('createNfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
     const c = await cenario();
     // A que a SEFAZ tem (montada antes, como um caminho que remontava) e a que o integrador gravou, com outro conteúdo.
     const naSefaz = await c.emissor.assinar(n(11, { cNF: '31415926' }));
-    expect((await c.emissor.cliente.autorizar(naSefaz.xml)).status).toBe('authorized');
+    expect((await c.emissor.cliente.autorizar(naSefaz.xml)).tipo).toBe('autorizado');
     const t = await c.store.travar('nfe', 'local', 60_000);
     if (t === undefined) throw new Error('sem trava');
     const local = await c.emissor.assinar(n(11, { cNF: '31415926', natOp: 'OUTRA NATUREZA' }));
@@ -391,7 +398,7 @@ describe('createNfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
   test('primeiro envio sem resposta e outra NF-e na chave: divergente, não erro de rede', async () => {
     const c = await cenario();
     const naSefaz = await c.emissor.assinar(n(12, { cNF: '31415926' }));
-    expect((await c.emissor.cliente.autorizar(naSefaz.xml)).status).toBe('authorized');
+    expect((await c.emissor.cliente.autorizar(naSefaz.xml)).tipo).toBe('autorizado');
     c.sim.injectFault({ kind: 'drop', phase: 'after' }, { servico: 'NFeAutorizacao', times: 1 });
     const d = await c.emissor.emitir('local', n(12, { cNF: '31415926', natOp: 'OUTRA NATUREZA' }));
     expect(d.tipo).toBe('divergente');
@@ -406,13 +413,13 @@ describe('createNfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
     expect((await c.emissor.emitir('nota-13', n(13))).tipo).toBe('pendente');
     const naSefaz = noSim(c, 13)[0];
     if (naSefaz === undefined) throw new Error('não autorizou');
-    c.clock.advance(60_000);
+    c.clock.avancar(60_000);
     const canc = await c.emissor.cliente.cancelar({
       chave: naSefaz.chave,
       nProt: naSefaz.nProt as string,
       xJust: 'CANCELAMENTO FORA DO FLUXO DE TESTE',
     });
-    expect(canc.status).toBe('authorized');
+    expect(canc.tipo).toBe('autorizado');
     const d = autorizado(await c.emissor.retomar('nota-13'));
     expect([d.cStat, d.situacaoAtual]).toEqual(['100', 'cancelado']);
     expect(d.proc).toContain(naSefaz.xml);
@@ -423,7 +430,7 @@ describe('createNfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
   test('a retomada vai ao autorizador da chave (SVC), depois de reiniciar, sem opção de contingência', async () => {
     const c = await cenario();
     c.sim.setContingencia('SVC-AN');
-    const contingencia = { tpEmis: '6', dhCont: c.clock.now(), xJust: 'SEFAZ DA UF FORA DO AR NO TESTE' } as const;
+    const contingencia = { tpEmis: '6', dhCont: c.clock.agora(), xJust: 'SEFAZ DA UF FORA DO AR NO TESTE' } as const;
     c.sim.injectFault({ kind: 'drop', phase: 'after' }, { servico: 'NFeAutorizacao', times: 1 });
     c.sim.injectFault({ kind: 'drop', phase: 'before' }, { servico: 'NfeConsultaProtocolo', times: 1 });
     expect((await c.emissor.emitir('nota-14', n(14, { contingencia }))).tipo).toBe('pendente');
@@ -467,7 +474,7 @@ describe('createNfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
       c.sim.injectFault({ kind: 'drop', phase: 'before' }, { servico: 'NfeConsultaProtocolo', times: 1 });
       expect((await c.emissor.emitir(ref, n(nNF))).tipo).toBe('pendente');
       c.sim.clearFaults();
-      c.clock.advance(10 * 60_000);
+      c.clock.avancar(10 * 60_000);
     }
 
     test('guarda sozinho a nota que a SEFAZ autorizou e cuja resposta se perdeu, pelo pool', async () => {
@@ -531,12 +538,12 @@ describe('createNfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
       const c = await cenario();
       // A SEFAZ tem a chave com outro conteúdo; o integrador gravou a versão local.
       const naSefaz = await c.emissor.assinar(n(20, { cNF: '31415926' }));
-      expect((await c.emissor.cliente.autorizar(naSefaz.xml)).status).toBe('authorized');
+      expect((await c.emissor.cliente.autorizar(naSefaz.xml)).tipo).toBe('autorizado');
       c.sim.injectFault({ kind: 'drop', phase: 'after' }, { servico: 'NFeAutorizacao', times: 1 });
       c.sim.injectFault({ kind: 'drop', phase: 'before' }, { servico: 'NfeConsultaProtocolo', times: 1 });
       const local = await c.emissor.emitir('b', n(20, { cNF: '31415926', natOp: 'OUTRA NATUREZA' }));
       expect(local.tipo).toBe('pendente');
-      c.clock.advance(10 * 60_000);
+      c.clock.avancar(10 * 60_000);
       const alertas: Desfecho[] = [];
       const r = await retomarPendentes({
         store: c.store,
@@ -592,7 +599,7 @@ describe('createNfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
       c.sim.injectFault({ kind: 'drop', phase: 'after' }, { servico: 'NFeAutorizacao', times: 1 });
       c.sim.injectFault({ kind: 'drop', phase: 'before' }, { servico: 'NfeConsultaProtocolo', times: 1 });
       expect((await c.emissor.emitir('nota-32', n(32))).tipo).toBe('pendente');
-      c.clock.advance(10 * 60_000);
+      c.clock.avancar(10 * 60_000);
       const r = await retomarPendentes({
         store: c.store,
         clock: c.clock,
@@ -611,7 +618,7 @@ describe('createNfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
     test('a chave denegada com outro conteúdo: denegado com conteudo difere, e o número sai como denegado', async () => {
       const c = await cenario({}, { sim: { cadastro: IRREGULAR } });
       const naSefaz = await c.emissor.assinar(n(33, { cNF: '27182818' }));
-      expect((await c.emissor.cliente.autorizar(naSefaz.xml)).status).toBe('denied');
+      expect((await c.emissor.cliente.autorizar(naSefaz.xml)).tipo).toBe('denegado');
       c.sim.injectFault({ kind: 'drop', phase: 'before' }, { servico: 'NFeAutorizacao', times: 1 });
       const d = denegado(await c.emissor.emitir('nota-33', n(33, { cNF: '27182818', natOp: 'OUTRA NATUREZA' })));
       expect([d.conteudo, d.proc]).toEqual(['difere', undefined]);
@@ -638,7 +645,7 @@ describe('createNfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
       expect((await c.store.ler('nfe', 'nota-35'))?.xml).toBe(noSim(c, 35)[0]?.xml as string);
       expect(autorizacoes(c)).toBe(1);
 
-      c.clock.advance(10 * 60_000);
+      c.clock.avancar(10 * 60_000);
       const alertas: Desfecho[] = [];
       const job = () =>
         retomarPendentes({
@@ -653,7 +660,7 @@ describe('createNfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
       expect(alertas[0]).toMatchObject({ tipo: 'divergente', conteudo: 'sem-digval' });
       // Se a SEFAZ passa a mandar o digVal, a próxima tentativa prova o conteúdo e guarda.
       c.sim.setProtocoloSemDigVal(undefined);
-      c.clock.advance(2 * 60 * 60_000);
+      c.clock.avancar(2 * 60 * 60_000);
       expect((await job()).desfechos).toEqual({ resolvida: 1 });
       expect(autorizado(c.guardados[0]?.desfecho).id).toBe(d.id);
       expect(autorizacoes(c)).toBe(1);
@@ -664,7 +671,7 @@ describe('createNfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
     test('sem resposta e depois 573 ou 580: o evento vem da consulta, nunca do cStat', async () => {
       const c = await cenario({ timeoutMs: 400 });
       const d = autorizado(await c.emissor.emitir('nota-21', n(21)));
-      c.clock.advance(60_000);
+      c.clock.avancar(60_000);
       c.sim.injectFault({ kind: 'hang', phase: 'after' }, { servico: 'RecepcaoEvento' });
       const pedido = { chave: d.id, nProt: d.protocolo.nProt, xJust: 'CANCELAMENTO DE TESTE SINTETICO' };
       const r = await c.emissor.cancelar(pedido);
@@ -681,7 +688,7 @@ describe('createNfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
     test('sem nProt: tira da consulta; já cancelada, devolve o evento; não consta, recusa', async () => {
       const c = await cenario();
       const d = autorizado(await c.emissor.emitir('nota-22', n(22)));
-      c.clock.advance(60_000);
+      c.clock.avancar(60_000);
       const r = await c.emissor.cancelar({ chave: d.id, xJust: 'CANCELAMENTO DE TESTE SINTETICO' });
       expect(r.tipo === 'registrado' && r.recuperado).toBe(false);
       const outra = await c.emissor.cancelar({ chave: d.id, xJust: 'CANCELAMENTO DE TESTE SINTETICO' });
@@ -732,9 +739,9 @@ describe('createNfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
     const c = await cenario();
     const outro = n(46, { emitente: { ...n(46).emitente, CNPJ: CNPJ_DEST } as NfeInput['emitente'] });
     const e = await c.emissor.emitir('nota-46', outro).catch((x: unknown) => x);
-    expect(e).toBeInstanceOf(ValidationError);
-    expect((e as ValidationError).issues).toEqual([
-      expect.objectContaining({ path: 'emitente.CNPJ', code: 'emitente_difere_do_certificado', origem: 'entrada' }),
+    expect(e).toBeInstanceOf(ErroDeValidacao);
+    expect((e as ErroDeValidacao).ocorrencias).toEqual([
+      expect.objectContaining({ caminho: 'emitente.CNPJ', code: 'emitente_difere_do_certificado', origem: 'entrada' }),
     ]);
     expect(await c.store.ler('nfe', 'nota-46')).toBeUndefined();
     expect(autorizacoes(c)).toBe(0);
@@ -748,7 +755,7 @@ describe('createNfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
     /** Mesmos bytes a cada montagem: cNF e data de emissão fixos. */
     const fixa = (nNF: number, extra: Partial<NfeInput> = {}) => ({
       nfe: n(nNF, { cNF: '31415926', ...extra }),
-      montagem: { time: timeContext({ emissao: fixedClock(EMISSAO) }) },
+      montagem: { time: contextoDeTempo({ emissao: relogioFixo(EMISSAO) }) },
     });
     const repetida = async (p: Promise<unknown>): Promise<RecusaRepetidaError> => {
       try {
@@ -774,8 +781,8 @@ describe('createNfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
       expect(autorizacoes(c)).toBe(3);
       const outro = await c.novoEmissor();
       const e = await repetida(outro.emitir('nota-40', fixa(40)));
-      expect(isSineteError(e, 'recusa_repetida')).toBe(true);
-      expect(e.details).toMatchObject({ tipo: 'nfe', cStat: '203', vezes: 3, limite: 3, janelaMs: 3_600_000 });
+      expect(ehErroSinete(e, 'recusa_repetida')).toBe(true);
+      expect(e.detalhes).toMatchObject({ tipo: 'nfe', cStat: '203', vezes: 3, limite: 3, janelaMs: 3_600_000 });
       expect(autorizacoes(c)).toBe(3);
       expect(await c.store.ler('nfe', 'nota-40')).toBeUndefined();
       // A nota mudou (outro conteúdo): vai à SEFAZ e recomeça a conta.
@@ -787,21 +794,21 @@ describe('createNfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
 
     test('quem remonta a cada tentativa (hora de agora, cNF novo) também é contado; o conteúdo corrigido vai', async () => {
       const c = await cenario({}, { sim: { cadastro: cadastro() } });
-      const agora = () => ({ nfe: n(47), montagem: { time: timeContext({ emissao: c.clock }) } });
+      const agora = () => ({ nfe: n(47), montagem: { time: contextoDeTempo({ emissao: c.clock }) } });
       const primeira = await c.emissor.assinar(agora());
       for (let i = 0; i < 3; i++) {
-        c.clock.advance(90_000);
+        c.clock.avancar(90_000);
         expect((await c.emissor.emitir('nota-47', agora())).tipo).toBe('recusado');
       }
-      c.clock.advance(90_000);
+      c.clock.avancar(90_000);
       const outra = await c.emissor.assinar(agora());
       expect(outra.xml).not.toBe(primeira.xml);
       const e = await repetida(c.emissor.emitir('nota-47', agora()));
-      expect(e.details).toMatchObject({ cStat: '203', vezes: 3 });
+      expect(e.detalhes).toMatchObject({ cStat: '203', vezes: 3 });
       expect(autorizacoes(c)).toBe(3);
       const corrigida = await c.emissor.emitir('nota-47', {
         nfe: n(47, { natOp: 'VENDA DE MERCADORIA ADQUIRIDA' }),
-        montagem: { time: timeContext({ emissao: c.clock }) },
+        montagem: { time: contextoDeTempo({ emissao: c.clock }) },
       });
       expect(corrigida.tipo).toBe('recusado');
       expect(autorizacoes(c)).toBe(4);
@@ -826,22 +833,22 @@ describe('createNfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
     test('a janela conta desde a primeira recusa, pelo relógio do banco; janela e limite são configuráveis', async () => {
       const c = await cenario({}, { sim: { cadastro: cadastro() } });
       await recusadas(c.emissor, 'nota-42', () => fixa(42));
-      c.clock.advance(59 * 60_000);
+      c.clock.avancar(59 * 60_000);
       await repetida(c.emissor.emitir('nota-42', fixa(42)));
-      c.clock.advance(2 * 60_000);
+      c.clock.avancar(2 * 60_000);
       // Passou uma hora desde a primeira: a conta recomeça.
       expect((await c.emissor.emitir('nota-42', fixa(42))).tipo).toBe('recusado');
       expect((await c.store.recusaRecente?.('nfe', 'nota-42', 3_600_000))?.vezes).toBe(1);
       await recusadas(c.emissor, 'nota-42', () => fixa(42), 2);
       await repetida(c.emissor.emitir('nota-42', fixa(42)));
       const curta = await c.novoEmissor({ recusaRepetida: { janelaMs: 60_000 } });
-      c.clock.advance(61_000);
+      c.clock.avancar(61_000);
       expect((await curta.emitir('nota-42', fixa(42))).tipo).toBe('recusado');
       const rigida = await c.novoEmissor({ recusaRepetida: { limite: 1 } });
       await repetida(rigida.emitir('nota-42', fixa(42)));
       expect(autorizacoes(c)).toBe(7);
-      await expect(c.novoEmissor({ recusaRepetida: { limite: 0 } })).rejects.toBeInstanceOf(ConfigError);
-      await expect(c.novoEmissor({ recusaRepetida: { limite: 1.5 } })).rejects.toBeInstanceOf(ConfigError);
+      await expect(c.novoEmissor({ recusaRepetida: { limite: 0 } })).rejects.toBeInstanceOf(ErroDeConfiguracao);
+      await expect(c.novoEmissor({ recusaRepetida: { limite: 1.5 } })).rejects.toBeInstanceOf(ErroDeConfiguracao);
     });
 
     test('serviço paralisado (108) não é da nota: os mesmos bytes vão de novo', async () => {
@@ -858,7 +865,7 @@ describe('createNfeEmissor contra a SEFAZ simulada, HTTPS com mTLS', () => {
       expect((await c.emissor.emitir('nota-44', fixa(44))).tipo).toBe('recusado');
       expect(autorizacoes(c)).toBe(2);
       const { recusaRecente: _r, ...meio } = createMemoriaStore();
-      await expect(c.novoEmissor({ store: meio })).rejects.toBeInstanceOf(ConfigError);
+      await expect(c.novoEmissor({ store: meio })).rejects.toBeInstanceOf(ErroDeConfiguracao);
     });
 
     test('a retomada dos bytes gravados nunca é barrada', async () => {

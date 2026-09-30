@@ -6,7 +6,7 @@
  * módulo vai pela opção `da`, importado de forma estática pelo app (ADR 0009, decisão 3).
  */
 
-import { ConfigError } from '@sinete/core';
+import { ErroDeConfiguracao } from '@sinete/core';
 
 /** Carregador de um subpath do `@sinete/da`, com o módulo injetado quando houver. */
 export function carregadorDa<M>(subpath: string, injetado: M | undefined): () => Promise<M> {
@@ -17,7 +17,7 @@ export function carregadorDa<M>(subpath: string, injetado: M | undefined): () =>
     try {
       modulo = (await import(/* @vite-ignore */ /* webpackIgnore: true */ especificador)) as M;
     } catch (cause) {
-      throw new ConfigError('o PDF usa o @sinete/da: instale o pacote ou passe o módulo na opção da', { cause });
+      throw new ErroDeConfiguracao('o PDF usa o @sinete/da: instale o pacote ou passe o módulo na opção da', { cause });
     }
     return modulo;
   };

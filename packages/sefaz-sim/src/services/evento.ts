@@ -7,8 +7,8 @@
  * gerados dos XSD oficiais (o 110112 pelo e110112_v1.00.xsd do Evento_CancSubst_v1.01).
  */
 
-import type { XmlDocument, XmlElement } from '@sinete/core/xml';
-import { attributeOf, childElements, textOf } from '@sinete/core/xml';
+import type { DocumentoXml, ElementoXml } from '@sinete/core/xml';
+import { atributoDe, elementosFilhos, textoDe } from '@sinete/core/xml';
 import type { RootElement } from '@sinete/schemas';
 import { serializeRoot, validateRoot } from '@sinete/schemas';
 import type { TRetEnvEvento, TRetEvento } from '@sinete/schemas/nfe/evento-cancelamento/PL_010d';
@@ -58,16 +58,16 @@ const SCHEMAS: Readonly<Record<string, RootElement<unknown>>> = {
  * Envelope genérico: qualquer schema de evento serve para o lote se as ocorrências ficarem restritas ao `detEvento`
  * (que é `xs:any` no leiaute genérico `envEvento_v1.00.xsd`).
  */
-function envelopeOk(doc: XmlDocument): boolean {
-  return validateRoot(canc.envEventoElement, doc).every((i) => /\/detEvento(?:\/|\[|$)/.test(i.path));
+function envelopeOk(doc: DocumentoXml): boolean {
+  return validateRoot(canc.envEventoElement, doc).every((i) => /\/detEvento(?:\/|\[|$)/.test(i.caminho));
 }
 
-function factsOf(evento: XmlElement): EventoFacts {
-  const inf = at(evento, 'infEvento') as XmlElement;
+function factsOf(evento: ElementoXml): EventoFacts {
+  const inf = at(evento, 'infEvento') as ElementoXml;
   const det: Record<string, string> = {};
-  for (const c of childElements(at(inf, 'detEvento') as XmlElement)) det[c.local] = textOf(c);
+  for (const c of elementosFilhos(at(inf, 'detEvento') as ElementoXml)) det[c.local] = textoDe(c);
   return {
-    id: attributeOf(inf, 'Id') ?? '',
+    id: atributoDe(inf, 'Id') ?? '',
     cOrgao: req(inf, 'cOrgao'),
     tpAmb: req(inf, 'tpAmb'),
     autor: documento(inf),
@@ -85,7 +85,7 @@ export async function recepcaoEvento(ctx: RequestContext): Promise<string> {
   const cOrgao = ctx.autorizador === 'an' ? '91' : ctx.rt.config.cUF;
   // D01 do lote: o envelope genérico, com o detEvento livre; cada evento é conferido depois pelo schema do tipo.
   const pre = prelude(ctx, { roots: [canc.envEventoElement], lote: false });
-  const idLido = pre.doc === undefined ? undefined : text(pre.doc.root, 'idLote');
+  const idLido = pre.doc === undefined ? undefined : text(pre.doc.raiz, 'idLote');
   const idLote = idLido !== undefined && /^[0-9]{1,15}$/.test(idLido) ? idLido : '0';
   const ret = (s: Status, retEvento?: TRetEvento[]): string => {
     const value: TRetEnvEvento = {
@@ -104,22 +104,22 @@ export async function recepcaoEvento(ctx: RequestContext): Promise<string> {
   // Falha só no detEvento: o lote passa e cada evento responde pelo próprio schema (D06).
   if (pre.status.cStat === '215' && pre.doc !== undefined && envelopeOk(pre.doc)) {
     // O resto do prelúdio depois do schema (D02) vale também para o lote aceito pelo envelope genérico.
-    if (hasPrefix(pre.doc.root)) return ret(status('404'));
+    if (hasPrefix(pre.doc.raiz)) return ret(status('404'));
     return ret(status('128'), await processarLote(ctx, pre.doc, cOrgao));
   }
   return ret(pre.status);
 }
 
-async function processarLote(ctx: RequestContext, doc: XmlDocument, cOrgao: string): Promise<TRetEvento[]> {
+async function processarLote(ctx: RequestContext, doc: DocumentoXml, cOrgao: string): Promise<TRetEvento[]> {
   const out: TRetEvento[] = [];
-  for (const el of all(doc.root, 'evento')) out.push(await processarEvento(ctx, doc, el, cOrgao));
+  for (const el of all(doc.raiz, 'evento')) out.push(await processarEvento(ctx, doc, el, cOrgao));
   return out;
 }
 
 async function processarEvento(
   ctx: RequestContext,
-  doc: XmlDocument,
-  el: XmlElement,
+  doc: DocumentoXml,
+  el: ElementoXml,
   cOrgao: string,
 ): Promise<TRetEvento> {
   const e = factsOf(el);
@@ -142,7 +142,7 @@ async function processarEvento(
   const schema = SCHEMAS[e.tpEvento];
   if (schema === undefined) return rejeitado('491');
   if (e.verEvento !== '1.00') return rejeitado('492');
-  const eventoXml = standalone(doc.source, el);
+  const eventoXml = standalone(doc.texto, el);
   const single = `<envEvento versao="1.00" xmlns="${NFE_NS}"><idLote>0</idLote>${eventoXml}</envEvento>`;
   if (validateRoot(schema, single).length > 0) return rejeitado('493');
   // Grupos E e F no lote como recebido (o C14N depende dos namespaces em escopo); o titular é o autor do evento.

@@ -8,9 +8,9 @@
  * código no `cStat`.
  */
 
-import type { Rejected, RejectionHint } from '@sinete/core';
+import type { DicaRejeicao, Recusado } from '@sinete/core';
 import table from './data/nfse-erros.json' with { type: 'json' };
-import type { RejeicaoSource } from './index.ts';
+import type { FonteRejeicao } from './index.ts';
 
 /** Categoria do erro, para agrupar tratamento e mensagens de interface. */
 export type NfseErroCategoria =
@@ -41,7 +41,7 @@ export const NFSE_ERRO_CATEGORIAS: readonly NfseErroCategoria[] = [
 /** Regra de negócio da planilha em que o código aparece. */
 export interface NfseErroRegra {
   /** Documento de origem em `NFSE_ERROS_TABLE.sources`. */
-  readonly doc: 'anexo-i' | 'anexo-ii';
+  readonly documento: 'anexo-i' | 'anexo-ii';
   /** Aba da planilha (`RN DPS_NFS-e`, `RN_RECEPCAO_DPS`, `RN EVENTO_PED.REG.EVENTO`). */
   readonly aba: string;
   /** Valor da coluna `#` da linha da regra. */
@@ -56,7 +56,7 @@ export interface NfseErroRegra {
 
 export interface NfseErro {
   /** Código de erro, `E` e 4 dígitos. */
-  readonly code: string;
+  readonly codigo: string;
   /** Mensagem oficial ("MSG. ERRO"), com espaços normalizados. */
   readonly mensagem: string;
   /** Todas as mensagens oficiais quando o mesmo código aparece com textos diferentes (E1570). */
@@ -74,42 +74,42 @@ export interface NfseErro {
   readonly referencia?: string;
 }
 
-export interface NfseErrosTableInfo {
-  readonly schemaVersion: number;
-  readonly version: string;
-  readonly sources: readonly RejeicaoSource[];
+export interface DescricaoTabelaErrosNfse {
+  readonly versaoDoFormato: number;
+  readonly versao: string;
+  readonly fontes: readonly FonteRejeicao[];
 }
 
 /** Metadados do catálogo: versão (data de coleta) e planilhas de origem com sha256. */
-export const NFSE_ERROS_TABLE: NfseErrosTableInfo = {
-  schemaVersion: table.schemaVersion,
-  version: table.version,
-  sources: table.sources,
+export const TABELA_ERROS_NFSE: DescricaoTabelaErrosNfse = {
+  versaoDoFormato: table.versaoDoFormato,
+  versao: table.versao,
+  fontes: table.fontes,
 };
 
 /** Todas as entradas, em ordem de código. */
 export const NFSE_ERROS: readonly NfseErro[] = table.erros as readonly NfseErro[];
 
-const byCode: ReadonlyMap<string, NfseErro> = new Map(NFSE_ERROS.map((e) => [e.code, e]));
+const byCode: ReadonlyMap<string, NfseErro> = new Map(NFSE_ERROS.map((e) => [e.codigo, e]));
 
 /** Entrada do catálogo para o código (`'E0312'`), ou `undefined` se não está catalogado. */
-export function nfseErroByCode(code: string): NfseErro | undefined {
+export function nfseErroPorCodigo(code: string): NfseErro | undefined {
   return byCode.get(code.trim().toUpperCase());
 }
 
 /** `RejectionHint` do core para o código, quando há curadoria de causa e correção. */
-export function nfseRejectionHint(code: string): RejectionHint | undefined {
-  const e = nfseErroByCode(code);
+export function dicaRejeicaoNfse(code: string): DicaRejeicao | undefined {
+  const e = nfseErroPorCodigo(code);
   if (!e?.causaProvavel || !e.comoCorrigir) return undefined;
-  return { probableCause: e.causaProvavel, suggestedFix: e.comoCorrigir, source: e.referencia ?? e.fonte };
+  return { causaProvavel: e.causaProvavel, comoCorrigir: e.comoCorrigir, fonte: e.referencia ?? e.fonte };
 }
 
 /**
  * Preenche o `hint` de um desfecho `rejected` da NFS-e a partir do catálogo. Não sobrescreve um `hint` já presente e
  * devolve o mesmo objeto quando não há o que acrescentar.
  */
-export function enrichNfseRejected(outcome: Rejected): Rejected {
-  if (outcome.hint !== undefined) return outcome;
-  const hint = nfseRejectionHint(outcome.cStat);
-  return hint === undefined ? outcome : { ...outcome, hint };
+export function completarRecusadoNfse(outcome: Recusado): Recusado {
+  if (outcome.dica !== undefined) return outcome;
+  const hint = dicaRejeicaoNfse(outcome.cStat);
+  return hint === undefined ? outcome : { ...outcome, dica: hint };
 }

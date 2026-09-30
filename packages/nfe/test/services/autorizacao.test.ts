@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
-import { ConfigError, fixedClock, ProtocolError, ValidationError } from '@sinete/core';
-import { verifySignature } from '@sinete/core/xml';
+import { ErroDeConfiguracao, ErroDeValidacao, ErroRespostaInvalida, relogioFixo } from '@sinete/core';
+import { conferirAssinatura } from '@sinete/core/xml';
 import { nfceEndpoint, nfeEndpoint } from '@sinete/transport';
 import {
   autorizadorContingencia,
@@ -40,9 +40,9 @@ describe('statusServico', () => {
     );
     const { c } = await client(t, { timeoutMs: 5000 });
     const r = await c.statusServico();
-    expect(r.status).toBe('authorized');
-    if (r.status !== 'authorized') return;
-    expect(r.value).toEqual({
+    expect(r.tipo).toBe('autorizado');
+    if (r.tipo !== 'autorizado') return;
+    expect(r.valor).toEqual({
       cUF: '35',
       verAplic: 'SP_NFE_PL009_V4',
       dhRecbto: '2026-09-10T09:00:00-03:00',
@@ -70,12 +70,12 @@ describe('statusServico', () => {
     );
     const { c } = await client(t);
     const r = await c.statusServico();
-    expect(r.status).toBe('rejected');
+    expect(r.tipo).toBe('recusado');
     expect(r.cStat).toBe('108');
   });
 
   test('UF inválida é ConfigError', async () => {
-    await expect(client(fakeTransport(), { uf: 'XX' as never })).rejects.toBeInstanceOf(ConfigError);
+    await expect(client(fakeTransport(), { uf: 'XX' as never })).rejects.toBeInstanceOf(ErroDeConfiguracao);
   });
 });
 
@@ -86,24 +86,24 @@ describe('autorizar síncrono', () => {
     const t = fakeTransport(soap(retEnviNFe({ cStat: '104', inner: protNFe({ chNFe: ch, digVal: digestOf(nfe) }) })));
     const { c, logger } = await client(t);
     const r = await c.autorizar(nfe);
-    expect(r.status).toBe('authorized');
-    if (r.status !== 'authorized') return;
+    expect(r.tipo).toBe('autorizado');
+    if (r.tipo !== 'autorizado') return;
     expect(r.cStat).toBe('100');
-    expect(r.value.nProt).toBe('135260000000001');
-    const proc = r.value.nfeProc as string;
+    expect(r.valor.nProt).toBe('135260000000001');
+    const proc = r.valor.nfeProc as string;
     expect(proc.startsWith(`<nfeProc xmlns="${NFE_NS}" versao="4.00">${nfe}<protNFe`)).toBe(true);
     // Dentro do nfeProc o protNFe herda o default; avulso, leva o próprio xmlns.
     expect(proc).toContain(`${nfe}<protNFe versao="4.00"><infProt`);
     expect(proc.endsWith('</protNFe></nfeProc>')).toBe(true);
-    expect(r.value.protNFe.startsWith(`<protNFe xmlns="${NFE_NS}" versao="4.00">`)).toBe(true);
-    const v = await verifySignature(proc, { id: `NFe${ch}`, element: 'infNFe' });
+    expect(r.valor.protNFe.startsWith(`<protNFe xmlns="${NFE_NS}" versao="4.00">`)).toBe(true);
+    const v = await conferirAssinatura(proc, { id: `NFe${ch}`, elemento: 'infNFe' });
     expect(v.ok).toBe(true);
     const msg = mensagem(t.requests[0] as never);
     expect(msg).toBe(
       `<enviNFe xmlns="${NFE_NS}" versao="4.00"><idLote>42</idLote><indSinc>1</indSinc>${nfe}</enviNFe>`,
     );
     expect(t.requests[0]?.url).toBe(nfeEndpoint({ ambiente: 'homologacao', servico: 'NFeAutorizacao', uf: 'SP' }).url);
-    expect(JSON.stringify(logger.entries)).not.toContain('<NFe');
+    expect(JSON.stringify(logger.entradas)).not.toContain('<NFe');
   });
 
   test('declaração XML e BOM antes da NF-e são descartados; o resto segue intacto', async () => {
@@ -112,7 +112,7 @@ describe('autorizar síncrono', () => {
     const t = fakeTransport(soap(retEnviNFe({ cStat: '104', inner: protNFe({ chNFe: ch, digVal: digestOf(nfe) }) })));
     const { c } = await client(t);
     const r = await c.autorizar(`﻿<?xml version="1.0" encoding="UTF-8"?>\n${nfe}`);
-    expect(r.status).toBe('authorized');
+    expect(r.tipo).toBe('autorizado');
     expect(mensagem(t.requests[0] as never)).toContain(`<indSinc>1</indSinc>${nfe}</enviNFe>`);
   });
 
@@ -129,8 +129,8 @@ describe('autorizar síncrono', () => {
     );
     const { c } = await client(t);
     const r = await c.autorizar(nfe);
-    expect(r.status).toBe('denied');
-    if (r.status === 'denied') expect(r.value.nfeProc).toContain(nfe);
+    expect(r.tipo).toBe('denegado');
+    if (r.tipo === 'denegado') expect(r.valor.nfeProc).toContain(nfe);
   });
 
   test('rejeição no protNFe e no lote, com dica do @sinete/rejeicoes quando houver', async () => {
@@ -147,11 +147,11 @@ describe('autorizar síncrono', () => {
     );
     const { c } = await client(t);
     const r1 = await c.autorizar(nfe);
-    expect(r1.status).toBe('rejected');
+    expect(r1.tipo).toBe('recusado');
     expect(r1.cStat).toBe('225');
     const r2 = await c.autorizar(nfe);
-    expect(r2.status).toBe('rejected');
-    if (r2.status === 'rejected') expect(r2.hint?.suggestedFix).toBeDefined();
+    expect(r2.tipo).toBe('recusado');
+    if (r2.tipo === 'recusado') expect(r2.dica?.comoCorrigir).toBeDefined();
   });
 
   test('digVal diferente do DigestValue enviado é ProtocolError', async () => {
@@ -159,7 +159,7 @@ describe('autorizar síncrono', () => {
     const nfe = await nfeAssinada(ch);
     const t = fakeTransport(soap(retEnviNFe({ cStat: '104', inner: protNFe({ chNFe: ch, digVal: 'AAAA' }) })));
     const { c } = await client(t);
-    await expect(c.autorizar(nfe)).rejects.toBeInstanceOf(ProtocolError);
+    await expect(c.autorizar(nfe)).rejects.toBeInstanceOf(ErroRespostaInvalida);
   });
 
   test('protocolo de outra chave é ProtocolError', async () => {
@@ -169,7 +169,7 @@ describe('autorizar síncrono', () => {
       soap(retEnviNFe({ cStat: '104', inner: protNFe({ chNFe: outra, digVal: digestOf(nfe) }) })),
     );
     const { c } = await client(t);
-    await expect(c.autorizar(nfe)).rejects.toBeInstanceOf(ProtocolError);
+    await expect(c.autorizar(nfe)).rejects.toBeInstanceOf(ErroRespostaInvalida);
   });
 
   test('protNFe sem digVal: autorizada, mas sem nfeProc (nada prova que o protocolo é deste conteúdo)', async () => {
@@ -178,8 +178,8 @@ describe('autorizar síncrono', () => {
     const t = fakeTransport(soap(retEnviNFe({ cStat: '104', inner: protNFe({ chNFe: ch }) })));
     const { c } = await client(t);
     const r = await c.autorizar(nfe);
-    expect(r.status).toBe('authorized');
-    expect(r.status === 'authorized' && r.value.nfeProc).toBeUndefined();
+    expect(r.tipo).toBe('autorizado');
+    expect(r.tipo === 'autorizado' && r.valor.nfeProc).toBeUndefined();
   });
 
   test('denegação sem digVal: denied com o protNFe, sem nfeProc', async () => {
@@ -190,19 +190,21 @@ describe('autorizar síncrono', () => {
     );
     const { c } = await client(t);
     const r = await c.autorizar(nfe);
-    expect(r.status).toBe('denied');
-    if (r.status !== 'denied') return;
-    expect(r.value.nfeProc).toBeUndefined();
-    expect(r.value.digVal).toBeUndefined();
-    expect(r.value.protNFe).toContain('<cStat>302</cStat>');
+    expect(r.tipo).toBe('denegado');
+    if (r.tipo !== 'denegado') return;
+    expect(r.valor.nfeProc).toBeUndefined();
+    expect(r.valor.digVal).toBeUndefined();
+    expect(r.valor.protNFe).toContain('<cStat>302</cStat>');
   });
 
   test('entrada sem assinatura, sem Id ou fora do namespace é ConfigError', async () => {
     const { c } = await client(fakeTransport());
-    await expect(c.autorizar(`<NFe xmlns="${NFE_NS}"><infNFe Id="NFe1"/></NFe>`)).rejects.toBeInstanceOf(ConfigError);
-    await expect(c.autorizar('<NFe><infNFe Id="NFe1"/></NFe>')).rejects.toBeInstanceOf(ConfigError);
-    await expect(c.autorizar(`<NFe xmlns="${NFE_NS}"><infNFe/></NFe>`)).rejects.toBeInstanceOf(ConfigError);
-    await expect(c.autorizar(`<nfeProc xmlns="${NFE_NS}"/>`)).rejects.toBeInstanceOf(ConfigError);
+    await expect(c.autorizar(`<NFe xmlns="${NFE_NS}"><infNFe Id="NFe1"/></NFe>`)).rejects.toBeInstanceOf(
+      ErroDeConfiguracao,
+    );
+    await expect(c.autorizar('<NFe><infNFe Id="NFe1"/></NFe>')).rejects.toBeInstanceOf(ErroDeConfiguracao);
+    await expect(c.autorizar(`<NFe xmlns="${NFE_NS}"><infNFe/></NFe>`)).rejects.toBeInstanceOf(ErroDeConfiguracao);
+    await expect(c.autorizar(`<nfeProc xmlns="${NFE_NS}"/>`)).rejects.toBeInstanceOf(ErroDeConfiguracao);
   });
 
   test('idLote padrão vem do relógio; idLote inválido é ConfigError', async () => {
@@ -213,7 +215,7 @@ describe('autorizar síncrono', () => {
     await c.autorizar(nfe);
     expect(mensagem(t.requests[0] as never)).toContain(`<idLote>${Date.parse('2026-09-10T12:00:00Z')}</idLote>`);
     const { c: c2 } = await client(fakeTransport(), { idLote: () => 'abc' });
-    await expect(c2.autorizar(nfe)).rejects.toBeInstanceOf(ConfigError);
+    await expect(c2.autorizar(nfe)).rejects.toBeInstanceOf(ErroDeConfiguracao);
   });
 });
 
@@ -231,14 +233,14 @@ describe('autorizar assíncrono e recibo', () => {
     );
     const { c } = await client(t);
     const r = await c.autorizar(nfe, { sincrono: false });
-    expect(r).toMatchObject({ status: 'pending', ref: '351000000000001', retryAfterMs: 3000 });
+    expect(r).toMatchObject({ tipo: 'pendente', referencia: '351000000000001', aguardarMs: 3000 });
     expect(mensagem(t.requests[0] as never)).toContain('<indSinc>0</indSinc>');
   });
 
   test('103 sem infRec é ProtocolError', async () => {
     const t = fakeTransport(soap(retEnviNFe({ cStat: '103' })));
     const { c } = await client(t);
-    await expect(c.autorizar(await nfeAssinada(), { sincrono: false })).rejects.toBeInstanceOf(ProtocolError);
+    await expect(c.autorizar(await nfeAssinada(), { sincrono: false })).rejects.toBeInstanceOf(ErroRespostaInvalida);
   });
 
   test('consultarRecibo: 105 pendente, 104 com o protNFe da chave, 106 rejeitado', async () => {
@@ -257,14 +259,14 @@ describe('autorizar assíncrono e recibo', () => {
       soap(retConsReciNFe({ cStat: '106', xMotivo: 'Lote não localizado' }), 'NFeRetAutorizacao4'),
     );
     const { c } = await client(t);
-    expect((await c.consultarRecibo('351000000000001')).status).toBe('pending');
+    expect((await c.consultarRecibo('351000000000001')).tipo).toBe('pendente');
     const r = await c.consultarRecibo('351000000000001', nfe);
-    expect(r.status === 'authorized' && r.value.chNFe).toBe(ch);
+    expect(r.tipo === 'autorizado' && r.valor.chNFe).toBe(ch);
     expect(
-      r.status === 'authorized' && r.value.nfeProc?.startsWith(`<nfeProc xmlns="${NFE_NS}" versao="4.00">${nfe}`),
+      r.tipo === 'autorizado' && r.valor.nfeProc?.startsWith(`<nfeProc xmlns="${NFE_NS}" versao="4.00">${nfe}`),
     ).toBe(true);
     const r3 = await c.consultarRecibo('351000000000001');
-    expect(r3.status).toBe('rejected');
+    expect(r3.tipo).toBe('recusado');
     expect(mensagem(t.requests[0] as never)).toBe(
       `<consReciNFe xmlns="${NFE_NS}" versao="4.00"><tpAmb>2</tpAmb><nRec>351000000000001</nRec></consReciNFe>`,
     );
@@ -284,8 +286,8 @@ describe('autorizar assíncrono e recibo', () => {
       ),
     );
     const { c } = await client(t);
-    await expect(c.consultarRecibo('351000000000001', nfe)).rejects.toBeInstanceOf(ProtocolError);
-    await expect(c.consultarRecibo('123')).rejects.toBeInstanceOf(ConfigError);
+    await expect(c.consultarRecibo('351000000000001', nfe)).rejects.toBeInstanceOf(ErroRespostaInvalida);
+    await expect(c.consultarRecibo('123')).rejects.toBeInstanceOf(ErroDeConfiguracao);
   });
 
   test('aguardarRecibo: espera crescente com teto, respeita retryAfter e para ao sair de pendente', async () => {
@@ -305,7 +307,7 @@ describe('autorizar assíncrono e recibo', () => {
       multiplicador: 2,
       esperaMaximaMs: 5000,
     });
-    expect(r.status).toBe('authorized');
+    expect(r.tipo).toBe('autorizado');
     expect(sleeps).toEqual([1000, 2000, 4000, 5000, 5000]);
     expect(t.requests).toHaveLength(5);
   });
@@ -315,17 +317,17 @@ describe('autorizar assíncrono e recibo', () => {
     const t = fakeTransport(...Array.from({ length: 10 }, () => pend));
     const { c, sleeps } = await client(t);
     const r = await c.aguardarRecibo('351000000000001');
-    expect(r.status).toBe('pending');
+    expect(r.tipo).toBe('pendente');
     expect(sleeps).toEqual([2000, 3000, 4500, 6750, 10125, 15188, 22782, 30000, 30000, 30000]);
   });
 
   test('aguardarRecibo: política inválida é ConfigError; sinal abortado interrompe a espera padrão', async () => {
     const { c } = await client(fakeTransport());
     await expect(c.aguardarRecibo('351000000000001', undefined, { maxTentativas: 0 })).rejects.toBeInstanceOf(
-      ConfigError,
+      ErroDeConfiguracao,
     );
     await expect(c.aguardarRecibo('351000000000001', undefined, { multiplicador: 0.5 })).rejects.toBeInstanceOf(
-      ConfigError,
+      ErroDeConfiguracao,
     );
     const { c: real } = await client(fakeTransport(), { sleep: undefined as never });
     const ac = new AbortController();
@@ -360,14 +362,14 @@ describe('autorizar assíncrono e recibo', () => {
   test('retorno de outro recibo é ProtocolError', async () => {
     const t = fakeTransport(soap(retConsReciNFe({ cStat: '105', nRec: '351000000000009' })));
     const { c } = await client(t);
-    await expect(c.consultarRecibo('351000000000001')).rejects.toBeInstanceOf(ProtocolError);
+    await expect(c.consultarRecibo('351000000000001')).rejects.toBeInstanceOf(ErroRespostaInvalida);
   });
 
   test('sleep padrão resolve depois do prazo', async () => {
     const t = fakeTransport(soap(retConsReciNFe({ cStat: '106' })));
     const { c } = await client(t, { sleep: undefined as never });
     const r = await c.aguardarRecibo('351000000000001', undefined, { esperaMinimaMs: 1, esperaMaximaMs: 1 });
-    expect(r.status).toBe('rejected');
+    expect(r.tipo).toBe('recusado');
   });
 
   test('sleep padrão remove o listener de abort quando o prazo vence', async () => {
@@ -407,7 +409,7 @@ describe('consultar', () => {
       soap(retConsSitNFe({ cStat: '100', chNFe: ch, inner: protNFe({ chNFe: outra, digVal: digestOf(nfe) }) })),
     );
     const { c } = await client(t);
-    await expect(c.consultar(ch, nfe)).rejects.toBeInstanceOf(ProtocolError);
+    await expect(c.consultar(ch, nfe)).rejects.toBeInstanceOf(ErroRespostaInvalida);
   });
 
   test('autorizada com a NF-e: digVal confere, nfeProc montado, rota pela UF da chave', async () => {
@@ -421,11 +423,11 @@ describe('consultar', () => {
     );
     const { c } = await client(t);
     const r = await c.consultar(ch, nfe);
-    expect(r.status).toBe('authorized');
-    if (r.status !== 'authorized') return;
-    expect(r.value.situacao).toBe('autorizada');
-    expect(r.value.digValConfere).toBe(true);
-    expect(r.value.protocolo?.nfeProc).toContain(nfe);
+    expect(r.tipo).toBe('autorizado');
+    if (r.tipo !== 'autorizado') return;
+    expect(r.valor.situacao).toBe('autorizada');
+    expect(r.valor.digValConfere).toBe(true);
+    expect(r.valor.protocolo?.nfeProc).toContain(nfe);
     expect(t.requests[0]?.url).toBe(
       nfeEndpoint({ ambiente: 'homologacao', servico: 'NfeConsultaProtocolo', uf: 'PR' }).url,
     );
@@ -449,11 +451,11 @@ describe('consultar', () => {
     );
     const { c } = await client(t);
     const r = await c.consultar(ch, nfe);
-    if (r.status !== 'authorized') throw new Error(r.status);
-    expect(r.value.situacao).toBe('cancelada');
-    expect(r.value.digValConfere).toBe(false);
-    expect(r.value.protocolo?.nfeProc).toBeUndefined();
-    expect(r.value.eventos).toEqual([evento.replace('<procEventoNFe ', `<procEventoNFe xmlns="${NFE_NS}" `)]);
+    if (r.tipo !== 'autorizado') throw new Error(r.tipo);
+    expect(r.valor.situacao).toBe('cancelada');
+    expect(r.valor.digValConfere).toBe(false);
+    expect(r.valor.protocolo?.nfeProc).toBeUndefined();
+    expect(r.valor.eventos).toEqual([evento.replace('<procEventoNFe ', `<procEventoNFe xmlns="${NFE_NS}" `)]);
   });
 
   test('denegada, sem protNFe e sem a NF-e', async () => {
@@ -461,10 +463,10 @@ describe('consultar', () => {
     const t = fakeTransport(soap(retConsSitNFe({ cStat: '110', xMotivo: 'Uso Denegado', chNFe: ch })));
     const { c } = await client(t);
     const r = await c.consultar(ch);
-    expect(r.status).toBe('denied');
-    if (r.status === 'denied') {
-      expect(r.value.protocolo).toBeUndefined();
-      expect(r.value.digValConfere).toBeUndefined();
+    expect(r.tipo).toBe('denegado');
+    if (r.tipo === 'denegado') {
+      expect(r.valor.protocolo).toBeUndefined();
+      expect(r.valor.digValConfere).toBeUndefined();
     }
   });
 
@@ -475,11 +477,11 @@ describe('consultar', () => {
     );
     const { c } = await client(t);
     const r = await c.consultar(ch);
-    expect(r.status).toBe('rejected');
-    if (r.status === 'rejected') expect(r.hint?.source).toBeDefined();
+    expect(r.tipo).toBe('recusado');
+    if (r.tipo === 'recusado') expect(r.dica?.fonte).toBeDefined();
     const dvErrado = ch.slice(0, 43) + String((Number(ch[43]) + 1) % 10);
-    await expect(c.consultar(dvErrado)).rejects.toBeInstanceOf(ValidationError);
-    await expect(c.consultar(ch, await nfeAssinada(chave({ nNF: 7 })))).rejects.toBeInstanceOf(ConfigError);
+    await expect(c.consultar(dvErrado)).rejects.toBeInstanceOf(ErroDeValidacao);
+    await expect(c.consultar(ch, await nfeAssinada(chave({ nNF: 7 })))).rejects.toBeInstanceOf(ErroDeConfiguracao);
   });
 });
 
@@ -502,16 +504,16 @@ describe('resolverEnvioSemResposta', () => {
     );
     const { c } = await client(t);
     const envio = await c.autorizar(nfe);
-    expect(envio.status).toBe('rejected');
+    expect(envio.tipo).toBe('recusado');
     const r = await resolverEnvioSemResposta(c, nfe, envio);
     expect(r.acao).toBe('concluida');
     if (r.acao !== 'concluida') return;
     expect(r.situacao).toBe('autorizada');
-    expect(r.outcome.status).toBe('authorized');
+    expect(r.outcome.tipo).toBe('autorizado');
     expect(r.outcome.cStat).toBe('100');
-    if (r.outcome.status === 'authorized') {
-      expect(r.outcome.value.nfeProc).toBe(
-        `<nfeProc xmlns="${NFE_NS}" versao="4.00">${nfe}${r.outcome.value.protNFe.replace(` xmlns="${NFE_NS}"`, '')}</nfeProc>`,
+    if (r.outcome.tipo === 'autorizado') {
+      expect(r.outcome.valor.nfeProc).toBe(
+        `<nfeProc xmlns="${NFE_NS}" versao="4.00">${nfe}${r.outcome.valor.protNFe.replace(` xmlns="${NFE_NS}"`, '')}</nfeProc>`,
       );
     }
   });
@@ -530,9 +532,9 @@ describe('resolverEnvioSemResposta', () => {
     );
     const { c } = await client(t);
     const r = await resolverEnvioSemResposta(c, nfe);
-    expect(r.acao === 'concluida' && r.outcome.status).toBe('denied');
+    expect(r.acao === 'concluida' && r.outcome.tipo).toBe('denegado');
     expect(r.acao === 'concluida' && r.conteudo).toBe('confere');
-    expect(r.acao === 'concluida' && r.outcome.status === 'denied' && r.outcome.value.nfeProc).toContain(nfe);
+    expect(r.acao === 'concluida' && r.outcome.tipo === 'denegado' && r.outcome.valor.nfeProc).toContain(nfe);
   });
 
   test('denegada sem digVal ou com outro digVal: concluída como Denied, sem nfeProc, com o conteúdo dito', async () => {
@@ -557,10 +559,10 @@ describe('resolverEnvioSemResposta', () => {
     for (const conteudo of ['sem-digval', 'difere'] as const) {
       const r = await resolverEnvioSemResposta(c, nfe);
       expect(r).toMatchObject({ acao: 'concluida', situacao: 'denegada', conteudo });
-      if (r.acao !== 'concluida' || r.outcome.status !== 'denied') throw new Error('esperado Denied');
+      if (r.acao !== 'concluida' || r.outcome.tipo !== 'denegado') throw new Error('esperado Denied');
       expect(r.outcome.cStat).toBe('302');
-      expect(r.outcome.value.nfeProc).toBeUndefined();
-      expect(r.outcome.value.protNFe).toContain('<cStat>302</cStat>');
+      expect(r.outcome.valor.nfeProc).toBeUndefined();
+      expect(r.outcome.valor.protNFe).toContain('<cStat>302</cStat>');
     }
     // Sem o protocolo não há o que guardar: a consulta não decidiu.
     expect((await resolverEnvioSemResposta(c, nfe)).acao).toBe('indefinida');
@@ -576,7 +578,7 @@ describe('resolverEnvioSemResposta', () => {
     const { c } = await client(t);
     const r = await resolverEnvioSemResposta(c, nfe);
     expect(r).toMatchObject({ acao: 'sem-prova', situacao: 'autorizada' });
-    expect(r.acao === 'sem-prova' && r.consulta.status).toBe('authorized');
+    expect(r.acao === 'sem-prova' && r.consulta.tipo).toBe('autorizado');
     expect(await resolverEnvioSemResposta(c, nfe)).toMatchObject({ acao: 'sem-prova', situacao: 'cancelada' });
   });
 
@@ -705,13 +707,13 @@ describe('autorizador pelo documento e pela chave', () => {
       soap(retEnvEvento({ evento: { cStat: '135', tpEvento: '110110', chNFe: ch } })),
     );
     const { c } = await client(t, { autor: { CNPJ: CNPJ_EMIT } });
-    expect((await c.consultar(ch, nfe)).status).toBe('authorized');
-    expect((await c.consultarRecibo('351000000000001', nfe)).status).toBe('authorized');
-    expect((await c.cancelar({ chave: ch, nProt: '135260000000001', xJust: 'CANCELAMENTO DE TESTE' })).status).toBe(
-      'authorized',
+    expect((await c.consultar(ch, nfe)).tipo).toBe('autorizado');
+    expect((await c.consultarRecibo('351000000000001', nfe)).tipo).toBe('autorizado');
+    expect((await c.cancelar({ chave: ch, nProt: '135260000000001', xJust: 'CANCELAMENTO DE TESTE' })).tipo).toBe(
+      'autorizado',
     );
-    expect((await c.cartaCorrecao({ chave: ch, xCorrecao: 'CORRECAO DE TESTE', nSeqEvento: 1 })).status).toBe(
-      'authorized',
+    expect((await c.cartaCorrecao({ chave: ch, xCorrecao: 'CORRECAO DE TESTE', nSeqEvento: 1 })).tipo).toBe(
+      'autorizado',
     );
     expect(t.requests.map((r) => r.url)).toEqual([
       url('NfeConsultaProtocolo', { autorizador: 'SVC-RS' }),
@@ -735,24 +737,24 @@ describe('autorizador pelo documento e pela chave', () => {
       transport: t,
       signer: await testSigner(),
       ambiente: 'homologacao',
-      clock: fixedClock(CLOCK_ISO),
+      clock: relogioFixo(CLOCK_ISO),
       autor: { CNPJ: CNPJ_EMIT },
     });
-    expect((await c.autorizar(await nfeAssinada(ch))).status).toBe('authorized');
+    expect((await c.autorizar(await nfeAssinada(ch))).tipo).toBe('autorizado');
     expect(t.requests[0]?.url).toBe(url('NFeAutorizacao', { uf: 'PR' }));
-    await expect(c.statusServico()).rejects.toBeInstanceOf(ConfigError);
-    await expect(c.consultarRecibo('351000000000001')).rejects.toBeInstanceOf(ConfigError);
+    await expect(c.statusServico()).rejects.toBeInstanceOf(ErroDeConfiguracao);
+    await expect(c.consultarRecibo('351000000000001')).rejects.toBeInstanceOf(ErroDeConfiguracao);
     await expect(
       c.inutilizar({ ano: 26, serie: 1, nNFIni: 1, nNFFin: 1, xJust: 'INUTILIZACAO DE TESTE' }),
-    ).rejects.toBeInstanceOf(ConfigError);
-    await expect(c.distribuicaoDFe({ ultNSU: 0 })).rejects.toBeInstanceOf(ConfigError);
+    ).rejects.toBeInstanceOf(ErroDeConfiguracao);
+    await expect(c.distribuicaoDFe({ ultNSU: 0 })).rejects.toBeInstanceOf(ErroDeConfiguracao);
   });
 
   test('Id da NF-e que não é chave de acesso é ConfigError antes do envio', async () => {
     const t = fakeTransport();
     const { c } = await client(t);
     const ruim = (await nfeAssinada()).replace(/Id="NFe(\d{43})\d"/, (_m, base: string) => `Id="NFe${base}X"`);
-    await expect(c.autorizar(ruim)).rejects.toBeInstanceOf(ConfigError);
+    await expect(c.autorizar(ruim)).rejects.toBeInstanceOf(ErroDeConfiguracao);
     expect(t.requests).toHaveLength(0);
   });
 });
@@ -780,9 +782,9 @@ describe('NFC-e (modelo 65)', () => {
       soap(retConsReciNFe({ cStat: '104', nRec: '351000000000001', inner: prot })),
     );
     const { c } = await client(t, { contingencia: 'svc' });
-    expect((await c.autorizar(nfe)).status).toBe('authorized');
-    expect((await c.consultar(ch)).status).toBe('authorized');
-    expect((await c.consultarRecibo('351000000000001', nfe)).status).toBe('authorized');
+    expect((await c.autorizar(nfe)).tipo).toBe('autorizado');
+    expect((await c.consultar(ch)).tipo).toBe('autorizado');
+    expect((await c.consultarRecibo('351000000000001', nfe)).tipo).toBe('autorizado');
     const url = (servico: 'NFeAutorizacao' | 'NfeConsultaProtocolo' | 'NFeRetAutorizacao'): string =>
       nfceEndpoint({ ambiente: 'homologacao', servico, uf: 'SP' }).url;
     expect(t.requests.map((r) => r.url)).toEqual([
@@ -809,8 +811,8 @@ describe('NFC-e (modelo 65)', () => {
         return { ...base, url: `https://nfce.exemplo.invalid/${servico}` };
       },
     });
-    expect((await c.autorizar(nfe)).status).toBe('authorized');
-    expect((await c.consultar(ch, nfe)).status).toBe('authorized');
+    expect((await c.autorizar(nfe)).tipo).toBe('autorizado');
+    expect((await c.consultar(ch, nfe)).tipo).toBe('autorizado');
     expect(vistos).toEqual(['NFeAutorizacao SP', 'NfeConsultaProtocolo SP']);
     expect(t.requests.map((r) => r.url)).toEqual([
       'https://nfce.exemplo.invalid/NFeAutorizacao',
@@ -832,7 +834,7 @@ describe('NFC-e (modelo 65)', () => {
       'https://nfce.exemplo.invalid/NFeRetAutorizacao',
     ]);
     const nfe = await nfeAssinada(chave());
-    await expect(c.consultarRecibo('351000000000001', nfe, { mod: '65' })).rejects.toBeInstanceOf(ConfigError);
+    await expect(c.consultarRecibo('351000000000001', nfe, { mod: '65' })).rejects.toBeInstanceOf(ErroDeConfiguracao);
   });
 });
 
@@ -887,7 +889,7 @@ describe('recuperarEventoRegistrado com respostas sintéticas', () => {
     const t = fakeTransport(soap(retConsSitNFe({ cStat: '656', xMotivo: 'Consumo indevido', chNFe: ch })));
     const { c } = await client(t);
     const r = await recuperarEventoRegistrado(c, ch, '110111');
-    expect([r.registrado, r.consulta.status, r.consulta.cStat]).toEqual([false, 'rejected', '656']);
+    expect([r.registrado, r.consulta.tipo, r.consulta.cStat]).toEqual([false, 'recusado', '656']);
   });
 });
 
@@ -910,9 +912,9 @@ describe('nfeAssinadaDoProc', () => {
     const proc = `<nfeProc versao="4.00" xmlns="${NFE_NS}">${semXmlns}${protNFe({ chNFe: ch })}</nfeProc>`;
     const recortada = nfeAssinadaDoProc(proc);
     expect(recortada).toBe(nfe);
-    expect((await verifySignature(recortada, { id: `NFe${ch}`, element: 'infNFe' })).ok).toBe(true);
+    expect((await conferirAssinatura(recortada, { id: `NFe${ch}`, elemento: 'infNFe' })).ok).toBe(true);
     // A consulta com os bytes recusa a raiz sem xmlns próprio; a fatia serve direto nela.
-    expect(() => documentoAssinado(semXmlns, 'NFe', 'infNFe')).toThrow(ConfigError);
+    expect(() => documentoAssinado(semXmlns, 'NFe', 'infNFe')).toThrow(ErroDeConfiguracao);
     expect(documentoAssinado(recortada, 'NFe', 'infNFe').id).toBe(`NFe${ch}`);
   });
 
@@ -927,9 +929,11 @@ describe('nfeAssinadaDoProc', () => {
 
   test('sem NF-e assinada: ConfigError', () => {
     const semAssinatura = `<nfeProc xmlns="${NFE_NS}" versao="4.00"><NFe xmlns="${NFE_NS}"><infNFe Id="NFe${chave()}"/></NFe></nfeProc>`;
-    expect(() => nfeAssinadaDoProc(semAssinatura)).toThrow(ConfigError);
-    expect(() => nfeAssinadaDoProc('<mdfeProc xmlns="http://www.portalfiscal.inf.br/mdfe"/>')).toThrow(ConfigError);
-    expect(() => nfeAssinadaDoProc(`<nfeProc xmlns="${NFE_NS}" versao="4.00"/>`)).toThrow(ConfigError);
-    expect(() => nfeAssinadaDoProc('<nfeProc')).toThrow(ConfigError);
+    expect(() => nfeAssinadaDoProc(semAssinatura)).toThrow(ErroDeConfiguracao);
+    expect(() => nfeAssinadaDoProc('<mdfeProc xmlns="http://www.portalfiscal.inf.br/mdfe"/>')).toThrow(
+      ErroDeConfiguracao,
+    );
+    expect(() => nfeAssinadaDoProc(`<nfeProc xmlns="${NFE_NS}" versao="4.00"/>`)).toThrow(ErroDeConfiguracao);
+    expect(() => nfeAssinadaDoProc('<nfeProc')).toThrow(ErroDeConfiguracao);
   });
 });

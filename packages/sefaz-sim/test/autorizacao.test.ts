@@ -163,7 +163,7 @@ describe('autorização assíncrona', () => {
     // Mesmo número em processamento: 635 para quem tenta o síncrono.
     const r635 = await h.send('NFeAutorizacao', enviNFe([(await nfe({ cNF: '11111111' })).xml]));
     expect(cStat(r635)[1]).toBe('635');
-    h.clock.advance(2000);
+    h.clock.avancar(2000);
     const done = await h.send('NFeRetAutorizacao', consReciNFe(nRec));
     expect(cStat(done)).toEqual(['104', '100', '100']);
     expect(tags(done, 'chNFe')).toEqual([a.chave, b.chave]);
@@ -190,7 +190,7 @@ describe('autorização assíncrona', () => {
     const b = await nfe({ nNF: 2 });
     const primeiro = tag(await h.send('NFeAutorizacao', enviNFe([a.xml, b.xml], '0')), 'nRec') as string;
     const segundo = tag(await h.send('NFeAutorizacao', enviNFe([a.xml], '0')), 'nRec') as string;
-    h.clock.advance(1000);
+    h.clock.avancar(1000);
     const settle = h.sim.settle();
     const [r1, r2] = await Promise.all([
       h.send('NFeRetAutorizacao', consReciNFe(primeiro)),
@@ -315,7 +315,7 @@ describe('grupos gerais', () => {
     ]);
     const antes = await h.send('NFeAutorizacao', enviNFe([(await nfe({ tpEmis: '6', nNF: 2 })).xml]), svc);
     expect(cStat(antes)).toEqual(['104', '100']);
-    h.clock.advance(15 * 60_000);
+    h.clock.avancar(15 * 60_000);
     expect((await statusSvc())[0]).toBe('114');
     const depois = await h.send('NFeAutorizacao', enviNFe([(await nfe({ tpEmis: '6', nNF: 3 })).xml]), svc);
     expect([cStat(depois), tag(depois, 'xMotivo')]).toEqual([

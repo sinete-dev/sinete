@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'bun:test';
 import { X509Certificate } from 'node:crypto';
-import { fixedClock } from '@sinete/core';
+import { relogioFixo } from '@sinete/core';
 import { certificateToPem, fingerprintSha256, icpBrasilCertificates, openPfx, parseCertificate } from '../src/index.ts';
 import { fixture, SENHA } from './helpers.ts';
 
-const clock = fixedClock('2026-09-25T12:00:00Z');
+const clock = relogioFixo('2026-09-25T12:00:00Z');
 
 describe('parseCertificate contra o X509Certificate do runtime', () => {
   const certs = icpBrasilCertificates().map((c) => c.der);

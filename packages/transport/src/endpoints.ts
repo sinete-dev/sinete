@@ -7,7 +7,7 @@
  */
 
 import type { Ambiente, Uf } from '@sinete/core';
-import { ConfigError, isUf, ServicoNaoOferecidoError } from '@sinete/core';
+import { ErroDeConfiguracao, ErroServicoNaoOferecido, ehUf } from '@sinete/core';
 import endpointsData from './data/endpoints.json' with { type: 'json' };
 import profilesData from './data/tls-profiles.json' with { type: 'json' };
 
@@ -184,7 +184,9 @@ export function nfeAutorizadorDaUf(uf: Uf, ambiente: Ambiente): NfeAutorizador {
   if (env.authorizers[uf]) return uf as NfeAutorizador;
   if (env.ufMap.SVAN?.includes(uf)) return 'SVAN';
   if (env.ufMap.SVRS?.includes(uf)) return 'SVRS';
-  throw new ConfigError(`UF ${uf} sem autorizador de NF-e nos dados de ${ambiente}`, { details: { uf, ambiente } });
+  throw new ErroDeConfiguracao(`UF ${uf} sem autorizador de NF-e nos dados de ${ambiente}`, {
+    detalhes: { uf, ambiente },
+  });
 }
 
 /** Autorizador de contingência (SVC) da UF no ambiente. */
@@ -192,7 +194,7 @@ export function nfeContingenciaDaUf(uf: Uf, ambiente: Ambiente): 'SVC-AN' | 'SVC
   const env = nfeEnv(ambiente);
   if (env.ufMap['SVC-AN']?.includes(uf)) return 'SVC-AN';
   if (env.ufMap['SVC-RS']?.includes(uf)) return 'SVC-RS';
-  throw new ConfigError(`UF ${uf} sem SVC nos dados de ${ambiente}`, { details: { uf, ambiente } });
+  throw new ErroDeConfiguracao(`UF ${uf} sem SVC nos dados de ${ambiente}`, { detalhes: { uf, ambiente } });
 }
 
 export interface NfeEndpointQuery {
@@ -212,12 +214,12 @@ const SVC: ReadonlySet<string> = new Set(['SVC-AN', 'SVC-RS']);
 export function nfeEndpoint(query: NfeEndpointQuery): EndpointRef {
   const { ambiente, servico } = query;
   const env = nfeEnv(ambiente);
-  if (query.uf !== undefined && !isUf(query.uf)) throw new ConfigError(`UF inválida: ${String(query.uf)}`);
+  if (query.uf !== undefined && !ehUf(query.uf)) throw new ErroDeConfiguracao(`UF inválida: ${String(query.uf)}`);
   let autorizador: NfeAutorizador;
   if (query.autorizador) autorizador = query.autorizador;
   else if (servico === 'NFeDistribuicaoDFe') autorizador = 'AN';
   else {
-    if (!query.uf) throw new ConfigError(`informe a UF (ou o autorizador) para ${servico}`);
+    if (!query.uf) throw new ErroDeConfiguracao(`informe a UF (ou o autorizador) para ${servico}`);
     // A consulta cadastro de toda UF autorizada pela SVRS vai para a SVRS. O portal lista só parte delas na linha de
     // consulta cadastro (`ufMap.SVRS_consultaCadastro`), mas o serviço da SVRS responde pelas outras: em produção, em
     // 2026, respondeu consultas do DF com 259 e 264 (contribuinte não cadastrado), que são respostas de cadastro da
@@ -231,8 +233,8 @@ export function nfeEndpoint(query: NfeEndpointQuery): EndpointRef {
     // A SVC não oferece a inutilização, mesmo com a URL no portal: ela fica para o ambiente normal da UF.
     const semNaSvc = SVC.has(autorizador) && (endpointsData.nfe.svcSemServicos.servicos as string[]).includes(servico);
     const source = semNaSvc ? endpointsData.nfe.svcSemServicos.source : env.source;
-    throw new ServicoNaoOferecidoError(`${autorizador} não oferece ${servico} em ${ambiente}`, {
-      details: { autorizador, servico, ...(query.uf ? { uf: query.uf } : {}), ambiente, source },
+    throw new ErroServicoNaoOferecido(`${autorizador} não oferece ${servico} em ${ambiente}`, {
+      detalhes: { autorizador, servico, ...(query.uf ? { uf: query.uf } : {}), ambiente, source },
     });
   }
   return ref('nfe', ambiente, autorizador, servico, entry, env.source);
@@ -243,11 +245,13 @@ export function nfeEndpoint(query: NfeEndpointQuery): EndpointRef {
  * (relação da SVRS e página da SEF/MG); a UF que não tem um autoriza na SVRS (`nfce.ufMapRule` nos dados).
  */
 export function nfceAutorizadorDaUf(uf: Uf, ambiente: Ambiente): NfceAutorizador {
-  if (!isUf(uf)) throw new ConfigError(`UF inválida: ${String(uf)}`);
+  if (!ehUf(uf)) throw new ErroDeConfiguracao(`UF inválida: ${String(uf)}`);
   const env = nfceEnv(ambiente);
   if (env.authorizers[uf]) return uf as NfceAutorizador;
   if (env.ufMap.SVRS.includes(uf)) return 'SVRS';
-  throw new ConfigError(`UF ${uf} sem autorizador de NFC-e nos dados de ${ambiente}`, { details: { uf, ambiente } });
+  throw new ErroDeConfiguracao(`UF ${uf} sem autorizador de NFC-e nos dados de ${ambiente}`, {
+    detalhes: { uf, ambiente },
+  });
 }
 
 export interface NfceEndpointQuery {
@@ -267,14 +271,14 @@ export function nfceEndpoint(query: NfceEndpointQuery): EndpointRef {
   let autorizador: NfceAutorizador;
   if (query.autorizador) autorizador = query.autorizador;
   else {
-    if (!query.uf) throw new ConfigError(`informe a UF (ou o autorizador) para ${servico} da NFC-e`);
+    if (!query.uf) throw new ErroDeConfiguracao(`informe a UF (ou o autorizador) para ${servico} da NFC-e`);
     autorizador = nfceAutorizadorDaUf(query.uf, ambiente);
   }
   const entry = nfceEnv(ambiente).authorizers[autorizador]?.[servico];
   const source = nfceSource(autorizador);
   if (!entry) {
-    throw new ServicoNaoOferecidoError(`${autorizador} não oferece ${servico} da NFC-e em ${ambiente}`, {
-      details: { autorizador, servico, ...(query.uf ? { uf: query.uf } : {}), ambiente, source },
+    throw new ErroServicoNaoOferecido(`${autorizador} não oferece ${servico} da NFC-e em ${ambiente}`, {
+      detalhes: { autorizador, servico, ...(query.uf ? { uf: query.uf } : {}), ambiente, source },
     });
   }
   return ref('nfce', ambiente, autorizador, servico, entry, source);
@@ -293,7 +297,7 @@ export function nfceConsultaUrls(uf: Uf, ambiente: Ambiente): NfceConsultaUrls |
 export function mdfeEndpoint(query: { readonly ambiente: Ambiente; readonly servico: MdfeServico }): EndpointRef {
   const services = endpointsData.mdfe[query.ambiente] as Services;
   const entry = services[query.servico];
-  if (!entry) throw new ConfigError(`MDF-e sem ${query.servico} em ${query.ambiente}`);
+  if (!entry) throw new ErroDeConfiguracao(`MDF-e sem ${query.servico} em ${query.ambiente}`);
   return ref('mdfe', query.ambiente, endpointsData.mdfe.autorizador, query.servico, entry, endpointsData.mdfe.source);
 }
 
@@ -301,7 +305,7 @@ export function mdfeEndpoint(query: { readonly ambiente: Ambiente; readonly serv
 export function nfseEndpoint(query: { readonly ambiente: Ambiente; readonly api: NfseApi }): EndpointRef {
   const env = query.ambiente === 'producao' ? endpointsData.nfse.producao : endpointsData.nfse.producaoRestrita;
   const url = (env as Readonly<Record<string, string>>)[query.api];
-  if (!url) throw new ConfigError(`NFS-e Nacional sem a API ${query.api}`);
+  if (!url) throw new ErroDeConfiguracao(`NFS-e Nacional sem a API ${query.api}`);
   return ref('nfse', query.ambiente, 'NFS-e Nacional', query.api, { url }, endpointsData.nfse.source);
 }
 

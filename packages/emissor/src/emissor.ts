@@ -11,8 +11,8 @@
  */
 
 import type { IcpIdentity } from '@sinete/cert';
-import type { Ambiente, Clock, Logger, Signer } from '@sinete/core';
-import { ConfigError, noopLogger, systemClock, tpAmbOf } from '@sinete/core';
+import type { Ambiente, Assinador, Logger, Relogio } from '@sinete/core';
+import { ErroDeConfiguracao, loggerSilencioso, relogioDoSistema, tpAmbDoAmbiente } from '@sinete/core';
 import type { CreateTransportOptions, Transport } from '@sinete/transport';
 import { allowlistPolicy, ambienteHosts, createTransport } from '@sinete/transport';
 import type { CertificadoAberto } from './certificado.ts';
@@ -27,8 +27,8 @@ import type { RegistroTransmissao, TransmissaoStore, Trava } from './store.ts';
 /** O que o perfil recebe do emissor: certificado aberto, relógio e o transporte do certificado. */
 export interface ContextoEmissor {
   readonly ambiente: Ambiente;
-  readonly clock: Clock;
-  readonly signer: Signer;
+  readonly clock: Relogio;
+  readonly signer: Assinador;
   /** Titular do certificado (CNPJ ou CPF, nome). */
   readonly titular: IcpIdentity;
   readonly logger: Logger | undefined;
@@ -167,7 +167,7 @@ export interface OpcoesEmissor<P = unknown, B = unknown> extends OpcoesGuarda<P,
   /** Avisa a entrada e a saída da contingência automática (log, alerta, tela do caixa). Se lançar, a emissão segue. */
   readonly aoMudarContingencia?: (mudanca: MudancaContingencia) => void | Promise<void>;
   /** Relógio de emissão; padrão o do sistema. */
-  readonly clock?: Clock;
+  readonly clock?: Relogio;
   readonly logger?: Logger;
   /** Prazo por requisição. Padrão: o do transporte (60 s). */
   readonly timeoutMs?: number;
@@ -273,37 +273,40 @@ function barreiraDaRecusa(
   const s = opcoes.store;
   const temRegistrar = typeof s.registrarRecusa === 'function';
   if (temRegistrar !== (typeof s.recusaRecente === 'function')) {
-    throw new ConfigError('o store implementa registrarRecusa e recusaRecente juntos, ou nenhum dos dois');
+    throw new ErroDeConfiguracao('o store implementa registrarRecusa e recusaRecente juntos, ou nenhum dos dois');
   }
   if (opcoes.recusaRepetida === false || !temRegistrar) return undefined;
   const janelaMs = opcoes.recusaRepetida?.janelaMs ?? JANELA_RECUSA_PADRAO_MS;
   if (!Number.isFinite(janelaMs) || janelaMs <= 0)
-    throw new ConfigError(`janela da recusa repetida inválida: ${janelaMs}`);
+    throw new ErroDeConfiguracao(`janela da recusa repetida inválida: ${janelaMs}`);
   const limite = opcoes.recusaRepetida?.limite ?? LIMITE_RECUSA_PADRAO;
-  if (!Number.isInteger(limite) || limite < 1) throw new ConfigError(`limite da recusa repetida inválido: ${limite}`);
+  if (!Number.isInteger(limite) || limite < 1)
+    throw new ErroDeConfiguracao(`limite da recusa repetida inválido: ${limite}`);
   return { janelaMs, limite };
 }
 
 function conferirOpcoes(opcoes: OpcoesEmissor<never, never>): { prazoMs: number; renovarACadaMs: number } {
   const s = opcoes.store as Partial<TransmissaoStore> | undefined;
   if (s === undefined || typeof s.travar !== 'function' || typeof s.gravar !== 'function') {
-    throw new ConfigError('store é obrigatório: os bytes assinados são gravados antes do envio (TransmissaoStore)');
+    throw new ErroDeConfiguracao(
+      'store é obrigatório: os bytes assinados são gravados antes do envio (TransmissaoStore)',
+    );
   }
   if (opcoes.aoDecidir !== undefined && typeof opcoes.aoDecidir !== 'function') {
-    throw new ConfigError('aoDecidir precisa ser uma função');
+    throw new ErroDeConfiguracao('aoDecidir precisa ser uma função');
   }
   const comPfx = opcoes.pfx !== undefined || opcoes.senha !== undefined;
   if (comPfx === (opcoes.certificado !== undefined)) {
-    throw new ConfigError('informe o certificado aberto ou o pfx com a senha, um dos dois');
+    throw new ErroDeConfiguracao('informe o certificado aberto ou o pfx com a senha, um dos dois');
   }
   if (comPfx && (opcoes.pfx === undefined || opcoes.senha === undefined)) {
-    throw new ConfigError('o pfx vai com a senha');
+    throw new ErroDeConfiguracao('o pfx vai com a senha');
   }
   const prazoMs = opcoes.trava?.prazoMs ?? PRAZO_PADRAO_MS;
-  if (!Number.isFinite(prazoMs) || prazoMs <= 0) throw new ConfigError(`prazo da trava inválido: ${prazoMs}`);
+  if (!Number.isFinite(prazoMs) || prazoMs <= 0) throw new ErroDeConfiguracao(`prazo da trava inválido: ${prazoMs}`);
   const renovarACadaMs = opcoes.trava?.renovarACadaMs ?? Math.floor(prazoMs / 3);
   if (!Number.isFinite(renovarACadaMs) || renovarACadaMs < 0 || renovarACadaMs >= prazoMs) {
-    throw new ConfigError(`renovação da trava inválida: ${renovarACadaMs} (precisa ficar entre 0 e o prazo)`);
+    throw new ErroDeConfiguracao(`renovação da trava inválida: ${renovarACadaMs} (precisa ficar entre 0 e o prazo)`);
   }
   return { prazoMs, renovarACadaMs };
 }
@@ -335,8 +338,8 @@ export async function createEmissor<Entrada, Cliente, P, B>(
   const barreira = barreiraDaRecusa(opcoes as OpcoesEmissor<never, never>);
   const { store, ambiente } = opcoes;
   const recusas = barreira === undefined ? undefined : (store as StoreComRecusas);
-  const clock = opcoes.clock ?? systemClock;
-  const logger = opcoes.logger ?? noopLogger;
+  const clock = opcoes.clock ?? relogioDoSistema;
+  const logger = opcoes.logger ?? loggerSilencioso;
   const contingencia = criarContingencia<Entrada, ContextoEmissor>({
     opcoes: opcoes.contingencia,
     perfil: perfil.contingencia,
@@ -365,7 +368,7 @@ export async function createEmissor<Entrada, Cliente, P, B>(
       if (transport !== undefined) return transport;
       const padrao: CreateTransportOptions = {
         identity: cert.identidade,
-        policy: allowlistPolicy({ hosts: ambienteHosts(ambiente), tpAmb: tpAmbOf(ambiente) }),
+        policy: allowlistPolicy({ hosts: ambienteHosts(ambiente), tpAmb: tpAmbDoAmbiente(ambiente) }),
         ...(opcoes.timeoutMs === undefined ? {} : { timeoutMs: opcoes.timeoutMs }),
         ...(opcoes.logger === undefined ? {} : { logger: opcoes.logger }),
       };
@@ -439,7 +442,7 @@ export async function createEmissor<Entrada, Cliente, P, B>(
           }))
         ) {
           throw new TravaPerdidaError('a trava venceu durante a transmissão; outro processo pode ter assumido', {
-            details: { desfecho: d.tipo },
+            detalhes: { desfecho: d.tipo },
           });
         }
         return;
@@ -450,7 +453,7 @@ export async function createEmissor<Entrada, Cliente, P, B>(
   function guardaDe(o: OpcoesGuarda<P, B> | undefined): { aoDecidir: AoDecidir<P, B>; jaGuardado?: JaGuardado } {
     const aoDecidir = o?.aoDecidir ?? opcoes.aoDecidir;
     if (typeof aoDecidir !== 'function') {
-      throw new ConfigError('aoDecidir é obrigatório, no emissor ou na chamada: guarda o documento decidido');
+      throw new ErroDeConfiguracao('aoDecidir é obrigatório, no emissor ou na chamada: guarda o documento decidido');
     }
     const jaGuardado = o?.jaGuardado ?? opcoes.jaGuardado;
     return jaGuardado === undefined ? { aoDecidir } : { aoDecidir, jaGuardado };
@@ -485,7 +488,7 @@ export async function createEmissor<Entrada, Cliente, P, B>(
     const trava = await store.travar(perfil.tipo, ref, prazoMs);
     if (trava === undefined) {
       throw new TransmissaoEmAndamentoError('transmissão em andamento para este documento', {
-        details: { tipo: perfil.tipo },
+        detalhes: { tipo: perfil.tipo },
       });
     }
     const parar = renovando(trava);
@@ -520,7 +523,7 @@ export async function createEmissor<Entrada, Cliente, P, B>(
             throw new RecusaRepetidaError(
               `a SEFAZ recusou esta mesma nota ${r.vezes} vezes desde ${r.primeiraEm.toISOString()} (${r.cStat}: ${r.xMotivo}); corrija a nota antes de reenviar`,
               {
-                details: {
+                detalhes: {
                   tipo: perfil.tipo,
                   cStat: r.cStat,
                   xMotivo: r.xMotivo,

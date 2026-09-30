@@ -3,8 +3,8 @@
  * códigos estáveis do transporte. O mapa segue o que foi observado contra a SEFAZ no spike S2 (ADR 0004, seção 4).
  */
 
-import type { SineteError } from '@sinete/core';
-import { ConfigError, isSineteError } from '@sinete/core';
+import type { ErroSinete } from '@sinete/core';
+import { ErroDeConfiguracao, ehErroSinete } from '@sinete/core';
 import type { TransportErrorCode } from './errors.ts';
 import { TransportError } from './errors.ts';
 
@@ -97,11 +97,11 @@ function classifyCode(text: string): { code: TransportErrorCode; alert?: string 
 }
 
 /** Converte a falha de uma runtime num erro tipado do sinete. `SineteError` passa direto. */
-export function classifyTransportFailure(err: unknown, context: { readonly host: string }): SineteError {
-  if (isSineteError(err)) return err;
+export function classifyTransportFailure(err: unknown, context: { readonly host: string }): ErroSinete {
+  if (ehErroSinete(err)) return err;
   const text = collectText(err);
   const r = classifyCode(text);
-  if ('config' in r) return new ConfigError(r.config, { cause: err, details: { host: context.host } });
+  if ('config' in r) return new ErroDeConfiguracao(r.config, { cause: err, detalhes: { host: context.host } });
   const hint = HINTS[r.code];
   const details: Record<string, unknown> = { host: context.host };
   if (r.alert) details.alert = r.alert.toLowerCase();
@@ -115,7 +115,7 @@ export function classifyTransportFailure(err: unknown, context: { readonly host:
       : MESSAGES[r.code];
   return new TransportError(r.code, `${context.host}: ${message}${hint ? ` (${hint})` : ''}`, {
     cause: err,
-    details,
+    detalhes: details,
   });
 }
 
@@ -171,7 +171,7 @@ export function classifyHelperFailure(data: HelperFailureData, message: string, 
     alert === 'HANDSHAKE_FAILURE'
       ? 'o servidor abortou o handshake (handshake_failure): costuma ser certificado de cliente ausente ou não aceito, mas também pode ser cifra ou versão sem acordo'
       : MESSAGES[code];
-  return new TransportError(code, `${host}: ${text}${hint ? ` (${hint})` : ''}`, { details });
+  return new TransportError(code, `${host}: ${text}${hint ? ` (${hint})` : ''}`, { detalhes: details });
 }
 
 /** HTTP 403 do IIS da SEFAZ: certificado ausente ou recusado (o subcódigo 403.7/403.16 só às vezes vem no corpo). */
@@ -179,6 +179,6 @@ export function http403Error(host: string): TransportError {
   return new TransportError(
     'certificado_ausente_ou_recusado',
     `${host}: HTTP 403, ${MESSAGES.certificado_ausente_ou_recusado} (${HINTS.certificado_ausente_ou_recusado})`,
-    { details: { host, status: 403 } },
+    { detalhes: { host, status: 403 } },
   );
 }

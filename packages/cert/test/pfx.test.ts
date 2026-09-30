@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { createPrivateKey, X509Certificate } from 'node:crypto';
-import { fixedClock } from '@sinete/core';
+import { relogioFixo } from '@sinete/core';
 import forge from 'node-forge';
 import type { Pkcs12Reader } from '../src/index.ts';
 import {
@@ -13,7 +13,7 @@ import {
 } from '../src/index.ts';
 import { fixture, SENHA, SENHA_ACENTUADA } from './helpers.ts';
 
-const clock = fixedClock('2026-09-25T12:00:00Z');
+const clock = relogioFixo('2026-09-25T12:00:00Z');
 
 describe('openPfx: perfis de cifra', () => {
   test.each([
@@ -27,7 +27,7 @@ describe('openPfx: perfis de cifra', () => {
     expect(ks.validity).toBe('valido');
     const signer = await ks.signer();
     const data = new TextEncoder().encode('<SignedInfo>x</SignedInfo>');
-    const sig = await signer.sign(data, 'SHA-1');
+    const sig = await signer.assinar(data, 'SHA-1');
     const ok = await crypto.subtle.verify(
       'RSASSA-PKCS1-v1_5',
       await crypto.subtle.importKey(
@@ -41,7 +41,7 @@ describe('openPfx: perfis de cifra', () => {
       data,
     );
     expect(ok).toBe(true);
-    expect(await signer.certificateDer()).toEqual(ks.certificate.der);
+    expect(await signer.certificadoDer()).toEqual(ks.certificate.der);
   });
 
   test('RC2-128 vira pfx_nao_suportado', async () => {
@@ -123,28 +123,28 @@ describe('trava de validade', () => {
   test('vencido é recusado com detalhes públicos', async () => {
     const e = (await openPfx(fixture('ecnpj-legacy.pfx'), {
       password: SENHA,
-      clock: fixedClock('2027-01-01T00:00:01Z'),
+      clock: relogioFixo('2027-01-01T00:00:01Z'),
     }).catch((x: unknown) => x)) as CertError;
     expect(e.code).toBe('certificado_expirado');
-    expect(e.details).toMatchObject({ notAfter: '2027-01-01T00:00:00Z' });
+    expect(e.detalhes).toMatchObject({ notAfter: '2027-01-01T00:00:00Z' });
   });
 
   test('ainda não válido é recusado', async () => {
     await expect(
-      openPfx(fixture('ecnpj-legacy.pfx'), { password: SENHA, clock: fixedClock('2025-12-31T23:59:59Z') }),
+      openPfx(fixture('ecnpj-legacy.pfx'), { password: SENHA, clock: relogioFixo('2025-12-31T23:59:59Z') }),
     ).rejects.toMatchObject({ code: 'certificado_ainda_nao_valido' });
   });
 
   test('allowExpired abre e marca a validade', async () => {
     const ks = await openPfx(fixture('ecnpj-legacy.pfx'), {
       password: SENHA,
-      clock: fixedClock('2030-01-01T00:00:00Z'),
+      clock: relogioFixo('2030-01-01T00:00:00Z'),
       allowExpired: true,
     });
     expect(ks.validity).toBe('expirado');
     const early = await openPfx(fixture('ecnpj-legacy.pfx'), {
       password: SENHA,
-      clock: fixedClock('2020-01-01T00:00:00Z'),
+      clock: relogioFixo('2020-01-01T00:00:00Z'),
       allowExpired: true,
     });
     expect(early.validity).toBe('ainda_nao_valido');

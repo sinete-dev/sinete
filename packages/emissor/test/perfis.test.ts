@@ -4,7 +4,7 @@
  * que não são de rede (sobem como estão). Os bytes são assinados de verdade, pelo `assinar` de cada emissor.
  */
 import { beforeAll, describe, expect, test } from 'bun:test';
-import { ConfigError, fixedClock, manualClock, TimeoutError, timeContext } from '@sinete/core';
+import { contextoDeTempo, ErroDeConfiguracao, ErroDeTempoEsgotado, relogioFixo, relogioManual } from '@sinete/core';
 import type { MdfeClient } from '@sinete/mdfe';
 import type { NfeClient } from '@sinete/nfe';
 import type { NfseClient } from '@sinete/nfse';
@@ -36,13 +36,13 @@ const comum = (pfx: Uint8Array): OpcoesEmissor => ({
   pfx,
   senha: SENHA,
   ambiente: 'homologacao',
-  clock: manualClock(EMISSAO),
+  clock: relogioManual(EMISSAO),
   store: createMemoriaStore(),
   aoDecidir: () => {},
 });
 
 beforeAll(async () => {
-  const clock = manualClock(EMISSAO);
+  const clock = relogioManual(EMISSAO);
   const ac = await syntheticCertificate({ clock, role: 'ac', validDays: 3650 });
   const emitente = await syntheticCertificate({ clock, role: 'titular', cnpj: CNPJ_EMIT, issuer: ac });
   const produtor = await syntheticCertificate({ clock, role: 'titular', cpf: CPF_EMIT, issuer: ac });
@@ -52,20 +52,20 @@ beforeAll(async () => {
   nfe = await eNfe.assinar(nota({ nNF: 1, destinatario: DESTINATARIO }));
   const eMdfe = await createMdfeEmissor({
     ...comum(syntheticPfx(produtor, SENHA, { chain: [ac] })),
-    clock: manualClock('2026-09-26T10:00:00-04:00'),
+    clock: relogioManual('2026-09-26T10:00:00-04:00'),
   });
   mdfe = await eMdfe.assinar(cargaPropria());
   emissorMdfe = eMdfe;
   const eNfse = await createNfseEmissor({
     ...comum(syntheticPfx(c.prestador, SENHA, { chain: [c.ac] })),
-    clock: manualClock('2026-09-25T10:00:00-03:00'),
+    clock: relogioManual('2026-09-25T10:00:00-03:00'),
   });
   nfse = await eNfse.assinar(dps());
 }, 60_000);
 
-const naoConsta = { status: 'rejected', cStat: '217', xMotivo: 'Rejeição: NF-e não consta na base de dados da SEFAZ' };
-const duplicidade = { status: 'rejected', cStat: '204', xMotivo: 'Rejeição: Duplicidade de NF-e' };
-const timeout = (): TimeoutError => new TimeoutError('sem resposta', 400);
+const naoConsta = { tipo: 'recusado', cStat: '217', xMotivo: 'Rejeição: NF-e não consta na base de dados da SEFAZ' };
+const duplicidade = { tipo: 'recusado', cStat: '204', xMotivo: 'Rejeição: Duplicidade de NF-e' };
+const timeout = (): ErroDeTempoEsgotado => new ErroDeTempoEsgotado('sem resposta', 400);
 
 /** Cliente de mentira: cada método devolve (ou lança) o próximo da fila. */
 function cliente<C>(filas: Record<string, unknown[]>): C {
@@ -99,7 +99,7 @@ describe('perfil da NF-e', () => {
   });
 
   test('protocolo sem digVal: a consulta decide; se a nota não consta depois do reenvio, pendente', async () => {
-    const semDigVal = { status: 'authorized', cStat: '100', xMotivo: 'Autorizado', value: { chNFe: nfe.id } };
+    const semDigVal = { tipo: 'autorizado', cStat: '100', xMotivo: 'Autorizado', valor: { chNFe: nfe.id } };
     const d = await enviar({ autorizar: [semDigVal], consultar: [naoConsta] });
     expect([tipo(d), d.tipo === 'pendente' && d.xMotivo]).toEqual([
       'pendente/consulta-indefinida',
@@ -108,14 +108,14 @@ describe('perfil da NF-e', () => {
   });
 
   test('autorização pendente sem recibo e consulta pendente: pendentes com o motivo certo', async () => {
-    const lote = { status: 'pending', cStat: '105', xMotivo: 'Lote em processamento' };
+    const lote = { tipo: 'pendente', cStat: '105', xMotivo: 'Lote em processamento' };
     expect(tipo(await enviar({ autorizar: [lote] }))).toBe('pendente/lote-em-processamento');
     const d = await enviar({ consultar: [lote] }, 'retomada');
     expect([tipo(d), d.tipo === 'pendente' && d.cStat]).toEqual(['pendente/consulta-indefinida', '105']);
   });
 
   test('204 que a consulta não decide: a pendência leva a recusa anterior', async () => {
-    const lote = { status: 'pending', cStat: '105', xMotivo: 'Lote em processamento' };
+    const lote = { tipo: 'pendente', cStat: '105', xMotivo: 'Lote em processamento' };
     const indecisa = await enviar({ autorizar: [duplicidade], consultar: [lote] });
     expect(indecisa).toMatchObject({
       tipo: 'pendente',
@@ -134,15 +134,17 @@ describe('perfil da NF-e', () => {
     const emissao = new Date('2026-09-27T08:30:00-03:00');
     const a = await emissorNfe.assinar({
       nfe: nota({ nNF: 2, destinatario: DESTINATARIO }),
-      montagem: { time: timeContext({ emissao: fixedClock(emissao) }) },
+      montagem: { time: contextoDeTempo({ emissao: relogioFixo(emissao) }) },
     });
     expect(a.xml).toContain('<dhEmi>2026-09-27T08:30:00-03:00</dhEmi>');
     expect(nfe.xml).not.toContain('<dhEmi>2026-09-27T08:30:00-03:00</dhEmi>');
   });
 
   test('erro que não é de rede sobe como está, no envio e na consulta', async () => {
-    await expect(enviar({ autorizar: [new ConfigError('uf')] })).rejects.toBeInstanceOf(ConfigError);
-    await expect(enviar({ consultar: [new ConfigError('x')] }, 'retomada')).rejects.toBeInstanceOf(ConfigError);
+    await expect(enviar({ autorizar: [new ErroDeConfiguracao('uf')] })).rejects.toBeInstanceOf(ErroDeConfiguracao);
+    await expect(enviar({ consultar: [new ErroDeConfiguracao('x')] }, 'retomada')).rejects.toBeInstanceOf(
+      ErroDeConfiguracao,
+    );
   });
 });
 
@@ -151,7 +153,7 @@ describe('perfil do MDF-e', () => {
     perfilMdfe().enviar(cliente<MdfeClient>(c as Record<string, unknown[]>), mdfe.xml, modo);
 
   test('recusa comum, duplicidade no reenvio e reenvio sem resposta', async () => {
-    const recusa = { status: 'rejected', cStat: '611', xMotivo: 'Rejeição: existe MDF-e não encerrado' };
+    const recusa = { tipo: 'recusado', cStat: '611', xMotivo: 'Rejeição: existe MDF-e não encerrado' };
     expect([tipo(await enviar({ autorizar: [recusa] }))]).toEqual(['recusado']);
     const dup = await enviar({ autorizar: [duplicidade, duplicidade], consultar: [naoConsta, naoConsta] });
     expect([tipo(dup), dup.tipo === 'recusado' && dup.cStat]).toEqual(['recusado', '204']);
@@ -160,30 +162,32 @@ describe('perfil do MDF-e', () => {
   });
 
   test('protocolo sem digVal, pendência na recepção e consulta indecisa', async () => {
-    const semDigVal = { status: 'authorized', cStat: '100', xMotivo: 'Autorizado', value: { chMDFe: mdfe.id } };
+    const semDigVal = { tipo: 'autorizado', cStat: '100', xMotivo: 'Autorizado', valor: { chMDFe: mdfe.id } };
     expect(tipo(await enviar({ autorizar: [semDigVal], consultar: [naoConsta] }))).toBe('pendente/consulta-indefinida');
-    const lote = { status: 'pending', cStat: '105', xMotivo: 'Lote em processamento' };
+    const lote = { tipo: 'pendente', cStat: '105', xMotivo: 'Lote em processamento' };
     expect(tipo(await enviar({ autorizar: [lote] }))).toBe('pendente/lote-em-processamento');
-    const paralisado = { status: 'rejected', cStat: '108', xMotivo: 'Serviço paralisado momentaneamente' };
+    const paralisado = { tipo: 'recusado', cStat: '108', xMotivo: 'Serviço paralisado momentaneamente' };
     expect(tipo(await enviar({ consultar: [paralisado] }, 'retomada'))).toBe('pendente/consulta-indefinida');
     expect(tipo(await enviar({ consultar: [timeout()] }, 'retomada'))).toBe('pendente/sem-resposta');
   });
 
   test('duplicidade que a consulta não decide: a pendência leva a recusa anterior; a montagem do manifesto vale', async () => {
-    const paralisado = { status: 'rejected', cStat: '108', xMotivo: 'Serviço paralisado momentaneamente' };
+    const paralisado = { tipo: 'recusado', cStat: '108', xMotivo: 'Serviço paralisado momentaneamente' };
     const d = await enviar({ autorizar: [duplicidade], consultar: [paralisado] });
     expect(d).toMatchObject({ tipo: 'pendente', motivo: 'consulta-indefinida', anterior: { cStat: '204' } });
     const emissao = new Date('2026-09-26T08:15:00-04:00');
     const a = await emissorMdfe.assinar({
       mdfe: cargaPropria(),
-      montagem: { time: timeContext({ emissao: fixedClock(emissao) }) },
+      montagem: { time: contextoDeTempo({ emissao: relogioFixo(emissao) }) },
     });
     expect(a.xml).toContain('<dhEmi>2026-09-26T08:15:00-04:00</dhEmi>');
   });
 
   test('erro que não é de rede sobe como está', async () => {
-    await expect(enviar({ autorizar: [new ConfigError('tpAmb')] })).rejects.toBeInstanceOf(ConfigError);
-    await expect(enviar({ consultar: [new ConfigError('x')] }, 'retomada')).rejects.toBeInstanceOf(ConfigError);
+    await expect(enviar({ autorizar: [new ErroDeConfiguracao('tpAmb')] })).rejects.toBeInstanceOf(ErroDeConfiguracao);
+    await expect(enviar({ consultar: [new ErroDeConfiguracao('x')] }, 'retomada')).rejects.toBeInstanceOf(
+      ErroDeConfiguracao,
+    );
   });
 });
 
@@ -204,12 +208,12 @@ describe('perfil da NFS-e', () => {
     expect([tipo(dup), dup.tipo === 'recusado' && dup.cStat]).toEqual(['recusado', 'E0014']);
     expect(tipo(await enviar({ autorizar: [timeout(), timeout()], ...cli }))).toBe('pendente/sem-resposta');
     expect(tipo(await enviar({ consultarDps: [timeout()] }, 'retomada'))).toBe('pendente/sem-resposta');
-    await expect(enviar({ autorizar: [new ConfigError('x')] })).rejects.toBeInstanceOf(ConfigError);
+    await expect(enviar({ autorizar: [new ErroDeConfiguracao('x')] })).rejects.toBeInstanceOf(ErroDeConfiguracao);
   });
 
   test('DPS sem Id é erro de configuração', async () => {
     await expect(perfilNfse().enviar(cliente<NfseClient>({}), '<DPS/>', 'retomada')).rejects.toBeInstanceOf(
-      ConfigError,
+      ErroDeConfiguracao,
     );
   });
 });

@@ -17,8 +17,8 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
-import { fixedClock, timeContext } from '@sinete/core';
-import { descendants, parseXml } from '@sinete/core/xml';
+import { contextoDeTempo, relogioFixo } from '@sinete/core';
+import { descendentes, lerXml } from '@sinete/core/xml';
 import { decode } from '@sinete/schemas';
 import type { TNFe_infNFe } from '@sinete/schemas/nfe/PL_010f';
 import { TNFe_infNFe as InfNFe } from '@sinete/schemas/nfe/PL_010f';
@@ -280,7 +280,7 @@ function comparar(
 
 const opcoes: BuildNfeOptions = {
   ambiente: 'homologacao',
-  time: timeContext({ emissao: fixedClock('2026-09-26T12:00:00-03:00') }),
+  time: contextoDeTempo({ emissao: relogioFixo('2026-09-26T12:00:00-03:00') }),
   exigencias: { infRespTec: 'opcional', csrt: 'opcional' },
 };
 
@@ -314,14 +314,14 @@ for (const pasta of PASTAS) {
   for (const f of readdirSync(dir).sort()) {
     if (!f.endsWith('.xml')) continue;
     r.docs++;
-    let doc: ReturnType<typeof parseXml>;
+    let doc: ReturnType<typeof lerXml>;
     try {
-      doc = parseXml(readFileSync(path.join(dir, f), 'utf8'));
+      doc = lerXml(readFileSync(path.join(dir, f), 'utf8'));
     } catch {
       inc(r.ignorados, 'xml ilegível');
       continue;
     }
-    const el = Array.from(descendants(doc.root)).find((e) => e.local === 'infNFe' && e.ns === NS);
+    const el = Array.from(descendentes(doc.raiz)).find((e) => e.local === 'infNFe' && e.ns === NS);
     if (el === undefined) {
       inc(r.ignorados, 'sem infNFe');
       continue;
@@ -345,7 +345,7 @@ for (const pasta of PASTAS) {
       }
       if (!res.ok) {
         r[modo].falha++;
-        for (const i of res.issues) inc(r[modo].ocorrencias, `${i.code} ${semIndice(i.path)}`);
+        for (const i of res.issues) inc(r[modo].ocorrencias, `${i.code} ${semIndice(i.caminho)}`);
         continue;
       }
       r[modo].ok++;

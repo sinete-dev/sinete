@@ -1,6 +1,6 @@
 /** Rotas, SOAP, falhas injetadas e o `Transport` em processo. */
 import { describe, expect, test } from 'bun:test';
-import { ConfigError, TimeoutError } from '@sinete/core';
+import { ErroDeConfiguracao, ErroDeTempoEsgotado } from '@sinete/core';
 import type { TransportRequest } from '@sinete/transport';
 import {
   allowlistPolicy,
@@ -114,9 +114,9 @@ describe('falhas injetadas', () => {
     expect(drop).toBeInstanceOf(TransportError);
     expect((drop as TransportError).code).toBe('conexao_recusada');
     h.sim.injectFault({ kind: 'hang', phase: 'after' });
-    expect(await t.send(req).catch((e: unknown) => e)).toBeInstanceOf(TimeoutError);
+    expect(await t.send(req).catch((e: unknown) => e)).toBeInstanceOf(ErroDeTempoEsgotado);
     h.sim.injectFault({ kind: 'delay', ms: 50 });
-    expect(await t.send(req).catch((e: unknown) => e)).toBeInstanceOf(TimeoutError);
+    expect(await t.send(req).catch((e: unknown) => e)).toBeInstanceOf(ErroDeTempoEsgotado);
     h.sim.injectFault({ kind: 'delay', ms: 5 });
     const res = await t.send(req);
     expect(res.status).toBe(200);
@@ -231,7 +231,9 @@ describe('redirectToSim', () => {
     expect(vistos[0]?.url).toBe(`${SIM_BASE_URL}/uf/ws/NFeStatusServico4`);
     expect(vistos[0]?.endpoint).toMatchObject({ host: 'sefaz-sim.invalid', tls: undefined, autorizador: 'SP' });
     await t.close();
-    await expect(inner.send({ url: `${SIM_BASE_URL}/uf/ws/NFeStatusServico4` })).rejects.toBeInstanceOf(ConfigError);
+    await expect(inner.send({ url: `${SIM_BASE_URL}/uf/ws/NFeStatusServico4` })).rejects.toBeInstanceOf(
+      ErroDeConfiguracao,
+    );
   });
 
   test('autorizador simulado: AN, SVC e UF (inclusive NFC-e e SVRS)', () => {
@@ -253,11 +255,11 @@ describe('redirectToSim', () => {
     };
     const t = redirectToSim(nunca, SIM_BASE_URL);
     await expect(t.send({ url: 'https://nfe.fazenda.sp.gov.br/ws/nfestatusservico4.asmx' })).rejects.toBeInstanceOf(
-      ConfigError,
+      ErroDeConfiguracao,
     );
     // O MDF-e é atendido; a distribuição de DF-e do MDF-e, não.
     const mdfe = mdfeEndpoint({ ambiente: 'homologacao', servico: 'MDFeDistribuicaoDFe' });
     await expect(t.send({ url: mdfe.url, endpoint: mdfe })).rejects.toThrow('não atende mdfe MDFeDistribuicaoDFe');
-    expect(() => redirectToSim(nunca, 'http://127.0.0.1:1')).toThrow(ConfigError);
+    expect(() => redirectToSim(nunca, 'http://127.0.0.1:1')).toThrow(ErroDeConfiguracao);
   });
 });

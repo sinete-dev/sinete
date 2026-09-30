@@ -4,8 +4,8 @@
  * alíquotas de teste do IBS e da CBS. Tudo como dado passado pelo teste; nada de município embutido no código.
  */
 
-import type { Ambiente, Clock, Signer, Uf } from '@sinete/core';
-import { ConfigError, isCUf, tpAmbOf, ufByCUf } from '@sinete/core';
+import type { Ambiente, Assinador, Relogio, Uf } from '@sinete/core';
+import { ErroDeConfiguracao, ehCUf, tpAmbDoAmbiente, ufPorCUf } from '@sinete/core';
 import type { TCEnderecoEmitente } from '@sinete/schemas/nfse/1.01-20260727';
 
 /** Alíquota de um código de serviço com vigência (datas `AAAA-MM-DD`, fim inclusivo). */
@@ -58,9 +58,9 @@ export interface AliquotasIbsCbsSim {
 }
 
 export interface NfseSimOptions {
-  readonly clock: Clock;
+  readonly clock: Relogio;
   /** Assinatura da Sefin simulada na NFS-e e no evento (ex.: `syntheticCertificate({ role: 'servidor' }).signer`). */
-  readonly signer: Signer;
+  readonly signer: Assinador;
   /** Padrão: `homologacao` (produção restrita). */
   readonly ambiente?: Ambiente;
   readonly municipios?: readonly MunicipioSim[];
@@ -71,8 +71,8 @@ export interface NfseSimOptions {
 }
 
 export interface NfseSimConfig {
-  readonly clock: Clock;
-  readonly signer: Signer;
+  readonly clock: Relogio;
+  readonly signer: Assinador;
   readonly ambiente: Ambiente;
   readonly tpAmb: '1' | '2';
   readonly municipios: ReadonlyMap<string, MunicipioSim>;
@@ -84,14 +84,14 @@ export interface NfseSimConfig {
 /** Código de serviço da parametrização (`01.01.01.000`). */
 export function codigoServico(c: string): string {
   const m = /^(\d{2})\.?(\d{2})\.?(\d{2})(?:\.(\d{3}))?$/.exec(c.trim());
-  if (m === null) throw new ConfigError(`código de serviço inválido: ${c}`);
+  if (m === null) throw new ErroDeConfiguracao(`código de serviço inválido: ${c}`);
   return `${m[1]}.${m[2]}.${m[3]}.${m[4] ?? '000'}`;
 }
 
 export function resolverConfig(o: NfseSimOptions): NfseSimConfig {
   const municipios = new Map<string, MunicipioSim>();
   for (const m of o.municipios ?? []) {
-    if (!/^\d{7}$/.test(m.cMun)) throw new ConfigError(`município inválido: ${m.cMun}`);
+    if (!/^\d{7}$/.test(m.cMun)) throw new ErroDeConfiguracao(`município inválido: ${m.cMun}`);
     for (const s of m.servicos ?? []) codigoServico(s.codigo);
     municipios.set(m.cMun, m);
   }
@@ -100,7 +100,7 @@ export function resolverConfig(o: NfseSimOptions): NfseSimConfig {
     clock: o.clock,
     signer: o.signer,
     ambiente,
-    tpAmb: tpAmbOf(ambiente),
+    tpAmb: tpAmbDoAmbiente(ambiente),
     municipios,
     contribuintes: o.contribuintes ?? [],
     exigirCertificado: o.exigirCertificado ?? true,
@@ -122,8 +122,8 @@ export function aliquotaEm(s: ServicoMunicipalSim | undefined, dia: string): Ali
 /** UF do município pelo prefixo IBGE. */
 export function ufDoMunicipio(cMun: string): Uf {
   const cUF = cMun.slice(0, 2);
-  const info = isCUf(cUF) ? ufByCUf(cUF) : undefined;
-  if (info === undefined) throw new ConfigError(`município com código de UF inválido: ${cMun}`);
+  const info = ehCUf(cUF) ? ufPorCUf(cUF) : undefined;
+  if (info === undefined) throw new ErroDeConfiguracao(`município com código de UF inválido: ${cMun}`);
   return info.sigla;
 }
 

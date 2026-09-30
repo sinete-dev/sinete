@@ -14,7 +14,7 @@
 import https from 'node:https';
 import tls from 'node:tls';
 import { icpBrasilTlsPem, pemToDers } from '@sinete/cert';
-import { ConfigError, TimeoutError, UnsupportedError } from '@sinete/core';
+import { ErroDeConfiguracao, ErroDeTempoEsgotado, ErroNaoSuportado } from '@sinete/core';
 import { classifyTransportFailure, http403Error } from './classify.ts';
 import { assertSupported, audited, detectRuntime, makeResponse, prepareRequest, sendViaHelper } from './common.ts';
 import { TransportError } from './errors.ts';
@@ -52,7 +52,7 @@ function trustStore(trust: 'bundled' | 'system'): string[] {
   if (trust === 'bundled') return [...tls.rootCertificates];
   const get = (tls as { getCACertificates?: (type: string) => string[] }).getCACertificates;
   if (typeof get !== 'function') {
-    throw new UnsupportedError('trust: "system" precisa de tls.getCACertificates (Node 22.15+ ou 23.5+)');
+    throw new ErroNaoSuportado('trust: "system" precisa de tls.getCACertificates (Node 22.15+ ou 23.5+)');
   }
   return get('system');
 }
@@ -89,7 +89,7 @@ export function createNodeTransport(options: NodeTransportOptions): Transport {
   let expectedLeaf: Uint8Array | undefined;
   if (id.kind === 'pem') {
     expectedLeaf = pemToDers(id.certChain)[0];
-    if (!expectedLeaf) throw new ConfigError('identidade pem sem certificado');
+    if (!expectedLeaf) throw new ErroDeConfiguracao('identidade pem sem certificado');
     agent = new https.Agent({
       keepAlive: options.keepAlive ?? true,
       cert: id.certChain,
@@ -172,7 +172,7 @@ export function createNodeTransport(options: NodeTransportOptions): Transport {
             new TransportError(
               'certificado_nao_carregado',
               `${prepared.host}: o socket TLS não carregou o certificado da identidade`,
-              { details: { host: prepared.host } },
+              { detalhes: { host: prepared.host } },
             ),
           );
         }
@@ -185,7 +185,9 @@ export function createNodeTransport(options: NodeTransportOptions): Transport {
         } else verify(s);
       });
       const timedOut = (): void => {
-        req.destroy(new TimeoutError(`${prepared.host}: sem resposta em ${prepared.timeoutMs} ms`, prepared.timeoutMs));
+        req.destroy(
+          new ErroDeTempoEsgotado(`${prepared.host}: sem resposta em ${prepared.timeoutMs} ms`, prepared.timeoutMs),
+        );
       };
       req.on('timeout', timedOut);
       deadline = setTimeout(timedOut, prepared.timeoutMs);
@@ -203,7 +205,7 @@ export function createNodeTransport(options: NodeTransportOptions): Transport {
   return {
     capabilities,
     async send(request: TransportRequest): Promise<TransportResponse> {
-      if (closed) throw new ConfigError('transporte já fechado');
+      if (closed) throw new ErroDeConfiguracao('transporte já fechado');
       const prepared = await prepareRequest(request, options);
       if (id.kind === 'pem') assertSupported(prepared, capabilities);
       return audited(runtime, prepared, options, async () => {

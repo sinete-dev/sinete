@@ -9,11 +9,11 @@ O sinete ainda não emite NF-e por EPEC (Evento Prévio de Emissão em Contingê
 A NF-e em SVC é outro documento: a forma de emissão (`tpEmis` 6 para SVC-AN, 7 para SVC-RS; MOC 7.0, campo B22) faz parte da chave de acesso. A data e hora de entrada em contingência (`dhCont`) e a justificativa (`xJust`) ficam no XML, mas não compõem a chave. Com o emissor, a contingência vai na entrada, e o autorizador é determinado pela chave: a nota com `tpEmis` 6 vai à SVC-AN, com 7 à SVC-RS, sem opção adicional no emissor.
 
 ```ts
-import { manualClock } from 'sinete/core';
+import { relogioManual } from 'sinete/core';
 import { createNfeEmissor } from 'sinete/emissor/nfe';
 import { autorizadorContingencia } from 'sinete/nfe';
 
-const clock = manualClock('2026-09-26T10:00:00-03:00');
+const clock = relogioManual('2026-09-26T10:00:00-03:00');
 const nfe = await createNfeEmissor({ pfx, senha, ambiente: 'homologacao', clock, store, aoDecidir });
 
 // Qual SVC atende a UF do emitente e o tpEmis que a nota leva.

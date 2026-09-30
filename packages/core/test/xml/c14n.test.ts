@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'bun:test';
-import { c14n, escapeC14nAttribute, escapeC14nText, firstChild, parseXml } from '../../src/xml/index.ts';
+import { c14n, escaparAtributoC14n, escaparTextoC14n, lerXml, primeiroFilho } from '../../src/xml/index.ts';
 
 const NFE = 'http://www.portalfiscal.inf.br/nfe';
 
 function canon(xml: string, local?: string): string {
-  const doc = parseXml(xml);
-  if (!local) return c14n(doc.root);
+  const doc = lerXml(xml);
+  if (!local) return c14n(doc.raiz);
   for (const list of doc.ids.values()) {
     for (const e of list) if (e.local === local) return c14n(e);
   }
@@ -21,8 +21,8 @@ describe('c14n', () => {
   test('escapes de texto e atributo', () => {
     const out = canon('<r a="&lt;&amp;&gt;&quot;\'&#9;&#10;&#13;">&lt;&amp;&gt;"\'&#13;</r>');
     expect(out).toBe('<r a="&lt;&amp;>&quot;\'&#x9;&#xA;&#xD;">&lt;&amp;&gt;"\'&#xD;</r>');
-    expect(escapeC14nText('sem nada')).toBe('sem nada');
-    expect(escapeC14nAttribute('sem nada')).toBe('sem nada');
+    expect(escaparTextoC14n('sem nada')).toBe('sem nada');
+    expect(escaparAtributoC14n('sem nada')).toBe('sem nada');
   });
 
   test('o ápice herda namespaces e xml:* dos ancestrais', () => {
@@ -48,10 +48,10 @@ describe('c14n', () => {
   });
 
   test('exclude omite a subárvore (enveloped-signature)', () => {
-    const doc = parseXml('<r><a/><Signature><x/></Signature><b/></r>');
-    const sig = firstChild(doc.root, 'Signature');
+    const doc = lerXml('<r><a/><Signature><x/></Signature><b/></r>');
+    const sig = primeiroFilho(doc.raiz, 'Signature');
     if (!sig) throw new Error('sem Signature');
-    expect(c14n(doc.root, { exclude: new Set([sig]) })).toBe('<r><a></a><b></b></r>');
+    expect(c14n(doc.raiz, { excluir: new Set([sig]) })).toBe('<r><a></a><b></b></r>');
   });
 
   test('whitespace entre tags é preservado', () => {

@@ -1,6 +1,6 @@
 /** Coerência do estado: namespaces herdados, recibo do síncrono, SVC fixada no lote, ano da inutilização e ecos. */
 import { describe, expect, test } from 'bun:test';
-import { signXml, verifySignature } from '@sinete/core/xml';
+import { assinarXml, conferirAssinatura } from '@sinete/core/xml';
 import { NFE_NS } from '../src/index.ts';
 import {
   certs,
@@ -35,13 +35,13 @@ describe('coerência do estado', () => {
     const lote =
       `<enviNFe versao="4.00" xmlns="${NFE_NS}" xmlns:x="urn:sinete:teste"><idLote>1</idLote><indSinc>1</indSinc>` +
       `${semAssinatura(n.xml)}</enviNFe>`;
-    const assinado = await signXml(lote, { id: `NFe${n.chave}` }, c.emitente.signer);
+    const assinado = await assinarXml(lote, { id: `NFe${n.chave}` }, c.emitente.signer);
     expect(tags(await h.send('NFeAutorizacao', assinado), 'cStat')[1]).toBe('100');
     const guardada = h.sim.inspect.nfe(n.chave)?.xml as string;
     expect(guardada).toContain('xmlns:x="urn:sinete:teste"');
-    expect((await verifySignature(guardada, { id: `NFe${n.chave}`, element: 'infNFe' })).ok).toBe(true);
+    expect((await conferirAssinatura(guardada, { id: `NFe${n.chave}`, elemento: 'infNFe' })).ok).toBe(true);
     const [proc] = h.sim.inspect.distribuicao(TERCEIRO);
-    expect((await verifySignature(proc?.xml ?? '', { id: `NFe${n.chave}`, element: 'infNFe' })).ok).toBe(true);
+    expect((await conferirAssinatura(proc?.xml ?? '', { id: `NFe${n.chave}`, elemento: 'infNFe' })).ok).toBe(true);
   });
 
   test('emitente que se lista em autXML não recebe a própria NF-e, nem pela fila nem pelo consChNFe', async () => {
@@ -79,7 +79,7 @@ describe('coerência do estado', () => {
     const rec = await h.send('NFeAutorizacao', enviNFe([n.xml], '0'), { autorizador: 'svc' });
     const nRec = tag(rec, 'nRec') as string;
     h.sim.setContingencia(undefined);
-    h.clock.advance(1000);
+    h.clock.avancar(1000);
     await h.sim.settle();
     const [prot] = h.sim.inspect.lote(nRec)?.protNFe ?? [];
     expect(prot?.infProt.cStat).toBe('100');
@@ -151,7 +151,7 @@ describe('coerência do estado', () => {
     const id = `ID110110${n.chave}01`;
     const inicio = r.indexOf('<procEventoNFe');
     const proc = r.slice(inicio, r.indexOf('</procEventoNFe>') + '</procEventoNFe>'.length);
-    expect((await verifySignature(proc, { id, element: 'infEvento' })).ok).toBe(true);
+    expect((await conferirAssinatura(proc, { id, elemento: 'infEvento' })).ok).toBe(true);
   });
 
   test('UF atendida além da principal: cadastro e inutilização usam a UF do pedido', async () => {

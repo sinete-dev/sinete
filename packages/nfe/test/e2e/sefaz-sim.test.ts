@@ -4,19 +4,19 @@
  * pelos dados do transporte, como em produção; o `redirectToSim` do simulador troca só a URL de cada pedido.
  */
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'bun:test';
-import type { ManualClock } from '@sinete/core';
-import { manualClock, TimeoutError, timeContext, ValidationError } from '@sinete/core';
+import type { RelogioManual } from '@sinete/core';
+import { contextoDeTempo, ErroDeTempoEsgotado, ErroDeValidacao, relogioManual } from '@sinete/core';
 import type { SefazSim, SefazSimOptions, SyntheticCertificate } from '@sinete/sefaz-sim';
 import { createSefazSim, redirectToSim, startSefazSimServer, syntheticCertificate } from '@sinete/sefaz-sim';
 import type { Transport } from '@sinete/transport';
 import { createTransport } from '@sinete/transport';
-import { cnpjCheckDigits } from '@sinete/validators';
+import { calcularDvCnpj } from '@sinete/validators';
 import type { NfeClient, NfeClientOptions, NfeInput } from '../../src/index.ts';
 import { buildNfe, createNfeClient, resolverEnvioSemResposta, signNfe } from '../../src/index.ts';
 import { CNPJ_DEST, CNPJ_EMIT, EMISSAO, IE_SP, nota, opcoes } from '../helpers/nota.ts';
 
 /** Transmissor terceiro (contabilidade): outra raiz de CNPJ. */
-const CNPJ_TERCEIRO = `778889990001${cnpjCheckDigits('778889990001')}`;
+const CNPJ_TERCEIRO = `778889990001${calcularDvCnpj('778889990001')}`;
 
 interface Certs {
   readonly ac: SyntheticCertificate;
@@ -30,7 +30,7 @@ let c: Certs;
 const fechar: (() => Promise<void>)[] = [];
 
 beforeAll(async () => {
-  const clock = manualClock(EMISSAO);
+  const clock = relogioManual(EMISSAO);
   const ac = await syntheticCertificate({ clock, role: 'ac', validDays: 3650 });
   const titular = (cnpj: string): Promise<SyntheticCertificate> =>
     syntheticCertificate({ clock, role: 'titular', cnpj, issuer: ac });
@@ -52,7 +52,7 @@ afterAll(async () => {
 });
 
 interface Cenario {
-  readonly clock: ManualClock;
+  readonly clock: RelogioManual;
   readonly sim: SefazSim;
   /** Caminhos pedidos ao simulador, na ordem (`/uf/ws/NFeAutorizacao4`...). */
   readonly caminhos: string[];
@@ -83,7 +83,7 @@ const DEST_CNPJ: NonNullable<NfeInput['destinatario']> = {
 };
 
 async function cenario(simOptions: Partial<SefazSimOptions> = {}): Promise<Cenario> {
-  const clock = manualClock(EMISSAO);
+  const clock = relogioManual(EMISSAO);
   const sim = createSefazSim({
     clock,
     uf: 'SP',
@@ -122,7 +122,7 @@ async function cenario(simOptions: Partial<SefazSimOptions> = {}): Promise<Cenar
       uf: 'SP',
       clock,
       // A espera entre consultas do recibo avança o relógio injetado, sem dormir.
-      sleep: async (ms) => clock.advance(ms),
+      sleep: async (ms) => clock.avancar(ms),
       ...(o.timeoutMs === undefined ? {} : { timeoutMs: o.timeoutMs }),
       ...o.opcoes,
     });
@@ -131,9 +131,9 @@ async function cenario(simOptions: Partial<SefazSimOptions> = {}): Promise<Cenar
   const emitir: Cenario['emitir'] = async (extra = {}, assinante = c.emitente) => {
     const r = await buildNfe(
       nota({ destinatario: DEST_CNPJ, ...extra }),
-      opcoes({ time: timeContext({ emissao: clock }) }),
+      opcoes({ time: contextoDeTempo({ emissao: clock }) }),
     );
-    if (!r.ok) throw new Error(r.issues.map((i) => `${i.path}: ${i.message}`).join('\n'));
+    if (!r.ok) throw new Error(r.issues.map((i) => `${i.caminho}: ${i.mensagem}`).join('\n'));
     return { chave: r.value.chave, xml: await signNfe(r.value, assinante.signer) };
   };
 
@@ -145,14 +145,14 @@ describe('NF-e contra a SEFAZ simulada, HTTPS com mTLS', () => {
   test('status do serviço', async () => {
     const { client, caminhos } = await cenario();
     const r = await client.statusServico();
-    expect(r.status).toBe('authorized');
-    if (r.status === 'authorized') expect(r.value.cUF).toBe('35');
+    expect(r.tipo).toBe('autorizado');
+    if (r.tipo === 'autorizado') expect(r.valor.cUF).toBe('35');
     expect(caminhos).toEqual(['/uf/ws/NFeStatusServico4']);
   });
 
   test('status do serviço da NFC-e: o autorizador do modelo 65', async () => {
     const { client, sim } = await cenario();
-    expect((await client.statusServico({ mod: '65' })).status).toBe('authorized');
+    expect((await client.statusServico({ mod: '65' })).tipo).toBe('autorizado');
     sim.setParalisacao('108');
     expect((await client.statusServico({ mod: '65' })).cStat).toBe('108');
   });
@@ -161,16 +161,16 @@ describe('NF-e contra a SEFAZ simulada, HTTPS com mTLS', () => {
     const { client, emitir, sim } = await cenario();
     const nfe = await emitir({ nNF: 1 });
     const r = await client.autorizar(nfe.xml);
-    expect([r.status, r.cStat]).toEqual(['authorized', '100']);
-    if (r.status !== 'authorized') throw new Error('não autorizou');
-    expect(r.value.nProt).toBe(sim.inspect.nfe(nfe.chave)?.nProt as string);
+    expect([r.tipo, r.cStat]).toEqual(['autorizado', '100']);
+    if (r.tipo !== 'autorizado') throw new Error('não autorizou');
+    expect(r.valor.nProt).toBe(sim.inspect.nfe(nfe.chave)?.nProt as string);
     // O nfeProc leva a NF-e assinada byte a byte.
-    expect(r.value.nfeProc).toContain(nfe.xml);
+    expect(r.valor.nfeProc).toContain(nfe.xml);
     const consulta = await client.consultar(nfe.chave, nfe.xml);
-    expect(consulta.status).toBe('authorized');
-    if (consulta.status === 'authorized') {
-      expect(consulta.value.situacao).toBe('autorizada');
-      expect(consulta.value.digValConfere).toBe(true);
+    expect(consulta.tipo).toBe('autorizado');
+    if (consulta.tipo === 'autorizado') {
+      expect(consulta.valor.situacao).toBe('autorizada');
+      expect(consulta.valor.digValConfere).toBe(true);
     }
   });
 
@@ -178,13 +178,13 @@ describe('NF-e contra a SEFAZ simulada, HTTPS com mTLS', () => {
     const { client, emitir, caminhos } = await cenario({ atrasoProcessamentoMs: 3000 });
     const nfe = await emitir({ nNF: 2 });
     const pendente = await client.autorizar(nfe.xml, { sincrono: false });
-    expect([pendente.status, pendente.cStat]).toEqual(['pending', '103']);
-    if (pendente.status !== 'pending') throw new Error('sem recibo');
-    const nRec = pendente.ref as string;
+    expect([pendente.tipo, pendente.cStat]).toEqual(['pendente', '103']);
+    if (pendente.tipo !== 'pendente') throw new Error('sem recibo');
+    const nRec = pendente.referencia as string;
     expect((await client.consultarRecibo(nRec, nfe.xml)).cStat).toBe('105');
     const r = await client.aguardarRecibo(nRec, nfe.xml, { esperaMinimaMs: 1000, multiplicador: 2 });
-    expect([r.status, r.cStat]).toEqual(['authorized', '100']);
-    if (r.status === 'authorized') expect(r.value.nfeProc).toContain(nfe.xml);
+    expect([r.tipo, r.cStat]).toEqual(['autorizado', '100']);
+    if (r.tipo === 'autorizado') expect(r.valor.nfeProc).toContain(nfe.xml);
     expect(caminhos.filter((p) => p === '/uf/ws/NFeRetAutorizacao4').length).toBeGreaterThanOrEqual(3);
   });
 
@@ -193,20 +193,20 @@ describe('NF-e contra a SEFAZ simulada, HTTPS com mTLS', () => {
     const nfe = await cen.emitir({ nNF: 3 });
     cen.sim.injectFault({ kind: 'hang', phase: 'after' }, { servico: 'NFeAutorizacao' });
     const apressado = cen.cliente({ canal: c.emitente, timeoutMs: 400 });
-    expect(await apressado.autorizar(nfe.xml).catch((e: unknown) => e)).toBeInstanceOf(TimeoutError);
+    expect(await apressado.autorizar(nfe.xml).catch((e: unknown) => e)).toBeInstanceOf(ErroDeTempoEsgotado);
     expect(cen.sim.inspect.nfe(nfe.chave)?.situacao).toBe('autorizada');
 
     // Sem resposta: a consulta recupera o protocolo e monta o nfeProc com os bytes gravados.
     const semResposta = await resolverEnvioSemResposta(cen.client, nfe.xml);
     expect(semResposta.acao).toBe('concluida');
     if (semResposta.acao === 'concluida') {
-      expect(semResposta.outcome.status).toBe('authorized');
-      if (semResposta.outcome.status === 'authorized') expect(semResposta.outcome.value.nfeProc).toContain(nfe.xml);
+      expect(semResposta.outcome.tipo).toBe('autorizado');
+      if (semResposta.outcome.tipo === 'autorizado') expect(semResposta.outcome.valor.nfeProc).toContain(nfe.xml);
     }
 
     // Reenvio dos mesmos bytes: 204; o resolvedor conclui pela consulta.
     const dup = await cen.client.autorizar(nfe.xml);
-    expect([dup.status, dup.cStat]).toEqual(['rejected', '204']);
+    expect([dup.tipo, dup.cStat]).toEqual(['recusado', '204']);
     const r204 = await resolverEnvioSemResposta(cen.client, nfe.xml, dup);
     expect(r204.acao).toBe('concluida');
 
@@ -214,7 +214,7 @@ describe('NF-e contra a SEFAZ simulada, HTTPS com mTLS', () => {
     const regerada = await cen.emitir({ nNF: 3, cNF: '87654321' });
     expect(regerada.chave).not.toBe(nfe.chave);
     const r539 = await cen.client.autorizar(regerada.xml);
-    expect([r539.status, r539.cStat]).toEqual(['rejected', '539']);
+    expect([r539.tipo, r539.cStat]).toEqual(['recusado', '539']);
     const divergente = await resolverEnvioSemResposta(cen.client, regerada.xml, r539);
     expect(divergente).toMatchObject({ acao: 'divergente', chNFe: nfe.chave });
 
@@ -230,60 +230,60 @@ describe('NF-e contra a SEFAZ simulada, HTTPS com mTLS', () => {
     const { client, emitir, clock } = await cenario();
     const nfe = await emitir({ nNF: 5 });
     const aut = await client.autorizar(nfe.xml);
-    if (aut.status !== 'authorized') throw new Error('não autorizou');
-    clock.advance(60_000);
+    if (aut.tipo !== 'autorizado') throw new Error('não autorizou');
+    clock.avancar(60_000);
     for (const nSeqEvento of [1, 2]) {
       const r = await client.cartaCorrecao({
         chave: nfe.chave,
         xCorrecao: `CORRECAO NUMERO ${nSeqEvento}`,
         nSeqEvento,
       });
-      expect([r.status, r.cStat]).toEqual(['authorized', '135']);
-      if (r.status === 'authorized') {
-        expect(r.value.nSeqEvento).toBe(String(nSeqEvento));
-        expect(r.value.procEventoNFe).toContain('<procEventoNFe');
+      expect([r.tipo, r.cStat]).toEqual(['autorizado', '135']);
+      if (r.tipo === 'autorizado') {
+        expect(r.valor.nSeqEvento).toBe(String(nSeqEvento));
+        expect(r.valor.procEventoNFe).toContain('<procEventoNFe');
       }
     }
     const repetida = await client.cartaCorrecao({ chave: nfe.chave, xCorrecao: 'CORRECAO REPETIDA', nSeqEvento: 1 });
-    expect([repetida.status, repetida.cStat]).toEqual(['rejected', '573']);
+    expect([repetida.tipo, repetida.cStat]).toEqual(['recusado', '573']);
 
     const canc = await client.cancelar({
       chave: nfe.chave,
-      nProt: aut.value.nProt as string,
+      nProt: aut.valor.nProt as string,
       xJust: 'Cancelamento por erro na digitacao do pedido',
     });
-    expect([canc.status, canc.cStat]).toEqual(['authorized', '135']);
+    expect([canc.tipo, canc.cStat]).toEqual(['autorizado', '135']);
     const consulta = await client.consultar(nfe.chave, nfe.xml);
     expect(consulta.cStat).toBe('101');
-    if (consulta.status === 'authorized') {
-      expect(consulta.value.situacao).toBe('cancelada');
-      expect(consulta.value.eventos.length).toBeGreaterThanOrEqual(1);
+    if (consulta.tipo === 'autorizado') {
+      expect(consulta.valor.situacao).toBe('cancelada');
+      expect(consulta.valor.eventos.length).toBeGreaterThanOrEqual(1);
     }
   });
 
   test('destinatário: resumo na distribuição, ciência no AN e a NF-e completa depois', async () => {
     const cen = await cenario();
     const nfe = await cen.emitir({ nNF: 6 });
-    expect((await cen.client.autorizar(nfe.xml)).status).toBe('authorized');
+    expect((await cen.client.autorizar(nfe.xml)).tipo).toBe('autorizado');
     const dest = cen.cliente({ canal: c.destinatario, opcoes: { autor: { CNPJ: CNPJ_DEST } } });
 
     const antes = await dest.distribuicaoDFe({ ultNSU: 0 });
-    if (antes.status !== 'authorized') throw new Error(`distribuição ${antes.cStat}`);
-    const resumo = antes.value.documentos.find((d) => d.tipo === 'resNFe');
+    if (antes.tipo !== 'autorizado') throw new Error(`distribuição ${antes.cStat}`);
+    const resumo = antes.valor.documentos.find((d) => d.tipo === 'resNFe');
     expect(resumo?.resNFe?.chNFe).toBe(nfe.chave);
-    expect(antes.value.documentos.some((d) => d.tipo === 'procNFe')).toBe(false);
+    expect(antes.valor.documentos.some((d) => d.tipo === 'procNFe')).toBe(false);
 
     const ciencia = await dest.manifestar({ chave: nfe.chave, tipo: 'ciencia' });
-    expect([ciencia.status, ciencia.cStat]).toEqual(['authorized', '135']);
+    expect([ciencia.tipo, ciencia.cStat]).toEqual(['autorizado', '135']);
     expect(cen.caminhos).toContain('/an/ws/NFeRecepcaoEvento4');
 
-    const depois = await dest.distribuicaoDFe({ ultNSU: antes.value.ultNSU });
-    if (depois.status !== 'authorized') throw new Error(`distribuição ${depois.cStat}`);
-    const proc = depois.value.documentos.find((d) => d.tipo === 'procNFe');
+    const depois = await dest.distribuicaoDFe({ ultNSU: antes.valor.ultNSU });
+    if (depois.tipo !== 'autorizado') throw new Error(`distribuição ${depois.cStat}`);
+    const proc = depois.valor.documentos.find((d) => d.tipo === 'procNFe');
     expect(proc?.xml).toContain(nfe.xml);
     const porChave = await dest.distribuicaoDFe({ chNFe: nfe.chave });
-    if (porChave.status !== 'authorized') throw new Error(`consChNFe ${porChave.cStat}`);
-    expect(porChave.value.documentos.map((d) => d.tipo)).toEqual(['procNFe']);
+    if (porChave.tipo !== 'autorizado') throw new Error(`consChNFe ${porChave.cStat}`);
+    expect(porChave.valor.documentos.map((d) => d.tipo)).toEqual(['procNFe']);
     expect(cen.caminhos.filter((p) => p === '/an/ws/NFeDistribuicaoDFe')).toHaveLength(3);
   });
 
@@ -291,24 +291,24 @@ describe('NF-e contra a SEFAZ simulada, HTTPS com mTLS', () => {
     const { client, caminhos } = await cenario();
     const pedido = { ano: 2026, serie: 1, nNFIni: 50, nNFFin: 52, xJust: 'Numeracao pulada por falha no sistema' };
     const r = await client.inutilizar(pedido);
-    expect([r.status, r.cStat]).toEqual(['authorized', '102']);
-    if (r.status === 'authorized') expect(r.value.procInutNFe).toContain('<ProcInutNFe');
+    expect([r.tipo, r.cStat]).toEqual(['autorizado', '102']);
+    if (r.tipo === 'autorizado') expect(r.valor.procInutNFe).toContain('<ProcInutNFe');
     const repetida = await client.inutilizar(pedido);
-    expect([repetida.status, repetida.cStat]).toEqual(['rejected', '563']);
+    expect([repetida.tipo, repetida.cStat]).toEqual(['recusado', '563']);
     const enviados = caminhos.length;
     // NT 2018.001 v1.10, item 6.1: o controle de inutilização não se aplica ao emitente pessoa física.
     const cpf = await client
       .inutilizar({ ...pedido, serie: 920, autor: { CPF: '11144477735' } })
       .catch((e: unknown) => e);
-    expect(cpf).toBeInstanceOf(ValidationError);
+    expect(cpf).toBeInstanceOf(ErroDeValidacao);
     expect(caminhos).toHaveLength(enviados);
   });
 
   test('consulta cadastro', async () => {
     const { client } = await cenario();
     const r = await client.consultarCadastro({ uf: 'SP', CNPJ: CNPJ_EMIT });
-    expect([r.status, r.cStat]).toEqual(['authorized', '111']);
-    if (r.status === 'authorized') expect(r.value.infCad[0]?.IE).toBe(IE_SP);
+    expect([r.tipo, r.cStat]).toEqual(['autorizado', '111']);
+    if (r.tipo === 'autorizado') expect(r.valor.infCad[0]?.IE).toBe(IE_SP);
     expect((await client.consultarCadastro({ uf: 'SP', CNPJ: CNPJ_DEST })).cStat).toBe('259');
   });
 
@@ -320,13 +320,17 @@ describe('NF-e contra a SEFAZ simulada, HTTPS com mTLS', () => {
     expect((await svc.statusServico()).cStat).toBe('107');
     const nfe = await cen.emitir({
       nNF: 7,
-      contingencia: { tpEmis: '6', dhCont: cen.clock.now(), xJust: 'SEFAZ de origem fora do ar no momento da emissao' },
+      contingencia: {
+        tpEmis: '6',
+        dhCont: cen.clock.agora(),
+        xJust: 'SEFAZ de origem fora do ar no momento da emissao',
+      },
     });
     const r = await svc.autorizar(nfe.xml);
-    expect([r.status, r.cStat]).toEqual(['authorized', '100']);
+    expect([r.tipo, r.cStat]).toEqual(['autorizado', '100']);
     expect(cen.caminhos).toContain('/svc/ws/NFeAutorizacao4');
     const consulta = await svc.consultar(nfe.chave, nfe.xml);
-    expect(consulta.status).toBe('authorized');
+    expect(consulta.tipo).toBe('autorizado');
     expect(cen.caminhos.at(-1)).toBe('/svc/ws/NFeConsultaProtocolo4');
   });
 
@@ -335,15 +339,15 @@ describe('NF-e contra a SEFAZ simulada, HTTPS com mTLS', () => {
     const contabilidade = cen.cliente({ canal: c.terceiro });
     const nfe = await cen.emitir({ nNF: 8 });
     const r = await contabilidade.autorizar(nfe.xml);
-    expect([r.status, r.cStat]).toEqual(['authorized', '100']);
+    expect([r.tipo, r.cStat]).toEqual(['autorizado', '100']);
 
     const assinadaPeloTerceiro = await cen.emitir({ nNF: 9 }, c.terceiro);
     const r213 = await contabilidade.autorizar(assinadaPeloTerceiro.xml);
-    expect([r213.status, r213.cStat]).toEqual(['rejected', '213']);
+    expect([r213.tipo, r213.cStat]).toEqual(['recusado', '213']);
     // Rejeição enriquecida pelo @sinete/rejeicoes: causa, correção e a regra de origem.
-    if (r213.status === 'rejected') {
-      expect(r213.hint?.source).toContain('F03');
-      expect(r213.hint?.suggestedFix).toContain('e-CNPJ');
+    if (r213.tipo === 'recusado') {
+      expect(r213.dica?.fonte).toContain('F03');
+      expect(r213.dica?.comoCorrigir).toContain('e-CNPJ');
     }
   });
 });

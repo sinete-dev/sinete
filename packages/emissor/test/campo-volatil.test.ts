@@ -29,7 +29,7 @@ test('as recusas que se corrigem só na data, na chave ou na assinatura entram; 
 test('eventoJaRegistrado da NFS-e vem do catálogo: só códigos de recusa do próprio e101101', () => {
   expect(tabela.nfse.eventoJaRegistrado).toEqual(['E0840']);
   for (const code of tabela.nfse.eventoJaRegistrado) {
-    const e = nfse.erros.find((x) => x.code === code);
+    const e = nfse.erros.find((x) => x.codigo === code);
     expect(e?.regras.some((r) => 'caminho' in r && r.caminho === 'evento/pedRegEvento/infPedReg/e101101')).toBe(true);
     expect(e?.mensagem).toContain('EVENTO DE CANCELAMENTO DE NFS-e pois');
   }

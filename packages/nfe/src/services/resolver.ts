@@ -26,8 +26,8 @@
  * Acesso [chNFe: ...]") e serviço de consulta protocolo (cStat 217; 561, 562 e 613 quando a numeração tem outra NF-e).
  */
 
-import type { Rejected } from '@sinete/core';
-import { authorized, denied } from '@sinete/core';
+import type { Recusado } from '@sinete/core';
+import { criarAutorizado, criarDenegado } from '@sinete/core';
 import type { AutorizacaoOutcome, ConsultaOutcome, NfeClient, ProtocoloNfe } from './client.ts';
 import { cstatEm } from './outcome.ts';
 import { documentoAssinado } from './proc.ts';
@@ -61,7 +61,7 @@ export type ResolucaoEnvio =
       readonly acao: 'divergente';
       readonly chNFe?: string;
       readonly consulta?: ConsultaOutcome;
-      readonly motivo: Rejected | ConsultaOutcome;
+      readonly motivo: Recusado | ConsultaOutcome;
     }
   /**
    * A chave está autorizada (ou cancelada), mas o protocolo não traz `digVal`: nada prova que o conteúdo autorizado é o
@@ -94,12 +94,12 @@ export async function resolverEnvioSemResposta(
 ): Promise<ResolucaoEnvio> {
   const a = documentoAssinado(nfeAssinada, 'NFe', 'infNFe');
   const chave = a.id.slice(3);
-  if (anterior && anterior.status === 'rejected' && cstatEm(anterior.cStat, 'duplicidadeChaveDiferente')) {
+  if (anterior && anterior.tipo === 'recusado' && cstatEm(anterior.cStat, 'duplicidadeChaveDiferente')) {
     const outra = chaveDaDuplicidade(anterior.xMotivo);
     return { acao: 'divergente', motivo: anterior, ...(outra === undefined ? {} : { chNFe: outra }) };
   }
   const consulta = await client.consultar(chave, nfeAssinada);
-  if (consulta.status === 'rejected') {
+  if (consulta.tipo === 'recusado') {
     if (cstatEm(consulta.cStat, 'naoConsta')) return { acao: 'reenviar', nfeAssinada: a.xml };
     // 561, 562 e 613 na consulta: a chave local não consta, mas a numeração dela tem outra NF-e (outro mês, outro cNF
     // ou outra chave). É a mesma situação da 539 no envio; o 562 traz a chave registrada no xMotivo.
@@ -109,8 +109,8 @@ export async function resolverEnvioSemResposta(
     }
     return { acao: 'indefinida', outcome: consulta };
   }
-  if (consulta.status === 'pending') return { acao: 'indefinida', outcome: consulta };
-  const v = consulta.value;
+  if (consulta.tipo === 'pendente') return { acao: 'indefinida', outcome: consulta };
+  const v = consulta.valor;
   const p: ProtocoloNfe | undefined = v.protocolo;
   if (!p) return { acao: 'indefinida', outcome: consulta };
   const conteudo: ConteudoDoProtocolo =
@@ -118,10 +118,10 @@ export async function resolverEnvioSemResposta(
   const protStatus = { cStat: p.cStat, xMotivo: p.xMotivo };
   // A denegação é da chave: o número está denegado com qualquer conteúdo, e o `conteudo` diz se é o destes bytes.
   if (v.situacao === 'denegada')
-    return { acao: 'concluida', situacao: 'denegada', conteudo, outcome: denied(protStatus, p) };
+    return { acao: 'concluida', situacao: 'denegada', conteudo, outcome: criarDenegado(protStatus, p) };
   // Só um digVal presente e diferente prova outro conteúdo para a chave.
   if (conteudo === 'difere') return { acao: 'divergente', chNFe: chave, consulta, motivo: consulta };
   if (conteudo === 'sem-digval') return { acao: 'sem-prova', situacao: v.situacao, consulta };
   if (p.nfeProc === undefined) return { acao: 'indefinida', outcome: consulta };
-  return { acao: 'concluida', situacao: v.situacao, conteudo, outcome: authorized(protStatus, p) };
+  return { acao: 'concluida', situacao: v.situacao, conteudo, outcome: criarAutorizado(protStatus, p) };
 }

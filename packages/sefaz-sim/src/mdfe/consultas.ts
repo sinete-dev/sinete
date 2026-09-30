@@ -13,7 +13,7 @@ import {
   retConsSitMDFeElement,
   retConsStatServMDFeElement,
 } from '@sinete/schemas/mdfe/servicos/3.00b';
-import { isValidCnpj, isValidCpf, parseChaveAcesso } from '@sinete/validators';
+import { cnpjValido, cpfValido, lerChaveAcesso } from '@sinete/validators';
 import type { RequestContext, Status } from '../context.ts';
 import { omitirDigVal } from '../context.ts';
 import { MDFE_NS } from '../services.ts';
@@ -37,7 +37,7 @@ export async function statusServicoMdfe(ctx: RequestContext): Promise<string> {
     return serializeRoot(retConsStatServMDFeElement, value);
   };
   if (!pre.ok) return ret(pre.status);
-  if (text(pre.doc.root, 'tpAmb') !== ctx.rt.config.tpAmb) return ret(statusMdfe('252'));
+  if (text(pre.doc.raiz, 'tpAmb') !== ctx.rt.config.tpAmb) return ret(statusMdfe('252'));
   return ret(statusMdfe('107'));
 }
 
@@ -59,13 +59,13 @@ export async function consultaMdfe(ctx: RequestContext): Promise<string> {
     return `${xml.slice(0, fim)}${prot ?? ''}${eventos.join('')}${xml.slice(fim)}`;
   };
   if (!pre.ok) return ret(pre.status);
-  const root = pre.doc.root;
+  const root = pre.doc.raiz;
   // G01 ambiente; G03 chave (modelo 58, DV, UF, AAMM, emitente).
   if (text(root, 'tpAmb') !== ctx.rt.config.tpAmb) return ret(statusMdfe('252'));
   const chMDFe = text(root, 'chMDFe') ?? '';
-  const c = parseChaveAcesso(chMDFe);
-  if (!c.ok || c.value.mod !== '58') {
-    return ret(statusMdfe('236', { Motivo: c.ok ? 'Modelo diferente de 58' : c.error.message }));
+  const c = lerChaveAcesso(chMDFe);
+  if (!c.ok || c.valor.mod !== '58') {
+    return ret(statusMdfe('236', { Motivo: c.ok ? 'Modelo diferente de 58' : c.erro.mensagem }));
   }
   const m = ctx.rt.state.mdfes.get(chMDFe);
   if (m === undefined) {
@@ -110,11 +110,11 @@ export async function consNaoEncMdfe(ctx: RequestContext): Promise<string> {
     return serializeRoot(retConsMDFeNaoEncElement, value);
   };
   if (!pre.ok) return ret(pre.status);
-  const root = pre.doc.root;
+  const root = pre.doc.raiz;
   if (text(root, 'tpAmb') !== ctx.rt.config.tpAmb) return ret(statusMdfe('252'));
   const emitente = documento(root);
-  if (emitente.CNPJ !== undefined && !isValidCnpj(emitente.CNPJ)) return ret(statusMdfe('207'));
-  if (emitente.CPF !== undefined && !isValidCpf(emitente.CPF)) return ret(statusMdfe('210'));
+  if (emitente.CNPJ !== undefined && !cnpjValido(emitente.CNPJ)) return ret(statusMdfe('207'));
+  if (emitente.CPF !== undefined && !cpfValido(emitente.CPF)) return ret(statusMdfe('210'));
   // H04 e H05: o certificado de transmissão é do emitente (raiz do CNPJ ou o mesmo CPF).
   const t = ctx.transmissor;
   if (t !== undefined) {

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { ConfigError } from '@sinete/core';
+import { ErroDeConfiguracao } from '@sinete/core';
 import pkg from '../package.json' with { type: 'json' };
 import { BUNDLED_DATASET, bundledDataset } from '../src/bundled.ts';
 import type { ApplicabilityRecord, DatasetBundle, TableName } from '../src/index.ts';
@@ -162,7 +162,7 @@ describe('visão por data de fato gerador', () => {
   });
 
   test('data inválida é ConfigError', () => {
-    expect(() => ds.at('2026-02-30')).toThrow(ConfigError);
+    expect(() => ds.at('2026-02-30')).toThrow(ErroDeConfiguracao);
   });
 });
 

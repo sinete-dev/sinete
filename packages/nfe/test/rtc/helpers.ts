@@ -2,8 +2,8 @@
  * Notas sintéticas para os testes do adaptador. Documentos são exemplos públicos de dígito verificador válido; IE de RS
  * e AM com o DV calculado sobre bases inventadas; nomes e endereços inventados.
  */
-import type { Clock } from '@sinete/core';
-import { timeContext } from '@sinete/core';
+import type { Relogio } from '@sinete/core';
+import { contextoDeTempo } from '@sinete/core';
 import type { BuildNfeOptions, IbsCbsCalculator, Item, NfeInput } from '../../src/index.ts';
 
 export const CNPJ_EMIT = '11222333000181';
@@ -76,11 +76,11 @@ export function notaRtc(local: Local, itens: readonly ItemRtc[], nNF = 1): NfeIn
 }
 
 /** Opções do `buildNfe` com cNF determinístico; sem `ibsCbs`, vale a calculadora padrão. */
-export function opcoesRtc(clock: Clock, ibsCbs?: IbsCbsCalculator, fatoGerador?: Clock): BuildNfeOptions {
+export function opcoesRtc(clock: Relogio, ibsCbs?: IbsCbsCalculator, fatoGerador?: Relogio): BuildNfeOptions {
   let seed = 4242;
   return {
     ambiente: 'homologacao',
-    time: timeContext({ emissao: clock, ...(fatoGerador === undefined ? {} : { fatoGerador }) }),
+    time: contextoDeTempo({ emissao: clock, ...(fatoGerador === undefined ? {} : { fatoGerador }) }),
     ...(ibsCbs === undefined ? {} : { ibsCbs }),
     random: (b: Uint8Array): Uint8Array => {
       for (let i = 0; i < b.length; i++) {

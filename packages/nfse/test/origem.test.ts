@@ -1,10 +1,10 @@
 /** Classificação das ocorrências do `buildDps` (ADR 0011). */
 import { expect, test } from 'bun:test';
-import { manualClock, timeContext } from '@sinete/core';
+import { contextoDeTempo, relogioManual } from '@sinete/core';
 import { buildDps } from '../src/index.ts';
 import { dps, EMISSAO } from './helpers.ts';
 
-const opcoes = { ambiente: 'homologacao', time: timeContext({ emissao: manualClock(EMISSAO) }) } as const;
+const opcoes = { ambiente: 'homologacao', time: contextoDeTempo({ emissao: relogioManual(EMISSAO) }) } as const;
 
 test('dado da entrada é entrada', () => {
   const r = buildDps(dps({ serie: 'X', nDPS: '0' }), opcoes);

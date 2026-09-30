@@ -17,7 +17,7 @@ switch (d.tipo) {
     await guardarPdf(chave, await nfe.pdfCancelado(nfeProc, d.procEvento));
     break;
   case 'recusado':
-    console.log(d.cStat, d.xMotivo, d.hint?.suggestedFix);
+    console.log(d.cStat, d.xMotivo, d.hint?.comoCorrigir);
     break;
   case 'pendente':
     break; // sem decisão: chame cancelar de novo mais tarde, com os mesmos dados

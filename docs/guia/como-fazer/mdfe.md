@@ -65,8 +65,8 @@ import { createMdfeEmissor } from 'sinete/emissor/mdfe';
 
 const emissor = await createMdfeEmissor({ pfx, senha, ambiente: 'homologacao', store, aoDecidir });
 const r = await emissor.encerrar({ chave, nProt, uf: 'SP', cMun: '3550308' });
-if (r.status === 'authorized') await guardarEvento(chave, r.value.procEventoMDFe);
-else console.log(r.status, r.cStat, r.xMotivo);
+if (r.tipo === 'autorizado') await guardarEvento(chave, r.valor.procEventoMDFe);
+else console.log(r.tipo, r.cStat, r.xMotivo);
 ```
 
 - `nProt` é o protocolo de autorização (`desfecho.protocolo.nProt` quando `emitir` retorna `tipo: 'autorizado'`). `dtEnc` é a data de encerramento e é opcional: o padrão é a data de hoje no fuso da UF da chave. Se registrar o encerramento depois da chegada, informe a data real.

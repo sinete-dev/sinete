@@ -5,11 +5,11 @@ Código gerado dos XSD oficiais dos DF-e, por documento e pacote de liberação 
 Status: pré-alfa, API instável até a 1.0.
 
 ```ts
-import { fixedClock } from '@sinete/core';
+import { relogioFixo } from '@sinete/core';
 import { decodeXml, selecionarPl, serialize, validateRoot } from '@sinete/schemas';
 import { nfeProcElement, TNFe_infNFe } from '@sinete/schemas/nfe/PL_010f';
 
-selecionarPl('nfe', 'producao', fixedClock('2026-09-25T10:00:00-03:00')).modulo; // 'nfe/PL_010e'
+selecionarPl('nfe', 'producao', relogioFixo('2026-09-25T10:00:00-03:00')).modulo; // 'nfe/PL_010e'
 
 const inf: TNFe_infNFe = { Id: 'NFe35...', versao: '4.00', ide, emit, det, total, transp, pag }; // os grupos montados
 const xml = serialize(TNFe_infNFe, 'infNFe', inf); // forma canônica: é o C14N do elemento, pronto para assinar

@@ -13,8 +13,8 @@
  * rejeição em HTTP 400 com `{"erros":[{"Codigo","Descricao","Complemento"}]}`.
  */
 
-import type { XmlDocument, XmlElement } from '@sinete/core/xml';
-import { base64Encode, childElements, firstChild, parseXml } from '@sinete/core/xml';
+import type { DocumentoXml, ElementoXml } from '@sinete/core/xml';
+import { codificarBase64, elementosFilhos, lerXml, primeiroFilho } from '@sinete/core/xml';
 import type { NfseApi } from '@sinete/transport';
 import type { CertIdentity } from '../certs.ts';
 import { checkAssinatura, checkTransmissor } from '../certs.ts';
@@ -85,8 +85,8 @@ function texto(status: number, corpo: string, ct = 'text/plain; charset=utf-8'):
   return { status, headers: { 'content-type': ct }, body: corpo, effect: 'respond', delayMs: 0 };
 }
 
-const filho = (el: XmlElement | undefined, nome: string): XmlElement | undefined =>
-  el === undefined ? undefined : childElements(el).find((c) => c.local === nome);
+const filho = (el: ElementoXml | undefined, nome: string): ElementoXml | undefined =>
+  el === undefined ? undefined : elementosFilhos(el).find((c) => c.local === nome);
 
 /** Mapeia os códigos das regras de certificado do simulador da NF-e para os da NFS-e. */
 const CERT_TRANSMISSOR: Readonly<Record<string, string>> = { '280': 'E1200', '281': 'E1203', '282': 'E1209' };
@@ -164,7 +164,7 @@ export function createNfseSim(options: NfseSimFullOptions): NfseSim {
     return run;
   }
 
-  const agora = (): number => config.clock.now().getTime();
+  const agora = (): number => config.clock.agora().getTime();
   const dh = (ms: number): string => formatInstant(ms, BRASILIA);
 
   function falhas(rota: NfseRota): SimFault | undefined {
@@ -194,7 +194,7 @@ export function createNfseSim(options: NfseSimFullOptions): NfseSim {
   async function recepcao(
     request: SimRequest,
     campo: string,
-  ): Promise<{ ok: true; xml: string; doc: XmlDocument } | { ok: false; res: SimResult }> {
+  ): Promise<{ ok: true; xml: string; doc: DocumentoXml } | { ok: false; res: SimResult }> {
     const corpo = typeof request.body === 'string' ? request.body : new TextDecoder().decode(request.body);
     let b64: unknown;
     try {
@@ -213,9 +213,9 @@ export function createNfseSim(options: NfseSimFullOptions): NfseSim {
       return { ok: false, res: erros(400, [{ codigo: 'E1229' }]) };
     }
     if (!/^<\?xml[^?]*encoding=["']UTF-8["']/i.test(xml)) return { ok: false, res: erros(400, [{ codigo: 'E1229' }]) };
-    let doc: XmlDocument;
+    let doc: DocumentoXml;
     try {
-      doc = parseXml(xml);
+      doc = lerXml(xml);
     } catch {
       return { ok: false, res: erros(400, [{ codigo: 'E1226' }]) };
     }
@@ -246,7 +246,7 @@ export function createNfseSim(options: NfseSimFullOptions): NfseSim {
     if (!r.ok) return r.res;
     const { doc, xml } = r;
     const leiaute = leiauteNfseEm(config.ambiente, now);
-    if (doc.root.local !== 'DPS') return erros(400, [{ codigo: 'E1242' }]);
+    if (doc.raiz.local !== 'DPS') return erros(400, [{ codigo: 'E1242' }]);
     const schema = leiaute.validar('dps', doc);
     if (schema.length > 0) return erros(400, [{ codigo: 'E1235', complemento: schema.slice(0, 3).join('; ') }]);
     const dps = leiaute.lerDps(doc);
@@ -259,7 +259,7 @@ export function createNfseSim(options: NfseSimFullOptions): NfseSim {
     };
     const sig = await checkAssinatura({ doc, id: inf.Id, element: 'infDPS', now, titular: doc14 });
     if (!sig.ok) {
-      const temAssinatura = firstChild(doc.root, 'Signature', 'http://www.w3.org/2000/09/xmldsig#') !== undefined;
+      const temAssinatura = primeiroFilho(doc.raiz, 'Signature', 'http://www.w3.org/2000/09/xmldsig#') !== undefined;
       return erros(400, [
         { codigo: temAssinatura ? codigoAssinatura(sig.cStat, ASSINATURA_DPS) : ASSINATURA_DPS.ausente },
       ]);
@@ -398,7 +398,7 @@ export function createNfseSim(options: NfseSimFullOptions): NfseSim {
       tpAmb: config.tpAmb,
       signer: config.signer,
     });
-    const pedido = leiaute.lerPedido(parseXml(pedidoXml));
+    const pedido = leiaute.lerPedido(lerXml(pedidoXml));
     await registrarEvento(nfse, tpEvento, seq, pedidoXml, pedido, now);
   }
 
@@ -434,7 +434,7 @@ export function createNfseSim(options: NfseSimFullOptions): NfseSim {
     if (!r.ok) return r.res;
     const { doc, xml } = r;
     const leiaute = leiauteNfseEm(config.ambiente, now);
-    if (doc.root.local !== 'pedRegEvento') return erros(400, [{ codigo: 'E1242' }]);
+    if (doc.raiz.local !== 'pedRegEvento') return erros(400, [{ codigo: 'E1242' }]);
     const schema = leiaute.validar('pedRegEvento', doc);
     if (schema.length > 0) return erros(400, [{ codigo: 'E1235', complemento: schema.slice(0, 3).join('; ') }]);
     const pedido = leiaute.lerPedido(doc);
@@ -442,7 +442,7 @@ export function createNfseSim(options: NfseSimFullOptions): NfseSim {
     const autor = inf.CNPJAutor !== undefined ? { CNPJ: inf.CNPJAutor } : { CPF: inf.CPFAutor };
     const sig = await checkAssinatura({ doc, id: inf.Id, element: 'infPedReg', now, titular: autor });
     if (!sig.ok) {
-      const temAssinatura = firstChild(doc.root, 'Signature', 'http://www.w3.org/2000/09/xmldsig#') !== undefined;
+      const temAssinatura = primeiroFilho(doc.raiz, 'Signature', 'http://www.w3.org/2000/09/xmldsig#') !== undefined;
       if (!temAssinatura) return erros(400, [{ codigo: ASSINATURA_EVENTO.ausente }]);
       if (sig.cStat === '213') return erros(400, [{ codigo: 'E0812' }]);
       if (sig.cStat === '227') return erros(400, [{ codigo: 'E0815' }]);
@@ -450,7 +450,7 @@ export function createNfseSim(options: NfseSimFullOptions): NfseSim {
     }
     const outroAtor = canalDeOutroAtor(t.id, autor);
     if (outroAtor !== undefined) return outroAtor;
-    const grupo = childElements(filho(doc.root, 'infPedReg') as XmlElement).find((e) => /^e\d{6}$/.test(e.local));
+    const grupo = elementosFilhos(filho(doc.raiz, 'infPedReg') as ElementoXml).find((e) => /^e\d{6}$/.test(e.local));
     const tpEvento = grupo === undefined ? '' : grupo.local.slice(1);
     const nfse = nfses.get(inf.chNFSe);
     const fatos: EventoNfseFatos = {
@@ -500,7 +500,7 @@ export function createNfseSim(options: NfseSimFullOptions): NfseSim {
           tipoEvento: e.tpEvento,
           numeroPedidoRegistroEvento: String(e.nSeqEvento),
           dataHoraRecebimento: `${formatInstant(e.recebidoEm, BRASILIA).slice(0, 19)}.${String(e.recebidoEm % 1000).padStart(3, '0')}`,
-          arquivoXml: base64Encode(new TextEncoder().encode(await gzipB64(e.xml))),
+          arquivoXml: codificarBase64(new TextEncoder().encode(await gzipB64(e.xml))),
         },
       ],
     });

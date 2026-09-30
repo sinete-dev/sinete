@@ -4,15 +4,15 @@
  */
 
 import type { Uf } from '@sinete/core';
-import { isUf, ufBySigla } from '@sinete/core';
-import type { XmlElement } from '@sinete/core/xml';
-import { attributeOf } from '@sinete/core/xml';
+import { ehUf, ufPorSigla } from '@sinete/core';
+import type { ElementoXml } from '@sinete/core/xml';
+import { atributoDe } from '@sinete/core/xml';
 import { serializeRoot } from '@sinete/schemas';
 import type { TRetConsCad, TRetConsCad_infCons_infCad } from '@sinete/schemas/nfe/consulta-cadastro/PL_010d';
 import { ConsCadElement, retConsCadElement } from '@sinete/schemas/nfe/consulta-cadastro/PL_010d';
 import type { TRetInutNFe } from '@sinete/schemas/nfe/inutilizacao/PL_010d';
 import { inutNFeElement, retInutNFeElement } from '@sinete/schemas/nfe/inutilizacao/PL_010d';
-import { parseCnpj, parseCpf, parseIe } from '@sinete/validators';
+import { lerCnpj, lerCpf, lerIe } from '@sinete/validators';
 import { checkAssinatura } from '../certs.ts';
 import type { RequestContext, Status } from '../context.ts';
 import { dh, prelude, status, tipoAutorizador, verAplic } from '../context.ts';
@@ -27,7 +27,7 @@ import { viewOf } from './autorizacao.ts';
 /** NFeInutilizacao4 (nfeInutilizacaoNF). */
 export async function inutilizacao(ctx: RequestContext): Promise<string> {
   const pre = prelude(ctx, { roots: [inutNFeElement], lote: false });
-  const inf = pre.doc === undefined ? undefined : at(pre.doc.root, 'infInut');
+  const inf = pre.doc === undefined ? undefined : at(pre.doc.raiz, 'infInut');
   const ret = (s: Status, homologada: Partial<TRetInutNFe['infInut']> = {}): string => {
     const value: TRetInutNFe = {
       versao: '4.00',
@@ -44,9 +44,9 @@ export async function inutilizacao(ctx: RequestContext): Promise<string> {
     return serializeRoot(retInutNFeElement, value);
   };
   if (!pre.ok) return ret(pre.status);
-  const infEl = inf as XmlElement;
+  const infEl = inf as ElementoXml;
   const facts: InutilizacaoFacts = {
-    id: attributeOf(infEl, 'Id') ?? '',
+    id: atributoDe(infEl, 'Id') ?? '',
     tpAmb: req(infEl, 'tpAmb'),
     cUF: req(infEl, 'cUF'),
     ano: req(infEl, 'ano'),
@@ -116,7 +116,7 @@ function infCad(c: Contribuinte): TRetConsCad_infCons_infCad {
 /** CadConsultaCadastro4 (consultaCadastro), MOC 7.0 Visão Geral, tabela 5-24. */
 export function consultaCadastro(ctx: RequestContext): string {
   const pre = prelude(ctx, { roots: [ConsCadElement], lote: false });
-  const inf = pre.doc === undefined ? undefined : at(pre.doc.root, 'infCons');
+  const inf = pre.doc === undefined ? undefined : at(pre.doc.raiz, 'infCons');
   const uf = text(inf, 'UF');
   const informado = (['IE', 'CNPJ', 'CPF'] as const).find((k) => text(inf, k) !== undefined) ?? 'CNPJ';
   // Só ecoa o documento pedido quando o pedido passou no schema: o retConsCad usa os mesmos tipos, e um valor fora do
@@ -131,7 +131,7 @@ export function consultaCadastro(ctx: RequestContext): string {
         verAplic: verAplic(ctx),
         cStat: s.cStat,
         xMotivo: s.xMotivo,
-        UF: (uf !== undefined && isUf(uf) ? uf : ctx.rt.config.uf) as Uf,
+        UF: (uf !== undefined && ehUf(uf) ? uf : ctx.rt.config.uf) as Uf,
         [chave[0]]: chave[1],
         dhCons: dh(ctx, ctx.now),
         cUF: ctx.rt.config.cUF,
@@ -142,11 +142,10 @@ export function consultaCadastro(ctx: RequestContext): string {
   };
   if (!pre.ok) return ret(pre.status);
   // 265: o autorizador responde pelo cadastro das UF que atende (a SVRS atende várias).
-  const atendida = uf !== undefined && ctx.rt.config.cUFsAtendidas.includes(ufBySigla(uf)?.cUF ?? '');
+  const atendida = uf !== undefined && ctx.rt.config.cUFsAtendidas.includes(ufPorSigla(uf)?.cUF ?? '');
   if (!atendida) return ret(status('265'));
   const [campo, valor] = chave;
-  const valido =
-    campo === 'CNPJ' ? parseCnpj(valor).ok : campo === 'CPF' ? parseCpf(valor).ok : parseIe(valor, uf as Uf).ok;
+  const valido = campo === 'CNPJ' ? lerCnpj(valor).ok : campo === 'CPF' ? lerCpf(valor).ok : lerIe(valor, uf as Uf).ok;
   if (!valido) return ret(status(campo === 'CNPJ' ? '258' : campo === 'CPF' ? '263' : '260'));
   const achados = ctx.rt.config.cadastro.filter((c) => c.UF === uf && c[campo] === valor);
   if (achados.length === 0) return ret(status(campo === 'CNPJ' ? '259' : campo === 'CPF' ? '264' : '261'));

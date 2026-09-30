@@ -7,7 +7,7 @@ import { beforeAll, describe, expect, test } from 'bun:test';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { c14n, childElements, firstChild, parseXml, signXml, verifySignature } from '@sinete/core/xml';
+import { assinarXml, c14n, conferirAssinatura, elementosFilhos, lerXml, primeiroFilho } from '@sinete/core/xml';
 import { $ } from 'bun';
 import type { TestKeys } from '../../core/test/xml/helpers/test-keys.ts';
 import { generateTestKeys } from '../../core/test/xml/helpers/test-keys.ts';
@@ -136,22 +136,22 @@ describe('NF-e sintética no PL_010f', () => {
     const nfeObj = { infNFe } as TNFe;
     const xml = serializeRoot(nfe.NFeElement, nfeObj);
     expect(xml).toBe(fixture.trimEnd());
-    const doc = parseXml(xml);
-    expect(c14n(doc.root)).toBe(xml);
+    const doc = lerXml(xml);
+    expect(c14n(doc.raiz)).toBe(xml);
   });
 
   test('sem Signature, o validador aponta só o modelo de conteúdo do NFe', () => {
     const issues = validateRoot(nfe.NFeElement, fixture);
-    expect(issues.map((i) => [i.code, i.path])).toEqual([['modelo_de_conteudo', '/NFe']]);
+    expect(issues.map((i) => [i.code, i.caminho])).toEqual([['modelo_de_conteudo', '/NFe']]);
     expect(() => assertValid(nfe.NFeElement, fixture)).toThrow();
   });
 
   test('assinada por splice, valida, verifica, decodifica e reserializa com o mesmo digest', async () => {
-    const signed = await signXml(fixture.trimEnd(), { id: ID }, keys.dataSigner);
-    expect(await signXml(fixture.trimEnd(), { id: ID }, keys.digestSigner)).toBe(signed);
+    const signed = await assinarXml(fixture.trimEnd(), { id: ID }, keys.dataSigner);
+    expect(await assinarXml(fixture.trimEnd(), { id: ID }, keys.digestSigner)).toBe(signed);
     expect(validateRoot(nfe.NFeElement, signed)).toEqual([]);
-    assertValid(nfe.NFeElement, parseXml(signed));
-    const v = await verifySignature(signed, { id: ID, element: 'infNFe' });
+    assertValid(nfe.NFeElement, lerXml(signed));
+    const v = await conferirAssinatura(signed, { id: ID, elemento: 'infNFe' });
     expect(v.ok).toBe(true);
     const d = decodeXml(nfe.NFeElement, signed);
     expect(d.issues).toEqual([]);
@@ -159,38 +159,38 @@ describe('NF-e sintética no PL_010f', () => {
     expect(d.value.infNFe.infAdic?.infCpl).toBe('DOCUMENTO SINTETICO & DE TESTE');
     expect(d.value.Signature.SignedInfo.Reference.URI).toBe(`#${ID}`);
     // Reserializar o infNFe decodificado dá o C14N do original: é o que o DigestValue cobre.
-    const inf = firstChild(parseXml(signed).root, 'infNFe', NFE);
+    const inf = primeiroFilho(lerXml(signed).raiz, 'infNFe', NFE);
     if (!inf) throw new Error('sem infNFe');
     expect(serialize(nfe.TNFe_infNFe, 'infNFe', d.value.infNFe)).toBe(c14n(inf));
     // O NFe inteiro reserializado é o C14N da string assinada (o template da Signature usa tags autofechadas, que o
     // C14N expande; só o infNFe e o SignedInfo entram nos digests).
-    expect(serializeRoot(nfe.NFeElement, d.value)).toBe(c14n(parseXml(signed).root));
+    expect(serializeRoot(nfe.NFeElement, d.value)).toBe(c14n(lerXml(signed).raiz));
   });
 
   test('com infNFeSupl, a Signature entra depois dele e o documento assinado valida', async () => {
     const supl = `<infNFeSupl><qrCode><![CDATA[https://exemplo.invalid/qrcode?p=${ID.slice(3)}|3|2]]></qrCode><urlChave>https://exemplo.invalid/consulta</urlChave></infNFeSupl>`;
     const comSupl = fixture.trimEnd().replace(/<\/infNFe><\/NFe>$/, `</infNFe>${supl}</NFe>`);
     if (!comSupl.includes('<infNFeSupl>')) throw new Error('fixture sem </infNFe></NFe> no fim');
-    const signed = await signXml(comSupl, { id: ID }, keys.dataSigner);
+    const signed = await assinarXml(comSupl, { id: ID }, keys.dataSigner);
     expect(signed.indexOf('</infNFeSupl><Signature ')).toBeGreaterThan(0);
     expect(validateRoot(nfe.NFeElement, signed)).toEqual([]);
-    expect((await verifySignature(signed, { id: ID, element: 'infNFe' })).ok).toBe(true);
+    expect((await conferirAssinatura(signed, { id: ID, elemento: 'infNFe' })).ok).toBe(true);
   });
 
   test('embrulhada num nfeProc por splice continua válida no PL_010f e no PL_010e', async () => {
-    const signed = await signXml(fixture.trimEnd(), { id: ID }, keys.dataSigner);
+    const signed = await assinarXml(fixture.trimEnd(), { id: ID }, keys.dataSigner);
     const proc = `<nfeProc xmlns="${NFE}" versao="4.00">${signed.replace(` xmlns="${NFE}"`, '')}<protNFe versao="4.00"><infProt><tpAmb>2</tpAmb><verAplic>SP_NFE_PL_010f</verAplic><chNFe>${ID.slice(3)}</chNFe><dhRecbto>2026-09-25T10:00:05-03:00</dhRecbto><nProt>135260000000001</nProt><digVal>${/<DigestValue>([^<]+)/.exec(signed)?.[1]}</digVal><cStat>100</cStat><xMotivo>Autorizado o uso da NF-e</xMotivo></infProt></protNFe></nfeProc>`;
     expect(validateRoot(nfe.nfeProcElement, proc)).toEqual([]);
     expect(validateRoot(nfe010e.nfeProcElement, proc)).toEqual([]);
-    expect((await verifySignature(proc, { id: ID, element: 'infNFe' })).ok).toBe(true);
-    const d = decodeRoot(nfe.nfeProcElement, parseXml(proc));
+    expect((await conferirAssinatura(proc, { id: ID, elemento: 'infNFe' })).ok).toBe(true);
+    const d = decodeRoot(nfe.nfeProcElement, lerXml(proc));
     expect(d.value.protNFe.infProt.cStat).toBe('100');
   });
 
   test.skipIf(!Bun.which('xmllint'))('o xmllint concorda com o validador na fixture assinada', async () => {
     const work = await mkdtemp(path.join(tmpdir(), 'sinete-xmllint-'));
     try {
-      const signed = await signXml(fixture.trimEnd(), { id: ID }, keys.dataSigner);
+      const signed = await assinarXml(fixture.trimEnd(), { id: ID }, keys.dataSigner);
       const leiaute = path.join(repo, 'tools/xsd-codegen/xsd/nfe/PL_010f_v1.04/leiauteNFe_v4.00.xsd');
       const wrapper = path.join(work, 'nfe.xsd');
       await Bun.write(
@@ -203,7 +203,7 @@ describe('NF-e sintética no PL_010f', () => {
       await Bun.write(file, signed.replace('<CFOP>5102</CFOP>', '<CFOP>51020</CFOP>'));
       expect((await $`xmllint --noout --schema ${wrapper} ${file}`.nothrow().quiet()).exitCode).not.toBe(0);
       expect(validateRoot(nfe.NFeElement, signed.replace('<CFOP>5102</CFOP>', '<CFOP>51020</CFOP>'))).toMatchObject([
-        { code: 'padrao', path: '/NFe/infNFe/det/prod/CFOP' },
+        { code: 'padrao', caminho: '/NFe/infNFe/det/prod/CFOP' },
       ]);
     } finally {
       await rm(work, { recursive: true, force: true });
@@ -212,7 +212,7 @@ describe('NF-e sintética no PL_010f', () => {
 });
 
 describe('validador: regras', () => {
-  const issues = (xml: string): string[] => validateRoot(nfe.NFeElement, xml).map((i) => `${i.code} ${i.path}`);
+  const issues = (xml: string): string[] => validateRoot(nfe.NFeElement, xml).map((i) => `${i.code} ${i.caminho}`);
   const mut = (from: string, to: string): string => {
     if (!fixture.includes(from)) throw new Error(`fixture sem ${from}`);
     return fixture.replace(from, to);
@@ -260,20 +260,20 @@ describe('validador: regras', () => {
   });
 
   test('ID duplicado no documento (Reference com o mesmo Id do infNFe)', async () => {
-    const signed = await signXml(fixture.trimEnd(), { id: ID }, keys.dataSigner);
+    const signed = await assinarXml(fixture.trimEnd(), { id: ID }, keys.dataSigner);
     const dup = signed.replace(`<Reference URI="#${ID}">`, `<Reference Id="${ID}" URI="#${ID}">`);
-    expect(validateRoot(nfe.NFeElement, dup).map((i) => `${i.code} ${i.path}`)).toEqual([
+    expect(validateRoot(nfe.NFeElement, dup).map((i) => `${i.code} ${i.caminho}`)).toEqual([
       'id_duplicado /NFe/Signature/SignedInfo/Reference/@Id',
     ]);
     // O ID compara depois do collapse: " Id " repete "Id" (o xmllint recusa).
     const spaced = signed.replace(`<Reference URI="#${ID}">`, `<Reference Id=" ${ID} " URI="#${ID}">`);
-    expect(validateRoot(nfe.NFeElement, spaced).map((i) => `${i.code} ${i.path}`)).toEqual([
+    expect(validateRoot(nfe.NFeElement, spaced).map((i) => `${i.code} ${i.caminho}`)).toEqual([
       'id_duplicado /NFe/Signature/SignedInfo/Reference/@Id',
     ]);
   });
 
   test('fixed e xs:unique também comparam depois do whiteSpace do tipo', async () => {
-    const signed = await signXml(fixture.trimEnd(), { id: ID }, keys.dataSigner);
+    const signed = await assinarXml(fixture.trimEnd(), { id: ID }, keys.dataSigner);
     const c14nAlg = 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315';
     const fixedSpaced = signed.replace(
       `<CanonicalizationMethod Algorithm="${c14nAlg}"/>`,
@@ -282,14 +282,14 @@ describe('validador: regras', () => {
     expect(validateRoot(nfe.NFeElement, fixedSpaced)).toEqual([]);
     const env = 'http://www.w3.org/2000/09/xmldsig#enveloped-signature';
     const dupTransform = signed.replace(`<Transform Algorithm="${c14nAlg}"/>`, `<Transform Algorithm=" ${env} "/>`);
-    expect(validateRoot(nfe.NFeElement, dupTransform).map((i) => `${i.code} ${i.path}`)).toEqual([
+    expect(validateRoot(nfe.NFeElement, dupTransform).map((i) => `${i.code} ${i.caminho}`)).toEqual([
       'unico /NFe/Signature/SignedInfo/Reference/Transforms/Transform/@Algorithm',
     ]);
   });
 
   test('raiz inesperada', () => {
     expect(validateRoot(nfe.NFeElement, '<NFe/>')).toMatchObject([{ code: 'raiz_inesperada' }]);
-    expect(validate(nfe.TNFe, parseXml(fixture).root).map((i) => i.code)).toEqual(['modelo_de_conteudo']);
+    expect(validate(nfe.TNFe, lerXml(fixture).raiz).map((i) => i.code)).toEqual(['modelo_de_conteudo']);
   });
 });
 
@@ -303,7 +303,7 @@ describe('decoder tolerante', () => {
       .replace('<cUF>35</cUF>', '<cUF __proto__="x">35</cUF>')
       .replace('<verProc>sinete-teste</verProc>', '<verProc xmlns="urn:outro">sinete-teste</verProc>');
     const d = decodeXml(nfe.NFeElement, odd);
-    expect(d.issues.map((i) => `${i.code} ${i.path}`)).toEqual([
+    expect(d.issues.map((i) => `${i.code} ${i.caminho}`)).toEqual([
       'atributo_desconhecido /NFe/infNFe/ide/cUF/@__proto__',
       'namespace_divergente /NFe/infNFe/ide/verProc',
       'atributo_desconhecido /NFe/infNFe/det/@x',
@@ -327,10 +327,10 @@ describe('decoder tolerante', () => {
     const src =
       `<evento xmlns="${NFE}" xmlns:n="urn:ext" xmlns:o="urn:outro"><detEvento versao="1.00" n:marca="1" xmlns:x="urn:x">` +
       '<descEvento>Cancelamento</descEvento><n:extra o:a="1"><x:y/></n:extra><semNs xmlns=""/></detEvento></evento>';
-    const doc = parseXml(src);
-    const det = firstChild(doc.root, 'detEvento', NFE);
+    const doc = lerXml(src);
+    const det = primeiroFilho(doc.raiz, 'detEvento', NFE);
     if (!det) throw new Error('sem detEvento');
-    const d = decode(protocolo.TEvento_infEvento_detEvento, det, doc.source);
+    const d = decode(protocolo.TEvento_infEvento_detEvento, det, doc.texto);
     expect(d.issues).toEqual([]);
     expect(d.value.$any).toEqual([
       '<descEvento>Cancelamento</descEvento>',
@@ -339,21 +339,21 @@ describe('decoder tolerante', () => {
     ]);
     expect(d.value.$attrs).toEqual({ versao: '1.00', 'n:marca': '1', 'xmlns:n': 'urn:ext' });
     const out = serialize(protocolo.TEvento_infEvento_detEvento, 'detEvento', d.value, NFE);
-    const back = parseXml(`<evento xmlns="${NFE}">${out}</evento>`).root;
-    const [desc, extra, semNs] = childElements(firstChild(back, 'detEvento', NFE) ?? back);
+    const back = lerXml(`<evento xmlns="${NFE}">${out}</evento>`).raiz;
+    const [desc, extra, semNs] = elementosFilhos(primeiroFilho(back, 'detEvento', NFE) ?? back);
     expect(desc?.ns).toBe(NFE);
     expect(extra?.ns).toBe('urn:ext');
-    expect(extra?.attributes[0]?.ns).toBe('urn:outro');
-    expect(childElements(extra ?? back)[0]?.ns).toBe('urn:x');
+    expect(extra?.atributos[0]?.ns).toBe('urn:outro');
+    expect(elementosFilhos(extra ?? back)[0]?.ns).toBe('urn:x');
     expect(semNs?.ns).toBe('');
     // Com prefixo em outro elemento: o default herdado que difere do pai também entra.
-    const pref = parseXml(`<p:detEvento xmlns:p="${NFE}" xmlns="urn:default"><a/></p:detEvento>`);
-    const prefAny = decode(protocolo.TEvento_infEvento_detEvento, pref.root, pref.source).value.$any;
+    const pref = lerXml(`<p:detEvento xmlns:p="${NFE}" xmlns="urn:default"><a/></p:detEvento>`);
+    const prefAny = decode(protocolo.TEvento_infEvento_detEvento, pref.raiz, pref.texto).value.$any;
     expect(prefAny).toEqual(['<a xmlns="urn:default"/>']);
   });
 
   test('decode direto de um elemento e texto de tipo simples misturado com PI', () => {
-    const inf = firstChild(parseXml(fixture).root, 'infNFe', NFE);
+    const inf = primeiroFilho(lerXml(fixture).raiz, 'infNFe', NFE);
     if (!inf) throw new Error('sem infNFe');
     expect(decode(nfe.TNFe_infNFe, inf).value.ide.cUF).toBe('35');
     const pi = decodeXml(nfe.NFeElement, fixture.replace('<cUF>35</cUF>', '<cUF>3<?p x?>5</cUF>'));
@@ -391,7 +391,7 @@ describe('serializer', () => {
     const servico = { ...semIcms, IPI: ipi, ISSQN: issqn } as unknown as typeof imposto;
     const xml = serialize(nfe.TNFe_infNFe_det_imposto, 'imposto', servico);
     expect(xml).toContain('<IPI><cEnq>999</cEnq><IPINT><CST>53</CST></IPINT></IPI><ISSQN>');
-    expect(validate(nfe.TNFe_infNFe_det_imposto, parseXml(xml).root)).toEqual([]);
+    expect(validate(nfe.TNFe_infNFe_det_imposto, lerXml(xml).raiz)).toEqual([]);
     const mistura = { ...imposto, ISSQN: issqn } as unknown as typeof imposto;
     expect(() => serialize(nfe.TNFe_infNFe_det_imposto, 'imposto', mistura)).toThrow(SerializeError);
   });

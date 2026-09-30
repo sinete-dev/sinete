@@ -3,7 +3,7 @@
  * texto, sem reparsear nem reserializar (invariante do repo), e só o que o simulador gera passa pelo serializer.
  */
 
-import type { XmlElement } from '@sinete/core/xml';
+import type { ElementoXml } from '@sinete/core/xml';
 import { serialize } from '@sinete/schemas';
 import type { resEvento, resNFe } from '@sinete/schemas/nfe/dist-dfe/PL_NFeDistDFe_104';
 import { resEvento as ResEvento, resNFe as ResNFe } from '@sinete/schemas/nfe/dist-dfe/PL_NFeDistDFe_104';
@@ -20,9 +20,9 @@ import type { EventoRecord, NfeRecord } from './state.ts';
  * leva em conta todo namespace em escopo, então sem isso um `xmlns:x` declarado no lote faria a assinatura divergir no
  * `nfeProc` e no `procEventoNFe`.
  */
-export function standalone(source: string, el: XmlElement): string {
+export function standalone(source: string, el: ElementoXml): string {
   const herdados = new Map<string, string>();
-  for (let a = el.parent; a !== null; a = a.parent) {
+  for (let a = el.pai; a !== null; a = a.pai) {
     for (const [prefix, uri] of a.namespaces) if (!herdados.has(prefix)) herdados.set(prefix, uri);
   }
   const decls: string[] = [];
@@ -30,8 +30,8 @@ export function standalone(source: string, el: XmlElement): string {
     if (el.namespaces.has(prefix) || prefix === 'xml' || (prefix === '' && uri === '')) continue;
     decls.push(prefix === '' ? ` xmlns="${escAttr(uri)}"` : ` xmlns:${prefix}="${escAttr(uri)}"`);
   }
-  const text = source.slice(el.start, el.end);
-  const nameEnd = 1 + el.name.length;
+  const text = source.slice(el.inicio, el.fim);
+  const nameEnd = 1 + el.nome.length;
   return `${text.slice(0, nameEnd)}${decls.join('')}${text.slice(nameEnd)}`;
 }
 

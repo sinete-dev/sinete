@@ -3,7 +3,7 @@
  * ordem. Cada decisão sai com proveniência (quem, quando, com que versão dos dados e por qual fonte), porque é isso que
  * o contribuinte mostra numa fiscalização. Assíncrona porque um resolvedor pode ser IA, cadastro ou fila de revisão.
  */
-import type { Clock } from '@sinete/core';
+import type { Relogio } from '@sinete/core';
 import type { TaxContent } from '@sinete/ibs-cbs-dados';
 import { inForce } from '@sinete/ibs-cbs-dados';
 import type { ClassifiedItem, ClassifiedOperation, GovernmentPurchase, OperationPlace } from '../calcular/index.ts';
@@ -35,13 +35,13 @@ export interface DetermineAtOptions {
   /** Respostas às perguntas de uma chamada anterior: id da pergunta para o cClassTrib escolhido. */
   readonly answers?: Readonly<Record<string, string>>;
   /** Relógio do instante da decisão, que vai na proveniência. */
-  readonly clock: Clock;
+  readonly clock: Relogio;
   readonly signal?: AbortSignal;
 }
 
 export interface DetermineOptions extends ConstrainOptions, Omit<DetermineAtOptions, 'clock'> {
   /** Relógio do instante da decisão; padrão: o de emissão de `time`. */
-  readonly clock?: Clock;
+  readonly clock?: Relogio;
 }
 
 /** Id estável da pergunta de classificação de um item. */
@@ -157,7 +157,7 @@ export async function determineAt(
   const resolvers = options.resolvers ?? DEFAULT_RESOLVERS;
   const answers = options.answers ?? {};
   const base = (): Pick<Provenance, 'at' | 'contentVersion' | 'asOf'> => ({
-    at: options.clock.now().toISOString(),
+    at: options.clock.agora().toISOString(),
     contentVersion: content.dataset.contentVersion,
     asOf: content.asOf,
   });

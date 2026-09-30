@@ -5,15 +5,15 @@ Certificado ICP-Brasil do titular: leitura de PFX em JS (inclusive o legado RC2-
 Status: pré-alfa, API instável até a 1.0.
 
 ```ts
-import { systemClock } from '@sinete/core';
+import { relogioDoSistema } from '@sinete/core';
 import { buildChain, openPfx } from '@sinete/cert';
 
-const ks = await openPfx(pfxBytes, { password, clock: systemClock });
+const ks = await openPfx(pfxBytes, { password, clock: relogioDoSistema });
 ks.identity; // { tipo: 'e-CNPJ', cnpj: '11222333000181', pessoa: { cpf, dataNascimento, nome }, ... }
 ks.certificate.notAfterIso; // '2027-01-01T00:00:00Z'
 
 const signer = await ks.signer(); // DataSigner do @sinete/core (RSASSA-PKCS1-v1_5, SHA-1 ou SHA-256)
-const chain = await buildChain(ks.certificate, { intermediates: ks.extraCertificates, clock: systemClock });
+const chain = await buildChain(ks.certificate, { intermediates: ks.extraCertificates, clock: relogioDoSistema });
 chain.status; // 'confiavel' | 'raiz_desconhecida' | 'incompleta' | 'assinatura_invalida' | 'emissor_nao_autorizado'
 
 const { certChain, key } = ks.tlsPem(); // para o @sinete/transport; só em memória

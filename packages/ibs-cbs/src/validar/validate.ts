@@ -4,8 +4,8 @@
  * presumido em condição suspensiva, competência da ZFM); o de fato gerador decide as tabelas (CST, cClassTrib,
  * cCredPres, reduções) do `@sinete/ibs-cbs-dados`.
  */
-import type { TimeContext } from '@sinete/core';
-import { ConfigError } from '@sinete/core';
+import type { ContextoDeTempo } from '@sinete/core';
+import { ErroDeConfiguracao } from '@sinete/core';
 import type { IbsCbsDataset } from '@sinete/ibs-cbs-dados';
 import { BRASILIA_OFFSET_MINUTES, civilDate } from '@sinete/ibs-cbs-dados';
 import type { RateProvider } from '../aliquotas/index.ts';
@@ -16,7 +16,7 @@ import type { Ambiente, RuleMeta, RulesDocument, ValidationReport, Violation } f
 
 export interface ValidateOptions {
   readonly dataset: IbsCbsDataset;
-  readonly time: TimeContext;
+  readonly time: ContextoDeTempo;
   readonly ambiente: Ambiente;
   /** Deslocamento do fuso do emitente em minutos (padrão: Brasília). */
   readonly utcOffsetMinutes?: number;
@@ -36,13 +36,13 @@ export function isActive(rule: RuleMeta, doc: RulesDocument, ambiente: Ambiente,
 }
 
 export function validate(doc: RulesDocument, options: ValidateOptions): ValidationReport {
-  if (!doc || !Array.isArray(doc.items)) throw new ConfigError('documento sem itens');
+  if (!doc || !Array.isArray(doc.items)) throw new ErroDeConfiguracao('documento sem itens');
   if (options.ambiente !== 'producao' && options.ambiente !== 'homologacao') {
-    throw new ConfigError(`ambiente inválido: ${String(options.ambiente)}`);
+    throw new ErroDeConfiguracao(`ambiente inválido: ${String(options.ambiente)}`);
   }
   const offset = options.utcOffsetMinutes ?? BRASILIA_OFFSET_MINUTES;
-  const emission = civilDate(options.time.emissao.now(), offset);
-  const factDate = civilDate(options.time.fatoGerador.now(), offset);
+  const emission = civilDate(options.time.emissao.agora(), offset);
+  const factDate = civilDate(options.time.fatoGerador.agora(), offset);
   const ctx: RuleContext = {
     doc,
     content: options.dataset.at(factDate),

@@ -8,10 +8,10 @@
  * documento tem dado pessoal), só a regra e o caminho.
  */
 
-import type { ValidationIssue } from '@sinete/core';
-import { ValidationError } from '@sinete/core';
-import type { XmlAttribute, XmlDocument, XmlElement } from '@sinete/core/xml';
-import { childElements, parseXml } from '@sinete/core/xml';
+import type { Ocorrencia } from '@sinete/core';
+import { ErroDeValidacao } from '@sinete/core';
+import type { AtributoXml, DocumentoXml, ElementoXml } from '@sinete/core/xml';
+import { elementosFilhos, lerXml } from '@sinete/core/xml';
 import type { ComplexType, ElementParticle, Particle, RootElement, SimpleType } from './desc.ts';
 import { isComplexType, isElementParticle, isWildcard, maxOccurs, minOccurs } from './desc.ts';
 import { compileXsdRegex } from './regex.ts';
@@ -39,7 +39,7 @@ export type ValidationCode =
   | 'unico'
   | 'id_duplicado';
 
-export interface SchemaIssue extends ValidationIssue {
+export interface SchemaIssue extends Ocorrencia {
   readonly code: ValidationCode;
 }
 
@@ -170,37 +170,38 @@ export function checkSimple(t: SimpleType, raw: string, path: string, out: Schem
   const name = t.nm ? ` (${t.nm})` : '';
   const lex = Object.hasOwn(LEXICAL, t.b) ? LEXICAL[t.b] : undefined;
   if (lex && !lex.test(v)) {
-    out.push({ path, code: 'tipo_base', message: `valor fora do espaço léxico de xs:${t.b}${name}` });
+    out.push({ caminho: path, code: 'tipo_base', mensagem: `valor fora do espaço léxico de xs:${t.b}${name}` });
     return;
   }
   if ((t.b === 'date' || t.b === 'dateTime') && !validCalendarDay(v)) {
-    out.push({ path, code: 'tipo_base', message: `dia inexistente no calendário em xs:${t.b}${name}` });
+    out.push({ caminho: path, code: 'tipo_base', mensagem: `dia inexistente no calendário em xs:${t.b}${name}` });
     return;
   }
   if ((t.b === 'gYear' || t.b === 'gYearMonth') && /^-?0+(?:-|Z|\+|$)/.test(v)) {
-    out.push({ path, code: 'tipo_base', message: `ano 0000 não existe em xs:${t.b}${name}` });
+    out.push({ caminho: path, code: 'tipo_base', mensagem: `ano 0000 não existe em xs:${t.b}${name}` });
     return;
   }
   const range = Object.hasOwn(INTEGER_RANGES, t.b) ? INTEGER_RANGES[t.b] : undefined;
   if (range && (BigInt(v) < range[0] || BigInt(v) > range[1])) {
-    out.push({ path, code: 'tipo_base', message: `valor fora do intervalo de xs:${t.b}${name}` });
+    out.push({ caminho: path, code: 'tipo_base', mensagem: `valor fora do intervalo de xs:${t.b}${name}` });
   }
-  if (t.e && !t.e.includes(v)) out.push({ path, code: 'enumeracao', message: `valor fora da enumeração${name}` });
+  if (t.e && !t.e.includes(v))
+    out.push({ caminho: path, code: 'enumeracao', mensagem: `valor fora da enumeração${name}` });
   // Facetas de tamanho contam caracteres em string, mas octetos em base64Binary e hexBinary (XSD Part 2, 4.3.1).
   if (t.l !== undefined || t.mn !== undefined || t.mx !== undefined) {
     const len = t.b === 'base64Binary' ? b64Octets(v) : t.b === 'hexBinary' ? v.length / 2 : [...v].length;
     if (t.l !== undefined && len !== t.l)
-      out.push({ path, code: 'tamanho', message: `tamanho deve ser ${t.l}${name}` });
+      out.push({ caminho: path, code: 'tamanho', mensagem: `tamanho deve ser ${t.l}${name}` });
     if (t.mn !== undefined && len < t.mn) {
-      out.push({ path, code: 'tamanho_minimo', message: `tamanho mínimo ${t.mn}${name}` });
+      out.push({ caminho: path, code: 'tamanho_minimo', mensagem: `tamanho mínimo ${t.mn}${name}` });
     }
     if (t.mx !== undefined && len > t.mx) {
-      out.push({ path, code: 'tamanho_maximo', message: `tamanho máximo ${t.mx}${name}` });
+      out.push({ caminho: path, code: 'tamanho_maximo', mensagem: `tamanho máximo ${t.mx}${name}` });
     }
   }
   for (const step of regexes(t)) {
     if (!step.some((re) => re.test(v))) {
-      out.push({ path, code: 'padrao', message: `valor não casa com o pattern${name}` });
+      out.push({ caminho: path, code: 'padrao', mensagem: `valor não casa com o pattern${name}` });
       break;
     }
   }
@@ -210,22 +211,22 @@ export function checkSimple(t: SimpleType, raw: string, path: string, out: Schem
     const fracDigits = frac.replace(/0+$/, '').length;
     const intDigits = int.replace(/^0+/, '').length;
     if (t.td !== undefined && intDigits + fracDigits > t.td) {
-      out.push({ path, code: 'digitos_totais', message: `mais de ${t.td} dígitos${name}` });
+      out.push({ caminho: path, code: 'digitos_totais', mensagem: `mais de ${t.td} dígitos${name}` });
     }
     if (t.fd !== undefined && fracDigits > t.fd) {
-      out.push({ path, code: 'digitos_fracionarios', message: `mais de ${t.fd} casas decimais${name}` });
+      out.push({ caminho: path, code: 'digitos_fracionarios', mensagem: `mais de ${t.fd} casas decimais${name}` });
     }
     if (t.mi !== undefined && compareDecimal(v, t.mi) < 0) {
-      out.push({ path, code: 'valor_minimo', message: `valor abaixo de ${t.mi}${name}` });
+      out.push({ caminho: path, code: 'valor_minimo', mensagem: `valor abaixo de ${t.mi}${name}` });
     }
     if (t.ma !== undefined && compareDecimal(v, t.ma) > 0) {
-      out.push({ path, code: 'valor_maximo', message: `valor acima de ${t.ma}${name}` });
+      out.push({ caminho: path, code: 'valor_maximo', mensagem: `valor acima de ${t.ma}${name}` });
     }
     if (t.me !== undefined && compareDecimal(v, t.me) <= 0) {
-      out.push({ path, code: 'valor_minimo', message: `valor deve ser maior que ${t.me}${name}` });
+      out.push({ caminho: path, code: 'valor_minimo', mensagem: `valor deve ser maior que ${t.me}${name}` });
     }
     if (t.mxe !== undefined && compareDecimal(v, t.mxe) >= 0) {
-      out.push({ path, code: 'valor_maximo', message: `valor deve ser menor que ${t.mxe}${name}` });
+      out.push({ caminho: path, code: 'valor_maximo', mensagem: `valor deve ser menor que ${t.mxe}${name}` });
     }
   }
 }
@@ -321,23 +322,25 @@ function checkCalendarRange(t: SimpleType, v: string, path: string, name: string
     const c = compareCalendar(t.b, v, bound);
     return !Number.isNaN(c) && pass(c);
   };
-  if (!ok(t.mi, (c) => c >= 0)) out.push({ path, code: 'valor_minimo', message: `valor antes de ${t.mi}${name}` });
-  if (!ok(t.ma, (c) => c <= 0)) out.push({ path, code: 'valor_maximo', message: `valor depois de ${t.ma}${name}` });
+  if (!ok(t.mi, (c) => c >= 0))
+    out.push({ caminho: path, code: 'valor_minimo', mensagem: `valor antes de ${t.mi}${name}` });
+  if (!ok(t.ma, (c) => c <= 0))
+    out.push({ caminho: path, code: 'valor_maximo', mensagem: `valor depois de ${t.ma}${name}` });
   if (!ok(t.me, (c) => c > 0))
-    out.push({ path, code: 'valor_minimo', message: `valor deve ser depois de ${t.me}${name}` });
+    out.push({ caminho: path, code: 'valor_minimo', mensagem: `valor deve ser depois de ${t.me}${name}` });
   if (!ok(t.mxe, (c) => c < 0)) {
-    out.push({ path, code: 'valor_maximo', message: `valor deve ser antes de ${t.mxe}${name}` });
+    out.push({ caminho: path, code: 'valor_maximo', mensagem: `valor deve ser antes de ${t.mxe}${name}` });
   }
 }
 
-function elementMatches(p: Particle, k: XmlElement | undefined, ownerNs: string): boolean {
+function elementMatches(p: Particle, k: ElementoXml | undefined, ownerNs: string): boolean {
   if (!k) return false;
   if (isWildcard(p)) return true;
   return isElementParticle(p) && k.local === p.e && k.ns === (p.ns ?? ownerNs);
 }
 
 /** Posições finais alcançáveis casando a partícula `p` a partir de `pos` (conjuntos de posições, sem backtracking). */
-function match(p: Particle, kids: readonly XmlElement[], pos: number, ownerNs: string): Set<number> {
+function match(p: Particle, kids: readonly ElementoXml[], pos: number, ownerNs: string): Set<number> {
   const min = minOccurs(p);
   const max = maxOccurs(p);
   let cur = new Set([pos]);
@@ -400,75 +403,75 @@ function hasWildcard(p: Particle | undefined): boolean {
   return isWildcard(p) || p.i.some(hasWildcard);
 }
 
-function textOnly(el: XmlElement): string {
+function textOnly(el: ElementoXml): string {
   let s = '';
-  for (const c of el.children) if (c.type === 'text') s += c.value;
+  for (const c of el.filhos) if (c.tipo === 'texto') s += c.valor;
   return s;
 }
 
-function checkAttributes(ct: ComplexType, el: XmlElement, path: string, ctx: Ctx): void {
+function checkAttributes(ct: ComplexType, el: ElementoXml, path: string, ctx: Ctx): void {
   for (const a of ct.a ?? []) {
-    const v = el.attributes.find((x) => x.local === a.a && x.ns === '');
+    const v = el.atributos.find((x) => x.local === a.a && x.ns === '');
     const ap = `${path}/@${a.a}`;
     if (!v) {
-      if (a.r) ctx.out.push({ path: ap, code: 'atributo_obrigatorio', message: 'atributo obrigatório ausente' });
+      if (a.r) ctx.out.push({ caminho: ap, code: 'atributo_obrigatorio', mensagem: 'atributo obrigatório ausente' });
       continue;
     }
     // fixed, ID e unique comparam no espaço de valores, depois do whiteSpace do tipo (`" x "` e `"x"` são o mesmo ID).
-    const nv = normalize(a.t, v.value);
+    const nv = normalize(a.t, v.valor);
     if (a.f !== undefined && nv !== normalize(a.t, a.f)) {
-      ctx.out.push({ path: ap, code: 'atributo_fixo', message: `atributo deve valer ${a.f}` });
+      ctx.out.push({ caminho: ap, code: 'atributo_fixo', mensagem: `atributo deve valer ${a.f}` });
     }
-    checkSimple(a.t, v.value, ap, ctx.out);
+    checkSimple(a.t, v.valor, ap, ctx.out);
     if (a.t.b === 'ID') {
       const prev = ctx.ids.get(nv);
       if (prev !== undefined)
-        ctx.out.push({ path: ap, code: 'id_duplicado', message: `ID repetido (primeiro em ${prev})` });
+        ctx.out.push({ caminho: ap, code: 'id_duplicado', mensagem: `ID repetido (primeiro em ${prev})` });
       else ctx.ids.set(nv, ap);
     }
   }
-  for (const x of el.attributes) {
+  for (const x of el.atributos) {
     if (x.ns === '' && (ct.a ?? []).some((a) => a.a === x.local)) continue;
     if (ct.aa) continue;
     if (isSchemaLocation(x)) continue;
-    ctx.out.push({ path: `${path}/@${x.name}`, code: 'atributo_desconhecido', message: 'atributo fora do schema' });
+    ctx.out.push({ caminho: `${path}/@${x.nome}`, code: 'atributo_desconhecido', mensagem: 'atributo fora do schema' });
   }
 }
 
-function isSchemaLocation(x: XmlAttribute): boolean {
+function isSchemaLocation(x: AtributoXml): boolean {
   return x.ns === XSI && (x.local === 'schemaLocation' || x.local === 'noNamespaceSchemaLocation');
 }
 
 /** Elemento de tipo simples não declara atributos: qualquer um fora de `xsi:*SchemaLocation` é ocorrência. */
-function checkNoAttributes(el: XmlElement, path: string, ctx: Ctx): void {
-  for (const x of el.attributes) {
+function checkNoAttributes(el: ElementoXml, path: string, ctx: Ctx): void {
+  for (const x of el.atributos) {
     if (isSchemaLocation(x)) continue;
-    ctx.out.push({ path: `${path}/@${x.name}`, code: 'atributo_desconhecido', message: 'atributo fora do schema' });
+    ctx.out.push({ caminho: `${path}/@${x.nome}`, code: 'atributo_desconhecido', mensagem: 'atributo fora do schema' });
   }
 }
 
 function checkUnique(
   attrs: readonly string[],
-  el: XmlElement,
+  el: ElementoXml,
   t: ComplexType | SimpleType,
   path: string,
   ctx: Ctx,
 ): void {
-  const kids = childElements(el);
+  const kids = elementosFilhos(el);
   const kidDecls = isComplexType(t) ? declsOf(t) : undefined;
   for (const attr of attrs) {
     const seen = new Set<string>();
     for (const k of kids) {
-      const a = k.attributes.find((x) => x.local === attr && x.ns === '');
+      const a = k.atributos.find((x) => x.local === attr && x.ns === '');
       if (!a) continue;
       const kt = kidDecls?.get(k.local)?.t;
       const at = kt && isComplexType(kt) ? kt.a?.find((d) => d.a === attr)?.t : undefined;
-      const value = at ? normalize(at, a.value) : a.value;
+      const value = at ? normalize(at, a.valor) : a.valor;
       if (seen.has(value)) {
         ctx.out.push({
-          path: `${path}/${k.local}/@${attr}`,
+          caminho: `${path}/${k.local}/@${attr}`,
           code: 'unico',
-          message: `@${attr} repetido entre os filhos`,
+          mensagem: `@${attr} repetido entre os filhos`,
         });
       }
       seen.add(value);
@@ -476,22 +479,22 @@ function checkUnique(
   }
 }
 
-function validateElement(ct: ComplexType, el: XmlElement, path: string, ctx: Ctx): void {
+function validateElement(ct: ComplexType, el: ElementoXml, path: string, ctx: Ctx): void {
   checkAttributes(ct, el, path, ctx);
   if (ct.tx) {
-    for (const c of el.children) {
-      if (c.type === 'element') {
-        ctx.out.push({ path, code: 'elemento_em_tipo_simples', message: 'elemento em conteúdo simples' });
+    for (const c of el.filhos) {
+      if (c.tipo === 'elemento') {
+        ctx.out.push({ caminho: path, code: 'elemento_em_tipo_simples', mensagem: 'elemento em conteúdo simples' });
         break;
       }
     }
     checkSimple(ct.tx, textOnly(el), path, ctx.out);
     return;
   }
-  const kids = childElements(el);
-  for (const c of el.children) {
-    if (c.type === 'text' && !/^[ \t\n\r]*$/.test(c.value)) {
-      ctx.out.push({ path, code: 'texto_em_elemento', message: 'texto em elemento só de elementos' });
+  const kids = elementosFilhos(el);
+  for (const c of el.filhos) {
+    if (c.tipo === 'texto' && !/^[ \t\n\r]*$/.test(c.valor)) {
+      ctx.out.push({ caminho: path, code: 'texto_em_elemento', mensagem: 'texto em elemento só de elementos' });
       break;
     }
   }
@@ -501,8 +504,12 @@ function validateElement(ct: ComplexType, el: XmlElement, path: string, ctx: Ctx
     const unknown = hasWildcard(ct.c) ? undefined : kids.find((k) => !decls.has(k.local));
     ctx.out.push(
       unknown
-        ? { path: `${path}/${unknown.local}`, code: 'elemento_desconhecido', message: 'elemento fora do schema' }
-        : { path, code: 'modelo_de_conteudo', message: `filhos fora da ordem, faltando ou sobrando em ${ct.id}` },
+        ? { caminho: `${path}/${unknown.local}`, code: 'elemento_desconhecido', mensagem: 'elemento fora do schema' }
+        : {
+            caminho: path,
+            code: 'modelo_de_conteudo',
+            mensagem: `filhos fora da ordem, faltando ou sobrando em ${ct.id}`,
+          },
     );
   }
   const counts = new Map<string, number>();
@@ -519,8 +526,8 @@ function validateElement(ct: ComplexType, el: XmlElement, path: string, ctx: Ctx
     if (isComplexType(t)) validateElement(t, k, kp, ctx);
     else {
       checkNoAttributes(k, kp, ctx);
-      if (childElements(k).length > 0) {
-        ctx.out.push({ path: kp, code: 'elemento_em_tipo_simples', message: 'elemento em tipo simples' });
+      if (elementosFilhos(k).length > 0) {
+        ctx.out.push({ caminho: kp, code: 'elemento_em_tipo_simples', mensagem: 'elemento em tipo simples' });
       }
       checkSimple(t, textOnly(k), kp, ctx.out);
     }
@@ -528,25 +535,27 @@ function validateElement(ct: ComplexType, el: XmlElement, path: string, ctx: Ctx
 }
 
 /** Valida o elemento `el` como o tipo `ct`. Lista vazia = válido. */
-export function validate(ct: ComplexType, el: XmlElement): SchemaIssue[] {
+export function validate(ct: ComplexType, el: ElementoXml): SchemaIssue[] {
   const ctx: Ctx = { out: [], ids: new Map() };
   validateElement(ct, el, `/${el.local}`, ctx);
   return ctx.out;
 }
 
 /** Valida um documento (string ou já parseado) pela raiz esperada. Lança `XmlError` se o XML for malformado. */
-export function validateRoot<T>(root: RootElement<T>, xml: string | XmlDocument): SchemaIssue[] {
-  const doc = typeof xml === 'string' ? parseXml(xml) : xml;
-  if (doc.root.local !== root.name || doc.root.ns !== root.ns) {
-    return [{ path: `/${doc.root.local}`, code: 'raiz_inesperada', message: `raiz esperada {${root.ns}}${root.name}` }];
+export function validateRoot<T>(root: RootElement<T>, xml: string | DocumentoXml): SchemaIssue[] {
+  const doc = typeof xml === 'string' ? lerXml(xml) : xml;
+  if (doc.raiz.local !== root.name || doc.raiz.ns !== root.ns) {
+    return [
+      { caminho: `/${doc.raiz.local}`, code: 'raiz_inesperada', mensagem: `raiz esperada {${root.ns}}${root.name}` },
+    ];
   }
-  return validate(root.type as ComplexType, doc.root);
+  return validate(root.type as ComplexType, doc.raiz);
 }
 
 /** Como `validateRoot`, mas lança `ValidationError` (`validacao_falhou`) com todas as ocorrências. */
-export function assertValid<T>(root: RootElement<T>, xml: string | XmlDocument): void {
+export function assertValid<T>(root: RootElement<T>, xml: string | DocumentoXml): void {
   const issues = validateRoot(root, xml);
   if (issues.length > 0) {
-    throw new ValidationError(`${root.name}: ${issues.length} ocorrência(s) de schema`, issues);
+    throw new ErroDeValidacao(`${root.name}: ${issues.length} ocorrência(s) de schema`, issues);
   }
 }

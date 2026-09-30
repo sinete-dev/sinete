@@ -16,15 +16,15 @@ Status: pré-alfa, API instável até a 1.0. Contra a SEFAZ real, só em homolog
 ## API completa
 
 ```ts
-import { systemClock, timeContext } from '@sinete/core';
+import { relogioDoSistema, contextoDeTempo } from '@sinete/core';
 import { buildNfe, createNfeClient, signNfe } from '@sinete/nfe';
 
-const r = await buildNfe(nota, { ambiente: 'homologacao', time: timeContext({ emissao: systemClock }) });
-if (!r.ok) throw new Error(r.issues.map((i) => `${i.path}: ${i.message}`).join('\n'));
+const r = await buildNfe(nota, { ambiente: 'homologacao', time: contextoDeTempo({ emissao: relogioDoSistema }) });
+if (!r.ok) throw new Error(r.issues.map((i) => `${i.caminho}: ${i.mensagem}`).join('\n'));
 const assinada = await signNfe(r.value, signer); // grave esta string antes de enviar
-const client = createNfeClient({ transport, signer, ambiente: 'homologacao', uf: 'SP', clock: systemClock });
+const client = createNfeClient({ transport, signer, ambiente: 'homologacao', uf: 'SP', clock: relogioDoSistema });
 const desfecho = await client.autorizar(assinada);
-if (desfecho.status === 'authorized') guardar(desfecho.value.nfeProc);
+if (desfecho.tipo === 'autorizado') guardar(desfecho.valor.nfeProc);
 ```
 
 ## Montagem (`buildNfe`)

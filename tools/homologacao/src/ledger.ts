@@ -6,7 +6,7 @@
 import { appendFileSync, mkdirSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { systemClock } from '@sinete/core';
+import { relogioDoSistema } from '@sinete/core';
 import { detectRuntime } from '@sinete/transport';
 
 export const LEDGER_PADRAO: string = join(homedir(), '.local/state/sinete/cert-usage.log');
@@ -18,7 +18,7 @@ export interface Ledger {
   registrar(host: string, servico: string, desfecho: string): void;
 }
 
-export function ledger(path: string = LEDGER_PADRAO, now: () => Date = () => systemClock.now()): Ledger {
+export function ledger(path: string = LEDGER_PADRAO, now: () => Date = () => relogioDoSistema.agora()): Ledger {
   return {
     path,
     registrar(host, servico, desfecho): void {

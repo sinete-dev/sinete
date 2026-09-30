@@ -8,7 +8,7 @@
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import type { Ambiente, Uf } from '@sinete/core';
-import { isAmbiente, isUf } from '@sinete/core';
+import { ehAmbiente, ehUf } from '@sinete/core';
 import { CLAUDE_MD, DIRETORIOS_SKILL, upsertBloco, upsertSkill } from './agents-md.ts';
 import { BLOCO_AGENTS } from './bloco-agents.ts';
 import type { DoctorOptions, DoctorReport } from './doctor.ts';
@@ -209,9 +209,9 @@ export async function main(argv: readonly string[], io: CliIo): Promise<number> 
   };
   if (typeof values.pfx !== 'string') return fail('informe --pfx');
   const uf = typeof values.uf === 'string' ? values.uf.toUpperCase() : undefined;
-  if (uf !== undefined && !isUf(uf)) return fail(`UF inválida: ${values.uf}`);
+  if (uf !== undefined && !ehUf(uf)) return fail(`UF inválida: ${values.uf}`);
   const ambiente = values.ambiente as string;
-  if (!isAmbiente(ambiente)) return fail(`ambiente inválido: ${ambiente}`);
+  if (!ehAmbiente(ambiente)) return fail(`ambiente inválido: ${ambiente}`);
   const documento = values.documento as string | undefined;
   if (documento !== undefined && !['nfe', 'mdfe', 'nfse'].includes(documento))
     return fail(`documento inválido: ${documento}`);

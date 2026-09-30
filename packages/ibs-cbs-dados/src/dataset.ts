@@ -141,13 +141,13 @@ function checkShape(bundle: unknown): asserts bundle is DatasetBundle {
     throw new IbsCbsDataError(
       'ibscbs_dados_versao_incompativel',
       `dataSchemaVersion ${v} não suportado; este código lê a versão ${DATA_SCHEMA_VERSION}`,
-      { details: { dataSchemaVersion: v, supported: DATA_SCHEMA_VERSION } },
+      { detalhes: { dataSchemaVersion: v, supported: DATA_SCHEMA_VERSION } },
     );
   }
   for (const name of TABLE_NAMES) {
     if (!Array.isArray((b.tables as unknown as Record<string, unknown>)[name])) {
       throw new IbsCbsDataError('ibscbs_dados_invalidos', `tabela ${name} ausente no bundle`, {
-        details: { table: name },
+        detalhes: { table: name },
       });
     }
   }
@@ -266,7 +266,7 @@ export function loadDataset(bundle: DatasetBundle): IbsCbsDataset {
     for (const r of tables[name]) {
       if (!classByKey.has(r.classTribKey)) {
         throw new IbsCbsDataError('ibscbs_dados_invalidos', `${name}: ${r.key} aponta para cClassTrib inexistente`, {
-          details: { table: name, key: r.key },
+          detalhes: { table: name, key: r.key },
         });
       }
     }
@@ -294,7 +294,7 @@ export async function verifyDataset(bundle: DatasetBundle): Promise<void> {
       'ibscbs_dados_invalidos',
       'manifest não lista cada tabela do dataset exatamente uma vez',
       {
-        details: { missing, extra },
+        detalhes: { missing, extra },
       },
     );
   }
@@ -305,7 +305,7 @@ export async function verifyDataset(bundle: DatasetBundle): Promise<void> {
     const got = await sha256Hex(canonicalTable(records));
     if (got !== t.sha256 || records.length !== t.records) {
       throw new IbsCbsDataError('ibscbs_dados_invalidos', `tabela ${t.name} não confere com o manifest`, {
-        details: { table: t.name, expected: t.sha256, got },
+        detalhes: { table: t.name, expected: t.sha256, got },
       });
     }
     lines.push(`${t.sha256}  ${t.name}`);
@@ -313,7 +313,7 @@ export async function verifyDataset(bundle: DatasetBundle): Promise<void> {
   const all = await sha256Hex(lines.join('\n'));
   if (all !== bundle.manifest.datasetSha256) {
     throw new IbsCbsDataError('ibscbs_dados_invalidos', 'datasetSha256 não confere com as tabelas', {
-      details: { expected: bundle.manifest.datasetSha256, got: all },
+      detalhes: { expected: bundle.manifest.datasetSha256, got: all },
     });
   }
 }

@@ -17,27 +17,27 @@
 const SINETE_ERROR: unique symbol = Symbol.for('sinete.error');
 
 /** Detalhes estruturados do erro, serializáveis e sem segredo (nunca PIN, chave ou certificado). */
-export type ErrorDetails = Readonly<Record<string, unknown>>;
+export type DetalhesDoErro = Readonly<Record<string, unknown>>;
 
-export interface SineteErrorOptions {
+export interface ErroSineteOpcoes {
   /** Erro original, preservado como `Error.cause`. */
   readonly cause?: unknown;
-  readonly details?: ErrorDetails;
+  readonly detalhes?: DetalhesDoErro;
 }
 
 /** Forma do erro em `JSON.stringify`, para log estruturado. */
-export interface SerializedError {
+export interface ErroSerializado {
   readonly name: string;
   readonly code: string;
   readonly message: string;
   /** Página do código na documentação embarcada (veja `SineteError.docs`). */
-  readonly docs?: string;
-  readonly details?: ErrorDetails;
-  readonly cause?: SerializedError | { readonly name: string; readonly message: string } | string;
+  readonly pagina?: string;
+  readonly detalhes?: DetalhesDoErro;
+  readonly cause?: ErroSerializado | { readonly name: string; readonly message: string } | string;
 }
 
-function serializeCause(cause: unknown): NonNullable<SerializedError['cause']> {
-  if (isSineteError(cause)) return cause.toJSON();
+function serializeCause(cause: unknown): NonNullable<ErroSerializado['cause']> {
+  if (ehErroSinete(cause)) return cause.toJSON();
   if (cause instanceof Error) return { name: cause.name, message: cause.message };
   return String(cause);
 }
@@ -52,36 +52,36 @@ export function paginaDoErro(code: string): string {
 }
 
 /** Base de todos os erros do sinete. */
-export class SineteError<C extends string = string> extends Error {
+export class ErroSinete<C extends string = string> extends Error {
   static {
-    Object.defineProperty(SineteError.prototype, SINETE_ERROR, { value: true });
+    Object.defineProperty(ErroSinete.prototype, SINETE_ERROR, { value: true });
   }
 
   readonly code: C;
-  readonly details: ErrorDetails | undefined;
+  readonly detalhes: DetalhesDoErro | undefined;
   /**
    * Caminho da página deste código na documentação embarcada (`erros/<code>.md`), relativo à pasta `docs/` do pacote
    * `sinete` ou do `@sinete/emissor` instalado: causa, correção canônica e armadilha. Propriedade própria, para aparecer
    * quando o runtime imprime o erro.
    */
-  readonly docs: string;
+  readonly pagina: string;
 
-  constructor(code: C, message: string, options: SineteErrorOptions = {}) {
+  constructor(code: C, message: string, options: ErroSineteOpcoes = {}) {
     super(message, 'cause' in options ? { cause: options.cause } : undefined);
     // Nome fixo em cada classe: `constructor.name` não sobrevive à minificação do bundler do consumidor.
-    this.name = 'SineteError';
+    this.name = 'ErroSinete';
     this.code = code;
-    this.details = options.details;
-    this.docs = paginaDoErro(code);
+    this.detalhes = options.detalhes;
+    this.pagina = paginaDoErro(code);
   }
 
-  toJSON(): SerializedError {
+  toJSON(): ErroSerializado {
     return {
       name: this.name,
       code: this.code,
       message: this.message,
-      docs: this.docs,
-      ...(this.details === undefined ? {} : { details: this.details }),
+      pagina: this.pagina,
+      ...(this.detalhes === undefined ? {} : { detalhes: this.detalhes }),
       ...(this.cause === undefined ? {} : { cause: serializeCause(this.cause) }),
     };
   }
@@ -91,17 +91,17 @@ export class SineteError<C extends string = string> extends Error {
  * Confere se `value` é um `SineteError`, inclusive vindo de outra cópia do pacote. Com `code`, confere também o
  * código.
  */
-export function isSineteError(value: unknown, code?: string): value is SineteError {
+export function ehErroSinete(value: unknown, code?: string): value is ErroSinete {
   if (typeof value !== 'object' || value === null) return false;
   if ((value as { [SINETE_ERROR]?: unknown })[SINETE_ERROR] !== true) return false;
   return code === undefined || (value as { code?: unknown }).code === code;
 }
 
 /** Configuração inválida passada pelo chamador (opção ausente, valor fora do domínio, data inválida). */
-export class ConfigError extends SineteError<'config_invalida'> {
-  constructor(message: string, options?: SineteErrorOptions) {
+export class ErroDeConfiguracao extends ErroSinete<'config_invalida'> {
+  constructor(message: string, options?: ErroSineteOpcoes) {
     super('config_invalida', message, options);
-    this.name = 'ConfigError';
+    this.name = 'ErroDeConfiguracao';
   }
 }
 
@@ -117,11 +117,11 @@ export class ConfigError extends SineteError<'config_invalida'> {
 export type OrigemOcorrencia = 'entrada' | 'montagem';
 
 /** Uma ocorrência de validação local, com o caminho do campo (`infNFe.emit.CNPJ`, `[3].cUF`). */
-export interface ValidationIssue {
-  readonly path: string;
+export interface Ocorrencia {
+  readonly caminho: string;
   /** Código estável da ocorrência, no mesmo formato dos códigos de erro. */
   readonly code: string;
-  readonly message: string;
+  readonly mensagem: string;
   /**
    * De onde vem a ocorrência (veja `OrigemOcorrencia`). Os montadores do sinete (`buildNfe`, `buildMdfe`, `buildDps`)
    * sempre preenchem; ausente, a ocorrência não foi classificada (validadores avulsos, ocorrência criada fora do
@@ -131,25 +131,25 @@ export interface ValidationIssue {
 }
 
 /** Dado recusado pela validação local, antes de chegar à SEFAZ. Traz todas as ocorrências, não só a primeira. */
-export class ValidationError extends SineteError<'validacao_falhou'> {
-  readonly issues: readonly ValidationIssue[];
+export class ErroDeValidacao extends ErroSinete<'validacao_falhou'> {
+  readonly ocorrencias: readonly Ocorrencia[];
 
-  constructor(message: string, issues: readonly ValidationIssue[], options?: SineteErrorOptions) {
+  constructor(message: string, issues: readonly Ocorrencia[], options?: ErroSineteOpcoes) {
     super('validacao_falhou', message, options);
-    this.name = 'ValidationError';
-    this.issues = issues;
+    this.name = 'ErroDeValidacao';
+    this.ocorrencias = issues;
   }
 
-  override toJSON(): SerializedError {
-    return { ...super.toJSON(), details: { ...this.details, issues: this.issues } };
+  override toJSON(): ErroSerializado {
+    return { ...super.toJSON(), detalhes: { ...this.detalhes, issues: this.ocorrencias } };
   }
 }
 
 /** A runtime ou o ambiente não suporta o recurso pedido (ex.: o transporte do Deno para um host com renegociação). */
-export class UnsupportedError extends SineteError<'nao_suportado'> {
-  constructor(message: string, options?: SineteErrorOptions) {
+export class ErroNaoSuportado extends ErroSinete<'nao_suportado'> {
+  constructor(message: string, options?: ErroSineteOpcoes) {
     super('nao_suportado', message, options);
-    this.name = 'UnsupportedError';
+    this.name = 'ErroNaoSuportado';
   }
 }
 
@@ -159,58 +159,58 @@ export class UnsupportedError extends SineteError<'nao_suportado'> {
  * não um erro de configuração: repetir falha igual, e o integrador decide o que fazer sem o serviço. `details` traz
  * `autorizador`, `servico`, `ambiente` e, quando houver, `uf` e a `source` da tabela.
  */
-export class ServicoNaoOferecidoError extends SineteError<'servico_nao_oferecido'> {
-  constructor(message: string, options?: SineteErrorOptions) {
+export class ErroServicoNaoOferecido extends ErroSinete<'servico_nao_oferecido'> {
+  constructor(message: string, options?: ErroSineteOpcoes) {
     super('servico_nao_oferecido', message, options);
-    this.name = 'ServicoNaoOferecidoError';
+    this.name = 'ErroServicoNaoOferecido';
   }
 }
 
 /** Uma operação passou do prazo configurado. */
-export class TimeoutError extends SineteError<'tempo_esgotado'> {
+export class ErroDeTempoEsgotado extends ErroSinete<'tempo_esgotado'> {
   readonly timeoutMs: number;
 
-  constructor(message: string, timeoutMs: number, options?: SineteErrorOptions) {
+  constructor(message: string, timeoutMs: number, options?: ErroSineteOpcoes) {
     super('tempo_esgotado', message, options);
-    this.name = 'TimeoutError';
+    this.name = 'ErroDeTempoEsgotado';
     this.timeoutMs = timeoutMs;
   }
 }
 
 /** A resposta recebida não segue o leiaute esperado (XML malformado, grupo obrigatório ausente, cStat inválido). */
-export class ProtocolError extends SineteError<'resposta_invalida'> {
-  constructor(message: string, options?: SineteErrorOptions) {
+export class ErroRespostaInvalida extends ErroSinete<'resposta_invalida'> {
+  constructor(message: string, options?: ErroSineteOpcoes) {
     super('resposta_invalida', message, options);
-    this.name = 'ProtocolError';
+    this.name = 'ErroRespostaInvalida';
   }
 }
 
 /** Códigos lançados pelas classes do `@sinete/core`. Os outros pacotes declaram os próprios. */
-export type CoreErrorCode =
+export type CodigoErroCore =
   | 'config_invalida'
   | 'validacao_falhou'
   | 'nao_suportado'
   | 'servico_nao_oferecido'
   | 'tempo_esgotado'
   | 'resposta_invalida'
-  | SefazErrorCode;
+  | CodigoErroSefaz;
 
 /** Códigos do `SefazError`, um por desfecho não autorizado. */
-export type SefazErrorCode = 'sefaz_rejeitou' | 'sefaz_denegou' | 'sefaz_pendente';
+export type CodigoErroSefaz = 'sefaz_rejeitou' | 'sefaz_denegou' | 'sefaz_pendente';
 
 /** Lançado por `unwrapAuthorized` quando o desfecho não é autorização. Carrega `cStat` e `xMotivo` oficiais. */
-export class SefazError extends SineteError<SefazErrorCode> {
+export class ErroSefaz extends ErroSinete<CodigoErroSefaz> {
   readonly cStat: string;
   readonly xMotivo: string;
 
-  constructor(code: SefazErrorCode, cStat: string, xMotivo: string, options?: SineteErrorOptions) {
+  constructor(code: CodigoErroSefaz, cStat: string, xMotivo: string, options?: ErroSineteOpcoes) {
     super(code, `SEFAZ ${cStat}: ${xMotivo}`, options);
-    this.name = 'SefazError';
+    this.name = 'ErroSefaz';
     this.cStat = cStat;
     this.xMotivo = xMotivo;
   }
 
-  override toJSON(): SerializedError {
-    return { ...super.toJSON(), details: { ...this.details, cStat: this.cStat, xMotivo: this.xMotivo } };
+  override toJSON(): ErroSerializado {
+    return { ...super.toJSON(), detalhes: { ...this.detalhes, cStat: this.cStat, xMotivo: this.xMotivo } };
   }
 }
