@@ -28,10 +28,12 @@ export type {
   ManifestacaoTipo,
   NfeClient,
   NfeClientOptions,
+  OpcoesEnvio,
   PoliticaRecibo,
   ProtocoloNfe,
   Sleep,
   StatusServico,
+  StatusServicoOpcoes,
 } from './client.ts';
 export { autorizadorContingencia, createNfeClient } from './client.ts';
 export { gunzipBase64 } from './gzip.ts';

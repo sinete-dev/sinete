@@ -549,3 +549,68 @@ describe('eventos', () => {
     ).rejects.toBeInstanceOf(ValidationError);
   });
 });
+
+describe('signal', () => {
+  test('todo método que vai à rede repassa o signal: abortado, recusa sem chegar à SEFAZ', async () => {
+    const s = cenario();
+    const a = await s.autorizado();
+    const ac = new AbortController();
+    ac.abort(new Error('parou'));
+    const signal = ac.signal;
+    const pagamentos = [
+      {
+        CPF: CPF_CONDUTOR,
+        componentes: [{ tpComp: '04' as const, vComp: '1500.00' }],
+        indPag: '0' as const,
+        banco: { PIX: 'pix-tac@exemplo.invalid' },
+      },
+    ];
+    const chamadas: readonly (readonly [string, () => Promise<unknown>])[] = [
+      ['statusServico', () => s.client.statusServico({ signal })],
+      ['autorizar', async () => s.client.autorizar((await s.emitir(cargaPropria({ nMDF: 9 }))).xml, { signal })],
+      ['consultar', () => s.client.consultar(a.chave, undefined, { signal })],
+      ['consultarNaoEncerrados', () => s.client.consultarNaoEncerrados(undefined, { signal })],
+      [
+        'cancelar',
+        () => s.client.cancelar({ chave: a.chave, nProt: a.nProt, xJust: 'JUSTIFICATIVA SINTETICA' }, { signal }),
+      ],
+      ['encerrar', () => s.client.encerrar({ chave: a.chave, nProt: a.nProt, uf: 'SP', cMun: '3550308' }, { signal })],
+      [
+        'incluirCondutor',
+        () =>
+          s.client.incluirCondutor(
+            { chave: a.chave, nSeqEvento: 1, condutor: { xNome: 'SEGUNDO CONDUTOR', CPF: CPF_EMIT } },
+            { signal },
+          ),
+      ],
+      [
+        'incluirDFe',
+        () =>
+          s.client.incluirDFe(
+            {
+              chave: a.chave,
+              nProt: a.nProt,
+              nSeqEvento: 1,
+              carregamento: { cMun: '5103403', xMun: 'CUIABA' },
+              documentos: [{ cMunDescarga: '5108402', xMunDescarga: 'VARZEA GRANDE', chNFe: chaveDoc(1) }],
+            },
+            { signal },
+          ),
+      ],
+      [
+        'pagamentoOperacao',
+        () =>
+          s.client.pagamentoOperacao(
+            { chave: a.chave, nProt: a.nProt, qtdViagens: 1, nroViagem: 1, pagamentos },
+            { signal },
+          ),
+      ],
+    ];
+    for (const [nome, chamar] of chamadas) {
+      const erro = await chamar().catch((e: unknown) => e);
+      expect([nome, erro]).toMatchObject([nome, { code: 'cancelado', cause: signal.reason }]);
+    }
+    expect(s.sim.inspect.mdfes()).toHaveLength(1);
+    expect(s.sim.inspect.mdfe(a.chave)?.situacao).toBe('autorizado');
+  });
+});

@@ -41,7 +41,6 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 
 ### Interfaces
 
-- `AutorizarOpcoes`: Opções do envio para autorização. Membros: `signal`.
 - `BuildMdfeOptions`: Membros: `ambiente`, `time`, `offsetMinutes`, `verProc`, `tpEmis`, `respTec`, `random`.
 - `BuiltMdfe`: Membros: `chave`, `id`, `cMDF`, `cDV`, `tpEmis`, `tpAmb`, `dhEmi`, `schema`, `infMDFe`, `xml`.
 - `CancelamentoPedido`: Membros: `chave`, `nProt`, `xJust`.
@@ -62,6 +61,7 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `MdfeInput`: Membros: `tpEmit`, `tpTransp`, `serie`, `nMDF`, `cMDF`, `emitente`, `ufIni`, `ufFim`, `carregamento`, `percurso`, `dhIniViagem`, `indCanalVerde`, `indCarregaPosterior`, `rodoviario`, `descarregamentos`, `seguros`, `produtoPredominante`, `totais`, `lacres`, `autXML`, `informacoesAdicionais`, `respTec`.
 - `MdfeNaoEncerrado`: MDF-e autorizado e ainda não encerrado do emitente. Membros: `chMDFe`, `nProt`.
 - `MunicipioCarregamento`: Membros: `cMun`, `xMun`.
+- `OpcoesEnvio`: Opções de toda chamada que vai à rede. Membros: `signal`.
 - `PagamentoOperacaoPedido`: Membros: `chave`, `nProt`, `nSeqEvento`, `qtdViagens`, `nroViagem`, `pagamentos`.
 - `ParcelaPagamento`: Membros: `dVenc`, `vParcela`.
 - `ProdutoPerigoso`: Produto perigoso transportado (`peri`). Membros: `nONU`, `xNomeAE`, `xClaRisco`, `grEmb`, `qTotProd`, `qVolTipo`.
@@ -81,6 +81,7 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 
 - `AutorDocumento`: CNPJ ou CPF do emitente para a consulta dos não encerrados. `type AutorDocumento = { readonly CNPJ: string; readonly CPF?: never; } | { readonly CPF: string; readonly CNPJ?: never; }`
 - `AutorizacaoOutcome`: `type AutorizacaoOutcome = SefazOutcome<ProtocoloMdfe, never>`
+- `AutorizarOpcoes`: Opções do envio para autorização. `type AutorizarOpcoes = OpcoesEnvio`
 - `BuildMdfeResult`: `type BuildMdfeResult = { readonly ok: true; readonly value: BuiltMdfe; } | { readonly ok: false; readonly issues: readonly ValidationIssue[]; }`
 - `Ciot`: CIOT (`infCIOT`): código e o CPF ou CNPJ do responsável pela geração. O código é opcional desde a NT 2025.001. `type Ciot = DocumentoPessoa & { readonly CIOT?: string; }`
 - `ConsultaOutcome`: `type ConsultaOutcome = SefazOutcome<ConsultaMdfe, never>`

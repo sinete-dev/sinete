@@ -15,6 +15,7 @@ export type {
   MdfeClient,
   MdfeClientOptions,
   MdfeNaoEncerrado,
+  OpcoesEnvio,
   PagamentoOperacaoPedido,
   ProtocoloMdfe,
   StatusServico,

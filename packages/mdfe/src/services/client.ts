@@ -109,11 +109,14 @@ export interface ProtocoloMdfe {
 
 export type AutorizacaoOutcome = SefazOutcome<ProtocoloMdfe, never>;
 
-/** Opções do envio para autorização. */
-export interface AutorizarOpcoes {
+/** Opções de toda chamada que vai à rede. */
+export interface OpcoesEnvio {
   /** Cancela a requisição em curso. */
   readonly signal?: AbortSignal;
 }
+
+/** Opções do envio para autorização. */
+export type AutorizarOpcoes = OpcoesEnvio;
 
 /** Situação do MDF-e na consulta: autorizado (100), cancelado (101) ou encerrado (132). */
 export interface ConsultaMdfe {
@@ -204,21 +207,24 @@ export interface PagamentoOperacaoPedido {
 
 export interface MdfeClient {
   readonly options: MdfeClientOptions;
-  statusServico(): Promise<SefazOutcome<StatusServico, never>>;
+  statusServico(opcoes?: OpcoesEnvio): Promise<SefazOutcome<StatusServico, never>>;
   /**
    * Envia um MDF-e assinado (a string devolvida pelo `signMdfe`, sem outra alteração). O `tpAmb` do MDF-e diferente do
    * ambiente do cliente lança `PolicyError` antes do envio.
    */
   autorizar(mdfeAssinado: string, opcoes?: AutorizarOpcoes): Promise<AutorizacaoOutcome>;
   /** Situação do MDF-e; com o MDF-e assinado, confere o `digVal` e monta o `mdfeProc`. */
-  consultar(chave: string, mdfeAssinado?: string): Promise<ConsultaOutcome>;
+  consultar(chave: string, mdfeAssinado?: string, opcoes?: OpcoesEnvio): Promise<ConsultaOutcome>;
   /** MDF-e autorizados e não encerrados do emitente (111 com a lista; 112 sem nenhum). */
-  consultarNaoEncerrados(autor?: AutorDocumento): Promise<SefazOutcome<readonly MdfeNaoEncerrado[], never>>;
-  cancelar(p: CancelamentoPedido): Promise<EventoOutcome>;
-  encerrar(p: EncerramentoPedido): Promise<EventoOutcome>;
-  incluirCondutor(p: InclusaoCondutorPedido): Promise<EventoOutcome>;
-  incluirDFe(p: InclusaoDfePedido): Promise<EventoOutcome>;
-  pagamentoOperacao(p: PagamentoOperacaoPedido): Promise<EventoOutcome>;
+  consultarNaoEncerrados(
+    autor?: AutorDocumento,
+    opcoes?: OpcoesEnvio,
+  ): Promise<SefazOutcome<readonly MdfeNaoEncerrado[], never>>;
+  cancelar(p: CancelamentoPedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome>;
+  encerrar(p: EncerramentoPedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome>;
+  incluirCondutor(p: InclusaoCondutorPedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome>;
+  incluirDFe(p: InclusaoDfePedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome>;
+  pagamentoOperacao(p: PagamentoOperacaoPedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome>;
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -333,6 +339,7 @@ interface EventoPedido {
   readonly detalhe: { readonly nome: keyof TEvento_infEvento_detEvento; readonly valor: Record<string, unknown> };
   /** Autor que não é o emitente da chave (encerramento pelo transportador terceiro). */
   readonly autor?: { CNPJ: string } | { CPF: string };
+  readonly signal: AbortSignal | undefined;
 }
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -388,7 +395,7 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
     const infEl = firstChild(parseXml(evento).root, 'infEvento', MDFE_NS) as XmlElement;
     schemaIssues('evento', validate(TEvento_infEvento, infEl));
     const assinado = await signXml(evento, { id }, options.signer);
-    const r = await call('MDFeRecepcaoEvento', assinado, 'retEventoMDFe', undefined, 'infEvento');
+    const r = await call('MDFeRecepcaoEvento', assinado, 'retEventoMDFe', p.signal, 'infEvento');
     const ret = decode(TRetEvento, r.ret, r.doc.source).value.infEvento;
     logger.info('mdfe.evento', { chMDFe: p.c.chave, tpEvento: p.tpEvento, cStat: ret.cStat });
     const status = { cStat: ret.cStat, xMotivo: ret.xMotivo };
@@ -426,9 +433,9 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
   const client: MdfeClient = {
     options,
 
-    async statusServico(): Promise<SefazOutcome<StatusServico, never>> {
+    async statusServico(opcoes?: OpcoesEnvio): Promise<SefazOutcome<StatusServico, never>> {
       const msg = serializeRoot(consStatServMDFeElement, { versao: VERSAO, tpAmb, xServ: 'STATUS' });
-      const r = await call('MDFeStatusServico', msg, 'retConsStatServMDFe');
+      const r = await call('MDFeStatusServico', msg, 'retConsStatServMDFe', opcoes?.signal);
       const v = decode(TRetConsStatServ, r.ret, r.doc.source).value;
       const status = { cStat: v.cStat, xMotivo: v.xMotivo };
       logger.info('mdfe.status', { cStat: v.cStat });
@@ -458,12 +465,12 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
       return authorized(status, comProc(lido, a));
     },
 
-    async consultar(chave: string, mdfeAssinado?: string): Promise<ConsultaOutcome> {
+    async consultar(chave: string, mdfeAssinado?: string, opcoes?: OpcoesEnvio): Promise<ConsultaOutcome> {
       const c = chaveValida(chave, 'chMDFe');
       const a = mdfeAssinado === undefined ? undefined : documentoAssinado(mdfeAssinado, 'MDFe', 'infMDFe');
       if (a && a.id !== `MDFe${c.chave}`) throw new ConfigError('o MDF-e assinado não é o da chave consultada');
       const msg = serializeRoot(consSitMDFeElement, { versao: VERSAO, tpAmb, xServ: 'CONSULTAR', chMDFe: c.chave });
-      const r = await call('MDFeConsulta', msg, 'retConsSitMDFe');
+      const r = await call('MDFeConsulta', msg, 'retConsSitMDFe', opcoes?.signal);
       const txt = (local: string): string => {
         const el = firstChild(r.ret, local, MDFE_NS);
         return el === undefined ? '' : textOf(el).trim();
@@ -511,7 +518,10 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
       });
     },
 
-    async consultarNaoEncerrados(autor?: AutorDocumento): Promise<SefazOutcome<readonly MdfeNaoEncerrado[], never>> {
+    async consultarNaoEncerrados(
+      autor?: AutorDocumento,
+      opcoes?: OpcoesEnvio,
+    ): Promise<SefazOutcome<readonly MdfeNaoEncerrado[], never>> {
       const quem = autor ?? options.autor;
       if (!quem) throw new ConfigError('informe o CNPJ ou CPF do emitente (argumento ou MdfeClientOptions.autor)');
       const doc = documentoAutor(quem, 'autor');
@@ -521,7 +531,7 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
         xServ: 'CONSULTAR NÃO ENCERRADOS',
         ...doc,
       } as TConsMDFeNaoEnc);
-      const r = await call('MDFeConsNaoEnc', msg, 'retConsMDFeNaoEnc');
+      const r = await call('MDFeConsNaoEnc', msg, 'retConsMDFeNaoEnc', opcoes?.signal);
       const v = decode(TRetConsMDFeNaoEnc, r.ret, r.doc.source).value;
       const status = { cStat: v.cStat, xMotivo: v.xMotivo };
       logger.info('mdfe.nao-encerrados', { cStat: v.cStat, quantidade: v.infMDFe?.length ?? 0 });
@@ -533,7 +543,7 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
       );
     },
 
-    async cancelar(p: CancelamentoPedido): Promise<EventoOutcome> {
+    async cancelar(p: CancelamentoPedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome> {
       const c = chaveValida(p.chave, 'chave');
       return enviarEvento({
         c,
@@ -543,10 +553,11 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
           nome: 'evCancMDFe',
           valor: { descEvento: 'Cancelamento', nProt: nProtValido(p.nProt), xJust: p.xJust },
         },
+        signal: opcoes?.signal,
       });
     },
 
-    async encerrar(p: EncerramentoPedido): Promise<EventoOutcome> {
+    async encerrar(p: EncerramentoPedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome> {
       const c = chaveValida(p.chave, 'chave');
       const exterior = p.uf === 'EX';
       const cUF = exterior ? '99' : cUFdaUf(p.uf);
@@ -588,10 +599,11 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
             ...(terceiro === undefined ? {} : { indEncPorTerceiro: '1' }),
           },
         },
+        signal: opcoes?.signal,
       });
     },
 
-    async incluirCondutor(p: InclusaoCondutorPedido): Promise<EventoOutcome> {
+    async incluirCondutor(p: InclusaoCondutorPedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome> {
       const c = chaveValida(p.chave, 'chave');
       if (!Number.isInteger(p.nSeqEvento) || p.nSeqEvento < 1 || p.nSeqEvento > 99) {
         throw new ConfigError(`nSeqEvento da inclusão de condutor vai de 1 a 99 (K01): ${p.nSeqEvento}`);
@@ -606,10 +618,11 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
           nome: 'evIncCondutorMDFe',
           valor: { descEvento: 'Inclusao Condutor', condutor: { xNome: p.condutor.xNome, CPF: cpf.value } },
         },
+        signal: opcoes?.signal,
       });
     },
 
-    async incluirDFe(p: InclusaoDfePedido): Promise<EventoOutcome> {
+    async incluirDFe(p: InclusaoDfePedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome> {
       const c = chaveValida(p.chave, 'chave');
       if (!Number.isInteger(p.nSeqEvento) || p.nSeqEvento < 1 || p.nSeqEvento > 99) {
         throw new ConfigError(`nSeqEvento da inclusão de DF-e vai de 1 a 99 (K01): ${p.nSeqEvento}`);
@@ -639,10 +652,11 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
             infDoc,
           },
         },
+        signal: opcoes?.signal,
       });
     },
 
-    async pagamentoOperacao(p: PagamentoOperacaoPedido): Promise<EventoOutcome> {
+    async pagamentoOperacao(p: PagamentoOperacaoPedido, opcoes?: OpcoesEnvio): Promise<EventoOutcome> {
       const c = chaveValida(p.chave, 'chave');
       const viagem = (n: number, k: string): string => {
         if (!Number.isInteger(n) || n < 1 || n > 99_999) throw new ConfigError(`${k} de 1 a 99999: ${n}`);
@@ -664,10 +678,14 @@ export function createMdfeClient(options: MdfeClientOptions): MdfeClient {
           valor: {
             descEvento: 'Pagamento Operacao MDF-e',
             nProt: nProtValido(p.nProt),
-            infViagens: { qtdViagens: viagem(p.qtdViagens, 'qtdViagens'), nroViagem: viagem(p.nroViagem, 'nroViagem') },
+            infViagens: {
+              qtdViagens: viagem(p.qtdViagens, 'qtdViagens'),
+              nroViagem: viagem(p.nroViagem, 'nroViagem'),
+            },
             infPag,
           },
         },
+        signal: opcoes?.signal,
       });
     },
   };

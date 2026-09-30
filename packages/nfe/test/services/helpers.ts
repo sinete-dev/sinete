@@ -183,7 +183,7 @@ export function retEnvEvento(p: {
 export const CLOCK_ISO = '2026-09-10T12:00:00Z';
 
 export function client(
-  transport: FakeTransport,
+  transport: Transport,
   over: Partial<NfeClientOptions> = {},
 ): Promise<{ c: NfeClient; logger: ReturnType<typeof memoryLogger>; sleeps: number[] }> {
   return testSigner().then((signer) => {
@@ -219,4 +219,38 @@ export async function gzipBase64(text: string): Promise<string> {
   let bin = '';
   for (const b of bytes) bin += String.fromCharCode(b);
   return btoa(bin);
+}
+
+/**
+ * Transporte que nunca responde: a requisição fica em curso até o `signal` dela abortar e então rejeita com o motivo,
+ * como o `fetch`. Sem `signal` rejeita na hora, o que acusa o método que não repassou o sinal. `enviou` resolve quando a
+ * requisição chega ao transporte.
+ */
+export interface TransportePendente extends Transport {
+  readonly sinais: AbortSignal[];
+  readonly enviou: Promise<void>;
+}
+
+export function transportePendente(): TransportePendente {
+  const base = fakeTransport();
+  const sinais: AbortSignal[] = [];
+  let avisar: () => void = () => {};
+  const enviou = new Promise<void>((r) => {
+    avisar = r;
+  });
+  return {
+    ...base,
+    sinais,
+    enviou,
+    send(req: TransportRequest): Promise<TransportResponse> {
+      avisar();
+      const signal = req.signal;
+      if (signal === undefined) return Promise.reject(new Error('requisição sem signal'));
+      sinais.push(signal);
+      return new Promise((_, reject) => {
+        if (signal.aborted) reject(signal.reason);
+        else signal.addEventListener('abort', () => reject(signal.reason), { once: true });
+      });
+    },
+  };
 }
