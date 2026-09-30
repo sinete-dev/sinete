@@ -12,7 +12,7 @@ const ks = await openPfx(pfxBytes, { password, clock: relogioDoSistema });
 ks.identity; // { tipo: 'e-CNPJ', cnpj: '11222333000181', pessoa: { cpf, dataNascimento, nome }, ... }
 ks.certificate.notAfterIso; // '2027-01-01T00:00:00Z'
 
-const signer = await ks.signer(); // DataSigner do @sinete/core (RSASSA-PKCS1-v1_5, SHA-1 ou SHA-256)
+const signer = await ks.signer(); // AssinadorDeDados do @sinete/core (RSASSA-PKCS1-v1_5, SHA-1 ou SHA-256)
 const chain = await buildChain(ks.certificate, { intermediates: ks.extraCertificates, clock: relogioDoSistema });
 chain.status; // 'confiavel' | 'raiz_desconhecida' | 'incompleta' | 'assinatura_invalida' | 'emissor_nao_autorizado'
 
@@ -43,8 +43,8 @@ Na cadeia, cada emissor precisa poder emitir (RFC 5280, 6.1.4): BasicConstraints
 
 ## Assinatura
 
-- `createA1Signer(pkcs8, certDer)` / `ks.signer()`: `DataSigner` com a chave importada no WebCrypto como não exportável.
-- `digestSignerAsDataSigner(signer)`: faz um `DigestSigner` (PKCS#11, A3 em nuvem, HSM) servir onde se espera `DataSigner`; calcula o hash e monta o DigestInfo. A assinatura sai idêntica à do modo `data`.
+- `createA1Signer(pkcs8, certDer)` / `ks.signer()`: `AssinadorDeDados` com a chave importada no WebCrypto como não exportável.
+- `digestSignerAsDataSigner(signer)`: faz um `AssinadorDeDigest` (PKCS#11, A3 em nuvem, HSM) servir onde se espera `AssinadorDeDados`; calcula o hash e monta o DigestInfo. A assinatura sai idêntica à do modo `dados`.
 - `signBytes(signer, data, hash)` e `verifyBytes(cert, data, sig, hash)`.
 
 ## Bundle ICP-Brasil

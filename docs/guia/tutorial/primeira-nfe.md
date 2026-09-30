@@ -15,7 +15,7 @@ O simulador fica fora do pacote `sinete` de propósito: é ferramenta de teste e
 
 ## 1. Um certificado e uma SEFAZ de mentira
 
-O simulador gera na hora uma autoridade certificadora (AC) de teste e um e-CNPJ, certificado digital de pessoa jurídica, assinado por ela. O relógio é fixo (`manualClock`) para manter a data do tutorial: ela determina o leiaute vigente e as alíquotas do Imposto sobre Bens e Serviços (IBS) e da Contribuição sobre Bens e Serviços (CBS). Na aplicação, não passe relógio nenhum; o padrão é o do sistema.
+O simulador gera na hora uma autoridade certificadora (AC) de teste e um e-CNPJ, certificado digital de pessoa jurídica, assinado por ela. O relógio é fixo (`relogioManual`) para manter a data do tutorial: ela determina o leiaute vigente e as alíquotas do Imposto sobre Bens e Serviços (IBS) e da Contribuição sobre Bens e Serviços (CBS). Na aplicação, não passe relógio nenhum; o padrão é o do sistema.
 
 ```ts completo
 import { writeFile } from 'node:fs/promises';
@@ -121,7 +121,7 @@ const nota: NfeInput = {
 
 ## 4. Emitir
 
-`emitir(ref, nota)` recebe a referência do documento no seu sistema, como o identificador do pedido ou do rascunho, estável entre tentativas, e a entrada. Ele monta, valida, assina, grava os bytes no `store`, envia e devolve um desfecho com `tipo`. Quando a montagem detecta problemas na entrada, lança `ValidationError` com as ocorrências encontradas antes de gravar os bytes da transmissão. Nas respostas da SEFAZ, `cStat` é o código da situação e `xMotivo` é sua descrição.
+`emitir(ref, nota)` recebe a referência do documento no seu sistema, como o identificador do pedido ou do rascunho, estável entre tentativas, e a entrada. Ele monta, valida, assina, grava os bytes no `store`, envia e devolve um desfecho com `tipo`. Quando a montagem detecta problemas na entrada, lança `ErroDeValidacao` com as ocorrências encontradas antes de gravar os bytes da transmissão. Nas respostas da SEFAZ, `cStat` é o código da situação e `xMotivo` é sua descrição.
 
 ```ts continua
 const d1 = await emissor.emitir('pedido-1', nota);
@@ -168,7 +168,7 @@ Em homologação, o DANFE sai com a marca "SEM VALOR FISCAL". Na montagem da NF-
 
 Para emitir na SEFAZ de homologação de verdade com um certificado A1, mude três coisas no emissor: substitua o PFX e a senha pelos do certificado real, remova `transporte` e remova `clock`. O transporte padrão usa mTLS, permite os hosts de homologação e confere `tpAmb`, o código do ambiente, no corpo da requisição.
 
-A nota precisa trazer a identidade fiscal do emitente, com a inscrição estadual (`IE`) e o endereço reais. Para e-CNPJ, os oito primeiros caracteres do CNPJ do emitente, o CNPJ-base, precisam coincidir com os do certificado; a divergência corresponde à rejeição 213. Para e-CPF, o CPF precisa coincidir integralmente; a divergência corresponde à rejeição 227. O emissor confere essa correspondência localmente e lança `ValidationError` antes de transmitir.
+A nota precisa trazer a identidade fiscal do emitente, com a inscrição estadual (`IE`) e o endereço reais. Para e-CNPJ, os oito primeiros caracteres do CNPJ do emitente, o CNPJ-base, precisam coincidir com os do certificado; a divergência corresponde à rejeição 213. Para e-CPF, o CPF precisa coincidir integralmente; a divergência corresponde à rejeição 227. O emissor confere essa correspondência localmente e lança `ErroDeValidacao` antes de transmitir.
 
 ```ts sem-execucao
 import { readFile } from 'node:fs/promises';

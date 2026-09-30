@@ -1,6 +1,6 @@
 # `codigo_barras_invalido`: o conteúdo não cabe no código de barras
 
-O conteúdo do código de barras ou do QR Code não pode ser codificado. O erro é uma instância de `DanfeError` (`@sinete/da`), que estende `SineteError`, com `code: 'codigo_barras_invalido'`. Identifique o erro pelo `code`, usando `isSineteError(e, 'codigo_barras_invalido')` de `@sinete/core`, nunca pela mensagem.
+O conteúdo do código de barras ou do QR Code não pode ser codificado. O erro é uma instância de `DanfeError` (`@sinete/da`), que estende `ErroSinete`, com `code: 'codigo_barras_invalido'`. Identifique o erro pelo `code`, usando `ehErroSinete(e, 'codigo_barras_invalido')` de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 

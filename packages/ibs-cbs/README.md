@@ -66,7 +66,7 @@ roc.total.IBSCBSTot.vBCIBSCBS; // '1000.00'
 ### Como calcula
 
 - As expressões de cada tratamento tributário vêm do dataset (`aliquota*(1-percentualReducao)`, `baseCalculo*aliquotaEfetiva`...) e são avaliadas com decimal exato (BigInt), 8 casas HALF_EVEN por expressão, como a Calculadora (`ArredondamentoUtils`, LC 214/2025 art. 349 §14). Valores saem com 2 casas e percentuais com 4, HALF_EVEN.
-- A data do fato gerador (`TimeContext.fatoGerador`, no fuso de Brasília por padrão) escolhe dados e alíquotas. `calculateAt` recebe a data civil direto.
+- A data do fato gerador (`ContextoDeTempo.fatoGerador`, no fuso de Brasília por padrão) escolhe dados e alíquotas. `calculateAt` recebe a data civil direto.
 - Saída (`Roc`) nos grupos da NT 2025.002: `gIBSCBS` com `gIBSUF`, `gIBSMun` e `gCBS` (`gDif`, `gDevTrib`, `gRed`), `gTribRegular`, `gTribCompraGov`, `gTransfCred`, `gAjusteCompet`, `gEstornoCred`, `gCredPresOper`, `gCredPresIBSZFM`, e `IBSCBSTot`. Cada item diz as alíquotas usadas e o estado delas; `simulated` marca o cálculo com alíquota informada; `trace` guarda fórmula, entradas e resultado de cada passo.
 - Com diferimento e devolução no mesmo tributo, o valor sai do tributo menos as deduções como emitidas (2 casas), para fechar com a UB67-10; tributação regular com diferimento ou devolução é recusada.
 - Crédito presumido em bem móvel usado (`presumedCredit.usedMovableGood`, `indBemMovelUsado=1`) vale mesmo com cClassTrib que veda o grupo (UB120-20, exceção).

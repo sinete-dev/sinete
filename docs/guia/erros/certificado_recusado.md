@@ -1,6 +1,6 @@
 # `certificado_recusado`: o servidor recebeu o certificado e recusou
 
-O servidor recebeu o certificado de cliente e o recusou durante a negociação TLS, que estabelece a conexão segura (alertas 43 a 46, 48 e 49). O transporte lança um `TransportError` de `@sinete/transport`, que herda de `SineteError`, com `code: 'certificado_recusado'`. Trate o erro pelo `code`, usando `isSineteError(e, 'certificado_recusado')` de `@sinete/core`, nunca pela mensagem.
+O servidor recebeu o certificado de cliente e o recusou durante a negociação TLS, que estabelece a conexão segura (alertas 43 a 46, 48 e 49). O transporte lança um `TransportError` de `@sinete/transport`, que herda de `ErroSinete`, com `code: 'certificado_recusado'`. Trate o erro pelo `code`, usando `ehErroSinete(e, 'certificado_recusado')` de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 

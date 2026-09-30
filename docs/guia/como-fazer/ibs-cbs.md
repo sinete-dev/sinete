@@ -31,13 +31,13 @@ const ibsCbs = ibsCbsCalculator({ base: (item) => item.vProd.minus(item.vDesc).t
 const nfe = await createNfeEmissor({ pfx, senha, ambiente: 'homologacao', store, aoDecidir, montagem: { ibsCbs } });
 ```
 
-- **Datas.** A data do fato gerador determina os dados e as alíquotas; a data de emissão determina quais regras da NT já estão implantadas no ambiente. Os dois relógios vêm do `TimeContext`; sem fato gerador explícito, vale a data da emissão.
+- **Datas.** A data do fato gerador determina os dados e as alíquotas; a data de emissão determina quais regras da NT já estão implantadas no ambiente. Os dois relógios vêm do `ContextoDeTempo`; sem fato gerador explícito, vale a data da emissão.
 - **Local da operação.** O sinete usa `cMunFGIBS`, o código do município do fato gerador informado na nota (campo B12a), quando consegue identificar sua unidade federativa (UF). Caso contrário, usa o destino da mercadoria: primeiro o endereço de entrega, depois o endereço do destinatário, conforme o critério de local da entrega da LC 214/2025, art. 11. Sem destino ou com destino no exterior, usa o município e a UF do emitente.
 - **Alíquota não publicada.** Uma alíquota necessária ao cálculo que não está disponível no provedor nunca vira zero: a calculadora retorna a ocorrência `ibscbs_aliquota_desconhecida`, e a nota não é montada. Para simular, informe as alíquotas (`ibsCbsCalculator({ rates })`, com `withOverrides` do `sinete/nfe/ibs-cbs`). No resultado do motor de cálculo avulso, `simulated` indica o uso de alíquotas informadas; a calculadora integrada à montagem não repassa esse indicador.
 - **Grupo pronto.** Se outro sistema já calcula, mande o grupo do leiaute em `ibsCbs.grupo` no lugar da classificação; a calculadora não roda para esse item.
 - **Crédito presumido, diferimento e devolução de tributos.** Para informar esses valores, use o grupo pronto. A classificação aceita `cCredPres`, mas a calculadora padrão retorna `ibscbs_nao_suportado` quando ele é informado, pois precisa dos percentuais de crédito por tributo. A classificação não tem campos para informar percentuais de diferimento nem de devolução de tributos.
 
-As ocorrências do IBS/CBS voltam como as outras da montagem: `ValidationError` no emissor e `issues` no `buildNfe`. As ocorrências de um item apontam para `itens[n].impostos.ibsCbs` ou seus campos, com índice iniciado em zero. Há também ocorrências em outros caminhos: alíquota desconhecida aponta para `impostos.ibsCbs`, e violações das regras de totalização apontam para `total.IBSCBSTot`. A propriedade `origem` vale `entrada` quando a ocorrência aponta um valor informado na nota e `montagem` quando decorre do cálculo ou dos dados usados pelo sinete. As violações das regras da NT usam o código `ibscbs_regra_nt`, com a identificação da regra, o código de rejeição e a fonte na mensagem. Veja [como tratar as ocorrências de validação](ocorrencias-de-validacao.md).
+As ocorrências do IBS/CBS voltam como as outras da montagem: `ErroDeValidacao` no emissor e `issues` no `buildNfe`. As ocorrências de um item apontam para `itens[n].impostos.ibsCbs` ou seus campos, com índice iniciado em zero. Há também ocorrências em outros caminhos: alíquota desconhecida aponta para `impostos.ibsCbs`, e violações das regras de totalização apontam para `total.IBSCBSTot`. A propriedade `origem` vale `entrada` quando a ocorrência aponta um valor informado na nota e `montagem` quando decorre do cálculo ou dos dados usados pelo sinete. As violações das regras da NT usam o código `ibscbs_regra_nt`, com a identificação da regra, o código de rejeição e a fonte na mensagem. Veja [como tratar as ocorrências de validação](ocorrencias-de-validacao.md).
 
 ## Chegar ao CST e ao `cClassTrib`
 
@@ -86,7 +86,7 @@ O motor (`sinete/ibs-cbs` ou `@sinete/ibs-cbs`) calcula sem depender da montagem
 ## Armadilhas
 
 - **Base presumida por conta própria.** Como a composição da base pela UB16-10 não está implementada nas regras usadas pelo sinete, você precisa fornecer a base; documente de onde ela vem no seu sistema.
-- **Relógio único.** Reprocessar uma nota antiga com o relógio de hoje pode trocar os dados e as alíquotas aplicáveis. Passe o fato gerador da operação (`timeContext({ emissao, fatoGerador })`).
+- **Relógio único.** Reprocessar uma nota antiga com o relógio de hoje pode trocar os dados e as alíquotas aplicáveis. Passe o fato gerador da operação (`contextoDeTempo({ emissao, fatoGerador })`).
 - **Dataset trocado sem verificação.** Para carregar um novo conjunto de dados sem atualizar o pacote, verifique o pacote de dados com `verifyDataset` antes de chamar `loadDataset`. A verificação confere os hashes das tabelas e do conjunto contra o manifesto.
 
 ## Veja também

@@ -1,6 +1,6 @@
 # `pfx_sem_certificado_da_chave`: nenhum certificado do PFX é da chave
 
-O arquivo PFX contém uma chave privada RSA, mas nenhum certificado do titular, também chamado de certificado de fim de cadeia, corresponde a uma chave privada RSA presente nele. A função `openPfx`, de `@sinete/cert`, lança um `CertError`, que herda de `SineteError`, com `code: 'pfx_sem_certificado_da_chave'`. Trate o erro pelo `code`, usando `isSineteError(e, 'pfx_sem_certificado_da_chave')`, de `@sinete/core`, nunca pela mensagem.
+O arquivo PFX contém uma chave privada RSA, mas nenhum certificado do titular, também chamado de certificado de fim de cadeia, corresponde a uma chave privada RSA presente nele. A função `openPfx`, de `@sinete/cert`, lança um `CertError`, que herda de `ErroSinete`, com `code: 'pfx_sem_certificado_da_chave'`. Trate o erro pelo `code`, usando `ehErroSinete(e, 'pfx_sem_certificado_da_chave')`, de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 

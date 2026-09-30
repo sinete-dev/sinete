@@ -1,6 +1,6 @@
 # `certificado_nao_carregado`: a identidade não entrou no contexto TLS
 
-Depois do handshake, a negociação que estabelece a conexão TLS segura, o socket não tinha certificado local ou tinha um certificado diferente do configurado na identidade do transporte. O erro é uma instância de `TransportError` (`@sinete/transport`), que estende `SineteError`, com `code: 'certificado_nao_carregado'`. Decida pelo `code`, usando `isSineteError(e, 'certificado_nao_carregado')` de `@sinete/core`, nunca pela mensagem.
+Depois do handshake, a negociação que estabelece a conexão TLS segura, o socket não tinha certificado local ou tinha um certificado diferente do configurado na identidade do transporte. O erro é uma instância de `TransportError` (`@sinete/transport`), que estende `ErroSinete`, com `code: 'certificado_nao_carregado'`. Decida pelo `code`, usando `ehErroSinete(e, 'certificado_nao_carregado')` de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 

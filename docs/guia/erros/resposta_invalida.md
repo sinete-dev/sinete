@@ -1,6 +1,6 @@
 # `resposta_invalida`: a resposta não segue o leiaute esperado
 
-Chegou uma resposta, mas ela não segue o formato esperado: XML malformado, SOAP fault (mensagem de falha do serviço SOAP), grupo obrigatório ausente, `cStat` (código de situação da resposta) inválido ou uma resposta que não corresponde ao pedido. O erro é uma instância de `ProtocolError`, de `@sinete/core`, que estende `SineteError` com `code: 'resposta_invalida'`. Decida pelo `code` (`isSineteError(e, 'resposta_invalida')`), nunca pela mensagem.
+Chegou uma resposta, mas ela não segue o formato esperado: XML malformado, SOAP fault (mensagem de falha do serviço SOAP), grupo obrigatório ausente, `cStat` (código de situação da resposta) inválido ou uma resposta que não corresponde ao pedido. O erro é uma instância de `ErroRespostaInvalida`, de `@sinete/core`, que estende `ErroSinete` com `code: 'resposta_invalida'`. Decida pelo `code` (`ehErroSinete(e, 'resposta_invalida')`), nunca pela mensagem.
 
 ## Causa
 
@@ -10,7 +10,7 @@ Exemplos: resposta HTTP 5xx com corpo fora do formato esperado ou página HTML d
 
 Se o erro ocorreu no envio para autorização, trate como envio sem resposta: o pedido pode ter sido processado. Os emissores de `@sinete/emissor` já fazem essa recuperação: consultam a chave do documento ou, na NFS-e, o identificador da DPS, e decidem o próximo passo. Com o cliente direto, use `resolverEnvioSemResposta` do pacote correspondente (`@sinete/nfe`, `@sinete/mdfe` ou `@sinete/nfse`) antes de reenviar. Só reenvie quando o resultado indicar `acao: 'reenviar'`, preservando os mesmos bytes do XML assinado.
 
-Se a resposta fora do leiaute se repetir no mesmo host, investigue o serviço e os intermediários da conexão. Isso pode indicar uma mudança ou falha na SEFAZ (Secretaria da Fazenda) ou no serviço nacional de NFS-e, mas a repetição sozinha não confirma a causa. Registre `details`, incluindo o status HTTP quando disponível, e o host utilizado, que não é garantido em `details`, e abra uma issue com essas informações.
+Se a resposta fora do leiaute se repetir no mesmo host, investigue o serviço e os intermediários da conexão. Isso pode indicar uma mudança ou falha na SEFAZ (Secretaria da Fazenda) ou no serviço nacional de NFS-e, mas a repetição sozinha não confirma a causa. Registre `detalhes`, incluindo o status HTTP quando disponível, e o host utilizado, que não é garantido em `detalhes`, e abra uma issue com essas informações.
 
 ## Armadilha
 

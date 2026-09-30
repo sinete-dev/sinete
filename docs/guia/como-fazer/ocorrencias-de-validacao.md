@@ -1,20 +1,20 @@
 # Como tratar as ocorrências de validação
 
-Antes de assinar, o sinete confere a entrada e o documento montado e reúne os problemas encontrados numa lista de ocorrências (`ValidationIssue`). Pelo emissor, a lista vem num `ValidationError` (`code: 'validacao_falhou'`), lançado antes de gravar o XML da transmissão. Pela montagem direta (`buildNfe`, `buildMdfe`, `buildDps`), vem como valor, em `{ ok: false, issues }`. Esta página mostra como separar o que a pessoa corrige do que precisa de investigação na integração, e como mostrar o campo em português.
+Antes de assinar, o sinete confere a entrada e o documento montado e reúne os problemas encontrados numa lista de ocorrências (`Ocorrencia`). Pelo emissor, a lista vem num `ErroDeValidacao` (`code: 'validacao_falhou'`), lançado antes de gravar o XML da transmissão. Pela montagem direta (`buildNfe`, `buildMdfe`, `buildDps`), vem como valor, em `{ ok: false, issues }`. Esta página mostra como separar o que a pessoa corrige do que precisa de investigação na integração, e como mostrar o campo em português.
 
 ## A ocorrência
 
 | Campo | O que é |
 |---|---|
-| `path` | caminho do campo: da entrada (`itens[0].produto.xProd`) ou do documento montado (`/infNFe/det[1]/prod/xProd`, `infNFe.det[0].prod.xProd`) |
-| `code` | código estável da ocorrência (`valor_divergente`, `schema`, `ibscbs_base_ausente`...); consulte `NFE_ISSUE_CODES` para NF-e, `MDFE_ISSUE_CODES` para MDF-e e `VALIDATION_ISSUE_CODES`, de `@sinete/validators`, para os validadores avulsos |
-| `message` | texto para a pessoa, com a regra do Manual de Orientação do Contribuinte (MOC) e a rejeição quando aplicável, por exemplo `(F90, rejeição 663)`; pode mudar a cada versão |
+| `caminho` | caminho do campo: da entrada (`itens[0].produto.xProd`) ou do documento montado (`/infNFe/det[1]/prod/xProd`, `infNFe.det[0].prod.xProd`) |
+| `code` | código estável da ocorrência (`valor_divergente`, `schema`, `ibscbs_base_ausente`...); consulte `NFE_ISSUE_CODES` para NF-e, `MDFE_ISSUE_CODES` para MDF-e e `CODIGOS_OCORRENCIA`, de `@sinete/validators`, para os validadores avulsos |
+| `mensagem` | texto para a pessoa, com a regra do Manual de Orientação do Contribuinte (MOC) e a rejeição quando aplicável, por exemplo `(F90, rejeição 663)`; pode mudar a cada versão |
 | `origem` | `entrada` ou `montagem` (abaixo); quando ausente, a ocorrência não foi classificada, como nos validadores avulsos, que não sabem em que fase estão |
 
 ## `entrada` ou `montagem`
 
-- **`entrada`**: a conferência foi sobre os dados de entrada (`NfeInput`, `MdfeInput`, `DpsInput`), usados para montar a Nota Fiscal Eletrônica (NF-e), o Manifesto Eletrônico de Documentos Fiscais (MDF-e) ou a Declaração de Prestação de Serviços (DPS). O `path` aponta para a entrada, onde o valor deve ser corrigido.
-- **`montagem`**: a conferência foi sobre o que o sinete produziu a partir da entrada: o XML contra o XSD, que define a estrutura e os valores permitidos pelo leiaute vigente, a chave gerada, o grupo do Imposto sobre Bens e Serviços (IBS) e da Contribuição sobre Bens e Serviços (CBS) que a calculadora devolveu e as regras da Nota Técnica (NT) sobre ele. A causa ainda pode ser um valor da entrada: um texto longo copiado como veio pode ultrapassar o tamanho permitido pelo XSD. Nesse caso, o sinete não identifica automaticamente o campo de entrada responsável. O `path` pode apontar para o documento montado ou para o item da entrada ao qual o resultado pertence.
+- **`entrada`**: a conferência foi sobre os dados de entrada (`NfeInput`, `MdfeInput`, `DpsInput`), usados para montar a Nota Fiscal Eletrônica (NF-e), o Manifesto Eletrônico de Documentos Fiscais (MDF-e) ou a Declaração de Prestação de Serviços (DPS). O `caminho` aponta para a entrada, onde o valor deve ser corrigido.
+- **`montagem`**: a conferência foi sobre o que o sinete produziu a partir da entrada: o XML contra o XSD, que define a estrutura e os valores permitidos pelo leiaute vigente, a chave gerada, o grupo do Imposto sobre Bens e Serviços (IBS) e da Contribuição sobre Bens e Serviços (CBS) que a calculadora devolveu e as regras da Nota Técnica (NT) sobre ele. A causa ainda pode ser um valor da entrada: um texto longo copiado como veio pode ultrapassar o tamanho permitido pelo XSD. Nesse caso, o sinete não identifica automaticamente o campo de entrada responsável. O `caminho` pode apontar para o documento montado ou para o item da entrada ao qual o resultado pertence.
 
 A classificação é pela fase, não pelo código: o mesmo `schema` é `entrada` num grupo pronto que veio na entrada e `montagem` no grupo que a calculadora produziu. Para selecionar o que a pessoa pode corrigir, filtre por `entrada` e exclua os campos que o seu próprio sistema preenche, como a numeração e o responsável técnico. Essa exclusão depende da sua integração:
 
@@ -34,7 +34,7 @@ try {
   const daPessoa = issues.filter((i) => i.origem === 'entrada' && !CAMPOS_DO_SISTEMA.some((r) => r.test(i.caminho)));
   const doSistema = issues.filter((i) => !daPessoa.includes(i));
   for (const i of daPessoa) mostrarNoCampo(i.caminho, `${rotuloDoCaminho(i.caminho)}: ${i.mensagem}`);
-  if (doSistema.length > 0) logDeErros.registrar({ pedido: pedido.id, issues: doSistema });
+  if (doSistema.length > 0) logDeErros.registrar({ pedido: pedido.id, ocorrencias: doSistema });
 }
 ```
 
@@ -48,7 +48,7 @@ Além do leiaute, a montagem da NF-e confere regras de validação da Secretaria
 
 Na tabela, RV significa regra de validação, CST é o Código de Situação Tributária, IE é a inscrição estadual e UF é a unidade federativa:
 
-| Regra | Rejeição | `code` e `path` |
+| Regra | Rejeição | `code` e `caminho` |
 |---|---|---|
 | série do emitente CNPJ de 0 a 889 (MOC 7.0 Anexo I, RV C02-30 e B26-10) | 503, 244 | `serie_invalida` em `serie` |
 | CST 50 ou 51 com destinatário contribuinte isento, fora das exceções (RV N12-80; o CST 51 em operação interna passa na validação local) | 529 | `combinacao_invalida` em `itens[n].impostos.icms.CST` |

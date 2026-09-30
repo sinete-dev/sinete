@@ -36,7 +36,7 @@ await transport.close();
 | Condição | Arquivo | `createTransport` |
 |---|---|---|
 | `node` (Node, Bun, Deno via `npm:`) | `index.node` | Node e Bun: `node:https`; Deno: `Deno.createHttpClient` |
-| `default` (browser, bundlers) | `index` | só Deno; em outra runtime lança `UnsupportedError` em vez de cair num `fetch` que ignoraria o certificado |
+| `default` (browser, bundlers) | `index` | só Deno; em outra runtime lança `ErroNaoSuportado` em vez de cair num `fetch` que ignoraria o certificado |
 
 `capabilities` diz o que cada implementação faz. O laboratório TLS (`test/tls-lab.test.ts`) mediu:
 
@@ -46,7 +46,7 @@ await transport.close();
 | Bun (BoringSSL) | sim | sim | **não** (o BoringSSL não tem suíte DHE; GO produção fica fora do Bun) |
 | Deno (rustls) | não | não | não |
 
-Antes de abrir socket, o transporte cruza o perfil TLS do host com as capacidades e recusa com `TransportUnsupportedError` (`code: 'nao_suportado'`, `details: { host, reasons, alternative }`).
+Antes de abrir socket, o transporte cruza o perfil TLS do host com as capacidades e recusa com `TransportUnsupportedError` (`code: 'nao_suportado'`, `detalhes: { host, reasons, alternative }`).
 
 ## Dados
 
@@ -65,7 +65,7 @@ Antes de abrir socket, o transporte cruza o perfil TLS do host com as capacidade
 
 ## Erros
 
-`TransportError` com `code`: `certificado_nao_apresentado` (alertas 40, 42, 116), `certificado_recusado` (43 a 46, 48, 49), `certificado_ausente_ou_recusado` (HTTP 403 do IIS, "bad record mac" do ADN), `certificado_nao_carregado`, `conexao_recusada`, `cadeia_servidor_nao_confiavel`, `nome_servidor_divergente`, `falha_tls`, `falha_rede`, `politica_recusou` (`PolicyError`), `cancelado`. Mais `TimeoutError`, `ConfigError` e `TransportUnsupportedError` do core. O alerta 40 é ambíguo (a SEFAZ o manda por falta de certificado, mas ele também sai sem cifra em comum); a mensagem diz isso e `details.alert` traz o alerta.
+`TransportError` com `code`: `certificado_nao_apresentado` (alertas 40, 42, 116), `certificado_recusado` (43 a 46, 48, 49), `certificado_ausente_ou_recusado` (HTTP 403 do IIS, "bad record mac" do ADN), `certificado_nao_carregado`, `conexao_recusada`, `cadeia_servidor_nao_confiavel`, `nome_servidor_divergente`, `falha_tls`, `falha_rede`, `politica_recusou` (`PolicyError`), `cancelado`. Mais `ErroDeTempoEsgotado`, `ErroDeConfiguracao` e `TransportUnsupportedError` do core. O alerta 40 é ambíguo (a SEFAZ o manda por falta de certificado, mas ele também sai sem cifra em comum); a mensagem diz isso e `details.alert` traz o alerta.
 
 ## Chave fora do processo: `@sinete/transport/signer`
 
@@ -81,7 +81,7 @@ const transport = createTransport({ identity: a3.tlsIdentity });
 const certificado = certificadoAberto(a3); // para o @sinete/emissor: signer (dfe.sign), titular e identidade
 ```
 
-- Entrada `default` (pura): `connectSignerChannel` sobre qualquer canal de linhas, `cryptoKeyTlsSigner` (modo `message`), `digestTlsSigner` (modo `digest`, sobre um `DigestSigner` do core), `certificadoAberto`, `parseTlsTranscript`. Entrada `node`: `startSigner` (processo filho com ambiente mínimo) e `connectSigner` (socket Unix).
+- Entrada `default` (pura): `connectSignerChannel` sobre qualquer canal de linhas, `cryptoKeyTlsSigner` (modo `message`), `digestTlsSigner` (modo `digest`, sobre um `AssinadorDeDigest` do core), `certificadoAberto`, `parseTlsTranscript`. Entrada `node`: `startSigner` (processo filho com ambiente mínimo) e `connectSigner` (socket Unix).
 - `openRemote({ signer, allowedHosts })`: a chave fica com quem chamou. O cliente aplica a política do dono da chave antes de chamar o `TlsSigner`: host em `allowedHosts`, propósito, esquema PKCS#1 SHA-256 e, no modo `message`, SNI e certificado do servidor dentro do transcript.
 - `openPkcs11({ module, token, label | keyId, pin })`: token pelo helper `-p11`; `documentSigner` assina XML pelo `dfe.sign`, que o helper valida (perfil XMLDSig dos DF-e e `Id` de documento do titular).
 - `TlsInfo.signatures` diz quantas assinaturas de handshake a requisição custou; `stats()` dá o total por identidade.

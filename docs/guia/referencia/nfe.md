@@ -8,16 +8,16 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 
 ### Funções
 
-- `assinaturaQrCode`: Assinatura dos parâmetros do QR Code da NFC-e em contingência off-line com a versão 3 (RSA-SHA1 em Base64, com o certificado que assina a nota; Manual do DANFE NFC-e 6.0, 4.4.2). `undefined` quando o QR Code não leva assinatura (NF-e, emissão normal, versão 2). `assinaturaQrCode(built: BuiltNfe, signer: Signer): Promise<string | undefined>`
+- `assinaturaQrCode`: Assinatura dos parâmetros do QR Code da NFC-e em contingência off-line com a versão 3 (RSA-SHA1 em Base64, com o certificado que assina a nota; Manual do DANFE NFC-e 6.0, 4.4.2). `undefined` quando o QR Code não leva assinatura (NF-e, emissão normal, versão 2). `assinaturaQrCode(built: BuiltNfe, signer: Assinador): Promise<string | undefined>`
 - `autorizadorContingencia`: Autorizador SVC da UF e o `tpEmis` que a NF-e emitida nele leva (6 SVC-AN, 7 SVC-RS; MOC 7.0, B22). `autorizadorContingencia(uf: Uf, ambiente: Ambiente): { readonly autorizador: 'SVC-AN' | 'SVC-RS'; readonly tpEmis: '6' | '7'; }`
 - `buildNfe`: Monta, calcula e valida. Nunca lança por dado do chamador: devolve as ocorrências. `buildNfe(input: NfeInput, options: BuildNfeOptions): Promise<BuildNfeResult>`
 - `carregarDatasetEmbarcado`: O dataset embarcado no `@sinete/ibs-cbs-dados`, importado sob demanda (`import()` dinâmico) e carregado uma vez por processo. É o que a calculadora padrão usa quando `dataset` não é informado; chamar antes só adianta a carga. Se o import falhar, a próxima chamada tenta de novo. `carregarDatasetEmbarcado(): Promise<IbsCbsDataset>`
 - `chaveDaDuplicidade`: Chave de acesso que a SEFAZ informa no `xMotivo` da rejeição 539 (`[chNFe:...]`), se houver. `chaveDaDuplicidade(xMotivo: string): string | undefined`
 - `comQrCode`: A NFC-e montada com o `infNFeSupl` (QR Code e `urlChave`) inserido por splice antes do fechamento de `NFe`, pronta para a assinatura. `comQrCode(built: BuiltNfe, assinatura?: string): string`
-- `conferirEmitenteDoCertificado`: Confere o emitente com o titular do certificado que assina a NF-e (MOC 7.0 Anexo I, grupo F): `conferirEmitenteDoCertificado(nfe: NfeInput, titular: { readonly cnpj?: string | undefined; readonly cpf?: string | undefined; }): readonly ValidationIssue[]`
+- `conferirEmitenteDoCertificado`: Confere o emitente com o titular do certificado que assina a NF-e (MOC 7.0 Anexo I, grupo F): `conferirEmitenteDoCertificado(nfe: NfeInput, titular: { readonly cnpj?: string | undefined; readonly cpf?: string | undefined; }): readonly Ocorrencia[]`
 - `createNfeClient`: Cria o cliente dos serviços da NF-e. `createNfeClient(options: NfeClientOptions): NfeClient`
 - `dec`: Atalho para `Decimal.of`. `dec(input: DecimalInput): Decimal`
-- `documentoAssinado`: Confere que `xml` é um documento `raiz` assinado (no namespace da NF-e, com `Signature` referenciando o filho `elemento`) e devolve a string sem a declaração XML. Lança `ConfigError` para qualquer outra coisa: o serviço nunca "conserta" o documento de quem chama. `documentoAssinado(xml: string, raiz: string, elemento: string): DocumentoAssinado`
+- `documentoAssinado`: Confere que `xml` é um documento `raiz` assinado (no namespace da NF-e, com `Signature` referenciando o filho `elemento`) e devolve a string sem a declaração XML. Lança `ErroDeConfiguracao` para qualquer outra coisa: o serviço nunca "conserta" o documento de quem chama. `documentoAssinado(xml: string, raiz: string, elemento: string): DocumentoAssinado`
 - `exigenciaRespTec`: Exigência de infRespTec ou CSRT para a UF no ambiente e na data (tabela `data/resp-tec.json`). `exigenciaRespTec(uf: Uf, ambiente: Ambiente, data: Instante): { readonly infRespTec: ExigenciaRespTec; readonly csrt: ExigenciaRespTec; }`
 - `formatDecimal`: Texto do valor já arredondado no formato (arredonda em `max` casas pelo modo dado). `formatDecimal(value: Decimal, format: DecimalFormat, mode?: RoundingMode): string`
 - `formatDh`: `TDateTimeUTC` do instante no deslocamento dado. `formatDh(date: Instante, offsetMinutes: number): string`
@@ -31,8 +31,8 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `recuperarEventoRegistrado`: Consulta a chave e devolve o evento `tpEvento` que a SEFAZ registrou para ela (o de maior `nSeqEvento`, quando há vários, como na CC-e). `recuperarEventoRegistrado(client: NfeClient, chave: string, tpEvento: string): Promise<RecuperacaoEvento>`
 - `resolverEnvioSemResposta`: Resolve um envio de autorização sem resposta, ou cuja resposta foi 204 ou 539, consultando a chave da NF-e assinada. `anterior` é o desfecho do envio, quando houve um. `resolverEnvioSemResposta(client: NfeClient, nfeAssinada: string, anterior?: AutorizacaoOutcome): Promise<ResolucaoEnvio>`
 - `rotuloDoCaminho`: Rótulo em português do caminho de uma ocorrência da NF-e: `Grupo, Campo` quando os dois são conhecidos (`Emitente, Inscrição estadual`), só um deles quando falta o outro, e `Dados da NF-e` quando nenhum é. `rotuloDoCaminho(path: string): string`
-- `signNfe`: Assina a NF-e montada: na NFC-e, insere antes o `infNFeSupl` (`comQrCode`, com a assinatura do QR Code quando a contingência off-line pede); depois, a `Signature` como último filho de `NFe`, tudo por splice, e devolve a string final. `signNfe(built: BuiltNfe, signer: Signer): Promise<string>`
-- `sliceElement`: Recorta o elemento da fonte, acrescentando na tag de abertura só as declarações de namespace que ele usa e que estão em ancestrais fora do recorte. O default entra apenas quando difere de `parentDefaultNs` (o default do envelope onde a fatia vai morar). `sliceElement(doc: XmlDocument, el: XmlElement, parentDefaultNs?: string): string`
+- `signNfe`: Assina a NF-e montada: na NFC-e, insere antes o `infNFeSupl` (`comQrCode`, com a assinatura do QR Code quando a contingência off-line pede); depois, a `Signature` como último filho de `NFe`, tudo por splice, e devolve a string final. `signNfe(built: BuiltNfe, signer: Assinador): Promise<string>`
+- `sliceElement`: Recorta o elemento da fonte, acrescentando na tag de abertura só as declarações de namespace que ele usa e que estão em ancestrais fora do recorte. O default entra apenas quando difere de `parentDefaultNs` (o default do envelope onde a fatia vai morar). `sliceElement(doc: DocumentoXml, el: ElementoXml, parentDefaultNs?: string): string`
 - `sum`: Soma uma lista (vazia = zero). `sum(values: Iterable<Decimal>): Decimal`
 - `urlsNfce`: Endereços da NFC-e da UF no ambiente e no dia (`data/nfce-urls.json`, das tabelas do Portal Nacional da NFC-e). O `qrCode` é `undefined` onde a tabela não traz o endereço completo (AM e MA publicam sem o protocolo): informe `BuildNfeOptions.urlQrCode`. `urlsNfce(uf: Uf, ambiente: Ambiente, dia: string): { readonly qrCode: string | undefined; readonly urlChave: string | undefined; }`
 
@@ -124,10 +124,10 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 ### Tipos
 
 - `AutorDocumento`: CNPJ ou CPF de quem assina um evento ou consulta a distribuição. `type AutorDocumento = { readonly CNPJ: string; readonly CPF?: never; } | { readonly CPF: string; readonly CNPJ?: never; }`
-- `AutorizacaoOutcome`: Desfecho da autorização: autorizada, denegada (número consumido), rejeitada ou pendente (recibo em `ref`). `type AutorizacaoOutcome = SefazOutcome<ProtocoloNfe, ProtocoloNfe>`
-- `BuildNfeResult`: `type BuildNfeResult = { readonly ok: true; readonly value: BuiltNfe; } | { readonly ok: false; readonly issues: readonly ValidationIssue[]; }`
+- `AutorizacaoOutcome`: Desfecho da autorização: autorizada, denegada (número consumido), rejeitada ou pendente (recibo em `referencia`). `type AutorizacaoOutcome = ResultadoSefaz<ProtocoloNfe, ProtocoloNfe>`
+- `BuildNfeResult`: `type BuildNfeResult = { readonly ok: true; readonly value: BuiltNfe; } | { readonly ok: false; readonly issues: readonly Ocorrencia[]; }`
 - `CadastroPedido`: `type CadastroPedido = { readonly uf: Uf; } & ({ readonly CNPJ: string; } | { readonly CPF: string; } | { readonly IE: string; })`
-- `ConsultaOutcome`: `type ConsultaOutcome = SefazOutcome<ConsultaNfe, ConsultaNfe>`
+- `ConsultaOutcome`: `type ConsultaOutcome = ResultadoSefaz<ConsultaNfe, ConsultaNfe>`
 - `ConteudoDoProtocolo`: O que o `digVal` do protocolo diz dos bytes assinados: `confere` (é o DigestValue deles), `sem-digval` (o protocolo não o traz) ou `difere` (a SEFAZ registrou outro conteúdo com a mesma chave). `type ConteudoDoProtocolo = 'confere' | 'sem-digval' | 'difere'`
 - `Crt`: Código de Regime Tributário (C21): 1 Simples Nacional; 2 Simples com excesso de sublimite; 3 Regime Normal; 4 MEI. `type Crt = '1' | '2' | '3' | '4'`
 - `CstPisCofinsOutras`: CSTs de PIS/COFINS do grupo "outras operações" (Q05, S05). `type CstPisCofinsOutras = '49' | '50' | '51' | '52' | '53' | '54' | '55' | '56' | '60' | '61' | '62' | '63' | '64' | '65' | '66' | '67' | '70' | '71' | '72' | '73' | '74' | '75' | '98' | '99'`
@@ -136,7 +136,7 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `DistribuicaoConsulta`: `type DistribuicaoConsulta = { readonly ultNSU: string | number; } | { readonly NSU: string | number; } | { readonly chNFe: string; }`
 - `DocumentoPessoa`: CNPJ (numérico ou alfanumérico) ou CPF, exclusivos. Aceitam máscara; o builder normaliza. `type DocumentoPessoa = { readonly CNPJ: string; readonly CPF?: never; } | { readonly CPF: string; readonly CNPJ?: never; }`
 - `Emitente`: Emitente (grupo C). Produtor rural pessoa física emite com CPF, nas séries 920 a 969.
-- `EventoOutcome`: `type EventoOutcome = SefazOutcome<EventoRegistrado, never>`
+- `EventoOutcome`: `type EventoOutcome = ResultadoSefaz<EventoRegistrado, never>`
 - `ExigenciaRespTec`: `type ExigenciaRespTec = 'obrigatorio' | 'opcional'`
 - `Familia`: Famílias de campo com modo de arredondamento próprio (`data/arredondamento.json`). `type Familia = 'produto' | 'icms' | 'ipi' | 'pisCofins' | 'issqn' | 'ibsCbs'`
 - `FinNFe`: Finalidade (B25): 1 normal; 2 complementar; 3 ajuste; 4 devolução; 5 nota de crédito; 6 nota de débito. `type FinNFe = '1' | '2' | '3' | '4' | '5' | '6'`
@@ -144,8 +144,8 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `IbsCbsItem`: IBS/CBS do item: pela classificação (a calculadora injetada devolve o grupo) ou já calculado (grupo do schema pronto, por exemplo vindo de outro sistema). `type IbsCbsItem = { readonly classificacao: ClassificacaoIbsCbs; readonly grupo?: never; } | { readonly grupo: TTribNFe; readonly classificacao?: never; }`
 - `Icms`: Tributação do ICMS do item: um grupo por CST (regime normal) ou CSOSN (Simples Nacional). `type Icms = Icms00 | Icms02 | Icms10 | Icms15 | Icms20 | Icms30 | Icms40 | Icms51 | Icms53 | Icms60 | Icms61 | Icms70 | Icms90 | IcmsPartilha | IcmsRepasseSt | IcmsSn101 | IcmsSn102 | IcmsSn201 | IcmsSn202 | IcmsSn500 | IcmsSn900`
 - `IndIEDest`: Indicador da IE do destinatário (E16a): 1 contribuinte do ICMS; 2 contribuinte isento de inscrição (não informar a IE); 9 não contribuinte. `type IndIEDest = '1' | '2' | '9'`
-- `Instante`: Instante no tempo, como os relógios do `@sinete/core` o devolvem (o tipo `Date`, sem tocar no global). `type Instante = ReturnType<Clock['now']>`
-- `InutilizacaoOutcome`: `type InutilizacaoOutcome = SefazOutcome<Inutilizacao, never>`
+- `Instante`: Instante no tempo, como os relógios do `@sinete/core` o devolvem (o tipo `Date`, sem tocar no global). `type Instante = ReturnType<Relogio['agora']>`
+- `InutilizacaoOutcome`: `type InutilizacaoOutcome = ResultadoSefaz<Inutilizacao, never>`
 - `Ipi`: `type Ipi = (IpiTributado | IpiNaoTributado) & { /** Código de enquadramento legal; `999` quando não há. */ readonly cEnq: string; readonly CNPJProd?: string; readonly cSelo?: string; readonly qSelo?: string; }`
 - `IpiTributado`: IPI tributado (O07): por alíquota (`vBC` padrão valor da operação) ou por unidade (`qUnid × vUnid`).
 - `Local`: Local de retirada ou de entrega (grupos F e G), quando diferente do endereço do emitente ou destinatário. `type Local = DocumentoPessoa & Endereco & { readonly xNome?: string; readonly email?: string; readonly IE?: string; }`

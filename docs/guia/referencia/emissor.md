@@ -19,10 +19,10 @@ A raiz tem o que é comum aos documentos e não importa nenhum pacote de documen
 
 ### Classes
 
-- `RecusaRepetidaError` (estende `SineteError<'recusa_repetida'>`): A SEFAZ recusou de vez o mesmo conteúdo deste documento, com a mesma rejeição, o limite de vezes dentro da janela (`details`: `cStat`, `xMotivo`, `recusadaEm`, `primeiraEm`, `vezes`, `limite`, `janelaMs`).
-- `TransmissaoEmAndamentoError` (estende `SineteError<'transmissao_em_andamento'>`): Outro processo (ou outra chamada) tem a trava deste documento em vigor: está transmitindo agora. Nada foi à SEFAZ. Tente de novo depois; se o outro processo morreu, a trava vence sozinha no prazo.
-- `TransmissaoJaGravadaError` (estende `SineteError<'transmissao_ja_gravada'>`): Já há bytes gravados para o documento: gravar outros por cima criaria um segundo documento para o mesmo número. Retome com os gravados.
-- `TravaPerdidaError` (estende `SineteError<'trava_perdida'>`): A trava venceu e pode ter sido assumida por outro processo: quem a perdeu não grava, não descarta e não guarda o desfecho. O outro processo retoma pelos bytes gravados.
+- `RecusaRepetidaError` (estende `ErroSinete<'recusa_repetida'>`): A SEFAZ recusou de vez o mesmo conteúdo deste documento, com a mesma rejeição, o limite de vezes dentro da janela (`detalhes`: `cStat`, `xMotivo`, `recusadaEm`, `primeiraEm`, `vezes`, `limite`, `janelaMs`).
+- `TransmissaoEmAndamentoError` (estende `ErroSinete<'transmissao_em_andamento'>`): Outro processo (ou outra chamada) tem a trava deste documento em vigor: está transmitindo agora. Nada foi à SEFAZ. Tente de novo depois; se o outro processo morreu, a trava vence sozinha no prazo.
+- `TransmissaoJaGravadaError` (estende `ErroSinete<'transmissao_ja_gravada'>`): Já há bytes gravados para o documento: gravar outros por cima criaria um segundo documento para o mesmo número. Retome com os gravados.
+- `TravaPerdidaError` (estende `ErroSinete<'trava_perdida'>`): A trava venceu e pode ter sido assumida por outro processo: quem a perdeu não grava, não descarta e não guarda o desfecho. O outro processo retoma pelos bytes gravados.
 
 ### Interfaces
 
@@ -78,7 +78,7 @@ A raiz tem o que é comum aos documentos e não importa nenhum pacote de documen
 - `DesfechoRetomada`: Como terminou cada gravação selecionada.
 - `DestinoDosBytes`: O que fazer com os bytes gravados depois de um desfecho. `type DestinoDosBytes = 'concluir' | 'manter' | 'descartar'`
 - `EmissorErrorCode`: Códigos lançados pelas classes do `@sinete/emissor` (`contrato_violado` é da suíte de `@sinete/emissor/contrato`). `type EmissorErrorCode = 'transmissao_em_andamento' | 'trava_perdida' | 'transmissao_ja_gravada' | 'recusa_repetida' | 'contrato_violado'`
-- `Instante`: Instante no tempo, como os relógios do `@sinete/core` o devolvem (o tipo `Date`, sem tocar no global). `type Instante = ReturnType<Clock['now']>`
+- `Instante`: Instante no tempo, como os relógios do `@sinete/core` o devolvem (o tipo `Date`, sem tocar no global). `type Instante = ReturnType<Relogio['agora']>`
 - `JaGuardado`: O integrador já guardou o documento destes bytes? Consultado com a trava, quando há bytes gravados, antes de ir à SEFAZ. `type JaGuardado = (registro: RegistroTransmissao) => boolean | Promise<boolean>`
 - `ModoEnvio`: `primeiro`: os bytes acabaram de ser gravados e nunca saíram. `retomada`: podem ter chegado à SEFAZ. `type ModoEnvio = 'primeiro' | 'retomada'`
 - `MotivoPendencia`: Por que os bytes ficaram pendentes: `type MotivoPendencia = 'sem-resposta' | 'consulta-indefinida' | 'lote-em-processamento' | 'contingencia'`
@@ -213,7 +213,7 @@ Não depende de runner de teste: devolve casos com `nome` e `rodar`, que lançam
 
 ### Classes
 
-- `ContratoVioladoError` (estende `SineteError<'contrato_violado'>`): O adaptador não cumpriu um item do contrato. `details.caso` diz qual.
+- `ContratoVioladoError` (estende `ErroSinete<'contrato_violado'>`): O adaptador não cumpriu um item do contrato. `detalhes.caso` diz qual.
 
 ### Interfaces
 

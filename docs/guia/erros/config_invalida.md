@@ -1,10 +1,10 @@
 # `config_invalida`: opção ou argumento fora do domínio
 
-Uma opção ou um argumento passado ao sinete está ausente, malformado ou fora dos valores aceitos. O erro é representado por `ConfigError` (`@sinete/core`), uma subclasse de `SineteError` com `code: 'config_invalida'`. No código da integração, identifique o erro por `isSineteError(e, 'config_invalida')`, nunca pelo texto da mensagem.
+Uma opção ou um argumento passado ao sinete está ausente, malformado ou fora dos valores aceitos. O erro é representado por `ErroDeConfiguracao` (`@sinete/core`), uma subclasse de `ErroSinete` com `code: 'config_invalida'`. No código da integração, identifique o erro por `ehErroSinete(e, 'config_invalida')`, nunca pelo texto da mensagem.
 
 ## Causa
 
-Alguns exemplos reais: instante sem fuso explícito (`2026-09-26T10:00:00` em vez de `2026-09-26T10:00:00-03:00`); emissor criado sem `store`, com `pfx` e `certificado` juntos, sem nenhum dos dois ou com `pfx` sem `senha`; `emitir` ou `retomar` sem `aoDecidir` no emissor nem na chamada; prazo da trava ou política de retomada com número não finito; serviço sem documento, como consulta de status ou inutilização de numeração, num `NfeClient` sem `uf` (unidade federativa); chamada a `pdf` do emissor sem conseguir carregar `@sinete/da` e sem o módulo correspondente na opção `da`; nota assinada que não corresponde à chave de acesso consultada; pool de emissores usado depois de `fechar()`; `nSeqEvento`, o número sequencial do evento, fora da faixa aceita para aquele evento. A propriedade opcional `details` pode trazer o valor recusado, sem incluir segredos.
+Alguns exemplos reais: instante sem fuso explícito (`2026-09-26T10:00:00` em vez de `2026-09-26T10:00:00-03:00`); emissor criado sem `store`, com `pfx` e `certificado` juntos, sem nenhum dos dois ou com `pfx` sem `senha`; `emitir` ou `retomar` sem `aoDecidir` no emissor nem na chamada; prazo da trava ou política de retomada com número não finito; serviço sem documento, como consulta de status ou inutilização de numeração, num `NfeClient` sem `uf` (unidade federativa); chamada a `pdf` do emissor sem conseguir carregar `@sinete/da` e sem o módulo correspondente na opção `da`; nota assinada que não corresponde à chave de acesso consultada; pool de emissores usado depois de `fechar()`; `nSeqEvento`, o número sequencial do evento, fora da faixa aceita para aquele evento. A propriedade opcional `detalhes` pode trazer o valor recusado, sem incluir segredos.
 
 ## Correção
 

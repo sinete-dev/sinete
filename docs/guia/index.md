@@ -36,7 +36,7 @@ Esta pasta contém a documentação da versão instalada e acompanha os pacotes 
 ## Referência
 
 - [Pacotes e entradas](referencia/index.md): cada nome exportado, com referência gerada a partir dos tipos publicados.
-- [Códigos de erro](erros/index.md): uma página por código (`code`), com causa, correção e armadilha. Os erros derivados de `SineteError`, a classe base de erros do sinete, trazem na propriedade `docs` o caminho `erros/<code>.md`, relativo à pasta `docs/` do pacote instalado.
+- [Códigos de erro](erros/index.md): uma página por código (`code`), com causa, correção e armadilha. Os erros derivados de `ErroSinete`, a classe base de erros do sinete, trazem na propriedade `pagina` o caminho `erros/<code>.md`, relativo à pasta `docs/` do pacote instalado.
 
 ## Para agentes de código
 

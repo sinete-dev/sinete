@@ -1,10 +1,10 @@
 # `documento_inesperado`: o XML é de outro documento
 
-O XML informado não tem a raiz esperada pela função que gera o documento auxiliar. O erro é um `DanfeError` (`@sinete/da`), que estende `SineteError`, com `code: 'documento_inesperado'`. Identifique-o pelo `code` (`isSineteError(e, 'documento_inesperado')`), nunca pela mensagem.
+O XML informado não tem a raiz esperada pela função que gera o documento auxiliar. O erro é um `DanfeError` (`@sinete/da`), que estende `ErroSinete`, com `code: 'documento_inesperado'`. Identifique-o pelo `code` (`ehErroSinete(e, 'documento_inesperado')`), nunca pela mensagem.
 
 ## Causa
 
-Um MDF-e (Manifesto Eletrônico de Documentos Fiscais) passado ao `danfe`, uma NF-e (Nota Fiscal Eletrônica) ao `damdfe`, um evento no lugar da nota ou uma raiz que o leitor não reconhece. A validação considera tanto o nome da raiz quanto seu namespace XML. `details.raiz` informa o nome da raiz recebida, e `details.esperado` lista os nomes aceitos.
+Um MDF-e (Manifesto Eletrônico de Documentos Fiscais) passado ao `danfe`, uma NF-e (Nota Fiscal Eletrônica) ao `damdfe`, um evento no lugar da nota ou uma raiz que o leitor não reconhece. A validação considera tanto o nome da raiz quanto seu namespace XML. `detalhes.raiz` informa o nome da raiz recebida, e `detalhes.esperado` lista os nomes aceitos.
 
 ## Correção
 

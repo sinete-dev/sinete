@@ -15,11 +15,11 @@ Este projeto usa o sinete (DF-e brasileiros em TypeScript: NF-e, NFC-e, MDF-e, N
 - Não apague bytes gravados à mão para destravar a tela; o documento pode estar autorizado na SEFAZ.
 - Contingência da NF-e e da NFC-e: deixe o emissor decidir (`contingencia: { automatica: true }`, `aoMudarContingencia`) ou ponha `contingencia` na entrada (a NF-e só vai à SVC com a SVC ativada pela SEFAZ da UF: 107 no status da SVC); nunca reassine em contingência uma nota pendente de emissão normal (é vedado reutilizar o número, e a UF pode tê-la autorizado).
 - `sinete/emissor/memoria` é só para testes e scripts de um processo.
-- Rejeição da SEFAZ é desfecho (`tipo: 'recusado'` no emissor, `status: 'rejected'` no cliente), não exceção. Erro lançado é `SineteError` com `code` estável e `docs` (página em `docs/erros/<code>.md`): decida pelo `code`, nunca pela mensagem.
+- Rejeição da SEFAZ é desfecho (`tipo: 'recusado'`, no emissor e no cliente), não exceção. Erro lançado é `ErroSinete` com `code` estável e `pagina` (página em `docs/erros/<code>.md`): decida pelo `code`, nunca pela mensagem.
 - Barreira contra 656: implemente `registrarRecusa` e `recusaRecente` juntos no store. Ligada por padrão; após 3 recusas iguais em 1 hora, barra a próxima emissão do mesmo conteúdo com `recusa_repetida`. Corrija a nota; `reenviarRecusado: true` nas opções de `emitir` só após resolver a causa fora dela. Sem esses métodos, não há barreira.
 - Cancelamento e eventos pelo emissor: ele confirma pela consulta quando o pedido fica sem resposta ou volta como duplicidade; não conclua por 573, 580, 631 ou E0840. Na NFS-e, E0840 só vira sucesso com o e101101 recuperado pela consulta (`recuperado: true`); sem ele, continua `recusado`.
 - Testes sem certificado real e sem SEFAZ: `@sinete/sefaz-sim` (`createSefazSim`, `syntheticCertificate`, `syntheticPfx`) e `ambiente: 'homologacao'`. Senha de PFX vem do ambiente, nunca do código.
-- Datas do documento vêm do relógio injetado (`clock`, `timeContext`), não de `new Date()`; em teste, `manualClock`.
+- Datas do documento vêm do relógio injetado (`clock`, `contextoDeTempo`), não de `new Date()`; em teste, `relogioManual`.
 
 ### Índice (guarda-chuva `sinete/<pacote>`; avulso `@sinete/<pacote>`)
 
@@ -39,10 +39,10 @@ Este projeto usa o sinete (DF-e brasileiros em TypeScript: NF-e, NFC-e, MDF-e, N
 - `sinete/cert`: `openPfx`, `buildChain`, `createA1Signer`
 - `sinete/transport`: `createTransport`, `allowlistPolicy`, `nfeEndpoint`
 - `sinete/transport/signer`: `startSigner`, `certificadoAberto` (cliente do helper `sinete-signer`, distribuído em `@sinete/signer`: A3 em token PKCS#11, A3 em nuvem de PSC e chave não exportável)
-- `sinete/validators`: `parseCnpj`, `parseCpf`, `parseIe`, `parseChaveAcesso`, `isValidCnpj`
-- `sinete/rejeicoes`: `rejeicaoByCode`, `enrichRejected`; `/nfse`: `nfseErroByCode`
+- `sinete/validators`: `lerCnpj`, `lerCpf`, `lerIe`, `lerChaveAcesso`, `cnpjValido`
+- `sinete/rejeicoes`: `rejeicaoPorCodigo`, `completarRecusado`; `/nfse`: `nfseErroPorCodigo`
 - `sinete/schemas`: `selecionarPl`, `decodeXml`, `validateRoot`
-- `sinete/core`: `SineteError`, `isSineteError`, `ValidationError`, `matchOutcome`, `systemClock`, `manualClock`, `timeContext`; `/xml`: `verifySignature`
+- `sinete/core`: `ErroSinete`, `ehErroSinete`, `ErroDeValidacao`, `tratarResultado`, `relogioDoSistema`, `relogioManual`, `contextoDeTempo`; `/xml`: `conferirAssinatura`
 - `@sinete/sefaz-sim` (dev, fora do guarda-chuva): `createSefazSim`, `createNfseSim`, `simTransport`, `redirectToSim`, `redirectNfseToSim`, `syntheticCertificate`, `syntheticPfx`
 - CLI: `npx sinete doctor --pfx <arquivo>` confere certificado, cadeia, relógio e TLS; `npx sinete agents-md` atualiza este bloco e a skill `sinete`.
 

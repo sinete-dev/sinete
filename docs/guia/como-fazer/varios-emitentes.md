@@ -27,7 +27,7 @@ const pool = createPoolDeEmissores({
 });
 ```
 
-O exemplo cria um emissor de Nota Fiscal Eletrônica (NF-e). O `store` é a implementação da aplicação que persiste os bytes do documento e controla a trava entre processos. O emissor acima não tem `aoDecidir`, a função que guarda no sistema o documento autorizado ou denegado: cada chamada fornece a sua, como mostrado abaixo. Sem `aoDecidir` no emissor nem na chamada, `emitir` e `retomar` lançam `ConfigError` antes de obter a trava.
+O exemplo cria um emissor de Nota Fiscal Eletrônica (NF-e). O `store` é a implementação da aplicação que persiste os bytes do documento e controla a trava entre processos. O emissor acima não tem `aoDecidir`, a função que guarda no sistema o documento autorizado ou denegado: cada chamada fornece a sua, como mostrado abaixo. Sem `aoDecidir` no emissor nem na chamada, `emitir` e `retomar` lançam `ErroDeConfiguracao` antes de obter a trava.
 
 `situacaoPosterior: 'divergente'` atende a quem não quer guardar como ativo um documento que já foi cancelado ou encerrado fora deste fluxo. Quando a consulta encontra um documento autorizado nessa situação, o resultado passa a ser `divergente`, com `situacaoAtual` e `proc`, o documento processado com seu protocolo de autorização. Os bytes permanecem gravados para análise, sem chamar `aoDecidir`. O padrão (`guardar`) entrega o resultado `autorizado` ao `aoDecidir` com `situacaoAtual`.
 

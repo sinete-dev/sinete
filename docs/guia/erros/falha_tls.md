@@ -1,10 +1,10 @@
 # `falha_tls`: outra falha de TLS
 
-A conexão TLS, que protege a comunicação com o servidor, falhou sem que o sinete identificasse uma causa com código mais específico. Pode haver incompatibilidade de versão, cifra (conjunto de algoritmos criptográficos) ou negociação inicial da conexão, chamada handshake. O erro é um `TransportError` (`@sinete/transport`), que estende `SineteError` e tem `code: 'falha_tls'`. Decida pelo `code`, usando `isSineteError(e, 'falha_tls')` de `@sinete/core`, nunca pela mensagem. Esse código, sozinho, não garante que o certificado esteja correto.
+A conexão TLS, que protege a comunicação com o servidor, falhou sem que o sinete identificasse uma causa com código mais específico. Pode haver incompatibilidade de versão, cifra (conjunto de algoritmos criptográficos) ou negociação inicial da conexão, chamada handshake. O erro é um `TransportError` (`@sinete/transport`), que estende `ErroSinete` e tem `code: 'falha_tls'`. Decida pelo `code`, usando `ehErroSinete(e, 'falha_tls')` de `@sinete/core`, nunca pela mensagem. Esse código, sozinho, não garante que o certificado esteja correto.
 
 ## Causa
 
-O servidor pode exigir um recurso que o ambiente de execução (runtime) não oferece, como a troca de chaves DHE no Bun, ou pode ter ocorrido um erro de protocolo. Quando a incompatibilidade já consta no perfil TLS do host, o transporte a recusa antes da conexão com `nao_suportado`. Em `falha_tls`, `details.host` identifica o servidor; `details.alert` e `details.systemCode` trazem o alerta TLS e o código do sistema quando disponíveis. Nas falhas relatadas pelo helper `sinete-signer`, `details.helper` traz a mensagem do helper e `details.stage` pode indicar a etapa da falha.
+O servidor pode exigir um recurso que o ambiente de execução (runtime) não oferece, como a troca de chaves DHE no Bun, ou pode ter ocorrido um erro de protocolo. Quando a incompatibilidade já consta no perfil TLS do host, o transporte a recusa antes da conexão com `nao_suportado`. Em `falha_tls`, `detalhes.host` identifica o servidor; `detalhes.alert` e `detalhes.systemCode` trazem o alerta TLS e o código do sistema quando disponíveis. Nas falhas relatadas pelo helper `sinete-signer`, `detalhes.helper` traz a mensagem do helper e `detalhes.stage` pode indicar a etapa da falha.
 
 ## Correção
 

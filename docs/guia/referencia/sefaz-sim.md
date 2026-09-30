@@ -95,13 +95,13 @@ A NFS-e Nacional tem simulador próprio (`createNfseSim`): Sefin Nacional (emiss
 - `SimServer` (só na condição `node`): Servidor HTTPS de um simulador (NF-e ou NFS-e). Membros: `baseUrl`, `port`, `close()`.
 - `SimTransportOptions`: Membros: `clientCertificate`, `policy`, `timeoutMs`, `rejectOn403`.
 - `SimView`: Consultas somente leitura ao estado, para as regras. Membros: `config`, `contingencia`, `nfe()`, `nfeByNumero()`, `pendenteByNumero()`, `inutilizacaoCom()`, `inutilizacoes()`, `eventos()`, `contribuinte()`.
-- `SyntheticCertificate`: Certificado com a chave, pronto para o TLS (PEM), para assinar XML (`DataSigner`) e para assinar outros. Membros: `der`, `pem`, `keyPem`, `signer`, `tlsIdentity`, `commonName`, `signTbs`.
+- `SyntheticCertificate`: Certificado com a chave, pronto para o TLS (PEM), para assinar XML (`AssinadorDeDados`) e para assinar outros. Membros: `der`, `pem`, `keyPem`, `signer`, `tlsIdentity`, `commonName`, `signTbs`.
 - `SyntheticCertificateOptions`: Membros: `clock`, `role`, `commonName`, `cnpj`, `cpf`, `validDays`, `issuer`, `hosts`, `omitDocumentExtension`.
 - `SyntheticPfxOptions`: Membros: `chain`.
 
 ### Tipos
 
-- `AtivacaoSvc`: Ativação da SVC para uma UF (NT 2013.007 v1.03, item 03): a SEFAZ de origem a ativa (`ativa`, 107 na consulta status), a desativa com aviso (`desativando` até `ate`, 113 na consulta status e a recepção ainda aceita; depois de `ate`, como `inativa`) ou a deixa desligada (`inativa`, 114 na consulta status e na recepção). `type AtivacaoSvc = { readonly situacao: 'ativa'; } | { readonly situacao: 'desativando'; readonly ate: ReturnType<Clock['now']>; } | { readonly situacao: 'inativa'; }`
+- `AtivacaoSvc`: Ativação da SVC para uma UF (NT 2013.007 v1.03, item 03): a SEFAZ de origem a ativa (`ativa`, 107 na consulta status), a desativa com aviso (`desativando` até `ate`, 113 na consulta status e a recepção ainda aceita; depois de `ate`, como `inativa`) ou a deixa desligada (`inativa`, 114 na consulta status e na recepção). `type AtivacaoSvc = { readonly situacao: 'ativa'; } | { readonly situacao: 'desativando'; readonly ate: ReturnType<Relogio['agora']>; } | { readonly situacao: 'inativa'; }`
 - `CertCheck`: `type CertCheck = { readonly ok: true; readonly identity: CertIdentity; } | { readonly ok: false; readonly cStat: string; }`
 - `MdfeServicoSim`: Serviços do MDF-e que o simulador atende (a distribuição de DF-e do MDF-e fica de fora). `type MdfeServicoSim = Exclude<MdfeServico, 'MDFeDistribuicaoDFe'>`
 - `MotivoParams`: Valores dos marcadores entre colchetes da mensagem oficial (`nRec`, `chNFe`, `nProt`) ou `campo` do `<nome do campo>`. `type MotivoParams = Readonly<Record<string, string>>`

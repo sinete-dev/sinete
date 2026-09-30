@@ -19,14 +19,14 @@ if (r.tipo === 'autorizado') await guardarEvento(chave, r.valor.procEventoNFe);
 else console.log(r.tipo, r.cStat, r.xMotivo);
 ```
 
-- **Sequência.** Cada nova CC-e da mesma nota substitui a anterior e leva o número sequencial seguinte (`nSeqEvento` de 1 a 20). Inclua no texto as correções anteriores que devem continuar valendo. O sinete lança `ConfigError` antes do envio se o sequencial não for inteiro ou estiver fora desse intervalo. A Secretaria da Fazenda (SEFAZ) rejeita sequencial repetido com o código 573 (duplicidade de evento). O código 594 corresponde à rejeição por sequencial acima do permitido, mas o sinete impede esse envio na validação local.
-- **Texto.** `xCorrecao` deve ter de 15 a 1000 caracteres, conforme o schema do evento no pacote PL_010d. Fora desse intervalo, o sinete lança `ValidationError` antes do envio.
+- **Sequência.** Cada nova CC-e da mesma nota substitui a anterior e leva o número sequencial seguinte (`nSeqEvento` de 1 a 20). Inclua no texto as correções anteriores que devem continuar valendo. O sinete lança `ErroDeConfiguracao` antes do envio se o sequencial não for inteiro ou estiver fora desse intervalo. A Secretaria da Fazenda (SEFAZ) rejeita sequencial repetido com o código 573 (duplicidade de evento). O código 594 corresponde à rejeição por sequencial acima do permitido, mas o sinete impede esse envio na validação local.
+- **Texto.** `xCorrecao` deve ter de 15 a 1000 caracteres, conforme o schema do evento no pacote PL_010d. Fora desse intervalo, o sinete lança `ErroDeValidacao` antes do envio.
 - **Autorizador.** A CC-e vai sempre ao autorizador da unidade federativa (UF), mesmo quando a nota foi autorizada pela SEFAZ Virtual de Contingência (SVC), usada como alternativa ao autorizador habitual.
-- O retorno é o `EventoOutcome`, definido como um `SefazOutcome` do cliente. Neste método, `status` é `authorized` quando o evento foi registrado ou `rejected` quando foi rejeitado; `cStat` é o código de resposta da SEFAZ e `xMotivo` é sua descrição. Em caso de registro, `procEventoNFe` contém o XML do evento com a resposta da SEFAZ. A CC-e não usa o desfecho normalizado do emissor nem mantém estado entre chamadas.
+- O retorno é o `EventoOutcome`, definido como um `ResultadoSefaz` do cliente. Neste método, `tipo` é `autorizado` quando o evento foi registrado ou `recusado` quando foi rejeitado; `cStat` é o código de resposta da SEFAZ e `xMotivo` é sua descrição. Em caso de registro, `procEventoNFe` contém o XML do evento com a resposta da SEFAZ. A CC-e não usa o desfecho normalizado do emissor nem mantém estado entre chamadas.
 
 ## Quando o pedido fica sem resposta
 
-`cartaCorrecao` propaga falhas de transporte, como `TimeoutError` com código `tempo_esgotado` ou `TransportError` com código `conexao_recusada`. Se a resposta não chegou, o evento pode ter sido registrado. Antes de reenviar, consulte: `recuperarEventoRegistrado` devolve o evento 110110 de maior sequencial encontrado na consulta da chave, desde que tenha retorno de registro válido.
+`cartaCorrecao` propaga falhas de transporte, como `ErroDeTempoEsgotado` com código `tempo_esgotado` ou `TransportError` com código `conexao_recusada`. Se a resposta não chegou, o evento pode ter sido registrado. Antes de reenviar, consulte: `recuperarEventoRegistrado` devolve o evento 110110 de maior sequencial encontrado na consulta da chave, desde que tenha retorno de registro válido.
 
 ```ts
 import { recuperarEventoRegistrado } from 'sinete/nfe';
@@ -37,7 +37,7 @@ if (rec.registrado && rec.evento.nSeqEvento === '1') await guardarEvento(chave, 
 
 Se o evento recuperado tem o sequencial que você enviou, confira o conteúdo da correção e guarde o XML. A mesma consulta serve após uma rejeição 573: o código de duplicidade, sozinho, não comprova que o conteúdo registrado é o que você pretendia enviar.
 
-`registrado: false` significa que a consulta não mostrou um evento válido desse tipo; não prova que ele não existe. A função examina os eventos quando `rec.consulta.status` é `authorized` ou `denied`. Nos demais casos, a consulta foi inconclusiva: tente novamente depois. Com a consulta concluída, confira também a situação da nota antes de reenviar o pedido com o mesmo sequencial. Se a função recuperar outro sequencial, verifique os registros antes de decidir pelo reenvio, pois ela devolve apenas o maior.
+`registrado: false` significa que a consulta não mostrou um evento válido desse tipo; não prova que ele não existe. A função examina os eventos quando `rec.consulta.tipo` é `autorizado` ou `denegado`. Nos demais casos, a consulta foi inconclusiva: tente novamente depois. Com a consulta concluída, confira também a situação da nota antes de reenviar o pedido com o mesmo sequencial. Se a função recuperar outro sequencial, verifique os registros antes de decidir pelo reenvio, pois ela devolve apenas o maior.
 
 ## Imprimir o DACCe
 

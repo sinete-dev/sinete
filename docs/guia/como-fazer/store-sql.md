@@ -220,7 +220,7 @@ Para comparar o conteúdo, os perfis retiram campos que mudam a cada montagem, c
 
 Quando a contagem chega ao limite, 3 por padrão, dentro da janela de 1 hora desde a primeira recusa da sequência, a próxima emissão do mesmo conteúdo lança `RecusaRepetidaError` antes de gravar. O reenvio da mesma nota com a mesma rejeição mais de 30 vezes pode levar ao bloqueio por consumo indevido, a rejeição 656, conforme o Manual de Orientação do Contribuinte (MOC) 7.0, Anexo I, item 4.3.1. Os limites dessa regra são parametrizáveis por ambiente autorizador.
 
-Abaixo do limite da barreira, a mesma nota pode ser enviada novamente, pois a causa pode ter sido resolvida fora dela. A opção `recusaRepetida` permite configurar `limite` e `janelaMs`, ou desligar a barreira com `false`. Sem os dois métodos, o emissor não mantém essa barreira local; com apenas um deles, `createEmissor` lança `ConfigError`.
+Abaixo do limite da barreira, a mesma nota pode ser enviada novamente, pois a causa pode ter sido resolvida fora dela. A opção `recusaRepetida` permite configurar `limite` e `janelaMs`, ou desligar a barreira com `false`. Sem os dois métodos, o emissor não mantém essa barreira local; com apenas um deles, `createEmissor` lança `ErroDeConfiguracao`.
 
 A contagem fica numa tabela à parte: `soltar` apaga a linha de `transmissao` quando não há bytes, e a recusa precisa sobreviver a isso e ser visível para outro processo. Basta uma linha por documento, com a sequência atual, o instante da primeira recusa e quantas vezes ela se repetiu. A janela é comparada com o relógio do banco:
 
@@ -296,7 +296,7 @@ Apague periodicamente as linhas antigas. Por exemplo, `DELETE FROM transmissao_r
 
 `registrarFalhaDoAutorizador`, `contingenciaAtiva`, `entrarEmContingencia`, `sairDaContingencia`, `reservarSonda` e `marcarFimDaSvc` são opcionais e devem ser implementados juntos. Eles guardam o estado da [contingência automática](contingencia.md#contingência-automática), a emissão alternativa quando o serviço autorizador normal falha, no banco. Assim, todas as réplicas da aplicação veem o mesmo estado, somam as falhas umas das outras e apenas uma avisa a entrada em contingência. A reserva de consulta também garante que apenas uma réplica por intervalo consulte o status do autorizador ou da SEFAZ Virtual de Contingência (SVC), o serviço alternativo da NF-e.
 
-Sem os seis métodos, o emissor guarda a contingência na memória do processo; com apenas parte deles, `createEmissor` lança `ConfigError`. Implementar os métodos não ativa a contingência por si só: ela depende da configuração do emissor. Na NF-e, a entrada na SVC exige que a consulta feita à própria SVC responda 107, indicando serviço em operação. O escopo é um texto como `homologacao:nfe:55:SP`, que identifica ambiente, tipo de documento, modelo e unidade federativa (UF). Uma linha por escopo basta:
+Sem os seis métodos, o emissor guarda a contingência na memória do processo; com apenas parte deles, `createEmissor` lança `ErroDeConfiguracao`. Implementar os métodos não ativa a contingência por si só: ela depende da configuração do emissor. Na NF-e, a entrada na SVC exige que a consulta feita à própria SVC responda 107, indicando serviço em operação. O escopo é um texto como `homologacao:nfe:55:SP`, que identifica ambiente, tipo de documento, modelo e unidade federativa (UF). Uma linha por escopo basta:
 
 ```sql
 CREATE TABLE autorizador_contingencia (

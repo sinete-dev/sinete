@@ -1,6 +1,6 @@
 # `signer_indisponivel`: o helper sinete-signer não está disponível
 
-O cliente do `@sinete/transport/signer` não encontrou o binário, o processo não iniciou ou o canal de comunicação com o helper foi fechado ou recusou a escrita. O helper é o processo auxiliar `sinete-signer`, usado para assinar documentos e estabelecer conexões autenticadas com a chave do certificado. O erro é uma instância de `SignerError` (`@sinete/transport`), que estende `SineteError` e tem `code: 'signer_indisponivel'`. Identifique-o pelo `code`, usando `isSineteError(e, 'signer_indisponivel')` de `@sinete/core`, nunca pela mensagem.
+O cliente do `@sinete/transport/signer` não encontrou o binário, o processo não iniciou ou o canal de comunicação com o helper foi fechado ou recusou a escrita. O helper é o processo auxiliar `sinete-signer`, usado para assinar documentos e estabelecer conexões autenticadas com a chave do certificado. O erro é uma instância de `SignerError` (`@sinete/transport`), que estende `ErroSinete` e tem `code: 'signer_indisponivel'`. Identifique-o pelo `code`, usando `ehErroSinete(e, 'signer_indisponivel')` de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 

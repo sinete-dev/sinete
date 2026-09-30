@@ -1,6 +1,6 @@
 # Códigos de erro
 
-Gerado do fonte por `scripts/docs-gerados.ts`; não edite à mão. Todo erro lançado pelo sinete é um `SineteError` com `code` estável e `docs`, o caminho da página do código nesta pasta (`erros/<code>.md`). Decida pelo `code` (ou por `isSineteError(e, code)`), nunca pela mensagem. Rejeição da SEFAZ não é erro lançado: é desfecho (`status: 'rejected'` no cliente, `tipo: 'recusado'` no emissor), e o catálogo de rejeições é o `@sinete/rejeicoes`.
+Gerado do fonte por `scripts/docs-gerados.ts`; não edite à mão. Todo erro lançado pelo sinete é um `ErroSinete` com `code` estável e `pagina`, o caminho da página do código nesta pasta (`erros/<code>.md`). Decida pelo `code` (ou por `ehErroSinete(e, code)`), nunca pela mensagem. Rejeição da SEFAZ não é erro lançado: é desfecho (`tipo: 'recusado'`, no cliente e no emissor), e o catálogo de rejeições é o `@sinete/rejeicoes`.
 
 ## `@sinete/cert`
 
@@ -16,17 +16,17 @@ Gerado do fonte por `scripts/docs-gerados.ts`; não edite à mão. Todo erro lan
 
 ## `@sinete/core`
 
-- [`config_invalida`](config_invalida.md) (`ConfigError`): opção ou argumento fora do domínio
-- [`nao_suportado`](nao_suportado.md) (`UnsupportedError`): a runtime não suporta o que foi pedido
-- [`resposta_invalida`](resposta_invalida.md) (`ProtocolError`): a resposta não segue o leiaute esperado
-- [`sefaz_denegou`](sefaz_denegou.md) (`SefazError`): uso denegado e o código pediu o valor autorizado
-- [`sefaz_pendente`](sefaz_pendente.md) (`SefazError`): o documento ainda está em processamento e o código pediu o valor autorizado
-- [`sefaz_rejeitou`](sefaz_rejeitou.md) (`SefazError`): a SEFAZ rejeitou e o código pediu o valor autorizado
-- [`servico_nao_oferecido`](servico_nao_oferecido.md) (`ServicoNaoOferecidoError`): o autorizador não oferece esse serviço
-- [`tempo_esgotado`](tempo_esgotado.md) (`TimeoutError`): a operação passou do prazo
-- [`validacao_falhou`](validacao_falhou.md) (`ValidationError`): a entrada ou o documento montado não passou na validação local
-- [`xml_malformado`](xml_malformado.md) (`XmlError`): o XML não é bem formado
-- [`xmldsig_falhou`](xmldsig_falhou.md) (`XmlSignatureError`): não foi possível assinar o XML
+- [`config_invalida`](config_invalida.md) (`ErroDeConfiguracao`): opção ou argumento fora do domínio
+- [`nao_suportado`](nao_suportado.md) (`ErroNaoSuportado`): a runtime não suporta o que foi pedido
+- [`resposta_invalida`](resposta_invalida.md) (`ErroRespostaInvalida`): a resposta não segue o leiaute esperado
+- [`sefaz_denegou`](sefaz_denegou.md) (`ErroSefaz`): uso denegado e o código pediu o valor autorizado
+- [`sefaz_pendente`](sefaz_pendente.md) (`ErroSefaz`): o documento ainda está em processamento e o código pediu o valor autorizado
+- [`sefaz_rejeitou`](sefaz_rejeitou.md) (`ErroSefaz`): a SEFAZ rejeitou e o código pediu o valor autorizado
+- [`servico_nao_oferecido`](servico_nao_oferecido.md) (`ErroServicoNaoOferecido`): o autorizador não oferece esse serviço
+- [`tempo_esgotado`](tempo_esgotado.md) (`ErroDeTempoEsgotado`): a operação passou do prazo
+- [`validacao_falhou`](validacao_falhou.md) (`ErroDeValidacao`): a entrada ou o documento montado não passou na validação local
+- [`xml_malformado`](xml_malformado.md) (`ErroXml`): o XML não é bem formado
+- [`xmldsig_falhou`](xmldsig_falhou.md) (`ErroAssinaturaXml`): não foi possível assinar o XML
 
 ## `@sinete/da`
 

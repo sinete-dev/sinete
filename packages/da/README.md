@@ -79,7 +79,7 @@ Sem `formato`, o modelo 65 vai para `nfce` e o 55 segue o `tpImp`: 2 paisagem, 3
 
 ## Erros
 
-`DanfeError` (`SineteError`) com `code`: `xml_invalido`, `documento_inesperado`, `campo_ausente` (ex.: NFC-e sem `infNFeSupl/qrCode`), `evento_incompativel`, `formato_incompativel`, `imagem_invalida`, `codigo_barras_invalido`.
+`DanfeError` (`ErroSinete`) com `code`: `xml_invalido`, `documento_inesperado`, `campo_ausente` (ex.: NFC-e sem `infNFeSupl/qrCode`), `evento_incompativel`, `formato_incompativel`, `imagem_invalida`, `codigo_barras_invalido`.
 
 ## Testes
 

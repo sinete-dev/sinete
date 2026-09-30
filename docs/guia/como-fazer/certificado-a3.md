@@ -38,7 +38,7 @@ O `documentSigner` envia também o elemento referenciado quando recebe esse cont
 
 ## 3. A3 em nuvem, OpenBao ou `CryptoKey`
 
-Quando a chave é acessada pelo seu código, localmente ou por um serviço remoto, o helper pede cada assinatura de handshake por um `TlsSigner`. Há dois modos. No modo `digest`, seu código recebe o resumo SHA-256 das mensagens do handshake e devolve uma assinatura RSA PKCS#1 v1.5 sobre o `DigestInfo`, a estrutura que combina o resumo e a identificação do algoritmo. `digestTlsSigner` adapta um `DigestSigner` de `sinete/core`: monta o `DigestInfo` e chama `signDigestInfo`. Esse modo atende integrações com PSC que ofereçam assinatura RAW, OpenBao Transit com `prehashed` e módulos de segurança criptográfica, os HSM, desde que o adaptador implemente esse contrato.
+Quando a chave é acessada pelo seu código, localmente ou por um serviço remoto, o helper pede cada assinatura de handshake por um `TlsSigner`. Há dois modos. No modo `digest`, seu código recebe o resumo SHA-256 das mensagens do handshake e devolve uma assinatura RSA PKCS#1 v1.5 sobre o `DigestInfo`, a estrutura que combina o resumo e a identificação do algoritmo. `digestTlsSigner` adapta um `AssinadorDeDigest` de `sinete/core`: monta o `DigestInfo` e chama `assinarDigestInfo`. Esse modo atende integrações com PSC que ofereçam assinatura RAW, OpenBao Transit com `prehashed` e módulos de segurança criptográfica, os HSM, desde que o adaptador implemente esse contrato.
 
 No modo `message`, seu código recebe as mensagens completas do handshake para assinar com WebCrypto. `cryptoKeyTlsSigner` recebe uma `CryptoKey` configurada para `RSASSA-PKCS1-v1_5` com SHA-256 e a cadeia de certificados em DER. A chave pode ser não exportável.
 
@@ -59,7 +59,7 @@ const transport = createTransport({ identity: nuvem.tlsIdentity });
 const certificado = certificadoAberto(nuvem, { signer: psc });
 ```
 
-`allowedHosts` define a política de quem tem a chave, independente da política do helper: o cliente recusa qualquer pedido de assinatura para um host fora dessa lista. No modo `message`, o cliente confere ainda, antes de assinar, que o SNI, o nome do servidor indicado no handshake, corresponde ao host pedido e que o certificado apresentado pelo servidor cobre esse host. Para conexões por endereço IP, confere o IP no certificado. Com chave remota, quem assina os documentos é seu próprio `DigestSigner` ou `DataSigner`: passe-o a `certificadoAberto`.
+`allowedHosts` define a política de quem tem a chave, independente da política do helper: o cliente recusa qualquer pedido de assinatura para um host fora dessa lista. No modo `message`, o cliente confere ainda, antes de assinar, que o SNI, o nome do servidor indicado no handshake, corresponde ao host pedido e que o certificado apresentado pelo servidor cobre esse host. Para conexões por endereço IP, confere o IP no certificado. Com chave remota, quem assina os documentos é seu próprio `AssinadorDeDigest` ou `AssinadorDeDados`: passe-o a `certificadoAberto`.
 
 ## 4. O que o helper garante
 

@@ -1,6 +1,6 @@
 # `formato_incompativel`: o formato pedido não se aplica ao modelo
 
-O `formato` pedido à função `danfe` (`@sinete/da/nfe`) não se aplica ao modelo da nota. O erro também ocorre ao passar uma nota de outro modelo à função `danfce` (`@sinete/da/nfce`), exclusiva do modelo 65. É um `DanfeError` de `@sinete/da`, que estende `SineteError` e tem `code: 'formato_incompativel'`. Identifique o erro pelo `code`, com `isSineteError(e, 'formato_incompativel')` de `@sinete/core`, nunca pela mensagem.
+O `formato` pedido à função `danfe` (`@sinete/da/nfe`) não se aplica ao modelo da nota. O erro também ocorre ao passar uma nota de outro modelo à função `danfce` (`@sinete/da/nfce`), exclusiva do modelo 65. É um `DanfeError` de `@sinete/da`, que estende `ErroSinete` e tem `code: 'formato_incompativel'`. Identifique o erro pelo `code`, com `ehErroSinete(e, 'formato_incompativel')` de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 

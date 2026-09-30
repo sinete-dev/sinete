@@ -1,6 +1,6 @@
 # `assinatura_documento_recusada`: o helper recusou assinar o documento
 
-O `documentSigner` de uma identidade PKCS#11, interface de acesso ao token criptográfico, pediu ao helper `sinete-signer` a assinatura de um XML e o helper recusou. O helper só usa a chave do token para documentos fiscais cujo emitente ou autor seja compatível com o titular do certificado, conforme as regras abaixo. O erro é um `SignerError` (`@sinete/transport`), derivado de `SineteError`, com `code: 'assinatura_documento_recusada'`. Decida pelo `code`, usando `isSineteError(e, 'assinatura_documento_recusada')` de `@sinete/core`, nunca pela mensagem.
+O `documentSigner` de uma identidade PKCS#11, interface de acesso ao token criptográfico, pediu ao helper `sinete-signer` a assinatura de um XML e o helper recusou. O helper só usa a chave do token para documentos fiscais cujo emitente ou autor seja compatível com o titular do certificado, conforme as regras abaixo. O erro é um `SignerError` (`@sinete/transport`), derivado de `ErroSinete`, com `code: 'assinatura_documento_recusada'`. Decida pelo `code`, usando `ehErroSinete(e, 'assinatura_documento_recusada')` de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 
@@ -16,7 +16,7 @@ Quando o pedido inclui o elemento referenciado canonicalizado, o helper confere 
 
 Assine com o certificado do emitente ou do autor do evento, observando as regras de correspondência acima. Confira também o formato do `Id`, o perfil do `SignedInfo` e a correspondência entre o parâmetro `hash` e o algoritmo da assinatura.
 
-Para evento feito como destinatário, envie também o elemento referenciado canonicalizado, pois a chave de acesso identifica quem emitiu a nota. O `documentSigner` já encaminha esse elemento ao helper quando recebe `SignContext` no terceiro argumento de `sign`, usando `context.referenced`. O fluxo de assinatura XML de `@sinete/core/xml` fornece esse contexto quando o elemento referenciado está disponível. Se você chama `documentSigner.sign` diretamente ou usa um adaptador, preserve esse contexto para que o helper possa conferir o autor, o `Id` e o resumo criptográfico do elemento.
+Para evento feito como destinatário, envie também o elemento referenciado canonicalizado, pois a chave de acesso identifica quem emitiu a nota. O `documentSigner` já encaminha esse elemento ao helper quando recebe `ContextoDaAssinatura` no terceiro argumento de `assinar`, usando `contexto.referenciado`. O fluxo de assinatura XML de `@sinete/core/xml` fornece esse contexto quando o elemento referenciado está disponível. Se você chama `documentSigner.assinar` diretamente ou usa um adaptador, preserve esse contexto para que o helper possa conferir o autor, o `Id` e o resumo criptográfico do elemento.
 
 ## Armadilha
 

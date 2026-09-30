@@ -63,11 +63,11 @@ Os eventos, a consulta, a inutilização e o cadastro não vêm no zip do PL_010
 |---|---|
 | `serialize(ct, nome, valor, nsHerdado?)`, `serializeRoot(raiz, valor)` | forma canônica, na ordem do XSD; é o C14N do elemento (o de `serializeRoot` inclui o `xmlns`) |
 | `decode(ct, el)`, `decodeRoot(raiz, doc)`, `decodeXml(raiz, xml)` | decoder tolerante: `{ value, issues }` com `elemento_desconhecido`, `whitespace_descartado`, `namespace_divergente`... |
-| `validate(ct, el)`, `validateRoot(raiz, xml)`, `assertValid(raiz, xml)` | validador estrito: modelo de conteúdo, atributos, facetas, espaço léxico dos tipos embutidos, `xs:unique`, `ID` único. `assertValid` lança `ValidationError` do core |
+| `validate(ct, el)`, `validateRoot(raiz, xml)`, `assertValid(raiz, xml)` | validador estrito: modelo de conteúdo, atributos, facetas, espaço léxico dos tipos embutidos, `xs:unique`, `ID` único. `assertValid` lança `ErroDeValidacao` do core |
 | `selecionarPl(familia, ambiente, relogio)`, `VIGENCIAS` | PL por data (dia de Brasília) e ambiente, nunca por tentativa; `VigenciaError` (`pl_sem_vigencia`) fora de toda vigência |
 | `xsdRegexToJs`, `compileXsdRegex`, `checkSimple`, `compareDecimal` | utilitários do validador |
 
-As ocorrências seguem o `ValidationIssue` do core (`path`, `code`, `message`) e nunca trazem o valor do campo, só a regra e o caminho.
+As ocorrências seguem o `Ocorrencia` do core (`caminho`, `code`, `mensagem`) e nunca trazem o valor do campo, só a regra e o caminho.
 
 ## Vigências (`src/data/vigencia.json`)
 

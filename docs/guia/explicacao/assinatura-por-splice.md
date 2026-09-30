@@ -13,15 +13,15 @@ O mesmo risco existe fora da biblioteca: ao guardar o XML num campo que o reform
 ## Como o sinete assina
 
 1. A montagem serializa os elementos na ordem do XSD, o esquema que define a estrutura do XML, com escapes, atributos e tags no formato usado pela canonicalização. Os namespaces herdados são considerados na etapa seguinte.
-2. `prepareSignature` localiza o elemento pelo `Id`, calcula o digest de sua forma canônica e insere o `<Signature>` por splice, uma inserção direta na string. A assinatura entra como último filho do pai do elemento, com um marcador no lugar de `SignatureValue`. O `SignedInfo`, que contém a referência, os algoritmos e o digest, é canonicalizado nesse contexto final.
-3. `signPrepared` pede a assinatura ao `Signer`. No modo `data`, ele recebe os bytes do `SignedInfo` canonicalizado, como no A1 via WebCrypto. No modo `digest`, recebe apenas o `DigestInfo`, que reúne a identificação do algoritmo e o hash do `SignedInfo`, permitindo integrações com dispositivos e serviços de assinatura sem enviar o conteúdo do documento.
-4. `assembleSignature` troca o marcador pelo valor da assinatura em base64. Depois da inserção do `<Signature>`, essa é a única edição da string.
+2. `prepararAssinatura` localiza o elemento pelo `Id`, calcula o digest de sua forma canônica e insere o `<Signature>` por splice, uma inserção direta na string. A assinatura entra como último filho do pai do elemento, com um marcador no lugar de `SignatureValue`. O `SignedInfo`, que contém a referência, os algoritmos e o digest, é canonicalizado nesse contexto final.
+3. `assinarPreparada` pede a assinatura ao `Assinador`. No modo `dados`, ele recebe os bytes do `SignedInfo` canonicalizado, como no A1 via WebCrypto. No modo `digest`, recebe apenas o `DigestInfo`, que reúne a identificação do algoritmo e o hash do `SignedInfo`, permitindo integrações com dispositivos e serviços de assinatura sem enviar o conteúdo do documento.
+4. `montarAssinatura` troca o marcador pelo valor da assinatura em base64. Depois da inserção do `<Signature>`, essa é a única edição da string.
 
-O A3 em token PKCS#11 funciona pelo helper `sinete-signer`, implementado em `helpers/signer-tls`, distribuído no npm como `@sinete/signer` e acessado pelo cliente `@sinete/transport/signer`. Nesse caso, o `documentSigner` usa o modo `data`: envia ao helper o `SignedInfo` e, no fluxo de `signPrepared`, o elemento referenciado canonicalizado para validação. Portanto, esse conteúdo sai do processo da aplicação. Para A3 em nuvem de um prestador de serviços de confiança (PSC) e outras chaves não exportáveis, o helper oferece a conexão TLS com autenticação mútua; no modo `remote`, a aplicação fornece o `Signer` dos documentos.
+O A3 em token PKCS#11 funciona pelo helper `sinete-signer`, implementado em `helpers/signer-tls`, distribuído no npm como `@sinete/signer` e acessado pelo cliente `@sinete/transport/signer`. Nesse caso, o `documentSigner` usa o modo `dados`: envia ao helper o `SignedInfo` e, no fluxo de `assinarPreparada`, o elemento referenciado canonicalizado para validação. Portanto, esse conteúdo sai do processo da aplicação. Para A3 em nuvem de um prestador de serviços de confiança (PSC) e outras chaves não exportáveis, o helper oferece a conexão TLS com autenticação mútua; no modo `remote`, a aplicação fornece o `Assinador` dos documentos.
 
 A saída da assinatura é a entrada com exatamente uma inserção. O XML assinado segue para o autorizador, para o `store`, responsável pela persistência, e para os documentos processados. O `nfeProc`, o `procEventoNFe`, que reúne evento e protocolo, e os envelopes do manifesto eletrônico de documentos fiscais (MDF-e) são montados por concatenação, preservando o texto do documento assinado. A declaração XML inicial, quando presente, é removida para permitir sua inclusão no envelope. O simulador e o transporte também preservam o XML assinado, sem reserializá-lo.
 
-Na verificação, `verifySignature` exige o `Id` esperado e permite informar também o nome do elemento em `expected.element`. Recusa mais de um elemento com esse `Id` ou mais de uma assinatura que o referencie. Para evitar que uma assinatura válida seja usada para apresentar outro conteúdo como assinado, informe também o nome esperado e leia os dados do elemento retornado pela verificação.
+Na verificação, `conferirAssinatura` exige o `Id` esperado e permite informar também o nome do elemento em `elemento`. Recusa mais de um elemento com esse `Id` ou mais de uma assinatura que o referencie. Para evitar que uma assinatura válida seja usada para apresentar outro conteúdo como assinado, informe também o nome esperado e leia os dados do elemento retornado pela verificação.
 
 ## O que isso pede de quem integra
 
@@ -32,7 +32,7 @@ Na verificação, `verifySignature` exige o `Id` esperado e permite informar tam
 
 ## Parser estrito
 
-O parser do sinete recusa XML malformado, como texto com `&` sem escape, atributo duplicado ou prefixo não declarado. Também recusa DTD, a definição de tipo de documento, e aninhamento acima de 256 níveis, mesmo que o XML seja bem formado. Essas recusas geram `XmlError`, com o código `xml_malformado`. Quando recebe uma string, `verifySignature` converte esse erro em um resultado com `failure: 'parse'`.
+O parser do sinete recusa XML malformado, como texto com `&` sem escape, atributo duplicado ou prefixo não declarado. Também recusa DTD, a definição de tipo de documento, e aninhamento acima de 256 níveis, mesmo que o XML seja bem formado. Essas recusas geram `ErroXml`, com o código `xml_malformado`. Quando recebe uma string, `conferirAssinatura` converte esse erro em um resultado com `motivo: 'leitura'`.
 
 Um documento que outra biblioteca aceitaria pode ser recusado aqui, de propósito. A recusa de DTD impede o uso de entidades externas e sua expansão, e um documento malformado não tem forma canônica confiável.
 

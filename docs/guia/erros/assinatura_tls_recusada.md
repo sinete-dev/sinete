@@ -1,6 +1,6 @@
 # `assinatura_tls_recusada`: quem assina recusou o handshake
 
-Durante o handshake TLS, a negociação da conexão segura, o helper `sinete-signer` pediu a assinatura da mensagem CertificateVerify, que comprova a posse da chave privada do cliente. Quem controla a chave recusou o pedido ou devolveu uma assinatura que não confere com a chave pública do certificado. A negociação foi interrompida. O erro é representado por `SignerError` (`@sinete/transport`), um `SineteError` com `code: 'assinatura_tls_recusada'`. Decida pelo `code`, usando `isSineteError(e, 'assinatura_tls_recusada')` de `@sinete/core`, nunca pela mensagem. `details.host` traz o host de destino.
+Durante o handshake TLS, a negociação da conexão segura, o helper `sinete-signer` pediu a assinatura da mensagem CertificateVerify, que comprova a posse da chave privada do cliente. Quem controla a chave recusou o pedido ou devolveu uma assinatura que não confere com a chave pública do certificado. A negociação foi interrompida. O erro é representado por `SignerError` (`@sinete/transport`), um `ErroSinete` com `code: 'assinatura_tls_recusada'`. Decida pelo `code`, usando `ehErroSinete(e, 'assinatura_tls_recusada')` de `@sinete/core`, nunca pela mensagem. `detalhes.host` traz o host de destino.
 
 ## Causa
 
@@ -18,4 +18,4 @@ Verifique se o `TlsSigner` assina conforme o modo declarado: em `message`, ele r
 
 ## Armadilha
 
-Não amplie `allowedHosts` indiscriminadamente para "fazer funcionar". Essa lista aplica a restrição de destinos do dono da chave, independentemente das verificações do helper. Uma lista vazia é rejeitada por `openRemote` com `ConfigError`; ela não desativa a política. No modo `message`, o transcript permite conferir o destino informado. No modo `digest`, essa conferência não é possível: o cliente depende do contexto informado pelo helper, e `allowedHosts` sozinho não comprova o destino real se o helper estiver comprometido.
+Não amplie `allowedHosts` indiscriminadamente para "fazer funcionar". Essa lista aplica a restrição de destinos do dono da chave, independentemente das verificações do helper. Uma lista vazia é rejeitada por `openRemote` com `ErroDeConfiguracao`; ela não desativa a política. No modo `message`, o transcript permite conferir o destino informado. No modo `digest`, essa conferência não é possível: o cliente depende do contexto informado pelo helper, e `allowedHosts` sozinho não comprova o destino real se o helper estiver comprometido.

@@ -1,6 +1,6 @@
 # `xml_malformado`: o XML não é bem formado
 
-O parser estrito do `@sinete/core/xml` recusou o XML. A propriedade `offset` indica a posição em que o problema foi detectado, em unidades UTF-16 da string, com contagem a partir de zero. O erro lançado é um `XmlError`, exportado por `@sinete/core/xml`, que estende `SineteError` com `code: 'xml_malformado'`. Para identificar o erro, use `isSineteError(e, 'xml_malformado')`, de `@sinete/core`, nunca a mensagem.
+O parser estrito do `@sinete/core/xml` recusou o XML. A propriedade `posicao` indica a posição em que o problema foi detectado, em unidades UTF-16 da string, com contagem a partir de zero. O erro lançado é um `ErroXml`, exportado por `@sinete/core/xml`, que estende `ErroSinete` com `code: 'xml_malformado'`. Para identificar o erro, use `ehErroSinete(e, 'xml_malformado')`, de `@sinete/core`, nunca a mensagem.
 
 ## Causa
 

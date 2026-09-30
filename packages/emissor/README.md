@@ -47,7 +47,7 @@ switch (desfecho.tipo) {
 
 `emitir(ref, entrada)` trava o documento `ref`, lê o que estiver gravado para ele e:
 
-- **sem bytes gravados**: monta, valida (entrada inválida lança `ValidationError`, antes de gravar; na NF-e, também o emitente de outro CNPJ-base ou CPF que o certificado, rejeição 213 ou 227), assina, grava os bytes no `store` e só então envia;
+- **sem bytes gravados**: monta, valida (entrada inválida lança `ErroDeValidacao`, antes de gravar; na NF-e, também o emitente de outro CNPJ-base ou CPF que o certificado, rejeição 213 ou 227), assina, grava os bytes no `store` e só então envia;
 - **com bytes gravados** (uma transmissão anterior ficou sem desfecho): retoma com eles e ignora a entrada. O documento nunca é montado de novo: remontar gera outro `cNF` e outro `dhEmi`, e a SEFAZ responde 539 ou autoriza um segundo documento para o mesmo número.
 
 `entrada` também pode ser uma função que prepara a entrada só quando for montar, já com a trava e só sem bytes gravados: é onde o integrador confere que o documento ainda pode ser emitido e lê do banco o que vai na montagem, e o `meta` que ela devolve é o que fica gravado com os bytes. Numa retomada, nada disso roda.
@@ -57,13 +57,13 @@ const desfecho = await nfe.emitir(
   'pedido-42',
   async () => {
     const pedido = await db.pedidos.rascunho('pedido-42'); // lança se já não é rascunho
-    return { entrada: { nfe: notaDe(pedido), montagem: { time: timeContext({ emissao: fixedClock(pedido.emissao) }) } }, meta: { numero: pedido.numero } };
+    return { entrada: { nfe: notaDe(pedido), montagem: { time: contextoDeTempo({ emissao: relogioFixo(pedido.emissao) }) } }, meta: { numero: pedido.numero } };
   },
   { aoDecidir: guardarPedido, jaGuardado: async (registro) => (await db.pedidos.chave('pedido-42')) === registro.id },
 );
 ```
 
-O `aoDecidir` e o `jaGuardado` vão no emissor (padrão de todas as chamadas) ou em cada chamada, que vale sobre o do emissor: duas transmissões ao mesmo tempo no mesmo emissor guardam cada uma do seu jeito. Sem `aoDecidir` em nenhum dos dois, `emitir` e `retomar` lançam `ConfigError` antes de travar.
+O `aoDecidir` e o `jaGuardado` vão no emissor (padrão de todas as chamadas) ou em cada chamada, que vale sobre o do emissor: duas transmissões ao mesmo tempo no mesmo emissor guardam cada uma do seu jeito. Sem `aoDecidir` em nenhum dos dois, `emitir` e `retomar` lançam `ErroDeConfiguracao` antes de travar.
 
 **`jaGuardado`.** Se a transmissão cai depois de o integrador guardar o documento e antes de a gravação ser apagada, a próxima transmissão acha os bytes. Com o gancho, o emissor pergunta, com a trava e antes de ir à SEFAZ, se o documento destes bytes já foi guardado; se sim, apaga a gravação e devolve `ja-guardado`. Sem ele, a consulta da chave decide de novo e o `aoDecidir` roda outra vez (por isso ele é idempotente), e um documento cancelado ou encerrado nesse meio tempo volta com `situacaoAtual`.
 
@@ -171,7 +171,7 @@ const pool = createPoolDeEmissores({
 
 Opções comuns: `pfx` e `senha` ou `certificado`, `ambiente` e `store` (obrigatórias), `aoDecidir` e `jaGuardado` (no emissor ou em cada chamada), `situacaoPosterior` (`guardar`, padrão, ou `divergente`), `recusaRepetida` (`{ janelaMs, limite }` ou `false`), `trava` (`prazoMs`, `renovarACadaMs`), `clock`, `logger`, `timeoutMs`, `transporte` (recebe as opções padrão do transporte e devolve outro: somar uma AC de teste, apontar para o simulador). As do documento: `montagem` (de todos os documentos; a de um documento vai com ele, `{ nfe, montagem }`), `cliente`, `recibo` e `uf` (NF-e), `da` (NF-e, MDF-e e NFS-e).
 
-**PDF.** O `@sinete/da` é peer dependency opcional. Em Node e Bun o emissor o importa na primeira chamada; sem o pacote, `pdf()` lança `ConfigError`. No browser e no Deno, importe-o de forma estática e passe o módulo: `import * as da from '@sinete/da/nfe'` e `createNfeEmissor({ ..., da })`. Se a marca de cancelado falhar (evento de outro documento), `pdfCancelado` lança, e o integrador decide manter o PDF antigo.
+**PDF.** O `@sinete/da` é peer dependency opcional. Em Node e Bun o emissor o importa na primeira chamada; sem o pacote, `pdf()` lança `ErroDeConfiguracao`. No browser e no Deno, importe-o de forma estática e passe o módulo: `import * as da from '@sinete/da/nfe'` e `createNfeEmissor({ ..., da })`. Se a marca de cancelado falhar (evento de outro documento), `pdfCancelado` lança, e o integrador decide manter o PDF antigo.
 
 **DANFSe.** A API de geração do ADN foi suspensa em 03/08/2026 (NT SE/CGNFS-e 008/2026, 1), então o emissor de NFS-e gera o DANFSe v2 pelo `@sinete/da/nfse`, como os outros documentos. `pdf(nfse)` usa o XML da NFS-e (o `proc` do desfecho autorizado, que o `aoDecidir` guardou) e não vai à rede. `pdfCancelado(nfse, evento)` põe a marca d'água pelo evento registrado: "SUBSTITUÍDA" com o e105102, "CANCELADA" com o e101101, o e105104 ou o e305101. Quem não guardou o XML usa `pdfPorChave(chave)`: consulta a NFS-e e os quatro eventos que marcam o documento na Sefin, põe a marca que achar e devolve `undefined` se a Sefin não conhece a chave.
 

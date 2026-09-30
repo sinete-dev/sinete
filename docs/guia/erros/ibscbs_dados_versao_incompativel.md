@@ -1,6 +1,6 @@
 # `ibscbs_dados_versao_incompativel`: o formato do dataset não é o que o código lê
 
-O conjunto de dados (dataset) declara, no campo `manifest.dataSchemaVersion` do bundle, uma versão de formato diferente da constante `DATA_SCHEMA_VERSION` aceita pelo código instalado. O erro é uma instância de `IbsCbsDataError` (`@sinete/ibs-cbs-dados`), que estende `SineteError`, com `code: 'ibscbs_dados_versao_incompativel'`. Identifique-o pelo `code`, usando `isSineteError(e, 'ibscbs_dados_versao_incompativel')`, de `@sinete/core`, nunca pela mensagem.
+O conjunto de dados (dataset) declara, no campo `manifest.dataSchemaVersion` do bundle, uma versão de formato diferente da constante `DATA_SCHEMA_VERSION` aceita pelo código instalado. O erro é uma instância de `IbsCbsDataError` (`@sinete/ibs-cbs-dados`), que estende `ErroSinete`, com `code: 'ibscbs_dados_versao_incompativel'`. Identifique-o pelo `code`, usando `ehErroSinete(e, 'ibscbs_dados_versao_incompativel')`, de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 

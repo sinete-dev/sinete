@@ -6,8 +6,8 @@ Monorepo bun de pacotes `@sinete/*` (DF-e brasileiros em TypeScript, Apache-2.0)
 
 - **Assinar a string final e nunca mais tocar nela.** Nada de reparsear ou reserializar XML assinado.
 - **Dados como dados.** Endpoints, tabelas, rejeições, cadeia ICP e regras por UF em arquivos versionados com `source` e vigência. Nunca `if (uf === 'MT')`.
-- **Relógio injetado.** Nada de `new Date()` ou `Date.now()` fora de `packages/core/src/clock.ts` (o Biome barra). Dois relógios: emissão e fato gerador (`TimeContext`).
-- **Erro tipado.** Todo erro estende `SineteError` com `code` estável; rejeição da SEFAZ é `SefazOutcome`, não exceção.
+- **Relógio injetado.** Nada de `new Date()` ou `Date.now()` fora de `packages/core/src/clock.ts` (o Biome barra). Dois relógios: emissão e fato gerador (`ContextoDeTempo`).
+- **Erro tipado.** Todo erro estende `ErroSinete` com `code` estável; rejeição da SEFAZ é `ResultadoSefaz`, não exceção.
 - **Sem LGPL/GPL.** Implementar das specs oficiais, registrar a origem de cada regra, nunca copiar código de projetos LGPL/GPL.
 - **Corpus nunca no repo.** Nem certificado, nem XML real, nem dado pessoal. `scripts/check-no-secrets.ts` barra os casos comuns.
 - Pacotes puros sem builtins do Node; código de runtime em entradas `*.node.ts` com condição `node` no `exports`.
@@ -25,7 +25,7 @@ Monorepo bun de pacotes `@sinete/*` (DF-e brasileiros em TypeScript, Apache-2.0)
 - for trabalhar em DANFE e nos outros documentos auxiliares (`@sinete/da`): `docs/adr/0006-danfe.md`
 - for trabalhar em IBS/CBS (`@sinete/ibs-cbs`, `@sinete/ibs-cbs-dados`): `docs/adr/0007-rtc-dados-e-oraculo.md`
 - for trabalhar no `@sinete/emissor` (estado, trava, retomada, pool) ou decidir se algo vai para ele ou para um pacote de documento: `docs/adr/0010-fronteira-emissor.md`
-- for mexer em ocorrências de validação (`ValidationIssue`, `origem`, `rotuloDoCaminho`) ou no coletor de um montador: `docs/adr/0011-origem-e-rotulo-das-ocorrencias.md`
+- for mexer em ocorrências de validação (`Ocorrencia`, `origem`, `rotuloDoCaminho`) ou no coletor de um montador: `docs/adr/0011-origem-e-rotulo-das-ocorrencias.md`
 - for pré-validar uma regra da SEFAZ, curar a dica de uma rejeição ou mexer na barreira da recusa repetida (656): `docs/adr/0012-pre-validacao-pelas-rejeicoes-reais.md`
 - for mexer na contingência automática do emissor (SVC da NF-e, NFC-e off-line, métodos de contingência do `TransmissaoStore`): `docs/adr/0013-contingencia-automatica.md`
 - for mexer na documentação embarcada (`docs/guia/`, que vai no tarball do `sinete` e do `@sinete/emissor`), criar um código de erro ou mudar o bloco do `AGENTS.md` ou a skill `sinete`: `CONTRIBUTING.md` (seção Documentação embarcada) e `scripts/check-docs.ts`

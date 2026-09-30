@@ -1,6 +1,6 @@
 # @sinete/sefaz-sim
 
-SEFAZ simulada com estado, para os testes de integração dos pacotes e dos consumidores. Atende os web services da NF-e 4.00 e do MDF-e 3.00b com os nomes reais dos WSDL, valida na ordem da SEFAZ com as mensagens oficiais do `@sinete/rejeicoes`, guarda notas, eventos, inutilizações e a fila de distribuição em memória e lê o tempo só do `Clock` injetado. O `@sinete/transport` real conversa com ela como conversaria com a SEFAZ: em processo pelo `simTransport` ou por HTTPS com mTLS pelo `startSefazSimServer`.
+SEFAZ simulada com estado, para os testes de integração dos pacotes e dos consumidores. Atende os web services da NF-e 4.00 e do MDF-e 3.00b com os nomes reais dos WSDL, valida na ordem da SEFAZ com as mensagens oficiais do `@sinete/rejeicoes`, guarda notas, eventos, inutilizações e a fila de distribuição em memória e lê o tempo só do `Relogio` injetado. O `@sinete/transport` real conversa com ela como conversaria com a SEFAZ: em processo pelo `simTransport` ou por HTTPS com mTLS pelo `startSefazSimServer`.
 
 Status: pré-alfa, API instável até a 1.0. Nada aqui fala com SEFAZ real.
 
@@ -58,7 +58,7 @@ const nfe = await createNfeEmissor({
 });
 ```
 
-`redirectToSim` recusa com `ConfigError` o pedido sem `endpoint` ou de serviço que o simulador não atende: nada escapa para a SEFAZ real.
+`redirectToSim` recusa com `ErroDeConfiguracao` o pedido sem `endpoint` ou de serviço que o simulador não atende: nada escapa para a SEFAZ real.
 
 ## Decisões que valem aqui
 
@@ -134,7 +134,7 @@ Fora do simulador: cadastro de emitente e de municípios (405, 406, 408), bases 
 | `setProtocoloSemDigVal('denegacao' \| 'todos', onde)` | Protocolo sem `digVal` (opcional no leiaute): só nas denegações da NF-e ou também nas autorizações da NF-e e do MDF-e; `onde` é `autorizacao`, `consulta` ou `ambos` (padrão). `undefined` volta ao normal |
 | `respostaSincrona: 'aceita' \| 'recusa' \| 'assincrona'`, `cadastro`, `prazoCancelamentoHoras`, `intervaloConsumoIndevidoMs`, `tamanhoMaximo` | Opções de `createSefazSim` |
 
-O alvo (`{ servico, autorizador, times }`) restringe a falha; `times: Infinity` mantém até `clearFaults()`. No `simTransport`, queda vira `TransportError('conexao_recusada')` e falta de resposta vira `TimeoutError`, como no transporte real; no servidor HTTPS a queda destrói o socket e a falta de resposta deixa o socket aberto.
+O alvo (`{ servico, autorizador, times }`) restringe a falha; `times: Infinity` mantém até `clearFaults()`. No `simTransport`, queda vira `TransportError('conexao_recusada')` e falta de resposta vira `ErroDeTempoEsgotado`, como no transporte real; no servidor HTTPS a queda destrói o socket e a falta de resposta deixa o socket aberto.
 
 ## Números determinísticos
 
@@ -165,7 +165,7 @@ O alvo (`{ servico, autorizador, times }`) restringe a falha; `times: Infinity` 
 
 ## NFS-e Nacional (`createNfseSim`)
 
-Sefin Nacional e ADN simulados, com estado próprio e o mesmo relógio injetado. `createNfseSim({ clock, signer, municipios, contribuintes })` devolve um `SimHandler` (o mesmo `handle(SimRequest)` da NF-e), então serve pelo `simTransport` em processo e pelo `startSimServer(sim, { cert, key })` em HTTPS com mTLS. `redirectNfseToSim(transport, baseUrl)` troca a base de cada API resolvida pelo `nfseEndpoint` (Sefin, ADN, parametrização) pelo prefixo dela no simulador (`NFSE_SIM_PREFIXOS`), e recusa com `ConfigError` o pedido sem endpoint ou fora da base.
+Sefin Nacional e ADN simulados, com estado próprio e o mesmo relógio injetado. `createNfseSim({ clock, signer, municipios, contribuintes })` devolve um `SimHandler` (o mesmo `handle(SimRequest)` da NF-e), então serve pelo `simTransport` em processo e pelo `startSimServer(sim, { cert, key })` em HTTPS com mTLS. `redirectNfseToSim(transport, baseUrl)` troca a base de cada API resolvida pelo `nfseEndpoint` (Sefin, ADN, parametrização) pelo prefixo dela no simulador (`NFSE_SIM_PREFIXOS`), e recusa com `ErroDeConfiguracao` o pedido sem endpoint ou fora da base.
 
 ```ts
 import { createNfseSim, redirectNfseToSim, startSimServer, syntheticCertificate } from '@sinete/sefaz-sim';
@@ -187,7 +187,7 @@ const transport = redirectNfseToSim(createTransport({ identity: prestador.tlsIde
 
 ## Certificados sintéticos
 
-`syntheticCertificate({ clock, role })` gera na hora (WebCrypto, RSA-2048, sha256WithRSA) a AC, o e-CNPJ (`otherName` 2.16.76.1.3.3), o e-CPF (2.16.76.1.3.1 posicional) e o certificado do servidor (SAN com IP e DNS), com `signer` (`DataSigner` do core), `tlsIdentity` (`pem` do transporte) e PEM da chave. Não são ICP-Brasil e nada vai para o repo. No Bun, um certificado de AC apresentado como cliente derruba o handshake no servidor; use um de titular.
+`syntheticCertificate({ clock, role })` gera na hora (WebCrypto, RSA-2048, sha256WithRSA) a AC, o e-CNPJ (`otherName` 2.16.76.1.3.3), o e-CPF (2.16.76.1.3.1 posicional) e o certificado do servidor (SAN com IP e DNS), com `signer` (`AssinadorDeDados` do core), `tlsIdentity` (`pem` do transporte) e PEM da chave. Não são ICP-Brasil e nada vai para o repo. No Bun, um certificado de AC apresentado como cliente derruba o handshake no servidor; use um de titular.
 
 ## Servidor HTTPS
 
