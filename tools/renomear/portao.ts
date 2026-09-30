@@ -267,7 +267,13 @@ for (const arquivo of arquivos) {
       const linha = linhaDe(inicio);
       if (rel.startsWith('docs/adr/')) registrar(nome, arquivo, linha, 'historico', 'prosa histórica do ADR');
       else if (rel.startsWith('.changeset/'))
-        registrar(nome, arquivo, linha, 'historico', 'changeset: a tabela de nomes antigos e novos vai para o CHANGELOG');
+        registrar(
+          nome,
+          arquivo,
+          linha,
+          'historico',
+          'changeset: a tabela de nomes antigos e novos vai para o CHANGELOG',
+        );
       else if (rel.startsWith('tools/renomear/'))
         registrar(nome, arquivo, linha, 'historico', 'a ferramenta de renomeação cita os nomes antigos como exemplo');
       else if (rel.startsWith('spikes/'))
