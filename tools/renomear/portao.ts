@@ -110,6 +110,13 @@ for (const m of mapas) {
   for (const e of m.literais ?? []) ligar(e.antigo, e.arquivo);
   for (const e of m.chavesDeDados ?? []) ligar(e.antigo, e.arquivo);
 }
+/**
+ * Membro que também é palavra de outro assunto (`status`, `code`, `chain`): longe do dono, é homônimo. Nome composto
+ * (`additionalCa`, `user-provided`) não tem outro assunto, e a sobra dele na prosa é achado mesmo sem o dono por perto.
+ */
+function palavraComum(nome: string, comum: boolean): boolean {
+  return comum && !/[A-Z0-9-]/.test(nome.slice(1));
+}
 /** O trecho cita algum nome do dono do membro? */
 function citaODono(nome: string, trecho: string): boolean {
   for (const a of donos.get(nome) ?? []) for (const n of doArquivo(a)) if (palavra(n).test(trecho)) return true;
@@ -234,7 +241,8 @@ function classificarNoCodigo(
   // `const`) sem nada a ver com o nome achado no comentário.
   const dentro = !jsdoc && pos >= t.getStart(sf) && pos < t.getEnd();
   // Comentário: membro comum só conta na forma de código (`.status`, `status:`, entre crases).
-  if (!dentro) return comum && !emForma ? undefined : ['revisar', 'comentário'];
+  const generico = palavraComum(nome, comum);
+  if (!dentro) return generico && !emForma ? undefined : ['revisar', 'comentário'];
   if (t.kind >= ts.SyntaxKind.FirstKeyword && t.kind <= ts.SyntaxKind.LastKeyword) return undefined;
   if (ts.isIdentifier(t) || ts.isPrivateIdentifier(t)) {
     let s = checker.getSymbolAtLocation(t);
@@ -245,14 +253,18 @@ function classificarNoCodigo(
       return ['homonimo', `resolve para ${onde}`];
     }
     // Membro comum sem símbolo (acesso a `any`, chave de um `Record`): só conta se for acesso ou chave.
-    if (comum && !(ts.isPropertyAccessExpression(t.parent) || ts.isPropertyAssignment(t.parent))) return undefined;
+    if (generico && !(ts.isPropertyAccessExpression(t.parent) || ts.isPropertyAssignment(t.parent))) return undefined;
     return ['revisar', 'identificador sem símbolo'];
   }
   if (ts.isStringLiteralLike(t)) {
-    if (comum && t.text !== nome) return undefined;
+    // Caminho de módulo (`./runtime/decode.ts`): os arquivos ficam com o nome que têm, e o import errado não compila.
+    if (ts.isImportDeclaration(t.parent) || ts.isExportDeclaration(t.parent) || ts.isImportTypeNode(t.parent.parent)) {
+      return ['homonimo', 'caminho de módulo'];
+    }
+    if (generico && t.text !== nome) return undefined;
     // Literal com tipo esperado (`string` livre ou uma união de outro tipo): o typecheck já garante que não é da fase.
     const esperado = ts.isExpression(t) ? checker.getContextualType(t) : undefined;
-    if (comum && esperado && !(esperado.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)))
+    if (generico && esperado && !(esperado.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)))
       return ['homonimo', `literal com tipo esperado ${checker.typeToString(esperado).slice(0, 60)}`];
     return ['revisar', 'texto'];
   }
@@ -261,7 +273,7 @@ function classificarNoCodigo(
     t.kind === ts.SyntaxKind.TemplateMiddle ||
     t.kind === ts.SyntaxKind.TemplateTail
   ) {
-    return comum ? undefined : ['revisar', 'texto'];
+    return generico ? undefined : ['revisar', 'texto'];
   }
   return ['revisar', ts.SyntaxKind[t.kind]];
 }
@@ -309,15 +321,22 @@ for (const arquivo of arquivos) {
       else if (rel.startsWith('spikes/'))
         registrar(nome, arquivo, linha, 'homonimo', 'spike: código descartável, não importa o sinete');
       else if (rel.endsWith('.go')) registrar(nome, arquivo, linha, 'homonimo', 'código Go do helper');
+      else if (rel === 'bun.lock') registrar(nome, arquivo, linha, 'homonimo', 'nome de dependência no lockfile');
       else if (sf) {
         const antes = texto[inicio - 1] ?? '';
         const depois = texto.slice(inicio + nome.length, inicio + nome.length + 2);
         const emForma = ['.', '`', "'", '"'].includes(antes) || /^(\?:|:|`|'|")/.test(depois);
         const c = classificarNoCodigo(sf, inicio, nome, comum, emForma);
-        if (c && c[0] === 'revisar' && c[1] === 'comentário' && comum && !citaODono(nome, vizinhanca(inicio, 10)))
+        if (
+          c &&
+          c[0] === 'revisar' &&
+          c[1] === 'comentário' &&
+          palavraComum(nome, comum) &&
+          !citaODono(nome, vizinhanca(inicio, 10))
+        )
           registrar(nome, arquivo, linha, 'homonimo', 'membro comum num comentário que não cita o dono');
         else if (c) registrar(nome, arquivo, linha, c[0], c[1]);
-      } else if (comum && !citaODono(nome, secao(inicio)))
+      } else if (palavraComum(nome, comum) && !citaODono(nome, secao(inicio)))
         registrar(nome, arquivo, linha, 'homonimo', 'membro comum numa seção que não cita o dono');
       else registrar(nome, arquivo, linha, 'revisar', 'texto');
     }
