@@ -1,9 +1,9 @@
 // Tipos do pacote publicado, vistos por um consumidor com tsc nodenext (e por deno check).
-import type { Clock } from '@sinete/core';
+import type { Relogio } from '@sinete/core';
 import type { AutorizacaoContext, SefazSim, SimFault, SimRule, SyntheticCertificate } from '@sinete/sefaz-sim';
 import { createSefazSim, DEFAULT_RULES, simTransport, syntheticCertificate } from '@sinete/sefaz-sim';
 
-export async function usar(clock: Clock): Promise<number> {
+export async function usar(clock: Relogio): Promise<number> {
   const ac: SyntheticCertificate = await syntheticCertificate({ clock, role: 'ac' });
   const serie: SimRule<AutorizacaoContext> = {
     id: 'serie-9',

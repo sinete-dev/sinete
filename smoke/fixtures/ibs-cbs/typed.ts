@@ -1,5 +1,5 @@
 // Tipos do pacote publicado, vistos por um consumidor com tsc nodenext (e por deno check): a raiz e os quatro subpaths.
-import { fixedClock, timeContext } from '@sinete/core';
+import { relogioFixo, contextoDeTempo } from '@sinete/core';
 import type { Roc as RocRaiz } from '@sinete/ibs-cbs';
 import { calculateAt as calculateAtRaiz, officialRates as officialRatesRaiz } from '@sinete/ibs-cbs';
 import type { NominalRates, Rate, RateProvider, RateStatus } from '@sinete/ibs-cbs/aliquotas';
@@ -43,7 +43,7 @@ import { bundledDataset } from '@sinete/ibs-cbs-dados/bundled';
   const doc: RulesDocument = { modelo: 55, crt: 3, finNFe: 1, items: [] };
   const report: ValidationReport = validate(doc, {
     dataset: bundledDataset(),
-    time: timeContext({ emissao: fixedClock('2026-10-10T12:00:00-03:00') }),
+    time: contextoDeTempo({ emissao: relogioFixo('2026-10-10T12:00:00-03:00') }),
     ambiente: 'homologacao',
   });
   const first: Rule | undefined = RULES[0];
@@ -63,7 +63,7 @@ import { bundledDataset } from '@sinete/ibs-cbs-dados/bundled';
   };
   const det: Promise<Determination> = determine(facts, {
     dataset: bundledDataset(),
-    time: timeContext({ emissao: fixedClock('2026-10-10T12:00:00-03:00') }),
+    time: contextoDeTempo({ emissao: relogioFixo('2026-10-10T12:00:00-03:00') }),
     resolvers: [mine, uniqueCandidate()],
   });
   // @ts-expect-error motivo é uma união fechada

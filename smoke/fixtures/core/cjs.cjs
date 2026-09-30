@@ -5,20 +5,20 @@ const xml = require('@sinete/core/xml');
 const failures = [];
 let err;
 try {
-  core.fixedClock('sem-fuso');
+  core.relogioFixo('sem-fuso');
 } catch (e) {
   err = e;
 }
-if (!(err instanceof core.ConfigError) || err.code !== 'config_invalida') failures.push('ConfigError via require');
+if (!(err instanceof core.ErroDeConfiguracao) || err.code !== 'config_invalida') failures.push('ConfigError via require');
 let xerr;
 try {
-  xml.parseXml('<a><b></a>');
+  xml.lerXml('<a><b></a>');
 } catch (e) {
   xerr = e;
 }
-if (!(xerr instanceof xml.XmlError) || !(xerr instanceof core.SineteError)) failures.push('XmlError via require');
+if (!(xerr instanceof xml.ErroXml) || !(xerr instanceof core.ErroSinete)) failures.push('XmlError via require');
 Promise.all([import('@sinete/core'), import('@sinete/core/xml')]).then(([esm, esmXml]) => {
-  if (esm.SineteError !== core.SineteError) failures.push('mesma classe em require e import');
-  if (esmXml.XmlError !== xml.XmlError) failures.push('mesma XmlError em require e import');
+  if (esm.ErroSinete !== core.ErroSinete) failures.push('mesma classe em require e import');
+  if (esmXml.ErroXml !== xml.ErroXml) failures.push('mesma XmlError em require e import');
   console.log(JSON.stringify({ ok: failures.length === 0, rt: `node ${process.version}`, mode: 'require', failures }));
 });

@@ -1,5 +1,5 @@
 // Verificações do @sinete/ibs-cbs/determinar compartilhadas por Node, Deno e Chromium. Devolve a lista de falhas (vazia = ok).
-import { fixedClock, timeContext } from '@sinete/core';
+import { relogioFixo, contextoDeTempo } from '@sinete/core';
 import { bundledDataset } from '@sinete/ibs-cbs-dados/bundled';
 import { calculateAt } from '@sinete/ibs-cbs/calcular';
 import { officialRates } from '@sinete/ibs-cbs/aliquotas';
@@ -11,7 +11,7 @@ export async function runChecks() {
     if (!cond) failures.push(name);
   };
   const dataset = bundledDataset();
-  const time = timeContext({ emissao: fixedClock('2026-10-10T12:00:00-03:00') });
+  const time = contextoDeTempo({ emissao: relogioFixo('2026-10-10T12:00:00-03:00') });
   const facts = { modelo: 55, kind: 'venda', items: [{ n: 1, ncm: '10063021', description: 'arroz' }] };
   const [item] = constrain(facts, { dataset, time });
   expect('candidato do anexo', item.candidates.some((c) => c.cClassTrib === '200003'));

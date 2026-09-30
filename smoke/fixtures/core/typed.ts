@@ -1,40 +1,40 @@
 // Tipos do pacote publicado, vistos por um consumidor com tsc nodenext (e por deno check).
-import type { Authorized, Clock, SefazOutcome, Signer, Uf } from '@sinete/core';
-import { authorized, fixedClock, SefazError, ufBySigla } from '@sinete/core';
-import type { PreparedSignature, VerifyFailure, VerifyResult, XmlDocument, XmlElement } from '@sinete/core/xml';
-import { parseXml, signXml, verifySignature } from '@sinete/core/xml';
+import type { Autorizado, Relogio, ResultadoSefaz, Assinador, Uf } from '@sinete/core';
+import { criarAutorizado, relogioFixo, ErroSefaz, ufPorSigla } from '@sinete/core';
+import type { AssinaturaPreparada, MotivoFalhaConferencia, ResultadoConferencia, DocumentoXml, ElementoXml } from '@sinete/core/xml';
+import { lerXml, assinarXml, conferirAssinatura } from '@sinete/core/xml';
 
-const clock: Clock = fixedClock('2026-09-25T12:00:00Z');
-const out: SefazOutcome<{ nProt: string }> = authorized({ cStat: '100', xMotivo: 'ok' }, { nProt: '1' });
-if (out.status === 'authorized') {
-  const a: Authorized<{ nProt: string }> = out;
-  const nProt: string = a.value.nProt;
+const clock: Relogio = relogioFixo('2026-09-25T12:00:00Z');
+const out: ResultadoSefaz<{ nProt: string }> = criarAutorizado({ cStat: '100', xMotivo: 'ok' }, { nProt: '1' });
+if (out.tipo === 'autorizado') {
+  const a: Autorizado<{ nProt: string }> = out;
+  const nProt: string = a.valor.nProt;
   void nProt;
 }
-const uf: Uf | undefined = ufBySigla('SP')?.sigla;
-const e = new SefazError('sefaz_rejeitou', '539', 'Duplicidade');
+const uf: Uf | undefined = ufPorSigla('SP')?.sigla;
+const e = new ErroSefaz('sefaz_rejeitou', '539', 'Duplicidade');
 const code: 'sefaz_rejeitou' | 'sefaz_denegou' | 'sefaz_pendente' = e.code;
 // @ts-expect-error Uf é uma união fechada de siglas
 const bad: Uf = 'EX';
 void [clock, uf, code, bad];
 
 // Subpath ./xml
-declare const signer: Signer;
-const doc: XmlDocument = parseXml('<a Id="x"><b/></a>');
-const root: XmlElement = doc.root;
-const pending: Promise<string> = signXml('<r><a Id="x"/></r>', { id: 'x' }, signer);
-const result: Promise<VerifyResult> = verifySignature(doc, { id: 'x', element: 'a' });
-async function reason(): Promise<VerifyFailure | 'ok'> {
+declare const signer: Assinador;
+const doc: DocumentoXml = lerXml('<a Id="x"><b/></a>');
+const root: ElementoXml = doc.raiz;
+const pending: Promise<string> = assinarXml('<r><a Id="x"/></r>', { id: 'x' }, signer);
+const result: Promise<ResultadoConferencia> = conferirAssinatura(doc, { id: 'x', elemento: 'a' });
+async function reason(): Promise<MotivoFalhaConferencia | 'ok'> {
   const r = await result;
   if (r.ok) {
-    const el: XmlElement = r.element;
+    const el: ElementoXml = r.elemento;
     void el;
     return 'ok';
   }
-  return r.failure;
+  return r.motivo;
 }
-declare const p: PreparedSignature;
+declare const p: AssinaturaPreparada;
 const bytes: Uint8Array = p.signedInfo;
 // @ts-expect-error o verificador exige o Id esperado
-void verifySignature(doc, {});
+void conferirAssinatura(doc, {});
 void [root, pending, reason, bytes];

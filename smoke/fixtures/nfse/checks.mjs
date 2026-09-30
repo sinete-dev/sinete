@@ -3,7 +3,7 @@
 // escolhido pela tabela de vigências embutida no bundle, e emite na NFS-e simulada em processo: o cliente resolve as
 // bases pelos dados de endpoints do transporte e o redirectNfseToSim troca só a origem. Por fim, a rejeição com o
 // catálogo do Anexo I, um parâmetro municipal com cache e o gzip da plataforma.
-import { manualClock, timeContext } from '@sinete/core';
+import { relogioManual, contextoDeTempo } from '@sinete/core';
 import {
   buildDps,
   codigoServicoParametrizacao,
@@ -28,7 +28,7 @@ export async function runChecks() {
   const expect = (name, cond) => {
     if (!cond) failures.push(name);
   };
-  const clock = manualClock('2026-09-26T10:00:00-03:00');
+  const clock = relogioManual('2026-09-26T10:00:00-03:00');
   const dps = (cTribNac) => ({
     serie: '1',
     nDPS: cTribNac === '01.01.01' ? '1' : '2',
@@ -39,7 +39,7 @@ export async function runChecks() {
     valores: { vServ: '1500.00' },
     tributacao: { issqn: { tribISSQN: '1', tpRetISSQN: '1' }, totTrib: { pTotTribSN: '6.00' } },
   });
-  const r = buildDps(dps('01.01.01'), { ambiente: 'homologacao', time: timeContext({ emissao: clock }) });
+  const r = buildDps(dps('01.01.01'), { ambiente: 'homologacao', time: contextoDeTempo({ emissao: clock }) });
   expect('monta', r.ok);
   expect('código de 9 dígitos', codigoServicoParametrizacao('010101') === '01.01.01.000');
   expect('gunzip', (await gunzipBase64(await gzipBase64('ok'))) === 'ok');
@@ -73,12 +73,12 @@ export async function runChecks() {
   const gerada = await client.autorizar(assinada);
   expect(
     'NFS-e gerada com a DPS embutida',
-    gerada.status === 'authorized' && gerada.value.chaveAcesso.length === 50 && gerada.value.xml.includes(assinada.slice(38)),
+    gerada.tipo === 'autorizado' && gerada.valor.chaveAcesso.length === 50 && gerada.valor.xml.includes(assinada.slice(38)),
   );
-  const outra = buildDps(dps('01.02.01'), { ambiente: 'homologacao', time: timeContext({ emissao: clock }) });
+  const outra = buildDps(dps('01.02.01'), { ambiente: 'homologacao', time: contextoDeTempo({ emissao: clock }) });
   if (outra.ok) {
     const rej = await client.autorizar(await signDps(outra.value, titular.signer));
-    expect('rejeição com o catálogo', rej.status === 'rejected' && rej.cStat === 'E0312' && rej.hint !== undefined);
+    expect('rejeição com o catálogo', rej.tipo === 'recusado' && rej.cStat === 'E0312' && rej.dica !== undefined);
   } else expect('monta a segunda', false);
   const conv = await client.parametros.convenio(SAO_PAULO);
   await client.parametros.convenio(SAO_PAULO);

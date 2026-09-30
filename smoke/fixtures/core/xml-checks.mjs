@@ -1,35 +1,35 @@
 // Verificações do subpath @sinete/core/xml compartilhadas por Node, Bun, Deno e Chromium. Devolve a lista de falhas (vazia = ok).
 // A chave é gerada na hora com WebCrypto; o "certificado" é um DER mínimo só com o SubjectPublicKeyInfo no lugar
 // certo, que é o que o verificador lê (a confiança na cadeia não é papel deste pacote).
-import { isSineteError } from '@sinete/core';
+import { ehErroSinete } from '@sinete/core';
 import {
-  assembleSignature,
-  attributeOf,
-  base64Decode,
-  base64Encode,
+  montarAssinatura,
+  atributoDe,
+  decodificarBase64,
+  codificarBase64,
   c14n,
-  childElements,
-  descendants,
-  escapeC14nAttribute,
-  escapeC14nText,
-  findSignatures,
-  firstChild,
-  inScopeNamespaces,
-  parseXml,
-  prepareSignature,
-  SHA1_DIGEST_INFO_PREFIX,
-  signedInfoDigestInfo,
-  signPrepared,
-  signXml,
-  spkiFromCertificate,
-  textOf,
-  verifySignature,
+  elementosFilhos,
+  descendentes,
+  escaparAtributoC14n,
+  escaparTextoC14n,
+  encontrarAssinaturas,
+  primeiroFilho,
+  namespacesEmEscopo,
+  lerXml,
+  prepararAssinatura,
+  PREFIXO_DIGEST_INFO_SHA1,
+  digestInfoDoSignedInfo,
+  assinarPreparada,
+  assinarXml,
+  extrairSpki,
+  textoDe,
+  conferirAssinatura,
   XML_NS,
-  XMLDSIG_ALGORITHMS,
+  ALGORITMOS_XMLDSIG,
   XMLDSIG_NS,
   XMLNS_NS,
-  XmlError,
-  XmlSignatureError,
+  ErroXml,
+  ErroAssinaturaXml,
 } from '@sinete/core/xml';
 
 const NFE = 'http://www.portalfiscal.inf.br/nfe';
@@ -41,7 +41,7 @@ const tlv = (tag, bytes) => {
   return Uint8Array.from([tag, ...len, ...bytes]);
 };
 const big = (u) => u.reduce((v, b) => (v << 8n) | BigInt(b), 0n);
-const b64url = (s) => base64Decode(s.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - (s.length % 4)) % 4));
+const b64url = (s) => decodificarBase64(s.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - (s.length % 4)) % 4));
 
 async function keys() {
   const s = globalThis.crypto.subtle;
@@ -91,51 +91,51 @@ export async function runChecks() {
     if (!cond) failures.push(name);
   };
 
-  const doc = parseXml(DOC);
-  const inf = firstChild(doc.root, 'infNFe', NFE);
-  expect('parseXml offsets', inf && DOC.slice(inf.start, inf.openEnd) === '<infNFe Id="NFe1" versao="4.00">');
+  const doc = lerXml(DOC);
+  const inf = primeiroFilho(doc.raiz, 'infNFe', NFE);
+  expect('parseXml offsets', inf && DOC.slice(inf.inicio, inf.fimDaAbertura) === '<infNFe Id="NFe1" versao="4.00">');
   expect('ids', doc.ids.get('NFe1')?.[0] === inf);
-  expect('helpers', childElements(doc.root).length === 1 && [...descendants(doc.root)].length === 3);
-  expect('textOf', textOf(firstChild(inf, 'xNome')) === 'A&B Ç' && attributeOf(inf, 'versao') === '4.00');
-  expect('inScopeNamespaces', inScopeNamespaces(inf).get('') === NFE);
+  expect('helpers', elementosFilhos(doc.raiz).length === 1 && [...descendentes(doc.raiz)].length === 3);
+  expect('textOf', textoDe(primeiroFilho(inf, 'xNome')) === 'A&B Ç' && atributoDe(inf, 'versao') === '4.00');
+  expect('inScopeNamespaces', namespacesEmEscopo(inf).get('') === NFE);
   expect('c14n', c14n(inf) === `<infNFe xmlns="${NFE}" Id="NFe1" versao="4.00"><xNome>A&amp;B Ç</xNome></infNFe>`);
-  expect('escapes', escapeC14nText('<') === '&lt;' && escapeC14nAttribute('"') === '&quot;');
+  expect('escapes', escaparTextoC14n('<') === '&lt;' && escaparAtributoC14n('"') === '&quot;');
   expect('constantes', XML_NS.includes('XML/1998') && XMLNS_NS.includes('xmlns') && XMLDSIG_NS.endsWith('#'));
-  expect('base64', base64Encode(base64Decode('AQID')) === 'AQID');
+  expect('base64', codificarBase64(decodificarBase64('AQID')) === 'AQID');
 
   let err;
   try {
-    parseXml('<a>M&M</a>');
+    lerXml('<a>M&M</a>');
   } catch (e) {
     err = e;
   }
-  expect('XmlError', err instanceof XmlError && isSineteError(err, 'xml_malformado') && err.offset === 4);
+  expect('XmlError', err instanceof ErroXml && ehErroSinete(err, 'xml_malformado') && err.posicao === 4);
 
   const k = await keys();
-  expect('spkiFromCertificate', base64Encode(spkiFromCertificate(k.cert)) === base64Encode(k.spki));
-  const signed = await signXml(DOC, { id: 'NFe1' }, k.data);
+  expect('spkiFromCertificate', codificarBase64(extrairSpki(k.cert)) === codificarBase64(k.spki));
+  const signed = await assinarXml(DOC, { id: 'NFe1' }, k.data);
   expect('assinatura é inserção', signed.replace(/<Signature .*<\/Signature>/, '') === DOC);
-  expect('algoritmo', signed.includes(XMLDSIG_ALGORITHMS.rsaSha1));
-  const r = await verifySignature(signed, { id: 'NFe1', element: 'infNFe' });
-  expect('verifySignature ok', r.ok === true && r.element.local === 'infNFe');
-  expect('findSignatures', findSignatures(parseXml(signed)).length === 1);
-  const bad = await verifySignature(signed.replace('A&amp;B', 'A&amp;C'), { id: 'NFe1' });
-  expect('digest-diverge', bad.ok === false && bad.failure === 'digest-diverge' && bad.signedInfoValid === true);
-  const wrong = await verifySignature(signed, { id: 'NFe2' });
-  expect('referencia-inesperada', wrong.ok === false && wrong.failure === 'referencia-inesperada');
+  expect('algoritmo', signed.includes(ALGORITMOS_XMLDSIG.rsaSha1));
+  const r = await conferirAssinatura(signed, { id: 'NFe1', elemento: 'infNFe' });
+  expect('verifySignature ok', r.ok === true && r.elemento.local === 'infNFe');
+  expect('findSignatures', encontrarAssinaturas(lerXml(signed)).length === 1);
+  const bad = await conferirAssinatura(signed.replace('A&amp;B', 'A&amp;C'), { id: 'NFe1' });
+  expect('digest-diverge', bad.ok === false && bad.motivo === 'digest-diverge' && bad.signedInfoValido === true);
+  const wrong = await conferirAssinatura(signed, { id: 'NFe2' });
+  expect('referencia-inesperada', wrong.ok === false && wrong.motivo === 'referencia-inesperada');
 
-  const p = await prepareSignature(DOC, { id: 'NFe1', certificateDer: k.cert });
-  const di = await signedInfoDigestInfo(p);
-  expect('DigestInfo', di.length === 35 && di[0] === SHA1_DIGEST_INFO_PREFIX[0]);
-  const viaDigest = assembleSignature(p, await signPrepared(p, k.digest));
+  const p = await prepararAssinatura(DOC, { id: 'NFe1', certificadoDer: k.cert });
+  const di = await digestInfoDoSignedInfo(p);
+  expect('DigestInfo', di.length === 35 && di[0] === PREFIXO_DIGEST_INFO_SHA1[0]);
+  const viaDigest = montarAssinatura(p, await assinarPreparada(p, k.digest));
   expect('modos data e digest idênticos', viaDigest === signed);
 
   let serr;
   try {
-    await prepareSignature(DOC, { id: 'nada', certificateDer: k.cert });
+    await prepararAssinatura(DOC, { id: 'nada', certificadoDer: k.cert });
   } catch (e) {
     serr = e;
   }
-  expect('XmlSignatureError', serr instanceof XmlSignatureError && serr.reason === 'id-ausente');
+  expect('XmlSignatureError', serr instanceof ErroAssinaturaXml && serr.motivo === 'id-ausente');
   return failures;
 }

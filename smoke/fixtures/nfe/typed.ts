@@ -1,5 +1,5 @@
 // Tipos do pacote publicado, vistos por um consumidor com tsc nodenext (e por deno check).
-import type { ValidationIssue } from '@sinete/core';
+import type { Ocorrencia } from '@sinete/core';
 import type {
   AutorizacaoOutcome,
   BuildNfeResult,
@@ -36,7 +36,7 @@ declare const input: NfeInput;
 declare const r: BuildNfeResult;
 declare const client: NfeClient;
 if (!r.ok) {
-  const issues: readonly ValidationIssue[] = r.issues;
+  const issues: readonly Ocorrencia[] = r.issues;
   void issues;
 }
 const d: Decimal = Decimal.of('1.5').times(2);
@@ -48,5 +48,5 @@ const grupo: GrupoIbsCbs | undefined = undefined;
 // @ts-expect-error regras é `false` ou um objeto
 ibsCbsCalculator({ regras: true });
 declare const desfecho: AutorizacaoOutcome;
-const nfeProc: string | undefined = desfecho.status === 'authorized' ? desfecho.value.nfeProc : undefined;
+const nfeProc: string | undefined = desfecho.tipo === 'autorizado' ? desfecho.valor.nfeProc : undefined;
 void [icms, errado, calc, input, client, d, padrao, comOpcoes, ds, grupo, nfeProc];

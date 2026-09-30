@@ -1,5 +1,5 @@
 // Tipos do pacote publicado, vistos por um consumidor com tsc nodenext (e por deno check).
-import type { ValidationIssue } from '@sinete/core';
+import type { Ocorrencia } from '@sinete/core';
 import type {
   AutorizacaoOutcome,
   BuildMdfeResult,
@@ -29,11 +29,11 @@ declare const input: MdfeInput;
 declare const r: BuildMdfeResult;
 declare const client: MdfeClient;
 if (!r.ok) {
-  const issues: readonly ValidationIssue[] = r.issues;
+  const issues: readonly Ocorrencia[] = r.issues;
   void issues;
 }
 const code: MdfeIssueCode = 'percurso_invalido';
 const d: Decimal = Decimal.of('1.5');
 declare const emitido: AutorizacaoOutcome;
-const mdfeProc: string | undefined = emitido.status === 'authorized' ? emitido.value.mdfeProc : undefined;
+const mdfeProc: string | undefined = emitido.tipo === 'autorizado' ? emitido.valor.mdfeProc : undefined;
 void [errado, tipo, carga, trecho, input, client, code, d, mdfeProc];

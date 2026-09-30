@@ -1,6 +1,6 @@
 // Verificações do @sinete/da compartilhadas por Node, Bun, Deno e Chromium: layout, PDF e HTML a partir de XML
 // sintéticos, com o sha256 do PDF igual em todas as runtimes. Devolve a lista de falhas (vazia = ok).
-import { isSineteError } from '@sinete/core';
+import { ehErroSinete } from '@sinete/core';
 import { code128C, DanfeError, qrMatrix, toHtml, toPdf, toSvg } from '@sinete/da';
 import { dacce } from '@sinete/da/cce';
 import { damdfe } from '@sinete/da/mdfe';
@@ -38,20 +38,20 @@ export async function runChecks() {
   } catch (e) {
     err = e;
   }
-  expect('DanfeError', err instanceof DanfeError && isSineteError(err, 'formato_incompativel'));
+  expect('DanfeError', err instanceof DanfeError && ehErroSinete(err, 'formato_incompativel'));
   let err2;
   try {
     dacce(NFE);
   } catch (e) {
     err2 = e;
   }
-  expect('dacce recusa nfeProc', isSineteError(err2, 'documento_inesperado'));
+  expect('dacce recusa nfeProc', ehErroSinete(err2, 'documento_inesperado'));
   let err3;
   try {
     danfse(NFE);
   } catch (e) {
     err3 = e;
   }
-  expect('danfse recusa nfeProc', isSineteError(err3, 'documento_inesperado'));
+  expect('danfse recusa nfeProc', ehErroSinete(err3, 'documento_inesperado'));
   return failures;
 }

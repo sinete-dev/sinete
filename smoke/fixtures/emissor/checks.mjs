@@ -8,7 +8,7 @@
 import '@sinete/mdfe';
 import '@sinete/nfe';
 import '@sinete/nfse';
-import { manualClock } from '@sinete/core';
+import { relogioManual } from '@sinete/core';
 import * as daMdfe from '@sinete/da/mdfe';
 import * as daNfe from '@sinete/da/nfe';
 import * as daNfse from '@sinete/da/nfse';
@@ -126,7 +126,7 @@ export async function runChecks() {
 
   // A suíte de contrato roda contra o adaptador em memória: dois "processos" sobre o mesmo banco. O relógio é manual e
   // a espera o avança: com espera de verdade e prazo curto, o atraso do timer no Node reprovava a renovação.
-  const relogioDoBanco = manualClock('2026-09-26T10:00:00-03:00');
+  const relogioDoBanco = relogioManual('2026-09-26T10:00:00-03:00');
   const casos = casosDoContrato({
     criar: () => {
       const banco = createBancoMemoria();
@@ -136,7 +136,7 @@ export async function runChecks() {
       };
     },
     esperar: async (ms) => {
-      relogioDoBanco.advance(ms);
+      relogioDoBanco.avancar(ms);
     },
   });
   let contratoOk = casos.length > 0;
@@ -150,7 +150,7 @@ export async function runChecks() {
   }
   expect('contrato do store em memória', contratoOk);
 
-  const clock = manualClock('2026-09-26T10:00:00-03:00');
+  const clock = relogioManual('2026-09-26T10:00:00-03:00');
   const ac = await syntheticCertificate({ clock, role: 'ac' });
 
   // NF-e

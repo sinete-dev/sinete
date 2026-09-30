@@ -1,5 +1,5 @@
 // Verificações do @sinete/cert compartilhadas por Node, Bun, Deno e Chromium. Devolve a lista de falhas (vazia = ok).
-import { fixedClock } from '@sinete/core';
+import { relogioFixo } from '@sinete/core';
 import {
   base64ToBytes,
   buildChain,
@@ -17,7 +17,7 @@ export async function runChecks() {
   const expect = (name, cond) => {
     if (!cond) failures.push(name);
   };
-  const clock = fixedClock('2026-09-25T12:00:00Z');
+  const clock = relogioFixo('2026-09-25T12:00:00Z');
   const pfx = base64ToBytes(PFX_LEGACY_B64);
   const ks = await openPfx(pfx, { password: SENHA, clock });
   expect('PFX legado RC2-40 + 3DES', ks.kind === 'a1' && ks.validity === 'valido');
@@ -26,12 +26,12 @@ export async function runChecks() {
   const data = new TextEncoder().encode('<SignedInfo/>');
   const signer = await ks.signer();
   for (const hash of ['SHA-1', 'SHA-256']) {
-    const sig = await signer.sign(data, hash);
+    const sig = await signer.assinar(data, hash);
     expect(`assina e confere ${hash}`, sig.length === 256 && (await verifyBytes(ks.certificate, data, sig, hash)));
   }
   let err;
   try {
-    await openPfx(pfx, { password: SENHA, clock: fixedClock('2031-01-01T00:00:00Z') });
+    await openPfx(pfx, { password: SENHA, clock: relogioFixo('2031-01-01T00:00:00Z') });
   } catch (e) {
     err = e;
   }

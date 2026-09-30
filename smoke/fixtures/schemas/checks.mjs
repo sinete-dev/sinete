@@ -1,6 +1,6 @@
 // Verificações do @sinete/schemas compartilhadas por Node, Bun, Deno e Chromium: a entrada principal e todos os
 // subpaths gerados são importados e exercitados. Só dado sintético. Devolve a lista de falhas (vazia = ok).
-import { fixedClock, isSineteError, ValidationError } from '@sinete/core';
+import { relogioFixo, ehErroSinete, ErroDeValidacao } from '@sinete/core';
 import {
   assertValid,
   checkSimple,
@@ -43,7 +43,7 @@ import * as nfe010f from '@sinete/schemas/nfe/PL_010f';
 import * as status from '@sinete/schemas/nfe/status-servico/PL_009q';
 import * as nfse0209 from '@sinete/schemas/nfse/1.01-20260209';
 import * as nfse0727 from '@sinete/schemas/nfse/1.01-20260727';
-import { parseXml } from '@sinete/core/xml';
+import { lerXml } from '@sinete/core/xml';
 
 const NFE = 'http://www.portalfiscal.inf.br/nfe';
 const NFE_XML = '<NFe xmlns="http://www.portalfiscal.inf.br/nfe"><infNFe Id="NFe35260900000000000000550010000000011000000011" versao="4.00"><ide><cUF>35</cUF><cNF>00000001</cNF><natOp>VENDA DE MERCADORIA SINTETICA</natOp><mod>55</mod><serie>1</serie><nNF>1</nNF><dhEmi>2026-09-25T10:00:00-03:00</dhEmi><tpNF>1</tpNF><idDest>1</idDest><cMunFG>3550308</cMunFG><tpImp>1</tpImp><tpEmis>1</tpEmis><cDV>1</cDV><tpAmb>2</tpAmb><finNFe>1</finNFe><indFinal>1</indFinal><indPres>1</indPres><procEmi>0</procEmi><verProc>sinete-teste</verProc></ide><emit><CNPJ>00000000000000</CNPJ><xNome>EMPRESA SINTETICA DE TESTE LTDA</xNome><enderEmit><xLgr>RUA DE TESTE</xLgr><nro>100</nro><xBairro>CENTRO</xBairro><cMun>3550308</cMun><xMun>SAO PAULO</xMun><UF>SP</UF><CEP>01001000</CEP></enderEmit><IE>111111111111</IE><CRT>1</CRT></emit><dest><CPF>00000000000</CPF><xNome>NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL</xNome><indIEDest>9</indIEDest></dest><det nItem="1"><prod><cProd>SKU1</cProd><cEAN>SEM GTIN</cEAN><xProd>PRODUTO SINTETICO</xProd><NCM>84713012</NCM><CFOP>5102</CFOP><uCom>UN</uCom><qCom>1.0000</qCom><vUnCom>10.00</vUnCom><vProd>10.00</vProd><cEANTrib>SEM GTIN</cEANTrib><uTrib>UN</uTrib><qTrib>1.0000</qTrib><vUnTrib>10.00</vUnTrib><indTot>1</indTot></prod><imposto><ICMS><ICMSSN102><orig>0</orig><CSOSN>102</CSOSN></ICMSSN102></ICMS><PIS><PISNT><CST>07</CST></PISNT></PIS><COFINS><COFINSNT><CST>07</CST></COFINSNT></COFINS></imposto></det><total><ICMSTot><vBC>0.00</vBC><vICMS>0.00</vICMS><vICMSDeson>0.00</vICMSDeson><vFCP>0.00</vFCP><vBCST>0.00</vBCST><vST>0.00</vST><vFCPST>0.00</vFCPST><vFCPSTRet>0.00</vFCPSTRet><vProd>10.00</vProd><vFrete>0.00</vFrete><vSeg>0.00</vSeg><vDesc>0.00</vDesc><vII>0.00</vII><vIPI>0.00</vIPI><vIPIDevol>0.00</vIPIDevol><vPIS>0.00</vPIS><vCOFINS>0.00</vCOFINS><vOutro>0.00</vOutro><vNF>10.00</vNF></ICMSTot></total><transp><modFrete>9</modFrete></transp><pag><detPag><tPag>01</tPag><vPag>10.00</vPag></detPag></pag><infAdic><infCpl>DOCUMENTO SINTETICO &amp; DE TESTE</infCpl></infAdic></infNFe></NFe>';
@@ -87,22 +87,22 @@ export function runChecks() {
 
   // NF-e sintética: sem Signature, só o modelo de conteúdo do NFe falha; decode e serialize voltam ao mesmo texto.
   const nfeIssues = validateRoot(nfe010f.NFeElement, NFE_XML);
-  expect('NF-e sem Signature', nfeIssues.length === 1 && nfeIssues[0].path === '/NFe' && nfeIssues[0].code === 'modelo_de_conteudo');
+  expect('NF-e sem Signature', nfeIssues.length === 1 && nfeIssues[0].caminho === '/NFe' && nfeIssues[0].code === 'modelo_de_conteudo');
   const d = decodeXml(nfe010f.NFeElement, NFE_XML);
   expect('decode NF-e', d.issues.length === 0 && d.value.infNFe.emit.enderEmit.UF === 'SP');
   expect('serialize NF-e', serializeRoot(nfe010f.NFeElement, d.value) === NFE_XML);
-  const inf = parseXml(NFE_XML).root.children[0];
+  const inf = lerXml(NFE_XML).raiz.filhos[0];
   expect('decode elemento', decode(nfe010f.TNFe_infNFe, inf).value.ide.mod === '55');
   expect('serialize elemento', serialize(nfe010f.TNFe_infNFe, 'infNFe', d.value.infNFe, NFE).startsWith('<infNFe Id='));
   expect('validate elemento', validate(nfe010f.TNFe_infNFe, inf).length === 0);
-  expect('decodeRoot', decodeRoot(nfe010e.NFeElement, parseXml(NFE_XML)).issues.length === 0);
+  expect('decodeRoot', decodeRoot(nfe010e.NFeElement, lerXml(NFE_XML)).issues.length === 0);
   let verr;
   try {
     assertValid(nfe010f.NFeElement, NFE_XML);
   } catch (e) {
     verr = e;
   }
-  expect('assertValid', verr instanceof ValidationError && verr.issues.length === 1);
+  expect('assertValid', verr instanceof ErroDeValidacao && verr.ocorrencias.length === 1);
 
   const st = serializeRoot(status.consStatServElement, { versao: '4.00', tpAmb: '2', cUF: '35', xServ: 'STATUS' });
   expect('status do serviço', validateRoot(status.consStatServElement, st).length === 0);
@@ -119,15 +119,15 @@ export function runChecks() {
   }
   expect('SerializeError', serr instanceof SerializeError && serr.path === '/infNFe/ide/cUF');
 
-  expect('selecionarPl', selecionarPl('nfe', 'producao', fixedClock('2026-09-25T12:00:00-03:00')).modulo === 'nfe/PL_010e');
+  expect('selecionarPl', selecionarPl('nfe', 'producao', relogioFixo('2026-09-25T12:00:00-03:00')).modulo === 'nfe/PL_010e');
   expect('VIGENCIAS', Object.keys(VIGENCIAS).length === 17 && VIGENCIAS.nfse?.length === 2 && /^\d{4}-/.test(VIGENCIAS_ATUALIZADAS_EM));
   let vErr;
   try {
-    selecionarPl('nfe', 'producao', fixedClock('2020-01-01T00:00:00Z'));
+    selecionarPl('nfe', 'producao', relogioFixo('2020-01-01T00:00:00Z'));
   } catch (e) {
     vErr = e;
   }
-  expect('VigenciaError', vErr instanceof VigenciaError && isSineteError(vErr, 'pl_sem_vigencia'));
+  expect('VigenciaError', vErr instanceof VigenciaError && ehErroSinete(vErr, 'pl_sem_vigencia'));
 
   expect('regex', compileXsdRegex('\\d{2}').test('12') && xsdRegexToJs('a') === '^(?:a)$');
   let rErr;

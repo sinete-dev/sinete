@@ -3,7 +3,7 @@
 // sem dado real) e confere chave, XML, divisas e QR Code; os data JSON (fusos, divisas, vigências, cStat) precisam
 // estar embutidos no bundle. Depois autoriza o MDF-e na SEFAZ simulada em processo, consulta os não encerrados e
 // encerra (o cliente resolve o endpoint pelos dados do transporte e o redirectToSim troca só a URL).
-import { manualClock, timeContext } from '@sinete/core';
+import { relogioManual, contextoDeTempo } from '@sinete/core';
 import {
   buildMdfe,
   createMdfeClient,
@@ -65,8 +65,8 @@ export async function runChecks() {
     produtoPredominante: { tpCarga: '01', xProd: 'SOJA EM GRAOS', NCM: '12019000' },
     totais: { vCarga: '150000', cUnid: '01', qCarga: '30000' },
   };
-  const clock = manualClock('2026-09-26T10:00:00-04:00');
-  const opcoes = { ambiente: 'homologacao', time: timeContext({ emissao: clock }) };
+  const clock = relogioManual('2026-09-26T10:00:00-04:00');
+  const opcoes = { ambiente: 'homologacao', time: contextoDeTempo({ emissao: clock }) };
   const r = buildMdfe(mdfe, opcoes);
   expect('monta', r.ok);
   const semPercurso = buildMdfe({ ...mdfe, percurso: [] }, opcoes);
@@ -90,16 +90,16 @@ export async function runChecks() {
   const assinado = await signMdfe(m, produtor.signer);
   expect('qr code antes da assinatura', assinado.includes('<infMDFeSupl><qrCodMDFe>'));
   const aut = await client.autorizar(assinado);
-  expect('autorizado no simulador', aut.status === 'authorized' && aut.value.mdfeProc?.includes(assinado) === true);
+  expect('autorizado no simulador', aut.tipo === 'autorizado' && aut.valor.mdfeProc?.includes(assinado) === true);
   const abertos = await client.consultarNaoEncerrados();
-  expect('não encerrados', abertos.status === 'authorized' && abertos.value.length === 1);
-  if (aut.status === 'authorized') {
-    clock.advance(3_600_000);
-    const enc = await client.encerrar({ chave: m.chave, nProt: aut.value.nProt ?? '', uf: 'SP', cMun: '3550308' });
-    expect('encerrado', enc.status === 'authorized' && enc.cStat === '135');
+  expect('não encerrados', abertos.tipo === 'autorizado' && abertos.valor.length === 1);
+  if (aut.tipo === 'autorizado') {
+    clock.avancar(3_600_000);
+    const enc = await client.encerrar({ chave: m.chave, nProt: aut.valor.nProt ?? '', uf: 'SP', cMun: '3550308' });
+    expect('encerrado', enc.tipo === 'autorizado' && enc.cStat === '135');
   }
   const dup = await client.autorizar(assinado);
-  expect('duplicidade enriquecida', dup.status === 'rejected' && dup.cStat === '204' && dup.hint !== undefined);
+  expect('duplicidade enriquecida', dup.tipo === 'recusado' && dup.cStat === '204' && dup.dica !== undefined);
   await transport.close();
 
   return failures;
