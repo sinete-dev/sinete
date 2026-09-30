@@ -1,5 +1,111 @@
 # @sinete/nfse
 
+## 0.2.0
+
+### Minor Changes
+
+- 2a46db6: Acompanham a fase 2 do ADR 0015 (`@sinete/cert`, `@sinete/transport`, runtime do `@sinete/schemas`, `@sinete/ibs-cbs-dados` e `@sinete/ibs-cbs` com nomes em português). Os tipos desses pacotes que estes recebem e devolvem mudam, e o código de quem os usa muda junto; a tabela completa está nos changesets de cada pacote da fase. Nomes destes pacotes que também mudam:
+  
+  | Onde aparece | Antigo | Novo |
+  |---|---|---|
+  | `CertificadoAberto` (`@sinete/emissor`) | `signer` | `assinador` |
+  | `syntheticCertificate(...).tlsIdentity` (`@sinete/sefaz-sim`) | `{ kind: 'pem', certChain, key }` | `{ tipo: 'pem', cadeia, chave }`, a forma da `IdentidadeTls` |
+  | `simTransport` (`@sinete/sefaz-sim`) | `runtime: 'custom'` | `runtime: 'personalizada'` |
+- ae8ab90: Acompanham a fase 1 do ADR 0015 (`@sinete/core`, `@sinete/validators` e `@sinete/rejeicoes` com nomes em português). Nenhum nome próprio destes pacotes muda nesta fase, mas os tipos do core que eles recebem e devolvem mudam, e o código de quem os usa muda junto. Os mais visíveis:
+  
+  | Onde aparece | Antigo | Novo |
+  |---|---|---|
+  | desfecho dos clientes (`ResultadoSefaz`, antes `SefazOutcome`) | `status: 'authorized' \| 'rejected' \| 'denied' \| 'pending'` | `tipo: 'autorizado' \| 'recusado' \| 'denegado' \| 'pendente'` |
+  | desfecho autorizado ou denegado | `value` | `valor` |
+  | desfecho recusado | `hint` (`probableCause`, `suggestedFix`, `source`) | `dica` (`causaProvavel`, `comoCorrigir`, `fonte`) |
+  | desfecho pendente | `ref`, `retryAfterMs` | `referencia`, `aguardarMs` |
+  | erros (`ErroSinete`, antes `SineteError`) | `details`, `docs` | `detalhes`, `pagina` |
+  | ocorrências (`Ocorrencia`, antes `ValidationIssue`) | `path`, `message` | `caminho`, `mensagem` |
+  | `ErroDeValidacao` (antes `ValidationError`) | `issues` | `ocorrencias` |
+  | assinador (`Assinador`, antes `Signer`) | `kind: 'data' \| 'digest'`, `sign`, `signDigestInfo`, `certificateDer` | `tipo: 'dados' \| 'digest'`, `assinar`, `assinarDigestInfo`, `certificadoDer` |
+  | relógio (`Relogio`, antes `Clock`) | `now()` | `agora()` |
+  | resultado local (`Resultado`, antes `Result`) | `value`, `error` | `valor`, `erro` |
+  
+  A tabela completa de cada pacote da fase está nos changesets do `@sinete/core`, do `@sinete/validators` e do `@sinete/rejeicoes`.
+- 84080ad: Nomes da API pública em português (ADR 0015, fase 3). Sem aliases: quem usa a 0.1.x troca os nomes ao atualizar.
+  
+  Mudanças de comportamento:
+  
+  - `montarDps` passa a ser assíncrona e devolve `Promise<ResultadoMontagemDps>`, como a `montarNfe` e a `montarMdfe` (ADR 0009, emenda de 30/set/2026). O `ErroDeConfiguracao` de um `verAplic` inválido vira rejeição da `Promise`.
+  - `ttl` é traduzido: `validadeMs`, `validadeNaoEncontradoMs` e `validadeParametrosMs`.
+  - `detalhes` do `ErroRespostaInvalida` de uma rejeição fora do formato do Anexo I: `httpStatus` → `statusHttp`.
+  
+  Nomes exportados:
+  
+  | Antigo | Novo |
+  |---|---|
+  | `BuildDpsOptions` | `MontarDpsOpcoes` |
+  | `BuildDpsResult` | `ResultadoMontagemDps` |
+  | `buildDps` | `montarDps` |
+  | `signDps` | `assinarDps` |
+  | `NfseClient` | `ClienteNfse` |
+  | `NfseClientOptions` | `ClienteNfseOpcoes` |
+  | `OpcoesEnvio` | `EnvioOpcoes` |
+  | `createNfseClient` | `criarClienteNfse` |
+  | `parseChaveNfse` | `lerChaveNfse` |
+  | `PedidoEventoOptions` | `PedidoEventoOpcoes` |
+  | `PedidoEventoResult` | `ResultadoPedidoEvento` |
+  | `buildPedidoAnaliseFiscal` | `montarPedidoAnaliseFiscal` |
+  | `buildPedidoCancelamento` | `montarPedidoCancelamento` |
+  | `signPedidoEvento` | `assinarPedidoEvento` |
+  | `gunzipBase64` | `descomprimirGzipBase64` |
+  | `gzipBase64` | `comprimirGzipBase64` |
+  | `DpsInput` | `DadosDps` |
+  | `ParametrosOptions` | `ParametrosOpcoes` |
+  | `createParametrosMunicipais` | `criarParametrosMunicipais` |
+  | `NfseMensagem` | `MensagemNfse` |
+  | `NfseOutcome` | `ResultadoNfse` |
+  | `NfseRejeicao` | `RejeicaoNfse` |
+  | `formatValor` | `formatarValor` |
+  
+  Membros e parâmetros com nome:
+  
+  | Tipo | Antigo | Novo |
+  |---|---|---|
+  | `MontarDpsOpcoes` | `time` | `tempo` |
+  | `MontarDpsOpcoes`, `PedidoEventoOpcoes` | `offsetMinutes` | `deslocamentoMin` |
+  | `ResultadoMontagemDps`, `ResultadoPedidoEvento` | `value` | `valor` |
+  | `ResultadoMontagemDps`, `ResultadoPedidoEvento`, `formatarValor` | `issues` | `ocorrencias` |
+  | `montarDps` | `input` | `entrada` |
+  | `montarDps`, `montarPedidoAnaliseFiscal`, `montarPedidoCancelamento` | `options` | `opcoes` |
+  | `assinarDps`, `ClienteNfseOpcoes`, `assinarPedidoEvento` | `signer` | `assinador` |
+  | `ClienteNfseOpcoes`, `ParametrosOpcoes` | `transport` | `transporte` |
+  | `ClienteNfseOpcoes`, `PedidoEventoOpcoes`, `ParametrosOpcoes` | `clock` | `relogio` |
+  | `ResolucaoEnvio` | `outcome` | `resultado` |
+  | `criarClienteNfse` | `options` | `opcoesDoCliente` |
+  | `resolverEnvioSemResposta` | `client` | `cliente` |
+  | `inscricaoId` | `doc` | `documento` |
+  | `comprimirGzipBase64` | `text` | `texto` |
+  | `CacheParametros` | `get` | `obter` |
+  | `CacheParametros` | `set` | `gravar` |
+  | `CacheParametros` | `clear` | `limpar` |
+  | `ParametrosOpcoes` | `ttlMs` | `validadeMs` |
+  | `ParametrosOpcoes` | `ttlNaoEncontradoMs` | `validadeNaoEncontradoMs` |
+  | `RejeicaoNfse` | `httpStatus` | `statusHttp` |
+  | `formatarValor` | `path` | `caminho` |
+  | `ClienteNfseOpcoes` | `ttlParametrosMs` | `validadeParametrosMs` |
+
+### Patch Changes
+
+- Updated dependencies [4a3d258]
+- Updated dependencies [ae8ab90]
+- Updated dependencies [ae8ab90]
+- Updated dependencies [ae8ab90]
+- Updated dependencies [2a46db6]
+- Updated dependencies [2a46db6]
+- Updated dependencies [ae8ab90]
+- Updated dependencies [d824983]
+  - @sinete/validators@0.2.0
+  - @sinete/core@0.2.0
+  - @sinete/transport@0.2.0
+  - @sinete/schemas@0.2.0
+  - @sinete/rejeicoes@0.2.0
+
 ## 0.1.0
 
 ### Minor Changes

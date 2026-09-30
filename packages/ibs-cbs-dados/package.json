@@ -1,6 +1,6 @@
 {
   "name": "@sinete/ibs-cbs-dados",
-  "version": "2026.9.1",
+  "version": "2026.9.2",
   "description": "Dados oficiais do IBS/CBS versionados (CST, cClassTrib, cCredPres, aplicabilidade de NCM/NBS, tratamentos, atores), extraídos da Calculadora offline da RFB e do IT 2025.002 com proveniência por hash",
   "keywords": [
     "ibs",

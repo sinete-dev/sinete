@@ -1,5 +1,111 @@
 # @sinete/mdfe
 
+## 0.2.0
+
+### Minor Changes
+
+- 2bd9b9a: `NfeClient` e `MdfeClient` aceitam `signal` em todo método que vai à rede, no padrão do `NfseClient`. Na NF-e, `consultar`, `cancelar`, `cancelarPorSubstituicao`, `cartaCorrecao`, `manifestar`, `inutilizar` e `consultarCadastro` ganham `opcoes?: OpcoesEnvio` no fim, e `statusServico` (`StatusServicoOpcoes`) e `distribuicaoDFe` recebem o `signal` no objeto de opções que já tinham. No MDF-e, `statusServico`, `consultar`, `consultarNaoEncerrados` e os eventos ganham `opcoes?: OpcoesEnvio`, e `AutorizarOpcoes` passa a ser o mesmo tipo. Os dois pacotes exportam `OpcoesEnvio`. A mudança é compatível: o parâmetro novo é opcional.
+- 2a46db6: Acompanham a fase 2 do ADR 0015 (`@sinete/cert`, `@sinete/transport`, runtime do `@sinete/schemas`, `@sinete/ibs-cbs-dados` e `@sinete/ibs-cbs` com nomes em português). Os tipos desses pacotes que estes recebem e devolvem mudam, e o código de quem os usa muda junto; a tabela completa está nos changesets de cada pacote da fase. Nomes destes pacotes que também mudam:
+  
+  | Onde aparece | Antigo | Novo |
+  |---|---|---|
+  | `CertificadoAberto` (`@sinete/emissor`) | `signer` | `assinador` |
+  | `syntheticCertificate(...).tlsIdentity` (`@sinete/sefaz-sim`) | `{ kind: 'pem', certChain, key }` | `{ tipo: 'pem', cadeia, chave }`, a forma da `IdentidadeTls` |
+  | `simTransport` (`@sinete/sefaz-sim`) | `runtime: 'custom'` | `runtime: 'personalizada'` |
+- ae8ab90: Acompanham a fase 1 do ADR 0015 (`@sinete/core`, `@sinete/validators` e `@sinete/rejeicoes` com nomes em português). Nenhum nome próprio destes pacotes muda nesta fase, mas os tipos do core que eles recebem e devolvem mudam, e o código de quem os usa muda junto. Os mais visíveis:
+  
+  | Onde aparece | Antigo | Novo |
+  |---|---|---|
+  | desfecho dos clientes (`ResultadoSefaz`, antes `SefazOutcome`) | `status: 'authorized' \| 'rejected' \| 'denied' \| 'pending'` | `tipo: 'autorizado' \| 'recusado' \| 'denegado' \| 'pendente'` |
+  | desfecho autorizado ou denegado | `value` | `valor` |
+  | desfecho recusado | `hint` (`probableCause`, `suggestedFix`, `source`) | `dica` (`causaProvavel`, `comoCorrigir`, `fonte`) |
+  | desfecho pendente | `ref`, `retryAfterMs` | `referencia`, `aguardarMs` |
+  | erros (`ErroSinete`, antes `SineteError`) | `details`, `docs` | `detalhes`, `pagina` |
+  | ocorrências (`Ocorrencia`, antes `ValidationIssue`) | `path`, `message` | `caminho`, `mensagem` |
+  | `ErroDeValidacao` (antes `ValidationError`) | `issues` | `ocorrencias` |
+  | assinador (`Assinador`, antes `Signer`) | `kind: 'data' \| 'digest'`, `sign`, `signDigestInfo`, `certificateDer` | `tipo: 'dados' \| 'digest'`, `assinar`, `assinarDigestInfo`, `certificadoDer` |
+  | relógio (`Relogio`, antes `Clock`) | `now()` | `agora()` |
+  | resultado local (`Resultado`, antes `Result`) | `value`, `error` | `valor`, `erro` |
+  
+  A tabela completa de cada pacote da fase está nos changesets do `@sinete/core`, do `@sinete/validators` e do `@sinete/rejeicoes`.
+- 84080ad: Nomes da API pública em português (ADR 0015, fase 3). Sem aliases: quem usa a 0.1.x troca os nomes ao atualizar.
+  
+  Mudanças de comportamento:
+  
+  - `montarMdfe` passa a ser assíncrona e devolve `Promise<ResultadoMontagemMdfe>`, como a `montarNfe` e a `montarDps` (ADR 0009, emenda de 30/set/2026). Quem chamava sem `await` passa a receber uma `Promise`.
+  - O `Decimal` próprio do pacote fica em inglês (ADR 0015, exceção 3).
+  
+  Nomes exportados:
+  
+  | Antigo | Novo |
+  |---|---|
+  | `BuildMdfeOptions` | `MontarMdfeOpcoes` |
+  | `BuildMdfeResult` | `ResultadoMontagemMdfe` |
+  | `BuiltMdfe` | `MdfeMontado` |
+  | `buildMdfe` | `montarMdfe` |
+  | `signMdfe` | `assinarMdfe` |
+  | `DecimalFormat` | `FormatoDecimal` |
+  | `MdfeIssueCode` | `CodigoOcorrenciaMdfe` |
+  | `MDFE_ISSUE_CODES` | `CODIGOS_OCORRENCIA_MDFE` |
+  | `MdfeInput` | `DadosMdfe` |
+  | `AutorizacaoOutcome` | `ResultadoAutorizacao` |
+  | `ConsultaOutcome` | `ResultadoConsulta` |
+  | `EventoOutcome` | `ResultadoEvento` |
+  | `MdfeClient` | `ClienteMdfe` |
+  | `MdfeClientOptions` | `ClienteMdfeOpcoes` |
+  | `OpcoesEnvio` | `EnvioOpcoes` |
+  | `createMdfeClient` | `criarClienteMdfe` |
+  | `gunzipBase64` | `descomprimirGzipBase64` |
+  | `gzipBase64` | `comprimirGzipBase64` |
+  | `sliceElement` | `recortarElemento` |
+  | `offsetDaUf` | `deslocamentoDaUf` |
+  
+  Membros e parâmetros com nome:
+  
+  | Tipo | Antigo | Novo |
+  |---|---|---|
+  | `pagamentosDoLeiaute` | `@retorno.issues` | `@retorno.ocorrencias` |
+  | `MontarMdfeOpcoes` | `time` | `tempo` |
+  | `MontarMdfeOpcoes`, `ClienteMdfeOpcoes` | `offsetMinutes` | `deslocamentoMin` |
+  | `MontarMdfeOpcoes` | `random` | `aleatorio` |
+  | `ResultadoMontagemMdfe` | `value` | `valor` |
+  | `ResultadoMontagemMdfe` | `issues` | `ocorrencias` |
+  | `assinaturaQrCode`, `assinarMdfe`, `ClienteMdfeOpcoes` | `signer` | `assinador` |
+  | `montarMdfe` | `input` | `entrada` |
+  | `montarMdfe`, `ClienteMdfe` | `options` | `opcoes` |
+  | `comQrCode`, `assinarMdfe` | `built` | `manifesto` |
+  | `comQrCode`, `qrCodeMdfe` | `sign` | `assinatura` |
+  | `pagamentosDoLeiaute`, `rotuloDoCaminho` | `path` | `caminho` |
+  | `FormatoDecimal` | `name` | `nome` |
+  | `FormatoDecimal` | `intDigits` | `digitosInteiros` |
+  | `FormatoDecimal` | `nonZero` | `naoNulo` |
+  | `dec` | `input` | `valor` |
+  | `sum` | `values` | `valores` |
+  | `DocumentoAssinado`, `recortarElemento` | `doc` | `documento` |
+  | `ClienteMdfeOpcoes` | `transport` | `transporte` |
+  | `ClienteMdfeOpcoes` | `clock` | `relogio` |
+  | `ResolucaoEnvio` | `outcome` | `resultado` |
+  | `criarClienteMdfe` | `options` | `opcoesDoCliente` |
+  | `comprimirGzipBase64` | `text` | `texto` |
+  | `recuperarEventoRegistrado`, `resolverEnvioSemResposta` | `client` | `cliente` |
+  | `recortarElemento` | `parentDefaultNs` | `nsPadraoDoPai` |
+
+### Patch Changes
+
+- Updated dependencies [4a3d258]
+- Updated dependencies [ae8ab90]
+- Updated dependencies [ae8ab90]
+- Updated dependencies [ae8ab90]
+- Updated dependencies [2a46db6]
+- Updated dependencies [2a46db6]
+- Updated dependencies [ae8ab90]
+- Updated dependencies [d824983]
+  - @sinete/validators@0.2.0
+  - @sinete/core@0.2.0
+  - @sinete/transport@0.2.0
+  - @sinete/schemas@0.2.0
+  - @sinete/rejeicoes@0.2.0
+
 ## 0.1.0
 
 ### Minor Changes
