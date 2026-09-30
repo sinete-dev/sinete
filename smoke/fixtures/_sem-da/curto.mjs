@@ -1,5 +1,5 @@
 // Consumidor sem o @sinete/da, que é peer dependency opcional do @sinete/emissor. Os emissores de NF-e e MDF-e têm de
-// instalar, empacotar para o browser e rodar sem ele; só o pdf() pede o pacote, com ConfigError e não com um erro de
+// instalar, empacotar para o browser e rodar sem ele; só o pdf() pede o pacote, com ErroDeConfiguracao e não com um erro de
 // módulo.
 // No Deno com `npm:`, peer opcional só é resolvida quando está no grafo estático do app (ADR 0010): quem usa o
 // emissor de um documento importa também o pacote dele. No Node, o import não muda nada.

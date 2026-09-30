@@ -1,5 +1,5 @@
 // require() de pacote ESM puro (Node ^20.19 || >=22.12) e identidade de classe entre require e import, na raiz e no
-// subpath ./xml (o XmlError do subpath precisa ser SineteError da mesma cópia do core).
+// subpath ./xml (o ErroXml do subpath precisa ser ErroSinete da mesma cópia do core).
 const core = require('@sinete/core');
 const xml = require('@sinete/core/xml');
 const failures = [];
