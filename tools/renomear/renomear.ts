@@ -46,7 +46,7 @@ interface EntradaSimbolo {
 interface EntradaLiteral {
   readonly arquivo: string;
   readonly tipo: string | readonly string[];
-  /** Propriedade que tem o literal; ausente, `tipo` é o alias da própria união (`VerifyFailure`). */
+  /** Propriedade que tem o literal; ausente, `tipo` é o alias da própria união (`MotivoFalhaConferencia`). */
   readonly propriedade?: string;
   readonly antigo: string;
   readonly novo: string;

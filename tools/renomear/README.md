@@ -18,10 +18,10 @@ Com vários mapas, rodam como um só: os símbolos de todos, depois os literais,
 {
   "pacote": "@sinete/core",
   "simbolos": [
-    { "arquivo": "packages/core/src/result.ts", "tipo": "SefazOutcome", "nome": "status", "novo": "tipo" },
+    { "arquivo": "packages/core/src/result.ts", "tipo": "ResultadoSefaz", "nome": "status", "novo": "tipo" },
     { "arquivo": "packages/core/src/result.ts", "tipo": "pending", "nome": "options.ref", "novo": "referencia" },
     { "arquivo": "packages/core/src/result.ts", "tipo": "ok", "nome": "@retorno.value", "novo": "valor" },
-    { "arquivo": "packages/core/src/result.ts", "nome": "SefazOutcome", "novo": "ResultadoSefaz" }
+    { "arquivo": "packages/core/src/result.ts", "nome": "ResultadoSefaz", "novo": "ResultadoSefaz" }
   ],
   "literais": [
     { "arquivo": "packages/core/src/result.ts", "tipo": "ResultadoSefaz", "propriedade": "tipo",
@@ -38,7 +38,7 @@ Com vários mapas, rodam como um só: os símbolos de todos, depois os literais,
 ```
 
 - `simbolos` rodam na ordem do mapa, cada um sobre o estado deixado pelo anterior. Membro se acha pelo tipo que o declara, com o nome antigo do tipo: ponha os membros antes do tipo. `tipo` pode ser uma lista, ou uma união (os membros de mesmo nome de todas as partes mudam juntos). No caminho de `nome`, um segmento é um parâmetro (`options.ref`) ou um membro, e `@retorno` desce no tipo de retorno anotado.
-- `literais` rodam depois dos símbolos, então `tipo` e `propriedade` já têm o nome novo. Sem `propriedade`, `tipo` é o alias da união (`VerifyFailure`). Só muda o literal que o verificador liga ao tipo: a propriedade comparada ou atribuída tem a declaração do mapa entre as raízes, o objeto é do tipo (o `this.name` de uma classe de erro), o tipo esperado é uma união com dois ou mais valores de `grupo`, ou o objeto sem tipo tem todas as chaves de um tipo do alvo. O resto sai no relatório, sem mudança.
+- `literais` rodam depois dos símbolos, então `tipo` e `propriedade` já têm o nome novo. Sem `propriedade`, `tipo` é o alias da união (`MotivoFalhaConferencia`). Só muda o literal que o verificador liga ao tipo: a propriedade comparada ou atribuída tem a declaração do mapa entre as raízes, o objeto é do tipo (o `this.name` de uma classe de erro), o tipo esperado é uma união com dois ou mais valores de `grupo`, ou o objeto sem tipo tem todas as chaves de um tipo do alvo. O resto sai no relatório, sem mudança.
 - `chavesDeDados` e `valoresDeDados` trocam chaves e valores de JSON por caminho (`*` é qualquer chave, `[]` qualquer item), e os acessos do código ao JSON importado (`table.schemaVersion`).
 
 ## O que a ferramenta confere
