@@ -29,6 +29,7 @@ Monorepo bun de pacotes `@sinete/*` (DF-e brasileiros em TypeScript, Apache-2.0)
 - for pré-validar uma regra da SEFAZ, curar a dica de uma rejeição ou mexer na barreira da recusa repetida (656): `docs/adr/0012-pre-validacao-pelas-rejeicoes-reais.md`
 - for mexer na contingência automática do emissor (SVC da NF-e, NFC-e off-line, métodos de contingência do `TransmissaoStore`): `docs/adr/0013-contingencia-automatica.md`
 - for mexer na documentação embarcada (`docs/guia/`, que vai no tarball do `sinete` e do `@sinete/emissor`), criar um código de erro ou mudar o bloco do `AGENTS.md` ou a skill `sinete`: `CONTRIBUTING.md` (seção Documentação embarcada) e `scripts/check-docs.ts`
+- for dar nome a qualquer coisa pública (função, tipo, propriedade, valor de união): `docs/adr/0015-nomes-em-portugues.md`
 - antes de abrir PR: `CONTRIBUTING.md`
 - índice completo: `docs/README.md`
 
