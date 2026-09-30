@@ -358,7 +358,7 @@
 - Updated dependencies [84080ad]
 - Updated dependencies [2a46db6]
   - @sinete/core@0.2.0
-  - @sinete/ibs-cbs-dados@2026.10.0
+  - @sinete/ibs-cbs-dados@2026.9.2
 
 ## 0.1.0
 
