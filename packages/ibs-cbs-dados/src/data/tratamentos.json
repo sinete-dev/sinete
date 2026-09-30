@@ -1,7 +1,8 @@
 [
   {
-    "description": "Tributação pelo Imposto Seletivo - Com Cálculo",
-    "expr": {
+    "chave": "001",
+    "descricao": "Tributação pelo Imposto Seletivo - Com Cálculo",
+    "expressao": {
       "aliquota": null,
       "aliquotaEfetiva": null,
       "baseCalculo": "baseCalculoInformada",
@@ -10,7 +11,8 @@
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
     },
-    "flags": {
+    "id": 1,
+    "indicadores": {
       "exigeGrupoTribRegular": false,
       "incompativelComSuspensao": false,
       "possuiAjuste": false,
@@ -18,13 +20,12 @@
       "possuiPercentualReducao": true,
       "possuiRedutor": false
     },
-    "id": 1,
-    "key": "001",
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Tributação pelo Imposto Seletivo - Sem Cálculo",
-    "expr": {
+    "chave": "002",
+    "descricao": "Tributação pelo Imposto Seletivo - Sem Cálculo",
+    "expressao": {
       "aliquota": null,
       "aliquotaEfetiva": null,
       "baseCalculo": "baseCalculoInformada",
@@ -33,7 +34,8 @@
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
     },
-    "flags": {
+    "id": 2,
+    "indicadores": {
       "exigeGrupoTribRegular": false,
       "incompativelComSuspensao": false,
       "possuiAjuste": false,
@@ -41,13 +43,12 @@
       "possuiPercentualReducao": true,
       "possuiRedutor": false
     },
-    "id": 2,
-    "key": "002",
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Tributação integral",
-    "expr": {
+    "chave": "003",
+    "descricao": "Tributação integral",
+    "expressao": {
       "aliquota": "aliquota",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -55,22 +56,22 @@
       "tributoCalculado": "baseCalculo*aliquotaEfetiva",
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
-    },
-    "flags": {
-      "exigeGrupoTribRegular": false,
-      "incompativelComSuspensao": false,
-      "possuiAjuste": false,
-      "possuiMonofasia": false,
-      "possuiPercentualReducao": true,
-      "possuiRedutor": false
     },
     "id": 3,
-    "key": "003",
-    "validity": { "from": "2026-01-01", "to": null }
+    "indicadores": {
+      "exigeGrupoTribRegular": false,
+      "incompativelComSuspensao": false,
+      "possuiAjuste": false,
+      "possuiMonofasia": false,
+      "possuiPercentualReducao": true,
+      "possuiRedutor": false
+    },
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Tributação com alíquotas uniformes - operações do FGTS",
-    "expr": {
+    "chave": "004",
+    "descricao": "Tributação com alíquotas uniformes - operações do FGTS",
+    "expressao": {
       "aliquota": "aliquota",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -78,22 +79,22 @@
       "tributoCalculado": "baseCalculo*aliquotaEfetiva",
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
-    },
-    "flags": {
-      "exigeGrupoTribRegular": false,
-      "incompativelComSuspensao": false,
-      "possuiAjuste": false,
-      "possuiMonofasia": false,
-      "possuiPercentualReducao": true,
-      "possuiRedutor": false
     },
     "id": 4,
-    "key": "004",
-    "validity": { "from": "2026-01-01", "to": null }
+    "indicadores": {
+      "exigeGrupoTribRegular": false,
+      "incompativelComSuspensao": false,
+      "possuiAjuste": false,
+      "possuiMonofasia": false,
+      "possuiPercentualReducao": true,
+      "possuiRedutor": false
+    },
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Tributação com alíquotas uniformes - operações do setor financeiro",
-    "expr": {
+    "chave": "005",
+    "descricao": "Tributação com alíquotas uniformes - operações do setor financeiro",
+    "expressao": {
       "aliquota": "aliquota",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -101,22 +102,22 @@
       "tributoCalculado": "baseCalculo*aliquotaEfetiva",
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
-    },
-    "flags": {
-      "exigeGrupoTribRegular": false,
-      "incompativelComSuspensao": false,
-      "possuiAjuste": false,
-      "possuiMonofasia": false,
-      "possuiPercentualReducao": true,
-      "possuiRedutor": false
     },
     "id": 5,
-    "key": "005",
-    "validity": { "from": "2026-01-01", "to": null }
+    "indicadores": {
+      "exigeGrupoTribRegular": false,
+      "incompativelComSuspensao": false,
+      "possuiAjuste": false,
+      "possuiMonofasia": false,
+      "possuiPercentualReducao": true,
+      "possuiRedutor": false
+    },
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Tributação com alíquotas uniformes reduzidas em 60%",
-    "expr": {
+    "chave": "006",
+    "descricao": "Tributação com alíquotas uniformes reduzidas em 60%",
+    "expressao": {
       "aliquota": "aliquota",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -124,22 +125,22 @@
       "tributoCalculado": "baseCalculo*aliquotaEfetiva",
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
-    },
-    "flags": {
-      "exigeGrupoTribRegular": false,
-      "incompativelComSuspensao": false,
-      "possuiAjuste": false,
-      "possuiMonofasia": false,
-      "possuiPercentualReducao": true,
-      "possuiRedutor": false
     },
     "id": 6,
-    "key": "006",
-    "validity": { "from": "2026-01-01", "to": null }
+    "indicadores": {
+      "exigeGrupoTribRegular": false,
+      "incompativelComSuspensao": false,
+      "possuiAjuste": false,
+      "possuiMonofasia": false,
+      "possuiPercentualReducao": true,
+      "possuiRedutor": false
+    },
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Tributação com alíquotas uniformes",
-    "expr": {
+    "chave": "007",
+    "descricao": "Tributação com alíquotas uniformes",
+    "expressao": {
       "aliquota": "aliquota",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -147,22 +148,22 @@
       "tributoCalculado": "baseCalculo*aliquotaEfetiva",
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
-    },
-    "flags": {
-      "exigeGrupoTribRegular": false,
-      "incompativelComSuspensao": false,
-      "possuiAjuste": false,
-      "possuiMonofasia": false,
-      "possuiPercentualReducao": true,
-      "possuiRedutor": false
     },
     "id": 7,
-    "key": "007",
-    "validity": { "from": "2026-01-01", "to": null }
+    "indicadores": {
+      "exigeGrupoTribRegular": false,
+      "incompativelComSuspensao": false,
+      "possuiAjuste": false,
+      "possuiMonofasia": false,
+      "possuiPercentualReducao": true,
+      "possuiRedutor": false
+    },
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Tributação com alíquotas uniformes reduzidas em 30%",
-    "expr": {
+    "chave": "008",
+    "descricao": "Tributação com alíquotas uniformes reduzidas em 30%",
+    "expressao": {
       "aliquota": "aliquota",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -170,22 +171,22 @@
       "tributoCalculado": "baseCalculo*aliquotaEfetiva",
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
-    },
-    "flags": {
-      "exigeGrupoTribRegular": false,
-      "incompativelComSuspensao": false,
-      "possuiAjuste": false,
-      "possuiMonofasia": false,
-      "possuiPercentualReducao": true,
-      "possuiRedutor": false
     },
     "id": 8,
-    "key": "008",
-    "validity": { "from": "2026-01-01", "to": null }
+    "indicadores": {
+      "exigeGrupoTribRegular": false,
+      "incompativelComSuspensao": false,
+      "possuiAjuste": false,
+      "possuiMonofasia": false,
+      "possuiPercentualReducao": true,
+      "possuiRedutor": false
+    },
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Alíquota zero",
-    "expr": {
+    "chave": "009",
+    "descricao": "Alíquota zero",
+    "expressao": {
       "aliquota": "aliquota",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -193,22 +194,22 @@
       "tributoCalculado": "baseCalculo*aliquotaEfetiva",
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
-    },
-    "flags": {
-      "exigeGrupoTribRegular": false,
-      "incompativelComSuspensao": false,
-      "possuiAjuste": false,
-      "possuiMonofasia": false,
-      "possuiPercentualReducao": true,
-      "possuiRedutor": false
     },
     "id": 9,
-    "key": "009",
-    "validity": { "from": "2026-01-01", "to": null }
+    "indicadores": {
+      "exigeGrupoTribRegular": false,
+      "incompativelComSuspensao": false,
+      "possuiAjuste": false,
+      "possuiMonofasia": false,
+      "possuiPercentualReducao": true,
+      "possuiRedutor": false
+    },
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Alíquota zero apenas CBS e reduzida em 60% para IBS",
-    "expr": {
+    "chave": "010",
+    "descricao": "Alíquota zero apenas CBS e reduzida em 60% para IBS",
+    "expressao": {
       "aliquota": "aliquota",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -216,22 +217,22 @@
       "tributoCalculado": "baseCalculo*aliquotaEfetiva",
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
-    },
-    "flags": {
-      "exigeGrupoTribRegular": false,
-      "incompativelComSuspensao": false,
-      "possuiAjuste": false,
-      "possuiMonofasia": false,
-      "possuiPercentualReducao": true,
-      "possuiRedutor": false
     },
     "id": 10,
-    "key": "010",
-    "validity": { "from": "2026-01-01", "to": null }
+    "indicadores": {
+      "exigeGrupoTribRegular": false,
+      "incompativelComSuspensao": false,
+      "possuiAjuste": false,
+      "possuiMonofasia": false,
+      "possuiPercentualReducao": true,
+      "possuiRedutor": false
+    },
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Alíquota Reduzida em 80%",
-    "expr": {
+    "chave": "011",
+    "descricao": "Alíquota Reduzida em 80%",
+    "expressao": {
       "aliquota": "aliquota",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -239,22 +240,22 @@
       "tributoCalculado": "baseCalculo*aliquotaEfetiva",
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
-    },
-    "flags": {
-      "exigeGrupoTribRegular": false,
-      "incompativelComSuspensao": false,
-      "possuiAjuste": false,
-      "possuiMonofasia": false,
-      "possuiPercentualReducao": true,
-      "possuiRedutor": false
     },
     "id": 11,
-    "key": "011",
-    "validity": { "from": "2026-01-01", "to": null }
+    "indicadores": {
+      "exigeGrupoTribRegular": false,
+      "incompativelComSuspensao": false,
+      "possuiAjuste": false,
+      "possuiMonofasia": false,
+      "possuiPercentualReducao": true,
+      "possuiRedutor": false
+    },
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Alíquota reduzida em 70%",
-    "expr": {
+    "chave": "012",
+    "descricao": "Alíquota reduzida em 70%",
+    "expressao": {
       "aliquota": "aliquota",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -262,22 +263,22 @@
       "tributoCalculado": "baseCalculo*aliquotaEfetiva",
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
-    },
-    "flags": {
-      "exigeGrupoTribRegular": false,
-      "incompativelComSuspensao": false,
-      "possuiAjuste": false,
-      "possuiMonofasia": false,
-      "possuiPercentualReducao": true,
-      "possuiRedutor": false
     },
     "id": 12,
-    "key": "012",
-    "validity": { "from": "2026-01-01", "to": null }
+    "indicadores": {
+      "exigeGrupoTribRegular": false,
+      "incompativelComSuspensao": false,
+      "possuiAjuste": false,
+      "possuiMonofasia": false,
+      "possuiPercentualReducao": true,
+      "possuiRedutor": false
+    },
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Alíquota reduzida em 60%",
-    "expr": {
+    "chave": "013",
+    "descricao": "Alíquota reduzida em 60%",
+    "expressao": {
       "aliquota": "aliquota",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -285,22 +286,22 @@
       "tributoCalculado": "baseCalculo*aliquotaEfetiva",
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
-    },
-    "flags": {
-      "exigeGrupoTribRegular": false,
-      "incompativelComSuspensao": false,
-      "possuiAjuste": false,
-      "possuiMonofasia": false,
-      "possuiPercentualReducao": true,
-      "possuiRedutor": false
     },
     "id": 13,
-    "key": "013",
-    "validity": { "from": "2026-01-01", "to": null }
+    "indicadores": {
+      "exigeGrupoTribRegular": false,
+      "incompativelComSuspensao": false,
+      "possuiAjuste": false,
+      "possuiMonofasia": false,
+      "possuiPercentualReducao": true,
+      "possuiRedutor": false
+    },
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Alíquota reduzida em 50%",
-    "expr": {
+    "chave": "014",
+    "descricao": "Alíquota reduzida em 50%",
+    "expressao": {
       "aliquota": "aliquota",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -308,22 +309,22 @@
       "tributoCalculado": "baseCalculo*aliquotaEfetiva",
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
-    },
-    "flags": {
-      "exigeGrupoTribRegular": false,
-      "incompativelComSuspensao": false,
-      "possuiAjuste": false,
-      "possuiMonofasia": false,
-      "possuiPercentualReducao": true,
-      "possuiRedutor": false
     },
     "id": 14,
-    "key": "014",
-    "validity": { "from": "2026-01-01", "to": null }
+    "indicadores": {
+      "exigeGrupoTribRegular": false,
+      "incompativelComSuspensao": false,
+      "possuiAjuste": false,
+      "possuiMonofasia": false,
+      "possuiPercentualReducao": true,
+      "possuiRedutor": false
+    },
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Alíquota reduzida em 40%",
-    "expr": {
+    "chave": "015",
+    "descricao": "Alíquota reduzida em 40%",
+    "expressao": {
       "aliquota": "aliquota",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -331,22 +332,22 @@
       "tributoCalculado": "baseCalculo*aliquotaEfetiva",
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
-    },
-    "flags": {
-      "exigeGrupoTribRegular": false,
-      "incompativelComSuspensao": false,
-      "possuiAjuste": false,
-      "possuiMonofasia": false,
-      "possuiPercentualReducao": true,
-      "possuiRedutor": false
     },
     "id": 15,
-    "key": "015",
-    "validity": { "from": "2026-01-01", "to": null }
+    "indicadores": {
+      "exigeGrupoTribRegular": false,
+      "incompativelComSuspensao": false,
+      "possuiAjuste": false,
+      "possuiMonofasia": false,
+      "possuiPercentualReducao": true,
+      "possuiRedutor": false
+    },
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Alíquota reduzida em 30%",
-    "expr": {
+    "chave": "016",
+    "descricao": "Alíquota reduzida em 30%",
+    "expressao": {
       "aliquota": "aliquota",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -355,7 +356,8 @@
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
     },
-    "flags": {
+    "id": 16,
+    "indicadores": {
       "exigeGrupoTribRegular": false,
       "incompativelComSuspensao": false,
       "possuiAjuste": false,
@@ -363,13 +365,12 @@
       "possuiPercentualReducao": true,
       "possuiRedutor": false
     },
-    "id": 16,
-    "key": "016",
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Redução de base de cálculo",
-    "expr": {
+    "chave": "017",
+    "descricao": "Redução de base de cálculo",
+    "expressao": {
       "aliquota": "aliquota",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada*0.5",
@@ -378,7 +379,8 @@
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
     },
-    "flags": {
+    "id": 17,
+    "indicadores": {
       "exigeGrupoTribRegular": false,
       "incompativelComSuspensao": false,
       "possuiAjuste": false,
@@ -386,13 +388,12 @@
       "possuiPercentualReducao": true,
       "possuiRedutor": false
     },
-    "id": 17,
-    "key": "017",
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Isenção",
-    "expr": {
+    "chave": "018",
+    "descricao": "Isenção",
+    "expressao": {
       "aliquota": "aliquota",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -400,22 +401,22 @@
       "tributoCalculado": "baseCalculo*aliquotaEfetiva",
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
-    },
-    "flags": {
-      "exigeGrupoTribRegular": false,
-      "incompativelComSuspensao": false,
-      "possuiAjuste": false,
-      "possuiMonofasia": false,
-      "possuiPercentualReducao": true,
-      "possuiRedutor": false
     },
     "id": 18,
-    "key": "018",
-    "validity": { "from": "2026-01-01", "to": null }
+    "indicadores": {
+      "exigeGrupoTribRegular": false,
+      "incompativelComSuspensao": false,
+      "possuiAjuste": false,
+      "possuiMonofasia": false,
+      "possuiPercentualReducao": true,
+      "possuiRedutor": false
+    },
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Imunidade e não incidência",
-    "expr": {
+    "chave": "019",
+    "descricao": "Imunidade e não incidência",
+    "expressao": {
       "aliquota": "aliquota",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -424,7 +425,8 @@
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
     },
-    "flags": {
+    "id": 19,
+    "indicadores": {
       "exigeGrupoTribRegular": false,
       "incompativelComSuspensao": false,
       "possuiAjuste": false,
@@ -432,13 +434,12 @@
       "possuiPercentualReducao": true,
       "possuiRedutor": false
     },
-    "id": 19,
-    "key": "019",
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Diferimento",
-    "expr": {
+    "chave": "020",
+    "descricao": "Diferimento",
+    "expressao": {
       "aliquota": "aliquota",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -446,22 +447,22 @@
       "tributoCalculado": "baseCalculo*aliquotaEfetiva",
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": "tributoCalculado*1.00"
-    },
-    "flags": {
-      "exigeGrupoTribRegular": false,
-      "incompativelComSuspensao": false,
-      "possuiAjuste": false,
-      "possuiMonofasia": false,
-      "possuiPercentualReducao": true,
-      "possuiRedutor": false
     },
     "id": 20,
-    "key": "020",
-    "validity": { "from": "2026-01-01", "to": null }
+    "indicadores": {
+      "exigeGrupoTribRegular": false,
+      "incompativelComSuspensao": false,
+      "possuiAjuste": false,
+      "possuiMonofasia": false,
+      "possuiPercentualReducao": true,
+      "possuiRedutor": false
+    },
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Diferimento com redução de alíquota",
-    "expr": {
+    "chave": "021",
+    "descricao": "Diferimento com redução de alíquota",
+    "expressao": {
       "aliquota": "aliquota",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -470,7 +471,8 @@
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": "tributoCalculado*1.00"
     },
-    "flags": {
+    "id": 21,
+    "indicadores": {
       "exigeGrupoTribRegular": false,
       "incompativelComSuspensao": false,
       "possuiAjuste": false,
@@ -478,13 +480,12 @@
       "possuiPercentualReducao": true,
       "possuiRedutor": false
     },
-    "id": 21,
-    "key": "021",
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Suspensão",
-    "expr": {
+    "chave": "022",
+    "descricao": "Suspensão",
+    "expressao": {
       "aliquota": "0",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -493,7 +494,8 @@
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
     },
-    "flags": {
+    "id": 22,
+    "indicadores": {
       "exigeGrupoTribRegular": true,
       "incompativelComSuspensao": true,
       "possuiAjuste": false,
@@ -501,13 +503,12 @@
       "possuiPercentualReducao": true,
       "possuiRedutor": false
     },
-    "id": 22,
-    "key": "022",
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Tributação monofásica sobre combustíveis",
-    "expr": {
+    "chave": "023",
+    "descricao": "Tributação monofásica sobre combustíveis",
+    "expressao": {
       "aliquota": "aliquotaAdRemPrincipal",
       "aliquotaEfetiva": null,
       "baseCalculo": "quantidade",
@@ -516,7 +517,8 @@
       "tributoDevido": null,
       "valorDiferimento": null
     },
-    "flags": {
+    "id": 23,
+    "indicadores": {
       "exigeGrupoTribRegular": false,
       "incompativelComSuspensao": false,
       "possuiAjuste": true,
@@ -524,13 +526,12 @@
       "possuiPercentualReducao": true,
       "possuiRedutor": false
     },
-    "id": 23,
-    "key": "023",
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Tributação monofásica com responsabilidade pela retenção sobre combustíveis",
-    "expr": {
+    "chave": "024",
+    "descricao": "Tributação monofásica com responsabilidade pela retenção sobre combustíveis",
+    "expressao": {
       "aliquota": "aliquotaAdRemPrincipal",
       "aliquotaEfetiva": "aliquotaAdRemSecundaria",
       "baseCalculo": "quantidade",
@@ -539,7 +540,8 @@
       "tributoDevido": "(pBio/(1-pBio))*quantidade*aliquotaAdRemSecundaria",
       "valorDiferimento": null
     },
-    "flags": {
+    "id": 24,
+    "indicadores": {
       "exigeGrupoTribRegular": false,
       "incompativelComSuspensao": false,
       "possuiAjuste": true,
@@ -547,13 +549,12 @@
       "possuiPercentualReducao": true,
       "possuiRedutor": false
     },
-    "id": 24,
-    "key": "024",
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Tributação monofásica com tributos retidos por responsabilidade sobre combustíveis",
-    "expr": {
+    "chave": "025",
+    "descricao": "Tributação monofásica com tributos retidos por responsabilidade sobre combustíveis",
+    "expressao": {
       "aliquota": "aliquotaAdRemPrincipal",
       "aliquotaEfetiva": null,
       "baseCalculo": "quantidade",
@@ -562,7 +563,8 @@
       "tributoDevido": "quantidade*aliquotaAdRemPrincipal*(1-percentualDiferimento)",
       "valorDiferimento": null
     },
-    "flags": {
+    "id": 25,
+    "indicadores": {
       "exigeGrupoTribRegular": false,
       "incompativelComSuspensao": false,
       "possuiAjuste": true,
@@ -570,13 +572,12 @@
       "possuiPercentualReducao": true,
       "possuiRedutor": false
     },
-    "id": 25,
-    "key": "025",
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Tributação monofásica sobre mistura de EAC com gasolina A em percentual superior ao obrigatório",
-    "expr": {
+    "chave": "026",
+    "descricao": "Tributação monofásica sobre mistura de EAC com gasolina A em percentual superior ao obrigatório",
+    "expressao": {
       "aliquota": "(1-pBio)*aliquotaAdRemPrincipal+pBio*aliquotaAdRemSecundaria",
       "aliquotaEfetiva": "aliquotaAdRemSecundaria",
       "baseCalculo": "quantidade",
@@ -584,22 +585,22 @@
       "tributoCalculado": "(variacaoPontoPercentual/100)*quantidade*(pBio/(1-pBio))*aliquotaAdRemSecundaria",
       "tributoDevido": "quantidade*aliquota",
       "valorDiferimento": null
-    },
-    "flags": {
-      "exigeGrupoTribRegular": false,
-      "incompativelComSuspensao": false,
-      "possuiAjuste": true,
-      "possuiMonofasia": true,
-      "possuiPercentualReducao": true,
-      "possuiRedutor": false
     },
     "id": 26,
-    "key": "026",
-    "validity": { "from": "2026-01-01", "to": null }
+    "indicadores": {
+      "exigeGrupoTribRegular": false,
+      "incompativelComSuspensao": false,
+      "possuiAjuste": true,
+      "possuiMonofasia": true,
+      "possuiPercentualReducao": true,
+      "possuiRedutor": false
+    },
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Tributação monofásica sobre mistura de EAC com gasolina A em percentual inferior ao obrigatório",
-    "expr": {
+    "chave": "027",
+    "descricao": "Tributação monofásica sobre mistura de EAC com gasolina A em percentual inferior ao obrigatório",
+    "expressao": {
       "aliquota": "(1-pBio)*aliquotaAdRemPrincipal+pBio*aliquotaAdRemSecundaria",
       "aliquotaEfetiva": "aliquotaAdRemSecundaria",
       "baseCalculo": "quantidade",
@@ -607,22 +608,22 @@
       "tributoCalculado": "(variacaoPontoPercentual/100)*quantidade*(pBio/(1-pBio))*aliquotaAdRemSecundaria",
       "tributoDevido": "quantidade*aliquota",
       "valorDiferimento": null
-    },
-    "flags": {
-      "exigeGrupoTribRegular": false,
-      "incompativelComSuspensao": false,
-      "possuiAjuste": true,
-      "possuiMonofasia": true,
-      "possuiPercentualReducao": true,
-      "possuiRedutor": false
     },
     "id": 27,
-    "key": "027",
-    "validity": { "from": "2026-01-01", "to": null }
+    "indicadores": {
+      "exigeGrupoTribRegular": false,
+      "incompativelComSuspensao": false,
+      "possuiAjuste": true,
+      "possuiMonofasia": true,
+      "possuiPercentualReducao": true,
+      "possuiRedutor": false
+    },
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Tributação monofásica sobre combustíveis cobrada anteriormente",
-    "expr": {
+    "chave": "028",
+    "descricao": "Tributação monofásica sobre combustíveis cobrada anteriormente",
+    "expressao": {
       "aliquota": "(1-pBio)*aliquotaAdRemPrincipal+pBio*aliquotaAdRemSecundaria",
       "aliquotaEfetiva": "aliquotaAdRemSecundaria",
       "baseCalculo": "quantidade",
@@ -631,7 +632,8 @@
       "tributoDevido": "quantidade*aliquota",
       "valorDiferimento": null
     },
-    "flags": {
+    "id": 28,
+    "indicadores": {
       "exigeGrupoTribRegular": false,
       "incompativelComSuspensao": false,
       "possuiAjuste": true,
@@ -639,13 +641,12 @@
       "possuiPercentualReducao": true,
       "possuiRedutor": false
     },
-    "id": 28,
-    "key": "028",
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Transferência de crédito",
-    "expr": {
+    "chave": "029",
+    "descricao": "Transferência de crédito",
+    "expressao": {
       "aliquota": "aliquota",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -653,22 +654,22 @@
       "tributoCalculado": "baseCalculo*aliquotaEfetiva",
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
-    },
-    "flags": {
-      "exigeGrupoTribRegular": false,
-      "incompativelComSuspensao": false,
-      "possuiAjuste": true,
-      "possuiMonofasia": false,
-      "possuiPercentualReducao": true,
-      "possuiRedutor": false
     },
     "id": 29,
-    "key": "029",
-    "validity": { "from": "2026-01-01", "to": null }
+    "indicadores": {
+      "exigeGrupoTribRegular": false,
+      "incompativelComSuspensao": false,
+      "possuiAjuste": true,
+      "possuiMonofasia": false,
+      "possuiPercentualReducao": true,
+      "possuiRedutor": false
+    },
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Ajuste de IBS na ZFM",
-    "expr": {
+    "chave": "030",
+    "descricao": "Ajuste de IBS na ZFM",
+    "expressao": {
       "aliquota": "aliquota",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -676,22 +677,22 @@
       "tributoCalculado": "baseCalculo*aliquotaEfetiva",
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
-    },
-    "flags": {
-      "exigeGrupoTribRegular": false,
-      "incompativelComSuspensao": false,
-      "possuiAjuste": true,
-      "possuiMonofasia": false,
-      "possuiPercentualReducao": true,
-      "possuiRedutor": false
     },
     "id": 30,
-    "key": "030",
-    "validity": { "from": "2026-01-01", "to": null }
+    "indicadores": {
+      "exigeGrupoTribRegular": false,
+      "incompativelComSuspensao": false,
+      "possuiAjuste": true,
+      "possuiMonofasia": false,
+      "possuiPercentualReducao": true,
+      "possuiRedutor": false
+    },
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Ajustes",
-    "expr": {
+    "chave": "031",
+    "descricao": "Ajustes",
+    "expressao": {
       "aliquota": "aliquota",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -699,22 +700,22 @@
       "tributoCalculado": "baseCalculo*aliquotaEfetiva",
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
-    },
-    "flags": {
-      "exigeGrupoTribRegular": false,
-      "incompativelComSuspensao": false,
-      "possuiAjuste": true,
-      "possuiMonofasia": false,
-      "possuiPercentualReducao": true,
-      "possuiRedutor": false
     },
     "id": 31,
-    "key": "031",
-    "validity": { "from": "2026-01-01", "to": null }
+    "indicadores": {
+      "exigeGrupoTribRegular": false,
+      "incompativelComSuspensao": false,
+      "possuiAjuste": true,
+      "possuiMonofasia": false,
+      "possuiPercentualReducao": true,
+      "possuiRedutor": false
+    },
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Tributação em documento específico",
-    "expr": {
+    "chave": "032",
+    "descricao": "Tributação em documento específico",
+    "expressao": {
       "aliquota": "0",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -722,22 +723,22 @@
       "tributoCalculado": "baseCalculo*aliquotaEfetiva",
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
-    },
-    "flags": {
-      "exigeGrupoTribRegular": false,
-      "incompativelComSuspensao": false,
-      "possuiAjuste": true,
-      "possuiMonofasia": false,
-      "possuiPercentualReducao": true,
-      "possuiRedutor": false
     },
     "id": 32,
-    "key": "032",
-    "validity": { "from": "2026-01-01", "to": null }
+    "indicadores": {
+      "exigeGrupoTribRegular": false,
+      "incompativelComSuspensao": false,
+      "possuiAjuste": true,
+      "possuiMonofasia": false,
+      "possuiPercentualReducao": true,
+      "possuiRedutor": false
+    },
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Exclusão de base de cálculo",
-    "expr": {
+    "chave": "033",
+    "descricao": "Exclusão de base de cálculo",
+    "expressao": {
       "aliquota": "0",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -745,22 +746,22 @@
       "tributoCalculado": "baseCalculo*aliquotaEfetiva",
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
-    },
-    "flags": {
-      "exigeGrupoTribRegular": false,
-      "incompativelComSuspensao": false,
-      "possuiAjuste": true,
-      "possuiMonofasia": false,
-      "possuiPercentualReducao": true,
-      "possuiRedutor": false
     },
     "id": 33,
-    "key": "033",
-    "validity": { "from": "2026-01-01", "to": null }
+    "indicadores": {
+      "exigeGrupoTribRegular": false,
+      "incompativelComSuspensao": false,
+      "possuiAjuste": true,
+      "possuiMonofasia": false,
+      "possuiPercentualReducao": true,
+      "possuiRedutor": false
+    },
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Alíquota fixa",
-    "expr": {
+    "chave": "034",
+    "descricao": "Alíquota fixa",
+    "expressao": {
       "aliquota": "aliquota",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -768,22 +769,22 @@
       "tributoCalculado": "baseCalculo*aliquotaEfetiva",
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
-    },
-    "flags": {
-      "exigeGrupoTribRegular": false,
-      "incompativelComSuspensao": false,
-      "possuiAjuste": true,
-      "possuiMonofasia": false,
-      "possuiPercentualReducao": true,
-      "possuiRedutor": false
     },
     "id": 34,
-    "key": "034",
-    "validity": { "from": "2026-01-01", "to": null }
+    "indicadores": {
+      "exigeGrupoTribRegular": false,
+      "incompativelComSuspensao": false,
+      "possuiAjuste": true,
+      "possuiMonofasia": false,
+      "possuiPercentualReducao": true,
+      "possuiRedutor": false
+    },
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Alíquota fixa",
-    "expr": {
+    "chave": "035",
+    "descricao": "Alíquota fixa",
+    "expressao": {
       "aliquota": "aliquota",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -791,22 +792,22 @@
       "tributoCalculado": "baseCalculo*aliquotaEfetiva",
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
-    },
-    "flags": {
-      "exigeGrupoTribRegular": false,
-      "incompativelComSuspensao": false,
-      "possuiAjuste": true,
-      "possuiMonofasia": false,
-      "possuiPercentualReducao": true,
-      "possuiRedutor": false
     },
     "id": 35,
-    "key": "035",
-    "validity": { "from": "2026-01-01", "to": null }
+    "indicadores": {
+      "exigeGrupoTribRegular": false,
+      "incompativelComSuspensao": false,
+      "possuiAjuste": true,
+      "possuiMonofasia": false,
+      "possuiPercentualReducao": true,
+      "possuiRedutor": false
+    },
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Alíquota fixa",
-    "expr": {
+    "chave": "036",
+    "descricao": "Alíquota fixa",
+    "expressao": {
       "aliquota": "aliquota",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -814,22 +815,22 @@
       "tributoCalculado": "baseCalculo*aliquotaEfetiva",
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
-    },
-    "flags": {
-      "exigeGrupoTribRegular": false,
-      "incompativelComSuspensao": false,
-      "possuiAjuste": true,
-      "possuiMonofasia": false,
-      "possuiPercentualReducao": true,
-      "possuiRedutor": false
     },
     "id": 36,
-    "key": "036",
-    "validity": { "from": "2026-01-01", "to": null }
+    "indicadores": {
+      "exigeGrupoTribRegular": false,
+      "incompativelComSuspensao": false,
+      "possuiAjuste": true,
+      "possuiMonofasia": false,
+      "possuiPercentualReducao": true,
+      "possuiRedutor": false
+    },
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Alíquota fixa proporcional",
-    "expr": {
+    "chave": "037",
+    "descricao": "Alíquota fixa proporcional",
+    "expressao": {
       "aliquota": "aliquota",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -838,7 +839,8 @@
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
     },
-    "flags": {
+    "id": 37,
+    "indicadores": {
       "exigeGrupoTribRegular": false,
       "incompativelComSuspensao": false,
       "possuiAjuste": true,
@@ -846,13 +848,12 @@
       "possuiPercentualReducao": true,
       "possuiRedutor": false
     },
-    "id": 37,
-    "key": "037",
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Operação originada fora da ZFM - 200022",
-    "expr": {
+    "chave": "038",
+    "descricao": "Operação originada fora da ZFM - 200022",
+    "expressao": {
       "aliquota": "0",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -860,22 +861,22 @@
       "tributoCalculado": "baseCalculo*aliquotaEfetiva",
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
-    },
-    "flags": {
-      "exigeGrupoTribRegular": true,
-      "incompativelComSuspensao": false,
-      "possuiAjuste": false,
-      "possuiMonofasia": false,
-      "possuiPercentualReducao": true,
-      "possuiRedutor": false
     },
     "id": 38,
-    "key": "038",
-    "validity": { "from": "2026-01-01", "to": null }
+    "indicadores": {
+      "exigeGrupoTribRegular": true,
+      "incompativelComSuspensao": false,
+      "possuiAjuste": false,
+      "possuiMonofasia": false,
+      "possuiPercentualReducao": true,
+      "possuiRedutor": false
+    },
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Operação originada fora das Áreas de Livre Comércio - 200024",
-    "expr": {
+    "chave": "039",
+    "descricao": "Operação originada fora das Áreas de Livre Comércio - 200024",
+    "expressao": {
       "aliquota": "0",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -884,7 +885,8 @@
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
     },
-    "flags": {
+    "id": 39,
+    "indicadores": {
       "exigeGrupoTribRegular": true,
       "incompativelComSuspensao": false,
       "possuiAjuste": false,
@@ -892,13 +894,12 @@
       "possuiPercentualReducao": true,
       "possuiRedutor": false
     },
-    "id": 39,
-    "key": "039",
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Tributação com exclusão de base de cálculo em caso de não incidência",
-    "expr": {
+    "chave": "040",
+    "descricao": "Tributação com exclusão de base de cálculo em caso de não incidência",
+    "expressao": {
       "aliquota": "aliquota",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "(baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado)*(1-100/100)",
@@ -907,7 +908,8 @@
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
     },
-    "flags": {
+    "id": 40,
+    "indicadores": {
       "exigeGrupoTribRegular": false,
       "incompativelComSuspensao": false,
       "possuiAjuste": false,
@@ -915,13 +917,12 @@
       "possuiPercentualReducao": true,
       "possuiRedutor": false
     },
-    "id": 40,
-    "key": "040",
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Suspensão em operações com hidrocarbonetos líquidos",
-    "expr": {
+    "chave": "041",
+    "descricao": "Suspensão em operações com hidrocarbonetos líquidos",
+    "expressao": {
       "aliquota": "0",
       "aliquotaEfetiva": "aliquota",
       "baseCalculo": "quantidade",
@@ -930,7 +931,8 @@
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
     },
-    "flags": {
+    "id": 41,
+    "indicadores": {
       "exigeGrupoTribRegular": true,
       "incompativelComSuspensao": false,
       "possuiAjuste": true,
@@ -938,13 +940,12 @@
       "possuiPercentualReducao": true,
       "possuiRedutor": false
     },
-    "id": 41,
-    "key": "041",
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Tributação monofásica sem alíquota",
-    "expr": {
+    "chave": "042",
+    "descricao": "Tributação monofásica sem alíquota",
+    "expressao": {
       "aliquota": "0",
       "aliquotaEfetiva": "0",
       "baseCalculo": "0",
@@ -953,7 +954,8 @@
       "tributoDevido": "0",
       "valorDiferimento": null
     },
-    "flags": {
+    "id": 42,
+    "indicadores": {
       "exigeGrupoTribRegular": false,
       "incompativelComSuspensao": false,
       "possuiAjuste": true,
@@ -961,13 +963,12 @@
       "possuiPercentualReducao": true,
       "possuiRedutor": false
     },
-    "id": 42,
-    "key": "042",
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "description": "Alíquota fixa fictícia",
-    "expr": {
+    "chave": "043",
+    "descricao": "Alíquota fixa fictícia",
+    "expressao": {
       "aliquota": "aliquota",
       "aliquotaEfetiva": "aliquota*(1-percentualReducao)*(1-pRedutorCompraGov/100)",
       "baseCalculo": "baseCalculoInformada-impostoSeletivoInformado+impostoSeletivoCalculado",
@@ -976,7 +977,8 @@
       "tributoDevido": "tributoCalculado",
       "valorDiferimento": null
     },
-    "flags": {
+    "id": 43,
+    "indicadores": {
       "exigeGrupoTribRegular": false,
       "incompativelComSuspensao": false,
       "possuiAjuste": false,
@@ -984,8 +986,6 @@
       "possuiPercentualReducao": true,
       "possuiRedutor": false
     },
-    "id": 43,
-    "key": "043",
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   }
 ]

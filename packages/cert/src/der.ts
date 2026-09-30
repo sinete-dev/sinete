@@ -4,7 +4,7 @@
  * que aparece em X.509 e PKCS#8.
  */
 
-import { CertError } from './errors.ts';
+import { ErroCertificado } from './errors.ts';
 
 /** Um TLV DER: `start` e `end` delimitam o conteúdo; `headerStart` o TLV inteiro. */
 export interface Tlv {
@@ -35,7 +35,7 @@ export const TAG = {
 } as const;
 
 function fail(msg: string): never {
-  throw new CertError('certificado_invalido', `DER inválido: ${msg}`);
+  throw new ErroCertificado('certificado_invalido', `DER inválido: ${msg}`);
 }
 
 /** Lê o TLV que começa em `offset`, sem passar de `limit`. */

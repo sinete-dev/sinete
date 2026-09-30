@@ -9,10 +9,10 @@
  * - nfe/PL_010d_v1.03 (PL_010d_v1.03.zip)
  * - nfe/Evento_CCe_PL_v1.01 (Evento_CCe_PL_v1.01.zip)
  */
-import type { ComplexType, RootElement, SchemaModuleInfo, SimpleType } from "../../runtime/desc.ts";
+import type { ComplexType, DescricaoModuloSchema, ElementoRaiz, SimpleType } from "../../runtime/desc.ts";
 
 /** Proveniência deste módulo. */
-export const schema: SchemaModuleInfo = {
+export const schema: DescricaoModuloSchema = {
   "subpath": "nfe/evento-cce/PL_010d",
   "documento": "nfe",
   "pl": "PL_010d_v1.03",
@@ -487,8 +487,8 @@ export const TProcEvento: ComplexType<TProcEvento> = { id: "TProcEvento", ns: "h
 
 // ---------- elementos raiz ----------
 /** Elemento raiz `envEvento` (tipo TEnvEvento). */
-export const envEventoElement: RootElement<TEnvEvento> = { name: "envEvento", ns: "http://www.portalfiscal.inf.br/nfe", type: TEnvEvento };
+export const envEventoElement: ElementoRaiz<TEnvEvento> = { nome: "envEvento", ns: "http://www.portalfiscal.inf.br/nfe", tipo: TEnvEvento };
 /** Elemento raiz `retEnvEvento` (tipo TRetEnvEvento). */
-export const retEnvEventoElement: RootElement<TRetEnvEvento> = { name: "retEnvEvento", ns: "http://www.portalfiscal.inf.br/nfe", type: TRetEnvEvento };
+export const retEnvEventoElement: ElementoRaiz<TRetEnvEvento> = { nome: "retEnvEvento", ns: "http://www.portalfiscal.inf.br/nfe", tipo: TRetEnvEvento };
 /** Elemento raiz `procEventoNFe` (tipo TProcEvento). */
-export const procEventoNFeElement: RootElement<TProcEvento> = { name: "procEventoNFe", ns: "http://www.portalfiscal.inf.br/nfe", type: TProcEvento };
+export const procEventoNFeElement: ElementoRaiz<TProcEvento> = { nome: "procEventoNFe", ns: "http://www.portalfiscal.inf.br/nfe", tipo: TProcEvento };

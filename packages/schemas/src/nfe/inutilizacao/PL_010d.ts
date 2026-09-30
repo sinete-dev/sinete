@@ -8,10 +8,10 @@
  * Fontes (conteúdo oficial, sha256 em tools/xsd-codegen/xsd/<pacote>/SOURCE.md):
  * - nfe/PL_010d_v1.03 (PL_010d_v1.03.zip)
  */
-import type { ComplexType, RootElement, SchemaModuleInfo, SimpleType } from "../../runtime/desc.ts";
+import type { ComplexType, DescricaoModuloSchema, ElementoRaiz, SimpleType } from "../../runtime/desc.ts";
 
 /** Proveniência deste módulo. */
-export const schema: SchemaModuleInfo = {
+export const schema: DescricaoModuloSchema = {
   "subpath": "nfe/inutilizacao/PL_010d",
   "documento": "nfe",
   "pl": "PL_010d_v1.03",
@@ -349,8 +349,8 @@ export const TProcInutNFe: ComplexType<TProcInutNFe> = { id: "TProcInutNFe", ns:
 
 // ---------- elementos raiz ----------
 /** Elemento raiz `inutNFe` (tipo TInutNFe). */
-export const inutNFeElement: RootElement<TInutNFe> = { name: "inutNFe", ns: "http://www.portalfiscal.inf.br/nfe", type: TInutNFe };
+export const inutNFeElement: ElementoRaiz<TInutNFe> = { nome: "inutNFe", ns: "http://www.portalfiscal.inf.br/nfe", tipo: TInutNFe };
 /** Elemento raiz `retInutNFe` (tipo TRetInutNFe). */
-export const retInutNFeElement: RootElement<TRetInutNFe> = { name: "retInutNFe", ns: "http://www.portalfiscal.inf.br/nfe", type: TRetInutNFe };
+export const retInutNFeElement: ElementoRaiz<TRetInutNFe> = { nome: "retInutNFe", ns: "http://www.portalfiscal.inf.br/nfe", tipo: TRetInutNFe };
 /** Elemento raiz `ProcInutNFe` (tipo TProcInutNFe). */
-export const ProcInutNFeElement: RootElement<TProcInutNFe> = { name: "ProcInutNFe", ns: "http://www.portalfiscal.inf.br/nfe", type: TProcInutNFe };
+export const ProcInutNFeElement: ElementoRaiz<TProcInutNFe> = { nome: "ProcInutNFe", ns: "http://www.portalfiscal.inf.br/nfe", tipo: TProcInutNFe };

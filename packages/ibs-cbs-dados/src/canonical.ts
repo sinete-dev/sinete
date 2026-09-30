@@ -17,11 +17,11 @@ function normalize(value: unknown): unknown {
   return value;
 }
 
-export function canonicalTable(records: readonly unknown[]): string {
-  if (records.length === 0) return '[]\n';
-  return `[\n${records.map((r) => JSON.stringify(normalize(r))).join(',\n')}\n]\n`;
+export function tabelaCanonica(registros: readonly unknown[]): string {
+  if (registros.length === 0) return '[]\n';
+  return `[\n${registros.map((r) => JSON.stringify(normalize(r))).join(',\n')}\n]\n`;
 }
 
-export function canonicalJson(value: unknown): string {
-  return `${JSON.stringify(normalize(value), null, 2)}\n`;
+export function jsonCanonico(valor: unknown): string {
+  return `${JSON.stringify(normalize(valor), null, 2)}\n`;
 }

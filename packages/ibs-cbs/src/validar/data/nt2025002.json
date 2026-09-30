@@ -1,87 +1,87 @@
 {
-  "source": {
+  "fonte": {
     "id": "nt-2025.002-v1.51",
-    "title": "NT 2025.002-RTC v1.51 (NF-e e NFC-e), item 7: regras de validação",
-    "version": "v1.51",
-    "published": "2026-07",
+    "titulo": "NT 2025.002-RTC v1.51 (NF-e e NFC-e), item 7: regras de validação",
+    "versao": "v1.51",
+    "publicadaEm": "2026-07",
     "url": "https://www.nfe.fazenda.gov.br/portal/listaConteudo.aspx?tipoConteudo=04BIflQt1aY=",
     "sha256": "a4aaaa181522b43cd90b502f8ccb9e4bdabea30fed838e2d0790be5ba77254a4"
   },
   "tpNFDebito": [
     {
-      "code": "01",
-      "description": "Transferência de créditos para Cooperativas",
+      "codigo": "01",
+      "descricao": "Transferência de créditos para Cooperativas",
       "cClassTrib": "800002"
     },
     {
-      "code": "02",
-      "description": "Anulação de Crédito por Saídas Imunes/Isentas",
+      "codigo": "02",
+      "descricao": "Anulação de Crédito por Saídas Imunes/Isentas",
       "cClassTrib": "811001"
     },
     {
-      "code": "03",
-      "description": "Débitos de notas fiscais não processadas na apuração",
+      "codigo": "03",
+      "descricao": "Débitos de notas fiscais não processadas na apuração",
       "cClassTrib": "811002"
     },
     {
-      "code": "04",
-      "description": "Multa e juros",
+      "codigo": "04",
+      "descricao": "Multa e juros",
       "cClassTrib": null
     },
     {
-      "code": "05",
-      "description": "Transferência de crédito na sucessão",
+      "codigo": "05",
+      "descricao": "Transferência de crédito na sucessão",
       "cClassTrib": "800001"
     },
     {
-      "code": "06",
-      "description": "Pagamento antecipado",
+      "codigo": "06",
+      "descricao": "Pagamento antecipado",
       "cClassTrib": null
     },
     {
-      "code": "07",
-      "description": "Perda em estoque",
+      "codigo": "07",
+      "descricao": "Perda em estoque",
       "cClassTrib": "410030"
     },
     {
-      "code": "08",
-      "description": "Desenquadramento do SN",
+      "codigo": "08",
+      "descricao": "Desenquadramento do SN",
       "cClassTrib": "811003"
     }
   ],
   "tpNFCredito": [
     {
-      "code": "01",
-      "description": "Multa e Juros",
+      "codigo": "01",
+      "descricao": "Multa e Juros",
       "cClassTrib": null
     },
     {
-      "code": "02",
-      "description": "Apropriação de crédito presumido de IBS sobre o saldo devedor na ZFM (art. 450, § 1º, LC 214/25)",
+      "codigo": "02",
+      "descricao": "Apropriação de crédito presumido de IBS sobre o saldo devedor na ZFM (art. 450, § 1º, LC 214/25)",
       "cClassTrib": "810001"
     },
     {
-      "code": "03",
-      "description": "Retorno por recusa total na entrega ou por não localização do destinatário na tentativa de entrega",
+      "codigo": "03",
+      "descricao": "Retorno por recusa total na entrega ou por não localização do destinatário na tentativa de entrega",
       "cClassTrib": null
     },
     {
-      "code": "04",
-      "description": "Redução de valores",
+      "codigo": "04",
+      "descricao": "Redução de valores",
       "cClassTrib": null
     },
     {
-      "code": "05",
-      "description": "Transferência de crédito na sucessão",
+      "codigo": "05",
+      "descricao": "Transferência de crédito na sucessão",
       "cClassTrib": "800001"
     },
     {
-      "code": "06",
-      "description": "Retorno por recusa parcial na entrega",
+      "codigo": "06",
+      "descricao": "Retorno por recusa parcial na entrega",
       "cClassTrib": null
     }
   ],
-  "classTribByNoteType": [
+  "classTribPorTipoDeNota": [
     {
       "cClassTrib": "410030",
       "tpNFDebito": "07",
@@ -118,25 +118,25 @@
       "tpNFCredito": null
     }
   ],
-  "ratesByEmissionYear": [
+  "aliquotasPorAnoDeEmissao": [
     {
-      "from": 2025,
-      "to": 2026,
+      "inicio": 2025,
+      "fim": 2026,
       "pIBSUF": "0.1",
       "pIBSMun": "0",
       "pCBS": "0.9",
       "legal": "LC 214/2025, arts. 343 e 346"
     },
     {
-      "from": 2027,
-      "to": 2028,
+      "inicio": 2027,
+      "fim": 2028,
       "pIBSUF": "0.05",
       "pIBSMun": "0.05",
       "pCBS": null,
       "legal": "LC 214/2025, arts. 344 e 347"
     }
   ],
-  "incentivizedAreas": [
+  "areasIncentivadas": [
     {
       "area": "ZFM",
       "municipios": ["1301902", "1302603", "1303569"]
@@ -162,9 +162,9 @@
       "municipios": ["1200104", "1200203", "1200252"]
     }
   ],
-  "cbsZeroExcludedNcm": {
-    "prefixes": ["93", "24", "2203", "2204", "2205", "2206", "2207", "2208", "8703", "33"],
-    "allowedWithin": ["3303", "3304", "3305", "3306", "3307"],
-    "note": "UB56-10, exceção 3, condição 01: NCM de armas e munições (93), fumo (24), bebidas alcoólicas (2203 a 2208), automóveis de passageiros (8703) e perfumaria (33, exceto 3303 a 3307) não admitem CBS zero nas áreas incentivadas."
+  "ncmExcluidosDaCbsZero": {
+    "prefixos": ["93", "24", "2203", "2204", "2205", "2206", "2207", "2208", "8703", "33"],
+    "permitidoDentroDe": ["3303", "3304", "3305", "3306", "3307"],
+    "nota": "UB56-10, exceção 3, condição 01: NCM de armas e munições (93), fumo (24), bebidas alcoólicas (2203 a 2208), automóveis de passageiros (8703) e perfumaria (33, exceto 3303 a 3307) não admitem CBS zero nas áreas incentivadas."
   }
 }

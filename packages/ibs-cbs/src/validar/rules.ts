@@ -7,41 +7,48 @@
  * As tabelas (indicadores, reduções, vigências) vêm do `@sinete/ibs-cbs-dados` na data do fato gerador; as tabelas próprias
  * da NT (tipo de nota x cClassTrib, alíquotas por ano, áreas incentivadas) estão em `data/nt2025002.json`.
  */
-import type { ClassTribRecord, CstRecord, TaxContent, TreatmentRecord } from '@sinete/ibs-cbs-dados';
-import type { RateProvider } from '../aliquotas/index.ts';
-import type { GCBS, GIBSMun, GIBSUF, GRed, IBSCBS, IsoDate } from '../calcular/index.ts';
+import type { ConteudoTributario, RegistroClassTrib, RegistroCst, RegistroTratamento } from '@sinete/ibs-cbs-dados';
+import type { ProvedorDeAliquotas } from '../aliquotas/index.ts';
+import type { DataIso, GCBS, GIBSMun, GIBSUF, GRed, IBSCBS } from '../calcular/index.ts';
 import { Decimal } from '../calcular/index.ts';
 import ntData from './data/nt2025002.json' with { type: 'json' };
-import type { Activation, NotImplemented, NtTables, RuleMeta, RulesDocument, RulesItem } from './types.ts';
+import type {
+  Ativacao,
+  DescricaoDaRegra,
+  DocumentoDasRegras,
+  ItemDasRegras,
+  NaoImplementada,
+  TabelasNt,
+} from './types.ts';
 
 /** Contexto de uma validação. */
-export interface RuleContext {
-  readonly doc: RulesDocument;
+export interface ContextoDaRegra {
+  readonly documento: DocumentoDasRegras;
   /** Tabelas na data do fato gerador. */
-  readonly content: TaxContent;
+  readonly conteudo: ConteudoTributario;
   /** Data civil de emissão. */
-  readonly emission: IsoDate;
-  readonly rates?: RateProvider;
+  readonly emissao: DataIso;
+  readonly aliquotas?: ProvedorDeAliquotas;
 }
 
-export type Report = (item: number | undefined, message: string) => void;
+export type Relatar = (item: number | undefined, message: string) => void;
 
-export interface Rule extends RuleMeta {
-  check(ctx: RuleContext, report: Report): void;
+export interface Regra extends DescricaoDaRegra {
+  conferir(contexto: ContextoDaRegra, relatar: Relatar): void;
 }
 
 /** Tabelas da NT embarcadas neste pacote. */
-export const NT_TABLES: NtTables = ntData as NtTables;
-const nt: NtTables = NT_TABLES;
+export const TABELAS_NT: TabelasNt = ntData as TabelasNt;
+const nt: TabelasNt = TABELAS_NT;
 
 const SRC = 'NT 2025.002 v1.51';
-const V130: Activation = { homologacao: '2025-10-29', producao: '2025-11-10' };
-const V130B: Activation = { homologacao: '2025-11-24', producao: '2026-02-02' };
-const V140: Activation = { homologacao: '2026-07-01', producao: '2026-08-03' };
-const V151: Activation = { homologacao: '2026-09-01', producao: '2026-10-05' };
+const V130: Ativacao = { homologacao: '2025-10-29', producao: '2025-11-10' };
+const V130B: Ativacao = { homologacao: '2025-11-24', producao: '2026-02-02' };
+const V140: Ativacao = { homologacao: '2026-07-01', producao: '2026-08-03' };
+const V151: Ativacao = { homologacao: '2026-09-01', producao: '2026-10-05' };
 
 /** Implantação por regra, pelo cronograma da NT (versão em que a regra entrou ou mudou pela última vez). */
-const ACTIVATION: Readonly<Record<string, Activation>> = {
+const ACTIVATION: Readonly<Record<string, Ativacao>> = {
   ...Object.fromEntries(
     ['UB112-20', 'UB112-30', 'UB116-20', 'UB116-30', 'UB120-10', 'UB120-20', 'UB122-10', 'UB123-20', 'UB125-10']
       .concat(['UB126-10', 'UB127-20', 'UB129-10', 'UB130-10', 'UB131-10', 'UB131-30', 'UB131-40', 'UB131-50'])
@@ -62,12 +69,12 @@ const ACTIVATION: Readonly<Record<string, Activation>> = {
 };
 
 /** UB12-10: obrigatoriedade do grupo IBSCBS por CRT (cronograma da v1.51 e observação 3 da regra). */
-const UB12_ACTIVATION: readonly Activation[] = [
+const UB12_ACTIVATION: readonly Ativacao[] = [
   { homologacao: '2026-07-01', producao: '2026-08-03', crt: [3] },
   { homologacao: '2027-01-04', producao: '2027-01-04', crt: [1, 2, 4] },
 ];
 
-function activationOf(id: string): readonly Activation[] {
+function activationOf(id: string): readonly Ativacao[] {
   if (id === 'UB12-10') return UB12_ACTIVATION;
   return [ACTIVATION[id] ?? V130];
 }
@@ -89,32 +96,32 @@ function sumOf(values: readonly (string | undefined)[]): Decimal {
 }
 
 interface Refs {
-  readonly cst: CstRecord | undefined;
-  readonly ct: ClassTribRecord | undefined;
-  readonly treatment: TreatmentRecord | undefined;
+  readonly cst: RegistroCst | undefined;
+  readonly ct: RegistroClassTrib | undefined;
+  readonly treatment: RegistroTratamento | undefined;
 }
 
-function refs(ctx: RuleContext, ib: IBSCBS): Refs {
-  const cst = ctx.content.cst(ib.CST);
-  const ct = ctx.content.classTrib(ib.cClassTrib);
-  const treatment = ct ? ctx.content.treatment(ct) : undefined;
+function refs(ctx: ContextoDaRegra, ib: IBSCBS): Refs {
+  const cst = ctx.conteudo.cst(ib.CST);
+  const ct = ctx.conteudo.classTrib(ib.cClassTrib);
+  const treatment = ct ? ctx.conteudo.tratamento(ct) : undefined;
   return { cst, ct, treatment };
 }
 
-function withIbscbs(ctx: RuleContext, fn: (it: RulesItem, ib: IBSCBS, r: Refs) => void): void {
-  for (const it of ctx.doc.items) if (it.IBSCBS) fn(it, it.IBSCBS, refs(ctx, it.IBSCBS));
+function withIbscbs(ctx: ContextoDaRegra, fn: (it: ItemDasRegras, ib: IBSCBS, r: Refs) => void): void {
+  for (const it of ctx.documento.itens) if (it.IBSCBS) fn(it, it.IBSCBS, refs(ctx, it.IBSCBS));
 }
 
 function needsRegular(r: Refs): boolean {
-  return r.ct?.groups.gTribRegular === 'required' || r.treatment?.flags.exigeGrupoTribRegular === true;
+  return r.ct?.grupos.gTribRegular === 'obrigatorio' || r.treatment?.indicadores.exigeGrupoTribRegular === true;
 }
 
 /** Exceção comum às regras de alíquota por ano (UB18-10, UB37-10, UB56-10, UB56-20). */
-function rateRuleExempt(doc: RulesDocument): boolean {
+function rateRuleExempt(doc: DocumentoDasRegras): boolean {
   return doc.finNFe === 4 || ['03', '04', '06'].includes(doc.tpNFCredito ?? '');
 }
 
-function yearOf(date: IsoDate): number {
+function yearOf(date: DataIso): number {
   return Number(date.slice(0, 4));
 }
 
@@ -123,18 +130,18 @@ function rule(
   cStat: string,
   title: string,
   modelos: readonly (55 | 65)[],
-  check: Rule['check'],
+  check: Regra['conferir'],
   note?: string,
-): Rule {
+): Regra {
   return {
     id,
     cStat,
-    title,
+    titulo: title,
     modelos,
-    activation: activationOf(id),
-    source: `${SRC}, ${id}`,
-    ...(note === undefined ? {} : { note }),
-    check,
+    ativacao: activationOf(id),
+    fonte: `${SRC}, ${id}`,
+    ...(note === undefined ? {} : { nota: note }),
+    conferir: check,
   };
 }
 
@@ -214,23 +221,26 @@ function effectiveRate(g: GIBSUF | GIBSMun | GCBS, e: EnteSpec): Decimal {
   return red ? dec(red.pAliqEfet) : dec(e.p(g));
 }
 
-function enteRules(e: EnteSpec): Rule[] {
-  const each = (ctx: RuleContext, fn: (it: RulesItem, g: GIBSUF | GIBSMun | GCBS, ib: IBSCBS, r: Refs) => void): void =>
+function enteRules(e: EnteSpec): Regra[] {
+  const each = (
+    ctx: ContextoDaRegra,
+    fn: (it: ItemDasRegras, g: GIBSUF | GIBSMun | GCBS, ib: IBSCBS, r: Refs) => void,
+  ): void =>
     withIbscbs(ctx, (it, ib, r) => {
       const g = e.get(ib);
       if (g) fn(it, g, ib, r);
     });
-  const out: Rule[] = [
+  const out: Regra[] = [
     rule(e.difForbidden[0], e.difForbidden[1], `CST veda diferimento do ${e.label}`, BOTH, (ctx, report) =>
       each(ctx, (it, g, ib, r) => {
-        if (r.cst?.groups.gDif === 'forbidden' && (g as { gDif?: unknown }).gDif) {
+        if (r.cst?.grupos.gDif === 'vedado' && (g as { gDif?: unknown }).gDif) {
           report(it.nItem, `CST ${ib.CST} não permite gDif no ${e.label}`);
         }
       }),
     ),
     rule(e.difRequired[0], e.difRequired[1], `CST exige diferimento do ${e.label}`, BOTH, (ctx, report) =>
       each(ctx, (it, g, ib, r) => {
-        if (r.cst?.groups.gDif === 'required' && !(g as { gDif?: unknown }).gDif) {
+        if (r.cst?.grupos.gDif === 'obrigatorio' && !(g as { gDif?: unknown }).gDif) {
           report(it.nItem, `CST ${ib.CST} exige gDif no ${e.label}`);
         }
       }),
@@ -248,8 +258,8 @@ function enteRules(e: EnteSpec): Rule[] {
     rule(e.redForbidden[0], e.redForbidden[1], `CST veda redução de alíquota do ${e.label}`, BOTH, (ctx, report) =>
       each(ctx, (it, g, ib, r) => {
         const red = (g as { gRed?: GRed }).gRed;
-        if (r.cst?.groups.gRed !== 'forbidden' || !red) return;
-        if (ctx.doc.gCompraGov && dec(red.pRedAliq).isZero()) return;
+        if (r.cst?.grupos.gRed !== 'vedado' || !red) return;
+        if (ctx.documento.gCompraGov && dec(red.pRedAliq).isZero()) return;
         report(it.nItem, `CST ${ib.CST} não permite gRed no ${e.label}`);
       }),
     ),
@@ -260,11 +270,11 @@ function enteRules(e: EnteSpec): Rule[] {
       BOTH,
       (ctx, report) =>
         each(ctx, (it, g, ib, r) => {
-          const required = r.cst?.groups.gRed === 'required' || ctx.doc.gCompraGov !== undefined;
+          const required = r.cst?.grupos.gRed === 'obrigatorio' || ctx.documento.gCompraGov !== undefined;
           if (required && !(g as { gRed?: GRed }).gRed) {
             report(
               it.nItem,
-              `gRed do ${e.label} não informado (CST ${ib.CST}${ctx.doc.gCompraGov ? ', compra governamental' : ''})`,
+              `gRed do ${e.label} não informado (CST ${ib.CST}${ctx.documento.gCompraGov ? ', compra governamental' : ''})`,
             );
           }
         }),
@@ -273,15 +283,15 @@ function enteRules(e: EnteSpec): Rule[] {
       each(ctx, (it, g, ib, r) => {
         const red = (g as { gRed?: GRed }).gRed;
         if (!red || !r.ct) return;
-        if (r.cst?.groups.gRed === 'required') {
-          const expected = dec(ctx.content.reduction(r.ct, e.key));
+        if (r.cst?.grupos.gRed === 'obrigatorio') {
+          const expected = dec(ctx.conteudo.reducao(r.ct, e.key));
           if (!dec(red.pRedAliq).eq(expected)) {
             report(
               it.nItem,
               `pRedAliq do ${e.label} ${red.pRedAliq}, a tabela dá ${expected.toString()} para ${ib.cClassTrib}`,
             );
           }
-        } else if (r.cst?.groups.gRed === 'forbidden' && (!ctx.doc.gCompraGov || !dec(red.pRedAliq).isZero())) {
+        } else if (r.cst?.grupos.gRed === 'vedado' && (!ctx.documento.gCompraGov || !dec(red.pRedAliq).isZero())) {
           report(it.nItem, `pRedAliq do ${e.label} ${red.pRedAliq} com CST ${ib.CST}, que veda redução`);
         }
       }),
@@ -298,7 +308,8 @@ function enteRules(e: EnteSpec): Rule[] {
           let expected = dec(e.p(g))
             .mul(HUNDRED.sub(dec(red.pRedAliq)))
             .div(HUNDRED);
-          if (ctx.doc.gCompraGov) expected = expected.mul(HUNDRED.sub(dec(ctx.doc.gCompraGov.pRedutor))).div(HUNDRED);
+          if (ctx.documento.gCompraGov)
+            expected = expected.mul(HUNDRED.sub(dec(ctx.documento.gCompraGov.pRedutor))).div(HUNDRED);
           if (!near(dec(red.pAliqEfet), expected.setScale(4), '0.0001')) {
             report(it.nItem, `pAliqEfet do ${e.label} ${red.pAliqEfet}, calculado ${expected.setScale(4).toString()}`);
           }
@@ -321,14 +332,14 @@ function enteRules(e: EnteSpec): Rule[] {
 
 // ---------- alíquotas por ano de emissão ----------
 
-function rateByYear(year: number): (typeof nt.ratesByEmissionYear)[number] | undefined {
-  return nt.ratesByEmissionYear.find((r) => r.from <= year && year <= r.to);
+function rateByYear(year: number): (typeof nt.aliquotasPorAnoDeEmissao)[number] | undefined {
+  return nt.aliquotasPorAnoDeEmissao.find((r) => r.inicio <= year && year <= r.fim);
 }
 
-function rateRule(id: string, cStat: string, e: EnteSpec, field: 'pIBSUF' | 'pIBSMun' | 'pCBS'): Rule {
+function rateRule(id: string, cStat: string, e: EnteSpec, field: 'pIBSUF' | 'pIBSMun' | 'pCBS'): Regra {
   return rule(id, cStat, `alíquota do ${e.label} pelo ano de emissão`, BOTH, (ctx, report) => {
-    if (rateRuleExempt(ctx.doc)) return;
-    const row = rateByYear(yearOf(ctx.emission));
+    if (rateRuleExempt(ctx.documento)) return;
+    const row = rateByYear(yearOf(ctx.emissao));
     const expected = row?.[field];
     if (expected === null || expected === undefined) return;
     withIbscbs(ctx, (it, ib, r) => {
@@ -339,7 +350,7 @@ function rateRule(id: string, cStat: string, e: EnteSpec, field: 'pIBSUF' | 'pIB
         if (!p.isZero()) report(it.nItem, `${field} ${e.p(g)} com cClassTrib de tributação regular: deve ser zero`);
         return;
       }
-      if (field === 'pCBS' && p.isZero() && cbsZeroAllowed(ctx.doc, it)) return;
+      if (field === 'pCBS' && p.isZero() && cbsZeroAllowed(ctx.documento, it)) return;
       if (!p.eq(dec(expected))) report(it.nItem, `${field} ${e.p(g)}, esperado ${expected} (${row?.legal})`);
     });
   });
@@ -347,15 +358,15 @@ function rateRule(id: string, cStat: string, e: EnteSpec, field: 'pIBSUF' | 'pIB
 
 function sameIncentivizedArea(a: string | undefined, b: string | undefined): boolean {
   if (!a || !b) return false;
-  return nt.incentivizedAreas.some((z) => z.municipios.includes(a) && z.municipios.includes(b));
+  return nt.areasIncentivadas.some((z) => z.municipios.includes(a) && z.municipios.includes(b));
 }
 
 /** UB56-10, exceção 3: CBS zero entre emitente e destinatário da mesma área incentivada, fora dos NCM excluídos. */
-function cbsZeroAllowed(doc: RulesDocument, it: RulesItem): boolean {
+function cbsZeroAllowed(doc: DocumentoDasRegras, it: ItemDasRegras): boolean {
   const ncm = it.ncm ?? '';
-  const x = nt.cbsZeroExcludedNcm;
-  const excluded = x.prefixes.some((p) => ncm.startsWith(p)) && !x.allowedWithin.some((p) => ncm.startsWith(p));
-  return ncm !== '' && !excluded && sameIncentivizedArea(doc.emitMun, doc.destMun);
+  const x = nt.ncmExcluidosDaCbsZero;
+  const excluded = x.prefixos.some((p) => ncm.startsWith(p)) && !x.permitidoDentroDe.some((p) => ncm.startsWith(p));
+  return ncm !== '' && !excluded && sameIncentivizedArea(doc.munEmitente, doc.munDestinatario);
 }
 
 const [UF, MUN, CBS] = ENTES as readonly [EnteSpec, EnteSpec, EnteSpec];
@@ -369,32 +380,36 @@ function groupPresence(
   modelos: readonly (55 | 65)[],
   indicator: (r: Refs) => string | null | undefined,
   present: (ib: IBSCBS) => boolean,
-  when: 'forbidden' | 'required',
-  skip?: (ctx: RuleContext, ib: IBSCBS) => boolean,
-): Rule {
+  when: 'vedado' | 'obrigatorio',
+  skip?: (ctx: ContextoDaRegra, ib: IBSCBS) => boolean,
+): Regra {
   return rule(id, cStat, title, modelos, (ctx, report) =>
     withIbscbs(ctx, (it, ib, r) => {
       if (skip?.(ctx, ib)) return;
       const ind = indicator(r);
-      if (when === 'forbidden' && ind === 'forbidden' && present(ib))
-        report(it.nItem, `${title}: informado indevidamente`);
-      if (when === 'required' && ind === 'required' && !present(ib)) report(it.nItem, `${title}: não informado`);
+      if (when === 'vedado' && ind === 'vedado' && present(ib)) report(it.nItem, `${title}: informado indevidamente`);
+      if (when === 'obrigatorio' && ind === 'obrigatorio' && !present(ib)) report(it.nItem, `${title}: não informado`);
     }),
   );
 }
 
-const perdaEmEstoque = (ctx: RuleContext): boolean => ctx.doc.tpNFDebito === '07';
+const perdaEmEstoque = (ctx: ContextoDaRegra): boolean => ctx.documento.tpNFDebito === '07';
 
-export const RULES: readonly Rule[] = [
+export const REGRAS: readonly Regra[] = [
   rule('UB12-10', '1115', 'grupo IBSCBS obrigatório no item', BOTH, (ctx, report) => {
-    const d = ctx.doc;
-    if ((d.finNFe === 4 || d.finNFe === 2) && d.referencedEmission !== undefined && d.referencedEmission < '2027-01-01')
+    const d = ctx.documento;
+    if (
+      (d.finNFe === 4 || d.finNFe === 2) &&
+      d.emissaoReferenciada !== undefined &&
+      d.emissaoReferenciada < '2027-01-01'
+    )
       return;
-    for (const it of d.items) if (!it.IBSCBS && !it.monophasicFuel) report(it.nItem, 'grupo IBSCBS não informado');
+    for (const it of d.itens)
+      if (!it.IBSCBS && !it.combustivelMonofasico) report(it.nItem, 'grupo IBSCBS não informado');
   }),
   rule('UB13-10', '1020', 'CST do IBS/CBS existente', BOTH, (ctx, report) =>
     withIbscbs(ctx, (it, ib, r) => {
-      if (!r.cst) report(it.nItem, `CST ${ib.CST} inexistente em ${ctx.content.asOf}`);
+      if (!r.cst) report(it.nItem, `CST ${ib.CST} inexistente em ${ctx.conteudo.dataDeReferencia}`);
     }),
   ),
   groupPresence(
@@ -402,18 +417,18 @@ export const RULES: readonly Rule[] = [
     '1021',
     'grupo gIBSCBS',
     BOTH,
-    (r) => r.cst?.groups.gIBSCBS,
+    (r) => r.cst?.grupos.gIBSCBS,
     (ib) => !!ib.gIBSCBS,
-    'forbidden',
+    'vedado',
   ),
   groupPresence(
     'UB13-30',
     '1022',
     'grupo gIBSCBS',
     BOTH,
-    (r) => r.cst?.groups.gIBSCBS,
+    (r) => r.cst?.grupos.gIBSCBS,
     (ib) => !!ib.gIBSCBS,
-    'required',
+    'obrigatorio',
     perdaEmEstoque,
   ),
   groupPresence(
@@ -421,22 +436,22 @@ export const RULES: readonly Rule[] = [
     '1131',
     'grupo gTransfCred',
     BOTH,
-    (r) => r.cst?.groups.gTransfCred,
+    (r) => r.cst?.grupos.gTransfCred,
     (ib) => !!ib.gTransfCred,
-    'forbidden',
+    'vedado',
   ),
   groupPresence(
     'UB13-45',
     '1132',
     'grupo gTransfCred',
     BOTH,
-    (r) => r.cst?.groups.gTransfCred,
+    (r) => r.cst?.grupos.gTransfCred,
     (ib) => !!ib.gTransfCred,
-    'required',
+    'obrigatorio',
   ),
   rule('UB14-10', '1023', 'cClassTrib existente', BOTH, (ctx, report) =>
     withIbscbs(ctx, (it, ib, r) => {
-      if (!r.ct) report(it.nItem, `cClassTrib ${ib.cClassTrib} inexistente em ${ctx.content.asOf}`);
+      if (!r.ct) report(it.nItem, `cClassTrib ${ib.cClassTrib} inexistente em ${ctx.conteudo.dataDeReferencia}`);
     }),
   ),
   rule('UB14-20', '1024', 'cClassTrib compatível com a CST', BOTH, (_ctx, report) =>
@@ -447,23 +462,24 @@ export const RULES: readonly Rule[] = [
   ),
   rule('UB14-25', '1025', 'cClassTrib permitido no modelo', BOTH, (ctx, report) =>
     withIbscbs(ctx, (it, ib, r) => {
-      if (r.ct && !ctx.content.allowedIn(r.ct, ctx.doc.modelo)) {
-        report(it.nItem, `cClassTrib ${ib.cClassTrib} não é permitido no modelo ${ctx.doc.modelo}`);
+      if (r.ct && !ctx.conteudo.permitidoEm(r.ct, ctx.documento.modelo)) {
+        report(it.nItem, `cClassTrib ${ib.cClassTrib} não é permitido no modelo ${ctx.documento.modelo}`);
       }
     }),
   ),
   rule('UB14-40', '1057', 'cClassTrib 620005 exige nota de crédito', NFE, (ctx, report) =>
     withIbscbs(ctx, (it, ib) => {
-      if (ib.cClassTrib === '620005' && ctx.doc.finNFe !== 5) report(it.nItem, 'cClassTrib 620005 exige finNFe 5');
+      if (ib.cClassTrib === '620005' && ctx.documento.finNFe !== 5)
+        report(it.nItem, 'cClassTrib 620005 exige finNFe 5');
     }),
   ),
   rule('UB14-60', '1202', 'cClassTrib compatível com o tipo de nota de débito ou crédito', NFE, (ctx, report) =>
     withIbscbs(ctx, (it, ib) => {
-      const row = nt.classTribByNoteType.find((x) => x.cClassTrib === ib.cClassTrib);
+      const row = nt.classTribPorTipoDeNota.find((x) => x.cClassTrib === ib.cClassTrib);
       if (!row) return;
       const ok =
-        (row.tpNFDebito !== null && ctx.doc.tpNFDebito === row.tpNFDebito) ||
-        (row.tpNFCredito !== null && ctx.doc.tpNFCredito === row.tpNFCredito);
+        (row.tpNFDebito !== null && ctx.documento.tpNFDebito === row.tpNFDebito) ||
+        (row.tpNFCredito !== null && ctx.documento.tpNFCredito === row.tpNFCredito);
       if (!ok) {
         report(
           it.nItem,
@@ -473,19 +489,19 @@ export const RULES: readonly Rule[] = [
     }),
   ),
   rule('UB14-70', '1200', 'tipo de nota de débito compatível com o cClassTrib', NFE, (ctx, report) => {
-    const row = nt.tpNFDebito.find((x) => x.code === ctx.doc.tpNFDebito);
+    const row = nt.tpNFDebito.find((x) => x.codigo === ctx.documento.tpNFDebito);
     if (!row?.cClassTrib) return;
     withIbscbs(ctx, (it, ib) => {
       if (ib.cClassTrib !== row.cClassTrib)
-        report(it.nItem, `tpNFDebito ${row.code} exige cClassTrib ${row.cClassTrib}`);
+        report(it.nItem, `tpNFDebito ${row.codigo} exige cClassTrib ${row.cClassTrib}`);
     });
   }),
   rule('UB14-80', '1201', 'tipo de nota de crédito compatível com o cClassTrib', NFE, (ctx, report) => {
-    const row = nt.tpNFCredito.find((x) => x.code === ctx.doc.tpNFCredito);
+    const row = nt.tpNFCredito.find((x) => x.codigo === ctx.documento.tpNFCredito);
     if (!row?.cClassTrib) return;
     withIbscbs(ctx, (it, ib) => {
       if (ib.cClassTrib !== row.cClassTrib)
-        report(it.nItem, `tpNFCredito ${row.code} exige cClassTrib ${row.cClassTrib}`);
+        report(it.nItem, `tpNFCredito ${row.codigo} exige cClassTrib ${row.cClassTrib}`);
     });
   }),
   rateRule('UB18-10', '1026', UF, 'pIBSUF'),
@@ -497,17 +513,17 @@ export const RULES: readonly Rule[] = [
     'alíquota da CBS vigente a partir de 2027',
     BOTH,
     (ctx, report) => {
-      if (yearOf(ctx.emission) < 2027 || rateRuleExempt(ctx.doc) || !ctx.rates) return;
-      const rate = ctx.rates.reference(ctx.emission).CBS;
-      if (rate.value === null) return;
+      if (yearOf(ctx.emissao) < 2027 || rateRuleExempt(ctx.documento) || !ctx.aliquotas) return;
+      const rate = ctx.aliquotas.referencia(ctx.emissao).CBS;
+      if (rate.valor === null) return;
       withIbscbs(ctx, (it, ib, r) => {
         const g = ib.gIBSCBS?.gCBS;
         if (!g) return;
-        const expected = needsRegular(r) ? ZERO : dec(rate.value);
+        const expected = needsRegular(r) ? ZERO : dec(rate.valor);
         if (!dec(g.pCBS).eq(expected)) report(it.nItem, `pCBS ${g.pCBS}, vigente ${expected.toString()}`);
       });
     },
-    'A alíquota vigente vem do RateProvider informado em validate(); sem provedor, ou com a alíquota ainda desconhecida, a regra não é avaliada.',
+    'A alíquota vigente vem do ProvedorDeAliquotas informado em validar(); sem provedor, ou com a alíquota ainda desconhecida, a regra não é avaliada.',
   ),
   ...ENTES.flatMap(enteRules),
   rule('UB24-10', '1111', 'devolução do IBS da UF não permitida', BOTH, (ctx, report) =>
@@ -525,7 +541,7 @@ export const RULES: readonly Rule[] = [
       const g = ib.gIBSCBS;
       if (!g) return;
       const cp = ib.gCredPresOper;
-      const deducts = cp ? ctx.content.credPres(cp.cCredPres)?.record.deductsFromTax === true : false;
+      const deducts = cp ? ctx.conteudo.credPres(cp.cCredPres)?.registro.deduzDoTributo === true : false;
       const expected = dec(g.gIBSUF.vIBSUF)
         .add(dec(g.gIBSMun.vIBSMun))
         .sub(deducts ? dec(cp?.gIBSCredPres?.vCredPres) : ZERO);
@@ -561,7 +577,7 @@ export const RULES: readonly Rule[] = [
   ),
   rule('UB68-11', '1114', 'cClassTrib veda tributação regular', BOTH, (ctx, report) =>
     withIbscbs(ctx, (it, ib, r) => {
-      if (ib.gIBSCBS?.gTribRegular && r.ct?.groups.gTribRegular === 'forbidden' && !needsRegular(r)) {
+      if (ib.gIBSCBS?.gTribRegular && r.ct?.grupos.gTribRegular === 'vedado' && !needsRegular(r)) {
         report(it.nItem, `cClassTrib ${ib.cClassTrib} não permite gTribRegular`);
       }
     }),
@@ -569,13 +585,13 @@ export const RULES: readonly Rule[] = [
   rule('UB69-10', '1066', 'CST da tributação regular existente', BOTH, (ctx, report) =>
     withIbscbs(ctx, (it, ib) => {
       const reg = ib.gIBSCBS?.gTribRegular;
-      if (reg && !ctx.content.cst(reg.CSTReg)) report(it.nItem, `CSTReg ${reg.CSTReg} inexistente`);
+      if (reg && !ctx.conteudo.cst(reg.CSTReg)) report(it.nItem, `CSTReg ${reg.CSTReg} inexistente`);
     }),
   ),
   rule('UB70-10', '1067', 'cClassTrib da tributação regular existente', BOTH, (ctx, report) =>
     withIbscbs(ctx, (it, ib) => {
       const reg = ib.gIBSCBS?.gTribRegular;
-      if (reg && !ctx.content.classTrib(reg.cClassTribReg))
+      if (reg && !ctx.conteudo.classTrib(reg.cClassTribReg))
         report(it.nItem, `cClassTribReg ${reg.cClassTribReg} inexistente`);
     }),
   ),
@@ -596,9 +612,9 @@ export const RULES: readonly Rule[] = [
     ),
   ),
   rule('UB82a-10', '1141', 'compra governamental exige gTribCompraGov', NFE, (ctx, report) => {
-    if (!ctx.doc.gCompraGov) return;
+    if (!ctx.documento.gCompraGov) return;
     withIbscbs(ctx, (it, ib, r) => {
-      if (r.cst?.groups.gIBSCBS !== 'forbidden' && ib.gIBSCBS && !ib.gIBSCBS.gTribCompraGov) {
+      if (r.cst?.grupos.gIBSCBS !== 'vedado' && ib.gIBSCBS && !ib.gIBSCBS.gTribCompraGov) {
         report(it.nItem, 'gTribCompraGov não informado');
       }
     });
@@ -614,19 +630,19 @@ export const RULES: readonly Rule[] = [
     }),
   ),
   rule('UB82a-30', '1144', 'gTribCompraGov só com compra governamental', NFE, (ctx, report) => {
-    if (ctx.doc.gCompraGov) return;
+    if (ctx.documento.gCompraGov) return;
     withIbscbs(ctx, (it, ib) => {
       if (ib.gIBSCBS?.gTribCompraGov) report(it.nItem, 'gTribCompraGov sem gCompraGov');
     });
   }),
   rule('UB106-30', '1133', 'transferência de crédito exige nota de débito', NFE, (ctx, report) =>
     withIbscbs(ctx, (it, ib) => {
-      if (ib.gTransfCred && ctx.doc.finNFe !== 6) report(it.nItem, 'gTransfCred com finNFe diferente de 6');
+      if (ib.gTransfCred && ctx.documento.finNFe !== 6) report(it.nItem, 'gTransfCred com finNFe diferente de 6');
     }),
   ),
   rule('UB106-31', '1168', 'transferência de crédito exige tpNFDebito 01 ou 05', NFE, (ctx, report) =>
     withIbscbs(ctx, (it, ib) => {
-      if (ib.gTransfCred && !['01', '05'].includes(ctx.doc.tpNFDebito ?? ''))
+      if (ib.gTransfCred && !['01', '05'].includes(ctx.documento.tpNFDebito ?? ''))
         report(it.nItem, 'gTransfCred sem tpNFDebito 01 ou 05');
     }),
   ),
@@ -641,18 +657,18 @@ export const RULES: readonly Rule[] = [
     '1169',
     'grupo gAjusteCompet',
     BOTH,
-    (r) => r.cst?.groups.gAjusteCompet,
+    (r) => r.cst?.grupos.gAjusteCompet,
     (ib) => !!ib.gAjusteCompet,
-    'forbidden',
+    'vedado',
   ),
   groupPresence(
     'UB112-20',
     '1170',
     'grupo gAjusteCompet',
     NFE,
-    (r) => r.cst?.groups.gAjusteCompet,
+    (r) => r.cst?.grupos.gAjusteCompet,
     (ib) => !!ib.gAjusteCompet,
-    'required',
+    'obrigatorio',
   ),
   rule('UB112-30', '1171', 'ajuste de competência com valor', NFE, (ctx, report) =>
     withIbscbs(ctx, (it, ib) => {
@@ -665,14 +681,14 @@ export const RULES: readonly Rule[] = [
     '1172',
     'grupo gEstornoCred',
     BOTH,
-    (r) => r.ct?.groups.gEstornoCred,
+    (r) => r.ct?.grupos.gEstornoCred,
     (ib) => !!ib.gEstornoCred,
-    'forbidden',
+    'vedado',
     perdaEmEstoque,
   ),
   rule('UB116-20', '1173', 'grupo gEstornoCred exigido', NFE, (ctx, report) =>
     withIbscbs(ctx, (it, ib, r) => {
-      if ((r.ct?.groups.gEstornoCred === 'required' || perdaEmEstoque(ctx)) && !ib.gEstornoCred) {
+      if ((r.ct?.grupos.gEstornoCred === 'obrigatorio' || perdaEmEstoque(ctx)) && !ib.gEstornoCred) {
         report(it.nItem, 'grupo gEstornoCred não informado');
       }
     }),
@@ -692,41 +708,42 @@ export const RULES: readonly Rule[] = [
   ),
   rule('UB120-20', '1175', 'cClassTrib veda crédito presumido', NFE, (ctx, report) =>
     withIbscbs(ctx, (it, ib, r) => {
-      if (ib.gCredPresOper && r.ct?.groups.gCredPresOper === 'forbidden' && !it.usedMovableGood) {
+      if (ib.gCredPresOper && r.ct?.grupos.gCredPresOper === 'vedado' && !it.bemMovelUsado) {
         report(it.nItem, `cClassTrib ${ib.cClassTrib} não permite gCredPresOper`);
       }
     }),
   ),
   rule('UB122-10', '1055', 'cCredPres existente', NFE, (ctx, report) =>
     withIbscbs(ctx, (it, ib) => {
-      if (ib.gCredPresOper && !ctx.content.credPres(ib.gCredPresOper.cCredPres)) {
+      if (ib.gCredPresOper && !ctx.conteudo.credPres(ib.gCredPresOper.cCredPres)) {
         report(it.nItem, `cCredPres ${ib.gCredPresOper.cCredPres} inexistente`);
       }
     }),
   ),
   ...(
     [
-      ['UB123-10', '1053', 'gIBSCredPres', 'ibs', 'forbidden'],
-      ['UB123-20', '1054', 'gIBSCredPres', 'ibs', 'required'],
-      ['UB127-10', '1050', 'gCBSCredPres', 'cbs', 'forbidden'],
-      ['UB127-20', '1058', 'gCBSCredPres', 'cbs', 'required'],
+      ['UB123-10', '1053', 'gIBSCredPres', 'ibs', 'vedado'],
+      ['UB123-20', '1054', 'gIBSCredPres', 'ibs', 'obrigatorio'],
+      ['UB127-10', '1050', 'gCBSCredPres', 'cbs', 'vedado'],
+      ['UB127-20', '1058', 'gCBSCredPres', 'cbs', 'obrigatorio'],
     ] as const
   ).map(([id, cStat, group, tributo, when]) =>
     rule(
       id,
       cStat,
-      `cCredPres ${when === 'forbidden' ? 'veda' : 'exige'} ${group}`,
+      `cCredPres ${when === 'vedado' ? 'veda' : 'exige'} ${group}`,
       NFE,
       (ctx, report) =>
         withIbscbs(ctx, (it, ib) => {
           const cp = ib.gCredPresOper;
-          const info = cp ? ctx.content.credPres(cp.cCredPres) : undefined;
+          const info = cp ? ctx.conteudo.credPres(cp.cCredPres) : undefined;
           if (!cp || !info) return;
-          const indicator = info[tributo] ? info.record.groups[group] : 'forbidden';
+          const indicator = info[tributo] ? info.registro.grupos[group] : 'vedado';
           const present = cp[group] !== undefined;
-          if (when === 'forbidden' && indicator === 'forbidden' && present)
+          if (when === 'vedado' && indicator === 'vedado' && present)
             report(it.nItem, `${group} informado indevidamente`);
-          if (when === 'required' && indicator === 'required' && !present) report(it.nItem, `${group} não informado`);
+          if (when === 'obrigatorio' && indicator === 'obrigatorio' && !present)
+            report(it.nItem, `${group} não informado`);
         }),
       'O indicador só vale no período em que o crédito está vigente para o tributo (vigência da tabela cCredPres); fora dele o grupo é tratado como vedado.',
     ),
@@ -756,8 +773,8 @@ export const RULES: readonly Rule[] = [
       withIbscbs(ctx, (it, ib) => {
         const cp = ib.gCredPresOper;
         if (cp?.[group]?.vCredPresCondSus === undefined) return;
-        if (yearOf(ctx.emission) < from || cp.cCredPres !== 4) {
-          report(it.nItem, `vCredPresCondSus em ${group} com cCredPres ${cp.cCredPres} em ${ctx.emission}`);
+        if (yearOf(ctx.emissao) < from || cp.cCredPres !== 4) {
+          report(it.nItem, `vCredPresCondSus em ${group} com cCredPres ${cp.cCredPres} em ${ctx.emissao}`);
         }
       }),
     ),
@@ -772,26 +789,27 @@ export const RULES: readonly Rule[] = [
     '1134',
     'grupo gCredPresIBSZFM',
     NFE,
-    (r) => r.cst?.groups.gCredPresIBSZFM,
+    (r) => r.cst?.grupos.gCredPresIBSZFM,
     (ib) => !!ib.gCredPresIBSZFM,
-    'forbidden',
+    'vedado',
   ),
   groupPresence(
     'UB131-30',
     '1135',
     'grupo gCredPresIBSZFM',
     NFE,
-    (r) => r.cst?.groups.gCredPresIBSZFM,
+    (r) => r.cst?.grupos.gCredPresIBSZFM,
     (ib) => !!ib.gCredPresIBSZFM,
-    'required',
+    'obrigatorio',
   ),
   rule('UB131-40', '1158', 'crédito presumido da ZFM exige tpNFCredito 02', NFE, (ctx, report) =>
     withIbscbs(ctx, (it, ib) => {
-      if (ib.gCredPresIBSZFM && ctx.doc.tpNFCredito !== '02') report(it.nItem, 'gCredPresIBSZFM sem tpNFCredito 02');
+      if (ib.gCredPresIBSZFM && ctx.documento.tpNFCredito !== '02')
+        report(it.nItem, 'gCredPresIBSZFM sem tpNFCredito 02');
     }),
   ),
   rule('UB131-50', '1159', 'tpNFCredito 02 exige crédito presumido da ZFM', NFE, (ctx, report) => {
-    if (ctx.doc.tpNFCredito !== '02') return;
+    if (ctx.documento.tpNFCredito !== '02') return;
     withIbscbs(ctx, (it, ib) => {
       if (!ib.gCredPresIBSZFM) report(it.nItem, 'tpNFCredito 02 sem gCredPresIBSZFM');
     });
@@ -799,8 +817,8 @@ export const RULES: readonly Rule[] = [
   rule('UB132-10', '1160', 'competApur da ZFM não posterior ao mês atual', NFE, (ctx, report) =>
     withIbscbs(ctx, (it, ib) => {
       const c = ib.gCredPresIBSZFM?.competApur;
-      if (c !== undefined && c > ctx.emission.slice(0, 7))
-        report(it.nItem, `competApur ${c} depois de ${ctx.emission.slice(0, 7)}`);
+      if (c !== undefined && c > ctx.emissao.slice(0, 7))
+        report(it.nItem, `competApur ${c} depois de ${ctx.emissao.slice(0, 7)}`);
     }),
   ),
   rule('UB133-10', '1136', 'tpCredPresIBSZFM sem repetição no documento', NFE, (ctx, report) => {
@@ -814,18 +832,20 @@ export const RULES: readonly Rule[] = [
   }),
   // ---------- totais ----------
   rule('W34-10', '1118', 'IBSCBSTot só com itens com IBSCBS', BOTH, (ctx, report) => {
-    if (ctx.doc.IBSCBSTot && !ctx.doc.items.some((i) => i.IBSCBS)) report(undefined, 'IBSCBSTot sem item com IBSCBS');
+    if (ctx.documento.IBSCBSTot && !ctx.documento.itens.some((i) => i.IBSCBS))
+      report(undefined, 'IBSCBSTot sem item com IBSCBS');
   }),
   rule('W34-20', '1119', 'IBSCBSTot obrigatório com itens com IBSCBS', BOTH, (ctx, report) => {
-    if (!ctx.doc.IBSCBSTot && ctx.doc.items.some((i) => i.IBSCBS)) report(undefined, 'IBSCBSTot não informado');
+    if (!ctx.documento.IBSCBSTot && ctx.documento.itens.some((i) => i.IBSCBS))
+      report(undefined, 'IBSCBSTot não informado');
   }),
   ...totalRules(),
 ];
 
-type Tot = NonNullable<RulesDocument['IBSCBSTot']>;
+type Tot = NonNullable<DocumentoDasRegras['IBSCBSTot']>;
 type Sel = (ib: IBSCBS) => string | undefined;
 
-function totalRules(): Rule[] {
+function totalRules(): Regra[] {
   const specs: readonly [string, string, string, (t: Tot) => string | undefined, Sel][] = [
     [
       'W35-10',
@@ -935,9 +955,9 @@ function totalRules(): Rule[] {
   ];
   return specs.map(([id, cStat, label, total, item]) =>
     rule(id, cStat, `total de ${label} = soma dos itens`, BOTH, (ctx, report) => {
-      const tot = ctx.doc.IBSCBSTot;
+      const tot = ctx.documento.IBSCBSTot;
       if (!tot) return;
-      const expected = sumOf(ctx.doc.items.map((i) => (i.IBSCBS ? item(i.IBSCBS) : undefined)));
+      const expected = sumOf(ctx.documento.itens.map((i) => (i.IBSCBS ? item(i.IBSCBS) : undefined)));
       const declared = total(tot);
       if (declared === undefined && expected.isZero()) return;
       if (!dec(declared).eq(expected))
@@ -947,25 +967,25 @@ function totalRules(): Rule[] {
 }
 
 /** Regras da NT que este pacote ainda não confere, com o motivo. */
-export const NOT_IMPLEMENTED: readonly NotImplemented[] = [
-  { id: 'UB11-10', reason: 'Imposto Seletivo: implementação futura na NT e fora do @sinete/ibs-cbs/calcular.' },
-  { id: 'UB16-10', reason: 'Composição da base: "implementação futura, aguardando orientação normativa" na NT.' },
-  { id: 'UB13-39', reason: 'Tributação monofásica ainda não suportada no @sinete/ibs-cbs.' },
-  { id: 'UB13-40', reason: 'Tributação monofásica (implementação futura na NT).' },
+export const NAO_IMPLEMENTADAS: readonly NaoImplementada[] = [
+  { id: 'UB11-10', motivo: 'Imposto Seletivo: implementação futura na NT e fora do @sinete/ibs-cbs/calcular.' },
+  { id: 'UB16-10', motivo: 'Composição da base: "implementação futura, aguardando orientação normativa" na NT.' },
+  { id: 'UB13-39', motivo: 'Tributação monofásica ainda não suportada no @sinete/ibs-cbs.' },
+  { id: 'UB13-40', motivo: 'Tributação monofásica (implementação futura na NT).' },
   {
     id: 'UB14-30',
-    reason: 'Depende da tabela de índice de mistura do biocombustível por código ANP, fora do dataset.',
+    motivo: 'Depende da tabela de índice de mistura do biocombustível por código ANP, fora do dataset.',
   },
   {
     id: 'UB14-50',
-    reason: 'Depende da tabela de índice de mistura do biocombustível por código ANP, fora do dataset.',
+    motivo: 'Depende da tabela de índice de mistura do biocombustível por código ANP, fora do dataset.',
   },
-  { id: 'UB66a-10', reason: 'Grupo gALCZFMCBS (CBS zero em áreas incentivadas) ainda não modelado.' },
-  { id: 'UB66a-20', reason: 'Grupo gALCZFMCBS ainda não modelado.' },
-  { id: 'UB66c-10', reason: 'Grupo gALCZFMCBS ainda não modelado.' },
-  { id: 'UB66e-10', reason: 'Grupo gALCZFMCBS ainda não modelado.' },
-  { id: 'UB84a-10 a UB104', reason: 'Grupos de tributação monofásica ainda não suportados.' },
-  { id: 'W31-10, W31-20, W33-10', reason: 'Totais do Imposto Seletivo, fora do escopo.' },
-  { id: 'W58-10 a W59d-10', reason: 'Totais da monofasia, ainda não suportada.' },
-  { id: 'VB01-05, VB01-10, VB01-20, W60-05, W60-10', reason: 'vItem e vNFTot: implementação futura na NT.' },
+  { id: 'UB66a-10', motivo: 'Grupo gALCZFMCBS (CBS zero em áreas incentivadas) ainda não modelado.' },
+  { id: 'UB66a-20', motivo: 'Grupo gALCZFMCBS ainda não modelado.' },
+  { id: 'UB66c-10', motivo: 'Grupo gALCZFMCBS ainda não modelado.' },
+  { id: 'UB66e-10', motivo: 'Grupo gALCZFMCBS ainda não modelado.' },
+  { id: 'UB84a-10 a UB104', motivo: 'Grupos de tributação monofásica ainda não suportados.' },
+  { id: 'W31-10, W31-20, W33-10', motivo: 'Totais do Imposto Seletivo, fora do escopo.' },
+  { id: 'W58-10 a W59d-10', motivo: 'Totais da monofasia, ainda não suportada.' },
+  { id: 'VB01-05, VB01-10, VB01-20, W60-05, W60-10', motivo: 'vItem e vNFTot: implementação futura na NT.' },
 ];

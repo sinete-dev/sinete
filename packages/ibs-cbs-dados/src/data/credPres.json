@@ -1,325 +1,325 @@
 [
   {
-    "calculation": { "base": "Valor líquido", "formula": "vLiq * pAliqCalc", "impediment": null, "pAliq": "Calculada" },
-    "code": 1,
-    "deductsFromTax": false,
-    "description": "Crédito presumido da aquisição de bens e serviços de produtor rural e produtor rural integrado não contribuinte, observado o art. 168 da Lei Complementar nº 214, de 2025.",
-    "groups": { "gCBSCredPres": "required", "gIBSCredPres": "required" },
-    "key": "01",
+    "aliquotas": {
+      "cbs": "Alíquota calculada e divulgada anualmente",
+      "ibs": "Alíquota calculada e divulgada anualmente",
+      "pAliqCredPresCBS": "pAliqCalculadaCBS",
+      "pAliqCredPresIBS": "pAliqCalculadaIBS",
+      "pRedTransicaoIBS": null
+    },
+    "calculo": { "base": "Valor líquido", "formula": "vLiq * pAliqCalc", "impedimento": null, "pAliq": "Calculada" },
+    "chave": "01",
+    "classTribReferenciado": "410014",
+    "codigo": 1,
+    "deduzDoTributo": false,
+    "descricao": "Crédito presumido da aquisição de bens e serviços de produtor rural e produtor rural integrado não contribuinte, observado o art. 168 da Lei Complementar nº 214, de 2025.",
+    "fontes": ["it-2025.002-v1.60-ccredpres"],
+    "grupos": { "gCBSCredPres": "obrigatorio", "gIBSCredPres": "obrigatorio" },
     "legal": "Art. 168. O contribuinte de IBS e de CBS sujeito ao regime regular poderá apropriar créditos presumidos dos referidos tributos relativos às aquisições de bens e serviços de produtor rural ou de produtor rural integrado, não contribuintes, de que trata o art. 164 desta Lei Complementar.",
-    "rates": {
+    "viaDocumento": true,
+    "viaEvento": true,
+    "vigencia": { "cbs": { "fim": null, "inicio": "2027-01-01" }, "ibs": { "fim": null, "inicio": "2027-01-01" } }
+  },
+  {
+    "aliquotas": {
       "cbs": "Alíquota calculada e divulgada anualmente",
       "ibs": "Alíquota calculada e divulgada anualmente",
       "pAliqCredPresCBS": "pAliqCalculadaCBS",
       "pAliqCredPresIBS": "pAliqCalculadaIBS",
       "pRedTransicaoIBS": null
     },
-    "referencedClassTrib": "410014",
-    "sources": ["it-2025.002-v1.60-ccredpres"],
-    "validity": { "cbs": { "from": "2027-01-01", "to": null }, "ibs": { "from": "2027-01-01", "to": null } },
-    "viaDocument": true,
-    "viaEvent": true
-  },
-  {
-    "calculation": { "base": "Valor líquido", "formula": "vLiq * pAliqCalc", "impediment": null, "pAliq": "Calculada" },
-    "code": 2,
-    "deductsFromTax": false,
-    "description": "Crédito presumido da aquisição de serviço de transportador autônomo de carga pessoa física não contribuinte, observado o art. 169 da Lei Complementar nº 214, de 2025.",
-    "groups": { "gCBSCredPres": "required", "gIBSCredPres": "required" },
-    "key": "02",
+    "calculo": { "base": "Valor líquido", "formula": "vLiq * pAliqCalc", "impedimento": null, "pAliq": "Calculada" },
+    "chave": "02",
+    "classTribReferenciado": "410015",
+    "codigo": 2,
+    "deduzDoTributo": false,
+    "descricao": "Crédito presumido da aquisição de serviço de transportador autônomo de carga pessoa física não contribuinte, observado o art. 169 da Lei Complementar nº 214, de 2025.",
+    "fontes": ["it-2025.002-v1.60-ccredpres"],
+    "grupos": { "gCBSCredPres": "obrigatorio", "gIBSCredPres": "obrigatorio" },
     "legal": "Art. 169. O contribuinte de IBS e de CBS sujeito ao regime regular poderá apropriar créditos presumidos dos referidos tributos relativos às aquisições de serviço de transporte de carga de transportador autônomo pessoa física que não seja contribuinte dos referidos tributos ou que seja inscrito como MEI.",
-    "rates": {
-      "cbs": "Alíquota calculada e divulgada anualmente",
-      "ibs": "Alíquota calculada e divulgada anualmente",
-      "pAliqCredPresCBS": "pAliqCalculadaCBS",
-      "pAliqCredPresIBS": "pAliqCalculadaIBS",
-      "pRedTransicaoIBS": null
-    },
-    "referencedClassTrib": "410015",
-    "sources": ["it-2025.002-v1.60-ccredpres"],
-    "validity": { "cbs": { "from": "2027-01-01", "to": null }, "ibs": { "from": "2027-01-01", "to": null } },
-    "viaDocument": false,
-    "viaEvent": true
+    "viaDocumento": false,
+    "viaEvento": true,
+    "vigencia": { "cbs": { "fim": null, "inicio": "2027-01-01" }, "ibs": { "fim": null, "inicio": "2027-01-01" } }
   },
   {
-    "calculation": {
-      "base": "Valor da operação de aquisição",
-      "formula": "vOpAq * pAliqFixa",
-      "impediment": "§ 3º Os créditos presumidos de IBS e de CBS de que trata o caput deste artigo não serão concedidos às aquisições de:\nI - agrotóxicos, seus resíduos e embalagens;\nII - medicamentos domiciliares, de uso humano, industrializados e manipulados e, observados critérios estabelecidos no regulamento, de suas embalagens;\nIII - pilhas e baterias; \nIV - pneus;\nV - produtos eletroeletrônicos e seus componentes de uso doméstico;\nVI - óleos lubrificantes, seus resíduos e embalagens;\nVII - lâmpadas fluorescentes, de vapor de sódio e mercúrio e de luz mista; e\nVIII - sucata de cobre.",
-      "pAliq": "IBS:\n- 1,3% em 2029\n- 2,6% em 2030\n- 3,9% em 2031\n- 5,2% em 2032\n- 13% a partir de 2033\n\nCBS: \n- 7%"
-    },
-    "code": 3,
-    "deductsFromTax": false,
-    "description": "Crédito presumido da aquisição de resíduos e demais materiais destinados à reciclagem, reutilização ou logística reversa adquiridos de pessoa física, cooperativa ou outra forma de organização popular, observado o art. 170 da Lei Complementar nº 214, de 2025.",
-    "groups": { "gCBSCredPres": "required", "gIBSCredPres": "required" },
-    "key": "03",
-    "legal": "Art. 170. O contribuinte de IBS e de CBS sujeito ao regime regular poderá apropriar créditos presumidos dos referidos tributos relativos às aquisições de resíduos sólidos de coletores incentivados para utilização em processo de destinação final ambientalmente adequada.",
-    "rates": {
+    "aliquotas": {
       "cbs": "Alíquota fixa",
       "ibs": "Alíquota fixa",
       "pAliqCredPresCBS": "7",
       "pAliqCredPresIBS": "a) em 2029, 1,3% (um inteiro e três décimos por cento);\nb) em 2030, 2,6% (dois inteiros e seis décimos por cento);\nc) em 2031, 3,9% (três inteiros e nove décimos por cento);\nd) em 2032, 5,2% (cinco inteiros e dois décimos por cento);\ne) a partir de 2033, 13% (treze por cento);",
       "pRedTransicaoIBS": null
     },
-    "referencedClassTrib": "410016",
-    "sources": ["it-2025.002-v1.60-ccredpres"],
-    "validity": { "cbs": { "from": "2027-01-01", "to": null }, "ibs": { "from": "2029-01-01", "to": null } },
-    "viaDocument": true,
-    "viaEvent": true
+    "calculo": {
+      "base": "Valor da operação de aquisição",
+      "formula": "vOpAq * pAliqFixa",
+      "impedimento": "§ 3º Os créditos presumidos de IBS e de CBS de que trata o caput deste artigo não serão concedidos às aquisições de:\nI - agrotóxicos, seus resíduos e embalagens;\nII - medicamentos domiciliares, de uso humano, industrializados e manipulados e, observados critérios estabelecidos no regulamento, de suas embalagens;\nIII - pilhas e baterias; \nIV - pneus;\nV - produtos eletroeletrônicos e seus componentes de uso doméstico;\nVI - óleos lubrificantes, seus resíduos e embalagens;\nVII - lâmpadas fluorescentes, de vapor de sódio e mercúrio e de luz mista; e\nVIII - sucata de cobre.",
+      "pAliq": "IBS:\n- 1,3% em 2029\n- 2,6% em 2030\n- 3,9% em 2031\n- 5,2% em 2032\n- 13% a partir de 2033\n\nCBS: \n- 7%"
+    },
+    "chave": "03",
+    "classTribReferenciado": "410016",
+    "codigo": 3,
+    "deduzDoTributo": false,
+    "descricao": "Crédito presumido da aquisição de resíduos e demais materiais destinados à reciclagem, reutilização ou logística reversa adquiridos de pessoa física, cooperativa ou outra forma de organização popular, observado o art. 170 da Lei Complementar nº 214, de 2025.",
+    "fontes": ["it-2025.002-v1.60-ccredpres"],
+    "grupos": { "gCBSCredPres": "obrigatorio", "gIBSCredPres": "obrigatorio" },
+    "legal": "Art. 170. O contribuinte de IBS e de CBS sujeito ao regime regular poderá apropriar créditos presumidos dos referidos tributos relativos às aquisições de resíduos sólidos de coletores incentivados para utilização em processo de destinação final ambientalmente adequada.",
+    "viaDocumento": true,
+    "viaEvento": true,
+    "vigencia": { "cbs": { "fim": null, "inicio": "2027-01-01" }, "ibs": { "fim": null, "inicio": "2029-01-01" } }
   },
   {
-    "calculation": {
-      "base": "Valor da operação de aquisição",
-      "formula": "vOpAq * pAliqEfet",
-      "impediment": "§ 2º Os créditos presumidos de que trata o caput deste artigo somente poderão ser utilizados para deduzir, respectivamente, o IBS e a CBS devidos pelo contribuinte, por ocasião da revenda do bem usado sobre o qual tenham sido calculados os respectivos créditos.",
-      "pAliq": "I - para o crédito presumido de IBS, o percentual equivalente à soma das alíquotas de IBS aplicáveis às operações com bem móvel de que trata o caput deste artigo, fixadas pelo Município e pelo Estado onde estiver localizado o estabelecimento em que tiver sido efetuada a aquisição vigentes:\na) na data da revenda, para aquisições realizadas até 31 de dezembro de 2032;\nb) na data da aquisição, para aquisições realizadas a partir de 1º de janeiro de 2033;\nII - para o crédito presumido de CBS, a alíquota da CBS aplicável às operações com o bem móvel de que trata o caput deste artigo, fixada pela União e vigente:\na) na data da revenda, para aquisições realizadas até 31 de dezembro de 2026;\nb) na data da aquisição, para aquisições realizadas a partir de 1º de janeiro de 2027."
-    },
-    "code": 4,
-    "deductsFromTax": true,
-    "description": "Crédito presumido da aquisição de bens móveis usados de pessoa física não contribuinte para revenda, observado o art. 171 da Lei Complementar nº 214, de 2025.",
-    "groups": { "gCBSCredPres": "required", "gIBSCredPres": "required" },
-    "key": "04",
-    "legal": "Art. 171. O contribuinte de IBS e de CBS sujeito ao regime regular poderá apropriar créditos presumidos dos referidos tributos relativos às aquisições, para revenda, de bem móvel usado de pessoa física que não seja contribuinte dos referidos tributos ou que seja inscrita como MEI.",
-    "rates": {
+    "aliquotas": {
       "cbs": "Alíquota efetiva",
       "ibs": "Alíquota efetiva",
       "pAliqCredPresCBS": "pAliqEfet",
       "pAliqCredPresIBS": "pAliqEfet",
       "pRedTransicaoIBS": null
     },
-    "referencedClassTrib": "410017",
-    "sources": ["it-2025.002-v1.60-ccredpres"],
-    "validity": { "cbs": { "from": "2027-01-01", "to": null }, "ibs": { "from": "2027-01-01", "to": null } },
-    "viaDocument": true,
-    "viaEvent": false
+    "calculo": {
+      "base": "Valor da operação de aquisição",
+      "formula": "vOpAq * pAliqEfet",
+      "impedimento": "§ 2º Os créditos presumidos de que trata o caput deste artigo somente poderão ser utilizados para deduzir, respectivamente, o IBS e a CBS devidos pelo contribuinte, por ocasião da revenda do bem usado sobre o qual tenham sido calculados os respectivos créditos.",
+      "pAliq": "I - para o crédito presumido de IBS, o percentual equivalente à soma das alíquotas de IBS aplicáveis às operações com bem móvel de que trata o caput deste artigo, fixadas pelo Município e pelo Estado onde estiver localizado o estabelecimento em que tiver sido efetuada a aquisição vigentes:\na) na data da revenda, para aquisições realizadas até 31 de dezembro de 2032;\nb) na data da aquisição, para aquisições realizadas a partir de 1º de janeiro de 2033;\nII - para o crédito presumido de CBS, a alíquota da CBS aplicável às operações com o bem móvel de que trata o caput deste artigo, fixada pela União e vigente:\na) na data da revenda, para aquisições realizadas até 31 de dezembro de 2026;\nb) na data da aquisição, para aquisições realizadas a partir de 1º de janeiro de 2027."
+    },
+    "chave": "04",
+    "classTribReferenciado": "410017",
+    "codigo": 4,
+    "deduzDoTributo": true,
+    "descricao": "Crédito presumido da aquisição de bens móveis usados de pessoa física não contribuinte para revenda, observado o art. 171 da Lei Complementar nº 214, de 2025.",
+    "fontes": ["it-2025.002-v1.60-ccredpres"],
+    "grupos": { "gCBSCredPres": "obrigatorio", "gIBSCredPres": "obrigatorio" },
+    "legal": "Art. 171. O contribuinte de IBS e de CBS sujeito ao regime regular poderá apropriar créditos presumidos dos referidos tributos relativos às aquisições, para revenda, de bem móvel usado de pessoa física que não seja contribuinte dos referidos tributos ou que seja inscrita como MEI.",
+    "viaDocumento": true,
+    "viaEvento": false,
+    "vigencia": { "cbs": { "fim": null, "inicio": "2027-01-01" }, "ibs": { "fim": null, "inicio": "2027-01-01" } }
   },
   {
-    "calculation": { "base": "Valor de venda", "formula": "vVenda * pAliqFixa", "impediment": null, "pAliq": null },
-    "code": 5,
-    "deductsFromTax": false,
-    "description": "Crédito presumido no regime automotivo, observado o art. 311 da Lei Complementar nº 214, de 2025.",
-    "groups": { "gCBSCredPres": "required", "gIBSCredPres": "forbidden" },
-    "key": "05",
-    "legal": "Art. 311. Em relação aos projetos habilitados à fruição dos benefícios estabelecidos pelo art. 11-C da Lei nº 9.440, de 14 de março de 1997, o crédito presumido de que trata o art. 309 desta Lei Complementar será calculado mediante a aplicação dos seguintes percentuais sobre o valor das vendas no mercado interno, em cada mês, dos produtos constantes nos projetos de que trata o art. 309, fabricados ou montados nos estabelecimentos incentivados:\nI - 11,60% (onze inteiros e sessenta centésimos por cento) até o 12º (décimo segundo) mês de fruição do benefício;\nII - 10% (dez inteiros por cento) do 13º (décimo terceiro) ao 48º (quadragésimo oitavo) mês de fruição do benefício;\nIII - 8,70% (oito inteiros e setenta centésimos por cento) do 49º (quadragésimo nono) ao 60º (sexagésimo) mês de fruição do benefício.",
-    "rates": {
+    "aliquotas": {
       "cbs": "Alíquota fixa",
       "ibs": null,
       "pAliqCredPresCBS": null,
       "pAliqCredPresIBS": null,
       "pRedTransicaoIBS": null
     },
-    "referencedClassTrib": "Com incidência de CBS",
-    "sources": ["it-2025.002-v1.60-ccredpres"],
-    "validity": { "cbs": { "from": "2027-01-01", "to": null }, "ibs": null },
-    "viaDocument": true,
-    "viaEvent": false
+    "calculo": { "base": "Valor de venda", "formula": "vVenda * pAliqFixa", "impedimento": null, "pAliq": null },
+    "chave": "05",
+    "classTribReferenciado": "Com incidência de CBS",
+    "codigo": 5,
+    "deduzDoTributo": false,
+    "descricao": "Crédito presumido no regime automotivo, observado o art. 311 da Lei Complementar nº 214, de 2025.",
+    "fontes": ["it-2025.002-v1.60-ccredpres"],
+    "grupos": { "gCBSCredPres": "obrigatorio", "gIBSCredPres": "vedado" },
+    "legal": "Art. 311. Em relação aos projetos habilitados à fruição dos benefícios estabelecidos pelo art. 11-C da Lei nº 9.440, de 14 de março de 1997, o crédito presumido de que trata o art. 309 desta Lei Complementar será calculado mediante a aplicação dos seguintes percentuais sobre o valor das vendas no mercado interno, em cada mês, dos produtos constantes nos projetos de que trata o art. 309, fabricados ou montados nos estabelecimentos incentivados:\nI - 11,60% (onze inteiros e sessenta centésimos por cento) até o 12º (décimo segundo) mês de fruição do benefício;\nII - 10% (dez inteiros por cento) do 13º (décimo terceiro) ao 48º (quadragésimo oitavo) mês de fruição do benefício;\nIII - 8,70% (oito inteiros e setenta centésimos por cento) do 49º (quadragésimo nono) ao 60º (sexagésimo) mês de fruição do benefício.",
+    "viaDocumento": true,
+    "viaEvento": false,
+    "vigencia": { "cbs": { "fim": null, "inicio": "2027-01-01" }, "ibs": null }
   },
   {
-    "calculation": {
+    "aliquotas": {
+      "cbs": "Alíquota fixa",
+      "ibs": null,
+      "pAliqCredPresCBS": null,
+      "pAliqCredPresIBS": null,
+      "pRedTransicaoIBS": null
+    },
+    "calculo": {
       "base": "Valor de venda",
       "formula": "vVenda * pAliqIPI * FatorEf * FatorM",
-      "impediment": null,
+      "impedimento": null,
       "pAliq": null
     },
-    "code": 6,
-    "deductsFromTax": false,
-    "description": "Crédito presumido no regime automotivo, observado o art. 312 da Lei Complementar nº 214, de 2025.",
-    "groups": { "gCBSCredPres": "required", "gIBSCredPres": "forbidden" },
-    "key": "06",
+    "chave": "06",
+    "classTribReferenciado": "Com incidência de CBS",
+    "codigo": 6,
+    "deduzDoTributo": false,
+    "descricao": "Crédito presumido no regime automotivo, observado o art. 312 da Lei Complementar nº 214, de 2025.",
+    "fontes": ["it-2025.002-v1.60-ccredpres"],
+    "grupos": { "gCBSCredPres": "obrigatorio", "gIBSCredPres": "vedado" },
     "legal": "Art. 312. Em relação aos projetos habilitados à fruição dos benefícios estabelecidos pelos arts. 1º a 4º da Lei nº 9.826, de 23 de agosto de 1999, o crédito presumido de que trata o art. 309 desta Lei Complementar corresponderá ao produto da multiplicação dos seguintes fatores:\nI - valor das vendas no mercado interno, em cada mês, dos produtos constantes nos projetos de que trata o art. 309 desta Lei Complementar, fabricados ou montados nos estabelecimentos incentivados;\nII - alíquotas do Imposto sobre Produtos Industrializados - IPI vigentes em 31 de dezembro de 2025, conforme a Tabela de Incidência do Imposto sobre Produtos Industrializados - Tipi, inclusive Notas Complementares, referentes aos produtos classificados nas posições 8702 a 8704;\nIII - fator de eficiência, que será o resultado do cálculo de 1 (um inteiro) diminuído da alíquota referida no inciso II, para cada posição na Tipi; e\nIV - fator multiplicador, que será de:\na) 32,00% (trinta e dois por cento) nos anos de 2027 e 2028;\nb) 25,60% (vinte e cinco inteiros e sessenta centésimos por cento) no ano de 2029;\nc) 19,20% (dezenove inteiros e vinte centésimos por cento) no ano de 2030;\nd) 12,80% (doze inteiros e oitenta centésimos por cento) no ano de 2031; e\ne) 6,40 % (seis inteiros e quarenta centésimos por cento) no ano de 2032.",
-    "rates": {
-      "cbs": "Alíquota fixa",
-      "ibs": null,
-      "pAliqCredPresCBS": null,
-      "pAliqCredPresIBS": null,
-      "pRedTransicaoIBS": null
-    },
-    "referencedClassTrib": "Com incidência de CBS",
-    "sources": ["it-2025.002-v1.60-ccredpres"],
-    "validity": { "cbs": { "from": "2027-01-01", "to": null }, "ibs": null },
-    "viaDocument": true,
-    "viaEvent": false
+    "viaDocumento": true,
+    "viaEvento": false,
+    "vigencia": { "cbs": { "fim": null, "inicio": "2027-01-01" }, "ibs": null }
   },
   {
-    "calculation": {
-      "base": "Valor da operação de aquisição",
-      "formula": "vOpAq * pAliqEfet * 50%",
-      "impediment": null,
-      "pAliq": "50% alíq importação"
-    },
-    "code": 7,
-    "deductsFromTax": true,
-    "description": "Crédito presumido na aquisição por contribuinte na Zona Franca de Manaus, observado o art. 444 da Lei Complementar nº 214, de 2025.",
-    "groups": { "gCBSCredPres": "forbidden", "gIBSCredPres": "required" },
-    "key": "07",
-    "legal": "Art. 444. Fica concedido ao contribuinte habilitado na forma do art. 442 e sujeito ao regime regular ou ao Simples Nacional crédito presumido de IBS relativo à importação de bem material para revenda presencial na Zona Franca de Manaus.",
-    "rates": {
+    "aliquotas": {
       "cbs": null,
       "ibs": "Alíquota efetiva com redução",
       "pAliqCredPresCBS": null,
       "pAliqCredPresIBS": "pAliqEfet * 50%",
       "pRedTransicaoIBS": null
     },
-    "referencedClassTrib": "Com incidência de IBS",
-    "sources": ["it-2025.002-v1.60-ccredpres"],
-    "validity": { "cbs": null, "ibs": { "from": "2027-01-01", "to": null } },
-    "viaDocument": true,
-    "viaEvent": false
+    "calculo": {
+      "base": "Valor da operação de aquisição",
+      "formula": "vOpAq * pAliqEfet * 50%",
+      "impedimento": null,
+      "pAliq": "50% alíq importação"
+    },
+    "chave": "07",
+    "classTribReferenciado": "Com incidência de IBS",
+    "codigo": 7,
+    "deduzDoTributo": true,
+    "descricao": "Crédito presumido na aquisição por contribuinte na Zona Franca de Manaus, observado o art. 444 da Lei Complementar nº 214, de 2025.",
+    "fontes": ["it-2025.002-v1.60-ccredpres"],
+    "grupos": { "gCBSCredPres": "vedado", "gIBSCredPres": "obrigatorio" },
+    "legal": "Art. 444. Fica concedido ao contribuinte habilitado na forma do art. 442 e sujeito ao regime regular ou ao Simples Nacional crédito presumido de IBS relativo à importação de bem material para revenda presencial na Zona Franca de Manaus.",
+    "viaDocumento": true,
+    "viaEvento": false,
+    "vigencia": { "cbs": null, "ibs": { "fim": null, "inicio": "2027-01-01" } }
   },
   {
-    "calculation": {
-      "base": "Valor da operação de aquisição",
-      "formula": "vOpAq * pAliqFixa",
-      "impediment": "alíquota zero",
-      "pAliq": "I - 7,5% (sete inteiros e cinco décimos por cento), no caso de bens provenientes das regiões Sul e Sudeste, exceto do Estado do Espírito Santo; e\n\nII - 13,5% (treze inteiros e cinco décimos por cento), no caso de bens provenientes das regiões Norte, Nordeste e Centro-Oeste e do Estado do Espírito Santo."
-    },
-    "code": 8,
-    "deductsFromTax": false,
-    "description": "Crédito presumido na aquisição por contribuinte na Zona Franca de Manaus, observado o art. 447 da Lei Complementar nº 214, de 2025.",
-    "groups": { "gCBSCredPres": "forbidden", "gIBSCredPres": "required" },
-    "key": "08",
-    "legal": "Art. 447. Fica concedido ao contribuinte sujeito ao regime regular do IBS e habilitado nos termos do art. 442 desta Lei Complementar crédito presumido de IBS relativo à aquisição de bem material industrializado de origem nacional contemplado pela redução a zero da alíquota do IBS nos termos do art. 445 desta Lei Complementar.",
-    "rates": {
+    "aliquotas": {
       "cbs": null,
       "ibs": "Alíquota fixa",
       "pAliqCredPresCBS": null,
       "pAliqCredPresIBS": "I - 7,5% (sete inteiros e cinco décimos por cento), no caso de bens provenientes das regiões Sul e Sudeste, exceto do Estado do Espírito Santo; e \n\nII - 13,5% (treze inteiros e cinco décimos por cento), no caso de bens provenientes das regiões Norte, Nordeste e Centro-Oeste e do Estado do Espírito Santo.",
       "pRedTransicaoIBS": "Redução:\nI - 9/10 (nove décimos), em 2029;\nII - 8/10 (oito décimos), em 2030;\nIII - 7/10 (sete décimos), em 2031; e\nIV - 6/10 (seis décimos), em 2032."
     },
-    "referencedClassTrib": "cClass de alíquota zero",
-    "sources": ["it-2025.002-v1.60-ccredpres"],
-    "validity": { "cbs": null, "ibs": { "from": "2029-01-01", "to": null } },
-    "viaDocument": false,
-    "viaEvent": true
-  },
-  {
-    "calculation": {
+    "calculo": {
       "base": "Valor da operação de aquisição",
       "formula": "vOpAq * pAliqFixa",
-      "impediment": "Alíquota zero",
-      "pAliq": "§ 1º O crédito presumido de que trata o caput será calculado mediante aplicação do percentual de 7,5% (sete inteiros e cinco décimos por cento) sobre o valor da operação contemplada pela redução a zero da alíquota do IBS estabelecida pelo art. 448 desta Lei Complementar."
+      "impedimento": "alíquota zero",
+      "pAliq": "I - 7,5% (sete inteiros e cinco décimos por cento), no caso de bens provenientes das regiões Sul e Sudeste, exceto do Estado do Espírito Santo; e\n\nII - 13,5% (treze inteiros e cinco décimos por cento), no caso de bens provenientes das regiões Norte, Nordeste e Centro-Oeste e do Estado do Espírito Santo."
     },
-    "code": 9,
-    "deductsFromTax": false,
-    "description": "Crédito presumido na aquisição por contribuinte na Zona Franca de Manaus, observado o art. 449 da Lei Complementar nº 214, de 2025.",
-    "groups": { "gCBSCredPres": "forbidden", "gIBSCredPres": "required" },
-    "key": "09",
-    "legal": "Art. 449. Fica concedido à indústria incentivada na Zona Franca de Manaus, sujeita ao regime regular do IBS e da CBS, crédito presumido de IBS relativo à aquisição de bem intermediário produzido na referida área, desde que o bem esteja contemplado pela redução a zero de alíquota estabelecida pelo art. 448 desta Lei Complementar e seja utilizado para incorporação ou consumo na produção de bens finais.",
-    "rates": {
+    "chave": "08",
+    "classTribReferenciado": "cClass de alíquota zero",
+    "codigo": 8,
+    "deduzDoTributo": false,
+    "descricao": "Crédito presumido na aquisição por contribuinte na Zona Franca de Manaus, observado o art. 447 da Lei Complementar nº 214, de 2025.",
+    "fontes": ["it-2025.002-v1.60-ccredpres"],
+    "grupos": { "gCBSCredPres": "vedado", "gIBSCredPres": "obrigatorio" },
+    "legal": "Art. 447. Fica concedido ao contribuinte sujeito ao regime regular do IBS e habilitado nos termos do art. 442 desta Lei Complementar crédito presumido de IBS relativo à aquisição de bem material industrializado de origem nacional contemplado pela redução a zero da alíquota do IBS nos termos do art. 445 desta Lei Complementar.",
+    "viaDocumento": false,
+    "viaEvento": true,
+    "vigencia": { "cbs": null, "ibs": { "fim": null, "inicio": "2029-01-01" } }
+  },
+  {
+    "aliquotas": {
       "cbs": null,
       "ibs": "Alíquota fixa",
       "pAliqCredPresCBS": null,
       "pAliqCredPresIBS": "7.5",
       "pRedTransicaoIBS": "Redução:\nI - 9/10 (nove décimos), em 2029;\nII - 8/10 (oito décimos), em 2030;\nIII - 7/10 (sete décimos), em 2031; e\nIV - 6/10 (seis décimos), em 2032."
     },
-    "referencedClassTrib": "cClass de alíquota zero",
-    "sources": ["it-2025.002-v1.60-ccredpres"],
-    "validity": { "cbs": null, "ibs": { "from": "2029-01-01", "to": null } },
-    "viaDocument": false,
-    "viaEvent": true
+    "calculo": {
+      "base": "Valor da operação de aquisição",
+      "formula": "vOpAq * pAliqFixa",
+      "impedimento": "Alíquota zero",
+      "pAliq": "§ 1º O crédito presumido de que trata o caput será calculado mediante aplicação do percentual de 7,5% (sete inteiros e cinco décimos por cento) sobre o valor da operação contemplada pela redução a zero da alíquota do IBS estabelecida pelo art. 448 desta Lei Complementar."
+    },
+    "chave": "09",
+    "classTribReferenciado": "cClass de alíquota zero",
+    "codigo": 9,
+    "deduzDoTributo": false,
+    "descricao": "Crédito presumido na aquisição por contribuinte na Zona Franca de Manaus, observado o art. 449 da Lei Complementar nº 214, de 2025.",
+    "fontes": ["it-2025.002-v1.60-ccredpres"],
+    "grupos": { "gCBSCredPres": "vedado", "gIBSCredPres": "obrigatorio" },
+    "legal": "Art. 449. Fica concedido à indústria incentivada na Zona Franca de Manaus, sujeita ao regime regular do IBS e da CBS, crédito presumido de IBS relativo à aquisição de bem intermediário produzido na referida área, desde que o bem esteja contemplado pela redução a zero de alíquota estabelecida pelo art. 448 desta Lei Complementar e seja utilizado para incorporação ou consumo na produção de bens finais.",
+    "viaDocumento": false,
+    "viaEvento": true,
+    "vigencia": { "cbs": null, "ibs": { "fim": null, "inicio": "2029-01-01" } }
   },
   {
-    "calculation": {
-      "base": "Apuração",
-      "formula": "vApur * pAliqFixa",
-      "impediment": null,
-      "pAliq": "I - 55% (cinquenta e cinco por cento) para bens de consumo final;\n\nII - 75% (setenta e cinco por cento) para bens de capital;\n\nIII - 90,25% (noventa inteiros e vinte e cinco centésimos por cento) para bens intermediários; e\n\nIV - 100% (cem por cento) para bens de informática e para os produtos que a legislação do Estado do Amazonas, até 31 de dezembro de 2023, estabeleceu crédito estímulo de ICMS neste percentual."
-    },
-    "code": 10,
-    "deductsFromTax": false,
-    "description": "Crédito presumido na aquisição por contribuinte na Zona Franca de Manaus, observado o art. 450 da Lei Complementar nº 214, de 2025.",
-    "groups": { "gCBSCredPres": "required", "gIBSCredPres": "forbidden" },
-    "key": "10",
-    "legal": "Art. 450. Ficam concedidos à indústria incentivada na Zona Franca de Manaus créditos presumidos de IBS e de CBS relativos à operação que destine ao território nacional, inclusive para a própria Zona Franca de Manaus, bem material produzido pela própria indústria incentivada na referida área nos termos do projeto econômico aprovado, exceto em relação às operações previstas no art. 447 desta Lei Complementar.",
-    "rates": {
+    "aliquotas": {
       "cbs": "Alíquota fixa",
       "ibs": null,
       "pAliqCredPresCBS": "I - 6% (seis por cento) na venda de produtos, nos termos do art. 454 desta Lei Complementar; ou \n\nII - 2% (dois por cento) nos demais casos.",
       "pAliqCredPresIBS": null,
       "pRedTransicaoIBS": null
     },
-    "referencedClassTrib": "Com incidência de CBS",
-    "sources": ["it-2025.002-v1.60-ccredpres"],
-    "validity": { "cbs": { "from": "2027-01-01", "to": null }, "ibs": null },
-    "viaDocument": true,
-    "viaEvent": false
+    "calculo": {
+      "base": "Apuração",
+      "formula": "vApur * pAliqFixa",
+      "impedimento": null,
+      "pAliq": "I - 55% (cinquenta e cinco por cento) para bens de consumo final;\n\nII - 75% (setenta e cinco por cento) para bens de capital;\n\nIII - 90,25% (noventa inteiros e vinte e cinco centésimos por cento) para bens intermediários; e\n\nIV - 100% (cem por cento) para bens de informática e para os produtos que a legislação do Estado do Amazonas, até 31 de dezembro de 2023, estabeleceu crédito estímulo de ICMS neste percentual."
+    },
+    "chave": "10",
+    "classTribReferenciado": "Com incidência de CBS",
+    "codigo": 10,
+    "deduzDoTributo": false,
+    "descricao": "Crédito presumido na aquisição por contribuinte na Zona Franca de Manaus, observado o art. 450 da Lei Complementar nº 214, de 2025.",
+    "fontes": ["it-2025.002-v1.60-ccredpres"],
+    "grupos": { "gCBSCredPres": "obrigatorio", "gIBSCredPres": "vedado" },
+    "legal": "Art. 450. Ficam concedidos à indústria incentivada na Zona Franca de Manaus créditos presumidos de IBS e de CBS relativos à operação que destine ao território nacional, inclusive para a própria Zona Franca de Manaus, bem material produzido pela própria indústria incentivada na referida área nos termos do projeto econômico aprovado, exceto em relação às operações previstas no art. 447 desta Lei Complementar.",
+    "viaDocumento": true,
+    "viaEvento": false,
+    "vigencia": { "cbs": { "fim": null, "inicio": "2027-01-01" }, "ibs": null }
   },
   {
-    "calculation": {
-      "base": "Valor da operação de aquisição",
-      "formula": "vOpAq * pAliqEfet * 50%",
-      "impediment": null,
-      "pAliq": "§ 1º O crédito presumido de que trata o caput será calculado mediante aplicação de percentual correspondente 50% (cinquenta por cento) da alíquota do IBS aplicável na importação."
-    },
-    "code": 11,
-    "deductsFromTax": true,
-    "description": "Crédito presumido na aquisição por contribuinte na Área de Livre Comércio, observado o art. 462 da Lei Complementar nº 214, de 2025.",
-    "groups": { "gCBSCredPres": "forbidden", "gIBSCredPres": "required" },
-    "key": "11",
-    "legal": "Art. 462. Fica concedido ao contribuinte habilitado na forma do art. 460 e sujeito ao regime regular ou ao Simples Nacional crédito presumido de IBS relativo à importação de bem material para revenda presencial na Área de Livre Comércio.",
-    "rates": {
+    "aliquotas": {
       "cbs": null,
       "ibs": "Alíquota efetiva com redução",
       "pAliqCredPresCBS": null,
       "pAliqCredPresIBS": "pAliqEfet * 50%",
       "pRedTransicaoIBS": null
     },
-    "referencedClassTrib": "Com incidência de IBS",
-    "sources": ["it-2025.002-v1.60-ccredpres"],
-    "validity": { "cbs": null, "ibs": { "from": "2027-01-01", "to": null } },
-    "viaDocument": true,
-    "viaEvent": false
+    "calculo": {
+      "base": "Valor da operação de aquisição",
+      "formula": "vOpAq * pAliqEfet * 50%",
+      "impedimento": null,
+      "pAliq": "§ 1º O crédito presumido de que trata o caput será calculado mediante aplicação de percentual correspondente 50% (cinquenta por cento) da alíquota do IBS aplicável na importação."
+    },
+    "chave": "11",
+    "classTribReferenciado": "Com incidência de IBS",
+    "codigo": 11,
+    "deduzDoTributo": true,
+    "descricao": "Crédito presumido na aquisição por contribuinte na Área de Livre Comércio, observado o art. 462 da Lei Complementar nº 214, de 2025.",
+    "fontes": ["it-2025.002-v1.60-ccredpres"],
+    "grupos": { "gCBSCredPres": "vedado", "gIBSCredPres": "obrigatorio" },
+    "legal": "Art. 462. Fica concedido ao contribuinte habilitado na forma do art. 460 e sujeito ao regime regular ou ao Simples Nacional crédito presumido de IBS relativo à importação de bem material para revenda presencial na Área de Livre Comércio.",
+    "viaDocumento": true,
+    "viaEvento": false,
+    "vigencia": { "cbs": null, "ibs": { "fim": null, "inicio": "2027-01-01" } }
   },
   {
-    "calculation": {
-      "base": "Valor da operação de aquisição",
-      "formula": "vOpAq * pAliqFixa",
-      "impediment": "zero da alíquota do IBS nos termos do art. 463",
-      "pAliq": "§ 1º O crédito presumido de que trata o caput será calculado mediante aplicação dos seguintes percentuais sobre o valor da operação contemplada pela redução a zero da alíquota do IBS nos termos do art. 463 desta Lei Complementar:\n\nI - 7,5% (sete inteiros e cinco décimos por cento), no caso de bens provenientes das regiões Sul e Sudeste, exceto do Estado do Espírito Santo; e\n\nII - 13,5% (treze inteiros e cinco décimos por cento), no caso de bens provenientes das regiões Norte, Nordeste e Centro-Oeste e do Estado do Espírito Santo."
-    },
-    "code": 12,
-    "deductsFromTax": false,
-    "description": "Crédito presumido na aquisição por contribuinte na Área de Livre Comércio, observado o art. 465 da Lei Complementar nº 214, de 2025.",
-    "groups": { "gCBSCredPres": "forbidden", "gIBSCredPres": "required" },
-    "key": "12",
-    "legal": "Art. 465. Fica concedido ao contribuinte sujeito ao regime regular do IBS e da CBS e habilitado na forma do art. 460 desta Lei Complementar crédito presumido de IBS relativo à aquisição de bem material industrializado de origem nacional contemplado pela redução a zero da alíquota do IBS nos termos do art. 463 desta Lei Complementar.",
-    "rates": {
+    "aliquotas": {
       "cbs": null,
       "ibs": "Alíquota fixa",
       "pAliqCredPresCBS": null,
       "pAliqCredPresIBS": "I - 7,5% (sete inteiros e cinco décimos por cento), no caso de bens provenientes das regiões Sul e Sudeste, exceto do Estado do Espírito Santo; e \n\nII - 13,5% (treze inteiros e cinco décimos por cento), no caso de bens provenientes das regiões Norte, Nordeste e Centro-Oeste e do Estado do Espírito Santo.",
       "pRedTransicaoIBS": "Redução:\nI - 9/10 (nove décimos), em 2029;\nII - 8/10 (oito décimos), em 2030;\nIII - 7/10 (sete décimos), em 2031; e\nIV - 6/10 (seis décimos), em 2032."
     },
-    "referencedClassTrib": "cClass de alíquota zero",
-    "sources": ["it-2025.002-v1.60-ccredpres"],
-    "validity": { "cbs": null, "ibs": { "from": "2029-01-01", "to": null } },
-    "viaDocument": false,
-    "viaEvent": true
+    "calculo": {
+      "base": "Valor da operação de aquisição",
+      "formula": "vOpAq * pAliqFixa",
+      "impedimento": "zero da alíquota do IBS nos termos do art. 463",
+      "pAliq": "§ 1º O crédito presumido de que trata o caput será calculado mediante aplicação dos seguintes percentuais sobre o valor da operação contemplada pela redução a zero da alíquota do IBS nos termos do art. 463 desta Lei Complementar:\n\nI - 7,5% (sete inteiros e cinco décimos por cento), no caso de bens provenientes das regiões Sul e Sudeste, exceto do Estado do Espírito Santo; e\n\nII - 13,5% (treze inteiros e cinco décimos por cento), no caso de bens provenientes das regiões Norte, Nordeste e Centro-Oeste e do Estado do Espírito Santo."
+    },
+    "chave": "12",
+    "classTribReferenciado": "cClass de alíquota zero",
+    "codigo": 12,
+    "deduzDoTributo": false,
+    "descricao": "Crédito presumido na aquisição por contribuinte na Área de Livre Comércio, observado o art. 465 da Lei Complementar nº 214, de 2025.",
+    "fontes": ["it-2025.002-v1.60-ccredpres"],
+    "grupos": { "gCBSCredPres": "vedado", "gIBSCredPres": "obrigatorio" },
+    "legal": "Art. 465. Fica concedido ao contribuinte sujeito ao regime regular do IBS e da CBS e habilitado na forma do art. 460 desta Lei Complementar crédito presumido de IBS relativo à aquisição de bem material industrializado de origem nacional contemplado pela redução a zero da alíquota do IBS nos termos do art. 463 desta Lei Complementar.",
+    "viaDocumento": false,
+    "viaEvento": true,
+    "vigencia": { "cbs": null, "ibs": { "fim": null, "inicio": "2029-01-01" } }
   },
   {
-    "calculation": {
-      "base": "Valor da operação de fornecimento",
-      "formula": "vOpForn * pAliqFixa",
-      "impediment": "§ 2º O disposto no caput não se aplica a operações:\n\nI - não sujeitas à incidência ou contempladas por hipóteses de isenção, alíquota zero, suspensão ou diferimento da CBS;\n\nII - com bens de que trata o art. 441 desta Lei Complementar.\n\nArt. 441. Não estão contemplados pelo regime favorecido da Zona Franca de Manaus:\n\na) armas e munições;\n\nb) fumo e seus derivados;\n\nc) bebidas alcoólicas;\n\nd) automóveis de passageiros;\n\ne) petróleo, lubrificantes e combustíveis líquidos e gasosos derivados de petróleo, exceto para a indústria de refino de petróleo localizada na Zona Franca de Manaus, em relação exclusivamente às saídas internas para aquela área incentivada, desde que cumprido o processo produtivo básico, permanecendo a vedação para todas as demais etapas; e\n\nf) produtos de perfumaria ou de toucador, preparados e preparações cosméticas, salvo quanto a estes (posições 3303 a 3307 da Nomenclatura Comum do Mercosul), se destinados exclusivamente a consumo interno na Zona Franca de Manaus ou se produzidos com utilização de matérias-primas da fauna e da flora regionais, em conformidade com processo produtivo básico.",
-      "pAliq": "§ 1º O crédito presumido de que trata o caput será calculado mediante aplicação do percentual de 6% (seis por cento) sobre o valor da operação registrado em documento fiscal idôneo."
-    },
-    "code": 13,
-    "deductsFromTax": false,
-    "description": "Crédito presumido na aquisição pela indústria na Área de Livre Comércio, observado o art. 467 da Lei Complementar nº 214, de 2025.",
-    "groups": { "gCBSCredPres": "required", "gIBSCredPres": "forbidden" },
-    "key": "13",
-    "legal": "Art. 467. Fica concedido à indústria sujeita ao regime regular de IBS e de CBS e habilitada na forma do inciso II do caput do art. 460 desta Lei Complementar créditos presumidos de CBS relativo à operação que destine ao território nacional bem material produzido pela própria indústria na referida área nos termos do projeto econômico aprovado.",
-    "rates": {
+    "aliquotas": {
       "cbs": "Alíquota fixa",
       "ibs": null,
       "pAliqCredPresCBS": "7",
       "pAliqCredPresIBS": null,
       "pRedTransicaoIBS": null
     },
-    "referencedClassTrib": "Com incidência de CBS",
-    "sources": ["it-2025.002-v1.60-ccredpres"],
-    "validity": { "cbs": { "from": "2027-01-01", "to": null }, "ibs": null },
-    "viaDocument": true,
-    "viaEvent": false
+    "calculo": {
+      "base": "Valor da operação de fornecimento",
+      "formula": "vOpForn * pAliqFixa",
+      "impedimento": "§ 2º O disposto no caput não se aplica a operações:\n\nI - não sujeitas à incidência ou contempladas por hipóteses de isenção, alíquota zero, suspensão ou diferimento da CBS;\n\nII - com bens de que trata o art. 441 desta Lei Complementar.\n\nArt. 441. Não estão contemplados pelo regime favorecido da Zona Franca de Manaus:\n\na) armas e munições;\n\nb) fumo e seus derivados;\n\nc) bebidas alcoólicas;\n\nd) automóveis de passageiros;\n\ne) petróleo, lubrificantes e combustíveis líquidos e gasosos derivados de petróleo, exceto para a indústria de refino de petróleo localizada na Zona Franca de Manaus, em relação exclusivamente às saídas internas para aquela área incentivada, desde que cumprido o processo produtivo básico, permanecendo a vedação para todas as demais etapas; e\n\nf) produtos de perfumaria ou de toucador, preparados e preparações cosméticas, salvo quanto a estes (posições 3303 a 3307 da Nomenclatura Comum do Mercosul), se destinados exclusivamente a consumo interno na Zona Franca de Manaus ou se produzidos com utilização de matérias-primas da fauna e da flora regionais, em conformidade com processo produtivo básico.",
+      "pAliq": "§ 1º O crédito presumido de que trata o caput será calculado mediante aplicação do percentual de 6% (seis por cento) sobre o valor da operação registrado em documento fiscal idôneo."
+    },
+    "chave": "13",
+    "classTribReferenciado": "Com incidência de CBS",
+    "codigo": 13,
+    "deduzDoTributo": false,
+    "descricao": "Crédito presumido na aquisição pela indústria na Área de Livre Comércio, observado o art. 467 da Lei Complementar nº 214, de 2025.",
+    "fontes": ["it-2025.002-v1.60-ccredpres"],
+    "grupos": { "gCBSCredPres": "obrigatorio", "gIBSCredPres": "vedado" },
+    "legal": "Art. 467. Fica concedido à indústria sujeita ao regime regular de IBS e de CBS e habilitada na forma do inciso II do caput do art. 460 desta Lei Complementar créditos presumidos de CBS relativo à operação que destine ao território nacional bem material produzido pela própria indústria na referida área nos termos do projeto econômico aprovado.",
+    "viaDocumento": true,
+    "viaEvento": false,
+    "vigencia": { "cbs": { "fim": null, "inicio": "2027-01-01" }, "ibs": null }
   }
 ]

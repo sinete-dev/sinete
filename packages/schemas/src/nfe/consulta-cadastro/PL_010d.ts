@@ -8,10 +8,10 @@
  * Fontes (conteúdo oficial, sha256 em tools/xsd-codegen/xsd/<pacote>/SOURCE.md):
  * - nfe/PL_010d_v1.03 (PL_010d_v1.03.zip)
  */
-import type { ComplexType, RootElement, SchemaModuleInfo, SimpleType } from "../../runtime/desc.ts";
+import type { ComplexType, DescricaoModuloSchema, ElementoRaiz, SimpleType } from "../../runtime/desc.ts";
 
 /** Proveniência deste módulo. */
-export const schema: SchemaModuleInfo = {
+export const schema: DescricaoModuloSchema = {
   "subpath": "nfe/consulta-cadastro/PL_010d",
   "documento": "nfe",
   "pl": "PL_010d_v1.03",
@@ -347,6 +347,6 @@ export const TRetConsCad: ComplexType<TRetConsCad> = { id: "TRetConsCad", ns: "h
 
 // ---------- elementos raiz ----------
 /** Elemento raiz `ConsCad` (tipo TConsCad). */
-export const ConsCadElement: RootElement<TConsCad> = { name: "ConsCad", ns: "http://www.portalfiscal.inf.br/nfe", type: TConsCad };
+export const ConsCadElement: ElementoRaiz<TConsCad> = { nome: "ConsCad", ns: "http://www.portalfiscal.inf.br/nfe", tipo: TConsCad };
 /** Elemento raiz `retConsCad` (tipo TRetConsCad). */
-export const retConsCadElement: RootElement<TRetConsCad> = { name: "retConsCad", ns: "http://www.portalfiscal.inf.br/nfe", type: TRetConsCad };
+export const retConsCadElement: ElementoRaiz<TRetConsCad> = { nome: "retConsCad", ns: "http://www.portalfiscal.inf.br/nfe", tipo: TRetConsCad };

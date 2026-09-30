@@ -86,14 +86,14 @@ export interface ComplexType<T = unknown> {
 }
 
 /** Elemento global que pode ser raiz de um documento. */
-export interface RootElement<T = unknown> {
-  readonly name: string;
+export interface ElementoRaiz<T = unknown> {
+  readonly nome: string;
   readonly ns: string;
-  readonly type: ComplexType<T>;
+  readonly tipo: ComplexType<T>;
 }
 
 /** Proveniência de um módulo gerado: de qual pacote oficial saiu cada schema. */
-export interface SchemaSource {
+export interface FonteDoSchema {
   /** Pasta do pacote oficial em `tools/xsd-codegen/xsd/` (`nfe/PL_010f_v1.04`). */
   readonly pacote: string;
   /** Nome do zip oficial baixado. */
@@ -102,19 +102,19 @@ export interface SchemaSource {
   readonly url: string;
 }
 
-export interface SchemaModuleInfo {
+export interface DescricaoModuloSchema {
   /** Subpath do módulo (`nfe/PL_010f`). */
   readonly subpath: string;
   readonly documento: string;
   /** Identificador do pacote de liberação (`PL_010f_v1.04`). */
   readonly pl: string;
-  readonly fontes: readonly SchemaSource[];
+  readonly fontes: readonly FonteDoSchema[];
   /** Correções de pattern aplicadas sobre o XSD oficial, com o motivo. Ausente quando o XSD foi usado como está. */
-  readonly patches?: readonly SchemaPatch[];
+  readonly ajustes?: readonly AjusteDoSchema[];
 }
 
 /** Correção de um pattern do XSD oficial que nenhum validador conforme aceita (o arquivo oficial não muda). */
-export interface SchemaPatch {
+export interface AjusteDoSchema {
   /** Tipo simples global. */
   readonly tipo: string;
   /** Pattern do XSD oficial. */
@@ -125,17 +125,17 @@ export interface SchemaPatch {
 }
 
 /** Valor tipado de um `ComplexType`. */
-export type ValueOf<C> = C extends ComplexType<infer T> ? T : never;
+export type ValorDe<C> = C extends ComplexType<infer T> ? T : never;
 
-export function isComplexType(t: ComplexType | SimpleType): t is ComplexType {
+export function ehComplexType(t: ComplexType | SimpleType): t is ComplexType {
   return (t as ComplexType).id !== undefined;
 }
 
-export function isElementParticle(p: Particle): p is ElementParticle {
+export function ehElementParticle(p: Particle): p is ElementParticle {
   return (p as ElementParticle).e !== undefined;
 }
 
-export function isWildcard(p: Particle): p is WildcardParticle {
+export function ehWildcard(p: Particle): p is WildcardParticle {
   return (p as WildcardParticle).w === 1;
 }
 

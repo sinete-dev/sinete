@@ -1,477 +1,477 @@
 [
   {
-    "code": "000",
-    "description": "Tributação integral",
-    "family": "CBS_IBS",
-    "groups": {
-      "gAjusteCompet": "forbidden",
-      "gCredPresIBSZFM": "forbidden",
-      "gDif": "forbidden",
-      "gIBSCBS": "required",
-      "gIBSCBSMono": "forbidden",
-      "gRed": "forbidden",
-      "gTransfCred": "forbidden",
-      "redutorBC": "forbidden"
+    "chave": "CBS_IBS:000:2026-01-01",
+    "codigo": "000",
+    "descricao": "Tributação integral",
+    "familia": "CBS_IBS",
+    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "grupos": {
+      "gAjusteCompet": "vedado",
+      "gCredPresIBSZFM": "vedado",
+      "gDif": "vedado",
+      "gIBSCBS": "obrigatorio",
+      "gIBSCBSMono": "vedado",
+      "gRed": "vedado",
+      "gTransfCred": "vedado",
+      "redutorBC": "vedado"
     },
-    "key": "CBS_IBS:000:2026-01-01",
-    "sources": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
     "tributos": ["CBS", "IBSMun", "IBSUF"],
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "code": "010",
-    "description": "Tributação com alíquotas uniformes",
-    "family": "CBS_IBS",
-    "groups": {
-      "gAjusteCompet": "forbidden",
-      "gCredPresIBSZFM": "forbidden",
-      "gDif": "forbidden",
-      "gIBSCBS": "required",
-      "gIBSCBSMono": "forbidden",
-      "gRed": "forbidden",
-      "gTransfCred": "forbidden",
-      "redutorBC": "forbidden"
+    "chave": "CBS_IBS:010:2026-01-01",
+    "codigo": "010",
+    "descricao": "Tributação com alíquotas uniformes",
+    "familia": "CBS_IBS",
+    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "grupos": {
+      "gAjusteCompet": "vedado",
+      "gCredPresIBSZFM": "vedado",
+      "gDif": "vedado",
+      "gIBSCBS": "obrigatorio",
+      "gIBSCBSMono": "vedado",
+      "gRed": "vedado",
+      "gTransfCred": "vedado",
+      "redutorBC": "vedado"
     },
-    "key": "CBS_IBS:010:2026-01-01",
-    "sources": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
     "tributos": ["CBS", "IBSMun", "IBSUF"],
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "code": "011",
-    "description": "Tributação com alíquotas uniformes reduzidas",
-    "family": "CBS_IBS",
-    "groups": {
-      "gAjusteCompet": "forbidden",
-      "gCredPresIBSZFM": "forbidden",
-      "gDif": "forbidden",
-      "gIBSCBS": "required",
-      "gIBSCBSMono": "forbidden",
-      "gRed": "required",
-      "gTransfCred": "forbidden",
-      "redutorBC": "forbidden"
+    "chave": "CBS_IBS:011:2026-01-01",
+    "codigo": "011",
+    "descricao": "Tributação com alíquotas uniformes reduzidas",
+    "familia": "CBS_IBS",
+    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "grupos": {
+      "gAjusteCompet": "vedado",
+      "gCredPresIBSZFM": "vedado",
+      "gDif": "vedado",
+      "gIBSCBS": "obrigatorio",
+      "gIBSCBSMono": "vedado",
+      "gRed": "obrigatorio",
+      "gTransfCred": "vedado",
+      "redutorBC": "vedado"
     },
-    "key": "CBS_IBS:011:2026-01-01",
-    "sources": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
     "tributos": ["CBS", "IBSMun", "IBSUF"],
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "code": "200",
-    "description": "Alíquota reduzida",
-    "family": "CBS_IBS",
-    "groups": {
-      "gAjusteCompet": "forbidden",
-      "gCredPresIBSZFM": "forbidden",
-      "gDif": "forbidden",
-      "gIBSCBS": "required",
-      "gIBSCBSMono": "forbidden",
-      "gRed": "required",
-      "gTransfCred": "forbidden",
-      "redutorBC": "forbidden"
+    "chave": "CBS_IBS:200:2026-01-01",
+    "codigo": "200",
+    "descricao": "Alíquota reduzida",
+    "familia": "CBS_IBS",
+    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "grupos": {
+      "gAjusteCompet": "vedado",
+      "gCredPresIBSZFM": "vedado",
+      "gDif": "vedado",
+      "gIBSCBS": "obrigatorio",
+      "gIBSCBSMono": "vedado",
+      "gRed": "obrigatorio",
+      "gTransfCred": "vedado",
+      "redutorBC": "vedado"
     },
-    "key": "CBS_IBS:200:2026-01-01",
-    "sources": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
     "tributos": ["CBS", "IBSMun", "IBSUF"],
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "code": "220",
-    "description": "Alíquota fixa",
-    "family": "CBS_IBS",
-    "groups": {
-      "gAjusteCompet": "forbidden",
-      "gCredPresIBSZFM": "forbidden",
-      "gDif": "forbidden",
-      "gIBSCBS": "required",
-      "gIBSCBSMono": "forbidden",
-      "gRed": "forbidden",
-      "gTransfCred": "forbidden",
-      "redutorBC": "forbidden"
+    "chave": "CBS_IBS:220:2026-01-01",
+    "codigo": "220",
+    "descricao": "Alíquota fixa",
+    "familia": "CBS_IBS",
+    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "grupos": {
+      "gAjusteCompet": "vedado",
+      "gCredPresIBSZFM": "vedado",
+      "gDif": "vedado",
+      "gIBSCBS": "obrigatorio",
+      "gIBSCBSMono": "vedado",
+      "gRed": "vedado",
+      "gTransfCred": "vedado",
+      "redutorBC": "vedado"
     },
-    "key": "CBS_IBS:220:2026-01-01",
-    "sources": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
     "tributos": ["CBS", "IBSMun", "IBSUF"],
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "code": "221",
-    "description": "Alíquota fixa proporcional",
-    "family": "CBS_IBS",
-    "groups": {
-      "gAjusteCompet": "forbidden",
-      "gCredPresIBSZFM": "forbidden",
-      "gDif": "forbidden",
-      "gIBSCBS": "required",
-      "gIBSCBSMono": "forbidden",
-      "gRed": "forbidden",
-      "gTransfCred": "forbidden",
-      "redutorBC": "forbidden"
+    "chave": "CBS_IBS:221:2026-01-01",
+    "codigo": "221",
+    "descricao": "Alíquota fixa proporcional",
+    "familia": "CBS_IBS",
+    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "grupos": {
+      "gAjusteCompet": "vedado",
+      "gCredPresIBSZFM": "vedado",
+      "gDif": "vedado",
+      "gIBSCBS": "obrigatorio",
+      "gIBSCBSMono": "vedado",
+      "gRed": "vedado",
+      "gTransfCred": "vedado",
+      "redutorBC": "vedado"
     },
-    "key": "CBS_IBS:221:2026-01-01",
-    "sources": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
     "tributos": ["CBS", "IBSMun", "IBSUF"],
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "code": "222",
-    "description": "Redução de Base de Cálculo",
-    "family": "CBS_IBS",
-    "groups": {
-      "gAjusteCompet": "forbidden",
-      "gCredPresIBSZFM": "forbidden",
-      "gDif": "forbidden",
-      "gIBSCBS": "required",
-      "gIBSCBSMono": "forbidden",
-      "gRed": "forbidden",
-      "gTransfCred": "forbidden",
-      "redutorBC": "required"
+    "chave": "CBS_IBS:222:2026-01-01",
+    "codigo": "222",
+    "descricao": "Redução de Base de Cálculo",
+    "familia": "CBS_IBS",
+    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "grupos": {
+      "gAjusteCompet": "vedado",
+      "gCredPresIBSZFM": "vedado",
+      "gDif": "vedado",
+      "gIBSCBS": "obrigatorio",
+      "gIBSCBSMono": "vedado",
+      "gRed": "vedado",
+      "gTransfCred": "vedado",
+      "redutorBC": "obrigatorio"
     },
-    "key": "CBS_IBS:222:2026-01-01",
-    "sources": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
     "tributos": ["CBS", "IBSMun", "IBSUF"],
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "code": "400",
-    "description": "Isenção",
-    "family": "CBS_IBS",
-    "groups": {
-      "gAjusteCompet": "forbidden",
-      "gCredPresIBSZFM": "forbidden",
-      "gDif": "forbidden",
-      "gIBSCBS": "forbidden",
-      "gIBSCBSMono": "forbidden",
-      "gRed": "forbidden",
-      "gTransfCred": "forbidden",
-      "redutorBC": "forbidden"
+    "chave": "CBS_IBS:400:2026-01-01",
+    "codigo": "400",
+    "descricao": "Isenção",
+    "familia": "CBS_IBS",
+    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "grupos": {
+      "gAjusteCompet": "vedado",
+      "gCredPresIBSZFM": "vedado",
+      "gDif": "vedado",
+      "gIBSCBS": "vedado",
+      "gIBSCBSMono": "vedado",
+      "gRed": "vedado",
+      "gTransfCred": "vedado",
+      "redutorBC": "vedado"
     },
-    "key": "CBS_IBS:400:2026-01-01",
-    "sources": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
     "tributos": ["CBS", "IBSMun", "IBSUF"],
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "code": "410",
-    "description": "Imunidade e não incidência",
-    "family": "CBS_IBS",
-    "groups": {
-      "gAjusteCompet": "forbidden",
-      "gCredPresIBSZFM": "forbidden",
-      "gDif": "forbidden",
-      "gIBSCBS": "forbidden",
-      "gIBSCBSMono": "forbidden",
-      "gRed": "forbidden",
-      "gTransfCred": "forbidden",
-      "redutorBC": "forbidden"
+    "chave": "CBS_IBS:410:2026-01-01",
+    "codigo": "410",
+    "descricao": "Imunidade e não incidência",
+    "familia": "CBS_IBS",
+    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "grupos": {
+      "gAjusteCompet": "vedado",
+      "gCredPresIBSZFM": "vedado",
+      "gDif": "vedado",
+      "gIBSCBS": "vedado",
+      "gIBSCBSMono": "vedado",
+      "gRed": "vedado",
+      "gTransfCred": "vedado",
+      "redutorBC": "vedado"
     },
-    "key": "CBS_IBS:410:2026-01-01",
-    "sources": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
     "tributos": ["CBS", "IBSMun", "IBSUF"],
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "code": "510",
-    "description": "Diferimento",
-    "family": "CBS_IBS",
-    "groups": {
-      "gAjusteCompet": "forbidden",
-      "gCredPresIBSZFM": "forbidden",
-      "gDif": "required",
-      "gIBSCBS": "required",
-      "gIBSCBSMono": "forbidden",
-      "gRed": "forbidden",
-      "gTransfCred": "forbidden",
-      "redutorBC": "forbidden"
+    "chave": "CBS_IBS:510:2026-01-01",
+    "codigo": "510",
+    "descricao": "Diferimento",
+    "familia": "CBS_IBS",
+    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "grupos": {
+      "gAjusteCompet": "vedado",
+      "gCredPresIBSZFM": "vedado",
+      "gDif": "obrigatorio",
+      "gIBSCBS": "obrigatorio",
+      "gIBSCBSMono": "vedado",
+      "gRed": "vedado",
+      "gTransfCred": "vedado",
+      "redutorBC": "vedado"
     },
-    "key": "CBS_IBS:510:2026-01-01",
-    "sources": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
     "tributos": ["CBS", "IBSMun", "IBSUF"],
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "code": "515",
-    "description": "Diferimento com redução de alíquota",
-    "family": "CBS_IBS",
-    "groups": {
-      "gAjusteCompet": "forbidden",
-      "gCredPresIBSZFM": "forbidden",
-      "gDif": "required",
-      "gIBSCBS": "required",
-      "gIBSCBSMono": "forbidden",
-      "gRed": "required",
-      "gTransfCred": "forbidden",
-      "redutorBC": "forbidden"
+    "chave": "CBS_IBS:515:2026-01-01",
+    "codigo": "515",
+    "descricao": "Diferimento com redução de alíquota",
+    "familia": "CBS_IBS",
+    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "grupos": {
+      "gAjusteCompet": "vedado",
+      "gCredPresIBSZFM": "vedado",
+      "gDif": "obrigatorio",
+      "gIBSCBS": "obrigatorio",
+      "gIBSCBSMono": "vedado",
+      "gRed": "obrigatorio",
+      "gTransfCred": "vedado",
+      "redutorBC": "vedado"
     },
-    "key": "CBS_IBS:515:2026-01-01",
-    "sources": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
     "tributos": ["CBS", "IBSMun", "IBSUF"],
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "code": "550",
-    "description": "Suspensão",
-    "family": "CBS_IBS",
-    "groups": {
-      "gAjusteCompet": "forbidden",
-      "gCredPresIBSZFM": "forbidden",
-      "gDif": "forbidden",
-      "gIBSCBS": "required",
-      "gIBSCBSMono": "forbidden",
-      "gRed": "forbidden",
-      "gTransfCred": "forbidden",
-      "redutorBC": "forbidden"
+    "chave": "CBS_IBS:550:2026-01-01",
+    "codigo": "550",
+    "descricao": "Suspensão",
+    "familia": "CBS_IBS",
+    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "grupos": {
+      "gAjusteCompet": "vedado",
+      "gCredPresIBSZFM": "vedado",
+      "gDif": "vedado",
+      "gIBSCBS": "obrigatorio",
+      "gIBSCBSMono": "vedado",
+      "gRed": "vedado",
+      "gTransfCred": "vedado",
+      "redutorBC": "vedado"
     },
-    "key": "CBS_IBS:550:2026-01-01",
-    "sources": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
     "tributos": ["CBS", "IBSMun", "IBSUF"],
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "code": "620",
-    "description": "Tributação monofásica",
-    "family": "CBS_IBS",
-    "groups": {
-      "gAjusteCompet": "forbidden",
-      "gCredPresIBSZFM": "forbidden",
-      "gDif": "forbidden",
-      "gIBSCBS": "forbidden",
-      "gIBSCBSMono": "required",
-      "gRed": "forbidden",
-      "gTransfCred": "forbidden",
-      "redutorBC": "forbidden"
+    "chave": "CBS_IBS:620:2026-01-01",
+    "codigo": "620",
+    "descricao": "Tributação monofásica",
+    "familia": "CBS_IBS",
+    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "grupos": {
+      "gAjusteCompet": "vedado",
+      "gCredPresIBSZFM": "vedado",
+      "gDif": "vedado",
+      "gIBSCBS": "vedado",
+      "gIBSCBSMono": "obrigatorio",
+      "gRed": "vedado",
+      "gTransfCred": "vedado",
+      "redutorBC": "vedado"
     },
-    "key": "CBS_IBS:620:2026-01-01",
-    "sources": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
     "tributos": ["CBS", "IBSMun", "IBSUF"],
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "code": "800",
-    "description": "Transferência de crédito",
-    "family": "CBS_IBS",
-    "groups": {
-      "gAjusteCompet": "forbidden",
-      "gCredPresIBSZFM": "forbidden",
-      "gDif": "forbidden",
-      "gIBSCBS": "forbidden",
-      "gIBSCBSMono": "forbidden",
-      "gRed": "forbidden",
-      "gTransfCred": "required",
-      "redutorBC": "forbidden"
+    "chave": "CBS_IBS:800:2026-01-01",
+    "codigo": "800",
+    "descricao": "Transferência de crédito",
+    "familia": "CBS_IBS",
+    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "grupos": {
+      "gAjusteCompet": "vedado",
+      "gCredPresIBSZFM": "vedado",
+      "gDif": "vedado",
+      "gIBSCBS": "vedado",
+      "gIBSCBSMono": "vedado",
+      "gRed": "vedado",
+      "gTransfCred": "obrigatorio",
+      "redutorBC": "vedado"
     },
-    "key": "CBS_IBS:800:2026-01-01",
-    "sources": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
     "tributos": ["CBS", "IBSMun", "IBSUF"],
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "code": "810",
-    "description": "Ajustes de IBS na ZFM",
-    "family": "CBS_IBS",
-    "groups": {
-      "gAjusteCompet": "forbidden",
-      "gCredPresIBSZFM": "required",
-      "gDif": "forbidden",
-      "gIBSCBS": "forbidden",
-      "gIBSCBSMono": "forbidden",
-      "gRed": "forbidden",
-      "gTransfCred": "forbidden",
-      "redutorBC": "forbidden"
+    "chave": "CBS_IBS:810:2026-01-01",
+    "codigo": "810",
+    "descricao": "Ajustes de IBS na ZFM",
+    "familia": "CBS_IBS",
+    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "grupos": {
+      "gAjusteCompet": "vedado",
+      "gCredPresIBSZFM": "obrigatorio",
+      "gDif": "vedado",
+      "gIBSCBS": "vedado",
+      "gIBSCBSMono": "vedado",
+      "gRed": "vedado",
+      "gTransfCred": "vedado",
+      "redutorBC": "vedado"
     },
-    "key": "CBS_IBS:810:2026-01-01",
-    "sources": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
     "tributos": ["CBS", "IBSMun", "IBSUF"],
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "code": "811",
-    "description": "Ajustes",
-    "family": "CBS_IBS",
-    "groups": {
-      "gAjusteCompet": "required",
-      "gCredPresIBSZFM": "forbidden",
-      "gDif": "forbidden",
-      "gIBSCBS": "forbidden",
-      "gIBSCBSMono": "forbidden",
-      "gRed": "forbidden",
-      "gTransfCred": "forbidden",
-      "redutorBC": "forbidden"
+    "chave": "CBS_IBS:811:2026-01-01",
+    "codigo": "811",
+    "descricao": "Ajustes",
+    "familia": "CBS_IBS",
+    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "grupos": {
+      "gAjusteCompet": "obrigatorio",
+      "gCredPresIBSZFM": "vedado",
+      "gDif": "vedado",
+      "gIBSCBS": "vedado",
+      "gIBSCBSMono": "vedado",
+      "gRed": "vedado",
+      "gTransfCred": "vedado",
+      "redutorBC": "vedado"
     },
-    "key": "CBS_IBS:811:2026-01-01",
-    "sources": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
     "tributos": ["CBS", "IBSMun", "IBSUF"],
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "code": "820",
-    "description": "Tributação em documento específico",
-    "family": "CBS_IBS",
-    "groups": {
-      "gAjusteCompet": "forbidden",
-      "gCredPresIBSZFM": "forbidden",
-      "gDif": "forbidden",
-      "gIBSCBS": "forbidden",
-      "gIBSCBSMono": "forbidden",
-      "gRed": "forbidden",
-      "gTransfCred": "forbidden",
-      "redutorBC": "forbidden"
+    "chave": "CBS_IBS:820:2026-01-01",
+    "codigo": "820",
+    "descricao": "Tributação em documento específico",
+    "familia": "CBS_IBS",
+    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "grupos": {
+      "gAjusteCompet": "vedado",
+      "gCredPresIBSZFM": "vedado",
+      "gDif": "vedado",
+      "gIBSCBS": "vedado",
+      "gIBSCBSMono": "vedado",
+      "gRed": "vedado",
+      "gTransfCred": "vedado",
+      "redutorBC": "vedado"
     },
-    "key": "CBS_IBS:820:2026-01-01",
-    "sources": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
     "tributos": ["CBS", "IBSMun", "IBSUF"],
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "code": "830",
-    "description": "Exclusão de base de cálculo",
-    "family": "CBS_IBS",
-    "groups": {
-      "gAjusteCompet": "forbidden",
-      "gCredPresIBSZFM": "forbidden",
-      "gDif": "forbidden",
-      "gIBSCBS": "required",
-      "gIBSCBSMono": "forbidden",
-      "gRed": "forbidden",
-      "gTransfCred": "forbidden",
-      "redutorBC": "forbidden"
+    "chave": "CBS_IBS:830:2026-01-01",
+    "codigo": "830",
+    "descricao": "Exclusão de base de cálculo",
+    "familia": "CBS_IBS",
+    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "grupos": {
+      "gAjusteCompet": "vedado",
+      "gCredPresIBSZFM": "vedado",
+      "gDif": "vedado",
+      "gIBSCBS": "obrigatorio",
+      "gIBSCBSMono": "vedado",
+      "gRed": "vedado",
+      "gTransfCred": "vedado",
+      "redutorBC": "vedado"
     },
-    "key": "CBS_IBS:830:2026-01-01",
-    "sources": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
     "tributos": ["CBS", "IBSMun", "IBSUF"],
-    "validity": { "from": "2026-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
   },
   {
-    "code": "000",
-    "description": "Tributado com Imposto Seletivo",
-    "family": "IS",
-    "groups": {
-      "gAjusteCompet": "forbidden",
-      "gCredPresIBSZFM": "forbidden",
-      "gDif": "forbidden",
-      "gIBSCBS": "forbidden",
-      "gIBSCBSMono": "forbidden",
-      "gRed": "forbidden",
-      "gTransfCred": "forbidden",
+    "chave": "IS:000:2027-01-01",
+    "codigo": "000",
+    "descricao": "Tributado com Imposto Seletivo",
+    "familia": "IS",
+    "fontes": ["calculadora-offline-V0057"],
+    "grupos": {
+      "gAjusteCompet": "vedado",
+      "gCredPresIBSZFM": "vedado",
+      "gDif": "vedado",
+      "gIBSCBS": "vedado",
+      "gIBSCBSMono": "vedado",
+      "gRed": "vedado",
+      "gTransfCred": "vedado",
       "redutorBC": null
     },
-    "key": "IS:000:2027-01-01",
-    "sources": ["calculadora-offline-V0057"],
     "tributos": ["IS"],
-    "validity": { "from": "2027-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2027-01-01" }
   },
   {
-    "code": "100",
-    "description": "Imunidade",
-    "family": "IS",
-    "groups": {
-      "gAjusteCompet": "forbidden",
-      "gCredPresIBSZFM": "forbidden",
-      "gDif": "forbidden",
-      "gIBSCBS": "forbidden",
-      "gIBSCBSMono": "forbidden",
-      "gRed": "forbidden",
-      "gTransfCred": "forbidden",
+    "chave": "IS:100:2027-01-01",
+    "codigo": "100",
+    "descricao": "Imunidade",
+    "familia": "IS",
+    "fontes": ["calculadora-offline-V0057"],
+    "grupos": {
+      "gAjusteCompet": "vedado",
+      "gCredPresIBSZFM": "vedado",
+      "gDif": "vedado",
+      "gIBSCBS": "vedado",
+      "gIBSCBSMono": "vedado",
+      "gRed": "vedado",
+      "gTransfCred": "vedado",
       "redutorBC": null
     },
-    "key": "IS:100:2027-01-01",
-    "sources": ["calculadora-offline-V0057"],
     "tributos": ["IS"],
-    "validity": { "from": "2027-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2027-01-01" }
   },
   {
-    "code": "200",
-    "description": "Não ocorrência do Fato Gerador",
-    "family": "IS",
-    "groups": {
-      "gAjusteCompet": "forbidden",
-      "gCredPresIBSZFM": "forbidden",
-      "gDif": "forbidden",
-      "gIBSCBS": "forbidden",
-      "gIBSCBSMono": "forbidden",
-      "gRed": "forbidden",
-      "gTransfCred": "forbidden",
+    "chave": "IS:200:2027-01-01",
+    "codigo": "200",
+    "descricao": "Não ocorrência do Fato Gerador",
+    "familia": "IS",
+    "fontes": ["calculadora-offline-V0057"],
+    "grupos": {
+      "gAjusteCompet": "vedado",
+      "gCredPresIBSZFM": "vedado",
+      "gDif": "vedado",
+      "gIBSCBS": "vedado",
+      "gIBSCBSMono": "vedado",
+      "gRed": "vedado",
+      "gTransfCred": "vedado",
       "redutorBC": null
     },
-    "key": "IS:200:2027-01-01",
-    "sources": ["calculadora-offline-V0057"],
     "tributos": ["IS"],
-    "validity": { "from": "2027-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2027-01-01" }
   },
   {
-    "code": "300",
-    "description": "Devolução",
-    "family": "IS",
-    "groups": {
-      "gAjusteCompet": "forbidden",
-      "gCredPresIBSZFM": "forbidden",
-      "gDif": "forbidden",
-      "gIBSCBS": "forbidden",
-      "gIBSCBSMono": "forbidden",
-      "gRed": "forbidden",
-      "gTransfCred": "forbidden",
+    "chave": "IS:300:2027-01-01",
+    "codigo": "300",
+    "descricao": "Devolução",
+    "familia": "IS",
+    "fontes": ["calculadora-offline-V0057"],
+    "grupos": {
+      "gAjusteCompet": "vedado",
+      "gCredPresIBSZFM": "vedado",
+      "gDif": "vedado",
+      "gIBSCBS": "vedado",
+      "gIBSCBSMono": "vedado",
+      "gRed": "vedado",
+      "gTransfCred": "vedado",
       "redutorBC": null
     },
-    "key": "IS:300:2027-01-01",
-    "sources": ["calculadora-offline-V0057"],
     "tributos": ["IS"],
-    "validity": { "from": "2027-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2027-01-01" }
   },
   {
-    "code": "400",
-    "description": "Suspensão",
-    "family": "IS",
-    "groups": {
-      "gAjusteCompet": "forbidden",
-      "gCredPresIBSZFM": "forbidden",
-      "gDif": "forbidden",
-      "gIBSCBS": "forbidden",
-      "gIBSCBSMono": "forbidden",
-      "gRed": "forbidden",
-      "gTransfCred": "forbidden",
+    "chave": "IS:400:2027-01-01",
+    "codigo": "400",
+    "descricao": "Suspensão",
+    "familia": "IS",
+    "fontes": ["calculadora-offline-V0057"],
+    "grupos": {
+      "gAjusteCompet": "vedado",
+      "gCredPresIBSZFM": "vedado",
+      "gDif": "vedado",
+      "gIBSCBS": "vedado",
+      "gIBSCBSMono": "vedado",
+      "gRed": "vedado",
+      "gTransfCred": "vedado",
       "redutorBC": null
     },
-    "key": "IS:400:2027-01-01",
-    "sources": ["calculadora-offline-V0057"],
     "tributos": ["IS"],
-    "validity": { "from": "2027-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2027-01-01" }
   },
   {
-    "code": "500",
-    "description": "Alíquota Zero",
-    "family": "IS",
-    "groups": {
-      "gAjusteCompet": "forbidden",
-      "gCredPresIBSZFM": "forbidden",
-      "gDif": "forbidden",
-      "gIBSCBS": "forbidden",
-      "gIBSCBSMono": "forbidden",
-      "gRed": "forbidden",
-      "gTransfCred": "forbidden",
+    "chave": "IS:500:2027-01-01",
+    "codigo": "500",
+    "descricao": "Alíquota Zero",
+    "familia": "IS",
+    "fontes": ["calculadora-offline-V0057"],
+    "grupos": {
+      "gAjusteCompet": "vedado",
+      "gCredPresIBSZFM": "vedado",
+      "gDif": "vedado",
+      "gIBSCBS": "vedado",
+      "gIBSCBSMono": "vedado",
+      "gRed": "vedado",
+      "gTransfCred": "vedado",
       "redutorBC": null
     },
-    "key": "IS:500:2027-01-01",
-    "sources": ["calculadora-offline-V0057"],
     "tributos": ["IS"],
-    "validity": { "from": "2027-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2027-01-01" }
   },
   {
-    "code": "600",
-    "description": "Isenção",
-    "family": "IS",
-    "groups": {
-      "gAjusteCompet": "forbidden",
-      "gCredPresIBSZFM": "forbidden",
-      "gDif": "forbidden",
-      "gIBSCBS": "forbidden",
-      "gIBSCBSMono": "forbidden",
-      "gRed": "forbidden",
-      "gTransfCred": "forbidden",
+    "chave": "IS:600:2027-01-01",
+    "codigo": "600",
+    "descricao": "Isenção",
+    "familia": "IS",
+    "fontes": ["calculadora-offline-V0057"],
+    "grupos": {
+      "gAjusteCompet": "vedado",
+      "gCredPresIBSZFM": "vedado",
+      "gDif": "vedado",
+      "gIBSCBS": "vedado",
+      "gIBSCBSMono": "vedado",
+      "gRed": "vedado",
+      "gTransfCred": "vedado",
       "redutorBC": null
     },
-    "key": "IS:600:2027-01-01",
-    "sources": ["calculadora-offline-V0057"],
     "tributos": ["IS"],
-    "validity": { "from": "2027-01-01", "to": null }
+    "vigencia": { "fim": null, "inicio": "2027-01-01" }
   }
 ]

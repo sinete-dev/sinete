@@ -4,90 +4,100 @@
  * o contribuinte mostra numa fiscalização. Assíncrona porque um resolvedor pode ser IA, cadastro ou fila de revisão.
  */
 import type { Relogio } from '@sinete/core';
-import type { TaxContent } from '@sinete/ibs-cbs-dados';
-import { inForce } from '@sinete/ibs-cbs-dados';
-import type { ClassifiedItem, ClassifiedOperation, GovernmentPurchase, OperationPlace } from '../calcular/index.ts';
-import type { ConstrainOptions } from './constrain.ts';
-import { constrainAt, factDate } from './constrain.ts';
-import { DeterminationError } from './errors.ts';
-import { LEGAL_RULES } from './legal.ts';
+import type { ConteudoTributario } from '@sinete/ibs-cbs-dados';
+import { vigente } from '@sinete/ibs-cbs-dados';
 import type {
-  AppliedRule,
-  Candidate,
-  Determination,
-  Exclusion,
-  ItemDetermination,
-  ItemFacts,
-  LegalRule,
-  OperationFacts,
-  Provenance,
-  Question,
-  ResolveContext,
-  Resolver,
-  ResolverOutcome,
+  CompraGovernamental,
+  ItemClassificado,
+  LocalDaOperacao,
+  OperacaoClassificada,
+} from '../calcular/index.ts';
+import type { RestringirOpcoes } from './constrain.ts';
+import { dataDoFato, restringirEm } from './constrain.ts';
+import { ErroDeterminacao } from './errors.ts';
+import { REGRAS_LEGAIS } from './legal.ts';
+import type {
+  Candidato,
+  ContextoDoResolvedor,
+  Determinacao,
+  DeterminacaoDoItem,
+  Exclusao,
+  FatosDaOperacao,
+  FatosDoItem,
+  Pergunta,
+  Procedencia,
+  RegraAplicada,
+  RegraLegal,
+  Resolvedor,
+  ResultadoDoResolvedor,
 } from './types.ts';
 
-export interface DetermineAtOptions {
-  /** Regras legais aplicadas; padrão: `LEGAL_RULES`. */
-  readonly rules?: readonly LegalRule[];
-  /** Resolvedores na ordem de consulta; padrão: `fromProfile()`, `uniqueCandidate()`, `askUser()`. */
-  readonly resolvers?: readonly Resolver[];
+export interface DeterminarEmOpcoes {
+  /** Regras legais aplicadas; padrão: `REGRAS_LEGAIS`. */
+  readonly regras?: readonly RegraLegal[];
+  /** Resolvedores na ordem de consulta; padrão: `doPerfil()`, `candidatoUnico()`, `perguntarAoUsuario()`. */
+  readonly resolvedores?: readonly Resolvedor[];
   /** Respostas às perguntas de uma chamada anterior: id da pergunta para o cClassTrib escolhido. */
-  readonly answers?: Readonly<Record<string, string>>;
+  readonly respostas?: Readonly<Record<string, string>>;
   /** Relógio do instante da decisão, que vai na proveniência. */
-  readonly clock: Relogio;
+  readonly relogio: Relogio;
   readonly signal?: AbortSignal;
 }
 
-export interface DetermineOptions extends ConstrainOptions, Omit<DetermineAtOptions, 'clock'> {
-  /** Relógio do instante da decisão; padrão: o de emissão de `time`. */
-  readonly clock?: Relogio;
+export interface DeterminarOpcoes extends RestringirOpcoes, Omit<DeterminarEmOpcoes, 'relogio'> {
+  /** Relógio do instante da decisão; padrão: o de emissão de `tempo`. */
+  readonly relogio?: Relogio;
 }
 
 /** Id estável da pergunta de classificação de um item. */
-export function questionId(n: number): string {
+export function idDaPergunta(n: number): string {
   return `cClassTrib:${n}`;
 }
 
 /** Decide quando só sobrou um candidato. */
-export function uniqueCandidate(): Resolver {
+export function candidatoUnico(): Resolvedor {
   return {
-    name: 'unique-candidate',
-    resolve: async (ctx: ResolveContext): Promise<ResolverOutcome> =>
-      ctx.candidates.length === 1 && ctx.candidates[0]
-        ? { kind: 'decided', cClassTrib: ctx.candidates[0].cClassTrib, confidence: 1, evidence: 'único candidato' }
-        : { kind: 'abstain' },
+    nome: 'unique-candidate',
+    resolver: async (ctx: ContextoDoResolvedor): Promise<ResultadoDoResolvedor> =>
+      ctx.candidatos.length === 1 && ctx.candidatos[0]
+        ? { tipo: 'decidido', cClassTrib: ctx.candidatos[0].cClassTrib, confianca: 1, evidencia: 'único candidato' }
+        : { tipo: 'abster' },
   };
 }
 
 /** Reaproveita a classificação guardada no cadastro do item, se ela ainda estiver entre os candidatos. */
-export function fromProfile(): Resolver {
+export function doPerfil(): Resolvedor {
   return {
-    name: 'item-profile',
-    resolve: async ({ item, candidates }: ResolveContext): Promise<ResolverOutcome> => {
-      const p = item.profile;
-      if (!p || !candidates.some((c) => c.cClassTrib === p.cClassTrib)) return { kind: 'abstain' };
-      return { kind: 'decided', cClassTrib: p.cClassTrib, confidence: 1, evidence: { decidedBy: p.decidedBy ?? null } };
+    nome: 'item-profile',
+    resolver: async ({ item, candidatos: candidates }: ContextoDoResolvedor): Promise<ResultadoDoResolvedor> => {
+      const p = item.perfil;
+      if (!p || !candidates.some((c) => c.cClassTrib === p.cClassTrib)) return { tipo: 'abster' };
+      return {
+        tipo: 'decidido',
+        cClassTrib: p.cClassTrib,
+        confianca: 1,
+        evidencia: { decididoPor: p.decididoPor ?? null },
+      };
     },
   };
 }
 
-/** Pergunta ao usuário entre os candidatos que sobraram; a resposta volta em `answers[questionId(n)]`. */
-export function askUser(): Resolver {
+/** Pergunta ao usuário entre os candidatos que sobraram; a resposta volta em `respostas[idDaPergunta(n)]`. */
+export function perguntarAoUsuario(): Resolvedor {
   return {
-    name: 'ask-user',
-    resolve: async ({ item, candidates }: ResolveContext): Promise<ResolverOutcome> => {
-      if (candidates.length === 0) return { kind: 'abstain' };
-      const what = item.description ? `: ${item.description}` : '';
+    nome: 'ask-user',
+    resolver: async ({ item, candidatos: candidates }: ContextoDoResolvedor): Promise<ResultadoDoResolvedor> => {
+      if (candidates.length === 0) return { tipo: 'abster' };
+      const what = item.descricao ? `: ${item.descricao}` : '';
       return {
-        kind: 'ask',
-        questions: [
+        tipo: 'perguntar',
+        perguntas: [
           {
-            id: questionId(item.n),
+            id: idDaPergunta(item.n),
             item: item.n,
-            text: `Qual a classificação tributária do item ${item.n}${what}?`,
-            options: candidates.map((c) => ({
-              label: `${c.cClassTrib} ${c.name ?? c.description}`,
+            texto: `Qual a classificação tributária do item ${item.n}${what}?`,
+            opcoes: candidates.map((c) => ({
+              rotulo: `${c.cClassTrib} ${c.nome ?? c.descricao}`,
               cClassTrib: c.cClassTrib,
             })),
           },
@@ -97,90 +107,90 @@ export function askUser(): Resolver {
   };
 }
 
-export const DEFAULT_RESOLVERS: readonly Resolver[] = [fromProfile(), uniqueCandidate(), askUser()];
+export const RESOLVEDORES_PADRAO: readonly Resolvedor[] = [doPerfil(), candidatoUnico(), perguntarAoUsuario()];
 
 interface Narrowed {
-  readonly candidates: readonly Candidate[];
-  readonly exclusions: readonly Exclusion[];
-  readonly rules: readonly AppliedRule[];
+  readonly candidates: readonly Candidato[];
+  readonly exclusions: readonly Exclusao[];
+  readonly rules: readonly RegraAplicada[];
 }
 
 function applyRules(
-  facts: OperationFacts,
-  item: ItemFacts,
-  content: TaxContent,
-  rules: readonly LegalRule[],
-  start: { candidates: readonly Candidate[]; exclusions: readonly Exclusion[] },
+  facts: FatosDaOperacao,
+  item: FatosDoItem,
+  content: ConteudoTributario,
+  rules: readonly RegraLegal[],
+  start: { candidatos: readonly Candidato[]; exclusoes: readonly Exclusao[] },
 ): Narrowed {
-  let candidates = start.candidates;
-  const exclusions = [...start.exclusions];
-  const applied: AppliedRule[] = [];
+  let candidates = start.candidatos;
+  const exclusions = [...start.exclusoes];
+  const applied: RegraAplicada[] = [];
   for (const rule of rules) {
-    if (!inForce(rule.validity, content.asOf)) continue;
-    const out = rule.apply({ facts, item, content });
-    if (out.kind === 'none') continue;
-    const keep = new Set(out.codes);
+    if (!vigente(rule.vigencia, content.dataDeReferencia)) continue;
+    const out = rule.aplicar({ fatos: facts, item, conteudo: content });
+    if (out.tipo === 'nenhum') continue;
+    const keep = new Set(out.codigos);
     const kept = candidates.filter((c) => keep.has(c.cClassTrib));
     for (const c of candidates) {
       if (keep.has(c.cClassTrib)) continue;
       exclusions.push({
         cClassTrib: c.cClassTrib,
-        reason: 'regra-legal',
-        detail: `${rule.title}: só ${out.codes.join(' ou ')}`,
-        source: rule.source,
+        motivo: 'regra-legal',
+        detalhe: `${rule.titulo}: só ${out.codigos.join(' ou ')}`,
+        fonte: rule.fonte,
       });
     }
-    applied.push({ rule: rule.id, source: rule.source, codes: out.codes, conflict: kept.length === 0 });
+    applied.push({ regra: rule.id, fonte: rule.fonte, codigos: out.codigos, conflito: kept.length === 0 });
     candidates = kept;
   }
   return { candidates, exclusions, rules: applied };
 }
 
-function pick(candidates: readonly Candidate[], code: string): Candidate | undefined {
+function pick(candidates: readonly Candidato[], code: string): Candidato | undefined {
   return candidates.find((c) => c.cClassTrib === code);
 }
 
-/** Determinação na data do fato gerador de `options.time`. */
-export function determine(facts: OperationFacts, options: DetermineOptions): Promise<Determination> {
-  const content = options.dataset.at(factDate(options.time, options.utcOffsetMinutes));
-  return determineAt(facts, content, { ...options, clock: options.clock ?? options.time.emissao });
+/** Determinação na data do fato gerador de `opcoes.tempo`. */
+export function determinar(fatos: FatosDaOperacao, opcoes: DeterminarOpcoes): Promise<Determinacao> {
+  const content = opcoes.dataset.em(dataDoFato(opcoes.tempo, opcoes.deslocamentoMin));
+  return determinarEm(fatos, content, { ...opcoes, relogio: opcoes.relogio ?? opcoes.tempo.emissao });
 }
 
 /** Determinação numa visão já fixada numa data. */
-export async function determineAt(
-  facts: OperationFacts,
-  content: TaxContent,
-  options: DetermineAtOptions,
-): Promise<Determination> {
-  const constrained = constrainAt(facts, content);
-  const rules = options.rules ?? LEGAL_RULES;
-  const resolvers = options.resolvers ?? DEFAULT_RESOLVERS;
-  const answers = options.answers ?? {};
-  const base = (): Pick<Provenance, 'at' | 'contentVersion' | 'asOf'> => ({
-    at: options.clock.agora().toISOString(),
-    contentVersion: content.dataset.contentVersion,
-    asOf: content.asOf,
+export async function determinarEm(
+  fatos: FatosDaOperacao,
+  conteudo: ConteudoTributario,
+  opcoes: DeterminarEmOpcoes,
+): Promise<Determinacao> {
+  const constrained = restringirEm(fatos, conteudo);
+  const rules = opcoes.regras ?? REGRAS_LEGAIS;
+  const resolvers = opcoes.resolvedores ?? RESOLVEDORES_PADRAO;
+  const answers = opcoes.respostas ?? {};
+  const base = (): Pick<Procedencia, 'em' | 'versaoDoConteudo' | 'dataDeReferencia'> => ({
+    em: opcoes.relogio.agora().toISOString(),
+    versaoDoConteudo: conteudo.dataset.versaoDoConteudo,
+    dataDeReferencia: conteudo.dataDeReferencia,
   });
-  const items: ItemDetermination[] = [];
-  for (const [i, item] of facts.items.entries()) {
+  const items: DeterminacaoDoItem[] = [];
+  for (const [i, item] of fatos.itens.entries()) {
     const start = constrained[i] as (typeof constrained)[number];
-    const { candidates, exclusions, rules: applied } = applyRules(facts, item, content, rules, start);
-    const common = { n: item.n, candidates, exclusions, rules: applied };
+    const { candidates, exclusions, rules: applied } = applyRules(fatos, item, conteudo, rules, start);
+    const common = { n: item.n, candidatos: candidates, exclusoes: exclusions, regras: applied };
 
-    const byUser = (id: string, answer: string): NonNullable<ItemDetermination['decided']> => {
+    const byUser = (id: string, answer: string): NonNullable<DeterminacaoDoItem['decidido']> => {
       const chosen = pick(candidates, answer);
       if (!chosen) {
-        throw new DeterminationError(
+        throw new ErroDeterminacao(
           'resposta_fora_dos_candidatos',
           `resposta ${answer} à pergunta ${id} fora dos candidatos do item ${item.n}`,
           item.n,
         );
       }
-      return { candidate: chosen, provenance: { by: 'user', name: id, ...base() } };
+      return { candidato: chosen, procedencia: { por: 'usuario', nome: id, ...base() } };
     };
-    const answer = answers[questionId(item.n)];
+    const answer = answers[idDaPergunta(item.n)];
     if (answer !== undefined) {
-      items.push({ ...common, decided: byUser(questionId(item.n), answer) });
+      items.push({ ...common, decidido: byUser(idDaPergunta(item.n), answer) });
       continue;
     }
 
@@ -188,86 +198,89 @@ export async function determineAt(
     if (last && candidates.length === 1 && candidates[0]) {
       items.push({
         ...common,
-        decided: {
-          candidate: candidates[0],
-          provenance: { by: 'rule', name: last.rule, source: last.source, ...base() },
+        decidido: {
+          candidato: candidates[0],
+          procedencia: { por: 'regra', nome: last.regra, fonte: last.fonte, ...base() },
         },
       });
       continue;
     }
 
-    let decided: ItemDetermination['decided'];
-    let pending: readonly Question[] | undefined;
+    let decided: DeterminacaoDoItem['decidido'];
+    let pending: readonly Pergunta[] | undefined;
     for (const resolver of resolvers) {
-      options.signal?.throwIfAborted();
-      const out = await resolver.resolve({ facts, item, candidates, content, answers }, options.signal);
-      if (out.kind === 'abstain') continue;
-      if (out.kind === 'ask') {
-        // Pergunta de um resolvedor com id próprio: a resposta volta em answers[id], como a do askUser.
-        const answered = out.questions.find((q) => q.item === item.n && answers[q.id] !== undefined);
+      opcoes.signal?.throwIfAborted();
+      const out = await resolver.resolver(
+        { fatos: fatos, item, candidatos: candidates, conteudo: conteudo, respostas: answers },
+        opcoes.signal,
+      );
+      if (out.tipo === 'abster') continue;
+      if (out.tipo === 'perguntar') {
+        // Pergunta de um resolvedor com id próprio: a resposta volta em answers[id], como a do perguntarAoUsuario.
+        const answered = out.perguntas.find((q) => q.item === item.n && answers[q.id] !== undefined);
         if (answered) decided = byUser(answered.id, answers[answered.id] as string);
-        else pending = out.questions;
+        else pending = out.perguntas;
         break;
       }
-      if (typeof out.confidence !== 'number' || !(out.confidence >= 0 && out.confidence <= 1)) {
-        throw new DeterminationError(
+      if (typeof out.confianca !== 'number' || !(out.confianca >= 0 && out.confianca <= 1)) {
+        throw new ErroDeterminacao(
           'resolvedor_invalido',
-          `resolvedor ${resolver.name} devolveu confiança fora de [0, 1]: ${String(out.confidence)}`,
+          `resolvedor ${resolver.nome} devolveu confiança fora de [0, 1]: ${String(out.confianca)}`,
           item.n,
         );
       }
       const chosen = pick(candidates, out.cClassTrib);
       if (!chosen) {
-        throw new DeterminationError(
+        throw new ErroDeterminacao(
           'resolvedor_fora_dos_candidatos',
-          `resolvedor ${resolver.name} escolheu ${out.cClassTrib}, fora dos candidatos do item ${item.n}`,
+          `resolvedor ${resolver.nome} escolheu ${out.cClassTrib}, fora dos candidatos do item ${item.n}`,
           item.n,
         );
       }
       decided = {
-        candidate: chosen,
-        provenance: {
-          by: 'resolver',
-          name: resolver.name,
-          confidence: out.confidence,
-          ...(out.evidence === undefined ? {} : { evidence: out.evidence }),
+        candidato: chosen,
+        procedencia: {
+          por: 'resolvedor',
+          nome: resolver.nome,
+          confianca: out.confianca,
+          ...(out.evidencia === undefined ? {} : { evidencia: out.evidencia }),
           ...base(),
         },
       };
       break;
     }
-    items.push({ ...common, ...(decided ? { decided } : {}), ...(pending ? { pending } : {}) });
+    items.push({ ...common, ...(decided ? { decidido: decided } : {}), ...(pending ? { pendente: pending } : {}) });
   }
   return {
-    asOf: content.asOf,
-    contentVersion: content.dataset.contentVersion,
-    items,
-    complete: items.every((d) => d.decided !== undefined),
+    dataDeReferencia: conteudo.dataDeReferencia,
+    versaoDoConteudo: conteudo.dataset.versaoDoConteudo,
+    itens: items,
+    completa: items.every((d) => d.decidido !== undefined),
   };
 }
 
 /** Dados do item para o cálculo que a determinação não produz (base, tributação regular, diferimento...). */
-export type ItemInput = Omit<ClassifiedItem, 'n' | 'cst' | 'cClassTrib'>;
+export type EntradaDoItem = Omit<ItemClassificado, 'n' | 'cst' | 'cClassTrib'>;
 
-export interface OperationInput {
+export interface EntradaDaOperacao {
   readonly modelo: number;
-  readonly place: OperationPlace;
-  readonly governmentPurchase?: GovernmentPurchase;
+  readonly local: LocalDaOperacao;
+  readonly compraGovernamental?: CompraGovernamental;
 }
 
 /** Monta a entrada do `@sinete/ibs-cbs/calcular`. Falha se algum item ficou sem decisão. */
-export function toClassified(
-  det: Determination,
-  op: OperationInput,
-  item: (n: number, candidate: Candidate) => ItemInput,
-): ClassifiedOperation {
+export function paraClassificado(
+  det: Determinacao,
+  op: EntradaDaOperacao,
+  item: (n: number, candidato: Candidato) => EntradaDoItem,
+): OperacaoClassificada {
   return {
     ...op,
-    items: det.items.map((d) => {
-      if (!d.decided) {
-        throw new DeterminationError('determinacao_incompleta', `item ${d.n} sem classificação decidida`, d.n);
+    itens: det.itens.map((d) => {
+      if (!d.decidido) {
+        throw new ErroDeterminacao('determinacao_incompleta', `item ${d.n} sem classificação decidida`, d.n);
       }
-      const c = d.decided.candidate;
+      const c = d.decidido.candidato;
       return { ...item(d.n, c), n: d.n, cst: c.cst, cClassTrib: c.cClassTrib };
     }),
   };

@@ -10,44 +10,44 @@
 
 import type { DocumentoXml } from '@sinete/core/xml';
 import { lerXml } from '@sinete/core/xml';
-import type { Decoded } from './runtime/decode.ts';
-import { decodeRoot } from './runtime/decode.ts';
-import type { RootElement } from './runtime/desc.ts';
+import type { Decodificado } from './runtime/decode.ts';
+import { decodificarRaiz } from './runtime/decode.ts';
+import type { ElementoRaiz } from './runtime/desc.ts';
 
-export type { SchemasErrorCode } from './errors.ts';
-export { SerializeError, VigenciaError } from './errors.ts';
-export type { Decoded, DecodeIssue, DecodeIssueCode } from './runtime/decode.ts';
-export { decode, decodeRoot } from './runtime/decode.ts';
+export type { CodigoErroSchemas } from './errors.ts';
+export { ErroSerializacao, ErroVigencia } from './errors.ts';
+export type { CodigoOcorrenciaDecodificacao, Decodificado, OcorrenciaDecodificacao } from './runtime/decode.ts';
+export { decodificar, decodificarRaiz } from './runtime/decode.ts';
 export type {
+  AjusteDoSchema,
   AttributeDecl,
   ComplexType,
+  DescricaoModuloSchema,
+  ElementoRaiz,
   ElementParticle,
+  FonteDoSchema,
   GroupParticle,
   Particle,
-  RootElement,
-  SchemaModuleInfo,
-  SchemaPatch,
-  SchemaSource,
   SimpleType,
-  ValueOf,
+  ValorDe,
   WildcardParticle,
 } from './runtime/desc.ts';
-export { isComplexType, isElementParticle, isWildcard, maxOccurs, minOccurs } from './runtime/desc.ts';
-export { compileXsdRegex, XsdRegexError, xsdRegexToJs } from './runtime/regex.ts';
-export { serialize, serializeRoot } from './runtime/serialize.ts';
-export type { SchemaIssue, ValidationCode } from './runtime/validate.ts';
+export { ehComplexType, ehElementParticle, ehWildcard, maxOccurs, minOccurs } from './runtime/desc.ts';
+export { compilarRegexXsd, ErroRegexXsd, regexXsdParaJs } from './runtime/regex.ts';
+export { serializar, serializarRaiz } from './runtime/serialize.ts';
+export type { CodigoValidacao, OcorrenciaSchema } from './runtime/validate.ts';
 export {
-  assertValid,
-  checkSimple,
-  compareCalendar,
-  compareDecimal,
-  validate,
-  validateRoot,
+  compararCalendario,
+  compararDecimal,
+  conferirTipoSimples,
+  exigirValido,
+  validar,
+  validarRaiz,
 } from './runtime/validate.ts';
-export type { FamiliaSchema, VigenciaEntry } from './vigencia.ts';
+export type { EntradaDeVigencia, FamiliaSchema } from './vigencia.ts';
 export { selecionarPl, VIGENCIAS, VIGENCIAS_ATUALIZADAS_EM } from './vigencia.ts';
 
-/** Parse estrito (`@sinete/core/xml`) seguido do decode tolerante pela raiz. Lança `ErroXml` só se o XML for malformado. */
-export function decodeXml<T>(root: RootElement<T>, xml: string | DocumentoXml): Decoded<T> {
-  return decodeRoot(root, typeof xml === 'string' ? lerXml(xml) : xml);
+/** Parse estrito (`@sinete/core/xml`) seguido da decodificação tolerante pela raiz. Lança `ErroXml` só se o XML for malformado. */
+export function decodificarXml<T>(raiz: ElementoRaiz<T>, xml: string | DocumentoXml): Decodificado<T> {
+  return decodificarRaiz(raiz, typeof xml === 'string' ? lerXml(xml) : xml);
 }

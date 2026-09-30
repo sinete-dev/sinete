@@ -20,21 +20,21 @@ import {
   tlvBytes,
   toHex,
 } from './der.ts';
-import { CertError } from './errors.ts';
-import { derToPem } from './pem.ts';
+import { ErroCertificado } from './errors.ts';
+import { pemDoDer } from './pem.ts';
 
 /** Atributo de um nome distinto (DN), na ordem em que aparece no certificado. */
-export interface DnAttribute {
+export interface AtributoDoNome {
   readonly oid: string;
   /** Nome curto (`CN`, `O`, `OU`, `C`...) ou o OID quando não há nome curto. */
   readonly type: string;
   readonly value: string;
 }
 
-export interface DistinguishedName {
+export interface NomeDistinto {
   /** `C=BR, O=ICP-Brasil, OU=..., CN=...`, na ordem do certificado (a mesma do OpenSSL e do Node). */
-  readonly text: string;
-  readonly attributes: readonly DnAttribute[];
+  readonly texto: string;
+  readonly atributos: readonly AtributoDoNome[];
   readonly commonName: string | undefined;
   /** DER do Name, usado para casar emissor e titular byte a byte. */
   readonly der: Uint8Array;
@@ -49,32 +49,32 @@ export interface OtherName {
 export interface SubjectAltNames {
   readonly otherNames: readonly OtherName[];
   readonly emails: readonly string[];
-  readonly dnsNames: readonly string[];
+  readonly nomesDns: readonly string[];
   readonly uris: readonly string[];
   /** `iPAddress` (RFC 5280, seção 4.2.1.6): IPv4 com pontos, IPv6 na forma curta da RFC 5952 (minúsculas, `::`). */
-  readonly ipAddresses: readonly string[];
+  readonly enderecosIp: readonly string[];
 }
 
-export interface RsaPublicKey {
-  readonly algorithm: 'RSA';
+export interface ChavePublicaRsa {
+  readonly algoritmo: 'RSA';
   /** Módulo em hexadecimal minúsculo, sem zero à esquerda. Serve para casar certificado e chave privada. */
-  readonly modulusHex: string;
-  readonly exponentHex: string;
+  readonly moduloHex: string;
+  readonly expoenteHex: string;
   readonly bits: number;
 }
 
-export interface OtherPublicKey {
-  readonly algorithm: 'outro';
+export interface OutraChavePublica {
+  readonly algoritmo: 'outro';
   readonly oid: string;
 }
 
-export interface CertificateInfo {
+export interface CertificadoX509 {
   readonly der: Uint8Array;
   readonly version: number;
   /** Número de série em hexadecimal minúsculo. */
   readonly serialNumber: string;
-  readonly subject: DistinguishedName;
-  readonly issuer: DistinguishedName;
+  readonly subject: NomeDistinto;
+  readonly issuer: NomeDistinto;
   /** Início e fim da validade, em milissegundos desde a época (UTC). */
   readonly notBefore: number;
   readonly notAfter: number;
@@ -87,18 +87,18 @@ export interface CertificateInfo {
   readonly selfIssued: boolean;
   /**
    * OIDs de extensões marcadas como críticas que este parser não processa (por exemplo nameConstraints ou
-   * certificatePolicies críticas). `buildChain` não dá como confiável um caminho que passe por um certificado assim.
+   * certificatePolicies críticas). `montarCadeia` não dá como confiável um caminho que passe por um certificado assim.
    */
-  readonly unsupportedCriticalExtensions: readonly string[];
+  readonly extensoesCriticasNaoSuportadas: readonly string[];
   readonly keyUsage: readonly string[];
   readonly extKeyUsage: readonly string[];
   readonly subjectAltNames: SubjectAltNames;
   readonly subjectKeyId: string | undefined;
   readonly authorityKeyId: string | undefined;
-  readonly ocspUrls: readonly string[];
-  readonly caIssuersUrls: readonly string[];
-  readonly crlUrls: readonly string[];
-  readonly publicKey: RsaPublicKey | OtherPublicKey;
+  readonly urlsOcsp: readonly string[];
+  readonly urlsCaIssuers: readonly string[];
+  readonly urlsCrl: readonly string[];
+  readonly chavePublica: ChavePublicaRsa | OutraChavePublica;
   /** SubjectPublicKeyInfo em DER (importável como `spki` no WebCrypto). */
   readonly spki: Uint8Array;
   /** TBSCertificate em DER: os bytes que o emissor assinou. */
@@ -141,39 +141,39 @@ const EKU_NAMES: Readonly<Record<string, string>> = {
 
 const OID_RSA = '1.2.840.113549.1.1.1';
 
-function parseName(buf: Uint8Array, node: Tlv): DistinguishedName {
+function parseName(buf: Uint8Array, node: Tlv): NomeDistinto {
   expectTag(node, TAG.SEQUENCE, 'Name');
-  const attributes: DnAttribute[] = [];
+  const attributes: AtributoDoNome[] = [];
   for (const rdn of children(buf, node)) {
     for (const atv of children(buf, expectTag(rdn, TAG.SET, 'RDN'))) {
       const [t, v] = children(buf, atv);
-      if (!t || !v) throw new CertError('certificado_invalido', 'atributo de DN incompleto');
+      if (!t || !v) throw new ErroCertificado('certificado_invalido', 'atributo de DN incompleto');
       const oid = decodeOid(buf, t);
       attributes.push({ oid, type: DN_NAMES[oid] ?? oid, value: decodeString(buf, v) });
     }
   }
   return {
-    text: attributes.map((a) => `${a.type}=${a.value}`).join(', '),
-    attributes,
+    texto: attributes.map((a) => `${a.type}=${a.value}`).join(', '),
+    atributos: attributes,
     commonName: attributes.findLast((a) => a.type === 'CN')?.value,
     der: tlvBytes(buf, node),
   };
 }
 
-function parseSpki(buf: Uint8Array, node: Tlv): RsaPublicKey | OtherPublicKey {
+function parseSpki(buf: Uint8Array, node: Tlv): ChavePublicaRsa | OutraChavePublica {
   const [alg, bits] = children(buf, expectTag(node, TAG.SEQUENCE, 'SubjectPublicKeyInfo'));
-  if (!alg || !bits) throw new CertError('certificado_invalido', 'SubjectPublicKeyInfo incompleto');
+  if (!alg || !bits) throw new ErroCertificado('certificado_invalido', 'SubjectPublicKeyInfo incompleto');
   const [algOidNode] = children(buf, alg);
-  if (!algOidNode) throw new CertError('certificado_invalido', 'AlgorithmIdentifier vazio');
+  if (!algOidNode) throw new ErroCertificado('certificado_invalido', 'AlgorithmIdentifier vazio');
   const oid = decodeOid(buf, algOidNode);
-  if (oid !== OID_RSA) return { algorithm: 'outro', oid };
+  if (oid !== OID_RSA) return { algoritmo: 'outro', oid };
   expectTag(bits, TAG.BIT_STRING, 'chave pública');
   // pula o byte de bits não usados
   const rsa = readTlv(buf, bits.start + 1, bits.end);
   const [n, e] = children(buf, expectTag(rsa, TAG.SEQUENCE, 'RSAPublicKey'));
-  if (!n || !e) throw new CertError('certificado_invalido', 'RSAPublicKey incompleta');
+  if (!n || !e) throw new ErroCertificado('certificado_invalido', 'RSAPublicKey incompleta');
   const modulusHex = integerHex(buf, n);
-  return { algorithm: 'RSA', modulusHex, exponentHex: integerHex(buf, e), bits: bitLength(modulusHex) };
+  return { algoritmo: 'RSA', moduloHex: modulusHex, expoenteHex: integerHex(buf, e), bits: bitLength(modulusHex) };
 }
 
 function bitLength(hex: string): number {
@@ -194,7 +194,7 @@ interface Extensions {
   pathLen: number | undefined;
   keyUsage: string[];
   extKeyUsage: string[];
-  san: { otherNames: OtherName[]; emails: string[]; dnsNames: string[]; uris: string[]; ipAddresses: string[] };
+  san: { otherNames: OtherName[]; emails: string[]; nomesDns: string[]; uris: string[]; enderecosIp: string[] };
   subjectKeyId: string | undefined;
   authorityKeyId: string | undefined;
   ocspUrls: string[];
@@ -221,7 +221,7 @@ function parseExtensions(buf: Uint8Array, list: Tlv | undefined): Extensions {
     pathLen: undefined,
     keyUsage: [],
     extKeyUsage: [],
-    san: { otherNames: [], emails: [], dnsNames: [], uris: [], ipAddresses: [] },
+    san: { otherNames: [], emails: [], nomesDns: [], uris: [], enderecosIp: [] },
     subjectKeyId: undefined,
     authorityKeyId: undefined,
     ocspUrls: [],
@@ -276,11 +276,11 @@ function parseExtensions(buf: Uint8Array, list: Tlv | undefined): Extensions {
             }
             x.san.otherNames.push({ oid: decodeOid(buf, typeId), value: text });
           } else if (gn.tag === 0x81) x.san.emails.push(decodeString(buf, { ...gn, tag: TAG.IA5_STRING }));
-          else if (gn.tag === 0x82) x.san.dnsNames.push(decodeString(buf, { ...gn, tag: TAG.IA5_STRING }));
+          else if (gn.tag === 0x82) x.san.nomesDns.push(decodeString(buf, { ...gn, tag: TAG.IA5_STRING }));
           else if (gn.tag === 0x86) x.san.uris.push(decodeString(buf, { ...gn, tag: TAG.IA5_STRING }));
           else if (gn.tag === 0x87) {
             const ip = formatIp(contentBytes(buf, gn));
-            if (ip !== undefined) x.san.ipAddresses.push(ip);
+            if (ip !== undefined) x.san.enderecosIp.push(ip);
           }
         }
         break;
@@ -310,13 +310,13 @@ function parseExtensions(buf: Uint8Array, list: Tlv | undefined): Extensions {
   return x;
 }
 
-/** Lê um certificado X.509 em DER. Lança `CertError('certificado_invalido')` se o DER não for um certificado. */
-export function parseCertificate(der: Uint8Array): CertificateInfo {
+/** Lê um certificado X.509 em DER. Lança `ErroCertificado('certificado_invalido')` se o DER não for um certificado. */
+export function lerCertificado(der: Uint8Array): CertificadoX509 {
   const buf = der;
   try {
     const cert = expectTag(readTlv(buf, 0), TAG.SEQUENCE, 'Certificate');
     const [tbs, sigAlg, sigValue] = children(buf, cert);
-    if (!tbs || !sigAlg || !sigValue) throw new CertError('certificado_invalido', 'Certificate incompleto');
+    if (!tbs || !sigAlg || !sigValue) throw new ErroCertificado('certificado_invalido', 'Certificate incompleto');
     const fields = children(buf, expectTag(tbs, TAG.SEQUENCE, 'TBSCertificate'));
     let i = 0;
     let version = 1;
@@ -327,19 +327,19 @@ export function parseCertificate(der: Uint8Array): CertificateInfo {
     }
     const at = (k: number): Tlv => {
       const f = fields[k];
-      if (!f) throw new CertError('certificado_invalido', 'TBSCertificate incompleto');
+      if (!f) throw new ErroCertificado('certificado_invalido', 'TBSCertificate incompleto');
       return f;
     };
     const serialNumber = integerHex(buf, at(i));
     const issuer = parseName(buf, at(i + 2));
     const [nb, na] = children(buf, expectTag(at(i + 3), TAG.SEQUENCE, 'Validity'));
-    if (!nb || !na) throw new CertError('certificado_invalido', 'Validity incompleta');
+    if (!nb || !na) throw new ErroCertificado('certificado_invalido', 'Validity incompleta');
     const subject = parseName(buf, at(i + 4));
     const spkiNode = at(i + 5);
     const extWrapper = fields.slice(i + 6).find((f) => f.tag === 0xa3);
     const ext = parseExtensions(buf, extWrapper ? children(buf, extWrapper)[0] : undefined);
     const sigAlgOid = children(buf, sigAlg)[0];
-    if (!sigAlgOid) throw new CertError('certificado_invalido', 'signatureAlgorithm vazio');
+    if (!sigAlgOid) throw new ErroCertificado('certificado_invalido', 'signatureAlgorithm vazio');
     expectTag(sigValue, TAG.BIT_STRING, 'signatureValue');
     const notBefore = decodeTime(buf, nb);
     const notAfter = decodeTime(buf, na);
@@ -355,35 +355,35 @@ export function parseCertificate(der: Uint8Array): CertificateInfo {
       notAfterIso: isoFromEpoch(notAfter),
       isCA: ext.isCA,
       pathLenConstraint: ext.pathLen,
-      unsupportedCriticalExtensions: ext.unsupportedCritical,
-      selfIssued: namesMatch(issuer, subject),
+      extensoesCriticasNaoSuportadas: ext.unsupportedCritical,
+      selfIssued: nomesIguais(issuer, subject),
       keyUsage: ext.keyUsage,
       extKeyUsage: ext.extKeyUsage,
       subjectAltNames: ext.san,
       subjectKeyId: ext.subjectKeyId,
       authorityKeyId: ext.authorityKeyId,
-      ocspUrls: ext.ocspUrls,
-      caIssuersUrls: ext.caIssuersUrls,
-      crlUrls: ext.crlUrls,
-      publicKey: parseSpki(buf, spkiNode),
+      urlsOcsp: ext.ocspUrls,
+      urlsCaIssuers: ext.caIssuersUrls,
+      urlsCrl: ext.crlUrls,
+      chavePublica: parseSpki(buf, spkiNode),
       spki: tlvBytes(buf, spkiNode),
       tbs: tlvBytes(buf, tbs),
       signatureAlgorithm: decodeOid(buf, sigAlgOid),
       signature: contentBytes(buf, sigValue).subarray(1),
     };
   } catch (cause) {
-    if (cause instanceof CertError) throw cause;
-    throw new CertError('certificado_invalido', 'certificado X.509 ilegível', { cause });
+    if (cause instanceof ErroCertificado) throw cause;
+    throw new ErroCertificado('certificado_invalido', 'certificado X.509 ilegível', { cause });
   }
 }
 
 /** Certificado em PEM (`CERTIFICATE`). */
-export function certificateToPem(cert: CertificateInfo | Uint8Array): string {
-  return derToPem(cert instanceof Uint8Array ? cert : cert.der, 'CERTIFICATE');
+export function pemDoCertificado(cert: CertificadoX509 | Uint8Array): string {
+  return pemDoDer(cert instanceof Uint8Array ? cert : cert.der, 'CERTIFICATE');
 }
 
 /** SHA-256 do DER em hexadecimal maiúsculo com `:`, no formato do OpenSSL e do Node (`fingerprint256`). */
-export async function fingerprintSha256(cert: CertificateInfo | Uint8Array): Promise<string> {
+export async function impressaoDigitalSha256(cert: CertificadoX509 | Uint8Array): Promise<string> {
   const der = cert instanceof Uint8Array ? cert : cert.der;
   const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', der as Uint8Array<ArrayBuffer>));
   return toHex(digest)
@@ -398,11 +398,11 @@ const norm = (v: string): string => v.normalize('NFKC').trim().replace(/\s+/g, '
  * Nomes distintos equivalentes (RFC 5280, 7.1): mesmos tipos de atributo na mesma ordem e valores iguais depois da
  * normalização, independente do tipo de string usado na codificação (PrintableString contra UTF8String).
  */
-export function namesMatch(a: DistinguishedName, b: DistinguishedName): boolean {
+export function nomesIguais(a: NomeDistinto, b: NomeDistinto): boolean {
   if (equalBytes(a.der, b.der)) return true;
-  if (a.attributes.length !== b.attributes.length) return false;
-  return a.attributes.every((x, i) => {
-    const y = b.attributes[i];
+  if (a.atributos.length !== b.atributos.length) return false;
+  return a.atributos.every((x, i) => {
+    const y = b.atributos[i];
     return y !== undefined && x.oid === y.oid && norm(x.value) === norm(y.value);
   });
 }

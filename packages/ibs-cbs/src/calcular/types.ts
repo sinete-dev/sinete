@@ -6,13 +6,13 @@
  * Calculadora da RFB devolve (`gIBSCBS`, `gIBSUF`, `gRed`, `gDif`, `gTribRegular`, `gTribCompraGov`, `IBSCBSTot`...),
  * com valores já formatados como no XML: texto decimal com 2 casas nos valores e de 2 a 4 casas nos percentuais.
  */
-import type { RateStatus, RateTributo } from '../aliquotas/index.ts';
+import type { SituacaoDaAliquota, TributoDaAliquota } from '../aliquotas/index.ts';
 
 /** Decimal em texto (`'1000.00'`, `'0.9'`). */
 export type Dec = string;
 
 /** Data civil `AAAA-MM-DD`. */
-export type IsoDate = string;
+export type DataIso = string;
 
 /**
  * Tipo de ente governamental comprador (`tpEnteGov`): 1 União, 2 Estado, 3 Distrito Federal, 4 Município. A Calculadora
@@ -20,55 +20,55 @@ export type IsoDate = string;
  */
 export type TpEnteGov = 1 | 2 | 3 | 4 | 5 | 6;
 
-export interface GovernmentPurchase {
+export interface CompraGovernamental {
   readonly tpEnteGov: TpEnteGov;
   /** `tpOperGov`: 1 fornecimento, 2 recebimento do pagamento. Só é repassado para a saída. */
   readonly tpOperGov?: 1 | 2;
 }
 
 /** Local da operação (define as alíquotas próprias de UF e município, quando houver). */
-export interface OperationPlace {
+export interface LocalDaOperacao {
   readonly uf: string;
   /** Código IBGE do município, 7 dígitos. */
   readonly cMun: string;
 }
 
 /** Alíquotas nominais informadas pelo usuário para o item, em percentual, com motivo obrigatório. */
-export interface InformedRates {
+export interface AliquotasInformadas {
   readonly CBS?: Dec;
   readonly IBSUF?: Dec;
   readonly IBSMun?: Dec;
-  readonly reason: string;
+  readonly motivo: string;
 }
 
 /** Grupo de tributação regular (`gTribRegular`), exigido pelos cClassTrib de suspensão e afins. */
-export interface RegularTaxation {
+export interface TributacaoRegular {
   readonly cst: string;
   readonly cClassTrib: string;
 }
 
-export interface PresumedCreditTributo {
+export interface CreditoPresumidoTributo {
   /** Percentual do crédito presumido. */
   readonly pCredPres: Dec;
   /** Crédito em condição suspensiva: o valor vai em `vCredPresCondSus` em vez de `vCredPres`. */
-  readonly conditional?: boolean;
+  readonly condicional?: boolean;
 }
 
 /** Crédito presumido da operação (`gCredPresOper`). */
-export interface PresumedCredit {
+export interface CreditoPresumido {
   readonly cCredPres: number;
   readonly vBCCredPres: Dec;
-  readonly ibs?: PresumedCreditTributo;
-  readonly cbs?: PresumedCreditTributo;
+  readonly ibs?: CreditoPresumidoTributo;
+  readonly cbs?: CreditoPresumidoTributo;
   /**
    * Fornecimento de bem móvel usado (`indBemMovelUsado=1` na NF-e): o crédito presumido vale mesmo com cClassTrib que o
    * veda (NT 2025.002 v1.51, UB120-20, exceção).
    */
-  readonly usedMovableGood?: boolean;
+  readonly bemMovelUsado?: boolean;
 }
 
 /** Crédito presumido do IBS na ZFM (`gCredPresIBSZFM`), com o valor apurado sobre o saldo devedor. */
-export interface ZfmPresumedCredit {
+export interface CreditoPresumidoZfm {
   /** Ano e mês de apuração, `AAAA-MM`. */
   readonly competApur: string;
   readonly tpCredPresIBSZFM: 0 | 1 | 2 | 3 | 4;
@@ -76,41 +76,41 @@ export interface ZfmPresumedCredit {
 }
 
 /** Item classificado: tudo o que o cálculo precisa, sem fato de negócio (CFOP, cliente, descrição). */
-export interface ClassifiedItem {
+export interface ItemClassificado {
   /** Número do item (`nItem`). */
   readonly n: number;
   readonly cst: string;
   readonly cClassTrib: string;
   /** Base de cálculo do IBS e da CBS (`vBC`) já apurada. A composição da UB16-10 ainda é "implementação futura". */
   readonly base: Dec;
-  readonly quantity?: Dec;
-  readonly unit?: string;
-  readonly regular?: RegularTaxation;
-  readonly informedRates?: InformedRates;
+  readonly quantidade?: Dec;
+  readonly unidade?: string;
+  readonly regular?: TributacaoRegular;
+  readonly aliquotasInformadas?: AliquotasInformadas;
   /** Percentual de diferimento por tributo, sobrepondo o do tratamento tributário do cClassTrib. */
-  readonly deferral?: Partial<Record<RateTributo, Dec>>;
+  readonly diferimento?: Partial<Record<TributoDaAliquota, Dec>>;
   /** Devolução de tributos (`gDevTrib`), só da CBS: percentual devolvido. */
-  readonly taxRefund?: { readonly pDevTrib: Dec };
+  readonly devolucaoDeTributo?: { readonly pDevTrib: Dec };
   /** `gTransfCred`: valores transferidos (CST 800). */
-  readonly creditTransfer?: { readonly vIBS: Dec; readonly vCBS: Dec };
+  readonly transferenciaDeCredito?: { readonly vIBS: Dec; readonly vCBS: Dec };
   /** `gAjusteCompet`: ajuste de competência (CST 811). */
-  readonly competenceAdjustment?: { readonly competApur: string; readonly vIBS: Dec; readonly vCBS: Dec };
+  readonly ajusteDeCompetencia?: { readonly competApur: string; readonly vIBS: Dec; readonly vCBS: Dec };
   /** `gEstornoCred`: estorno de crédito. */
-  readonly creditReversal?: { readonly vIBSEstCred: Dec; readonly vCBSEstCred: Dec };
-  readonly presumedCredit?: PresumedCredit;
-  readonly zfmCredit?: ZfmPresumedCredit;
-  /** Monofasia: não suportada; informar lança `UnsupportedRegimeError`. */
-  readonly monophase?: unknown;
-  /** Imposto Seletivo: não suportado; informar lança `UnsupportedRegimeError`. */
-  readonly selectiveTax?: unknown;
+  readonly estornoDeCredito?: { readonly vIBSEstCred: Dec; readonly vCBSEstCred: Dec };
+  readonly creditoPresumido?: CreditoPresumido;
+  readonly creditoZfm?: CreditoPresumidoZfm;
+  /** Monofasia: não suportada; informar lança `ErroRegimeNaoSuportado`. */
+  readonly monofasia?: unknown;
+  /** Imposto Seletivo: não suportado; informar lança `ErroRegimeNaoSuportado`. */
+  readonly impostoSeletivo?: unknown;
 }
 
-export interface ClassifiedOperation {
+export interface OperacaoClassificada {
   /** Modelo do DF-e (`55` NF-e, `65` NFC-e, `57` CT-e...), usado para conferir a habilitação do cClassTrib. */
   readonly modelo: number;
-  readonly place: OperationPlace;
-  readonly governmentPurchase?: GovernmentPurchase;
-  readonly items: readonly ClassifiedItem[];
+  readonly local: LocalDaOperacao;
+  readonly compraGovernamental?: CompraGovernamental;
+  readonly itens: readonly ItemClassificado[];
 }
 
 // ---------- saída ----------
@@ -214,25 +214,30 @@ export interface IBSCBS {
 }
 
 /** De onde veio a alíquota usada para um tributo. */
-export type RateOrigin = 'provider-nominal' | 'provider-reference' | 'dataset-fixed' | 'informed' | 'no-rate';
+export type OrigemDaAliquota =
+  | 'provedor-nominal'
+  | 'provedor-referencia'
+  | 'dataset-fixa'
+  | 'informada'
+  | 'sem-aliquota';
 
-export interface AppliedRate {
-  readonly tributo: RateTributo;
+export interface AliquotaAplicada {
+  readonly tributo: TributoDaAliquota;
   /** Percentual nominal. */
-  readonly value: Dec;
-  readonly status: RateStatus;
-  readonly origin: RateOrigin;
+  readonly valor: Dec;
+  readonly situacao: SituacaoDaAliquota;
+  readonly origem: OrigemDaAliquota;
   readonly legal?: string;
-  readonly reason?: string;
+  readonly motivo?: string;
 }
 
 export interface RocItem {
   readonly nItem: number;
   readonly IBSCBS: IBSCBS;
   /** Alíquotas usadas, por tributo (vazio quando o item não tem `gIBSCBS`). */
-  readonly rates: readonly AppliedRate[];
+  readonly aliquotas: readonly AliquotaAplicada[];
   /** Alguma alíquota usada não é oficial (informada pelo usuário). */
-  readonly simulated: boolean;
+  readonly simulado: boolean;
 }
 
 export interface IBSCBSTot {
@@ -255,27 +260,27 @@ export interface IBSCBSTot {
 }
 
 /** Uma conta do cálculo, com as entradas em precisão interna (8 casas), para auditoria. */
-export interface TraceEntry {
+export interface EntradaDoRastro {
   readonly item: number;
-  readonly tributo?: RateTributo;
-  readonly field: string;
+  readonly tributo?: TributoDaAliquota;
+  readonly campo: string;
   readonly formula: string;
-  readonly inputs: Readonly<Record<string, string>>;
-  readonly result: string;
+  readonly entradas: Readonly<Record<string, string>>;
+  readonly resultado: string;
 }
 
 export interface Roc {
   /** Data civil do fato gerador usada para dados e alíquotas. */
-  readonly asOf: IsoDate;
+  readonly dataDeReferencia: DataIso;
   readonly oper?: {
     readonly gCompraGov: { readonly tpEnteGov: TpEnteGov; readonly pRedutor: Dec; readonly tpOperGov?: 1 | 2 };
   };
-  readonly items: readonly RocItem[];
+  readonly itens: readonly RocItem[];
   readonly total: { readonly IBSCBSTot: IBSCBSTot };
-  readonly simulated: boolean;
-  /** `IbsCbsDataset.contentVersion` dos dados usados. */
-  readonly contentVersion: string;
+  readonly simulado: boolean;
+  /** `DatasetIbsCbs.versaoDoConteudo` dos dados usados. */
+  readonly versaoDoConteudo: string;
   /** Identificador do provedor de alíquotas. */
-  readonly ratesId: string;
-  readonly trace: readonly TraceEntry[];
+  readonly idDasAliquotas: string;
+  readonly rastro: readonly EntradaDoRastro[];
 }

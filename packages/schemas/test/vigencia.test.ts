@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import type { Ambiente } from '@sinete/core';
 import { ehErroSinete, relogioFixo } from '@sinete/core';
 import type { FamiliaSchema } from '../src/index.ts';
-import { selecionarPl, VIGENCIAS, VIGENCIAS_ATUALIZADAS_EM, VigenciaError } from '../src/index.ts';
+import { ErroVigencia, selecionarPl, VIGENCIAS, VIGENCIAS_ATUALIZADAS_EM } from '../src/index.ts';
 
 const at = (iso: string): ReturnType<typeof relogioFixo> => relogioFixo(iso);
 
@@ -25,22 +25,20 @@ describe('selecionarPl', () => {
       selecionarPl('nfe', 'producao', at('2026-01-01T12:00:00-03:00'));
       throw new Error('deveria lançar');
     } catch (e) {
-      expect(e).toBeInstanceOf(VigenciaError);
+      expect(e).toBeInstanceOf(ErroVigencia);
       expect(ehErroSinete(e, 'pl_sem_vigencia')).toBe(true);
-      expect((e as VigenciaError).message).toContain('2026-08-03');
+      expect((e as ErroVigencia).message).toContain('2026-08-03');
     }
     expect(() => selecionarPl('nfe/evento-cancelamento', 'homologacao', at('2026-06-14T12:00:00-03:00'))).toThrow(
-      VigenciaError,
+      ErroVigencia,
     );
     expect(() => selecionarPl('nada' as FamiliaSchema, 'producao', at('2026-06-14T12:00:00-03:00'))).toThrow(
-      VigenciaError,
+      ErroVigencia,
     );
     expect(() => selecionarPl('toString' as FamiliaSchema, 'producao', at('2026-06-14T12:00:00-03:00'))).toThrow(
-      VigenciaError,
+      ErroVigencia,
     );
-    expect(() => selecionarPl('nfe', 'constructor' as Ambiente, at('2026-06-14T12:00:00-03:00'))).toThrow(
-      VigenciaError,
-    );
+    expect(() => selecionarPl('nfe', 'constructor' as Ambiente, at('2026-06-14T12:00:00-03:00'))).toThrow(ErroVigencia);
   });
 
   test('entrada sem data de início vale para qualquer data', () => {

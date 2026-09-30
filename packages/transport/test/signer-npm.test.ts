@@ -51,10 +51,10 @@ describe.skipIf(!go)('pacotes npm do sinete-signer', () => {
     writeFileSync(
       path.join(app, 'uso.mjs'),
       [
-        "import { signerBinary, startSigner } from '@sinete/signer';",
-        'const s = await startSigner({ lab: true });',
-        'console.log(JSON.stringify({ bin: signerBinary(), helper: s.hello.helper, backends: s.hello.backends }));',
-        'await s.close();',
+        "import { binarioDoSigner, iniciarSigner } from '@sinete/signer';",
+        'const s = await iniciarSigner({ lab: true });',
+        'console.log(JSON.stringify({ bin: binarioDoSigner(), helper: s.hello.helper, backends: s.hello.backends }));',
+        'await s.fechar();',
       ].join('\n'),
     );
     const runtime = Bun.which('node') ?? 'bun';
@@ -76,10 +76,10 @@ describe.skipIf(!go)('pacotes npm do sinete-signer', () => {
     writeFileSync(
       path.join(semOpcional, 'uso.mjs'),
       [
-        "import { startSigner } from '@sinete/signer';",
-        'const s = await startSigner({ lab: true });',
+        "import { iniciarSigner } from '@sinete/signer';",
+        'const s = await iniciarSigner({ lab: true });',
         'console.log(JSON.stringify({ helper: s.hello.helper }));',
-        'await s.close();',
+        'await s.fechar();',
       ].join('\n'),
     );
     const semEnv = Bun.spawnSync([runtime, 'uso.mjs'], {

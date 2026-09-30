@@ -1,0 +1,121 @@
+[
+  {
+    "chave": "001",
+    "descricao": "Regime regular / contribuinte padrão (arts. 21 ss.)",
+    "id": 1,
+    "ordem": 1,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "002",
+    "descricao": "Simples Nacional e MEI (LC 123/2006; art. 41)",
+    "id": 2,
+    "ordem": 2,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "003",
+    "descricao": "Não contribuintes e pessoas físicas (art. 26; arts. 149 e 164-171)",
+    "id": 3,
+    "ordem": 3,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "004",
+    "descricao": "Fundos de investimento não contribuintes (art. 26, § 5º-A)",
+    "id": 4,
+    "ordem": 4,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "005",
+    "descricao": "Administração pública e entes federativos (art. 9º, I e § 1º; arts. 140-146)",
+    "id": 5,
+    "ordem": 5,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "006",
+    "descricao": "Entidades imunes e beneficentes (art. 9º, II e III)",
+    "id": 6,
+    "ordem": 6,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "007",
+    "descricao": "Serviços financeiros, seguros, FGTS e consórcios (arts. 181-233)",
+    "id": 7,
+    "ordem": 7,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "008",
+    "descricao": "Planos de assistência e concursos de prognósticos (arts. 234-248)",
+    "id": 8,
+    "ordem": 8,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "009",
+    "descricao": "Sociedades cooperativas e associados (arts. 271-272)",
+    "id": 9,
+    "ordem": 9,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "010",
+    "descricao": "Combustíveis — regime monofásico (arts. 172-180)",
+    "id": 10,
+    "ordem": 10,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "011",
+    "descricao": "Energia elétrica (art. 28; Lei nº 14.300/2022)",
+    "id": 11,
+    "ordem": 11,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "012",
+    "descricao": "Alimentação, hotelaria e turismo (arts. 274-289)",
+    "id": 12,
+    "ordem": 12,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "013",
+    "descricao": "Transportes e exploração de via (art. 11, VIII; arts. 103 e 285-287)",
+    "id": 13,
+    "ordem": 13,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "014",
+    "descricao": "Comércio exterior, regimes aduaneiros e suspensivos (arts. 82-110)",
+    "id": 14,
+    "ordem": 14,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "015",
+    "descricao": "Zona Franca de Manaus e Áreas de Livre Comércio (arts. 442-463)",
+    "id": 15,
+    "ordem": 15,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "016",
+    "descricao": "Regime automotivo incentivado (arts. 309-312; Leis 9.440/1997 e 9.826/1999)",
+    "id": 16,
+    "ordem": 16,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  },
+  {
+    "chave": "017",
+    "descricao": "Educação, ciência, esporte e profissões regulamentadas (arts. 127, 141-142, 156 e 308)",
+    "id": 17,
+    "ordem": 17,
+    "vigencia": { "fim": null, "inicio": "2026-01-01" }
+  }
+]

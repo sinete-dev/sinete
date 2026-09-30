@@ -3,7 +3,7 @@ import type { ErroSineteOpcoes } from '@sinete/core';
 import { ErroSinete } from '@sinete/core';
 
 /** Motivo de uma classificação recusada pelo motor, estável como o `code`. */
-export type ClassificationReason =
+export type MotivoErroClassificacao =
   | 'cst_inexistente'
   | 'cclasstrib_inexistente'
   | 'cclasstrib_fora_da_cst'
@@ -21,48 +21,48 @@ export type ClassificationReason =
 
 /**
  * A classificação informada não pode ser calculada: código inexistente ou fora de vigência na data do fato gerador,
- * cClassTrib fora da CST, não habilitado no modelo de DF-e, grupo exigido ausente ou vedado presente. `reason` diz qual.
+ * cClassTrib fora da CST, não habilitado no modelo de DF-e, grupo exigido ausente ou vedado presente. `motivo` diz qual.
  */
-export class ClassificationError extends ErroSinete<'ibscbs_classificacao_invalida'> {
-  readonly reason: ClassificationReason;
+export class ErroClassificacao extends ErroSinete<'ibscbs_classificacao_invalida'> {
+  readonly motivo: MotivoErroClassificacao;
   readonly item: number | undefined;
 
-  constructor(reason: ClassificationReason, message: string, item?: number, options: ErroSineteOpcoes = {}) {
+  constructor(motivo: MotivoErroClassificacao, message: string, item?: number, opcoes: ErroSineteOpcoes = {}) {
     super('ibscbs_classificacao_invalida', message, {
-      ...options,
-      detalhes: { ...options.detalhes, reason, ...(item === undefined ? {} : { item }) },
+      ...opcoes,
+      detalhes: { ...opcoes.detalhes, motivo, ...(item === undefined ? {} : { item }) },
     });
-    this.name = 'ClassificationError';
-    this.reason = reason;
+    this.name = 'ErroClassificacao';
+    this.motivo = motivo;
     this.item = item;
   }
 }
 
 /** Regime que o motor ainda não calcula. Nunca sai um valor preenchido com zero no lugar. */
-export type UnsupportedRegime = 'monofasia' | 'imposto-seletivo' | 'aliquotas-combinadas' | 'ajuste';
+export type RegimeNaoSuportado = 'monofasia' | 'imposto-seletivo' | 'aliquotas-combinadas' | 'ajuste';
 
-export class UnsupportedRegimeError extends ErroSinete<'ibscbs_regime_nao_suportado'> {
-  readonly regime: UnsupportedRegime;
+export class ErroRegimeNaoSuportado extends ErroSinete<'ibscbs_regime_nao_suportado'> {
+  readonly regime: RegimeNaoSuportado;
   readonly item: number | undefined;
 
-  constructor(regime: UnsupportedRegime, message: string, item?: number, options: ErroSineteOpcoes = {}) {
+  constructor(regime: RegimeNaoSuportado, message: string, item?: number, opcoes: ErroSineteOpcoes = {}) {
     super('ibscbs_regime_nao_suportado', message, {
-      ...options,
-      detalhes: { ...options.detalhes, regime, ...(item === undefined ? {} : { item }) },
+      ...opcoes,
+      detalhes: { ...opcoes.detalhes, regime, ...(item === undefined ? {} : { item }) },
     });
-    this.name = 'UnsupportedRegimeError';
+    this.name = 'ErroRegimeNaoSuportado';
     this.regime = regime;
     this.item = item;
   }
 }
 
 /** Expressão de cálculo do dataset fora da gramática conhecida: mudança de dado que precisa de revisão. */
-export class ExpressionError extends ErroSinete<'ibscbs_expressao_invalida'> {
-  readonly expression: string;
+export class ErroExpressao extends ErroSinete<'ibscbs_expressao_invalida'> {
+  readonly expressao: string;
 
-  constructor(expression: string, message: string) {
-    super('ibscbs_expressao_invalida', `expressão "${expression}": ${message}`, { detalhes: { expression } });
-    this.name = 'ExpressionError';
-    this.expression = expression;
+  constructor(expressao: string, message: string) {
+    super('ibscbs_expressao_invalida', `expressão "${expressao}": ${message}`, { detalhes: { expressao } });
+    this.name = 'ErroExpressao';
+    this.expressao = expressao;
   }
 }

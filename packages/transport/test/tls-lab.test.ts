@@ -6,7 +6,7 @@
  */
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import path from 'node:path';
-import { bytesToBase64 } from '@sinete/cert';
+import { codificarBase64 } from '@sinete/cert';
 import type { LabClientInput, LabClientResult } from './lab/client-core.ts';
 import { runLabClient } from './lab/client-core.ts';
 import type { Pki } from './lab/pki.ts';
@@ -42,22 +42,22 @@ async function run(runtime: 'bun' | 'node' | 'deno', input: LabClientInput): Pro
 }
 
 const RENEG_PROFILE = {
-  clientCert: 'renegotiation',
+  certificadoDoCliente: 'renegociacao',
   ecdheAead: true,
-  clientCertEvidence: 'verificado',
-  cipher: 'x',
+  evidenciaDoCertificadoDoCliente: 'verificado',
+  cifra: 'x',
 } as const;
 const DHE_PROFILE = {
-  clientCert: 'handshake',
+  certificadoDoCliente: 'handshake',
   ecdheAead: false,
-  keyExchange: 'dhe',
-  cipher: 'DHE-RSA-AES128-GCM-SHA256',
+  trocaDeChaves: 'dhe',
+  cifra: 'DHE-RSA-AES128-GCM-SHA256',
 } as const;
 const CBC_PROFILE = {
-  clientCert: 'handshake',
+  certificadoDoCliente: 'handshake',
   ecdheAead: false,
-  keyExchange: 'ecdhe',
-  cipher: 'ECDHE-RSA-AES128-SHA256',
+  trocaDeChaves: 'ecdhe',
+  cifra: 'ECDHE-RSA-AES128-SHA256',
 } as const;
 
 describe.skipIf(!openssl)('laboratório TLS', () => {
@@ -90,7 +90,7 @@ describe.skipIf(!openssl)('laboratório TLS', () => {
       expect(r.error).toBeUndefined();
       expect(r.status).toBe(200);
       expect(r.body).toContain('Subject: CN=Cliente de laboratorio');
-      if (nodeLike) expect(r.tls).toMatchObject({ protocol: 'TLSv1.2', clientCertificateLoaded: true });
+      if (nodeLike) expect(r.tls).toMatchObject({ protocolo: 'TLSv1.2', certificadoLocalCarregado: true });
     });
 
     test('renegociação iniciada pelo servidor, como o IIS da SEFAZ', async () => {
@@ -118,7 +118,7 @@ describe.skipIf(!openssl)('laboratório TLS', () => {
         expect(r.status).toBe(200);
         expect(presentedInRenegotiation(log)).toBe(true);
       } else {
-        expect(r.error).toMatchObject({ name: 'TransportUnsupportedError', code: 'nao_suportado' });
+        expect(r.error).toMatchObject({ name: 'ErroTransporteNaoSuportado', code: 'nao_suportado' });
         expect(r.error?.detalhes).toMatchObject({ host: '127.0.0.1' });
         // recusa antes de abrir socket
         expect(log).not.toContain('ClientHello');
@@ -135,7 +135,7 @@ describe.skipIf(!openssl)('laboratório TLS', () => {
         expect(r.body).toContain('Subject: CN=Cliente de laboratorio');
       } else {
         expect(r.error?.code).toBe('certificado_nao_apresentado');
-        expect(r.error?.detalhes).toMatchObject({ alert: 'handshake_failure' });
+        expect(r.error?.detalhes).toMatchObject({ alerta: 'handshake_failure' });
       }
     });
 
@@ -145,7 +145,7 @@ describe.skipIf(!openssl)('laboratório TLS', () => {
       const log = await srv.finished(nodeLike ? 1000 : 300);
       if (nodeLike) expect(r.status).toBe(200);
       else {
-        expect(r.error).toMatchObject({ name: 'TransportUnsupportedError', code: 'nao_suportado' });
+        expect(r.error).toMatchObject({ name: 'ErroTransporteNaoSuportado', code: 'nao_suportado' });
         expect(log).not.toContain('Cipher is');
       }
     });
@@ -157,26 +157,26 @@ describe.skipIf(!openssl)('laboratório TLS', () => {
       if (runtime === 'node') {
         expect(r.status).toBe(200);
         expect(r.body).toContain('Cipher is DHE-RSA-AES128-GCM-SHA256');
-      } else expect(r.error?.detalhes).toMatchObject({ alert: 'handshake_failure' });
+      } else expect(r.error?.detalhes).toMatchObject({ alerta: 'handshake_failure' });
       // com o perfil de GO produção nos dados, Bun e Deno recusam antes de abrir socket
       const srv2 = await wwwServer(pki, [...handshakeArgs(), '-cipher', 'DHE-RSA-AES128-GCM-SHA256']);
       const r2 = await run(runtime, { ...base, url: `${srv2.url}/`, profile: DHE_PROFILE });
       await srv2.finished(runtime === 'node' ? 1000 : 300);
       if (runtime === 'node') expect(r2.status).toBe(200);
-      else expect(r2.error).toMatchObject({ name: 'TransportUnsupportedError', code: 'nao_suportado' });
+      else expect(r2.error).toMatchObject({ name: 'ErroTransporteNaoSuportado', code: 'nao_suportado' });
     });
 
     test('política recusa antes de abrir socket', async () => {
       const srv = await wwwServer(pki, handshakeArgs());
       const r = await run(runtime, { ...base, url: `${srv.url}/`, allowHosts: ['homologacao.exemplo.invalid'] });
       const log = await srv.finished(300);
-      expect(r.error).toMatchObject({ name: 'PolicyError', code: 'politica_recusou' });
+      expect(r.error).toMatchObject({ name: 'ErroPolitica', code: 'politica_recusou' });
       expect(log).not.toContain('Cipher is');
     });
 
     test('PFX legado (RC2-40 + 3DES) lido em JS e apresentado no TLS', async () => {
       if (!pki.clientPfxLegacy) return;
-      const pfx = { pfxB64: bytesToBase64(pki.clientPfxLegacy), password: 'lab', additionalCa: [pki.caPem] };
+      const pfx = { pfxB64: codificarBase64(pki.clientPfxLegacy), password: 'lab', additionalCa: [pki.caPem] };
       const srv = await wwwServer(pki, handshakeArgs());
       const r = await run(runtime, { ...pfx, url: `${srv.url}/` });
       await srv.finished(1000);
@@ -205,7 +205,7 @@ describe.skipIf(!openssl)('laboratório TLS', () => {
       const r = await run(runtime, { ...base, url: `${srv.url}/` });
       await srv.finished(1000);
       expect(r.error?.code).toBe('certificado_recusado');
-      expect(r.error?.detalhes).toMatchObject({ alert: 'unknown_ca' });
+      expect(r.error?.detalhes).toMatchObject({ alerta: 'unknown_ca' });
     });
 
     test('cadeia do servidor fora da confiança', async () => {

@@ -9,9 +9,9 @@
  */
 
 import { escaparAtributoC14n, escaparTextoC14n } from '@sinete/core/xml';
-import { SerializeError } from '../errors.ts';
-import type { AttributeDecl, ComplexType, Particle, RootElement, SimpleType } from './desc.ts';
-import { isComplexType, isElementParticle, isWildcard, maxOccurs } from './desc.ts';
+import { ErroSerializacao } from '../errors.ts';
+import type { AttributeDecl, ComplexType, ElementoRaiz, Particle, SimpleType } from './desc.ts';
+import { ehComplexType, ehElementParticle, ehWildcard, maxOccurs } from './desc.ts';
 
 type Obj = Readonly<Record<string, unknown>>;
 
@@ -27,8 +27,8 @@ function attrsOf(ct: ComplexType): readonly AttributeDecl[] {
 }
 
 function memberNames(p: Particle, acc: string[]): string[] {
-  if (isWildcard(p)) acc.push('$any');
-  else if (isElementParticle(p)) acc.push(p.e);
+  if (ehWildcard(p)) acc.push('$any');
+  else if (ehElementParticle(p)) acc.push(p.e);
   else for (const i of p.i) memberNames(i, acc);
   return acc;
 }
@@ -39,8 +39,8 @@ function presentNames(p: Particle, o: Obj, acc: string[]): string[] {
 }
 
 function groupCount(p: Particle, o: Obj): number {
-  if (isWildcard(p)) return Array.isArray(o.$any) ? o.$any.length : 0;
-  if (isElementParticle(p)) {
+  if (ehWildcard(p)) return Array.isArray(o.$any) ? o.$any.length : 0;
+  if (ehElementParticle(p)) {
     const v = o[p.e];
     return v === undefined ? 0 : Array.isArray(v) ? v.length : 1;
   }
@@ -50,24 +50,24 @@ function groupCount(p: Particle, o: Obj): number {
 }
 
 /**
- * Serializa `value` como o elemento `name` do tipo `ct`. `inheritedNs` é o namespace default já em escopo onde a
+ * Serializa `valor` como o elemento `nome` do tipo `ct`. `nsHerdado` é o namespace default já em escopo onde a
  * string vai ser inserida (vazio para documento novo, que então recebe `xmlns`).
  */
-export function serialize<T>(ct: ComplexType<T>, name: string, value: T, inheritedNs = ''): string {
+export function serializar<T>(ct: ComplexType<T>, nome: string, valor: T, nsHerdado = ''): string {
   const out: string[] = [];
-  element(ct as ComplexType, name, value, ct.ns, inheritedNs, out, `/${name}`);
+  element(ct as ComplexType, nome, valor, ct.ns, nsHerdado, out, `/${nome}`);
   return out.join('');
 }
 
 /** Serializa um documento a partir do elemento raiz, com o `xmlns` do namespace dele. */
-export function serializeRoot<T>(root: RootElement<T>, value: T): string {
+export function serializarRaiz<T>(raiz: ElementoRaiz<T>, valor: T): string {
   const out: string[] = [];
-  element(root.type as ComplexType, root.name, value, root.ns, '', out, `/${root.name}`);
+  element(raiz.tipo as ComplexType, raiz.nome, valor, raiz.ns, '', out, `/${raiz.nome}`);
   return out.join('');
 }
 
 function text(v: unknown, path: string): string {
-  if (typeof v !== 'string') throw new SerializeError(path, `esperado string, veio ${typeof v}`);
+  if (typeof v !== 'string') throw new ErroSerializacao(path, `esperado string, veio ${typeof v}`);
   return v;
 }
 
@@ -82,12 +82,12 @@ function element(
 ): void {
   let open = `<${name}`;
   if (ns !== inScopeNs) open += ` xmlns="${escaparAtributoC14n(ns)}"`;
-  if (!isComplexType(t)) {
+  if (!ehComplexType(t)) {
     out.push(open, '>', escaparTextoC14n(text(v, path)), '</', name, '>');
     return;
   }
   if (typeof v !== 'object' || v === null || Array.isArray(v)) {
-    throw new SerializeError(path, `esperado objeto do tipo ${t.id}`);
+    throw new ErroSerializacao(path, `esperado objeto do tipo ${t.id}`);
   }
   const o = v as Obj;
   const attrs: [string, string][] = [];
@@ -107,15 +107,15 @@ function element(
 }
 
 function particle(p: Particle, o: Obj, ns: string, out: string[], gi: number, path: string): void {
-  if (isWildcard(p)) {
+  if (ehWildcard(p)) {
     const raw = o.$any;
     if (raw === undefined) return;
-    if (!Array.isArray(raw)) throw new SerializeError(`${path}/$any`, 'esperado array de XML bruto');
+    if (!Array.isArray(raw)) throw new ErroSerializacao(`${path}/$any`, 'esperado array de XML bruto');
     const items = gi >= 0 ? (raw[gi] === undefined ? [] : [raw[gi]]) : raw;
     for (const x of items) out.push(text(x, `${path}/$any`));
     return;
   }
-  if (isElementParticle(p)) {
+  if (ehElementParticle(p)) {
     const v = o[p.e];
     if (v === undefined) return;
     const ens = p.ns ?? ns;
@@ -146,5 +146,5 @@ function particle(p: Particle, o: Obj, ns: string, out: string[], gi: number, pa
       return;
     }
   }
-  throw new SerializeError(path, `choice com membros de ramos exclusivos: ${[...new Set(present)].join(', ')}`);
+  throw new ErroSerializacao(path, `choice com membros de ramos exclusivos: ${[...new Set(present)].join(', ')}`);
 }

@@ -1,22 +1,22 @@
 /**
  * O cliente TS contra o contrato de `docs/signer-contract/`: todo frame das fixtures passa pelo JSON Schema, os casos
- * de `guard.json` dão o mesmo veredito na `allowlistPolicy` que dão na guarda do helper
+ * de `guard.json` dão o mesmo veredito na `politicaDeHostsPermitidos` que dão na guarda do helper
  * (`helpers/signer-tls/internal/policy/policy_test.go`), e as conversas são reproduzidas contra o cliente com um
  * helper de mentira que fala exatamente os frames das fixtures.
  */
 import { describe, expect, test } from 'bun:test';
 import { X509Certificate } from 'node:crypto';
 import path from 'node:path';
-import { icpBrasilCertificates } from '@sinete/cert';
+import { certificadosIcpBrasil } from '@sinete/cert';
 import type { Ambiente } from '@sinete/core';
 import { ErroDeTempoEsgotado, loggerEmMemoria } from '@sinete/core';
 import { prepareRequest } from '../src/common.ts';
-import { ambienteHosts } from '../src/endpoints.ts';
-import { PolicyError, SignerError, TransportError } from '../src/errors.ts';
-import { allowlistPolicy } from '../src/policy.ts';
-import type { SignerChannel } from '../src/signer.ts';
-import { connectSignerChannel, parseTlsTranscript } from '../src/signer.ts';
-import type { TlsSigner } from '../src/types.ts';
+import { hostsDoAmbiente } from '../src/endpoints.ts';
+import { ErroPolitica, ErroSigner, ErroTransporte } from '../src/errors.ts';
+import { politicaDeHostsPermitidos } from '../src/policy.ts';
+import type { CanalSigner } from '../src/signer.ts';
+import { conectarCanalSigner, lerTranscricaoTls } from '../src/signer.ts';
+import type { AssinadorTls } from '../src/types.ts';
 
 const DIR = path.join(import.meta.dir, '../../../docs/signer-contract');
 const schema = (await Bun.file(path.join(DIR, 'schema/frame.schema.json')).json()) as Schema;
@@ -171,7 +171,7 @@ describe('schema e fixtures', () => {
   });
 });
 
-describe('guarda: os casos de guard.json na allowlistPolicy', async () => {
+describe('guarda: os casos de guard.json na politicaDeHostsPermitidos', async () => {
   const fx = (await Bun.file(path.join(DIR, 'fixtures/guard.json')).json()) as {
     cases: {
       name: string;
@@ -188,21 +188,21 @@ describe('guarda: os casos de guard.json na allowlistPolicy', async () => {
   test.each(fx.cases.map((c) => [c.name, c] as const))('%s', async (_, c) => {
     const lab = c.ambientes.length === 0;
     const url = new URL(c.url);
-    const hosts = lab ? ['127.0.0.1', 'localhost', '::1'] : c.ambientes.flatMap((a) => ambienteHosts(a));
-    const policy = allowlistPolicy({
+    const hosts = lab ? ['127.0.0.1', 'localhost', '::1'] : c.ambientes.flatMap((a) => hostsDoAmbiente(a));
+    const policy = politicaDeHostsPermitidos({
       hosts,
-      ...(lab ? { ports: [url.port === '' ? 443 : Number(url.port)] } : {}),
+      ...(lab ? { portas: [url.port === '' ? 443 : Number(url.port)] } : {}),
       ...(c.tpAmb === undefined ? {} : { tpAmb: c.tpAmb }),
-      ...(c.requireTpAmb === undefined ? {} : { requireTpAmbInBody: c.requireTpAmb }),
+      ...(c.requireTpAmb === undefined ? {} : { exigirTpAmbNoCorpo: c.requireTpAmb }),
     });
     const r = await prepareRequest(
       {
         url: c.url,
-        method: c.method,
-        headers: c.headers,
-        ...(c.body === '' && c.method === 'GET' ? {} : { body: c.body }),
+        metodo: c.method,
+        cabecalhos: c.headers,
+        ...(c.body === '' && c.method === 'GET' ? {} : { corpo: c.body }),
       },
-      { identity: { kind: 'pem', certChain: '', key: '' }, policy },
+      { identidade: { tipo: 'pem', cadeia: '', chave: '' }, politica: policy },
     ).then(
       () => true,
       () => false,
@@ -213,7 +213,7 @@ describe('guarda: os casos de guard.json na allowlistPolicy', async () => {
 
 /** Helper de mentira: responde com os frames da fixture e deixa o teste olhar o que o cliente mandou. */
 function scriptedHelper(onFrame: (f: Record<string, unknown>, reply: (frame: object) => void) => void): {
-  channel: SignerChannel;
+  channel: CanalSigner;
   sent: Record<string, unknown>[];
 } {
   let listener: (line: string) => void = () => {};
@@ -225,18 +225,18 @@ function scriptedHelper(onFrame: (f: Record<string, unknown>, reply: (frame: obj
   return {
     sent,
     channel: {
-      send: (line) => {
+      enviar: (line) => {
         const f = JSON.parse(line) as Record<string, unknown>;
         sent.push(f);
         onFrame(f, reply);
       },
-      onLine: (l) => {
+      aoReceberLinha: (l) => {
         listener = l;
       },
-      onClose: (l) => {
+      aoFechar: (l) => {
         closers.push(l);
       },
-      close: async () => {
+      fechar: async () => {
         for (const c of closers) c('fechado');
       },
     },
@@ -275,39 +275,39 @@ describe('cliente contra as conversas das fixtures', () => {
         pend?.reply({ v: 1, id: pend.id, result: res.result });
       }
     });
-    const c = await connectSignerChannel(channel);
-    const signer: TlsSigner = {
+    const c = await conectarCanalSigner(channel);
+    const signer: AssinadorTls = {
       mode: 'digest',
-      certificateChain: async () => [new Uint8Array([0x30, 0x82])],
-      sign: async (input, scheme, ctx) => {
+      cadeia: async () => [new Uint8Array([0x30, 0x82])],
+      assinar: async (input, scheme, ctx) => {
         signedWith.push({ len: input.length, scheme, ctx });
         return new Uint8Array([1, 2, 3]);
       },
     };
-    const id = await c.openRemote({
+    const id = await c.abrirRemoto({
       id: 'emitente-11222333000181',
-      signer,
-      allowedHosts: ['homologacao.nfe.fazenda.sp.gov.br'],
+      assinador: signer,
+      hostsPermitidos: ['homologacao.nfe.fazenda.sp.gov.br'],
     });
     const params = req.params as { url: string; headers: Record<string, string> };
-    const r = await c.request(id.id, {
+    const r = await c.enviar(id.id, {
       url: params.url,
-      method: 'POST',
-      headers: params.headers,
-      body: new TextEncoder().encode('<soap>'),
+      metodo: 'POST',
+      cabecalhos: params.headers,
+      corpo: new TextEncoder().encode('<soap>'),
       timeoutMs: 60_000,
     });
     expect(r.status).toBe(200);
-    expect(r.tls).toMatchObject({ protocol: 'TLS 1.2', signatures: 1, resumed: false });
-    expect(r.text()).toBe('<soap>');
+    expect(r.tls).toMatchObject({ protocolo: 'TLS 1.2', assinaturas: 1, retomada: false });
+    expect(r.texto()).toBe('<soap>');
     expect(signedWith).toEqual([
       {
         len: 32,
         scheme: 'rsa_pkcs1_sha256',
         ctx: {
           host: 'homologacao.nfe.fazenda.sp.gov.br',
-          purpose: 'tls12-client-certificate-verify',
-          connectionId: '1',
+          finalidade: 'tls12-client-certificate-verify',
+          idDaConexao: '1',
           handshake: 2,
         },
       },
@@ -343,33 +343,33 @@ describe('cliente contra as conversas das fixtures', () => {
       if (f.method === 'hello') reply({ v: 1, id: f.id, result: HELLO });
       else if (f.method === 'http.request') reply({ v: 1, id: f.id, error: errs[(f.params as { url: string }).url] });
     });
-    const c = await connectSignerChannel(channel);
+    const c = await conectarCanalSigner(channel);
     const send = (url: string) =>
-      c.request('k', { url, method: 'GET', headers: {}, body: undefined, timeoutMs: 1000 }).catch((e: unknown) => e);
-    expect(await send('https://guard.invalid/')).toBeInstanceOf(PolicyError);
+      c.enviar('k', { url, metodo: 'GET', cabecalhos: {}, corpo: undefined, timeoutMs: 1000 }).catch((e: unknown) => e);
+    expect(await send('https://guard.invalid/')).toBeInstanceOf(ErroPolitica);
     expect(await send('https://alert.invalid/')).toMatchObject({
       code: 'certificado_nao_apresentado',
-      detalhes: { alert: 'handshake_failure', stage: 'handshake' },
+      detalhes: { alerta: 'handshake_failure', etapa: 'handshake' },
     });
-    expect(await send('https://sign.invalid/')).toMatchObject({ name: 'SignerError', code: 'assinatura_tls_recusada' });
+    expect(await send('https://sign.invalid/')).toMatchObject({ name: 'ErroSigner', code: 'assinatura_tls_recusada' });
     expect(await send('https://timeout.invalid/')).toBeInstanceOf(ErroDeTempoEsgotado);
     expect(await send('https://p11.invalid/')).toMatchObject({ code: 'pkcs11_falhou' });
     expect(await send('https://stimeout.invalid/')).toMatchObject({ code: 'assinatura_tls_expirou' });
     expect(await send('https://reset.invalid/')).toMatchObject({ code: 'conexao_recusada' });
     expect(await send('https://ca.invalid/')).toMatchObject({ code: 'cadeia_servidor_nao_confiavel' });
     const proto = await send('https://bad.invalid/');
-    expect(proto).toBeInstanceOf(SignerError);
+    expect(proto).toBeInstanceOf(ErroSigner);
     expect(proto).toMatchObject({ code: 'signer_protocolo' });
-    expect(await send('https://reset.invalid/')).toBeInstanceOf(TransportError);
+    expect(await send('https://reset.invalid/')).toBeInstanceOf(ErroTransporte);
   });
 
   test('recusa helper de outra versão e o sign fora da política do dono da chave', async () => {
     const v2 = scriptedHelper((f, reply) => reply({ v: 1, id: f.id, result: { ...HELLO, protocol: 2 } }));
-    await expect(connectSignerChannel(v2.channel)).rejects.toMatchObject({ code: 'signer_protocolo' });
+    await expect(conectarCanalSigner(v2.channel)).rejects.toMatchObject({ code: 'signer_protocolo' });
     // Helper v2 de verdade responde com v: 2 no frame: falha já, sem esperar o prazo do controle.
     const v2frame = scriptedHelper((f, reply) => reply({ v: 2, id: f.id, result: { ...HELLO, protocol: 2 } }));
     const t0 = performance.now();
-    await expect(connectSignerChannel(v2frame.channel, { controlTimeoutMs: 30_000 })).rejects.toMatchObject({
+    await expect(conectarCanalSigner(v2frame.channel, { prazoDeControleMs: 30_000 })).rejects.toMatchObject({
       code: 'signer_protocolo',
     });
     expect(performance.now() - t0).toBeLessThan(5_000);
@@ -383,19 +383,19 @@ describe('cliente contra as conversas das fixtures', () => {
         reply(refused);
       } else if (f.id === 'h9') answers.push(f);
     });
-    const c = await connectSignerChannel(channel);
+    const c = await conectarCanalSigner(channel);
     let calls = 0;
-    await c.openRemote({
+    await c.abrirRemoto({
       id: 'emitente-11222333000181',
-      signer: {
+      assinador: {
         mode: 'digest',
-        certificateChain: async () => [new Uint8Array([0x30])],
-        sign: async () => {
+        cadeia: async () => [new Uint8Array([0x30])],
+        assinar: async () => {
           calls++;
           return new Uint8Array([1]);
         },
       },
-      allowedHosts: ['homologacao.nfe.fazenda.sp.gov.br'],
+      hostsPermitidos: ['homologacao.nfe.fazenda.sp.gov.br'],
     });
     await Bun.sleep(10);
     expect(calls).toBe(0);
@@ -414,17 +414,17 @@ describe('cliente contra as conversas das fixtures', () => {
       if (f.method === 'hello') reply({ v: 1, id: f.id, result: HELLO });
       else close();
     });
-    const orig = channel.onClose;
-    channel.onClose = (l) => {
+    const orig = channel.aoFechar;
+    channel.aoFechar = (l) => {
       close = () => l('processo saiu (1)');
       orig(l);
     };
-    const c = await connectSignerChannel(channel);
-    await expect(c.stats()).rejects.toMatchObject({ code: 'signer_indisponivel' });
+    const c = await conectarCanalSigner(channel);
+    await expect(c.estatisticas()).rejects.toMatchObject({ code: 'signer_indisponivel' });
   });
 });
 
-test('parseTlsTranscript lê o SNI e a folha do servidor', () => {
+test('lerTranscricaoTls lê o SNI e a folha do servidor', () => {
   const sni = new TextEncoder().encode('nfe-homologacao.svrs.rs.gov.br');
   const ext = [0, 0, 0, sni.length + 5, 0, sni.length + 3, 0, 0, sni.length, ...sni];
   const body = [3, 3, ...new Array(32).fill(0), 0, 0, 2, 0xc0, 0x2f, 1, 0, 0, ext.length, ...ext];
@@ -432,9 +432,9 @@ test('parseTlsTranscript lê o SNI e a folha do servidor', () => {
   const cert = [0x30, 0x03, 1, 2, 3];
   const certBody = [0, 0, cert.length + 3, 0, 0, cert.length, ...cert];
   const certMsg = [11, 0, 0, certBody.length, ...certBody];
-  const t = parseTlsTranscript(new Uint8Array([...hello, 2, 0, 0, 0, ...certMsg]));
+  const t = lerTranscricaoTls(new Uint8Array([...hello, 2, 0, 0, 0, ...certMsg]));
   expect(t.sni).toBe('nfe-homologacao.svrs.rs.gov.br');
-  expect([...(t.serverCertificate ?? [])]).toEqual(cert);
+  expect([...(t.certificadoDoServidor ?? [])]).toEqual(cert);
 });
 
 /** Transcript mínimo: ClientHello (com SNI, se houver) e o Certificate do servidor com a folha dada. */
@@ -468,7 +468,7 @@ const IP_SAN_PEM = [
 
 describe('modo message com destino IP: sem SNI e com o endereço no iPAddress do certificado', () => {
   const ipLeaf = new Uint8Array(new X509Certificate(IP_SAN_PEM).raw);
-  const semIp = icpBrasilCertificates()[0]?.der ?? new Uint8Array();
+  const semIp = certificadosIcpBrasil()[0]?.der ?? new Uint8Array();
 
   async function signAs(
     host: string,
@@ -496,15 +496,15 @@ describe('modo message com destino IP: sem SNI e com o endereço no iPAddress do
         });
       } else if (f.id === 'h1') answer = f;
     });
-    const c = await connectSignerChannel(channel);
-    await c.openRemote({
+    const c = await conectarCanalSigner(channel);
+    await c.abrirRemoto({
       id: 'ip',
-      signer: {
+      assinador: {
         mode: 'message',
-        certificateChain: async () => [new Uint8Array([0x30])],
-        sign: async () => new Uint8Array([1]),
+        cadeia: async () => [new Uint8Array([0x30])],
+        assinar: async () => new Uint8Array([1]),
       },
-      allowedHosts,
+      hostsPermitidos: allowedHosts,
     });
     for (let i = 0; i < 50 && !('result' in answer || 'error' in answer); i++) await Bun.sleep(5);
     return answer;
@@ -537,21 +537,21 @@ describe('modo message com destino IP: sem SNI e com o endereço no iPAddress do
   });
 });
 
-test('openRemote com id já aberto não mexe na chave da identidade aberta', async () => {
+test('abrirRemoto com id já aberto não mexe na chave da identidade aberta', async () => {
   const { channel, sent } = scriptedHelper((f, reply) => {
     if (f.method === 'hello') reply({ v: 1, id: f.id, result: HELLO });
     else if (f.method === 'identity.open') reply({ v: 1, id: f.id, result: { ...OPENED, id: 'a' } });
   });
-  const c = await connectSignerChannel(channel);
+  const c = await conectarCanalSigner(channel);
   const signer = {
     mode: 'digest' as const,
-    certificateChain: async () => [new Uint8Array([0x30])],
-    sign: async () => new Uint8Array([1]),
+    cadeia: async () => [new Uint8Array([0x30])],
+    assinar: async () => new Uint8Array([1]),
   };
-  await c.openRemote({ id: 'a', signer, allowedHosts: ['localhost'] });
-  await expect(c.openRemote({ id: 'a', signer, allowedHosts: ['localhost'] })).rejects.toMatchObject({
+  await c.abrirRemoto({ id: 'a', assinador: signer, hostsPermitidos: ['localhost'] });
+  await expect(c.abrirRemoto({ id: 'a', assinador: signer, hostsPermitidos: ['localhost'] })).rejects.toMatchObject({
     code: 'signer_protocolo',
-    detalhes: { code: 'identity_exists' },
+    detalhes: { codigo: 'identity_exists' },
   });
   expect(sent.filter((f) => f.method === 'identity.open')).toHaveLength(1);
 });
@@ -567,17 +567,17 @@ test('identity.open que responde depois do prazo: o cliente fecha a identidade q
     else if (f.method === 'identity.close') reply({ v: 1, id: f.id, result: { closed: true } });
   });
   const logger = loggerEmMemoria();
-  const c = await connectSignerChannel(channel, { controlTimeoutMs: 20, logger });
+  const c = await conectarCanalSigner(channel, { prazoDeControleMs: 20, logger });
   const signer = {
     mode: 'digest' as const,
-    certificateChain: async () => [new Uint8Array([0x30])],
-    sign: async () => new Uint8Array([1]),
+    cadeia: async () => [new Uint8Array([0x30])],
+    assinar: async () => new Uint8Array([1]),
   };
-  await expect(c.openRemote({ id: 'a', signer, allowedHosts: ['localhost'] })).rejects.toBeInstanceOf(
+  await expect(c.abrirRemoto({ id: 'a', assinador: signer, hostsPermitidos: ['localhost'] })).rejects.toBeInstanceOf(
     ErroDeTempoEsgotado,
   );
   await expect(
-    c.openPkcs11({ id: 'p', module: '/lab/libsofthsm2.so', token: 'lab', pin: async () => '0000' }),
+    c.abrirPkcs11({ id: 'p', modulo: '/lab/libsofthsm2.so', token: 'lab', pin: async () => '0000' }),
   ).rejects.toBeInstanceOf(ErroDeTempoEsgotado);
   expect(sent.some((f) => f.method === 'identity.close')).toBe(false);
 
@@ -589,7 +589,7 @@ test('identity.open que responde depois do prazo: o cliente fecha a identidade q
   expect(logger.entradas.filter((e) => e.nivel === 'warn')).toHaveLength(2);
 
   // Fechada a identidade atrasada, o mesmo id abre de novo no canal.
-  expect((await c.openRemote({ id: 'a', signer, allowedHosts: ['localhost'] })).id).toBe('a');
+  expect((await c.abrirRemoto({ id: 'a', assinador: signer, hostsPermitidos: ['localhost'] })).id).toBe('a');
 });
 
 test('chamador que desiste: o cliente manda cancel com o id da requisição ao helper', async () => {
@@ -598,24 +598,24 @@ test('chamador que desiste: o cliente manda cancel com o id da requisição ao h
     else if (f.method === 'identity.open') reply({ v: 1, id: f.id, result: { ...OPENED, id: 'a' } });
     else if (f.method === 'cancel') reply({ v: 1, id: f.id, result: { cancelled: true } });
   });
-  const c = await connectSignerChannel(channel);
-  await c.openRemote({
+  const c = await conectarCanalSigner(channel);
+  await c.abrirRemoto({
     id: 'a',
-    signer: {
+    assinador: {
       mode: 'digest',
-      certificateChain: async () => [new Uint8Array([0x30])],
-      sign: async () => new Uint8Array(),
+      cadeia: async () => [new Uint8Array([0x30])],
+      assinar: async () => new Uint8Array(),
     },
-    allowedHosts: ['localhost'],
+    hostsPermitidos: ['localhost'],
   });
   const ac = new AbortController();
-  const p = c.request(
+  const p = c.enviar(
     'a',
     {
       url: 'https://localhost/',
-      method: 'GET',
-      headers: {},
-      body: undefined,
+      metodo: 'GET',
+      cabecalhos: {},
+      corpo: undefined,
       timeoutMs: 60_000,
     },
     ac.signal,
@@ -631,9 +631,9 @@ test('chamador que desiste: o cliente manda cancel com o id da requisição ao h
   const ja = new AbortController();
   ja.abort();
   await expect(
-    c.request(
+    c.enviar(
       'a',
-      { url: 'https://localhost/', method: 'GET', headers: {}, body: undefined, timeoutMs: 60_000 },
+      { url: 'https://localhost/', metodo: 'GET', cabecalhos: {}, corpo: undefined, timeoutMs: 60_000 },
       ja.signal,
     ),
   ).rejects.toMatchObject({ code: 'cancelado' });
@@ -643,24 +643,24 @@ test('chamador que desiste: o cliente manda cancel com o id da requisição ao h
 test('linha com JSON que não é objeto (null, número, lista) vira aviso, não exceção', async () => {
   let listener: (line: string) => void = () => {};
   const logger = loggerEmMemoria();
-  const c = connectSignerChannel(
+  const c = conectarCanalSigner(
     {
-      send: (line) => {
+      enviar: (line) => {
         const f = JSON.parse(line) as { id: string };
         queueMicrotask(() => {
           for (const junk of ['null', '42', '[1]', '"x"']) listener(junk);
           listener(JSON.stringify({ v: 1, id: f.id, result: HELLO }));
         });
       },
-      onLine: (l) => {
+      aoReceberLinha: (l) => {
         listener = l;
       },
-      onClose: () => {},
-      close: async () => {},
+      aoFechar: () => {},
+      fechar: async () => {},
     },
     { logger },
   );
-  await expect(c).resolves.toMatchObject({ protocolVersion: 1 });
+  await expect(c).resolves.toMatchObject({ versaoDoProtocolo: 1 });
   expect(logger.entradas.filter((e) => e.mensagem === 'sinete-signer: linha que não é frame')).toHaveLength(4);
 });
 
@@ -677,8 +677,8 @@ test('canal que fecha (ou cujo send lança) no meio de um sign: a resposta não 
       let quebrado = false;
       let liberar: () => void = () => {};
       const logger = loggerEmMemoria();
-      const channel: SignerChannel = {
-        send: (line) => {
+      const channel: CanalSigner = {
+        enviar: (line) => {
           if (quebrado) throw new Error('canal fechado');
           const f = JSON.parse(line) as { id: string; method?: string };
           queueMicrotask(() => {
@@ -702,26 +702,26 @@ test('canal que fecha (ou cujo send lança) no meio de um sign: a resposta não 
             }
           });
         },
-        onLine: (l) => {
+        aoReceberLinha: (l) => {
           listener = l;
         },
-        onClose: (l) => {
+        aoFechar: (l) => {
           closers.push(l);
         },
-        close: async () => {},
+        fechar: async () => {},
       };
-      const c = await connectSignerChannel(channel, { logger });
-      await c.openRemote({
+      const c = await conectarCanalSigner(channel, { logger });
+      await c.abrirRemoto({
         id: 'a',
-        signer: {
+        assinador: {
           mode: 'digest',
-          certificateChain: async () => [new Uint8Array([0x30])],
-          sign: () =>
+          cadeia: async () => [new Uint8Array([0x30])],
+          assinar: () =>
             new Promise((resolve) => {
               liberar = () => resolve(new Uint8Array([1]));
             }),
         },
-        allowedHosts: ['localhost'],
+        hostsPermitidos: ['localhost'],
       });
       await Bun.sleep(5);
       quebrado = true;
@@ -743,22 +743,22 @@ test('send que lança: a chamada falha com signer_indisponivel e não deixa praz
   const { channel } = scriptedHelper((f, reply) => {
     if (f.method === 'hello') reply({ v: 1, id: f.id, result: HELLO });
   });
-  const orig = channel.send;
-  channel.send = (line) => {
+  const orig = channel.enviar;
+  channel.enviar = (line) => {
     if (quebrado) throw new Error('EPIPE');
     orig(line);
   };
-  const c = await connectSignerChannel(channel, { controlTimeoutMs: 60_000 });
+  const c = await conectarCanalSigner(channel, { prazoDeControleMs: 60_000 });
   quebrado = true;
   const t0 = performance.now();
-  const e = await c.stats().catch((x: unknown) => x);
-  expect(e).toBeInstanceOf(SignerError);
+  const e = await c.estatisticas().catch((x: unknown) => x);
+  expect(e).toBeInstanceOf(ErroSigner);
   expect(e).toMatchObject({ code: 'signer_indisponivel' });
   expect(performance.now() - t0).toBeLessThan(1_000);
   const ac = new AbortController();
-  const p = c.request(
+  const p = c.enviar(
     'a',
-    { url: 'https://localhost/', method: 'GET', headers: {}, body: undefined, timeoutMs: 1_000 },
+    { url: 'https://localhost/', metodo: 'GET', cabecalhos: {}, corpo: undefined, timeoutMs: 1_000 },
     ac.signal,
   );
   await expect(p).rejects.toMatchObject({ code: 'signer_indisponivel' });
@@ -774,12 +774,12 @@ test('hello que falha (erro, prazo ou outra versão) fecha o canal recebido', as
   for (const responder of casos) {
     const { channel } = scriptedHelper(responder);
     let fechado = false;
-    const close = channel.close;
-    channel.close = async () => {
+    const close = channel.fechar;
+    channel.fechar = async () => {
       fechado = true;
       await close();
     };
-    await expect(connectSignerChannel(channel, { controlTimeoutMs: 50 })).rejects.toBeInstanceOf(Error);
+    await expect(conectarCanalSigner(channel, { prazoDeControleMs: 50 })).rejects.toBeInstanceOf(Error);
     expect(fechado).toBe(true);
   }
 });

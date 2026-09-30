@@ -4,63 +4,75 @@
  * O dataset vem do SQLite da Calculadora offline da RFB e das tabelas do IT 2025.002, fixados por hash e extraídos por
  * `tools/ibs-cbs-dados` (ADR 0007). Esta entrada tem o leitor, a aplicabilidade de NCM/NBS e o diff semântico; o dataset
  * embarcado está em `@sinete/ibs-cbs-dados/bundled`, e qualquer outro bundle compatível pode ser carregado em runtime com
- * `loadDataset` (depois de `verifyDataset`, se veio de fora).
+ * `carregarDataset` (depois de `conferirDataset`, se veio de fora).
  */
 
-export type { Applicability, ApplicabilityResult } from './applicability.ts';
-export { applicability } from './applicability.ts';
-export { canonicalJson, canonicalTable } from './canonical.ts';
-export type { ActorFilter, ClassTribFilter, CredPresInForce, IbsCbsDataset, TaxContent } from './dataset.ts';
-export { contentVersionOf, DATA_SCHEMA_VERSION, loadDataset, TABLE_NAMES, verifyDataset } from './dataset.ts';
-export { BRASILIA_OFFSET_MINUTES, civilDate, inForce, isIsoDate, requireIsoDate } from './dates.ts';
-export type { ChangeKind, DatasetDiff, FieldChange, RecordChange, TableDiff } from './diff.ts';
-export { changeKind, diffDatasets, formatDiff } from './diff.ts';
-export type { IbsCbsDataErrorCode } from './errors.ts';
-export { IbsCbsDataError } from './errors.ts';
+export type { Aplicabilidade, ResultadoAplicabilidade } from './applicability.ts';
+export { aplicabilidade } from './applicability.ts';
+export { jsonCanonico, tabelaCanonica } from './canonical.ts';
+export type { ConteudoTributario, CredPresVigente, DatasetIbsCbs, FiltroClassTrib, FiltroDeAtores } from './dataset.ts';
+export {
+  carregarDataset,
+  conferirDataset,
+  NOMES_DAS_TABELAS,
+  VERSAO_DO_FORMATO_DOS_DADOS,
+  versaoDoConteudo,
+} from './dataset.ts';
+export { DESLOCAMENTO_BRASILIA_MIN, dataCivil, ehDataIso, exigirDataIso, vigente } from './dates.ts';
 export type {
-  ActorClassTribRecord,
-  ActorGroupRecord,
-  ActorRecord,
-  ActorRole,
-  AnnexRecord,
-  ApplicabilityRecord,
-  ByTributo,
-  CbsTransferRecord,
-  ClassTribCredit,
-  ClassTribGroups,
-  ClassTribLegal,
-  ClassTribRecord,
-  CredPresCalculation,
-  CredPresGroups,
-  CredPresRates,
-  CredPresRecord,
-  CstGroups,
-  CstRecord,
-  DataSource,
-  DatasetBundle,
-  DatasetManifest,
-  DatasetTables,
+  DiferencaDeDatasets,
+  DiferencaDeTabela,
+  MudancaDeCampo,
+  MudancaDeRegistro,
+  TipoDeMudanca,
+} from './diff.ts';
+export { compararDatasets, formatarDiferenca, tipoDeMudanca } from './diff.ts';
+export type { CodigoErroDadosIbsCbs } from './errors.ts';
+export { ErroDadosIbsCbs } from './errors.ts';
+export type {
+  AliquotasCredPres,
+  BaseLegal,
+  BaseLegalClassTrib,
+  BundleDoDataset,
+  CalculoCredPres,
+  CreditoClassTrib,
+  DataIso,
   Dec,
-  DfeLink,
-  DfeTypeRecord,
-  Family,
-  FixedRateRecord,
-  GovPurchaseReducerRecord,
-  Indicator,
-  IsoDate,
-  LegalBasis,
-  NfseNbsRecord,
-  Nomenclature,
-  PrefixException,
-  RateKind,
-  ReductionRecord,
-  SourceId,
-  TableManifest,
-  TableName,
-  TreatmentExpressions,
-  TreatmentFlags,
-  TreatmentLink,
-  TreatmentRecord,
+  ExcecaoDePrefixo,
+  ExpressoesDoTratamento,
+  Familia,
+  FonteDoDataset,
+  GruposClassTrib,
+  GruposCredPres,
+  GruposCst,
+  IdDaFonte,
+  Indicador,
+  IndicadoresDoTratamento,
+  ManifestoDaTabela,
+  ManifestoDoDataset,
+  NomeDaTabela,
+  Nomenclatura,
+  PapelDoAtor,
+  PorTributo,
+  RegistroAliquotaFixa,
+  RegistroAnexo,
+  RegistroAplicabilidade,
+  RegistroAtor,
+  RegistroAtorClassTrib,
+  RegistroClassTrib,
+  RegistroCredPres,
+  RegistroCst,
+  RegistroGrupoDeAtores,
+  RegistroNfseNbs,
+  RegistroReducao,
+  RegistroRedutorCompraGov,
+  RegistroTipoDfe,
+  RegistroTransferenciaCbs,
+  RegistroTratamento,
+  TabelasDoDataset,
+  TipoDeAliquota,
   Tributo,
-  Validity,
+  Vigencia,
+  VinculoDfe,
+  VinculoTratamento,
 } from './types.ts';

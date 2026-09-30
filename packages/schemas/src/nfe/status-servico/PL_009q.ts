@@ -8,10 +8,10 @@
  * Fontes (conteúdo oficial, sha256 em tools/xsd-codegen/xsd/<pacote>/SOURCE.md):
  * - nfe/PL_009q_NT2025_001_v1.00 (PL_009q_NT2025_001_v1.00.zip)
  */
-import type { ComplexType, RootElement, SchemaModuleInfo, SimpleType } from "../../runtime/desc.ts";
+import type { ComplexType, DescricaoModuloSchema, ElementoRaiz, SimpleType } from "../../runtime/desc.ts";
 
 /** Proveniência deste módulo. */
-export const schema: SchemaModuleInfo = {
+export const schema: DescricaoModuloSchema = {
   "subpath": "nfe/status-servico/PL_009q",
   "documento": "nfe",
   "pl": "PL_009q_NT2025_001_v1.00",
@@ -139,6 +139,6 @@ export const TRetConsStatServ: ComplexType<TRetConsStatServ> = { id: "TRetConsSt
 
 // ---------- elementos raiz ----------
 /** Elemento raiz `consStatServ` (tipo TConsStatServ). */
-export const consStatServElement: RootElement<TConsStatServ> = { name: "consStatServ", ns: "http://www.portalfiscal.inf.br/nfe", type: TConsStatServ };
+export const consStatServElement: ElementoRaiz<TConsStatServ> = { nome: "consStatServ", ns: "http://www.portalfiscal.inf.br/nfe", tipo: TConsStatServ };
 /** Elemento raiz `retConsStatServ` (tipo TRetConsStatServ). */
-export const retConsStatServElement: RootElement<TRetConsStatServ> = { name: "retConsStatServ", ns: "http://www.portalfiscal.inf.br/nfe", type: TRetConsStatServ };
+export const retConsStatServElement: ElementoRaiz<TRetConsStatServ> = { nome: "retConsStatServ", ns: "http://www.portalfiscal.inf.br/nfe", tipo: TRetConsStatServ };

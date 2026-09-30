@@ -11,17 +11,17 @@
       "date": "2026-09-12",
       "op": {
         "modelo": 76,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
             "cClassTrib": "410026",
             "base": "7895.00",
-            "creditReversal": {
+            "estornoDeCredito": {
               "vIBSEstCred": "1544.94",
               "vCBSEstCred": "4891.44"
             }
@@ -93,11 +93,11 @@
       "date": "2026-03-19",
       "op": {
         "modelo": 91,
-        "place": {
+        "local": {
           "uf": "SP",
           "cMun": "3550308"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
@@ -147,11 +147,11 @@
       "date": "2026-03-05",
       "op": {
         "modelo": 65,
-        "place": {
+        "local": {
           "uf": "SP",
           "cMun": "3550308"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
@@ -201,11 +201,11 @@
       "date": "2026-09-27",
       "op": {
         "modelo": 92,
-        "place": {
+        "local": {
           "uf": "SP",
           "cMun": "3550308"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "000",
@@ -302,14 +302,14 @@
       "date": "2026-05-10",
       "op": {
         "modelo": 65,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "governmentPurchase": {
+        "compraGovernamental": {
           "tpEnteGov": 1
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -376,11 +376,11 @@
       "date": "2026-09-19",
       "op": {
         "modelo": 65,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -439,11 +439,11 @@
       "date": "2026-11-23",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
@@ -493,11 +493,11 @@
       "date": "2026-09-07",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "SP",
           "cMun": "3550308"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "550",
@@ -553,11 +553,11 @@
       "date": "2026-02-23",
       "op": {
         "modelo": 91,
-        "place": {
+        "local": {
           "uf": "SP",
           "cMun": "3550308"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -610,20 +610,20 @@
       "date": "2032-05-10",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "governmentPurchase": {
+        "compraGovernamental": {
           "tpEnteGov": 6
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
             "cClassTrib": "410014",
             "base": "14215.00",
-            "presumedCredit": {
+            "creditoPresumido": {
               "cCredPres": 11,
               "vBCCredPres": "14215.00",
               "ibs": {
@@ -636,7 +636,7 @@
             "cst": "410",
             "cClassTrib": "410026",
             "base": "3465.00",
-            "creditReversal": {
+            "estornoDeCredito": {
               "vIBSEstCred": "9255.51",
               "vCBSEstCred": "721.41"
             }
@@ -646,11 +646,11 @@
             "cst": "000",
             "cClassTrib": "000005",
             "base": "48885.08",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.8",
               "IBSUF": "10.25",
               "IBSMun": "7.2",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -773,11 +773,11 @@
       "date": "2026-08-15",
       "op": {
         "modelo": 65,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -813,17 +813,17 @@
       "date": "2026-08-18",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
             "cClassTrib": "410030",
             "base": "1124.49",
-            "creditReversal": {
+            "estornoDeCredito": {
               "vIBSEstCred": "6447.49",
               "vCBSEstCred": "6741.36"
             }
@@ -886,11 +886,11 @@
       "date": "2026-10-16",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -926,11 +926,11 @@
       "date": "2026-10-02",
       "op": {
         "modelo": 65,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -966,11 +966,11 @@
       "date": "2026-11-24",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "SP",
           "cMun": "3550308"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
@@ -1029,21 +1029,21 @@
       "date": "2032-06-01",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
             "cClassTrib": "200015",
             "base": "28409.25",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "9.3",
               "IBSUF": "9.5",
               "IBSMun": "2.5",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           },
           {
@@ -1055,11 +1055,11 @@
               "cst": "200",
               "cClassTrib": "200010"
             },
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "9.3",
               "IBSUF": "17.7",
               "IBSMun": "7.2",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           },
           {
@@ -1133,11 +1133,11 @@
       "date": "2026-10-22",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "AM",
           "cMun": "1302603"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
@@ -1149,7 +1149,7 @@
             "cst": "410",
             "cClassTrib": "410030",
             "base": "1016028.14",
-            "creditReversal": {
+            "estornoDeCredito": {
               "vIBSEstCred": "7945.84",
               "vCBSEstCred": "6625.03"
             }
@@ -1258,11 +1258,11 @@
       "date": "2026-11-11",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "AM",
           "cMun": "1302603"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "000",
@@ -1315,11 +1315,11 @@
       "date": "2026-06-02",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -1378,11 +1378,11 @@
       "date": "2028-03-14",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "550",
@@ -1392,11 +1392,11 @@
               "cst": "200",
               "cClassTrib": "200009"
             },
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "9.25",
               "IBSUF": "0.05",
               "IBSMun": "0.05",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           },
           {
@@ -1453,11 +1453,11 @@
       "date": "2026-10-14",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
@@ -1525,11 +1525,11 @@
       "date": "2031-05-25",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "AM",
           "cMun": "1302603"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -1541,11 +1541,11 @@
             "cst": "200",
             "cClassTrib": "200008",
             "base": "3371031.05",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.8",
               "IBSUF": "10.25",
               "IBSMun": "2.5",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -1594,14 +1594,14 @@
       "date": "2029-12-09",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "AM",
           "cMun": "1302603"
         },
-        "governmentPurchase": {
+        "compraGovernamental": {
           "tpEnteGov": 4
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -1613,11 +1613,11 @@
             "cst": "200",
             "cClassTrib": "200034",
             "base": "11413.38",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.8",
               "IBSUF": "17.7",
               "IBSMun": "2.5",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -1674,21 +1674,21 @@
       "date": "2033-05-14",
       "op": {
         "modelo": 65,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
             "cClassTrib": "200031",
             "base": "49309.91",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "9.3",
               "IBSUF": "10.25",
               "IBSMun": "2.5",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -1734,11 +1734,11 @@
       "date": "2026-05-07",
       "op": {
         "modelo": 93,
-        "place": {
+        "local": {
           "uf": "AM",
           "cMun": "1302603"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -1774,11 +1774,11 @@
       "date": "2026-03-02",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -1852,11 +1852,11 @@
       "date": "2026-05-05",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
@@ -1929,11 +1929,11 @@
       "date": "2026-03-25",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "SP",
           "cMun": "3550308"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "550",
@@ -1989,11 +1989,11 @@
       "date": "2028-09-02",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "SP",
           "cMun": "3550308"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "550",
@@ -2003,11 +2003,11 @@
               "cst": "000",
               "cClassTrib": "000005"
             },
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "9.25",
               "IBSUF": "0.1",
               "IBSMun": "0.05",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           },
           {
@@ -2015,11 +2015,11 @@
             "cst": "200",
             "cClassTrib": "200010",
             "base": "6805.00",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.8",
               "IBSUF": "0.05",
               "IBSMun": "0.05",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -2084,11 +2084,11 @@
       "date": "2026-02-04",
       "op": {
         "modelo": 65,
-        "place": {
+        "local": {
           "uf": "AM",
           "cMun": "1302603"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
@@ -2170,11 +2170,11 @@
       "date": "2032-09-10",
       "op": {
         "modelo": 94,
-        "place": {
+        "local": {
           "uf": "AM",
           "cMun": "1302603"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -2186,11 +2186,11 @@
             "cst": "200",
             "cClassTrib": "200017",
             "base": "10185.00",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.8",
               "IBSUF": "17.7",
               "IBSMun": "2.5",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -2245,14 +2245,14 @@
       "date": "2026-12-15",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "governmentPurchase": {
+        "compraGovernamental": {
           "tpEnteGov": 4
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "550",
@@ -2423,14 +2423,14 @@
       "date": "2026-06-25",
       "op": {
         "modelo": 91,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "governmentPurchase": {
+        "compraGovernamental": {
           "tpEnteGov": 6
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
@@ -2517,11 +2517,11 @@
       "date": "2026-11-06",
       "op": {
         "modelo": 65,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
@@ -2594,14 +2594,14 @@
       "date": "2026-04-19",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "governmentPurchase": {
+        "compraGovernamental": {
           "tpEnteGov": 4
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "550",
@@ -2721,14 +2721,14 @@
       "date": "2027-01-10",
       "op": {
         "modelo": 65,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "governmentPurchase": {
+        "compraGovernamental": {
           "tpEnteGov": 5
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -2740,11 +2740,11 @@
             "cst": "200",
             "cClassTrib": "200015",
             "base": "40231.64",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.7",
               "IBSUF": "0.1",
               "IBSMun": "0.05",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           },
           {
@@ -2752,11 +2752,11 @@
             "cst": "200",
             "cClassTrib": "200030",
             "base": "34341.58",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "9.25",
               "IBSUF": "0.05",
               "IBSMun": "0.05",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -2836,24 +2836,24 @@
       "date": "2027-02-22",
       "op": {
         "modelo": 91,
-        "place": {
+        "local": {
           "uf": "SP",
           "cMun": "3550308"
         },
-        "governmentPurchase": {
+        "compraGovernamental": {
           "tpEnteGov": 3
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
             "cClassTrib": "200016",
             "base": "7034568.13",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.8",
               "IBSUF": "0.05",
               "IBSMun": "0.05",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -2907,17 +2907,17 @@
       "date": "2026-09-07",
       "op": {
         "modelo": 63,
-        "place": {
+        "local": {
           "uf": "AM",
           "cMun": "1302603"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
             "cClassTrib": "410026",
             "base": "8.34",
-            "creditReversal": {
+            "estornoDeCredito": {
               "vIBSEstCred": "3221.17",
               "vCBSEstCred": "1356.40"
             }
@@ -3006,11 +3006,11 @@
       "date": "2028-11-25",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "SP",
           "cMun": "3550308"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "550",
@@ -3020,11 +3020,11 @@
               "cst": "000",
               "cClassTrib": "000004"
             },
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "9.25",
               "IBSUF": "0.05",
               "IBSMun": "0.05",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -3072,24 +3072,24 @@
       "date": "2029-08-03",
       "op": {
         "modelo": 65,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "governmentPurchase": {
+        "compraGovernamental": {
           "tpEnteGov": 6
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
             "cClassTrib": "200047",
             "base": "33607.20",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.8",
               "IBSUF": "17.7",
               "IBSMun": "2.5",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -3143,11 +3143,11 @@
       "date": "2026-08-06",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "SP",
           "cMun": "3550308"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -3183,14 +3183,14 @@
       "date": "2026-12-12",
       "op": {
         "modelo": 77,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "governmentPurchase": {
+        "compraGovernamental": {
           "tpEnteGov": 1
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -3243,21 +3243,21 @@
       "date": "2033-08-28",
       "op": {
         "modelo": 65,
-        "place": {
+        "local": {
           "uf": "AM",
           "cMun": "1302603"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
             "cClassTrib": "200036",
             "base": "305.00",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "9.3",
               "IBSUF": "10.25",
               "IBSMun": "2.5",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -3316,21 +3316,21 @@
       "date": "2027-01-16",
       "op": {
         "modelo": 91,
-        "place": {
+        "local": {
           "uf": "SP",
           "cMun": "3550308"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
             "cClassTrib": "200016",
             "base": "39555.39",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "9.25",
               "IBSUF": "0.05",
               "IBSMun": "0.05",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           },
           {
@@ -3385,11 +3385,11 @@
       "date": "2026-06-24",
       "op": {
         "modelo": 65,
-        "place": {
+        "local": {
           "uf": "SP",
           "cMun": "3550308"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -3401,7 +3401,7 @@
             "cst": "200",
             "cClassTrib": "200054",
             "base": "17504.79",
-            "creditReversal": {
+            "estornoDeCredito": {
               "vIBSEstCred": "4805.09",
               "vCBSEstCred": "5664.17"
             }
@@ -3504,14 +3504,14 @@
       "date": "2030-07-19",
       "op": {
         "modelo": 91,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "governmentPurchase": {
+        "compraGovernamental": {
           "tpEnteGov": 5
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -3529,11 +3529,11 @@
             "cst": "200",
             "cClassTrib": "200045",
             "base": "16445.00",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.8",
               "IBSUF": "9.5",
               "IBSMun": "7.2",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -3593,11 +3593,11 @@
       "date": "2026-03-27",
       "op": {
         "modelo": 65,
-        "place": {
+        "local": {
           "uf": "SP",
           "cMun": "3550308"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
@@ -3647,11 +3647,11 @@
       "date": "2026-03-24",
       "op": {
         "modelo": 91,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -3705,21 +3705,21 @@
       "date": "2027-12-25",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "000",
             "cClassTrib": "000005",
             "base": "3054633.91",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.75",
               "IBSUF": "0.1",
               "IBSMun": "0.05",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -3759,21 +3759,21 @@
       "date": "2027-03-01",
       "op": {
         "modelo": 91,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
             "cClassTrib": "200019",
             "base": "47161.96",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.8",
               "IBSUF": "0.1",
               "IBSMun": "0.05",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -3819,11 +3819,11 @@
       "date": "2026-07-17",
       "op": {
         "modelo": 66,
-        "place": {
+        "local": {
           "uf": "AM",
           "cMun": "1302603"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -3868,11 +3868,11 @@
       "date": "2033-04-04",
       "op": {
         "modelo": 91,
-        "place": {
+        "local": {
           "uf": "SP",
           "cMun": "3550308"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -3926,11 +3926,11 @@
       "date": "2027-10-05",
       "op": {
         "modelo": 65,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -3942,11 +3942,11 @@
             "cst": "200",
             "cClassTrib": "200013",
             "base": "6379.55",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.8",
               "IBSUF": "0.05",
               "IBSMun": "0.05",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -3995,21 +3995,21 @@
       "date": "2028-06-05",
       "op": {
         "modelo": 67,
-        "place": {
+        "local": {
           "uf": "SP",
           "cMun": "3550308"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
             "cClassTrib": "200001",
             "base": "1527172.64",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.7",
               "IBSUF": "0.05",
               "IBSMun": "0.05",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           },
           {
@@ -4064,21 +4064,21 @@
       "date": "2031-06-26",
       "op": {
         "modelo": 91,
-        "place": {
+        "local": {
           "uf": "SP",
           "cMun": "3550308"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
             "cClassTrib": "200020",
             "base": "14195.00",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "9.3",
               "IBSUF": "17.7",
               "IBSMun": "2.5",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           },
           {
@@ -4086,11 +4086,11 @@
             "cst": "200",
             "cClassTrib": "200001",
             "base": "15345.00",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.8",
               "IBSUF": "17.7",
               "IBSMun": "2.5",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -4153,14 +4153,14 @@
       "date": "2026-06-05",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "governmentPurchase": {
+        "compraGovernamental": {
           "tpEnteGov": 4
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -4248,11 +4248,11 @@
       "date": "2026-05-21",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "AM",
           "cMun": "1302603"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -4340,11 +4340,11 @@
       "date": "2026-05-27",
       "op": {
         "modelo": 65,
-        "place": {
+        "local": {
           "uf": "AM",
           "cMun": "1302603"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
@@ -4394,24 +4394,24 @@
       "date": "2032-12-04",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "governmentPurchase": {
+        "compraGovernamental": {
           "tpEnteGov": 3
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
             "cClassTrib": "200004",
             "base": "4.98",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "9.3",
               "IBSUF": "9.5",
               "IBSMun": "5.05",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           },
           {
@@ -4429,11 +4429,11 @@
               "cst": "200",
               "cClassTrib": "200009"
             },
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "9.3",
               "IBSUF": "9.5",
               "IBSMun": "7.2",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -4521,21 +4521,21 @@
       "date": "2027-04-16",
       "op": {
         "modelo": 91,
-        "place": {
+        "local": {
           "uf": "SP",
           "cMun": "3550308"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
             "cClassTrib": "200030",
             "base": "7977579.30",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.75",
               "IBSUF": "0.05",
               "IBSMun": "0.05",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           },
           {
@@ -4543,11 +4543,11 @@
             "cst": "200",
             "cClassTrib": "200029",
             "base": "15287.98",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "9.25",
               "IBSUF": "0.05",
               "IBSMun": "0.05",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -4641,11 +4641,11 @@
       "date": "2029-12-24",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "SP",
           "cMun": "3550308"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "550",
@@ -4655,11 +4655,11 @@
               "cst": "200",
               "cClassTrib": "200012"
             },
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.8",
               "IBSUF": "10.25",
               "IBSMun": "2.5",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           },
           {
@@ -4671,11 +4671,11 @@
               "cst": "000",
               "cClassTrib": "000004"
             },
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.8",
               "IBSUF": "10.25",
               "IBSMun": "2.5",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -4742,11 +4742,11 @@
       "date": "2026-04-12",
       "op": {
         "modelo": 65,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
@@ -4796,11 +4796,11 @@
       "date": "2026-06-21",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "AM",
           "cMun": "1302603"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "000",
@@ -4844,11 +4844,11 @@
       "date": "2026-01-03",
       "op": {
         "modelo": 65,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -4916,14 +4916,14 @@
       "date": "2028-08-22",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "governmentPurchase": {
+        "compraGovernamental": {
           "tpEnteGov": 4
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "550",
@@ -4933,11 +4933,11 @@
               "cst": "000",
               "cClassTrib": "000001"
             },
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.75",
               "IBSUF": "0.1",
               "IBSMun": "0.05",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           },
           {
@@ -5017,21 +5017,21 @@
       "date": "2028-09-14",
       "op": {
         "modelo": 65,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
             "cClassTrib": "200003",
             "base": "13394.47",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.8",
               "IBSUF": "0.1",
               "IBSMun": "0.05",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -5077,11 +5077,11 @@
       "date": "2026-06-10",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "AM",
           "cMun": "1302603"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -5126,11 +5126,11 @@
       "date": "2028-02-09",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -5142,7 +5142,7 @@
             "cst": "410",
             "cClassTrib": "410016",
             "base": "45114.52",
-            "presumedCredit": {
+            "creditoPresumido": {
               "cCredPres": 4,
               "vBCCredPres": "45114.52",
               "ibs": {
@@ -5240,21 +5240,21 @@
       "date": "2031-02-09",
       "op": {
         "modelo": 91,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
             "cClassTrib": "200004",
             "base": "15125.00",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.8",
               "IBSUF": "9.5",
               "IBSMun": "2.5",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -5300,11 +5300,11 @@
       "date": "2026-08-10",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "550",
@@ -5360,11 +5360,11 @@
       "date": "2026-06-10",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "AM",
           "cMun": "1302603"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
@@ -5443,11 +5443,11 @@
       "date": "2026-06-24",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
@@ -5497,11 +5497,11 @@
       "date": "2026-01-08",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "AM",
           "cMun": "1302603"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "550",
@@ -5615,11 +5615,11 @@
       "date": "2026-08-16",
       "op": {
         "modelo": 65,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
@@ -5669,17 +5669,17 @@
       "date": "2026-07-27",
       "op": {
         "modelo": 77,
-        "place": {
+        "local": {
           "uf": "AM",
           "cMun": "1302603"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
             "cClassTrib": "410026",
             "base": "5399.15",
-            "creditReversal": {
+            "estornoDeCredito": {
               "vIBSEstCred": "6660.92",
               "vCBSEstCred": "9842.00"
             }
@@ -5732,21 +5732,21 @@
       "date": "2029-04-03",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "000",
             "cClassTrib": "000001",
             "base": "42830.53",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.8",
               "IBSUF": "9.5",
               "IBSMun": "2.5",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           },
           {
@@ -5754,7 +5754,7 @@
             "cst": "410",
             "cClassTrib": "410026",
             "base": "468880.88",
-            "creditReversal": {
+            "estornoDeCredito": {
               "vIBSEstCred": "9875.68",
               "vCBSEstCred": "3444.31"
             }
@@ -5828,11 +5828,11 @@
       "date": "2026-12-07",
       "op": {
         "modelo": 91,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
@@ -5882,11 +5882,11 @@
       "date": "2026-01-16",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "SP",
           "cMun": "3550308"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "000",
@@ -5959,11 +5959,11 @@
       "date": "2029-11-18",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -5975,11 +5975,11 @@
             "cst": "200",
             "cClassTrib": "200034",
             "base": "6695.00",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "9.3",
               "IBSUF": "17.7",
               "IBSMun": "7.2",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           },
           {
@@ -5987,11 +5987,11 @@
             "cst": "510",
             "cClassTrib": "510001",
             "base": "4685.00",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "9.3",
               "IBSUF": "9.5",
               "IBSMun": "2.5",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -6070,14 +6070,14 @@
       "date": "2026-02-21",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "SP",
           "cMun": "3550308"
         },
-        "governmentPurchase": {
+        "compraGovernamental": {
           "tpEnteGov": 3
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -6156,14 +6156,14 @@
       "date": "2026-12-18",
       "op": {
         "modelo": 66,
-        "place": {
+        "local": {
           "uf": "AM",
           "cMun": "1302603"
         },
-        "governmentPurchase": {
+        "compraGovernamental": {
           "tpEnteGov": 2
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -6210,11 +6210,11 @@
       "date": "2026-07-23",
       "op": {
         "modelo": 66,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -6268,11 +6268,11 @@
       "date": "2026-11-01",
       "op": {
         "modelo": 65,
-        "place": {
+        "local": {
           "uf": "SP",
           "cMun": "3550308"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -6308,11 +6308,11 @@
       "date": "2026-08-16",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "SP",
           "cMun": "3550308"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
@@ -6391,11 +6391,11 @@
       "date": "2027-05-25",
       "op": {
         "modelo": 95,
-        "place": {
+        "local": {
           "uf": "SP",
           "cMun": "3550308"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -6440,14 +6440,14 @@
       "date": "2026-02-07",
       "op": {
         "modelo": 91,
-        "place": {
+        "local": {
           "uf": "AM",
           "cMun": "1302603"
         },
-        "governmentPurchase": {
+        "compraGovernamental": {
           "tpEnteGov": 4
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
@@ -6505,11 +6505,11 @@
       "date": "2026-09-17",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "AM",
           "cMun": "1302603"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
@@ -6576,24 +6576,24 @@
       "date": "2027-08-26",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "governmentPurchase": {
+        "compraGovernamental": {
           "tpEnteGov": 5
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
             "cClassTrib": "200014",
             "base": "16178.86",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.8",
               "IBSUF": "0.1",
               "IBSMun": "0.05",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           },
           {
@@ -6656,21 +6656,21 @@
       "date": "2032-07-27",
       "op": {
         "modelo": 91,
-        "place": {
+        "local": {
           "uf": "AM",
           "cMun": "1302603"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
             "cClassTrib": "200051",
             "base": "4245.00",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "9.3",
               "IBSUF": "17.7",
               "IBSMun": "5.05",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           },
           {
@@ -6678,11 +6678,11 @@
             "cst": "200",
             "cClassTrib": "200019",
             "base": "28460.33",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.8",
               "IBSUF": "17.7",
               "IBSMun": "2.5",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -6745,14 +6745,14 @@
       "date": "2026-01-15",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "AM",
           "cMun": "1302603"
         },
-        "governmentPurchase": {
+        "compraGovernamental": {
           "tpEnteGov": 3
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -6819,21 +6819,21 @@
       "date": "2033-06-13",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
             "cClassTrib": "200053",
             "base": "5055.55",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.8",
               "IBSUF": "10.25",
               "IBSMun": "2.5",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           },
           {
@@ -6841,11 +6841,11 @@
             "cst": "000",
             "cClassTrib": "000003",
             "base": "8155.00",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.8",
               "IBSUF": "17.7",
               "IBSMun": "2.5",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           },
           {
@@ -6853,11 +6853,11 @@
             "cst": "200",
             "cClassTrib": "200003",
             "base": "16345.00",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "9.3",
               "IBSUF": "17.7",
               "IBSMun": "2.5",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -6944,11 +6944,11 @@
       "date": "2026-06-13",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "SP",
           "cMun": "3550308"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -6984,14 +6984,14 @@
       "date": "2028-02-27",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "governmentPurchase": {
+        "compraGovernamental": {
           "tpEnteGov": 5
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "550",
@@ -7001,11 +7001,11 @@
               "cst": "200",
               "cClassTrib": "200013"
             },
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "9.25",
               "IBSUF": "0.05",
               "IBSMun": "0.05",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           },
           {
@@ -7013,11 +7013,11 @@
             "cst": "200",
             "cClassTrib": "200003",
             "base": "14143.86",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.8",
               "IBSUF": "0.1",
               "IBSMun": "0.05",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -7102,11 +7102,11 @@
       "date": "2033-08-01",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "AM",
           "cMun": "1302603"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "550",
@@ -7116,11 +7116,11 @@
               "cst": "200",
               "cClassTrib": "200013"
             },
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "9.3",
               "IBSUF": "9.5",
               "IBSMun": "7.2",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           },
           {
@@ -7132,11 +7132,11 @@
               "cst": "000",
               "cClassTrib": "000003"
             },
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "9.3",
               "IBSUF": "10.25",
               "IBSMun": "7.2",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           },
           {
@@ -7148,11 +7148,11 @@
               "cst": "200",
               "cClassTrib": "200002"
             },
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "9.3",
               "IBSUF": "10.25",
               "IBSMun": "2.5",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -7281,11 +7281,11 @@
       "date": "2032-12-13",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "SP",
           "cMun": "3550308"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "550",
@@ -7295,11 +7295,11 @@
               "cst": "000",
               "cClassTrib": "000003"
             },
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "9.3",
               "IBSUF": "9.5",
               "IBSMun": "5.05",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           },
           {
@@ -7307,7 +7307,7 @@
             "cst": "811",
             "cClassTrib": "811002",
             "base": "22553.07",
-            "competenceAdjustment": {
+            "ajusteDeCompetencia": {
               "competApur": "2032-09",
               "vIBS": "4387.69",
               "vCBS": "5350.81"
@@ -7318,11 +7318,11 @@
             "cst": "200",
             "cClassTrib": "200034",
             "base": "11790.07",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.8",
               "IBSUF": "17.7",
               "IBSMun": "7.2",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -7399,11 +7399,11 @@
       "date": "2026-11-06",
       "op": {
         "modelo": 91,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
@@ -7415,7 +7415,7 @@
             "cst": "410",
             "cClassTrib": "410026",
             "base": "31797.99",
-            "creditReversal": {
+            "estornoDeCredito": {
               "vIBSEstCred": "897.00",
               "vCBSEstCred": "3596.32"
             }
@@ -7495,11 +7495,11 @@
       "date": "2027-11-09",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "AM",
           "cMun": "1302603"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "550",
@@ -7509,11 +7509,11 @@
               "cst": "200",
               "cClassTrib": "200013"
             },
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.7",
               "IBSUF": "0.05",
               "IBSMun": "0.05",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -7561,21 +7561,21 @@
       "date": "2031-08-05",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
             "cClassTrib": "200002",
             "base": "49092.51",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.8",
               "IBSUF": "17.7",
               "IBSMun": "5.05",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           },
           {
@@ -7630,11 +7630,11 @@
       "date": "2026-06-19",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "AM",
           "cMun": "1302603"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -7679,11 +7679,11 @@
       "date": "2026-08-02",
       "op": {
         "modelo": 91,
-        "place": {
+        "local": {
           "uf": "AM",
           "cMun": "1302603"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
@@ -7756,21 +7756,21 @@
       "date": "2027-07-17",
       "op": {
         "modelo": 92,
-        "place": {
+        "local": {
           "uf": "AM",
           "cMun": "1302603"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "000",
             "cClassTrib": "000002",
             "base": "565.00",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.8",
               "IBSUF": "0.1",
               "IBSMun": "0.05",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           },
           {
@@ -7778,11 +7778,11 @@
             "cst": "000",
             "cClassTrib": "000002",
             "base": "18705.00",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.75",
               "IBSUF": "0.05",
               "IBSMun": "0.05",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -7858,11 +7858,11 @@
       "date": "2026-03-20",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -7930,14 +7930,14 @@
       "date": "2026-02-15",
       "op": {
         "modelo": 65,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "governmentPurchase": {
+        "compraGovernamental": {
           "tpEnteGov": 4
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
@@ -8004,11 +8004,11 @@
       "date": "2026-12-01",
       "op": {
         "modelo": 91,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -8044,21 +8044,21 @@
       "date": "2028-03-13",
       "op": {
         "modelo": 91,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
             "cClassTrib": "200025",
             "base": "977513.67",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.7",
               "IBSUF": "0.05",
               "IBSMun": "0.05",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           },
           {
@@ -8066,11 +8066,11 @@
             "cst": "200",
             "cClassTrib": "200027",
             "base": "16069.63",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.75",
               "IBSUF": "0.05",
               "IBSMun": "0.05",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -8146,14 +8146,14 @@
       "date": "2026-07-14",
       "op": {
         "modelo": 91,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "governmentPurchase": {
+        "compraGovernamental": {
           "tpEnteGov": 3
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -8200,11 +8200,11 @@
       "date": "2028-02-01",
       "op": {
         "modelo": 75,
-        "place": {
+        "local": {
           "uf": "AM",
           "cMun": "1302603"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -8258,11 +8258,11 @@
       "date": "2026-01-17",
       "op": {
         "modelo": 65,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
@@ -8312,11 +8312,11 @@
       "date": "2033-07-11",
       "op": {
         "modelo": 91,
-        "place": {
+        "local": {
           "uf": "AM",
           "cMun": "1302603"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -8328,11 +8328,11 @@
             "cst": "010",
             "cClassTrib": "010001",
             "base": "12005.00",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.8",
               "IBSUF": "17.7",
               "IBSMun": "2.5",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -8388,11 +8388,11 @@
       "date": "2026-11-10",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
@@ -8451,11 +8451,11 @@
       "date": "2026-05-03",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "550",
@@ -8511,11 +8511,11 @@
       "date": "2026-03-24",
       "op": {
         "modelo": 91,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -8583,21 +8583,21 @@
       "date": "2027-07-19",
       "op": {
         "modelo": 65,
-        "place": {
+        "local": {
           "uf": "AM",
           "cMun": "1302603"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
             "cClassTrib": "200030",
             "base": "8642753.48",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "9.25",
               "IBSUF": "0.05",
               "IBSMun": "0.05",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           }
         ]
@@ -8643,11 +8643,11 @@
       "date": "2032-01-16",
       "op": {
         "modelo": 55,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
@@ -8683,17 +8683,17 @@
       "date": "2026-11-13",
       "op": {
         "modelo": 91,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",
             "cClassTrib": "410026",
             "base": "16265.00",
-            "creditReversal": {
+            "estornoDeCredito": {
               "vIBSEstCred": "500.57",
               "vCBSEstCred": "3805.51"
             }
@@ -8756,17 +8756,17 @@
       "date": "2026-07-21",
       "op": {
         "modelo": 91,
-        "place": {
+        "local": {
           "uf": "MT",
           "cMun": "5103403"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "811",
             "cClassTrib": "811002",
             "base": "20391.14",
-            "competenceAdjustment": {
+            "ajusteDeCompetencia": {
               "competApur": "2026-01",
               "vIBS": "3334.85",
               "vCBS": "5827.37"
@@ -8810,11 +8810,11 @@
       "date": "2026-07-15",
       "op": {
         "modelo": 91,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
@@ -8873,21 +8873,21 @@
       "date": "2033-11-26",
       "op": {
         "modelo": 91,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
             "cClassTrib": "200046",
             "base": "12465.00",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "8.8",
               "IBSUF": "9.5",
               "IBSMun": "7.2",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           },
           {
@@ -8942,21 +8942,21 @@
       "date": "2028-01-13",
       "op": {
         "modelo": 91,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "200",
             "cClassTrib": "200041",
             "base": "5700087.44",
-            "informedRates": {
+            "aliquotasInformadas": {
               "CBS": "9.25",
               "IBSUF": "0.05",
               "IBSMun": "0.05",
-              "reason": "simulação sintética do oráculo"
+              "motivo": "simulação sintética do oráculo"
             }
           },
           {
@@ -9024,11 +9024,11 @@
       "date": "2026-05-25",
       "op": {
         "modelo": 91,
-        "place": {
+        "local": {
           "uf": "RS",
           "cMun": "4314902"
         },
-        "items": [
+        "itens": [
           {
             "n": 1,
             "cst": "410",

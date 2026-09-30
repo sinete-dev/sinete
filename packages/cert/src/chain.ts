@@ -7,10 +7,10 @@
  */
 
 import type { Relogio } from '@sinete/core';
-import { icpBrasilCertificates } from './bundle.ts';
+import { certificadosIcpBrasil } from './bundle.ts';
 import { equalBytes } from './der.ts';
-import type { CertificateInfo } from './x509.ts';
-import { namesMatch, parseCertificate } from './x509.ts';
+import type { CertificadoX509 } from './x509.ts';
+import { lerCertificado, nomesIguais } from './x509.ts';
 
 const SIG_HASH: Readonly<Record<string, string>> = {
   '1.2.840.113549.1.1.5': 'SHA-1',
@@ -21,20 +21,23 @@ const SIG_HASH: Readonly<Record<string, string>> = {
 
 const ab = (b: Uint8Array): Uint8Array<ArrayBuffer> => b as Uint8Array<ArrayBuffer>;
 
-/** Confere se `issuer` assinou `cert`. `undefined` quando o algoritmo não é suportado (ex.: RSA-PSS, ECDSA). */
-export async function verifyIssuedBy(cert: CertificateInfo, issuer: CertificateInfo): Promise<boolean | undefined> {
+/** Confere se `emissor` assinou `cert`. `undefined` quando o algoritmo não é suportado (ex.: RSA-PSS, ECDSA). */
+export async function conferirEmitidoPor(
+  cert: CertificadoX509,
+  emissor: CertificadoX509,
+): Promise<boolean | undefined> {
   const hash = SIG_HASH[cert.signatureAlgorithm];
-  if (!hash || issuer.publicKey.algorithm !== 'RSA') return undefined;
+  if (!hash || emissor.chavePublica.algoritmo !== 'RSA') return undefined;
   const alg = { name: 'RSASSA-PKCS1-v1_5', hash };
   try {
-    const key = await crypto.subtle.importKey('spki', ab(issuer.spki), alg, false, ['verify']);
+    const key = await crypto.subtle.importKey('spki', ab(emissor.spki), alg, false, ['verify']);
     return await crypto.subtle.verify(alg.name, key, ab(cert.signature), ab(cert.tbs));
   } catch {
     return false;
   }
 }
 
-export type ChainStatus =
+export type SituacaoCadeia =
   /** Chegou a uma âncora confiável, com todas as assinaturas conferidas. */
   | 'confiavel'
   /** Chegou a uma raiz autoassinada que não está entre as âncoras. */
@@ -51,38 +54,37 @@ export type ChainStatus =
   /** Um elo abaixo da âncora tem extensão crítica que não sabemos processar (RFC 5280, 4.2): o caminho é rejeitado. */
   | 'extensao_critica_nao_suportada';
 
-export interface ChainResult {
-  readonly status: ChainStatus;
+export interface ResultadoCadeia {
+  readonly situacao: SituacaoCadeia;
   /** Do titular para cima, até onde foi possível subir (inclui a âncora quando achada). */
-  readonly chain: readonly CertificateInfo[];
-  readonly anchor: CertificateInfo | undefined;
+  readonly cadeia: readonly CertificadoX509[];
+  readonly ancora: CertificadoX509 | undefined;
   /** DN do emissor que faltou, quando `incompleta`. */
-  readonly missingIssuer: string | undefined;
-  /** Elos fora da validade no instante do relógio, quando um `clock` foi passado. */
-  readonly expired: readonly CertificateInfo[];
+  readonly emissorAusente: string | undefined;
+  /** Elos fora da validade no instante do relógio, quando um `relogio` foi passado. */
+  readonly vencidos: readonly CertificadoX509[];
 }
 
-export interface BuildChainOptions {
+export interface MontarCadeiaOpcoes {
   /** Certificados candidatos a intermediária (os do PFX, uma cadeia `.pem` trazida pelo usuário). */
-  readonly intermediates?: readonly (CertificateInfo | Uint8Array)[];
+  readonly intermediarias?: readonly (CertificadoX509 | Uint8Array)[];
   /** Âncoras de confiança. Padrão: as raízes do bundle ICP-Brasil. */
-  readonly anchors?: readonly (CertificateInfo | Uint8Array)[];
+  readonly ancoras?: readonly (CertificadoX509 | Uint8Array)[];
   /** Com relógio, o resultado lista os elos vencidos ou ainda não válidos. */
-  readonly clock?: Relogio;
-  readonly maxDepth?: number;
+  readonly relogio?: Relogio;
+  readonly profundidadeMaxima?: number;
 }
 
-const asInfo = (c: CertificateInfo | Uint8Array): CertificateInfo =>
-  c instanceof Uint8Array ? parseCertificate(c) : c;
+const asInfo = (c: CertificadoX509 | Uint8Array): CertificadoX509 => (c instanceof Uint8Array ? lerCertificado(c) : c);
 
-function defaultAnchors(): CertificateInfo[] {
-  return icpBrasilCertificates()
-    .filter((c) => c.kind === 'root')
-    .map((c) => parseCertificate(c.der));
+function defaultAnchors(): CertificadoX509[] {
+  return certificadosIcpBrasil()
+    .filter((c) => c.tipo === 'raiz')
+    .map((c) => lerCertificado(c.der));
 }
 
-function isIssuerCandidate(cert: CertificateInfo, cand: CertificateInfo): boolean {
-  if (!namesMatch(cert.issuer, cand.subject)) return false;
+function isIssuerCandidate(cert: CertificadoX509, cand: CertificadoX509): boolean {
+  if (!nomesIguais(cert.issuer, cand.subject)) return false;
   if (cert.authorityKeyId && cand.subjectKeyId) return cert.authorityKeyId === cand.subjectKeyId;
   return true;
 }
@@ -91,20 +93,20 @@ function isIssuerCandidate(cert: CertificateInfo, cand: CertificateInfo): boolea
  * O emissor na posição `depth` da cadeia (1 = emissor do titular) pode assinar o elo abaixo: é AC, tem `keyCertSign`
  * quando declara KeyUsage e respeita o `pathLenConstraint` (intermediárias não autoemitidas abaixo dele).
  */
-export function mayIssue(issuer: CertificateInfo, below: readonly CertificateInfo[]): boolean {
-  if (!issuer.isCA) return false;
-  if (issuer.keyUsage.length > 0 && !issuer.keyUsage.includes('keyCertSign')) return false;
-  if (issuer.pathLenConstraint !== undefined) {
-    const intermediates = below.slice(1).filter((c) => !c.selfIssued).length;
-    if (intermediates > issuer.pathLenConstraint) return false;
+export function podeEmitir(emissor: CertificadoX509, abaixo: readonly CertificadoX509[]): boolean {
+  if (!emissor.isCA) return false;
+  if (emissor.keyUsage.length > 0 && !emissor.keyUsage.includes('keyCertSign')) return false;
+  if (emissor.pathLenConstraint !== undefined) {
+    const intermediates = abaixo.slice(1).filter((c) => !c.selfIssued).length;
+    if (intermediates > emissor.pathLenConstraint) return false;
   }
   return true;
 }
 
-type Found = Omit<ChainResult, 'expired'>;
+type Found = Omit<ResultadoCadeia, 'vencidos'>;
 
 /** Quanto mais alto, mais útil o resultado para quem diagnostica, entre caminhos que não chegaram a uma âncora. */
-const RANK: Readonly<Record<ChainStatus, number>> = {
+const RANK: Readonly<Record<SituacaoCadeia, number>> = {
   confiavel: 6,
   raiz_desconhecida: 5,
   emissor_nao_autorizado: 4,
@@ -116,66 +118,66 @@ const RANK: Readonly<Record<ChainStatus, number>> = {
 /**
  * Monta a cadeia do certificado até uma âncora, tentando todos os emissores candidatos (com retrocesso): a ordem dos
  * certificados de entrada nunca esconde um caminho confiável, como o de uma intermediária com versão autoassinada e
- * versão com certificação cruzada. Com `clock`, prefere o caminho sem elos vencidos acima do titular (intermediária
+ * versão com certificação cruzada. Com `relogio`, prefere o caminho sem elos vencidos acima do titular (intermediária
  * renovada com o mesmo nome e chave). Nunca lança por cadeia ruim: o resultado diz o que houve.
  */
-export async function buildChain(
-  leaf: CertificateInfo | Uint8Array,
-  options: BuildChainOptions = {},
-): Promise<ChainResult> {
-  const anchors = (options.anchors ?? defaultAnchors()).map(asInfo);
-  const pool = [...(options.intermediates ?? []).map(asInfo), ...anchors];
-  const maxDepth = options.maxDepth ?? 8;
-  const isAnchor = (c: CertificateInfo): boolean => anchors.some((a) => equalBytes(a.der, c.der));
-  const now = options.clock?.agora().getTime();
-  const outOfValidity = (c: CertificateInfo): boolean => now !== undefined && (now < c.notBefore || now > c.notAfter);
+export async function montarCadeia(
+  folha: CertificadoX509 | Uint8Array,
+  opcoes: MontarCadeiaOpcoes = {},
+): Promise<ResultadoCadeia> {
+  const anchors = (opcoes.ancoras ?? defaultAnchors()).map(asInfo);
+  const pool = [...(opcoes.intermediarias ?? []).map(asInfo), ...anchors];
+  const maxDepth = opcoes.profundidadeMaxima ?? 8;
+  const isAnchor = (c: CertificadoX509): boolean => anchors.some((a) => equalBytes(a.der, c.der));
+  const now = opcoes.relogio?.agora().getTime();
+  const outOfValidity = (c: CertificadoX509): boolean => now !== undefined && (now < c.notBefore || now > c.notAfter);
   /** Elos vencidos acima do titular: a validade do titular não depende do caminho escolhido. */
-  const expiredAbove = (f: Found): number => f.chain.slice(1).filter(outOfValidity).length;
+  const expiredAbove = (f: Found): number => f.cadeia.slice(1).filter(outOfValidity).length;
   const better = (a: Found, b: Found | undefined): boolean => {
-    if (!b || RANK[a.status] !== RANK[b.status]) return !b || RANK[a.status] > RANK[b.status];
+    if (!b || RANK[a.situacao] !== RANK[b.situacao]) return !b || RANK[a.situacao] > RANK[b.situacao];
     const ea = expiredAbove(a);
     const eb = expiredAbove(b);
-    return ea !== eb ? ea < eb : a.chain.length > b.chain.length;
+    return ea !== eb ? ea < eb : a.cadeia.length > b.cadeia.length;
   };
 
-  async function search(chain: CertificateInfo[]): Promise<Found> {
-    const cur = chain[chain.length - 1] as CertificateInfo;
-    const found = (status: ChainStatus, missingIssuer?: string): Found => ({
-      status,
-      chain,
-      anchor: status === 'confiavel' ? cur : undefined,
-      missingIssuer,
+  async function search(chain: CertificadoX509[]): Promise<Found> {
+    const cur = chain[chain.length - 1] as CertificadoX509;
+    const found = (status: SituacaoCadeia, missingIssuer?: string): Found => ({
+      situacao: status,
+      cadeia: chain,
+      ancora: status === 'confiavel' ? cur : undefined,
+      emissorAusente: missingIssuer,
     });
     if (isAnchor(cur)) return found('confiavel');
-    if (cur.unsupportedCriticalExtensions.length > 0) return found('extensao_critica_nao_suportada');
-    if (chain.length > maxDepth) return found('incompleta', cur.issuer.text);
-    if (cur.selfIssued && (await verifyIssuedBy(cur, cur)) !== false) return found('raiz_desconhecida');
+    if (cur.extensoesCriticasNaoSuportadas.length > 0) return found('extensao_critica_nao_suportada');
+    if (chain.length > maxDepth) return found('incompleta', cur.issuer.texto);
+    if (cur.selfIssued && (await conferirEmitidoPor(cur, cur)) !== false) return found('raiz_desconhecida');
     const candidates = pool.filter((p) => !chain.some((c) => equalBytes(c.der, p.der)) && isIssuerCandidate(cur, p));
     let best: Found | undefined;
     let sawUnauthorized = false;
     let sawBadSignature = false;
     for (const cand of candidates) {
-      const ok = await verifyIssuedBy(cur, cand);
+      const ok = await conferirEmitidoPor(cur, cand);
       if (ok === false) sawBadSignature = true;
       if (!ok) continue;
-      if (!mayIssue(cand, chain)) {
+      if (!podeEmitir(cand, chain)) {
         sawUnauthorized = true;
         continue;
       }
       const sub = await search([...chain, cand]);
       // Um caminho confiável e todo dentro da validade encerra a busca; com elo vencido, segue procurando um renovado.
-      if (sub.status === 'confiavel' && expiredAbove(sub) === 0) return sub;
+      if (sub.situacao === 'confiavel' && expiredAbove(sub) === 0) return sub;
       if (better(sub, best)) best = sub;
     }
     const here = sawUnauthorized
       ? found('emissor_nao_autorizado')
       : sawBadSignature
         ? found('assinatura_invalida')
-        : found('incompleta', cur.issuer.text);
+        : found('incompleta', cur.issuer.texto);
     return best && better(best, here) ? best : here;
   }
 
-  const r = await search([asInfo(leaf)]);
-  const expired = r.chain.filter(outOfValidity);
-  return { ...r, expired };
+  const r = await search([asInfo(folha)]);
+  const expired = r.cadeia.filter(outOfValidity);
+  return { ...r, vencidos: expired };
 }

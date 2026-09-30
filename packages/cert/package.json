@@ -1,7 +1,7 @@
 {
   "name": "@sinete/cert",
   "version": "0.1.0",
-  "description": "Certificado ICP-Brasil do sinete: leitura de PFX (inclusive legado RC2/3DES), identidade (CNPJ/CPF), cadeia ICP-Brasil versionada, KeyStore e assinatura A1 via WebCrypto",
+  "description": "Certificado ICP-Brasil do sinete: leitura de PFX (inclusive legado RC2/3DES), identidade (CNPJ/CPF), cadeia ICP-Brasil versionada, Certificado e assinatura A1 via WebCrypto",
   "keywords": [
     "nfe",
     "dfe",

@@ -5,7 +5,7 @@ import { ErroNaoSuportado, ErroSinete } from '@sinete/core';
  * Códigos estáveis do `@sinete/transport`, mapeados do que a SEFAZ faz de fato (ADR 0004, seção 4 e decisão 4).
  * Os detalhes trazem host, alerta TLS, código do sistema e status HTTP; nunca corpo, chave ou certificado.
  */
-export type TransportErrorCode =
+export type CodigoErroTransporte =
   /** O servidor pediu certificado e não recebeu (alertas TLS 40 e 42; 116 no TLS 1.3). */
   | 'certificado_nao_apresentado'
   /** O servidor recebeu o certificado e recusou (alertas 43 a 46, 48 e 49: expirado, revogado, AC desconhecida). */
@@ -24,67 +24,67 @@ export type TransportErrorCode =
   | 'falha_tls'
   /** Falha de rede antes do TLS (DNS, rota). */
   | 'falha_rede'
-  /** A `HostPolicy` recusou o envio antes de abrir socket. */
+  /** A `PoliticaDeHosts` recusou o envio antes de abrir socket. */
   | 'politica_recusou'
   /** O chamador cancelou pelo `AbortSignal`. */
   | 'cancelado';
 
-export class TransportError extends ErroSinete<TransportErrorCode> {
-  constructor(code: TransportErrorCode, message: string, options?: ErroSineteOpcoes) {
-    super(code, message, options);
-    this.name = 'TransportError';
+export class ErroTransporte extends ErroSinete<CodigoErroTransporte> {
+  constructor(code: CodigoErroTransporte, message: string, opcoes?: ErroSineteOpcoes) {
+    super(code, message, opcoes);
+    this.name = 'ErroTransporte';
   }
 }
 
-/** Recusa da `HostPolicy`. Sempre antes de qualquer socket. */
-export class PolicyError extends TransportError {
-  constructor(message: string, details?: DetalhesDoErro) {
-    super('politica_recusou', message, details === undefined ? undefined : { detalhes: details });
-    this.name = 'PolicyError';
+/** Recusa da `PoliticaDeHosts`. Sempre antes de qualquer socket. */
+export class ErroPolitica extends ErroTransporte {
+  constructor(message: string, detalhes?: DetalhesDoErro) {
+    super('politica_recusou', message, detalhes === undefined ? undefined : { detalhes: detalhes });
+    this.name = 'ErroPolitica';
   }
 }
 
 /**
  * A runtime não consegue falar com o host pedido (ADR 0004, decisão 4): hoje, o Deno (rustls) diante de um host que
- * pede o certificado numa renegociação ou que só oferece CBC ou DHE. `detalhes` traz `host`, `reasons` e
- * `alternative`. O código é o `nao_suportado` do core.
+ * pede o certificado numa renegociação ou que só oferece CBC ou DHE. `detalhes` traz `host`, `motivos` e
+ * `alternativa`. O código é o `nao_suportado` do core.
  */
-export class TransportUnsupportedError extends ErroNaoSuportado {
+export class ErroTransporteNaoSuportado extends ErroNaoSuportado {
   readonly host: string;
-  readonly reasons: readonly string[];
+  readonly motivos: readonly string[];
 
-  constructor(host: string, reasons: readonly string[], alternative: string, options?: ErroSineteOpcoes) {
-    super(`${host}: esta runtime não suporta o que o host exige (${reasons.join('; ')}). ${alternative}`, {
-      ...options,
-      detalhes: { host, reasons, alternative },
+  constructor(host: string, motivos: readonly string[], alternativa: string, opcoes?: ErroSineteOpcoes) {
+    super(`${host}: esta runtime não suporta o que o host exige (${motivos.join('; ')}). ${alternativa}`, {
+      ...opcoes,
+      detalhes: { host, motivos, alternativa },
     });
-    this.name = 'TransportUnsupportedError';
+    this.name = 'ErroTransporteNaoSuportado';
     this.host = host;
-    this.reasons = reasons;
+    this.motivos = motivos;
   }
 }
 
 /**
  * Códigos do cliente do helper `sinete-signer` (`@sinete/transport/signer`, ADR 0005). As falhas de rede e TLS do
- * helper viram os mesmos `TransportError` do transporte em processo; estes são os que só existem com o helper.
+ * helper viram os mesmos `ErroTransporte` do transporte em processo; estes são os que só existem com o helper.
  */
-export type SignerErrorCode =
+export type CodigoErroSigner =
   /** O binário não foi achado ou não subiu, ou o processo saiu (o canal fechou). */
   | 'signer_indisponivel'
   /** O helper fala outra versão do protocolo ou respondeu fora do contrato. */
   | 'signer_protocolo'
   /** Quem assina recusou o handshake (política do dono da chave) ou devolveu assinatura que não confere. */
   | 'assinatura_tls_recusada'
-  /** Quem assina não respondeu no prazo da identidade (`signTimeoutMs`). */
+  /** Quem assina não respondeu no prazo da identidade (`prazoDaAssinaturaMs`). */
   | 'assinatura_tls_expirou'
   /** O token PKCS#11 falhou: módulo, token, PIN, objeto ou `C_Sign`; ou o binário não tem PKCS#11. */
   | 'pkcs11_falhou'
   /** O helper recusou assinar o documento (`dfe.sign`): o SignedInfo ou o Id não são de documento do titular. */
   | 'assinatura_documento_recusada';
 
-export class SignerError extends ErroSinete<SignerErrorCode> {
-  constructor(code: SignerErrorCode, message: string, options?: ErroSineteOpcoes) {
-    super(code, message, options);
-    this.name = 'SignerError';
+export class ErroSigner extends ErroSinete<CodigoErroSigner> {
+  constructor(code: CodigoErroSigner, message: string, opcoes?: ErroSineteOpcoes) {
+    super(code, message, opcoes);
+    this.name = 'ErroSigner';
   }
 }

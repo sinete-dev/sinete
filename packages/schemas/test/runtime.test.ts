@@ -1,58 +1,58 @@
 import { describe, expect, test } from 'bun:test';
-import type { SchemaIssue, SimpleType } from '../src/index.ts';
+import type { OcorrenciaSchema, SimpleType } from '../src/index.ts';
 import {
-  checkSimple,
-  compareCalendar,
-  compareDecimal,
-  compileXsdRegex,
-  isComplexType,
+  compararCalendario,
+  compararDecimal,
+  compilarRegexXsd,
+  conferirTipoSimples,
+  ErroRegexXsd,
+  ehComplexType,
   maxOccurs,
   minOccurs,
-  XsdRegexError,
-  xsdRegexToJs,
+  regexXsdParaJs,
 } from '../src/index.ts';
 
 function codes(t: SimpleType, v: string): string[] {
-  const out: SchemaIssue[] = [];
-  checkSimple(t, v, '/x', out);
+  const out: OcorrenciaSchema[] = [];
+  conferirTipoSimples(t, v, '/x', out);
   return out.map((o) => o.code);
 }
 
 describe('regex do XSD para JS', () => {
   test('ancorada, \\d é dígito Unicode, \\s é só whitespace XML, ^ e $ literais', () => {
-    expect(compileXsdRegex('[0-9]{3}').test('1234')).toBe(false);
-    expect(compileXsdRegex('\\d{2}').test('\u0661\u0662')).toBe(true);
-    expect(compileXsdRegex('a\\sb').test('a\tb')).toBe(true);
-    expect(compileXsdRegex('a\\sb').test('a\u00A0b')).toBe(false);
-    expect(compileXsdRegex('[a\\s]+').test('a a')).toBe(true);
-    expect(compileXsdRegex('\\S+').test('ab')).toBe(true);
-    expect(compileXsdRegex('\\D').test('a')).toBe(true);
-    expect(compileXsdRegex('a^b$').test('a^b$')).toBe(true);
-    expect(compileXsdRegex('a\\-b').test('a-b')).toBe(true);
-    expect(compileXsdRegex('[a\\-z]').test('-')).toBe(true);
-    expect(compileXsdRegex('\\p{Lu}+').test('ÁB')).toBe(true);
-    expect(compileXsdRegex('[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}').test('M&M Açúcar')).toBe(true);
+    expect(compilarRegexXsd('[0-9]{3}').test('1234')).toBe(false);
+    expect(compilarRegexXsd('\\d{2}').test('\u0661\u0662')).toBe(true);
+    expect(compilarRegexXsd('a\\sb').test('a\tb')).toBe(true);
+    expect(compilarRegexXsd('a\\sb').test('a\u00A0b')).toBe(false);
+    expect(compilarRegexXsd('[a\\s]+').test('a a')).toBe(true);
+    expect(compilarRegexXsd('\\S+').test('ab')).toBe(true);
+    expect(compilarRegexXsd('\\D').test('a')).toBe(true);
+    expect(compilarRegexXsd('a^b$').test('a^b$')).toBe(true);
+    expect(compilarRegexXsd('a\\-b').test('a-b')).toBe(true);
+    expect(compilarRegexXsd('[a\\-z]').test('-')).toBe(true);
+    expect(compilarRegexXsd('\\p{Lu}+').test('ÁB')).toBe(true);
+    expect(compilarRegexXsd('[!-ÿ]{1}[ -ÿ]{0,}[!-ÿ]{1}|[!-ÿ]{1}').test('M&M Açúcar')).toBe(true);
   });
 
   test('\\S e \\D dentro de classe positiva viram alternância (XSD da NFS-e)', () => {
-    const naoBranco = compileXsdRegex('[\\s\\S]*[^\\s][\\s\\S]*');
+    const naoBranco = compilarRegexXsd('[\\s\\S]*[^\\s][\\s\\S]*');
     expect(naoBranco.test(' a\n')).toBe(true);
     expect(naoBranco.test(' \t\n')).toBe(false);
     expect(naoBranco.test('')).toBe(false);
-    expect(xsdRegexToJs('[\\S]')).toBe('^(?:(?:[^ \\t\\n\\r]))$');
-    const desc = compileXsdRegex('[\\s\\S!-ÿ]{1}[\\s\\S -ÿ]{0,}[\\s\\S!-ÿ]{1}|[\\s\\S!-ÿ]{1}');
+    expect(regexXsdParaJs('[\\S]')).toBe('^(?:(?:[^ \\t\\n\\r]))$');
+    const desc = compilarRegexXsd('[\\s\\S!-ÿ]{1}[\\s\\S -ÿ]{0,}[\\s\\S!-ÿ]{1}|[\\s\\S!-ÿ]{1}');
     expect(desc.test('x')).toBe(true);
     expect(desc.test('linha\noutra')).toBe(true);
-    const digito = compileXsdRegex('[a\\D]');
+    const digito = compilarRegexXsd('[a\\D]');
     expect(digito.test('b')).toBe(true);
     expect(digito.test('1')).toBe(false);
-    expect(compileXsdRegex('[\\S\\S]').test('x')).toBe(true);
+    expect(compilarRegexXsd('[\\S\\S]').test('x')).toBe(true);
     // `[` escapado é literal, não subtração de classe, com ou sem os escapes negados.
-    expect(compileXsdRegex('[\\[]').test('[')).toBe(true);
-    const colchete = compileXsdRegex('[\\[\\D]');
+    expect(compilarRegexXsd('[\\[]').test('[')).toBe(true);
+    const colchete = compilarRegexXsd('[\\[\\D]');
     expect(colchete.test('[')).toBe(true);
     expect(colchete.test('1')).toBe(false);
-    expect(xsdRegexToJs('a|b')).toBe('^(?:a|b)$');
+    expect(regexXsdParaJs('a|b')).toBe('^(?:a|b)$');
   });
 
   test('construções não implementadas abortam', () => {
@@ -71,13 +71,13 @@ describe('regex do XSD para JS', () => {
       'a\\',
       '\\pL',
     ]) {
-      expect(() => xsdRegexToJs(p)).toThrow(XsdRegexError);
-      expect(() => xsdRegexToJs(p)).toThrow(expect.objectContaining({ code: 'nao_suportado' }));
+      expect(() => regexXsdParaJs(p)).toThrow(ErroRegexXsd);
+      expect(() => regexXsdParaJs(p)).toThrow(expect.objectContaining({ code: 'nao_suportado' }));
     }
   });
 });
 
-describe('checkSimple', () => {
+describe('conferirTipoSimples', () => {
   test('facetas de string e whitespace preserve', () => {
     const t: SimpleType = { b: 'string', mn: 2, mx: 3, e: ['ab', 'abc', ' ab'], nm: 'TX' };
     expect(codes(t, 'ab')).toEqual([]);
@@ -180,26 +180,26 @@ describe('checkSimple', () => {
     expect(codes({ b: 'time', ma: '12:00:00' }, '12:00:00.000')).toEqual([]);
   });
 
-  test('compareCalendar: fuso em só um lado dá ordem parcial', () => {
-    expect(compareCalendar('dateTime', '2026-09-25T10:00:00Z', '2026-09-25T10:00:00.5Z')).toBe(-1);
-    expect(compareCalendar('dateTime', '2026-09-25T24:00:00Z', '2026-09-26T00:00:00Z')).toBe(0);
-    expect(compareCalendar('dateTime', '2026-09-25T10:00:00Z', '2026-09-26T10:00:00')).toBe(-1);
-    expect(compareCalendar('dateTime', '2026-09-25T10:00:00Z', '2026-09-25T12:00:00')).toBeNaN();
-    expect(compareCalendar('date', '-0044-03-15', '2026-01-01')).toBe(-1);
+  test('compararCalendario: fuso em só um lado dá ordem parcial', () => {
+    expect(compararCalendario('dateTime', '2026-09-25T10:00:00Z', '2026-09-25T10:00:00.5Z')).toBe(-1);
+    expect(compararCalendario('dateTime', '2026-09-25T24:00:00Z', '2026-09-26T00:00:00Z')).toBe(0);
+    expect(compararCalendario('dateTime', '2026-09-25T10:00:00Z', '2026-09-26T10:00:00')).toBe(-1);
+    expect(compararCalendario('dateTime', '2026-09-25T10:00:00Z', '2026-09-25T12:00:00')).toBeNaN();
+    expect(compararCalendario('date', '-0044-03-15', '2026-01-01')).toBe(-1);
     expect(codes({ b: 'dateTime', mi: '2026-09-25T10:00:00Z' }, '2026-09-25T12:00:00')).toEqual(['valor_minimo']);
   });
 
-  test('compareDecimal sem perder precisão', () => {
-    expect(compareDecimal('0.10', '.1')).toBe(0);
-    expect(compareDecimal('-0', '+0.0')).toBe(0);
-    expect(compareDecimal('12345678901234567890.1', '12345678901234567890.09')).toBe(1);
-    expect(compareDecimal('-2', '-10')).toBe(1);
-    expect(compareDecimal('-2', '1')).toBe(-2);
-    expect(compareDecimal('9', '10')).toBe(-1);
+  test('compararDecimal sem perder precisão', () => {
+    expect(compararDecimal('0.10', '.1')).toBe(0);
+    expect(compararDecimal('-0', '+0.0')).toBe(0);
+    expect(compararDecimal('12345678901234567890.1', '12345678901234567890.09')).toBe(1);
+    expect(compararDecimal('-2', '-10')).toBe(1);
+    expect(compararDecimal('-2', '1')).toBe(-2);
+    expect(compararDecimal('9', '10')).toBe(-1);
   });
 
   test('utilitários de descritor', () => {
-    expect(isComplexType({ b: 'string' })).toBe(false);
+    expect(ehComplexType({ b: 'string' })).toBe(false);
     expect(minOccurs({ w: 1 })).toBe(1);
     expect(maxOccurs({ w: 1, x: -1 })).toBe(Number.POSITIVE_INFINITY);
     expect(maxOccurs({ w: 1, x: 5 })).toBe(5);

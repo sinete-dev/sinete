@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { decodeTime, encodeLength, encodeTlv, isoFromEpoch, readTlv, TAG } from '../src/der.ts';
-import { CertError } from '../src/errors.ts';
-import { base64ToBytes, bytesToBase64, derToPem, pemToDers } from '../src/pem.ts';
+import { ErroCertificado } from '../src/errors.ts';
+import { codificarBase64, decodificarBase64, dersDoPem, pemDoDer } from '../src/pem.ts';
 
 const ascii = (s: string): Uint8Array => new TextEncoder().encode(s);
 
@@ -26,7 +26,7 @@ describe('datas sem o global Date', () => {
 
   test('data sem Z é recusada', () => {
     const der = encodeTlv(TAG.UTC_TIME, ascii('2601010000'));
-    expect(() => decodeTime(der, readTlv(der, 0))).toThrow(CertError);
+    expect(() => decodeTime(der, readTlv(der, 0))).toThrow(ErroCertificado);
   });
 });
 
@@ -55,13 +55,13 @@ describe('TLV', () => {
 describe('PEM e base64', () => {
   test('ida e volta', () => {
     const bytes = crypto.getRandomValues(new Uint8Array(1000));
-    expect(base64ToBytes(bytesToBase64(bytes))).toEqual(bytes);
-    const pem = derToPem(bytes, 'CERTIFICATE');
+    expect(decodificarBase64(codificarBase64(bytes))).toEqual(bytes);
+    const pem = pemDoDer(bytes, 'CERTIFICATE');
     expect(pem.split('\n')[1]).toHaveLength(64);
-    expect(pemToDers(pem + pem)).toEqual([bytes, bytes]);
+    expect(dersDoPem(pem + pem)).toEqual([bytes, bytes]);
   });
 
   test('base64 inválido', () => {
-    expect(() => base64ToBytes('@@@')).toThrow(CertError);
+    expect(() => decodificarBase64('@@@')).toThrow(ErroCertificado);
   });
 });

@@ -1,7 +1,7 @@
 {
   "name": "@sinete/transport",
   "version": "0.1.1",
-  "description": "Transporte mTLS do sinete: Transport com identidade TLS plugável, endpoints e perfis TLS por host como dados, SOAP 1.2, política de hosts e erros tipados",
+  "description": "Transporte mTLS do sinete: Transporte com identidade TLS plugável, endpoints e perfis TLS por host como dados, SOAP 1.2, política de hosts e erros tipados",
   "keywords": [
     "nfe",
     "mdfe",
