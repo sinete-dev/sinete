@@ -1,0 +1,10 @@
+{
+  "name": "@sinete/tool-renomear",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Aplica um mapa de renomeação da API pública (ADR 0015) pelo serviço de renomeação do TypeScript, atravessando os pacotes",
+  "devDependencies": {
+    "typescript-ls": "npm:typescript@5.9.3"
+  }
+}
