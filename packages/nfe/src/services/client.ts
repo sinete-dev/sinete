@@ -398,7 +398,7 @@ function documentoAutor(a: AutorDocumento, path: string): { CNPJ: string } | { C
 }
 
 function autorDaChave(c: ChaveAcesso): { CNPJ: string } | { CPF: string } {
-  // parseChaveAcesso já exigiu CNPJ ou "000" + CPF válido nas 14 posições do emitente.
+  // lerChaveAcesso já exigiu CNPJ ou "000" + CPF válido nas 14 posições do emitente.
   return c.cnpj !== undefined ? { CNPJ: c.cnpj } : { CPF: c.cpf ?? c.emitente.slice(3) };
 }
 
