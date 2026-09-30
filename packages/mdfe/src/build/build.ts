@@ -531,7 +531,7 @@ export function buildMdfe(input: MdfeInput, options: BuildMdfeOptions): BuildMdf
   const cMDF = gerarCmdf(input.cMDF, nMDF, random);
   if (!/^\d{8}$/.test(cMDF)) issues.add('cMDF', 'campo_invalido', 'cMDF tem 8 algarismos');
   let chave = '';
-  // Só com todos os componentes válidos: o buildChaveAcesso lança com série, número ou cMDF fora da forma, e o
+  // Só com todos os componentes válidos: o montarChaveAcesso lança com série, número ou cMDF fora da forma, e o
   // buildMdfe devolve problema de entrada como ocorrência, nunca como exceção.
   const componentesOk =
     serieValida && nMDFValido && issues.list.every((i) => !i.caminho.startsWith('emitente.C') && i.caminho !== 'cMDF');
