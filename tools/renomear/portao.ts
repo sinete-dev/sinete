@@ -16,8 +16,12 @@
  * prosa, ou num comentário, o membro só conta se a seção (ou as linhas em volta) cita o dono: um nome do arquivo que o
  * declara. Numa seção que só fala do `ErroSinete`, o `code` é o do erro, que fica.
  *
- * Uso: `bun tools/renomear/portao.ts <mapa.json>... [--relatorio <arquivo.md>] [--json <achados.json>] [--excecoes <arquivo.json>]`. O arquivo de
- * exceções é uma lista de `{ "arquivo", "linha", "nome", "motivo" }` para ocorrências `revisar` aceitas de propósito.
+ * Uso: `bun tools/renomear/portao.ts <mapa.json>... [--relatorio <arquivo.md>] [--json <achados.json>] [--excecoes <arquivo.json>]`.
+ *
+ * As exceções (por padrão `tools/renomear/excecoes.json`) são pontuais: `{ "arquivo", "nome", "trecho", "motivo" }`,
+ * em que `trecho` é a linha exata, sem os espaços das pontas. Não há regra por nome nem por padrão de arquivo: uma
+ * ocorrência nova do mesmo nome, noutra linha, volta como `revisar`. E exceção que não casa mais com nenhuma
+ * ocorrência (a linha mudou ou saiu) também reprova, para a lista não guardar aceite velho.
  */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -44,8 +48,8 @@ interface Mapa {
 }
 interface Excecao {
   readonly arquivo: string;
-  readonly linha: number;
   readonly nome: string;
+  readonly trecho: string;
   readonly motivo: string;
 }
 
@@ -60,7 +64,10 @@ const arquivoJson = opcao('--json');
 const mapas = args
   .filter((a, i) => !a.startsWith('--') && !['--relatorio', '--excecoes', '--json'].includes(args[i - 1] ?? ''))
   .map((f) => JSON.parse(readFileSync(f, 'utf8')) as Mapa);
-const excecoes: Excecao[] = arquivoExcecoes ? JSON.parse(readFileSync(arquivoExcecoes, 'utf8')) : [];
+const excecoes: Excecao[] = JSON.parse(
+  readFileSync(arquivoExcecoes ?? path.join(import.meta.dir, 'excecoes.json'), 'utf8'),
+);
+const excecoesUsadas = new Set<Excecao>();
 
 const topo = new Set<string>();
 const comuns = new Set<string>();
@@ -114,8 +121,20 @@ const dadosDaFase = new Set(mapas.flatMap((m) => (m.chavesDeDados ?? []).map((e)
  * Membros e literais só contam em código que usa os pacotes da fase (o pacote em si ou quem o importa): no resto do
  * repo, `status` e `value` são de outros tipos, e o typecheck já prova que nenhum acesso tipado ficou para trás.
  */
-const USA_A_FASE =
-  /(?:@sinete|sinete)\/(?:core|validators|rejeicoes)\b|packages\/(?:core|validators|rejeicoes)\/src|\.\.\/(?:\.\.\/)*(?:core|validators|rejeicoes)\/src/;
+/** Os pacotes cuja API a fase renomeia. Chaves de dados não contam: o `cstat.json` do `nfe` acompanha um tipo do core. */
+const pacotesDaFase = [
+  ...new Set(
+    mapas.flatMap((m) =>
+      [...(m.simbolos ?? []), ...(m.literais ?? [])].map((e) => /^packages\/([^/]+)\//.exec(e.arquivo)?.[1]),
+    ),
+  ),
+].filter((p): p is string => p !== undefined);
+const alternativas = pacotesDaFase.map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+const USA_A_FASE = new RegExp(
+  `(?:@sinete|sinete)\\/(?:${alternativas})(?![\\w-])|packages\\/(?:${alternativas})\\/src|\\.\\.\\/(?:\\.\\.\\/)*(?:${alternativas})\\/src`,
+);
+const DA_FASE = new RegExp(`^packages\\/(?:${alternativas})\\/`);
+const REFERENCIA_DE_OUTRO = new RegExp(`^docs\\/guia\\/referencia\\/(?!(?:${alternativas})\\.md)`);
 
 // ---------------------------------------------------------------------------------------------------------------------
 // Programa para resolver identificadores (o mesmo recorte do renomear, mais os `.mjs`/`.cjs`)
@@ -183,10 +202,21 @@ const formaDeCodigo = (n: string): RegExp =>
 
 function registrar(nome: string, arquivo: string, linha: number, classe: Classe, motivo: string): void {
   const rel = path.relative(root, arquivo);
-  const ex =
-    classe === 'revisar' ? excecoes.find((e) => e.arquivo === rel && e.linha === linha && e.nome === nome) : undefined;
+  let ex: Excecao | undefined;
+  if (classe === 'revisar') {
+    const trecho = (linhasDe(arquivo)[linha - 1] ?? '').trim();
+    ex = excecoes.find((e) => e.arquivo === rel && e.nome === nome && e.trecho === trecho);
+    if (ex) excecoesUsadas.add(ex);
+  }
   achados.push({ nome, arquivo: rel, linha, classe: ex ? 'excecao' : classe, motivo: ex ? ex.motivo : motivo });
 }
+
+const cacheDeLinhas = new Map<string, string[]>();
+const linhasDe = (arquivo: string): string[] => {
+  const l = cacheDeLinhas.get(arquivo) ?? readFileSync(arquivo, 'utf8').split('\n');
+  cacheDeLinhas.set(arquivo, l);
+  return l;
+};
 
 const token = (sf: ts.SourceFile, p: number): ts.Node =>
   (ts as unknown as { getTokenAtPosition(sf: ts.SourceFile, p: number): ts.Node }).getTokenAtPosition(sf, p);
@@ -293,7 +323,7 @@ for (const arquivo of arquivos) {
     }
   };
   for (const n of topo) if (texto.includes(n)) procurar(n, palavra(n), false);
-  const daFase = /^packages\/(core|validators|rejeicoes)\//.test(rel) || USA_A_FASE.test(texto);
+  const daFase = DA_FASE.test(rel) || USA_A_FASE.test(texto);
   if (rel.endsWith('.json')) {
     // JSON: nos dados da fase, a chave antiga (`"effect":`) é achado; nos outros, é outro formato.
     if (dadosDaFase.has(rel)) for (const n of comuns) procurar(n, new RegExp(`"${esc(n)}"\\s*:`, 'g'), true);
@@ -302,7 +332,7 @@ for (const arquivo of arquivos) {
   if (sf && !daFase) continue;
   // Fora do código, membros só na prosa (Markdown), e não na referência gerada dos outros pacotes: ela sai dos `.d.ts`,
   // e os `code`, `source` e `status` de lá são dos tipos daqueles pacotes.
-  const referenciaDeOutro = /^docs\/guia\/referencia\/(?!core|validators|rejeicoes)/.test(rel);
+  const referenciaDeOutro = REFERENCIA_DE_OUTRO.test(rel);
   if (!sf && (!/\.mdx?$/.test(rel) || referenciaDeOutro)) continue;
   for (const n of comuns) if (texto.includes(n)) procurar(n, sf ? palavra(n) : formaDeCodigo(n), true);
 }
@@ -338,6 +368,9 @@ for (const a of achados.filter((x) => x.classe === 'revisar'))
 L.push('', '## Exceções aceitas', '');
 for (const a of achados.filter((x) => x.classe === 'excecao'))
   L.push(`- ${a.arquivo}:${a.linha} \`${a.nome}\`: ${a.motivo}`);
+const velhas = excecoes.filter((e) => !excecoesUsadas.has(e));
+L.push('', `## Exceções sem ocorrência (${velhas.length})`, '');
+for (const e of velhas) L.push(`- ${e.arquivo} \`${e.nome}\`: ${e.trecho}`);
 L.push('', '## Homônimos (amostra por nome)', '');
 for (const n of [...topo, ...comuns].sort()) {
   const h = achados.filter((a) => a.nome === n && a.classe === 'homonimo');
@@ -355,6 +388,6 @@ if (arquivoJson) writeFileSync(arquivoJson, `${JSON.stringify(achados, null, 1)}
 else console.log(saida);
 const revisar = porClasse.get('revisar') ?? 0;
 console.error(
-  `portão: ${revisar} a revisar, ${porClasse.get('excecao') ?? 0} exceções, ${porClasse.get('historico') ?? 0} históricos (ADR, changeset, a própria ferramenta), ${porClasse.get('homonimo') ?? 0} homônimos`,
+  `portão: ${revisar} a revisar, ${velhas.length} exceções sem ocorrência, ${porClasse.get('excecao') ?? 0} exceções, ${porClasse.get('historico') ?? 0} históricos (ADR, changeset, a própria ferramenta), ${porClasse.get('homonimo') ?? 0} homônimos`,
 );
-process.exit(revisar > 0 ? 1 : 0);
+process.exit(revisar > 0 || velhas.length > 0 ? 1 : 0);

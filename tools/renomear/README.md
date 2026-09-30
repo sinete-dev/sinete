@@ -37,7 +37,7 @@ Com vários mapas, rodam como um só: os símbolos de todos, depois os literais,
 }
 ```
 
-- `simbolos` rodam na ordem do mapa, cada um sobre o estado deixado pelo anterior. Membro se acha pelo tipo que o declara, com o nome antigo do tipo: ponha os membros antes do tipo. `tipo` pode ser uma lista, ou uma união (os membros de mesmo nome de todas as partes mudam juntos). No caminho de `nome`, um segmento é um parâmetro (`options.ref`) ou um membro, e `@retorno` desce no tipo de retorno anotado.
+- `simbolos` rodam na ordem do mapa, cada um sobre o estado deixado pelo anterior. Membro se acha pelo tipo que o declara, com o nome antigo do tipo: ponha os membros antes do tipo. `tipo` pode ser uma lista, ou uma união (os membros de mesmo nome de todas as partes mudam juntos). No caminho de `nome`, um segmento é um parâmetro (`options.ref`), um membro ou `constructor`, e `@retorno` desce no tipo de retorno anotado; o parâmetro vale também no tipo de função de uma propriedade (`onLine.listener`) e na arrow function que inicializa uma variável. Ponha o caminho mais fundo antes do raso (`send.request` antes de `send`), senão o segmento já trocou de nome. Membro que o serviço já renomeou junto com a família (a sobrescrita em `A1KeyStore` leva o `kind` de `KeyStore`) conta como feito.
 - `literais` rodam depois dos símbolos, então `tipo` e `propriedade` já têm o nome novo. Sem `propriedade`, `tipo` é o alias da união (`MotivoFalhaConferencia`). Só muda o literal que o verificador liga ao tipo: a propriedade comparada ou atribuída tem a declaração do mapa entre as raízes, o objeto é do tipo (o `this.name` de uma classe de erro), o tipo esperado é uma união com dois ou mais valores de `grupo`, ou o objeto sem tipo tem todas as chaves de um tipo do alvo. O resto sai no relatório, sem mudança.
 - `chavesDeDados` e `valoresDeDados` trocam chaves e valores de JSON por caminho (`*` é qualquer chave, `[]` qualquer item), e os acessos do código ao JSON importado (`table.schemaVersion`).
 
@@ -48,3 +48,19 @@ Com vários mapas, rodam como um só: os símbolos de todos, depois os literais,
 - O que o serviço não alcança sai no relatório para revisão: chaves de objeto sem tipo (`toEqual({ status: ... })`) trocadas pela regra do `expect` ou da forma, o nome antigo como texto (`'hint' in r`, `Object.keys` comparado com uma lista), chaves de `Record` e acessos que sobraram nos arquivos tocados, e o nome antigo em comentários e na prosa do Markdown.
 
 A cópia via `as unknown as T` (o `table.ufs` do `ie.ts`) não é conferida pelo verificador: se a chave do JSON e o membro do tipo divergirem, só os testes pegam.
+
+## Inventário
+
+```sh
+bun tools/renomear/inventario.ts @sinete/cert @sinete/transport --json inventario.json
+```
+
+Lista, por entrada de pacote, os nomes exportados, os membros, os métodos, os parâmetros (com `@retorno` e os tipos inline aninhados) e os valores de uniões literais. É a base para montar os mapas de uma fase.
+
+## Portão
+
+```sh
+bun tools/renomear/portao.ts mapa-*.json --relatorio portao.md
+```
+
+Depois de aplicar os mapas, procura cada nome antigo no repo inteiro e classifica cada ocorrência (a regra de cada classe está no cabeçalho do `portao.ts`). Passa com zero `revisar`. As exceções ficam em `excecoes.json`, uma por ocorrência: arquivo, nome, a linha exata e o motivo. Não há exceção por nome ou por padrão de arquivo, então uma ocorrência nova do mesmo nome volta como `revisar`, e uma exceção que não casa mais com nenhuma linha também reprova. Os mapas de todas as fases rodam juntos: os pacotes da fase saem dos próprios mapas.
