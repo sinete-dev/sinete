@@ -1,7 +1,7 @@
 // Verificações do @sinete/transport em Node, Bun, Deno e Chromium, sem rede: tudo que envia é recusado antes do
 // socket (política, perfil TLS do host ou runtime sem transporte).
 import { openPfx, base64ToBytes } from '@sinete/cert';
-import { fixedClock, isSineteError } from '@sinete/core';
+import { relogioFixo, ehErroSinete } from '@sinete/core';
 import {
   allowlistPolicy,
   classifyTransportFailure,
@@ -36,7 +36,7 @@ export async function runChecks(mode) {
   const env = soap12Envelope('<nfeDadosMsg>&amp;</nfeDadosMsg>');
   expect('SOAP sem tocar no corpo', soapBody(env) === '<nfeDadosMsg>&amp;</nfeDadosMsg>');
   const cls = classifyTransportFailure(Object.assign(new Error('x'), { code: 'ERR_SSL_TLSV1_ALERT_UNKNOWN_CA' }), { host: 'h' });
-  expect('erro tipado', cls instanceof TransportError && cls.code === 'certificado_recusado' && isSineteError(cls));
+  expect('erro tipado', cls instanceof TransportError && cls.code === 'certificado_recusado' && ehErroSinete(cls));
 
   // Cliente do helper sinete-signer: o protocolo sobre um canal de mentira, sem binário (ADR 0005).
   expect('signer: versão do protocolo', signer.SIGNER_PROTOCOL_VERSION === 1);
@@ -65,7 +65,7 @@ export async function runChecks(mode) {
     expect('signer: binário ausente', serr?.code === 'signer_indisponivel');
   }
 
-  const ks = await openPfx(base64ToBytes(PFX_LEGACY_B64), { password: SENHA, clock: fixedClock('2026-09-25T12:00:00Z') });
+  const ks = await openPfx(base64ToBytes(PFX_LEGACY_B64), { password: SENHA, clock: relogioFixo('2026-09-25T12:00:00Z') });
   const identity = { kind: 'pem', ...ks.tlsPem() };
   const policy = allowlistPolicy({ hosts: ['exemplo.invalid'] });
   if (mode === 'browser') {

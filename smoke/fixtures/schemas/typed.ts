@@ -6,14 +6,14 @@ import type { TEvento_infEvento_detEvento } from '@sinete/schemas/nfe/evento-can
 import type { TNFe, TNFe_infNFe, TNfeProc } from '@sinete/schemas/nfe/PL_010f';
 import { nfeProcElement, TNFe_infNFe as InfNFeDesc } from '@sinete/schemas/nfe/PL_010f';
 import type { TConsStatServ } from '@sinete/schemas/nfe/status-servico/PL_009q';
-import { fixedClock } from '@sinete/core';
+import { relogioFixo } from '@sinete/core';
 
 declare const inf: TNFe_infNFe;
 const xml: string = serialize(InfNFeDesc, 'infNFe', inf);
 const d: Decoded<TNfeProc> = decodeXml(nfeProcElement, xml);
 const nfe: TNFe = d.value.NFe;
 const issues: SchemaIssue[] = validateRoot(nfeProcElement, xml);
-const v: VigenciaEntry = selecionarPl('nfe', 'homologacao', fixedClock('2026-09-25T12:00:00-03:00'));
+const v: VigenciaEntry = selecionarPl('nfe', 'homologacao', relogioFixo('2026-09-25T12:00:00-03:00'));
 const cons: TConsStatServ = { versao: '4.00', tpAmb: '2', cUF: '35', xServ: 'STATUS' };
 const det: TEvento_infEvento_detEvento = { versao: '1.00', descEvento: 'Cancelamento', nProt: '1', xJust: 'x' };
 declare const mdfe: TMDFe;

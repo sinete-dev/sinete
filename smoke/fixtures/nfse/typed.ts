@@ -1,5 +1,5 @@
 // Tipos do pacote publicado, vistos por um consumidor com tsc nodenext (e por deno check).
-import type { ValidationIssue } from '@sinete/core';
+import type { Ocorrencia } from '@sinete/core';
 import type {
   BuildDpsResult,
   CacheParametros,
@@ -27,10 +27,10 @@ declare const client: NfseClient;
 declare const desfecho: NfseOutcome<NfseGerada>;
 declare const resolucao: ResolucaoEnvio;
 if (!r.ok) {
-  const issues: readonly ValidationIssue[] = r.issues;
+  const issues: readonly Ocorrencia[] = r.issues;
   void issues;
 }
-if (desfecho.status === 'rejected') {
+if (desfecho.tipo === 'recusado') {
   const codigos: readonly string[] = desfecho.erros.map((e) => e.codigo);
   void codigos;
 }

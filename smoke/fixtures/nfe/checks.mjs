@@ -3,7 +3,7 @@
 // data JSON (fusos, vigências, cStat) precisam estar embutidos no bundle. Depois autoriza a nota na SEFAZ simulada em
 // processo (o cliente resolve o endpoint pelos dados do transporte e o redirectToSim troca só a URL). Por fim, IBS/CBS
 // pela calculadora padrão (o motor do @sinete/ibs-cbs com o dataset embarcado, importado sob demanda pelo pacote publicado).
-import { fixedClock, manualClock, timeContext } from '@sinete/core';
+import { relogioFixo, relogioManual, contextoDeTempo } from '@sinete/core';
 import {
   autorizadorContingencia,
   buildNfe,
@@ -63,7 +63,7 @@ export async function runChecks() {
     ],
     pagamento: { detPag: [{ tPag: TipoPagamento.PIX_DINAMICO, vPag: '10' }] },
   };
-  const time = timeContext({ emissao: fixedClock('2026-09-26T10:00:00-03:00') });
+  const time = contextoDeTempo({ emissao: relogioFixo('2026-09-26T10:00:00-03:00') });
   const r = await buildNfe(nota, { ambiente: 'homologacao', time });
   expect('monta', r.ok);
   expect('rótulo do caminho', rotuloDoCaminho('/infNFe/det[2]/prod/xProd') === 'Item 2, Descrição do produto');
@@ -84,7 +84,7 @@ export async function runChecks() {
   expect('gunzip', (await gunzipBase64(gz)) === 'ok');
 
   if (r.ok) {
-    const clock = manualClock('2026-09-26T10:00:00-03:00');
+    const clock = relogioManual('2026-09-26T10:00:00-03:00');
     const ac = await syntheticCertificate({ clock, role: 'ac' });
     const titular = await syntheticCertificate({ clock, role: 'titular', cnpj: '11222333000181', issuer: ac });
     const sim = createSefazSim({ clock });
@@ -92,14 +92,14 @@ export async function runChecks() {
     const client = createNfeClient({ transport, signer: titular.signer, ambiente: 'homologacao', uf: 'SP', clock });
     const assinada = await signNfe(r.value, titular.signer);
     const aut = await client.autorizar(assinada);
-    expect('autorizada no simulador', aut.status === 'authorized' && aut.value.nfeProc?.includes(assinada) === true);
+    expect('autorizada no simulador', aut.tipo === 'autorizado' && aut.valor.nfeProc?.includes(assinada) === true);
     const consulta = await client.consultar(r.value.chave, assinada);
-    expect('consulta confere o digVal', consulta.status === 'authorized' && consulta.value.digValConfere === true);
+    expect('consulta confere o digVal', consulta.tipo === 'autorizado' && consulta.valor.digValConfere === true);
     await transport.close();
   }
 
   // IBS/CBS sem calculadora nas opções: o buildNfe usa o ibsCbsCalculator e importa o dataset embarcado na hora.
-  const quando = fixedClock('2026-10-10T12:00:00-03:00');
+  const quando = relogioFixo('2026-10-10T12:00:00-03:00');
   const classificado = {
     ...nota,
     itens: [
@@ -115,7 +115,7 @@ export async function runChecks() {
     ],
     pagamento: undefined,
   };
-  const rtc = await buildNfe(classificado, { ambiente: 'homologacao', time: timeContext({ emissao: quando }) });
+  const rtc = await buildNfe(classificado, { ambiente: 'homologacao', time: contextoDeTempo({ emissao: quando }) });
   expect('ibs/cbs pelo motor padrão', rtc.ok && rtc.value.infNFe.total.IBSCBSTot?.gCBS.vCBS === '9.00');
   const ds = await carregarDatasetEmbarcado();
   expect('dataset embarcado sob demanda', typeof ds === 'object' && ds !== null);
@@ -124,14 +124,14 @@ export async function runChecks() {
   expect('nfe/ibs-cbs: regras e dados', RULES.length > 0 && typeof verifyDataset === 'function');
   const det = await determine(
     { modelo: 55, kind: 'transferencia', items: [{ n: 1, ncm: '10063021' }] },
-    { dataset: ds, time: timeContext({ emissao: quando }) },
+    { dataset: ds, time: contextoDeTempo({ emissao: quando }) },
   );
   expect('nfe/ibs-cbs: determinação', det.items[0]?.decided?.candidate.cClassTrib === '410002');
   const zero = Decimal.of('0');
   const semBase = await ibsCbsCalculator({ regras: false }).calcular({
     nota: {
-      fatoGerador: quando.now(),
-      emissao: quando.now(),
+      fatoGerador: quando.agora(),
+      emissao: quando.agora(),
       ambiente: 'homologacao',
       mod: '55',
       tpNF: '1',

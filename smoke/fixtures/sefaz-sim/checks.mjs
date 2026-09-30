@@ -1,6 +1,6 @@
 // Verificações do @sinete/sefaz-sim em Node, Bun, Deno e Chromium, sem rede: o simulador atende em processo pelo
 // Transport do próprio pacote.
-import { manualClock, isSineteError } from '@sinete/core';
+import { relogioManual, ehErroSinete } from '@sinete/core';
 import { nfeEndpoint, nfseEndpoint, soap12ContentType, soap12Envelope, soapBody } from '@sinete/transport';
 import { createNfseSim, createSefazSim, dvChave, MDFE_SERVICES, NFE_SERVICES, redirectNfseToSim, redirectToSim, SIM_BASE_URL, simTransport, soapAction, syntheticCertificate } from '@sinete/sefaz-sim';
 
@@ -9,7 +9,7 @@ export async function runChecks(mode) {
   const expect = (name, cond) => {
     if (!cond) failures.push(name);
   };
-  const clock = manualClock('2026-09-26T10:00:00-03:00');
+  const clock = relogioManual('2026-09-26T10:00:00-03:00');
   const ac = await syntheticCertificate({ clock, role: 'ac' });
   const titular = await syntheticCertificate({ clock, role: 'titular', cnpj: '11222333000181', issuer: ac });
   const sim = createSefazSim({ clock });
@@ -43,7 +43,7 @@ export async function runChecks(mode) {
   } catch (e) {
     err = e;
   }
-  expect('403 sem certificado vira erro tipado', isSineteError(err) && err.code === 'certificado_ausente_ou_recusado');
+  expect('403 sem certificado vira erro tipado', ehErroSinete(err) && err.code === 'certificado_ausente_ou_recusado');
   if (mode !== 'browser' && typeof Deno === 'undefined') {
     const node = await import('@sinete/sefaz-sim');
     expect('entrada node com o servidor HTTPS', typeof node.startSefazSimServer === 'function');

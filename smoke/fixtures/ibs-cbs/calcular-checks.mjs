@@ -1,5 +1,5 @@
 // Verificações do @sinete/ibs-cbs/calcular compartilhadas por Node, Deno e Chromium. Devolve a lista de falhas (vazia = ok).
-import { fixedClock, timeContext } from '@sinete/core';
+import { relogioFixo, contextoDeTempo } from '@sinete/core';
 import { bundledDataset } from '@sinete/ibs-cbs-dados/bundled';
 import { calculate, ClassificationError, Decimal, UnsupportedRegimeError } from '@sinete/ibs-cbs/calcular';
 import { officialRates } from '@sinete/ibs-cbs/aliquotas';
@@ -12,7 +12,7 @@ export async function runChecks() {
   const options = {
     dataset: bundledDataset(),
     rates: officialRates(),
-    time: timeContext({ emissao: fixedClock('2026-10-10T12:00:00-03:00') }),
+    time: contextoDeTempo({ emissao: relogioFixo('2026-10-10T12:00:00-03:00') }),
   };
   const op = (item) => ({ modelo: 55, place: { uf: 'SP', cMun: '3550308' }, items: [{ n: 1, ...item }] });
   const roc = calculate(op({ cst: '000', cClassTrib: '000001', base: '1000.00' }), options);
