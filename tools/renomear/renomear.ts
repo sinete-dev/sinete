@@ -392,8 +392,13 @@ function membrosDoTipo(no: ts.Node | undefined, nome: string, vistos: Set<ts.Nod
   if (ts.isUnionTypeNode(no) || ts.isIntersectionTypeNode(no)) {
     return no.types.flatMap((t) => membrosDoTipo(t, nome, vistos));
   }
-  if (ts.isParenthesizedTypeNode(no)) return membrosDoTipo(no.type, nome, vistos);
+  if (ts.isParenthesizedTypeNode(no) || ts.isTypeOperatorNode(no)) return membrosDoTipo(no.type, nome, vistos);
+  // Lista (`readonly { code: string }[]`): o membro é do item.
+  if (ts.isArrayTypeNode(no)) return membrosDoTipo(no.elementType, nome, vistos);
   if (ts.isTypeReferenceNode(no)) {
+    // Argumento de tipo (`Readonly<{ url: string }>`, `Record<string, { url: string }>`): o membro inline é do argumento.
+    const dosArgumentos = (no.typeArguments ?? []).flatMap((t) => membrosDoTipo(t, nome, vistos));
+    if (dosArgumentos.length > 0) return dosArgumentos;
     const s = checker.getSymbolAtLocation(no.typeName);
     const alvo = s && s.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(s) : s;
     return (alvo?.declarations ?? [])
