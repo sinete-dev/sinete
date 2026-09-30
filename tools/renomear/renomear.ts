@@ -145,6 +145,8 @@ const arquivosTs = [
   ...(await varrer('tools/**/*.ts')),
   ...(await varrer('scripts/**/*.ts')),
   ...(await varrer('smoke/*.ts')),
+  // As fixtures da smoke consomem a API como quem instalou do npm, em TypeScript, ESM e CommonJS.
+  ...(await varrer('smoke/fixtures/**/*.{ts,mjs,cjs}')),
   ...(await varrer('helpers/*/scripts/**/*.ts')),
 ].sort();
 
@@ -233,6 +235,8 @@ const opcoes: ts.CompilerOptions = {
   customConditions: ['node'],
   paths,
   noEmit: true,
+  allowJs: true,
+  checkJs: false,
   isolatedDeclarations: false,
 };
 
