@@ -99,3 +99,70 @@ export function extrairPaginaGovBr(html: string, pagina: string): Item[] {
   }
   return ordenar(itens);
 }
+
+/** Texto sem acento, em minúsculas e com espaços simples, para casar termos de ementa escritos de qualquer jeito. */
+function normalizado(s: string): string {
+  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ');
+}
+
+/**
+ * A ementa trata da alíquota de referência do IBS/CBS (EC 132/2023, ADCT art. 130; LC 214/2025, arts. 14, 18 e 347):
+ * cita "alíquota(s) de referência", o IBS ou a CBS pelo nome ou pela sigla. Nenhuma resolução nem projeto de resolução
+ * do Senado anterior à reforma casa com isso (conferido em 01/10/2026 contra as 6.578 resoluções e os 275 projetos em
+ * tramitação), então qualquer item que aparecer é publicação nova a olhar.
+ */
+export function ementaDaAliquotaDeReferencia(ementa: string): boolean {
+  return /aliquotas? de referencia|(contribuicao social|imposto) sobre bens e servicos|\b(cbs|ibs)\b/.test(
+    normalizado(ementa),
+  );
+}
+
+function lista(v: unknown): unknown[] | undefined {
+  if (Array.isArray(v)) return v;
+  return v !== null && typeof v === 'object' ? [v] : undefined;
+}
+
+const textoJson = (v: unknown): string => (typeof v === 'string' ? v.replace(/\s+/g, ' ').trim() : '');
+
+/**
+ * Dados abertos do Senado, legislação (`/dadosabertos/legislacao/lista.json?tipo=RSF`): as resoluções do Senado cuja
+ * ementa trata da alíquota de referência. A lista vazia depois do filtro é o normal até a resolução sair; o que conta
+ * como falha de leitura é a resposta sem a lista de normas (leiaute mudou ou página de erro).
+ */
+export function extrairNormasDoSenado(json: unknown): Item[] {
+  const docs = lista(
+    (json as { ListaDocumento?: { documentos?: { documento?: unknown } } } | null)?.ListaDocumento?.documentos
+      ?.documento,
+  );
+  if (docs === undefined || docs.length === 0) throw new Error('resposta sem a lista de normas (o leiaute mudou?)');
+  const itens: Item[] = [];
+  for (const d of docs as Record<string, unknown>[]) {
+    const ementa = textoJson(d.ementa);
+    const id = textoJson(d.id);
+    if (!id || !ementaDaAliquotaDeReferencia(ementa)) continue;
+    itens.push({ id: `https://legis.senado.leg.br/norma/${id}`, titulo: `${textoJson(d.normaNome)}: ${ementa}` });
+  }
+  return ordenar(itens);
+}
+
+/**
+ * Dados abertos do Senado, processos (`/dadosabertos/processo?sigla=PRS&tramitando=S`): os projetos de resolução em
+ * tramitação cuja ementa trata da alíquota de referência. Avisa antes da resolução: o projeto aparece ao ser apresentado
+ * e sai da lista ao virar norma, que então aparece na fonte das resoluções.
+ */
+export function extrairProcessosDoSenado(json: unknown): Item[] {
+  const procs = lista(json);
+  if (procs === undefined || procs.length === 0)
+    throw new Error('resposta sem a lista de processos (o leiaute mudou?)');
+  const itens: Item[] = [];
+  for (const p of procs as Record<string, unknown>[]) {
+    const ementa = textoJson(p.ementa);
+    const codigo = p.codigoMateria;
+    if ((typeof codigo !== 'number' && typeof codigo !== 'string') || !ementaDaAliquotaDeReferencia(ementa)) continue;
+    itens.push({
+      id: `https://www25.senado.leg.br/web/atividade/materias/-/materia/${codigo}`,
+      titulo: `${textoJson(p.identificacao)}: ${ementa}`,
+    });
+  }
+  return ordenar(itens);
+}

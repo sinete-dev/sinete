@@ -1,6 +1,14 @@
 import { describe, expect, test } from 'bun:test';
 import { comparar, mudou, proximoEstado, relatorio } from '../src/comparar.ts';
-import { decodificarEntidades, extrairPaginaGovBr, extrairPortalDfe, extrairPortalNfe } from '../src/extrair.ts';
+import {
+  decodificarEntidades,
+  ementaDaAliquotaDeReferencia,
+  extrairNormasDoSenado,
+  extrairPaginaGovBr,
+  extrairPortalDfe,
+  extrairPortalNfe,
+  extrairProcessosDoSenado,
+} from '../src/extrair.ts';
 import type { Fonte } from '../src/fontes.ts';
 import { FONTES } from '../src/fontes.ts';
 
@@ -75,6 +83,60 @@ describe('extratores', () => {
     expect(extrairPaginaGovBr('<a href="rtc/nt-009.pdf">NT 009</a><a href="rtc">rtc</a>', pagina)).toEqual([
       { id: `${pagina}/nt-009.pdf`, titulo: 'NT 009' },
     ]);
+  });
+
+  test('ementa da alíquota de referência: com ou sem acento, IBS e CBS pelo nome ou pela sigla', () => {
+    expect(
+      ementaDaAliquotaDeReferencia(
+        'Fixa as alíquotas de referência da Contribuição Social sobre Bens e Serviços (CBS) para 2027.',
+      ),
+    ).toBe(true);
+    expect(ementaDaAliquotaDeReferencia('FIXA A ALIQUOTA DE REFERENCIA DE QUE TRATA O ART. 130 DO ADCT')).toBe(true);
+    expect(ementaDaAliquotaDeReferencia('Dispõe sobre o Imposto sobre Bens e Serviços')).toBe(true);
+    expect(ementaDaAliquotaDeReferencia('Altera a resolução do IBS')).toBe(true);
+    expect(ementaDaAliquotaDeReferencia('Estabelece alíquota máxima para o ITCMD')).toBe(false);
+    expect(ementaDaAliquotaDeReferencia('Altera as tabelas de referencia de vencimentos')).toBe(false);
+    expect(ementaDaAliquotaDeReferencia('Autoriza operação com o CBSX')).toBe(false);
+  });
+
+  test('Senado, legislação: só as resoluções da alíquota de referência; lista vazia é leitura válida', () => {
+    const doc = (id: string, normaNome: string, ementa: string) => ({ id, normaNome, ementa, tipo: 'RSF' });
+    const json = {
+      ListaDocumento: {
+        documentos: {
+          documento: [
+            doc('1', 'Resolução do Senado Federal nº 43 de 04/09/2026', 'Autoriza operação de crédito externo.'),
+            doc('2', 'Resolução do Senado Federal nº 60 de 10/12/2026', 'Fixa as alíquotas de referência da CBS.'),
+            { id: '3', normaNome: 'sem ementa' },
+          ],
+        },
+      },
+    };
+    expect(extrairNormasDoSenado(json)).toEqual([
+      {
+        id: 'https://legis.senado.leg.br/norma/2',
+        titulo: 'Resolução do Senado Federal nº 60 de 10/12/2026: Fixa as alíquotas de referência da CBS.',
+      },
+    ]);
+    // Um documento só vem como objeto, não como lista.
+    expect(extrairNormasDoSenado({ ListaDocumento: { documentos: { documento: doc('9', 'n', 'x') } } })).toEqual([]);
+    expect(() => extrairNormasDoSenado({ erro: 'fora do ar' })).toThrow(/lista de normas/);
+    expect(() => extrairNormasDoSenado({ ListaDocumento: { documentos: { documento: [] } } })).toThrow();
+  });
+
+  test('Senado, processos: projetos de resolução da alíquota de referência; resposta sem lista falha', () => {
+    const json = [
+      { codigoMateria: 120542, identificacao: 'PRS 17/2015', ementa: 'Altera o Regimento Interno.' },
+      { codigoMateria: 999, identificacao: 'PRS 80/2026', ementa: 'Fixa a alíquota de referência do IBS e da CBS.' },
+    ];
+    expect(extrairProcessosDoSenado(json)).toEqual([
+      {
+        id: 'https://www25.senado.leg.br/web/atividade/materias/-/materia/999',
+        titulo: 'PRS 80/2026: Fixa a alíquota de referência do IBS e da CBS.',
+      },
+    ]);
+    expect(() => extrairProcessosDoSenado([])).toThrow(/lista de processos/);
+    expect(() => extrairProcessosDoSenado(null)).toThrow(/lista de processos/);
   });
 
   test('entidades numéricas, hexadecimais e nomeadas; desconhecida fica como está', () => {

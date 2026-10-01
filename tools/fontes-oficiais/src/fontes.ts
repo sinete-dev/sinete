@@ -1,10 +1,11 @@
 /**
  * As páginas vigiadas. Cada uma é a lista oficial de onde saem os dados versionados do sinete: esquemas XSD
- * (`tools/xsd-codegen/xsd/`), notas técnicas, tabelas do IBS/CBS (`tools/ibs-cbs-dados/sources.json`) e a
- * Calculadora da RFB. Página nova aqui entra no `estado.json` na próxima gravação.
+ * (`tools/xsd-codegen/xsd/`), notas técnicas, tabelas do IBS/CBS (`tools/ibs-cbs-dados/sources.json`), a
+ * Calculadora da RFB e, no Senado, a resolução que fixa a alíquota de referência da CBS e do IBS. Página nova aqui
+ * entra no `estado.json` na próxima gravação.
  */
 
-export type Extrator = 'portal-nfe' | 'portal-dfe' | 'gov-br' | 'calculadora';
+export type Extrator = 'portal-nfe' | 'portal-dfe' | 'gov-br' | 'calculadora' | 'senado-normas' | 'senado-processos';
 
 export interface Fonte {
   readonly id: string;
@@ -81,6 +82,22 @@ export const FONTES: readonly Fonte[] = [
     url: `${NFSE}/rtc`,
     extrator: 'gov-br',
     afeta: 'grupo IBS/CBS da DPS (`@sinete/nfse`, `@sinete/ibs-cbs`)',
+  },
+  {
+    id: 'senado-resolucoes-aliquota-referencia',
+    titulo: 'Senado Federal: resoluções sobre a alíquota de referência do IBS/CBS',
+    url: 'https://legis.senado.leg.br/dadosabertos/legislacao/lista.json?tipo=RSF',
+    extrator: 'senado-normas',
+    afeta:
+      '`tools/ibs-cbs-dados/rates.json` (CBS de 2027 e 2028 = referência menos 0,1 ponto, LC 214/2025, art. 347): release patch do `@sinete/ibs-cbs`, passos em `tools/ibs-cbs-oraculo/README.md`, seção "Quando a resolução do Senado sair"',
+  },
+  {
+    id: 'senado-projetos-aliquota-referencia',
+    titulo: 'Senado Federal: projetos de resolução em tramitação sobre a alíquota de referência do IBS/CBS',
+    url: 'https://legis.senado.leg.br/dadosabertos/processo?sigla=PRS&tramitando=S',
+    extrator: 'senado-processos',
+    afeta:
+      'aviso prévio da resolução: acompanhar a votação e preparar a release do `@sinete/ibs-cbs` (`tools/ibs-cbs-oraculo/README.md`, seção "Quando a resolução do Senado sair")',
   },
   {
     id: 'calculadora-rfb',

@@ -2357,6 +2357,16 @@
           "titulo": "Nota Técnica SE/CGNFS-e nº 009"
         }
       ]
+    },
+    "senado-resolucoes-aliquota-referencia": {
+      "titulo": "Senado Federal: resoluções sobre a alíquota de referência do IBS/CBS",
+      "url": "https://legis.senado.leg.br/dadosabertos/legislacao/lista.json?tipo=RSF",
+      "itens": []
+    },
+    "senado-projetos-aliquota-referencia": {
+      "titulo": "Senado Federal: projetos de resolução em tramitação sobre a alíquota de referência do IBS/CBS",
+      "url": "https://legis.senado.leg.br/dadosabertos/processo?sigla=PRS&tramitando=S",
+      "itens": []
     }
   }
 }
