@@ -10,6 +10,7 @@ import {
   exigenciaRespTec,
   hashCsrt,
   montarNfe,
+  rotuloDoCaminho,
   TipoPagamento,
   XNOME_HOMOLOGACAO,
 } from '../../src/index.ts';
@@ -1048,13 +1049,43 @@ describe('grupos repassados e contexto da calculadora', () => {
   });
 });
 
-test('texto com caractere proibido em XML vira ocorrência com o caminho, não exceção', async () => {
+test('texto com caractere proibido em XML vira ocorrência com o caminho da entrada, não exceção', async () => {
   const b = item();
   const it: Item = { ...b, produto: { ...b.produto, xProd: 'ABC\u0001DEF' } };
   expect(falha(await montarNfe(nota({ itens: [it], natOp: 'VENDA \uD800' }), opcoes()))).toEqual([
-    expect.objectContaining({ caminho: 'infNFe.ide.natOp', code: 'campo_invalido' }),
-    expect.objectContaining({ caminho: 'infNFe.det[0].prod.xProd', code: 'campo_invalido' }),
+    expect.objectContaining({ caminho: 'natOp', code: 'campo_invalido', origem: 'entrada' }),
+    expect.objectContaining({ caminho: 'itens[0].produto.xProd', code: 'campo_invalido', origem: 'entrada' }),
   ]);
+});
+
+test('texto fora do tipo do leiaute é conferido na entrada: tamanho, espaço nas pontas e caractere fora do TString', async () => {
+  const b = item();
+  const itens: Item[] = [
+    { ...b, produto: { ...b.produto, xProd: 'X'.repeat(121) } },
+    { ...b, produto: { ...b.produto, uCom: 'CAIXA12' }, infAdProd: 'peça \u2013 nova' },
+    { ...b, produto: { ...b.produto, cProd: ' 1' } },
+  ];
+  const issues = falha(
+    await montarNfe(
+      nota({
+        itens,
+        informacoesAdicionais: { infCpl: 'X'.repeat(5001), obsCont: [{ xCampo: 'a', xTexto: 'X'.repeat(61) }] },
+        transporte: { modFrete: '9', volumes: [{ marca: 'X'.repeat(61) }] },
+      }),
+      opcoes(),
+    ),
+  );
+  expect(issues.map((i) => [i.caminho, i.code, i.origem, i.mensagem.split(':')[0]])).toEqual([
+    ['itens[2].produto.cProd', 'schema', 'entrada', 'padrao'],
+    ['itens[0].produto.xProd', 'schema', 'entrada', 'tamanho_maximo'],
+    ['itens[1].produto.uCom', 'schema', 'entrada', 'tamanho_maximo'],
+    ['itens[1].infAdProd', 'schema', 'entrada', 'padrao'],
+    ['transporte.volumes[0].marca', 'schema', 'entrada', 'tamanho_maximo'],
+    ['informacoesAdicionais.infCpl', 'schema', 'entrada', 'tamanho_maximo'],
+    ['informacoesAdicionais.obsCont[0].xTexto', 'schema', 'entrada', 'tamanho_maximo'],
+  ]);
+  // O rótulo da entrada diz à pessoa o que corrigir.
+  expect(rotuloDoCaminho('itens[0].produto.xProd')).toBe('Item 1, Descrição do produto');
 });
 
 test('grupo IBSCBS incompleto vira ocorrência de schema no item, antes dos totais', async () => {

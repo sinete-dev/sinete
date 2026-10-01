@@ -70,6 +70,7 @@ import {
 } from './nfce.ts';
 import { camposForaDoPl, escolherPl } from './pl.ts';
 import { cstComIsento, vencimentos } from './rejeicoes.ts';
+import { conferirTextosDaEntrada, textoXmlValido } from './textos.ts';
 import { buildIcmsUfDest, buildIi, buildIpi, buildIssqn, buildPisCofins, buildPisCofinsSt } from './tributos.ts';
 import type { Familia } from './values.ts';
 import { Ctx, clean, digits, TOLERANCIA } from './values.ts';
@@ -344,25 +345,10 @@ function referencia(ref: Referenciada, path: string, issues: Issues): TNFe_infNF
   } as TNFe_infNFe_ide_NFref;
 }
 
-/** Produção `Char` do XML 1.0: tab, LF, CR, U+0020 a U+D7FF, U+E000 a U+FFFD e U+10000 a U+10FFFF. */
-function textoXmlValido(texto: string): boolean {
-  for (const ch of texto) {
-    const c = ch.codePointAt(0) ?? 0;
-    const ok =
-      c === 0x9 ||
-      c === 0xa ||
-      c === 0xd ||
-      (c >= 0x20 && c <= 0xd7ff) ||
-      (c >= 0xe000 && c <= 0xfffd) ||
-      (c >= 0x10000 && c <= 0x10ffff);
-    if (!ok) return false;
-  }
-  return true;
-}
-
 /**
- * Texto com caractere que o XML não representa (vindo, por exemplo, de uma descrição importada) vira ocorrência com o
- * caminho do campo, em vez de falhar no parse do documento montado.
+ * Texto com caractere que o XML não representa vira ocorrência com o caminho do campo, em vez de falhar no parse do
+ * documento montado. Os textos da entrada já foram conferidos com o caminho dela (`conferirTextosDaEntrada`): aqui só
+ * sobra o que veio das opções da montagem.
  */
 function textosForaDoXml(value: unknown, path: string, issues: Issues): void {
   if (typeof value === 'string') {
@@ -971,6 +957,13 @@ export async function montarNfe(entrada: DadosNfe, opcoes: MontarNfeOpcoes): Pro
       grupoInvalido(TISCt as ComplexType, 'IS', imp.IS, is, issues);
     }
   });
+  // Texto e tamanho dos campos de texto pelo tipo do PL, com o caminho da entrada (ADR 0011); o campo que outra
+  // conferência já recusou fica só com a ocorrência dela.
+  // Em homologação, o nome do destinatário e, na NFC-e, a descrição do primeiro item são as literais da E04-20 e da I04-10:
+  // o texto informado não vai ao XML.
+  const substituidos =
+    opcoes.ambiente === 'homologacao' ? ['destinatario.xNome', ...(nfce ? ['itens[0].produto.xProd'] : [])] : [];
+  conferirTextosDaEntrada(entrada, pl.infNFe as ComplexType, issues, new Set(substituidos));
   if (!issues.empty) return { ok: false, ocorrencias: issues.classificadas };
 
   // Totais (grupo W)

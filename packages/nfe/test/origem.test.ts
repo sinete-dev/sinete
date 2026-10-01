@@ -28,17 +28,27 @@ describe('montarNfe: origem das ocorrências', () => {
     expect(issues).toEqual([expect.objectContaining({ caminho: 'cNF', code: 'chave_invalida', origem: 'entrada' })]);
   });
 
-  test('schema do XML montado é montagem', async () => {
+  test('texto longo num campo da entrada é da entrada, com o caminho da entrada', async () => {
     const issues = falha(await montarNfe(nota({ natOp: 'X'.repeat(61) }), opcoes()));
     expect(issues).toEqual([
-      expect.objectContaining({ code: 'schema', caminho: '/infNFe/ide/natOp', origem: 'montagem' }),
+      { caminho: 'natOp', code: 'schema', mensagem: 'tamanho_maximo: tamanho máximo 60 (TString)', origem: 'entrada' },
     ]);
   });
 
-  test('caractere fora do XML é conferido no documento montado', async () => {
+  test('caractere fora do XML na entrada é da entrada, com o caminho da entrada', async () => {
     const issues = falha(await montarNfe(nota({ natOp: 'VENDA \u0001' }), opcoes()));
+    expect(issues).toEqual([expect.objectContaining({ caminho: 'natOp', code: 'campo_invalido', origem: 'entrada' })]);
+  });
+
+  test('schema de um grupo repassado que a entrada não confere campo a campo continua da montagem', async () => {
+    const issues = falha(
+      await montarNfe(
+        nota({ infIntermed: { CNPJ: '11222333000181', idCadIntTran: 'X'.repeat(61) }, indIntermed: '1' }),
+        opcoes(),
+      ),
+    );
     expect(issues).toEqual([
-      expect.objectContaining({ caminho: 'infNFe.ide.natOp', code: 'campo_invalido', origem: 'montagem' }),
+      expect.objectContaining({ code: 'schema', caminho: '/infNFe/infIntermed/idCadIntTran', origem: 'montagem' }),
     ]);
   });
 
