@@ -102,6 +102,10 @@ Esta entrada é pura: fala o protocolo sobre qualquer `CanalSigner` (o stdio de 
 
 Identidades: - `abrirRemoto`: a chave fica com quem chamou, num `AssinadorTls` (A1 em `CryptoKey` não exportável, A3 em nuvem de PSC, OpenBao Transit). O helper pede `sign` no meio do handshake; este cliente aplica a política do dono da chave (host, propósito, esquema e, no modo `message`, o transcript) antes de chamar o `AssinadorTls`. - `abrirPkcs11`: token local pelo helper `-p11`. O `assinadorDeDocumentos` assina XML dos DF-e pelo `dfe.sign`, que o helper valida antes de usar a chave do token.
 
+Experimental (ADR 0016, seção 5) até o ADR 0014 ser aceito: a forma do cliente e do lançador `@sinete/signer` pode mudar em minor, sempre com changeset.
+
+@experimental
+
 ### Funções
 
 - `assinadorTlsDeCryptoKey`: `AssinadorTls` sobre uma `CryptoKey` RSASSA-PKCS1-v1_5 com SHA-256 (não exportável serve), no modo `message`: o helper manda o transcript e a chave assina a mensagem. É o caminho do A1 guardado como `CryptoKey` e da chave no navegador. `assinadorTlsDeCryptoKey(chave: CryptoKey, cadeia: readonly Uint8Array[]): AssinadorTls`

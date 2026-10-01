@@ -115,6 +115,10 @@ interface CalculadoraIbsCbs {
 
 `test/rtc/e2e.test.ts` pega casos gravados da Calculadora offline da RFB (fixtures do oráculo do `@sinete/ibs-cbs/calcular`, só os sem divergência), monta a nota com a calculadora padrão, autoriza na `@sinete/sefaz-sim` por HTTPS com mTLS e confere cada campo dos grupos `IBSCBS` e do `IBSCBSTot` do `nfeProc` autorizado contra a saída gravada.
 
+### Experimental: `@sinete/nfe/ibs-cbs`
+
+O subpath `@sinete/nfe/ibs-cbs` reexporta o `@sinete/ibs-cbs` inteiro, cuja calculadora espera a norma da base de cálculo (NT 2025.002, UB16-10). Até o `@sinete/ibs-cbs` sair 1.0, o subpath é experimental ([ADR 0016](../../docs/adr/0016-politica-de-estabilidade.md), seção 5): pode mudar em minor, sempre com changeset. A raiz do `@sinete/nfe`, inclusive a calculadora padrão usada pelo `montarNfe`, segue a política de estabilidade.
+
 ## Serviços (`criarClienteNfe`)
 
 `ClienteNfe` fala SOAP 1.2 sobre qualquer `Transporte` do `@sinete/transport`, com endpoints por UF e ambiente vindos dele. Cada operação devolve um `ResultadoSefaz` do core, com a rejeição enriquecida pelo `@sinete/rejeicoes`; o mapa de cStat é dado (`src/data/cstat.json`).

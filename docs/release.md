@@ -8,6 +8,17 @@ Decidido no [ADR 0001](adr/0001-tooling-monorepo.md). Resumo operacional.
 2. Para cortar versão: `bun run version`, que roda `changeset version` (bump e `CHANGELOG.md`), `bun scripts/versao-gerada.ts` (atualiza o `verProc`/`verAplic` embutido de `@sinete/nfe`, `@sinete/mdfe` e `@sinete/nfse` com a versão nova) **e** `bun install` (atualiza o `bun.lock`). O lock e os `src/versao-gerada.ts` vão no mesmo commit. Sem o `bun install`, o `bun pm pack` reescreveria `workspace:` com a versão velha gravada no lock; o `scripts/release.ts` barra esse caso antes de publicar. Sem o `bun scripts/versao-gerada.ts`, o `versão do verProc/verAplic em sincronia` do `bun run check` barra o release.
 3. Commit e PR da versão; merge no `main`.
 
+## O que o changeset precisa dizer
+
+A política de estabilidade está no [ADR 0016](adr/0016-politica-de-estabilidade.md). Na prática, para quem escreve o changeset:
+
+- Mudança de `code` de erro ou de ocorrência, de `caminho` ou de `origem` de ocorrência vai em linhas próprias, com o antes e o depois de cada uma: o integrador compara esses valores. Em 0.x é `minor`; depois da 1.0, `major`.
+- Caso novo numa união (`Desfecho`, `ResolucaoEnvio`, `ResultadoSefaz`, `MotivoPendencia`, os `CodigoErro*`) é `minor`, com o que ele significa e qual caso deixou de cobrir a situação.
+- Subpath experimental pode quebrar em `minor`, e o changeset diz a quebra; sair de experimental também é `minor`.
+- PL novo é `minor`; tirar um PL nunca é `minor`.
+- Dado com fonte (rejeição, endpoint, AC, vigência) segue a fonte: `patch` ou `minor` pela seção 3 do ADR, com a fonte no texto.
+- No `@sinete/ibs-cbs-dados`, a versão é o mês dos dados (`AAAA.M.patch`); quebra de formato sobe `VERSAO_DO_FORMATO_DOS_DADOS`.
+
 ## Publicar
 
 1. No commit mergeado, `bun run release:tag` (`changeset git-tag`) cria uma tag `@sinete/<pacote>@<versão>` por pacote com versão nova, e `sinete@<versão>` para o guarda-chuva. `git push --tags`.

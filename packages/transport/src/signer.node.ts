@@ -2,6 +2,10 @@
  * `@sinete/transport/signer`, entrada `node` (Node, Bun e o Deno que resolve a condição `node`): a entrada pura mais
  * `iniciarSigner`, que sobe o binário `sinete-signer` como processo filho e fala pelo stdio, e `conectarSigner`, que
  * conecta no socket Unix do helper em contêiner próprio.
+ *
+ * Experimental, como a entrada pura (ADR 0016, seção 5).
+ *
+ * @experimental
  */
 
 import { spawn } from 'node:child_process';
