@@ -1,13 +1,13 @@
 {
-  "conhecidoEm": "2026-09-03",
+  "conhecidoEm": "2026-09-30",
   "fontes": [
     {
-      "data": "2026-09-03",
-      "id": "calculadora-offline-V0057",
-      "sha256": "f451c3902621f02f3a63da29cd63d1e8e0f0456cce44425f1e22c89c079cb68e",
+      "data": "2026-09-30",
+      "id": "calculadora-offline-V0059",
+      "sha256": "13870dea14ddf0b59754ee4375b2a98548fffcf80d7d99f2635325d0e18da2fa",
       "titulo": "Calculadora de Tributos da Reforma Tributária do Consumo (RFB), módulo offline",
       "url": "https://obs-13820-calcpr-apr.obsv3.br-df-1.hcs.serpro.gov.br/calculadora.zip",
-      "versao": "V0057"
+      "versao": "V0059"
     },
     {
       "id": "it-2025.002-v1.60",
@@ -32,7 +32,7 @@
   "referencia": [
     {
       "aliquota": "0.9",
-      "fontes": ["calculadora-offline-V0057", "it-2026.002-v1.00-aliquotas-cbs", "lc214-2025"],
+      "fontes": ["calculadora-offline-V0059", "it-2026.002-v1.00-aliquotas-cbs", "lc214-2025"],
       "legal": "LC 214/2025, art. 346",
       "situacao": "oficial",
       "tributo": "CBS",
@@ -43,7 +43,7 @@
     },
     {
       "aliquota": "0.1",
-      "fontes": ["calculadora-offline-V0057", "lc214-2025", "it-2025.002-v1.60"],
+      "fontes": ["calculadora-offline-V0059", "lc214-2025", "it-2025.002-v1.60"],
       "legal": "LC 214/2025, art. 343",
       "situacao": "oficial",
       "tributo": "IBSUF",
@@ -54,7 +54,7 @@
     },
     {
       "aliquota": "0",
-      "fontes": ["calculadora-offline-V0057", "lc214-2025", "it-2025.002-v1.60"],
+      "fontes": ["calculadora-offline-V0059", "lc214-2025", "it-2025.002-v1.60"],
       "legal": "LC 214/2025, art. 343 (em 2026 só há a alíquota estadual)",
       "situacao": "oficial",
       "tributo": "IBSMun",

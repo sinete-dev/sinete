@@ -728,7 +728,7 @@
     "indicadores": {
       "exigeGrupoTribRegular": false,
       "incompativelComSuspensao": false,
-      "possuiAjuste": true,
+      "possuiAjuste": false,
       "possuiMonofasia": false,
       "possuiPercentualReducao": true,
       "possuiRedutor": false

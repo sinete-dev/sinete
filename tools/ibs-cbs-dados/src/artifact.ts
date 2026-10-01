@@ -1,7 +1,9 @@
 /**
  * Desmonta o `calculadora.zip` oficial em cache: o rootfs (`calculadora.tar.gz`), o SQLite embarcado nele e as
  * migrações Flyway do `codigo-fonte-backend.zip`; e reconstrói o SQLite a partir das migrações (segundo caminho de
- * build, ADR 0007 decisão 3). Todo arquivo intermediário é conferido pelo sha256 fixado em `sources.json`.
+ * build, ADR 0007 decisão 3). Desde a V0058 o código-fonte publicado não traz mais as migrações, só o próprio `.db`;
+ * nesse caso o segundo caminho se reduz a conferir que esse `.db` é o mesmo do rootfs (`segundoCaminho` do pin). Todo
+ * arquivo intermediário é conferido pelo sha256 fixado em `sources.json`.
  */
 import { existsSync } from 'node:fs';
 import { mkdir, readdir, rm } from 'node:fs/promises';
@@ -20,6 +22,14 @@ export interface CalculadoraPin {
   readonly entries: Readonly<Record<string, string>>;
   readonly dockerLayerDiffId: string;
   readonly db: { readonly pathInTar: string; readonly sha256: string };
+  /**
+   * Como conferir o `.db` por um segundo caminho. Ausente ou `flyway`: reconstruir das migrações do código-fonte, que
+   * é independente do `.db` distribuído. `db-do-codigo-fonte`: o código-fonte deixou de publicar as migrações e traz
+   * o `.db` em `pathInSourceZip`; só dá para conferir que é o mesmo arquivo do rootfs, sem reconstrução independente.
+   */
+  readonly segundoCaminho?:
+    | { readonly tipo: 'flyway' }
+    | { readonly tipo: 'db-do-codigo-fonte'; readonly pathInSourceZip: string; readonly nota: string };
   readonly versao: {
     readonly versaoApp: string;
     readonly versaoDb: string;
@@ -66,6 +76,21 @@ export async function unpackCalculadora(
     await verify(db, pin.db.sha256, pin.db.pathInTar);
   }
   return { tarGz, db, sourceZip };
+}
+
+/**
+ * Extrai o `.db` que o `codigo-fonte-backend.zip` publica no lugar das migrações (V0058 em diante) e confere que é o
+ * mesmo arquivo do rootfs, pelo sha256 fixado em `db.sha256`.
+ */
+export async function dbFromSourceZip(
+  sourceZip: string,
+  pathInSourceZip: string,
+  sha256: string,
+  cacheDir: string,
+): Promise<string> {
+  const dir = path.join(cacheDir, `fonte-${(await fileSha256(sourceZip)).slice(0, 16)}`);
+  await mkdir(dir, { recursive: true });
+  return await unzipEntry(sourceZip, pathInSourceZip, path.join(dir, path.basename(pathInSourceZip)), sha256);
 }
 
 /**

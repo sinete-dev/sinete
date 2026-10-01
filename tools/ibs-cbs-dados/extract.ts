@@ -7,7 +7,9 @@
  *      do zip, do `calculadora.tar.gz`, do `codigo-fonte-backend.zip` e do SQLite embarcado; com `--verify-layer`,
  *      também o `diff_id` da camada (o sha256 do tar descomprimido, que amarra o dataset ao contêiner do oráculo);
  *   2. extrai as tabelas do SQLite embarcado e, pelo segundo caminho, de um SQLite reconstruído das migrações Flyway
- *      do mesmo zip; os dois precisam dar as mesmas tabelas, byte a byte (`--skip-flyway` pula, só para desenvolvimento);
+ *      do mesmo zip; os dois precisam dar as mesmas tabelas, byte a byte (`--skip-flyway` pula, só para desenvolvimento).
+ *      Quando o código-fonte não traz as migrações (V0058 em diante, `segundoCaminho` do pin), o segundo caminho é o
+ *      `.db` que o código-fonte publica, conferido contra o do rootfs;
  *   3. lê as planilhas oficiais do IT 2025.002 (cClassTrib e cCredPres) e do IT 2026.002 (alíquotas da CBS), também
  *      por hash, junta com a Calculadora e confronta as divergências com `conflicts.json`;
  *   4. grava `packages/ibs-cbs-dados/src/data/*.json` + `manifest.json` e `packages/ibs-cbs/src/aliquotas/data/rates.json`, em JSON
@@ -29,7 +31,7 @@ import type {
   TabelasDoDataset,
 } from '../../packages/ibs-cbs-dados/src/types.ts';
 import type { CalculadoraPin } from './src/artifact.ts';
-import { layerDiffId, rebuildFromFlyway, unpackCalculadora } from './src/artifact.ts';
+import { dbFromSourceZip, layerDiffId, rebuildFromFlyway, unpackCalculadora } from './src/artifact.ts';
 import type { CalcTables } from './src/calculadora.ts';
 import { extractCalculadora } from './src/calculadora.ts';
 import { defaultCacheDir, ensureFile } from './src/fetch.ts';
@@ -123,7 +125,21 @@ const tableBytes = (t: CalcTables): Record<string, string> =>
       .filter(([k]) => k !== 'versao')
       .map(([k, v]) => [k, tabelaCanonica(v as unknown[])]),
   );
-if (!args['skip-flyway']) {
+const segundo = pin.segundoCaminho ?? { tipo: 'flyway' };
+if (args['skip-flyway']) {
+  log('AVISO: segundo caminho pulado (--skip-flyway); não use para gerar o dataset versionado');
+} else if (segundo.tipo === 'db-do-codigo-fonte') {
+  // Sem migrações no código-fonte (V0058 em diante): o segundo caminho é o .db que o código-fonte publica, que precisa
+  // ser o mesmo arquivo do rootfs e dar as mesmas tabelas. Não é uma reconstrução independente (ver a nota do pin).
+  const fromSource = await dbFromSourceZip(unpacked.sourceZip, segundo.pathInSourceZip, pin.db.sha256, cacheDir);
+  const a = tableBytes(shipped);
+  const b = tableBytes(extractCalculadora(fromSource));
+  const differ = Object.keys(a).filter((k) => a[k] !== b[k]);
+  if (differ.length) fail(`SQLite do rootfs e do código-fonte divergem em: ${differ.join(', ')}`);
+  log(
+    `AVISO: código-fonte sem migrações Flyway; o .db publicado no código-fonte é o mesmo do rootfs (${pin.versao.versaoDb}), sem reconstrução independente`,
+  );
+} else {
   const rebuiltDb = await rebuildFromFlyway(unpacked.sourceZip, pin.versao.versaoDb, cacheDir);
   const rebuilt = extractCalculadora(rebuiltDb);
   const a = tableBytes(shipped);
@@ -131,8 +147,6 @@ if (!args['skip-flyway']) {
   const differ = Object.keys(a).filter((k) => a[k] !== b[k]);
   if (differ.length) fail(`SQLite embarcado e reconstruído das migrações divergem em: ${differ.join(', ')}`);
   log(`SQLite embarcado e reconstruído das migrações (${pin.versao.versaoDb}) dão as mesmas tabelas`);
-} else {
-  log('AVISO: caminho Flyway pulado (--skip-flyway); não use para gerar o dataset versionado');
 }
 
 // 3. IT

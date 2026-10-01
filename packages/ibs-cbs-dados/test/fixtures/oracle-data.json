@@ -1,8 +1,8 @@
 {
   "comment": "Gravado por tools/ibs-cbs-oraculo/run.ts --record contra a Calculadora offline fixada. Não editar à mão: regravar.",
   "calculadora": {
-    "versaoDb": "V0057",
-    "zipSha256": "f451c3902621f02f3a63da29cd63d1e8e0f0456cce44425f1e22c89c079cb68e"
+    "versaoDb": "V0059",
+    "zipSha256": "13870dea14ddf0b59754ee4375b2a98548fffcf80d7d99f2635325d0e18da2fa"
   },
   "seed": 1,
   "pairs": [

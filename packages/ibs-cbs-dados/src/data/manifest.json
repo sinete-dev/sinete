@@ -1,22 +1,22 @@
 {
-  "conhecidoEm": "2026-09-03",
+  "conhecidoEm": "2026-09-30",
   "fontes": [
     {
-      "data": "2026-09-03",
-      "id": "calculadora-offline-V0057",
-      "notas": "Remoção de alíquotas da monofasia.",
+      "data": "2026-09-30",
+      "id": "calculadora-offline-V0059",
+      "notas": "Habilitação de 820 para NFSe.",
       "pins": {
-        "calculadora.tar.gz": "419d7918bbcedcbcecaf02795d10e263200037b2dce7d46edbcf3abd3c7c751a",
-        "calculadora/calculadora/db/calculadora-pro.db": "9a9143b12b38d02fb73630f89ea2b6c215508edc2bc3ac8d15f68c81ac12175d",
-        "codigo-fonte-backend.zip": "28a21a5cf080056c753eaa6e1bc10bccb645c500a888d3c89d904464a76abfad",
-        "dockerLayerDiffId": "sha256:36c2a33a6aa9777b307d7a653566b845f1a8c769f8769140f5d021418915ee6b",
-        "versaoApp": "demanda-5451861-cofis-43411-delete-aliquotas-ficticias"
+        "calculadora.tar.gz": "b59df3ff82d54142787d399d433a461ddd409f7a86aa889ed367b327a4467a66",
+        "calculadora/calculadora/db/calculadora-pro.db": "baa898c4c3c1bbe92ad832e221c4a2dad388136f95d66570869ba3d132894f9c",
+        "codigo-fonte-backend.zip": "9c10710b7f0747e8a229efb2de4fd1f7e04c28681a5e4cf825b671a969eeb827",
+        "dockerLayerDiffId": "sha256:520c3e924c0b78b131f5eb968a5eebae4a08f1ec07790c3eb3ca0b5e6546d76a",
+        "versaoApp": "1.5.4"
       },
-      "sha256": "f451c3902621f02f3a63da29cd63d1e8e0f0456cce44425f1e22c89c079cb68e",
+      "sha256": "13870dea14ddf0b59754ee4375b2a98548fffcf80d7d99f2635325d0e18da2fa",
       "tipo": "CALCULADORA_OFFLINE",
       "titulo": "Calculadora de Tributos da Reforma Tributária do Consumo (RFB), módulo offline",
       "url": "https://obs-13820-calcpr-apr.obsv3.br-df-1.hcs.serpro.gov.br/calculadora.zip",
-      "versao": "V0057"
+      "versao": "V0059"
     },
     {
       "data": "2026-06-22",
@@ -24,7 +24,7 @@
       "sha256": "1448cb63a41bdb67ea30b4e11f4dc200d9568542c6b9335b6cff87a4fd664654",
       "tipo": "IT",
       "titulo": "IT 2025.002 v1.60: Tabela de Classificação Tributária do IBS e CBS (CST e cClassTrib)",
-      "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=D5b4Ov84WDg=",
+      "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=CMlTOCo8JuE=",
       "versao": "v1.60"
     },
     {
@@ -37,22 +37,22 @@
       "versao": "v1.60"
     }
   ],
-  "sha256DoDataset": "89497764bc766dda96a71dd4bdbe17157b9c838687f3a11f1ce3dd56d5d18d05",
+  "sha256DoDataset": "f88dd50fda2b3b65368789d477fd0fc90b7586e2137b9f4c4c2ceca66016f8c2",
   "tabelas": [
     {
       "nome": "cst",
       "registros": 25,
-      "sha256": "7649b45cdcbd244319790c002fd76ddcc2f24c494905747775f13338a6bec787"
+      "sha256": "4b32b80433e2dbceb48cc6943bc3eeb2c323c09a49b84843813c7184648b57d6"
     },
     {
       "nome": "classTrib",
       "registros": 193,
-      "sha256": "7dc635ffd36056eb2c897c487d209810851b27d97c7785aa16904942f2b7bdf4"
+      "sha256": "f52babe371505bad28125e04f98d5889024366f052a8e5190b008edf3550add2"
     },
     {
       "nome": "tratamentos",
       "registros": 43,
-      "sha256": "7efe1782942398e7643d77c482da55bd83fdc831bca30a4208afc69ac8735bfd"
+      "sha256": "cf35e9b0af968ef5d9c983a0d18d7341fe077af9490918042f2c688df7268ec2"
     },
     {
       "nome": "credPres",
@@ -77,7 +77,7 @@
     {
       "nome": "nfseNbs",
       "registros": 3196,
-      "sha256": "34eefdc734359c69608e348d0c8e2804d34e472e86fb703fa5f702473e627985"
+      "sha256": "e5e3f13e1ac237e35b927adb29335bdd4589ea45adc37503b5fbee966cc8aef2"
     },
     {
       "nome": "gruposDeAtores",
