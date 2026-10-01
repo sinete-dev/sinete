@@ -40,8 +40,12 @@ switch (desfecho.tipo) {
   case 'pendente': // bytes gravados: o job (ou o próximo emitir) retoma
   case 'divergente': // a SEFAZ tem outro documento no número: alguém precisa olhar
     break;
+  default: // caso novo numa versão minor: os bytes ficam gravados, trate como pendente e alerte
+    console.warn('desfecho não tratado', desfecho);
 }
 ```
+
+O `Desfecho` é uma união aberta: um caso novo pode entrar numa versão minor ([ADR 0016](../../docs/adr/0016-politica-de-estabilidade.md), seção 2). Por isso o `switch` tem `default`, e não um `never` exaustivo, que quebraria a compilação nessa versão.
 
 ## O ciclo
 

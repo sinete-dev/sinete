@@ -103,4 +103,4 @@ São doze bibliotecas, as duas ferramentas e o guarda-chuva.
 ## Pendências
 
 - Medir o ganho do subpath no Deno e no `import` de CDN no browser, que é onde ele aparece (a tabela acima só mediu o Node e um bundler com tree shaking).
-- Decidir se o `DanfeError` ganha um nome neutro (`DaError`) antes da 1.0, agora que o pacote cobre o DAMDFE e o DACCe.
+- Decidir se o `DanfeError` ganha um nome neutro (`DaError`) antes da 1.0, agora que o pacote cobre o DAMDFE e o DACCe. *Revisão (01/10/2026): resolvida na 0.2.0, já com os nomes do [ADR 0015](0015-nomes-em-portugues.md): `ErroDa` e `CodigoErroDa` (`packages/da/src/errors.ts`, tabela no `packages/da/CHANGELOG.md`).*
