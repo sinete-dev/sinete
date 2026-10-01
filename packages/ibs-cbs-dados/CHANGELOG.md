@@ -1,5 +1,19 @@
 # @sinete/ibs-cbs-dados
 
+## 2026.9.3
+
+### Patch Changes
+
+- 1864bb5: Dados da Calculadora offline da RFB V0059 (30/09/2026), no lugar da V0057. O mês dos dados continua setembro de 2026, então o `@sinete/ibs-cbs-dados` segue em `2026.9.x`.
+  
+  - NFS-e: a troca de vínculos NBS x cClassTrib x indicador de operação que a V0057 marcava para 01/10/2026 passa para 03/11/2026 (V0058). Entre 01/10 e 02/11/2026 valem os vínculos de antes; a partir de 03/11/2026, os novos (1.519 vínculos, entre eles os de 820001, 820002, 820003, 820006 e 820007).
+  - Tratamento `032` (tributação em documento específico, CST 820): `possuiAjuste` passa a `false` (V0059, "Habilitação de 820 para NFSe"). A CST 820 não tem grupo IBS/CBS, então o cálculo do motor não muda.
+  - CST, cClassTrib, crédito presumido, aplicabilidade de NCM e NBS, atores, redutor de compra governamental e transferência: só a fonte citada muda. Alíquotas: nenhuma mudança; a Calculadora continua sem alíquota de referência da CBS para 2027.
+- 64b8d8a: **Atualize todos os `@sinete/*` juntos.** Nesta versão, parte dos pacotes sobe para 0.3.0 (`@sinete/core`, `@sinete/emissor`, `@sinete/mdfe`, `@sinete/nfe`, `@sinete/nfse`, `@sinete/rejeicoes` e o `sinete`) e o resto sobe em patch (0.2.1, e o `@sinete/ibs-cbs-dados` para a versão do mês), com faixas `^` entre si. Quem fixa versões exatas em `resolutions` (Yarn, Bun) ou `overrides` (npm, pnpm) precisa subir todos os `@sinete/*` na mesma mudança. Um pacote em 0.3.0 com outro preso numa versão anterior força uma combinação que nenhum deles declara: o `@sinete/nfe` 0.3.0 com o `@sinete/core` preso em 0.2.0 roda sem o que a 0.3.0 do core trouxe, ou o gerenciador instala duas cópias do core e o `instanceof` dos erros (`ErroDeValidacao`, `ErroSefaz`) falha entre elas. Quem usa só o `sinete` recebe as versões certas pelo guarda-chuva.
+- Updated dependencies [5547ca1]
+- Updated dependencies [64b8d8a]
+  - @sinete/core@0.3.0
+
 ## 2026.9.2
 
 ### Minor Changes

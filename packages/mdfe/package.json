@@ -1,6 +1,6 @@
 {
   "name": "@sinete/mdfe",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "MDF-e modelo 58 (3.00b): modelo de entrada tipado do rodoviário, montagem com totais em decimal exato e regras de validação antes de assinar, QR Code, contingência off-line, autorização síncrona, consultas e eventos (cancelamento, encerramento, inclusão de condutor e de DF-e, pagamento da operação)",
   "keywords": [
     "mdfe",
