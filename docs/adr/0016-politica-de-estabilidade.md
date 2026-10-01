@@ -2,6 +2,7 @@
 
 - Status: aceito
 - Data: 01/out/2026
+- Emenda: 01/out/2026, a pendência da faixa do `@sinete/ibs-cbs-dados` foi resolvida (seção 6, "Faixa aberta").
 - Complementa o [ADR 0001](0001-tooling-monorepo.md) (versões independentes por pacote, changesets), o [ADR 0008](0008-divisao-de-pacotes.md) (pacotes e subpaths), o [ADR 0010](0010-fronteira-emissor.md) (desfecho do emissor), o [ADR 0011](0011-origem-e-rotulo-das-ocorrencias.md) (`origem` e caminho das ocorrências) e o [ADR 0015](0015-nomes-em-portugues.md) (nomes da API pública).
 
 ## Contexto
@@ -96,6 +97,7 @@ O pacote segue `AAAA.M.patch` (o mês dos dados) e nunca terá "1.0": a versão 
 
 - **O formato é o contrato.** `versaoDoFormato` do bundle e `VERSAO_DO_FORMATO_DOS_DADOS` do código dizem qual formato o leitor entende, e bundle de formato diferente é recusado (`ibscbs_dados_versao_incompativel`). Enquanto o formato for o mesmo, os nomes exportados, `ConteudoTributario` e os tipos das tabelas só mudam de forma aditiva, pela seção 1.
 - **Quebra sobe o formato.** Mudança incompatível no código ou nas tabelas sobe `VERSAO_DO_FORMATO_DOS_DADOS`, sai num mês novo e é anunciada no changelog como quebra; o `@sinete/ibs-cbs`, que lê o dataset, sobe em major junto quando já estiver em 1.x.
+- **Faixa aberta.** Quem depende do pacote declara `workspace:>=2026.9.2`, que o `bun pm pack` publica como `>=2026.9.2`: o dataset de um ano seguinte satisfaz a dependência dos pacotes já publicados. A faixa não protege o formato; quem protege é o motor: o `@sinete/ibs-cbs` guarda o formato que ele lê numa constante própria (`FORMATO_DOS_DADOS_DO_MOTOR`, nunca importada do pacote de dados) e recusa em `calcular`, `validar`, `restringir` e `determinar` o dataset de outro `versaoDoFormato` (`ibscbs_dados_versao_incompativel`). O piso sobe quando o código passar a precisar de um dado que só um dataset mais novo tem. `scripts/lib/faixa-ibs-cbs-dados.test.ts` confere que a faixa publicada aceita o dataset atual e os dos anos seguintes.
 - **Dados mudam pela fonte**, pela seção 3: o pin de uma versão nova da Calculadora ou do IT é patch ou minor do mês, com o diff (`compararDatasets`) no PR, e `versaoDoConteudo` vai em todo cálculo para reprocessar com os dados da época.
 
 ### 7. `completarCadeia`: o padrão `false` é o contrato
@@ -146,4 +148,4 @@ Estado na data deste ADR, para depois do 0.3.0:
 
 ## Pendências
 
-- **Faixa de dependência do `@sinete/ibs-cbs-dados`.** O `@sinete/ibs-cbs` e o `@sinete/nfe` dependem dele com `workspace:^`, que o `bun pm pack` publica como `^2026.9.2`. Pelo semver, essa faixa não aceita `2027.1.0`: em janeiro de 2027, o dataset do mês novo não satisfaz a dependência dos pacotes já publicados, e o integrador fica com duas cópias ou preso ao último mês de 2026. A faixa precisa ir até a próxima mudança de formato (a trava real é o `versaoDoFormato` em runtime), por exemplo `>=2026.9.2` com o leitor recusando o formato desconhecido. Decidir a forma e conferir no `scripts/release.ts` antes do primeiro dataset de 2027.
+- ~~Faixa de dependência do `@sinete/ibs-cbs-dados`~~: resolvida em 01/out/2026 com a faixa aberta (`>=2026.9.2`) e a conferência do formato pelo motor (seção 6).

@@ -12,6 +12,7 @@ import type {
   LocalDaOperacao,
   OperacaoClassificada,
 } from '../calcular/index.ts';
+import { exigirFormatoDosDados } from '../formato.ts';
 import type { RestringirOpcoes } from './constrain.ts';
 import { dataDoFato, restringirEm } from './constrain.ts';
 import { ErroDeterminacao } from './errors.ts';
@@ -152,6 +153,11 @@ function pick(candidates: readonly Candidato[], code: string): Candidato | undef
 
 /** Determinação na data do fato gerador de `opcoes.tempo`. */
 export function determinar(fatos: FatosDaOperacao, opcoes: DeterminarOpcoes): Promise<Determinacao> {
+  try {
+    exigirFormatoDosDados(opcoes.dataset);
+  } catch (e) {
+    return Promise.reject(e);
+  }
   const content = opcoes.dataset.em(dataDoFato(opcoes.tempo, opcoes.deslocamentoMin));
   return determinarEm(fatos, content, { ...opcoes, relogio: opcoes.relogio ?? opcoes.tempo.emissao });
 }
