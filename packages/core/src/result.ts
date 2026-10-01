@@ -26,6 +26,11 @@ export interface DicaRejeicao {
   readonly comoCorrigir: string;
   /** Origem da regra: item do MOC, NT ou regra de validação (ex.: `MOC 7.0, RV G02-10`). */
   readonly fonte: string;
+  /**
+   * Texto para quem emite o documento, sem termo de integração, quando a correção está na mão dele. `causaProvavel` e
+   * `comoCorrigir` são para quem integra; este é o que vai para a tela de quem emite.
+   */
+  readonly orientacao?: string;
 }
 
 /** Documento ou evento autorizado; `valor` traz o protocolo e o que mais o pacote do documento devolver. */

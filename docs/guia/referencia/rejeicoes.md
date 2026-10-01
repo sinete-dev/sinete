@@ -12,7 +12,7 @@ O catálogo vive em `data/rejeicoes.json`, gerado por `tools/rejeicoes-data` a p
 
 - `completarRecusado`: Preenche a `dica` de um desfecho `recusado` a partir do catálogo. Não sobrescreve uma `dica` já presente e devolve o mesmo objeto quando não há o que acrescentar. `completarRecusado(desfecho: Recusado): Recusado`
 - `completarResultado`: Como `completarRecusado`, aceitando qualquer desfecho; só o `recusado` muda. `completarResultado<T, D = T>(desfecho: ResultadoSefaz<T, D>): ResultadoSefaz<T, D>`
-- `dicaRejeicao`: `DicaRejeicao` do core para o código, quando há curadoria de causa e correção. `dicaRejeicao(cStat: string): DicaRejeicao | undefined`
+- `dicaRejeicao`: `DicaRejeicao` do core para o código, quando há curadoria de causa e correção; traz a `orientacao` quando existe. `dicaRejeicao(cStat: string): DicaRejeicao | undefined`
 - `rejeicaoPorCodigo`: Entrada do catálogo para o `cStat` (`'204'`, `'1020'`), ou `undefined` se o código não está catalogado. `rejeicaoPorCodigo(cStat: string): Rejeicao | undefined`
 
 ### Interfaces
@@ -20,7 +20,7 @@ O catálogo vive em `data/rejeicoes.json`, gerado por `tools/rejeicoes-data` a p
 - `DescricaoTabelaRejeicoes`: Membros: `versaoDoFormato`, `versao`, `fontes`.
 - `FonteRejeicao` (estende `FonteDeDados`): Membros: `id`, `versao`, `citacao`, `sha256`.
 - `RegraRejeicao`: Regra de validação em que o código aparece. Membros: `documento`, `id`.
-- `Rejeicao`: Membros: `codigo`, `efeito`, `mensagem`, `mensagens`, `modelos`, `fonte`, `regras`, `categoria`, `causaProvavel`, `comoCorrigir`, `referencia`.
+- `Rejeicao`: Membros: `codigo`, `efeito`, `mensagem`, `mensagens`, `modelos`, `fonte`, `regras`, `categoria`, `causaProvavel`, `comoCorrigir`, `referencia`, `orientacao`.
 
 ### Tipos
 
@@ -42,12 +42,12 @@ Os códigos do MDF-e colidem com os da NF-e com outro significado (611 e 686 sã
 
 - `completarRecusadoMdfe`: Preenche a `dica` de um desfecho `recusado` do MDF-e. Não sobrescreve uma `dica` já presente. `completarRecusadoMdfe(desfecho: Recusado): Recusado`
 - `completarResultadoMdfe`: Como `completarRecusadoMdfe`, aceitando qualquer desfecho; só o `recusado` muda. `completarResultadoMdfe<T, D = T>(desfecho: ResultadoSefaz<T, D>): ResultadoSefaz<T, D>`
-- `dicaRejeicaoMdfe`: `DicaRejeicao` do core para o código do MDF-e, quando há curadoria de causa e correção. `dicaRejeicaoMdfe(cStat: string): DicaRejeicao | undefined`
+- `dicaRejeicaoMdfe`: `DicaRejeicao` do core para o código do MDF-e, quando há curadoria de causa e correção; traz a `orientacao` quando existe. `dicaRejeicaoMdfe(cStat: string): DicaRejeicao | undefined`
 - `rejeicaoMdfePorCodigo`: Entrada do catálogo do MDF-e para o `cStat`, ou `undefined` se o código não está catalogado. `rejeicaoMdfePorCodigo(cStat: string): RejeicaoMdfe | undefined`
 
 ### Interfaces
 
-- `RejeicaoMdfe`: Membros: `codigo`, `efeito`, `mensagem`, `mensagens`, `modelos`, `fonte`, `regras`, `categoria`, `causaProvavel`, `comoCorrigir`, `referencia`.
+- `RejeicaoMdfe`: Membros: `codigo`, `efeito`, `mensagem`, `mensagens`, `modelos`, `fonte`, `regras`, `categoria`, `causaProvavel`, `comoCorrigir`, `referencia`, `orientacao`.
 
 ### Constantes
 

@@ -28,6 +28,8 @@ export interface RejeicaoMdfe {
   readonly causaProvavel?: string;
   readonly comoCorrigir?: string;
   readonly referencia?: string;
+  /** Texto para quem emite o MDF-e, como em `Rejeicao.orientacao`; ausente quando a correção não está na mão dele. */
+  readonly orientacao?: string;
 }
 
 /** Metadados do catálogo do MDF-e: versão (data de coleta) e documentos de origem com sha256. */
@@ -47,11 +49,16 @@ export function rejeicaoMdfePorCodigo(cStat: string): RejeicaoMdfe | undefined {
   return byCode.get(cStat.trim());
 }
 
-/** `DicaRejeicao` do core para o código do MDF-e, quando há curadoria de causa e correção. */
+/** `DicaRejeicao` do core para o código do MDF-e, quando há curadoria de causa e correção; traz a `orientacao` quando existe. */
 export function dicaRejeicaoMdfe(cStat: string): DicaRejeicao | undefined {
   const r = rejeicaoMdfePorCodigo(cStat);
   if (!r?.causaProvavel || !r.comoCorrigir) return undefined;
-  return { causaProvavel: r.causaProvavel, comoCorrigir: r.comoCorrigir, fonte: r.referencia ?? r.fonte };
+  return {
+    causaProvavel: r.causaProvavel,
+    comoCorrigir: r.comoCorrigir,
+    fonte: r.referencia ?? r.fonte,
+    ...(r.orientacao ? { orientacao: r.orientacao } : {}),
+  };
 }
 
 /** Preenche a `dica` de um desfecho `recusado` do MDF-e. Não sobrescreve uma `dica` já presente. */

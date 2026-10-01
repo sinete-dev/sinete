@@ -61,7 +61,7 @@ Erros tipados, desfechos discriminados da SEFAZ, relógio injetável, logger est
 - `ContextoDeTempo`: Os dois relógios de uma operação fiscal. Membros: `emissao`, `fatoGerador`.
 - `Denegado` (estende `StatusSefaz`): Uso denegado (irregularidade do emitente ou do destinatário). Diferente da rejeição, a denegação é registrada na SEFAZ e o número fica consumido; `valor` traz o protocolo de denegação. Membros: `tipo`, `valor`.
 - `DescricaoTabelaUfs`: Metadados da tabela: versão (data da revisão), formato e fontes. Membros: `versaoDoFormato`, `versao`, `fontes`.
-- `DicaRejeicao`: Diagnóstico de uma rejeição, preenchido pelo `@sinete/rejeicoes` quando o `cStat` está no catálogo. Membros: `causaProvavel`, `comoCorrigir`, `fonte`.
+- `DicaRejeicao`: Diagnóstico de uma rejeição, preenchido pelo `@sinete/rejeicoes` quando o `cStat` está no catálogo. Membros: `causaProvavel`, `comoCorrigir`, `fonte`, `orientacao`.
 - `EntradaDeLog`: Membros: `nivel`, `mensagem`, `campos`.
 - `ErroSerializado`: Forma do erro em `JSON.stringify`, para log estruturado. Membros: `name`, `code`, `message`, `pagina`, `detalhes`, `cause`.
 - `ErroSineteOpcoes`: Membros: `cause`, `detalhes`.

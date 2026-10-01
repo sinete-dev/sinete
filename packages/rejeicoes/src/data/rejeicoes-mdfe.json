@@ -370,7 +370,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "O cancelamento só é aceito até 24 horas depois da autorização.",
       "comoCorrigir": "Depois do prazo, encerre o MDF-e (evento 110112). A liberação do prazo é feita só pelo fisco (evento 240170).",
-      "referencia": "MOC MDF-e 3.00b Visão Geral, item 6.1.1, regra K04"
+      "referencia": "MOC MDF-e 3.00b Visão Geral, item 6.1.1, regra K04",
+      "orientacao": "Encerre o MDF-e se já passaram 24 horas desde a autorização. Depois desse prazo, você não pode mais cancelar o documento."
     },
     {
       "codigo": "222",
@@ -1064,7 +1065,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Existe MDF-e não encerrado há mais de 5 dias para a placa, com até duas UF de percurso além do carregamento e do descarregamento.",
       "comoCorrigir": "Encerre o MDF-e anterior da placa antes de emitir o novo.",
-      "referencia": "MOC MDF-e 3.00b Anexo I, regra F87"
+      "referencia": "MOC MDF-e 3.00b Anexo I, regra F87",
+      "orientacao": "Encerre o MDF-e anterior da mesma placa antes de emitir o novo. Ele está aberto há mais de cinco dias, com até dois estados de percurso."
     },
     {
       "codigo": "479",
@@ -1617,7 +1619,8 @@
       "categoria": "duplicidade",
       "causaProvavel": "O MDF-e já foi encerrado; depois do encerramento não se cancela, não se encerra de novo e não se inclui condutor nem DF-e.",
       "comoCorrigir": "Consulte a chave para obter o evento de encerramento registrado. Para nova viagem, emita outro MDF-e.",
-      "referencia": "MOC MDF-e 3.00b Anexo I, regra F84; Visão Geral, item 6.2.1, regra K09"
+      "referencia": "MOC MDF-e 3.00b Anexo I, regra F84; Visão Geral, item 6.2.1, regra K09",
+      "orientacao": "Emita outro MDF-e se você estiver iniciando uma nova viagem. O documento encerrado não aceita cancelamento, novo encerramento, inclusão de condutor ou de documento."
     },
     {
       "codigo": "611",
@@ -1634,7 +1637,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Existe MDF-e não encerrado para a mesma placa, o mesmo tipo de emitente e a mesma UF de descarregamento.",
       "comoCorrigir": "Encerre o MDF-e anterior (a consulta de não encerrados lista chave e protocolo) antes de emitir o novo.",
-      "referencia": "MOC MDF-e 3.00b Anexo I, regra F85"
+      "referencia": "MOC MDF-e 3.00b Anexo I, regra F85",
+      "orientacao": "Encerre o MDF-e anterior da mesma placa antes de emitir o novo. Confira o documento aberto com o mesmo tipo de emitente e o mesmo estado de descarregamento."
     },
     {
       "codigo": "612",
@@ -2083,7 +2087,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Existe MDF-e não encerrado para a mesma placa com o par de UF de carregamento e descarregamento no sentido oposto (a volta foi emitida sem encerrar a ida).",
       "comoCorrigir": "Encerre o MDF-e da ida antes de autorizar o da volta.",
-      "referencia": "MOC MDF-e 3.00b Anexo I, regra F88"
+      "referencia": "MOC MDF-e 3.00b Anexo I, regra F88",
+      "orientacao": "Encerre o MDF-e da ida dessa placa antes de emitir o MDF-e da volta."
     },
     {
       "codigo": "663",
@@ -2100,7 +2105,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "As UF de percurso não formam um caminho por divisas entre a UF de carregamento e a de descarregamento, na ordem da viagem.",
       "comoCorrigir": "Informe em infPercurso, na ordem, cada UF atravessada entre UFIni e UFFim, de modo que cada par consecutivo faça divisa.",
-      "referencia": "MOC MDF-e 3.00b Anexo I, regra F90"
+      "referencia": "MOC MDF-e 3.00b Anexo I, regra F90",
+      "orientacao": "Informe cada estado atravessado na ordem da viagem, entre o carregamento e o descarregamento. Confira se cada estado faz divisa com o seguinte."
     },
     {
       "codigo": "666",
@@ -2344,7 +2350,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Prestação por conta de terceiros no modal rodoviário (tpEmit 1 ou 3, ou tpEmit 2 com tpTransp) sem o grupo infCIOT. A NT 2026.001 torna a exigência geral a partir de 23/11/2026 em produção.",
       "comoCorrigir": "Informe infANTT/infCIOT com o CIOT e o CPF ou CNPJ do responsável pela geração.",
-      "referencia": "MDF-e NT 2026.001 v1.00, item 1; MOC MDF-e 3.00b Anexo I, regra F113"
+      "referencia": "MDF-e NT 2026.001 v1.00, item 1; MOC MDF-e 3.00b Anexo I, regra F113",
+      "orientacao": "Informe o CIOT e o CPF ou CNPJ de quem o gerou. No transporte rodoviário por conta de terceiros, a exigência passa a ser geral em 23/11/2026."
     },
     {
       "codigo": "685",
@@ -2375,7 +2382,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "O emitente tem MDF-e autorizado há mais de 30 dias sem encerramento.",
       "comoCorrigir": "Liste os não encerrados (MDFeConsNaoEnc) e encerre cada um com a data e o município reais do fim da viagem.",
-      "referencia": "MOC MDF-e 3.00b Anexo I, regra F86"
+      "referencia": "MOC MDF-e 3.00b Anexo I, regra F86",
+      "orientacao": "Encerre cada MDF-e pendente do emitente que esteja autorizado há mais de 30 dias. Informe a data e o município reais do fim de cada viagem."
     },
     {
       "codigo": "687",
@@ -2434,7 +2442,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Prestador de serviço de transporte (tpEmit 1 ou 3) no modal rodoviário sem o grupo de seguro da carga.",
       "comoCorrigir": "Informe seg com o responsável, a seguradora, a apólice e as averbações.",
-      "referencia": "MOC MDF-e 3.00b Anexo I, regra F91"
+      "referencia": "MOC MDF-e 3.00b Anexo I, regra F91",
+      "orientacao": "Informe o responsável pelo seguro da carga, a seguradora, a apólice e as averbações. Esses dados são exigidos para a transportadora no transporte rodoviário."
     },
     {
       "codigo": "699",
@@ -2823,7 +2832,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Prestador de serviço de transporte (tpEmit 1 ou 3), ou carga própria com tpTransp informado, sem o grupo do produto predominante.",
       "comoCorrigir": "Informe prodPred com tpCarga e xProd (e NCM na carga lotação, NT 2025.001).",
-      "referencia": "MOC MDF-e 3.00b Anexo I, regra F54"
+      "referencia": "MOC MDF-e 3.00b Anexo I, regra F54",
+      "orientacao": "Informe o produto predominante, com o tipo de carga e a descrição. Se for carga lotação, preencha também o NCM do produto."
     },
     {
       "codigo": "726",
@@ -2840,7 +2850,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "MDF-e com um único DF-e transportado (carga lotação) sem o grupo infLotacao do produto predominante.",
       "comoCorrigir": "Informe prodPred/infLotacao com o CEP ou as coordenadas do local de carregamento e de descarregamento.",
-      "referencia": "MOC MDF-e 3.00b Anexo I, regra F55"
+      "referencia": "MOC MDF-e 3.00b Anexo I, regra F55",
+      "orientacao": "Informe o CEP ou as coordenadas de cada local de carregamento e descarregamento. Esses dados de lotação são exigidos quando o MDF-e transporta um único documento."
     },
     {
       "codigo": "727",
@@ -3159,7 +3170,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "tpTransp informado sem o proprietário do veículo de tração. No transporte de carga própria em veículo próprio, o tipo de transportador não vai.",
       "comoCorrigir": "Retire tpTransp, ou informe veicTracao/prop quando o veículo for de terceiro.",
-      "referencia": "MOC MDF-e 3.00b Anexo I, regra F20"
+      "referencia": "MOC MDF-e 3.00b Anexo I, regra F20",
+      "orientacao": "Retire o tipo de transportador se levar carga própria em veículo próprio. Se o veículo de tração for de terceiro, informe o proprietário."
     },
     {
       "codigo": "746",

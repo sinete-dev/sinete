@@ -13,14 +13,14 @@ rejeicaoPorCodigo('1037');
 //   regras: [{ documento: 'nt2025002', id: 'UB56-10' }, ...], causaProvavel: '...', comoCorrigir: '...' }
 
 const r = completarRecusado(criarRecusado({ cStat: '204', xMotivo: 'Rejeição: Duplicidade de NF-e' }));
-r.dica; // { causaProvavel, comoCorrigir, fonte: 'MOC 7.0 Anexo I, RV 2B08-20' }
+r.dica; // { causaProvavel, comoCorrigir, fonte: 'MOC 7.0 Anexo I, RV 2B08-20' }, sem orientacao: 204 é reenvio do sistema
 ```
 
 ## API
 
 - `rejeicaoPorCodigo(cStat)`: a entrada do catálogo ou `undefined`.
 - `REJEICOES`: todas as entradas em ordem numérica; `TABELA_REJEICOES`: versão e documentos de origem (URL no Portal da NF-e e sha256 do PDF).
-- `dicaRejeicao(cStat)`: o `DicaRejeicao` do core, só para códigos com curadoria.
+- `dicaRejeicao(cStat)`: o `DicaRejeicao` do core, só para códigos com curadoria; traz a `orientacao` quando a entrada tem. `causaProvavel` e `comoCorrigir` são para quem integra; a `orientacao` é o que vai para a tela de quem emite.
 - `completarRecusado(desfecho)` e `completarResultado(desfecho)`: preenchem a `dica` de um desfecho `recusado` sem sobrescrever uma `dica` existente.
 
 ## Entrada do catálogo
@@ -35,6 +35,7 @@ r.dica; // { causaProvavel, comoCorrigir, fonte: 'MOC 7.0 Anexo I, RV 2B08-20' }
 | `regras` | todas as regras de validação que emitem o código, com o documento |
 | `categoria` | `schema`, `assinatura`, `certificado`, `cadastro`, `regra-negocio`, `duplicidade` ou `reforma` |
 | `causaProvavel`, `comoCorrigir`, `referencia` | curadoria manual, sempre com a regra citada; ausente nos demais códigos |
+| `orientacao` | texto para quem emite a nota (produtor, contador, atendente): uma ou duas frases, sem termo de integração, com o que aconteceu e o que mudar na nota, no cadastro ou junto à SEFAZ; só nos códigos curados em que a correção está na mão de quem emite (falhas do sistema emissor, como schema, assinatura, duplicidade por reenvio e cálculo, ficam sem ela) |
 
 ## De onde vem
 
@@ -76,6 +77,8 @@ completarRecusadoNfse(criarRecusado({ cStat: 'E1229', xMotivo: 'Xml não está u
 | `categoria` | `recepcao`, `schema`, `assinatura`, `certificado`, `cadastro`, `parametrizacao-municipal`, `regra-negocio`, `duplicidade`, `evento` ou `reforma` |
 | `fonte` | anexo, versão e aba da primeira regra |
 | `causaProvavel`, `comoCorrigir`, `referencia` | curadoria manual (E1229, E0312, assinatura, certificado, área de dados, versão e duplicidade), com a linha da planilha citada |
+
+O catálogo da NFS-e ainda não tem `orientacao`: a curadoria dele é outra (planilhas, chave `entradas`) e cobre sobretudo falhas do sistema emissor.
 
 `src/data/nfse-erros.json` é gerado por `tools/rejeicoes-data/nfse.ts` das planilhas do Anexo I v1.01 (20260209: abas RN_RECEPCAO_DPS e RN DPS_NFS-e) e do Anexo II v1.01 (20260122: aba RN EVENTO_PED.REG.EVENTO), da Documentação Atual do Portal NFS-e. São 496 códigos. Os códigos de sucesso da NFS-e (`cStat` 100, 101, 102 dentro do XML da nota) não entram: são status, não erro.
 
