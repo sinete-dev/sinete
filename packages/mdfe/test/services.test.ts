@@ -581,6 +581,8 @@ describe('signal', () => {
       ['autorizar', async () => s.client.autorizar((await s.emitir(cargaPropria({ nMDF: 9 }))).xml, { signal })],
       ['consultar', () => s.client.consultar(a.chave, undefined, { signal })],
       ['consultarNaoEncerrados', () => s.client.consultarNaoEncerrados(undefined, { signal })],
+      ['resolverEnvioSemResposta', () => resolverEnvioSemResposta(s.client, a.xml, undefined, { signal })],
+      ['recuperarEventoRegistrado', () => recuperarEventoRegistrado(s.client, a.chave, '110111', { signal })],
       [
         'cancelar',
         () => s.client.cancelar({ chave: a.chave, nProt: a.nProt, xJust: 'JUSTIFICATIVA SINTETICA' }, { signal }),

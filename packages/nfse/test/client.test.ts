@@ -157,11 +157,50 @@ describe('consultas e eventos fora do contrato', () => {
     await expect(c.consultar('1')).rejects.toThrow(ErroDeConfiguracao);
   });
 
-  test('resolver envio sem resposta: DPS processada sem NFS-e é ErroRespostaInvalida', async () => {
-    const t = falso([{ status: 200, body: json({ chaveAcesso: CHAVE }) }, { status: 404 }]);
-    await expect(resolverEnvioSemResposta(cliente(t), assinada)).rejects.toThrow('não foi encontrada');
+  test('resolver envio sem resposta: a consulta que não decide é indefinida, não exceção', async () => {
+    const t = falso([
+      // A DPS consta como processada, mas a NFS-e da chave não é encontrada.
+      { status: 200, body: json({ chaveAcesso: CHAVE }) },
+      { status: 404 },
+      // A NFS-e da chave é de outra DPS.
+      { status: 200, body: json({ chaveAcesso: CHAVE }) },
+      { status: 200, body: json({ chaveAcesso: CHAVE, nfseXmlGZipB64: await nfseXml(CHAVE, 'DPS9') }) },
+      // E0014 no envio, e a consulta da DPS não a acha: reenviar voltaria E0014 de novo.
+      { status: 404 },
+      // Sem a E0014, a DPS que não consta é reenviada.
+      { status: 404 },
+    ]);
+    expect(await resolverEnvioSemResposta(cliente(t), assinada)).toEqual({
+      acao: 'indefinida',
+      motivo: 'a DPS consta como processada, mas a NFS-e não foi encontrada',
+      chaveAcesso: CHAVE,
+    });
+    expect(await resolverEnvioSemResposta(cliente(t), assinada)).toEqual({
+      acao: 'indefinida',
+      motivo: 'a NFS-e da consulta não corresponde à DPS',
+      chaveAcesso: CHAVE,
+    });
+    const e0014 = { tipo: 'recusado', cStat: 'E0014', xMotivo: 'x', erros: [], statusHttp: 400 } as const;
+    const res = await resolverEnvioSemResposta(cliente(t), assinada, e0014);
+    expect(res.acao).toBe('indefinida');
+    expect(await resolverEnvioSemResposta(cliente(t), assinada)).toEqual({ acao: 'reenviar', dpsAssinada: assinada });
     await expect(resolverEnvioSemResposta(cliente(t, { ambiente: 'producao' }), assinada)).rejects.toThrow('tpAmb 2');
-    expect(t.pedidos).toHaveLength(2);
+    expect(t.pedidos).toHaveLength(6);
+  });
+
+  test('resolver envio sem resposta: o signal vai às consultas', async () => {
+    const t = falso([{ status: 200, body: json({ chaveAcesso: CHAVE }) }, { status: 404 }]);
+    const ctrl = new AbortController();
+    await resolverEnvioSemResposta(cliente(t), assinada, undefined, { signal: ctrl.signal });
+    expect(t.pedidos.map((p) => p.signal)).toEqual([ctrl.signal, ctrl.signal]);
+  });
+
+  test('ClienteNfse.opcoes: as opções da criação, como na NF-e e no MDF-e', () => {
+    const t = falso([]);
+    const c = cliente(t, { timeoutMs: 1234 });
+    expect(c.opcoes.transporte).toBe(t);
+    expect(c.opcoes.timeoutMs).toBe(1234);
+    expect(c.opcoes.ambiente).toBe(c.ambiente);
   });
 
   test('eventos: filtro obrigatório, 404 como ausência, JSON inválido e evento de outra NFS-e', async () => {

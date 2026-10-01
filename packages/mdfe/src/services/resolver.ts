@@ -20,7 +20,7 @@
 
 import type { Recusado } from '@sinete/core';
 import { criarAutorizado } from '@sinete/core';
-import type { ClienteMdfe, ResultadoAutorizacao, ResultadoConsulta } from './client.ts';
+import type { ClienteMdfe, EnvioOpcoes, ResultadoAutorizacao, ResultadoConsulta } from './client.ts';
 import { cstatEm } from './outcome.ts';
 import { documentoAssinado } from './proc.ts';
 
@@ -65,12 +65,14 @@ export function chaveDaDuplicidade(xMotivo: string): string | undefined {
 
 /**
  * Resolve uma autorização sem resposta, ou cuja resposta foi 204 ou 539, consultando a chave do MDF-e assinado.
- * `anterior` é o desfecho do envio, quando houve um.
+ * `anterior` é o desfecho do envio, quando houve um. `opcoes.signal` cancela a consulta (lança o `ErroTransporte` com
+ * `code: 'cancelado'`).
  */
 export async function resolverEnvioSemResposta(
   cliente: ClienteMdfe,
   mdfeAssinado: string,
   anterior?: ResultadoAutorizacao,
+  opcoes?: EnvioOpcoes,
 ): Promise<ResolucaoEnvio> {
   const a = documentoAssinado(mdfeAssinado, 'MDFe', 'infMDFe');
   const chave = a.id.slice(4);
@@ -78,7 +80,7 @@ export async function resolverEnvioSemResposta(
     const outra = chaveDaDuplicidade(anterior.xMotivo);
     return { acao: 'divergente', motivo: anterior, ...(outra === undefined ? {} : { chMDFe: outra }) };
   }
-  const consulta = await cliente.consultar(chave, mdfeAssinado);
+  const consulta = await cliente.consultar(chave, mdfeAssinado, opcoes);
   if (consulta.tipo === 'recusado') {
     if (cstatEm(consulta.cStat, 'naoConsta')) return { acao: 'reenviar', mdfeAssinado: a.xml };
     return { acao: 'indefinida', resultado: consulta };

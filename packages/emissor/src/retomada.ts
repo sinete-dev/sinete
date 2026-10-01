@@ -112,6 +112,12 @@ export interface RetomadaOpcoes {
   readonly jaGuardado?: JaGuardado;
   /** Relógio do prazo da execução. Padrão: o do sistema. */
   readonly relogio?: Relogio;
+  /**
+   * Para a execução (o desligamento do processo, por exemplo): nenhuma retomada nova começa depois do abort, e a que
+   * está em curso recebe o mesmo `signal` (`retomar`, ADR 0010, decisão 8). As que ficaram, e a abortada no meio,
+   * contam em `adiadas`, sem tentativa nem alerta: ficam para a próxima execução.
+   */
+  readonly signal?: AbortSignal;
 }
 
 /**
@@ -156,7 +162,8 @@ export async function retomarPendentes(opcoes: RetomadaOpcoes): Promise<ResumoRe
   let alertas = 0;
   let adiadas = 0;
   let tentadas = 0;
-  const esgotado = (): boolean => clock.agora().getTime() - inicio >= politica.prazoMs;
+  const esgotado = (): boolean =>
+    opcoes.signal?.aborted === true || clock.agora().getTime() - inicio >= politica.prazoMs;
   for (let limite = SELECAO; ; limite *= 2) {
     const lista = await store.listarPendentes({ ...filtro, limite });
     // Uma por vez: cada retomada pode esperar a SEFAZ, e o lote é pequeno.
@@ -204,14 +211,18 @@ export async function retomarPendentes(opcoes: RetomadaOpcoes): Promise<ResumoRe
           gravacao: r.gravacao,
           ...(opcoes.aoDecidir === undefined ? {} : { aoDecidir: opcoes.aoDecidir }),
           ...(opcoes.jaGuardado === undefined ? {} : { jaGuardado: opcoes.jaGuardado }),
+          ...(opcoes.signal === undefined ? {} : { signal: opcoes.signal }),
         };
         return (await e.retomar(r.ref, o as RetomarOpcoes<never, never>)) ?? 'sem-bytes';
       });
       if (typeof res === 'string') return res;
       // NFC-e off-line com o autorizador ainda fora (ADR 0013): nada foi enviado, então não conta tentativa nem alerta.
       if (res.tipo === 'pendente' && res.motivo === 'contingencia') return 'adiada';
+      // Abortada pelo chamador no meio: não é tentativa do autorizador, fica para a próxima execução.
+      if (opcoes.signal?.aborted === true && res.tipo === 'pendente' && res.motivo === 'sem-resposta') return 'adiada';
       ultimo = res;
     } catch (e) {
+      if (opcoes.signal?.aborted === true && ehErroSinete(e, 'cancelado')) return 'adiada';
       // Outro processo tem a trava, ou a assumiu no meio desta retomada: é ele quem conta, não esta execução.
       if (ehErroSinete(e, 'transmissao_em_andamento') || ehErroSinete(e, 'trava_perdida')) return 'ocupada';
       ultimo = { erro: e };

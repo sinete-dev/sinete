@@ -164,14 +164,18 @@ const pool = criarPoolDeEmissores({
 | | NF-e (`/nfe`) | MDF-e (`/mdfe`) | NFS-e (`/nfse`) |
 |---|---|---|---|
 | emitir, retomar, assinar | `emitir(ref, DadosNfe)` ou `{ nfe, montagem }` | `emitir(ref, DadosMdfe)` ou `{ mdfe, montagem }` | `emitir(ref, DadosDps)`, `substituir(ref, dps)` |
-| consultar | `consultar(chave, xml?)` | `consultar(chave, xml?)` | `consultar(chave)` |
+| consultar | `consultar(chave, xml?, { signal }?)` | `consultar(chave, xml?, { signal }?)` | `consultar(chave, { signal }?)` |
 | cancelar | com recuperação: sem `nProt`, pela consulta; sem resposta, 573 ou 580, confirma pela consulta (`recuperado: true`) | idem, com 631 | sem resposta ou E0840, confirma pelo evento 101101 na Sefin (`recuperado: true`) |
 | outros eventos | `cartaCorrecao`, com a mesma recuperação, pela sequência e pelo texto | `encerrar`, com a mesma recuperação, pelo município | pelo `cliente` |
 | PDF | `pdf(nfeProc)`, `pdfCancelado(nfeProc, procEventoNFe)` | `pdf(mdfeProc)`, `pdfCancelado(mdfeProc, procEventoMDFe)` | `pdf(nfse)`, `pdfCancelado(nfse, evento)` e `pdfPorChave(chave)`: o DANFSe v2 local |
 
 `cancelar`, `cartaCorrecao` e `encerrar` devolvem um `DesfechoEvento` (`registrado`, `recusado`, `pendente`) e nunca concluem pelo `cStat` sozinho: 573, 580 e E0840 dizem que algo foi registrado, não que foi este evento; a prova é o evento na consulta (`recuperarEventoRegistrado` do pacote do documento, `consultarEventos` na NFS-e).
 
-`assinar(entrada)` monta e assina sem gravar nem usar a rede (roda no browser). `cliente` é o cliente completo do documento, com o mesmo transporte e signer, para o resto. Cada subpath exporta também o perfil (`perfilNfe`, `perfilMdfe`, `perfilNfse`), para quem compõe o próprio emissor com `criarEmissor(perfil, opcoes)` da raiz.
+`assinar(entrada)` monta e assina sem gravar nem usar a rede (roda no browser). `cliente` é o cliente completo do documento, com o mesmo transporte e signer, para o resto.
+
+**Perfil próprio (experimental).** `criarEmissor(perfil, opcoes)`, `PerfilDocumento` e os tipos que só servem a quem implementa um perfil ficam em `@sinete/emissor/perfil`, fora da garantia de estabilidade ([ADR 0016](../../docs/adr/0016-politica-de-estabilidade.md)): um gancho novo do perfil muda esses tipos em versão minor. Cada subpath exporta o perfil do documento (`perfilNfe`, `perfilMdfe`, `perfilNfse`), experimental pelo mesmo motivo. Para emitir, use `criarEmissorNfe` e os outros, que são estáveis.
+
+**Cancelamento pelo chamador (`signal`).** `emitir`, `retomar`, `substituir`, `consultar`, `cancelar`, `cartaCorrecao`, `encerrar` e `pdfPorChave` aceitam `signal` nas opções (`EnvioOpcoes`, o mesmo formato do dos clientes), e `retomarPendentes` também. Antes de os bytes serem gravados, o abort lança o `ErroTransporte` com `code: 'cancelado'` e nada fica gravado. Depois, a requisição em curso é cancelada, o emissor não consulta nem reenvia, os bytes ficam e o desfecho é `pendente` com `motivo: 'sem-resposta'` e o `cancelado` em `causa`, para `retomar` continuar com os mesmos bytes. A trava é solta no fim da chamada nos dois casos. Nos eventos, abortado com o pedido em curso, o desfecho é `pendente`; a próxima chamada recupera o evento pela consulta. O abort não conta como falha do autorizador para a contingência automática, e na retomada automática as gravações que ficaram contam em `adiadas`. Detalhes no ADR 0010, decisão 8.
 
 Opções comuns: `pfx` e `senha` ou `certificado`, `ambiente` e `store` (obrigatórias), `aoDecidir` e `jaGuardado` (no emissor ou em cada chamada), `situacaoPosterior` (`guardar`, padrão, ou `divergente`), `recusaRepetida` (`{ janelaMs, limite }` ou `false`), `trava` (`prazoMs`, `renovarACadaMs`), `relogio`, `logger`, `timeoutMs`, `transporte` (recebe as opções padrão do transporte e devolve outro: somar uma AC de teste, apontar para o simulador). As do documento: `montagem` (de todos os documentos; a de um documento vai com ele, `{ nfe, montagem }`), `cliente`, `recibo` e `uf` (NF-e), `da` (NF-e, MDF-e e NFS-e).
 

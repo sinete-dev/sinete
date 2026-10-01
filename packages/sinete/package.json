@@ -235,6 +235,10 @@
       "types": "./dist/emissor/contrato.d.ts",
       "default": "./dist/emissor/contrato.js"
     },
+    "./emissor/perfil": {
+      "types": "./dist/emissor/perfil.d.ts",
+      "default": "./dist/emissor/perfil.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [

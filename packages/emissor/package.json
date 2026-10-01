@@ -43,6 +43,10 @@
       "types": "./dist/contrato.d.ts",
       "default": "./dist/contrato.js"
     },
+    "./perfil": {
+      "types": "./dist/perfil.d.ts",
+      "default": "./dist/perfil.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [

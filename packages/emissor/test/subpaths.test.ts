@@ -27,6 +27,7 @@ const ESPERADO: Record<string, readonly string[]> = {
   'index.ts': [],
   'memoria.ts': [],
   'contrato.ts': [],
+  'perfil.ts': [],
   'nfe.ts': ['@sinete/nfe'],
   'mdfe.ts': ['@sinete/mdfe'],
   'nfse.ts': ['@sinete/nfse'],

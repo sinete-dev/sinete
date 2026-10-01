@@ -290,6 +290,35 @@ describe('retomarPendentes', () => {
     expect(r.desfechos).toEqual({ 'sem-desfecho': 1 });
   });
 
+  test('signal: a retomada em curso recebe o sinal; abortada, ela e as seguintes ficam para a próxima execução', async () => {
+    for (const ref of ['a1', 'a2']) {
+      await gravada(ref);
+      clock.avancar(MIN);
+    }
+    clock.avancar(10 * MIN);
+    const ctrl = new AbortController();
+    const recebidos: (AbortSignal | undefined)[] = [];
+    const r = await retomarPendentes(
+      opcoes({
+        signal: ctrl.signal,
+        usarEmissor: (_r, fn) =>
+          fn({
+            async retomar(ref, o): Promise<Desfecho> {
+              chamadas.push(ref);
+              recebidos.push(o?.signal);
+              ctrl.abort();
+              return { documento: 'nfe', tipo: 'pendente', id: 'x', motivo: 'sem-resposta' };
+            },
+          }),
+      }),
+    );
+    expect(chamadas).toEqual(['a1']);
+    expect(recebidos).toEqual([ctrl.signal]);
+    expect(r).toEqual({ candidatas: 2, desfechos: {}, alertas: 0, adiadas: 2 });
+    expect((await store.ler('nfe', 'a1'))?.tentativas).toBe(0);
+    expect((await store.ler('nfe', 'a2'))?.tentativas).toBe(0);
+  });
+
   test('a idade máxima nunca é infinita, e a política é conferida', async () => {
     expect(POLITICA_RETOMADA_PADRAO.idadeMaximaMs).toBe(3 * DIA);
     for (const politica of [{ idadeMaximaMs: Number.POSITIVE_INFINITY }, { idadeMaximaMs: 0 }, { lote: -1 }]) {

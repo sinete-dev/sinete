@@ -7,7 +7,8 @@
  *
  * O que muda de um documento para outro (montagem, assinatura, protocolo de envio, tabela de `cStat`) fica no perfil
  * (`PerfilDocumento`). Cada subpath exporta o seu e a fábrica com os tipos fixados (`criarEmissorNfe` e as outras):
- * `@sinete/emissor/nfe`, `/mdfe` e `/nfse`. Esta raiz não importa nenhum pacote de documento.
+ * `@sinete/emissor/nfe`, `/mdfe` e `/nfse`. `criarEmissor` e o `PerfilDocumento` saem por `@sinete/emissor/perfil`,
+ * experimental (ADR 0016). Este módulo não importa nenhum pacote de documento.
  */
 
 import type { IdentidadeIcp } from '@sinete/cert';
@@ -22,6 +23,8 @@ import { criarContingencia } from './contingencia.ts';
 import type { Desfecho, DesfechoDecidido, SituacaoPosterior, TipoDocumento } from './desfecho.ts';
 import { destinoDosBytes } from './desfecho.ts';
 import { ErroRecusaRepetida, ErroTransmissaoEmAndamento, ErroTravaPerdida } from './erros.ts';
+import type { EnvioOpcoes } from './sinal.ts';
+import { conferirSinal } from './sinal.ts';
 import type { RegistroTransmissao, TransmissaoStore, Trava } from './store.ts';
 
 /** O que o perfil recebe do emissor: certificado aberto, relógio e o transporte do certificado. */
@@ -50,6 +53,10 @@ export type ModoEnvio = 'primeiro' | 'retomada';
  * O que muda de um documento para outro. `enviar` nunca monta: recebe os bytes gravados, espera o recibo quando houver,
  * resolve a duplicidade e o envio sem resposta pela consulta, e devolve o desfecho normalizado. Só lança o que não é
  * da SEFAZ nem da rede (configuração, política do transporte, bug).
+ *
+ * Experimental (`@sinete/emissor/perfil`, ADR 0016): ganchos novos mudam este tipo em versão minor.
+ *
+ * @experimental
  */
 export interface PerfilDocumento<Entrada, Cliente, P = unknown, B = unknown> {
   readonly tipo: TipoDocumento;
@@ -76,7 +83,11 @@ export interface PerfilDocumento<Entrada, Cliente, P = unknown, B = unknown> {
   criarCliente(contexto: ContextoEmissor): Cliente;
   /** Monta, valida e assina, sem rede. Entrada inválida lança `ErroDeValidacao`. */
   assinar(entrada: Entrada, contexto: ContextoEmissor): Promise<DocumentoAssinado>;
-  enviar(cliente: Cliente, xml: string, modo: ModoEnvio): Promise<Desfecho<P, B>>;
+  /**
+   * `opcoes.signal` é o da chamada do emissor. Depois do abort, o perfil não começa outra chamada à rede e devolve
+   * `pendente` com `motivo: 'sem-resposta'` e o erro `cancelado` em `causa`.
+   */
+  enviar(cliente: Cliente, xml: string, modo: ModoEnvio, opcoes?: EnvioOpcoes): Promise<Desfecho<P, B>>;
 }
 
 /**
@@ -179,8 +190,8 @@ export interface EmissorOpcoes<P = unknown, B = unknown> extends GuardaOpcoes<P,
   readonly transporte?: (padrao: CriarTransporteOpcoes) => Transporte;
 }
 
-/** Opções de `retomar`. */
-export interface RetomarOpcoes<P = unknown, B = unknown> extends GuardaOpcoes<P, B> {
+/** Opções de `retomar`. `signal` segue o contrato de `emitir`. */
+export interface RetomarOpcoes<P = unknown, B = unknown> extends GuardaOpcoes<P, B>, EnvioOpcoes {
   /**
    * Só retoma se os bytes gravados forem desta gravação (`RegistroTransmissao.gravacao`), conferida já com a trava;
    * senão, `undefined` sem enviar nada. A retomada automática usa para não enviar uma gravação que ela não selecionou.
@@ -188,7 +199,13 @@ export interface RetomarOpcoes<P = unknown, B = unknown> extends GuardaOpcoes<P,
   readonly gravacao?: string;
 }
 
-export interface EmitirOpcoes<P = unknown, B = unknown> extends GuardaOpcoes<P, B> {
+/**
+ * Opções de `emitir`. `signal` cancela a transmissão: antes de os bytes serem gravados, `emitir` lança o
+ * `ErroTransporte` com `code: 'cancelado'` e nada fica gravado; depois, a requisição em curso é cancelada, os bytes
+ * ficam, e o desfecho é `pendente` com `motivo: 'sem-resposta'` (o erro `cancelado` em `causa`), para `retomar`. A
+ * trava é solta no fim da chamada nos dois casos.
+ */
+export interface EmitirOpcoes<P = unknown, B = unknown> extends GuardaOpcoes<P, B>, EnvioOpcoes {
   /** Dados do integrador gravados com os bytes (`RegistroTransmissao.meta`). Ignorado se já havia bytes gravados. */
   readonly meta?: Readonly<Record<string, unknown>>;
   /**
@@ -220,7 +237,8 @@ export interface Emissor<Entrada, Cliente, P = unknown, B = unknown> {
    * pode ser a própria entrada ou `preparar` (veja `PrepararEntrada`), chamada só quando for montar.
    * `ErroTransmissaoEmAndamento` se outro processo tem a trava; `ErroDeValidacao` se a entrada não passa, antes de
    * gravar; `ErroTravaPerdida` se a trava venceu antes de guardar o desfecho (os bytes ficam para quem assumiu);
-   * `ErroDeConfiguracao` sem `aoDecidir` no emissor nem na chamada.
+   * `ErroDeConfiguracao` sem `aoDecidir` no emissor nem na chamada; o `ErroTransporte` `cancelado` se `opcoes.signal`
+   * disparar antes de os bytes serem gravados (veja `EmitirOpcoes`).
    */
   emitir(
     ref: string,
@@ -231,7 +249,8 @@ export interface Emissor<Entrada, Cliente, P = unknown, B = unknown> {
   assinar(entrada: Entrada): Promise<DocumentoAssinado>;
   /**
    * Retoma pelos bytes gravados de `ref`; `undefined` se não há nada gravado (ou, com `opcoes.gravacao`, se a
-   * gravação é outra). Nunca monta.
+   * gravação é outra). Nunca monta. Com `opcoes.signal` já disparado antes do envio, lança o `cancelado` e nada muda;
+   * disparado durante o envio, devolve `pendente` (veja `EmitirOpcoes`).
    */
   retomar(ref: string, opcoes?: RetomarOpcoes<P, B>): Promise<Desfecho<P, B> | undefined>;
   /** Cliente completo do documento, com o mesmo transporte e signer. Criado no primeiro uso. */
@@ -329,6 +348,10 @@ function comoDivergente<P, B>(d: Desfecho<P, B>): Desfecho<P, B> {
 /**
  * Abre o PFX (ou usa o certificado aberto) e devolve o emissor. Nada vai à rede até a primeira operação que precisa
  * dela; o certificado fora da validade é recusado aqui (`ErroCertificado`).
+ *
+ * Experimental (`@sinete/emissor/perfil`, ADR 0016).
+ *
+ * @experimental
  */
 export async function criarEmissor<Entrada, Cliente, P, B>(
   perfil: PerfilDocumento<Entrada, Cliente, P, B>,
@@ -484,7 +507,10 @@ export async function criarEmissor<Entrada, Cliente, P, B>(
     guarda: { aoDecidir: AoDecidir<P, B>; jaGuardado?: JaGuardado },
     gravacao?: string,
     reenviarRecusado = false,
+    signal?: AbortSignal,
   ): Promise<Desfecho<P, B> | undefined> {
+    const onde = fonte === undefined ? 'retomar' : 'emitir';
+    conferirSinal(signal, onde);
     const trava = await store.travar(perfil.tipo, ref, prazoMs);
     if (trava === undefined) {
       throw new ErroTransmissaoEmAndamento('transmissão em andamento para este documento', {
@@ -498,6 +524,7 @@ export async function criarEmissor<Entrada, Cliente, P, B>(
       let modo: ModoEnvio = 'retomada';
       if (registro === undefined) {
         if (fonte === undefined) return undefined;
+        conferirSinal(signal, onde);
         let { entrada } = fonte;
         let { meta } = fonte;
         if (typeof entrada === 'function') {
@@ -508,7 +535,7 @@ export async function criarEmissor<Entrada, Cliente, P, B>(
         let offline = false;
         if (contingencia !== undefined) {
           // A contingência entra só aqui, na montagem de uma nota nova; bytes gravados nunca mudam (ADR 0013).
-          const c = await contingencia.naMontagem(entrada as Entrada, ctx);
+          const c = await contingencia.naMontagem(entrada as Entrada, ctx, signal);
           entrada = c.entrada;
           offline = c.offline;
         }
@@ -537,18 +564,33 @@ export async function criarEmissor<Entrada, Cliente, P, B>(
             );
           }
         }
+        // Último ponto em que o abort não deixa rastro: depois de gravar, ele vira envio sem resposta.
+        conferirSinal(signal, onde);
         registro = await store.gravar(trava, { xml: a.xml, id: a.id, meta });
         modo = 'primeiro';
         if (offline) return await emContingencia(trava, registro, guarda.aoDecidir);
-      } else if (guarda.jaGuardado !== undefined && (await guarda.jaGuardado(registro))) {
-        const d: Desfecho<P, B> = { documento: perfil.tipo, tipo: 'ja-guardado', id: registro.id };
-        await aplicar(trava, registro, d, guarda.aoDecidir);
-        return d;
-      } else if (contingencia !== undefined && (await contingencia.seguraOffline(registro.xml, ctx))) {
-        return await emContingencia(trava, registro, guarda.aoDecidir);
+      } else {
+        // Bytes de antes desta chamada: abortada antes de enviar, nada muda.
+        conferirSinal(signal, onde);
+        if (guarda.jaGuardado !== undefined && (await guarda.jaGuardado(registro))) {
+          // Abortado durante o gancho: nada muda, nem a gravação sai (contrato de antes do envio).
+          conferirSinal(signal, onde);
+          const d: Desfecho<P, B> = { documento: perfil.tipo, tipo: 'ja-guardado', id: registro.id };
+          await aplicar(trava, registro, d, guarda.aoDecidir);
+          return d;
+        }
+        if (contingencia !== undefined && (await contingencia.seguraOffline(registro.xml, ctx, signal))) {
+          conferirSinal(signal, onde);
+          return await emContingencia(trava, registro, guarda.aoDecidir);
+        }
+        // Os ganchos acima esperam o banco e o integrador: abortado neles, o envio não começa.
+        conferirSinal(signal, onde);
       }
-      let d = await perfil.enviar(cliente(), registro.xml, modo);
-      await contingencia?.depoisDoEnvio(registro.xml, d as Desfecho, ctx);
+      let d = await perfil.enviar(cliente(), registro.xml, modo, signal === undefined ? undefined : { signal });
+      // O abort do chamador não é falha do autorizador: não conta para a contingência automática.
+      if (!(signal?.aborted === true && d.tipo === 'pendente' && d.motivo === 'sem-resposta')) {
+        await contingencia?.depoisDoEnvio(registro.xml, d as Desfecho, ctx, signal);
+      }
       if (opcoes.situacaoPosterior === 'divergente') d = comoDivergente(d);
       await aplicar(trava, registro, d, guarda.aoDecidir);
       return d;
@@ -571,13 +613,20 @@ export async function criarEmissor<Entrada, Cliente, P, B>(
       entrada: Entrada | PrepararEntrada<Entrada>,
       o?: EmitirOpcoes<P, B>,
     ): Promise<Desfecho<P, B>> {
-      const d = await transmitir(ref, { entrada, meta: o?.meta ?? {} }, guardaDe(o), undefined, o?.reenviarRecusado);
+      const d = await transmitir(
+        ref,
+        { entrada, meta: o?.meta ?? {} },
+        guardaDe(o),
+        undefined,
+        o?.reenviarRecusado,
+        o?.signal,
+      );
       // Com a fonte dada, `transmitir` sempre chega a um desfecho.
       return d as Desfecho<P, B>;
     },
     assinar: (entrada: Entrada): Promise<DocumentoAssinado> => perfil.assinar(entrada, ctx),
     retomar: async (ref: string, o?: RetomarOpcoes<P, B>): Promise<Desfecho<P, B> | undefined> =>
-      transmitir(ref, undefined, guardaDe(o), o?.gravacao),
+      transmitir(ref, undefined, guardaDe(o), o?.gravacao, false, o?.signal),
     get cliente(): Cliente {
       return cliente();
     },

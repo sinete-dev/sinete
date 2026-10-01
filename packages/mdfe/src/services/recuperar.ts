@@ -9,7 +9,7 @@
 
 import type { DocumentoXml, ElementoXml } from '@sinete/core/xml';
 import { lerXml, primeiroFilho, textoDe } from '@sinete/core/xml';
-import type { ClienteMdfe, EventoRegistrado, ResultadoConsulta } from './client.ts';
+import type { ClienteMdfe, EnvioOpcoes, EventoRegistrado, ResultadoConsulta } from './client.ts';
 import { cstatEm } from './outcome.ts';
 import { MDFE_NS, recortarElemento } from './proc.ts';
 
@@ -72,13 +72,15 @@ function lerProcEvento(xml: string): EventoRegistrado | undefined {
  * vários, como na inclusão de condutor). Serve depois de um pedido de evento sem resposta ou respondido com uma
  * duplicidade: nunca conclua que o evento existe só pelo `cStat` do pedido. `registrado: false` quer dizer que a
  * consulta não mostrou o evento (ou não decidiu: veja `consulta`); não quer dizer que o evento não existe.
+ * `opcoes.signal` cancela a consulta.
  */
 export async function recuperarEventoRegistrado(
   cliente: ClienteMdfe,
   chave: string,
   tpEvento: string,
+  opcoes?: EnvioOpcoes,
 ): Promise<RecuperacaoEvento> {
-  const consulta = await cliente.consultar(chave);
+  const consulta = await cliente.consultar(chave, undefined, opcoes);
   if (consulta.tipo !== 'autorizado') return { registrado: false, consulta };
   let achado: EventoRegistrado | undefined;
   for (const xml of consulta.valor.eventos) {

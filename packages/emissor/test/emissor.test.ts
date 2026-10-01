@@ -4,18 +4,26 @@
  * `nfe.test.ts`, `mdfe.test.ts` e `nfse.test.ts`.
  */
 import { beforeAll, describe, expect, test } from 'bun:test';
-import { ErroDeConfiguracao, ErroDeTempoEsgotado, ErroDeValidacao, loggerEmMemoria, relogioManual } from '@sinete/core';
+import {
+  ErroDeConfiguracao,
+  ErroDeTempoEsgotado,
+  ErroDeValidacao,
+  ehErroSinete,
+  loggerEmMemoria,
+  relogioManual,
+} from '@sinete/core';
 import { certificadoSintetico, pfxSintetico } from '@sinete/sefaz-sim';
-import type { Desfecho, EmissorOpcoes, PerfilDocumento, RegistroTransmissao, TransmissaoStore } from '../src/index.ts';
+import type { Desfecho, EmissorOpcoes, RegistroTransmissao, TransmissaoStore } from '../src/index.ts';
 import {
   abrirCertificado,
-  criarEmissor,
   destinoDosBytes,
   ErroRecusaRepetida,
   ErroTransmissaoEmAndamento,
   semResposta,
 } from '../src/index.ts';
 import { criarBancoMemoria, criarMemoriaStore } from '../src/memoria.ts';
+import type { PerfilDocumento } from '../src/perfil.ts';
+import { criarEmissor } from '../src/perfil.ts';
 
 const SENHA = 'senha-sintetica';
 const EMISSAO = '2026-09-27T10:00:00-03:00';
@@ -484,5 +492,245 @@ describe('política dos bytes e erros sem resposta', () => {
     expect(semResposta(new ErroDeTempoEsgotado('t', 1))).toBe(true);
     expect(semResposta(new ErroDeConfiguracao('c'))).toBe(false);
     expect(semResposta(new Error('x'))).toBe(false);
+  });
+});
+
+describe('criarEmissor: signal (ADR 0010, decisão 8)', () => {
+  /** Perfil que registra o `signal` que recebe e, no envio, roda `aoEnviar` antes de responder. */
+  function perfilComSinal(
+    log: string[],
+    aoEnviar: (signal: AbortSignal | undefined) => Desfecho,
+  ): PerfilDocumento<Entrada, { readonly c: 1 }> {
+    const base = perfil([], log);
+    return {
+      ...base,
+      async enviar(_c, xml, modo, o) {
+        log.push(`enviar ${modo} ${xml} signal=${o?.signal === undefined ? 'nao' : 'sim'}`);
+        return aoEnviar(o?.signal);
+      },
+    };
+  }
+  const cancelado = (e: unknown): boolean => ehErroSinete(e, 'cancelado');
+
+  test('abortado antes de emitir: lança cancelado, sem travar nem montar', async () => {
+    const m = montar();
+    const log: string[] = [];
+    const e = await criarEmissor(
+      perfilComSinal(log, () => autorizado()),
+      m.opcoes,
+    );
+    const ctrl = new AbortController();
+    ctrl.abort();
+    const erro = await e.emitir('r', { n: 1 }, { signal: ctrl.signal }).catch((x: unknown) => x);
+    expect(cancelado(erro)).toBe(true);
+    expect(log).toEqual([]);
+    expect(await m.store.ler('nfe', 'r')).toBeUndefined();
+    expect(await m.store.travar('nfe', 'r', 1000)).toBeDefined();
+  });
+
+  test('abortado na preparação: lança cancelado, nada gravado, trava solta', async () => {
+    const m = montar();
+    const log: string[] = [];
+    const e = await criarEmissor(
+      perfilComSinal(log, () => autorizado()),
+      m.opcoes,
+    );
+    const ctrl = new AbortController();
+    const erro = await e
+      .emitir(
+        'r',
+        async () => {
+          ctrl.abort();
+          return { entrada: { n: 1 } };
+        },
+        { signal: ctrl.signal },
+      )
+      .catch((x: unknown) => x);
+    expect(cancelado(erro)).toBe(true);
+    // Montou e assinou, mas o abort chegou antes de gravar: nada fica, e a próxima emissão monta de novo.
+    expect(log).toEqual(['assinar 1']);
+    expect(await m.store.ler('nfe', 'r')).toBeUndefined();
+    expect(await m.store.travar('nfe', 'r', 1000)).toBeDefined();
+  });
+
+  test('abortado no envio: pendente sem-resposta, bytes gravados, trava solta; retomar conclui com os mesmos bytes', async () => {
+    const m = montar();
+    const log: string[] = [];
+    const ctrl = new AbortController();
+    let vez = 0;
+    const e = await criarEmissor(
+      perfilComSinal(log, (signal) => {
+        vez++;
+        if (vez === 1) {
+          ctrl.abort();
+          // O que o perfil de verdade devolve depois do abort: sem resposta, com o cancelado em `causa`.
+          expect(signal?.aborted).toBe(true);
+          return { ...pendente, causa: new Error('cancelado') };
+        }
+        return autorizado();
+      }),
+      m.opcoes,
+    );
+    const d = await e.emitir('r', { n: 1 }, { signal: ctrl.signal });
+    expect(d).toMatchObject({ tipo: 'pendente', motivo: 'sem-resposta' });
+    const gravado = await m.store.ler('nfe', 'r');
+    expect(gravado?.xml).toBe('<doc n="1" a="1"/>');
+    // A trava foi solta: outro processo trava (e solta, para o retomar abaixo).
+    const outra = await m.store.travar('nfe', 'r', 1000);
+    expect(outra).toBeDefined();
+    if (outra !== undefined) await m.store.soltar(outra);
+    const d2 = await e.retomar('r');
+    expect(d2?.tipo).toBe('autorizado');
+    expect(log).toEqual([
+      'assinar 1',
+      'cliente 11222333000181',
+      'enviar primeiro <doc n="1" a="1"/> signal=sim',
+      'enviar retomada <doc n="1" a="1"/> signal=nao',
+    ]);
+    expect(m.decididos[0]?.registro.xml).toBe('<doc n="1" a="1"/>');
+  });
+
+  test('retomar abortado antes do envio: lança cancelado e os bytes ficam como estavam', async () => {
+    const m = montar();
+    const log: string[] = [];
+    const e = await criarEmissor(
+      perfilComSinal(log, () => pendente),
+      m.opcoes,
+    );
+    await e.emitir('r', { n: 1 });
+    const antes = await m.store.ler('nfe', 'r');
+    const ctrl = new AbortController();
+    ctrl.abort();
+    const erro = await e.retomar('r', { signal: ctrl.signal }).catch((x: unknown) => x);
+    expect(cancelado(erro)).toBe(true);
+    expect(await m.store.ler('nfe', 'r')).toEqual(antes);
+    expect(log.filter((l) => l.startsWith('enviar'))).toHaveLength(1);
+    expect(await m.store.travar('nfe', 'r', 1000)).toBeDefined();
+  });
+  test('abort durante o jaGuardado: lança cancelado, sem concluir nem apagar os bytes', async () => {
+    const m = montar();
+    const log: string[] = [];
+    const e = await criarEmissor(
+      perfilComSinal(log, () => pendente),
+      m.opcoes,
+    );
+    await e.emitir('r', { n: 1 });
+    const antes = await m.store.ler('nfe', 'r');
+    const ctrl = new AbortController();
+    const erro = await e
+      .retomar('r', {
+        signal: ctrl.signal,
+        jaGuardado: async () => {
+          ctrl.abort();
+          return true;
+        },
+      })
+      .catch((x: unknown) => x);
+    expect(cancelado(erro)).toBe(true);
+    expect(await m.store.ler('nfe', 'r')).toEqual(antes);
+    expect(m.decididos).toHaveLength(0);
+    expect(log.filter((l) => l.startsWith('enviar'))).toHaveLength(1);
+  });
+
+  /** Perfil com contingência automática de mentira: registra cada sonda e o `signal` que ela recebeu. */
+  function perfilComContingencia(
+    sondas: string[],
+    aoSondar: (qual: 'sondar' | 'sondarSvc') => void,
+    envio: () => Desfecho,
+  ): PerfilDocumento<Entrada, { readonly c: 1 }> {
+    const escopo = { documento: 'nfe', modelo: '55', uf: 'SP' } as const;
+    return {
+      ...perfil([]),
+      async enviar() {
+        return envio();
+      },
+      contingencia: {
+        escopo: () => escopo,
+        dosBytes: () => ({ escopo, emContingencia: false, offline: false }),
+        aplicar: (entrada) => entrada,
+        offline: () => false,
+        async sondar(_e, _c, o) {
+          sondas.push(`sondar signal=${o?.signal === undefined ? 'nao' : 'sim'}`);
+          aoSondar('sondar');
+          return { emOperacao: false, detalhe: '108' };
+        },
+        async sondarSvc(_e, _c, o) {
+          sondas.push(`sondarSvc signal=${o?.signal === undefined ? 'nao' : 'sim'}`);
+          aoSondar('sondarSvc');
+          return { situacao: 'ativa', detalhe: '107' };
+        },
+        falha: (d) => d.tipo === 'pendente' && d.motivo === 'sem-resposta',
+        svcDesativada: () => false,
+      },
+    };
+  }
+
+  test('a sonda da contingência recebe o signal; abortada, o resultado não vale e nenhuma sonda nova começa', async () => {
+    const mudancas: unknown[] = [];
+    const m = montar({
+      contingencia: { automatica: true, limiteFalhas: 1 },
+      aoMudarContingencia: (x) => {
+        mudancas.push(x);
+      },
+    });
+    const ctrl = new AbortController();
+    const sondas: string[] = [];
+    const timeout = { ...pendente, causa: new ErroDeTempoEsgotado('sem resposta', 1) };
+    const e = await criarEmissor(
+      perfilComContingencia(
+        sondas,
+        () => ctrl.abort(),
+        () => timeout,
+      ),
+      m.opcoes,
+    );
+    // A falha do envio leva à sonda da SVC, que o chamador aborta: a SVC "ativa" não pode pôr o escopo em contingência.
+    const d = await e.emitir('r', { n: 1 }, { signal: ctrl.signal });
+    expect(d.tipo).toBe('pendente');
+    expect(sondas).toEqual(['sondarSvc signal=sim']);
+    expect(mudancas).toEqual([]);
+    // Sem contingência em vigor, a nota seguinte sai em emissão normal, sem sonda.
+    const e2 = await criarEmissor(
+      perfilComContingencia(
+        sondas,
+        () => {},
+        () => autorizado('chave-2'),
+      ),
+      m.opcoes,
+    );
+    expect((await e2.emitir('r2', { n: 2 })).tipo).toBe('autorizado');
+    expect(sondas).toEqual(['sondarSvc signal=sim']);
+  });
+
+  test('sonda da volta abortada na montagem: emitir lança cancelado, nada gravado, sem a segunda sonda', async () => {
+    const m = montar({ contingencia: { automatica: true, limiteFalhas: 1 } });
+    const sondas: string[] = [];
+    const timeout = { ...pendente, causa: new ErroDeTempoEsgotado('sem resposta', 1) };
+    // Entra em contingência: falha, SVC ativa.
+    const e = await criarEmissor(
+      perfilComContingencia(
+        sondas,
+        () => {},
+        () => timeout,
+      ),
+      m.opcoes,
+    );
+    await e.emitir('r', { n: 1 });
+    expect(sondas).toEqual(['sondarSvc signal=nao']);
+    // Passado o intervalo, a nota nova sonda a volta; o chamador aborta na sonda do autorizador normal.
+    (m.opcoes.relogio as ReturnType<typeof relogioManual>).avancar(10 * 60 * 1000);
+    const ctrl = new AbortController();
+    const e2 = await criarEmissor(
+      perfilComContingencia(
+        sondas,
+        () => ctrl.abort(),
+        () => autorizado('chave-2'),
+      ),
+      m.opcoes,
+    );
+    const erro = await e2.emitir('r2', { n: 2 }, { signal: ctrl.signal }).catch((x: unknown) => x);
+    expect(cancelado(erro)).toBe(true);
+    expect(await m.store.ler('nfe', 'r2')).toBeUndefined();
+    expect(sondas).toEqual(['sondarSvc signal=nao', 'sondar signal=sim']);
   });
 });

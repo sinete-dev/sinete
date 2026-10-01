@@ -12,6 +12,8 @@
 import type { Logger, Relogio } from '@sinete/core';
 import { ErroDeConfiguracao } from '@sinete/core';
 import type { Desfecho, TipoDocumento } from './desfecho.ts';
+import type { EnvioOpcoes } from './sinal.ts';
+import { abortado, conferirSinal } from './sinal.ts';
 import type { EstadoContingencia, Instante, TransmissaoStore } from './store.ts';
 
 /** O autorizador normal de um documento, modelo e UF: cada um entra e sai da contingência sozinho. */
@@ -99,7 +101,9 @@ export type SondaSvc =
 
 /**
  * O que o perfil de um documento com contingência automática oferece ao emissor. Hoje, só o da NF-e (55 e 65).
- * `C` é o contexto do emissor; o módulo não depende dele.
+ * `C` é o contexto do emissor; o módulo não depende dele. Experimental, como o perfil (`@sinete/emissor/perfil`).
+ *
+ * @experimental
  */
 export interface ContingenciaDoPerfil<Entrada, C> {
   /** Escopo do autorizador normal da entrada; `undefined` se a entrada já traz a contingência. */
@@ -120,9 +124,9 @@ export interface ContingenciaDoPerfil<Entrada, C> {
    */
   offline(escopo: EscopoContingencia): boolean;
   /** Consulta o status do autorizador normal do escopo. Não lança: sem resposta é `emOperacao: false`. */
-  sondar(escopo: EscopoContingencia, contexto: C): Promise<Sonda>;
+  sondar(escopo: EscopoContingencia, contexto: C, opcoes?: EnvioOpcoes): Promise<Sonda>;
   /** Consulta o status na SVC da UF do escopo (só nos escopos que não são off-line). Não lança. */
-  sondarSvc(escopo: EscopoContingencia, contexto: C): Promise<SondaSvc>;
+  sondarSvc(escopo: EscopoContingencia, contexto: C, opcoes?: EnvioOpcoes): Promise<SondaSvc>;
   /** O desfecho de um envio em emissão normal é falha do autorizador (sem resposta, serviço paralisado). */
   falha(d: Desfecho): boolean;
   /** O envio à SVC foi recusado porque a SVC não está ativada para a UF (114). */
@@ -246,11 +250,19 @@ const XJUST_PADRAO = 'SEFAZ autorizadora sem resposta: contingencia automatica';
 /** A contingência automática ligada: opções conferidas e o estado (store ou memória). */
 export interface Contingencia<Entrada, C> {
   /** A entrada com a contingência, se o escopo dela está em contingência (com a sonda da volta, se venceu). */
-  naMontagem(entrada: Entrada, ctx: C): Promise<{ readonly entrada: Entrada; readonly offline: boolean }>;
-  /** Os bytes gravados são de uma NFC-e off-line cujo autorizador ainda está fora: não envie. */
-  seguraOffline(xml: string, ctx: C): Promise<boolean>;
-  /** Conta a falha do envio em emissão normal e, no limite, confirma pela sonda e entra em contingência. */
-  depoisDoEnvio(xml: string, d: Desfecho, ctx: C): Promise<void>;
+  /** Abortado o `signal` (antes ou durante a sonda), lança o `cancelado`. */
+  naMontagem(
+    entrada: Entrada,
+    ctx: C,
+    signal?: AbortSignal,
+  ): Promise<{ readonly entrada: Entrada; readonly offline: boolean }>;
+  /** Os bytes gravados são de uma NFC-e off-line cujo autorizador ainda está fora: não envie. Abortado, lança. */
+  seguraOffline(xml: string, ctx: C, signal?: AbortSignal): Promise<boolean>;
+  /**
+   * Conta a falha do envio em emissão normal e, no limite, confirma pela sonda e entra em contingência. Abortado o
+   * `signal`, a sonda em curso é cancelada, o resultado dela não vale e nenhuma outra começa; não lança.
+   */
+  depoisDoEnvio(xml: string, d: Desfecho, ctx: C, signal?: AbortSignal): Promise<void>;
 }
 
 /**
@@ -318,19 +330,36 @@ export function criarContingencia<Entrada, C>(deps: {
   };
 
   /**
+   * Uma consulta de status com o `signal` do chamador: nenhuma começa depois do abort, e a abortada no meio lança o
+   * `cancelado` em vez de devolver o resultado (o perfil lê a falha da consulta como "fora", o que poria o escopo em
+   * contingência por um abort do chamador).
+   */
+  async function sonda<T>(signal: AbortSignal | undefined, f: (o: EnvioOpcoes | undefined) => Promise<T>): Promise<T> {
+    conferirSinal(signal, 'sonda da contingência');
+    const r = await f(signal === undefined ? undefined : { signal });
+    conferirSinal(signal, 'sonda da contingência');
+    return r;
+  }
+
+  /**
    * A sonda da volta, com a consulta já reservada: o autorizador normal em 107 encerra a contingência. Na SVC, 114
    * (desabilitada pela SEFAZ de origem) também encerra; 113 (em desativação) marca a hora em que a SVC deixa de atender
    * a UF, e sem hora legível, ou com ela já passada, encerra na hora (NT 2013.007 v1.03, item 04.7, regras K05.1 e
    * K05.3). `true`: a contingência continua.
    */
-  async function sondarVolta(escopo: EscopoContingencia, ativo: EstadoContingencia, ctx: C): Promise<boolean> {
-    const s = await doPerfil.sondar(escopo, ctx);
+  async function sondarVolta(
+    escopo: EscopoContingencia,
+    ativo: EstadoContingencia,
+    ctx: C,
+    signal: AbortSignal | undefined,
+  ): Promise<boolean> {
+    const s = await sonda(signal, (o) => doPerfil.sondar(escopo, ctx, o));
     if (s.emOperacao) {
       await sair(escopo, `autorizador normal em operação (status ${s.detalhe})`);
       return false;
     }
     if (doPerfil.offline(escopo)) return true;
-    const v = await doPerfil.sondarSvc(escopo, ctx);
+    const v = await sonda(signal, (o) => doPerfil.sondarSvc(escopo, ctx, o));
     if (v.situacao === 'desativada') {
       await sair(escopo, `SVC desabilitada pela SEFAZ de origem (status da SVC: ${v.detalhe})`);
       return false;
@@ -349,12 +378,16 @@ export function criarContingencia<Entrada, C>(deps: {
   }
 
   /** A contingência em vigor no escopo, depois da sonda da volta quando ela venceu. */
-  async function emVigor(escopo: EscopoContingencia, ctx: C): Promise<EstadoContingencia | undefined> {
+  async function emVigor(
+    escopo: EscopoContingencia,
+    ctx: C,
+    signal: AbortSignal | undefined,
+  ): Promise<EstadoContingencia | undefined> {
     const k = chave(escopo);
     let ativo = await estado.contingenciaAtiva(k);
     if (ativo === undefined) return undefined;
     if (await estado.reservarSonda(k, sondaMs)) {
-      if (!(await sondarVolta(escopo, ativo, ctx))) return undefined;
+      if (!(await sondarVolta(escopo, ativo, ctx, signal))) return undefined;
       // A sonda pode ter marcado ou apagado a hora do 113, e a espera por ela pode ter passado dessa hora.
       ativo = await estado.contingenciaAtiva(k);
       if (ativo === undefined) return undefined;
@@ -367,19 +400,33 @@ export function criarContingencia<Entrada, C>(deps: {
     return ativo;
   }
 
-  /** Falha no caminho da contingência não derruba a emissão: sem estado, a nota segue em emissão normal. */
-  async function seguro<T>(o: string, f: () => Promise<T>, padrao: T): Promise<T> {
+  /**
+   * Falha no caminho da contingência não derruba a emissão: sem estado, a nota segue em emissão normal. Com
+   * `relancarAbort`, o abort do chamador sobe (antes do envio, ele lança o `cancelado`).
+   */
+  async function seguro<T>(
+    o: string,
+    f: () => Promise<T>,
+    padrao: T,
+    relancarAbort?: AbortSignal | undefined,
+  ): Promise<T> {
     try {
       return await f();
     } catch (e) {
+      if (abortado(relancarAbort)) throw e;
       logger.warn(`emissor: contingência automática, ${o} falhou`, { erro: String(e) });
       return padrao;
     }
   }
 
   /** NFC-e: a off-line é decisão do emitente (Ajuste SINIEF 19/16), confirmada pelo status do autorizador normal. */
-  async function entrarOffline(escopo: EscopoContingencia, n: number, ctx: C): Promise<void> {
-    const s = await doPerfil.sondar(escopo, ctx);
+  async function entrarOffline(
+    escopo: EscopoContingencia,
+    n: number,
+    ctx: C,
+    signal: AbortSignal | undefined,
+  ): Promise<void> {
+    const s = await sonda(signal, (o) => doPerfil.sondar(escopo, ctx, o));
     if (s.emOperacao) return;
     const motivo = `${n} falhas de transmissão em até ${Math.round(janelaMs / 1000)} s; status do serviço: ${s.detalhe}`;
     const r = await estado.entrarEmContingencia(chave(escopo), motivo);
@@ -391,10 +438,16 @@ export function criarContingencia<Entrada, C>(deps: {
    * só a usa com 107 na consulta de status feita nela (item 04.7). Sem ativação, a nota segue em emissão normal, e a
    * reserva da consulta guarda a resposta por `sondaMs`: nenhum processo consulta a SVC de novo antes disso.
    */
-  async function entrarNaSvc(escopo: EscopoContingencia, n: number, ctx: C): Promise<void> {
+  async function entrarNaSvc(
+    escopo: EscopoContingencia,
+    n: number,
+    ctx: C,
+    signal: AbortSignal | undefined,
+  ): Promise<void> {
     const k = chave(escopo);
+    conferirSinal(signal, 'sonda da contingência');
     if (!(await estado.reservarSonda(k, sondaMs))) return;
-    const v = await doPerfil.sondarSvc(escopo, ctx);
+    const v = await sonda(signal, (o) => doPerfil.sondarSvc(escopo, ctx, o));
     const falhas = `${n} falhas de transmissão em até ${Math.round(janelaMs / 1000)} s`;
     if (v.situacao !== 'ativa') {
       const svc = {
@@ -412,22 +465,26 @@ export function criarContingencia<Entrada, C>(deps: {
   }
 
   return {
-    async naMontagem(entrada: Entrada, ctx: C): Promise<{ readonly entrada: Entrada; readonly offline: boolean }> {
+    async naMontagem(
+      entrada: Entrada,
+      ctx: C,
+      signal?: AbortSignal,
+    ): Promise<{ readonly entrada: Entrada; readonly offline: boolean }> {
       const escopo = doPerfil.escopo(entrada);
       if (escopo === undefined) return { entrada, offline: false };
-      const ativo = await seguro('ler o estado', () => emVigor(escopo, ctx), undefined);
+      const ativo = await seguro('ler o estado', () => emVigor(escopo, ctx, signal), undefined, signal);
       if (ativo === undefined) return { entrada, offline: false };
       return {
         entrada: doPerfil.aplicar(entrada, escopo, { desde: ativo.desde, xJust }, ctx),
         offline: doPerfil.offline(escopo),
       };
     },
-    async seguraOffline(xml: string, ctx: C): Promise<boolean> {
+    async seguraOffline(xml: string, ctx: C, signal?: AbortSignal): Promise<boolean> {
       const b = doPerfil.dosBytes(xml);
       if (b === undefined || !b.offline) return false;
-      return (await seguro('ler o estado', () => emVigor(b.escopo, ctx), undefined)) !== undefined;
+      return (await seguro('ler o estado', () => emVigor(b.escopo, ctx, signal), undefined, signal)) !== undefined;
     },
-    async depoisDoEnvio(xml: string, d: Desfecho, ctx: C): Promise<void> {
+    async depoisDoEnvio(xml: string, d: Desfecho, ctx: C, signal?: AbortSignal): Promise<void> {
       const b = doPerfil.dosBytes(xml);
       if (b === undefined) return;
       if (b.emContingencia) {
@@ -454,7 +511,10 @@ export function criarContingencia<Entrada, C>(deps: {
           'sondar depois da falha na contingência',
           async () => {
             const ativo = await estado.contingenciaAtiva(k);
-            if (ativo !== undefined && (await estado.reservarSonda(k, 0))) await sondarVolta(b.escopo, ativo, ctx);
+            if (abortado(signal)) return;
+            if (ativo !== undefined && (await estado.reservarSonda(k, 0))) {
+              await sondarVolta(b.escopo, ativo, ctx, signal);
+            }
           },
           undefined,
         );
@@ -467,7 +527,9 @@ export function criarContingencia<Entrada, C>(deps: {
           const k = chave(b.escopo);
           const n = await estado.registrarFalhaDoAutorizador(k, janelaMs);
           if (n < limite || (await estado.contingenciaAtiva(k)) !== undefined) return;
-          await (doPerfil.offline(b.escopo) ? entrarOffline(b.escopo, n, ctx) : entrarNaSvc(b.escopo, n, ctx));
+          await (doPerfil.offline(b.escopo)
+            ? entrarOffline(b.escopo, n, ctx, signal)
+            : entrarNaSvc(b.escopo, n, ctx, signal));
         },
         undefined,
       );

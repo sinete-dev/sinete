@@ -28,7 +28,7 @@ Entrada do domínio (`DadosDps`), montagem validada no XSD vigente (`montarDps`,
 - `montarDps`: Monta e valida a DPS. Nunca lança por dado de entrada: tudo o que impede a DPS vira `Ocorrencia` (formato, documento com DV errado, competência depois da emissão, schema). Lança `ErroDeConfiguracao` só por opção inválida. `montarDps(entrada: DadosDps, opcoes: MontarDpsOpcoes): Promise<ResultadoMontagemDps>`
 - `montarPedidoAnaliseFiscal`: Pedido de análise fiscal para cancelamento (e101103). `montarPedidoAnaliseFiscal(p: AnaliseFiscalPedido, opcoes: PedidoEventoOpcoes): ResultadoPedidoEvento`
 - `montarPedidoCancelamento`: Pedido de cancelamento da NFS-e (e101101). `montarPedidoCancelamento(p: CancelamentoPedido, opcoes: PedidoEventoOpcoes): ResultadoPedidoEvento`
-- `resolverEnvioSemResposta`: Depois de um envio sem resposta (timeout, conexão caída), descobre se a DPS gerou NFS-e: consulta pelo Id da DPS e, achando a chave, lê a NFS-e. `resolverEnvioSemResposta(cliente: ClienteNfse, dpsAssinada: string): Promise<ResolucaoEnvio>`
+- `resolverEnvioSemResposta`: Depois de um envio sem resposta (timeout, conexão caída) ou recusado com E0014, descobre se a DPS gerou NFS-e: consulta pelo Id da DPS e, achando a chave, lê a NFS-e. `resolverEnvioSemResposta(cliente: ClienteNfse, dpsAssinada: string, anterior?: ResultadoNfse<NfseGerada>, opcoes?: EnvioOpcoes): Promise<ResolucaoEnvio>`
 
 ### Interfaces
 
@@ -38,7 +38,7 @@ Entrada do domínio (`DadosDps`), montagem validada no XSD vigente (`montarDps`,
 - `CancelamentoPedido`: Cancelamento (e101101): 1 erro na emissão, 2 serviço não prestado, 9 outros; motivo com 15 a 255 caracteres. Membros: `chave`, `autor`, `cMotivo`, `xMotivo`.
 - `ChaveNfse`: Partes da chave de acesso da NFS-e. Membros: `chave`, `cMun`, `ambGer`, `tpInsc`, `inscricao`, `nNFSe`, `anoMes`, `cNum`, `dv`.
 - `ClassificacaoIbsCbs`: Classificação do IBS e da CBS do serviço (grupo `IBSCBS/valores/trib/gIBSCBS`). Membros: `CST`, `cClassTrib`, `cCredPres`, `tributacaoRegular`, `diferimento`.
-- `ClienteNfse`: Membros: `ambiente`, `autorizar()`, `substituir()`, `consultar()`, `consultarDps()`, `registrarEvento()`, `cancelar()`, `solicitarAnaliseFiscal()`, `consultarEventos()`, `parametros`.
+- `ClienteNfse`: Membros: `opcoes`, `ambiente`, `autorizar()`, `substituir()`, `consultar()`, `consultarDps()`, `registrarEvento()`, `cancelar()`, `solicitarAnaliseFiscal()`, `consultarEventos()`, `parametros`.
 - `ClienteNfseOpcoes`: Membros: `transporte`, `ambiente`, `relogio`, `assinador`, `logger`, `timeoutMs`, `cacheParametros`, `validadeParametrosMs`, `endpoint`, `verAplic`.
 - `ConvenioMunicipal`: Convênio do município com o Sistema Nacional NFS-e. Membros: `aderenteAmbienteNacional`, `aderenteEmissorNacional`, `situacaoEmissaoPadraoContribuintesRFB`, `aderenteMAN`, `permiteAproveitamentoDeCreditos`, `bruto`.
 - `DadosDps`: Membros: `serie`, `nDPS`, `dCompet`, `tpEmit`, `cMotivoEmisTI`, `chNFSeRej`, `cLocEmi`, `substituicao`, `prestador`, `tomador`, `intermediario`, `servico`, `valores`, `tributacao`, `ibsCbs`.

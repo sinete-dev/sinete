@@ -123,6 +123,9 @@ export interface EnvioOpcoes {
 }
 
 export interface ClienteNfse {
+  /** As opções com que o cliente foi criado, como `ClienteNfe.opcoes` e `ClienteMdfe.opcoes`. */
+  readonly opcoes: ClienteNfseOpcoes;
+  /** O mesmo que `opcoes.ambiente`. */
   readonly ambiente: Ambiente;
   /** Envia a DPS assinada (com a declaração UTF-8) e devolve a NFS-e gerada ou a rejeição. */
   autorizar(dpsAssinada: string, opcoes?: EnvioOpcoes): Promise<ResultadoNfse<NfseGerada>>;
@@ -374,6 +377,7 @@ export function criarClienteNfse(opcoesDoCliente: ClienteNfseOpcoes): ClienteNfs
   });
 
   return {
+    opcoes: opcoesDoCliente,
     ambiente,
     autorizar: (dps: string, opcoes?: EnvioOpcoes): Promise<ResultadoNfse<NfseGerada>> =>
       emitirDps(dps, opcoes, 'autorizar'),
@@ -486,7 +490,13 @@ export type ResolucaoEnvio =
    * Existe NFS-e para o Id desta DPS, mas de outro conteúdo: a DPS embutida nela tem outro DigestValue. Não reenvie:
    * recupere a NFS-e registrada (`nfse`) e descarte a DPS local.
    */
-  | { readonly acao: 'divergente'; readonly chaveAcesso: string; readonly nfse: NfseConsultada };
+  | { readonly acao: 'divergente'; readonly chaveAcesso: string; readonly nfse: NfseConsultada }
+  /**
+   * A consulta respondeu sem decidir: a DPS consta como processada, mas a NFS-e da chave não foi encontrada ou é de
+   * outra DPS, ou o envio voltou E0014 e a consulta da DPS não a acha. Tente de novo mais tarde, sem reenviar e sem
+   * descartar a DPS local. `motivo` diz o que a consulta mostrou; `chaveAcesso` é a que a consulta da DPS devolveu.
+   */
+  | { readonly acao: 'indefinida'; readonly motivo: string; readonly chaveAcesso?: string };
 
 /** DigestValue da assinatura de um elemento `DPS` (a própria raiz ou o primeiro descendente). */
 function digestDaDps(xml: string): string | undefined {
@@ -510,11 +520,20 @@ function digestDaDps(xml: string): string | undefined {
 }
 
 /**
- * Depois de um envio sem resposta (timeout, conexão caída), descobre se a DPS gerou NFS-e: consulta pelo Id da DPS
- * e, achando a chave, lê a NFS-e. Nunca monte outra DPS para o mesmo número antes disso: a Sefin responderia E0014
- * (série e número já usados) ou geraria uma segunda nota se o número mudasse.
+ * Depois de um envio sem resposta (timeout, conexão caída) ou recusado com E0014, descobre se a DPS gerou NFS-e:
+ * consulta pelo Id da DPS e, achando a chave, lê a NFS-e. Nunca monte outra DPS para o mesmo número antes disso: a
+ * Sefin responderia E0014 (série e número já usados) ou geraria uma segunda nota se o número mudasse.
+ *
+ * `anterior` é o desfecho do envio, quando houve um. Com a E0014 (a Sefin diz que a DPS já gerou NFS-e), a DPS que a
+ * consulta não acha é `indefinida`, não `reenviar`: o reenvio voltaria E0014 de novo. `opcoes.signal` cancela as
+ * consultas (lança o `ErroTransporte` com `code: 'cancelado'`).
  */
-export async function resolverEnvioSemResposta(cliente: ClienteNfse, dpsAssinada: string): Promise<ResolucaoEnvio> {
+export async function resolverEnvioSemResposta(
+  cliente: ClienteNfse,
+  dpsAssinada: string,
+  anterior?: ResultadoNfse<NfseGerada>,
+  opcoes?: EnvioOpcoes,
+): Promise<ResolucaoEnvio> {
   const { id, tpAmb } = lerDps(dpsAssinada);
   // O Id da DPS não carrega o ambiente: série e número repetidos em produção e em homologação dariam outra NFS-e.
   if (tpAmb !== tpAmbDoAmbiente(cliente.ambiente)) {
@@ -522,15 +541,26 @@ export async function resolverEnvioSemResposta(cliente: ClienteNfse, dpsAssinada
       `DPS com tpAmb ${tpAmb} num cliente de ${cliente.ambiente}: consulte no ambiente da DPS`,
     );
   }
-  const dps = await cliente.consultarDps(id);
-  if (dps === undefined) return { acao: 'reenviar', dpsAssinada };
-  const nfse = await cliente.consultar(dps.chaveAcesso);
-  if (nfse === undefined)
-    throw new ErroRespostaInvalida('a DPS consta como processada, mas a NFS-e não foi encontrada');
+  const dps = await cliente.consultarDps(id, opcoes);
+  if (dps === undefined) {
+    if (anterior?.tipo === 'recusado' && situacoes.duplicidade.codigos.includes(anterior.cStat)) {
+      return {
+        acao: 'indefinida',
+        motivo: `o envio voltou ${anterior.cStat}, mas a consulta da DPS não acha a NFS-e gerada por ela`,
+      };
+    }
+    return { acao: 'reenviar', dpsAssinada };
+  }
+  const nfse = await cliente.consultar(dps.chaveAcesso, opcoes);
+  if (nfse === undefined) {
+    return {
+      acao: 'indefinida',
+      motivo: 'a DPS consta como processada, mas a NFS-e não foi encontrada',
+      chaveAcesso: dps.chaveAcesso,
+    };
+  }
   if (nfse.nfse.infNFSe?.DPS?.infDPS?.Id !== id) {
-    throw new ErroRespostaInvalida('a NFS-e da consulta não corresponde à DPS', {
-      detalhes: { chaveAcesso: dps.chaveAcesso },
-    });
+    return { acao: 'indefinida', motivo: 'a NFS-e da consulta não corresponde à DPS', chaveAcesso: dps.chaveAcesso };
   }
   // Mesmo Id não prova o mesmo conteúdo: série e número repetidos com outra DPS também caem aqui. Só um DigestValue
   // presente dos dois lados e diferente prova outra DPS; sem ele (a Sefin não devolver a assinatura), vale o Id.

@@ -3,24 +3,19 @@
  *
  * A raiz tem o que é comum aos documentos e não importa nenhum pacote de documento: o desfecho normalizado, o
  * `TransmissaoStore` (bytes assinados gravados antes do envio, trava entre processos), a política dos bytes,
- * `criarEmissor` com o perfil de um documento, `retomarPendentes` para o job e o pool de emissores por certificado.
- * Cada documento tem um subpath que importa o seu pacote: `@sinete/emissor/nfe` (`criarEmissorNfe`), `/mdfe` e
- * `/nfse`. O adaptador em memória está em `@sinete/emissor/memoria` e a suíte de contrato do store em
- * `@sinete/emissor/contrato`.
+ * `retomarPendentes` para o job e o pool de emissores por certificado. Cada documento tem um subpath que importa o seu
+ * pacote: `@sinete/emissor/nfe` (`criarEmissorNfe`), `/mdfe` e `/nfse`. O adaptador em memória está em
+ * `@sinete/emissor/memoria` e a suíte de contrato do store em `@sinete/emissor/contrato`. `criarEmissor` com um perfil
+ * próprio está em `@sinete/emissor/perfil`, experimental (ADR 0016).
  */
 
 export type { AbrirCertificadoOpcoes, CertificadoA1, CertificadoAberto } from './certificado.ts';
 export { abrirCertificado } from './certificado.ts';
 export type {
-  ContingenciaAplicada,
-  ContingenciaDoPerfil,
-  ContingenciaDosBytes,
   ContingenciaOpcoes,
   ContingenciaStore,
   EscopoContingencia,
   MudancaContingencia,
-  Sonda,
-  SondaSvc,
 } from './contingencia.ts';
 export type {
   ConteudoRegistrado,
@@ -41,7 +36,6 @@ export type {
 export { destinoDosBytes, semResposta } from './desfecho.ts';
 export type {
   AoDecidir,
-  ContextoEmissor,
   DocumentoAssinado,
   Emissor,
   EmissorOpcoes,
@@ -49,14 +43,11 @@ export type {
   EntradaPreparada,
   GuardaOpcoes,
   JaGuardado,
-  ModoEnvio,
-  PerfilDocumento,
   PrepararEntrada,
   RecusaRepetidaOpcoes,
   RetomarOpcoes,
   TravaOpcoes,
 } from './emissor.ts';
-export { criarEmissor } from './emissor.ts';
 export type { CodigoErroEmissor } from './erros.ts';
 export {
   ErroRecusaRepetida,
@@ -74,6 +65,7 @@ export type {
   RetomadaOpcoes,
 } from './retomada.ts';
 export { POLITICA_RETOMADA_PADRAO, retomarPendentes } from './retomada.ts';
+export type { EnvioOpcoes } from './sinal.ts';
 export type {
   EstadoContingencia,
   FiltroPendentes,
