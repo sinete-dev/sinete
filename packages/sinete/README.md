@@ -66,6 +66,8 @@ O bin `sinete` executa a CLI de `@sinete/cli`, com `doctor` e `agents-md`. O sim
 | `sinete/schemas`, `sinete/schemas/nfe/PL_010f` e os demais schemas | `@sinete/schemas` |
 | `sinete/core`, `sinete/core/xml` | `@sinete/core` |
 
+Os subpaths experimentais dos pacotes cobertos (`sinete/transport/signer`, `sinete/nfe/ibs-cbs`) são experimentais aqui também: podem mudar em minor, sempre com changeset ([ADR 0016](../../docs/adr/0016-politica-de-estabilidade.md), seção 5).
+
 No repositório, `scripts/umbrella.ts` gera `package.json` e os arquivos de `src/` a partir do `exports` dos pacotes. O `bun run check` falha quando eles ficam fora de sincronia. Os critérios de divisão estão no ADR 0008.
 
 ## Licença

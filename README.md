@@ -124,7 +124,7 @@ Essas instruções mandam o agente consultar a documentação instalada. A API m
 
 ## Estado do projeto
 
-A versão é **0.x**, com possibilidade de mudanças na API até a 1.0.
+A versão é **0.x**, com possibilidade de mudanças na API até a 1.0. O que a 1.0 promete, e o que cada tipo de mudança exige, está no [ADR 0016](docs/adr/0016-politica-de-estabilidade.md).
 
 Desde setembro de 2026, o sinete está em produção num emissor em uso comercial, atendendo produtores rurais em várias UFs. Esse uso cobre autorização, cancelamento, CC-e e consulta cadastro de NF-e, além de emissão e encerramento de MDF-e.
 

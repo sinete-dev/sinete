@@ -151,7 +151,7 @@ Descritores são `const` sem efeito colateral, então quem importa um tipo peque
 - **Validação de objeto antes de serializar** (hoje o validador roda sobre a árvore). Para emissão, validar o objeto direto evita um parse extra e permite mensagem com caminho tipado.
 - **Performance do validador** (~110 µs por nota): cachear o mapa de declarações por tipo e trocar o matcher por conjuntos por um autômato determinístico, já que o XSD garante a Unique Particle Attribution.
 - **Tabela de vigências**: levantar as datas de homologação e produção de cada PL desde o 009q e decidir o comportamento quando a data cair fora de toda vigência.
-- **`xs:unique`** (`nItem` em `det`, `dia` em `cana`) está na IR mas o validador ainda não confere.
+- **`xs:unique`** (`nItem` em `det`, `dia` em `cana`) está na IR mas o validador ainda não confere. *Revisão (01/10/2026): resolvida no M0; o validador confere `xs:unique` e ID único (seção [Implementação no M0](#implementação-no-m0-25set2026), `packages/schemas/src/runtime/validate.ts`).*
 - **Diferenças de regex entre motores**: pela spec, `\d` do XSD é `\p{Nd}` (qualquer dígito Unicode), e é o que o libxml2 e o protótipo aplicam. Não sabemos qual motor cada autorizador usa; conferir em homologação se algum rejeita dígito não ASCII que o pattern aceita, e decidir se o validador de emissão deve ser mais estrito que a spec.
 
 ## Implementação no M0 (25/set/2026)

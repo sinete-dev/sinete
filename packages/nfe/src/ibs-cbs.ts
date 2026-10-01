@@ -7,6 +7,11 @@
  * embarcado não entra aqui, para não ir para o bundle de quem não o usa: `carregarDatasetEmbarcado()`, na raiz do
  * `@sinete/nfe`, o importa sob demanda. `Dec`, `DataIso` e `Vigencia` vêm do motor (os de `Dec` e `DataIso` são os
  * mesmos; a `Vigencia` dos dados, com os campos do dataset, fica acessível pelos tipos que a usam).
+ *
+ * Experimental (ADR 0016, seção 5) até o `@sinete/ibs-cbs` sair 1.0: a calculadora espera a norma da base de cálculo
+ * (NT 2025.002, UB16-10), e este subpath pode mudar em minor, sempre com changeset.
+ *
+ * @experimental
  */
 
 // biome-ignore lint/performance/noReExportAll: o subpath existe para reexportar o motor inteiro, e as duas pontas são do mesmo repo.

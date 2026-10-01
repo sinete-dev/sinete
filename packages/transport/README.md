@@ -69,6 +69,8 @@ Antes de abrir socket, o transporte cruza o perfil TLS do host com as capacidade
 
 ## Chave fora do processo: `@sinete/transport/signer`
 
+**Experimental** ([ADR 0016](../../docs/adr/0016-politica-de-estabilidade.md), seção 5): a forma do cliente e do lançador `@sinete/signer` depende do ADR 0014, ainda proposto, e pode mudar em minor, sempre com changeset. A raiz do pacote segue a política de estabilidade.
+
 Cliente do helper nativo `sinete-signer` (ADR 0005), para A3 em token PKCS#11, A3 em nuvem de PSC, OpenBao Transit e `CryptoKey` não exportável. Contrato em `docs/signer-contract/`; o helper em `helpers/signer-tls/`.
 
 ```ts

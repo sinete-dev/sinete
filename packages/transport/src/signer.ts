@@ -12,6 +12,11 @@
  *   (host, propósito, esquema e, no modo `message`, o transcript) antes de chamar o `AssinadorTls`.
  * - `abrirPkcs11`: token local pelo helper `-p11`. O `assinadorDeDocumentos` assina XML dos DF-e pelo `dfe.sign`, que o
  *   helper valida antes de usar a chave do token.
+ *
+ * Experimental (ADR 0016, seção 5) até o ADR 0014 ser aceito: a forma do cliente e do lançador `@sinete/signer` pode
+ * mudar em minor, sempre com changeset.
+ *
+ * @experimental
  */
 
 import type { IdentidadeIcp } from '@sinete/cert';

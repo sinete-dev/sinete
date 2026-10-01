@@ -3,6 +3,7 @@
 - Status: aceito
 - Data: 27/set/2026
 - Complementa o [ADR 0008](0008-divisao-de-pacotes.md), com um quinto critério de divisão, e revê a decisão 3 do [ADR 0009](0009-verbos-e-caminho-curto.md), que pôs os emissores curtos dentro de cada pacote de documento.
+- 01/out/2026, na política de estabilidade ([ADR 0016](0016-politica-de-estabilidade.md)): `consultar` dos emissores (`EmissorNfe.consultar`, `EmissorMdfe.consultar`, `EmissorNfse.consultar`) é passagem direta do `cliente.consultar` do documento, com o mesmo tipo de retorno, por decisão, e fica assim na 1.0. O desfecho do emissor descreve o que aconteceu com bytes gravados de uma transmissão; a consulta descreve a situação de uma chave na SEFAZ (autorizada, cancelada, não consta), sem bytes gravados nem trava. Devolver `Desfecho` misturaria os dois, e um tipo próprio de consulta no emissor repetiria o do cliente sem acrescentar política. O método existe para quem só tem o emissor à mão não precisar descer ao `cliente`.
 
 ## Contexto
 

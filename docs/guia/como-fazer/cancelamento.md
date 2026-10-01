@@ -21,6 +21,9 @@ switch (d.tipo) {
     break;
   case 'pendente':
     break; // sem decisão: chame cancelar de novo mais tarde, com os mesmos dados
+  default:
+    // A união é aberta: um caso novo pode entrar numa versão minor. Trate como pendente até conhecê-lo.
+    console.warn('desfecho de cancelamento não tratado', d);
 }
 ```
 
