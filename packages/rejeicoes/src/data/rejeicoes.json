@@ -1680,7 +1680,10 @@
           "id": "I08-140"
         }
       ],
-      "categoria": "regra-negocio"
+      "categoria": "regra-negocio",
+      "causaProvavel": "Nota de devolução (finNFe 4) com item cujo CFOP não está na relação de CFOP de devolução de mercadoria.",
+      "comoCorrigir": "Use em cada item um CFOP de devolução, conforme a tabela CFOP do Portal da NF-e (indDevol 1). Os CFOP 1.949 e 2.949 só são aceitos na devolução de venda para não contribuinte (indIEDest 9). Se a operação não é uma devolução, o que muda é a finalidade da nota, não o CFOP.",
+      "referencia": "MOC 7.0 Anexo I, RV I08-140 (NT 2015.002)"
     },
     {
       "codigo": "328",
@@ -8345,7 +8348,10 @@
           "id": "N12-85"
         }
       ],
-      "categoria": "regra-negocio"
+      "categoria": "regra-negocio",
+      "causaProvavel": "Item com CST de ICMS que a UF trata como de benefício fiscal, enviado sem cBenef. A regra é aplicada a critério da UF, por CST e por modelo: pela lista da N12-84 (CST 20, 30, 40, 41, 50, 51, 60, 70 e 90) ou, na N12-85, para todo CST que tenha algum código na tabela de benefícios da UF.",
+      "comoCorrigir": "Informe em cBenef, no grupo prod do item, o código da tabela de benefícios da SEFAZ da UF para o CST e a operação, o mesmo usado na EFD. Sem benefício, revise o CST; para alguns CST a UF pode exigir a literal SEM CBENEF. No CST 90 sem redução de base (pRedBC zero e, em operação interna, pRedBCST zero), a N12-84 não se aplica.",
+      "referencia": "MOC 7.0 Anexo I, RV N12-84 e N12-85 (NT 2019.001), campo I05f e nota da RV N12-94"
     },
     {
       "codigo": "931",
@@ -8367,7 +8373,10 @@
           "id": "N12-94"
         }
       ],
-      "categoria": "regra-negocio"
+      "categoria": "regra-negocio",
+      "causaProvavel": "O cBenef informado não corresponde ao CST do item segundo a tabela de benefícios da UF: o tipo do benefício não bate com o do CST, como um código de isenção num CST que não é de isenção. A mensagem da N12-94 diz \"incompatível com CST e UF\".",
+      "comoCorrigir": "Confira na tabela de cBenef publicada pela SEFAZ da UF a quais CST o código se aplica e alinhe os dois: troque o cBenef pelo do benefício que a operação usa, ou o CST pelo que o benefício pede. A regra é aplicada a critério da UF.",
+      "referencia": "MOC 7.0 Anexo I, RV I05f-20, N12-88 e N12-94 (NT 2019.001)"
     },
     {
       "codigo": "932",
@@ -8475,7 +8484,10 @@
           "id": "N12-98"
         }
       ],
-      "categoria": "regra-negocio"
+      "categoria": "regra-negocio",
+      "causaProvavel": "O cBenef informado não existe ou não está vigente na tabela de benefícios fiscais publicada pela SEFAZ da UF: código digitado errado, de outra UF ou já revogado.",
+      "comoCorrigir": "Confira o código na tabela de cBenef vigente da SEFAZ da UF e corrija o item. A regra é aplicada a critério da UF e não vale quando o item traz CSOSN (emitente do Simples Nacional).",
+      "referencia": "MOC 7.0 Anexo I, RV N12-98 (NT 2019.001)"
     },
     {
       "codigo": "957",
