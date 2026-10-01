@@ -3893,7 +3893,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Nota de entrada (tpNF 0) com CFOP de saída (começando por 5, 6 ou 7). A regra é aplicada a critério da UF.",
       "comoCorrigir": "Use o CFOP de entrada (1, 2 ou 3) na nota de entrada, ou mude o tipo da nota para saída.",
-      "referencia": "MOC 7.0 Anexo I, RV I08-20"
+      "referencia": "MOC 7.0 Anexo I, RV I08-20",
+      "orientacao": "A SEFAZ do seu estado pode barrar CFOP iniciado por 5, 6 ou 7 em notas de entrada. Use CFOP iniciado por 1, 2 ou 3, ou mude o tipo da nota para saída."
     },
     {
       "codigo": "520",
