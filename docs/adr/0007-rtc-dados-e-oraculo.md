@@ -2,6 +2,8 @@
 
 Status: aceita (spike S7, 25/set/2026; implementada no M1, 26/set/2026). O código do spike em `spikes/s7-calculadora/` é referência descartável; o que vale está em `tools/ibs-cbs-dados`, `tools/ibs-cbs-oraculo`, `packages/ibs-cbs` e `packages/ibs-cbs-dados` (seção "Implementação" no fim).
 
+Revisão de 01/out/2026 (V0059): o `codigo-fonte-backend.zip` da V0058 em diante não publica mais as migrações Flyway e traz o próprio `calculadora-pro.db`, igual ao do rootfs. A decisão 3 (dois caminhos independentes) só vale até a V0057; daí em diante o segundo caminho confere os dois arquivos publicados entre si (`segundoCaminho` em `tools/ibs-cbs-dados/sources.json`), Perde-se a verificação de que a base distribuída é a que as migrações publicadas geram; continua a conferência do extrator contra a API `dados-abertos` do contêiner, feita pelo oráculo, que lê a mesma base.
+
 Revisão de 26/set/2026 (ADR 0008): os pacotes `rtc-data`, `rtc-rates`, `rtc-engine`, `rtc-rules` e `rtc-determine` viraram `@sinete/ibs-cbs-dados` e `@sinete/ibs-cbs` (subpaths `/aliquotas`, `/calcular`, `/validar` e `/determinar`), e os códigos de erro `rtc_*` viraram `ibscbs_*`. O texto do spike abaixo mantém os nomes da época.
 
 ## Contexto

@@ -52,8 +52,9 @@ jobs:
           path: .cache/ibs-cbs
           key: ibs-cbs-calculadora-${{ hashFiles('tools/ibs-cbs-dados/sources.json') }}
       - run: bun install --frozen-lockfile
-      # Dataset reproduzível: SQLite embarcado e reconstruído das migrações Flyway dão os mesmos JSON, iguais aos
-      # versionados; confere também o diff_id da camada que o oráculo vai importar.
+      # Dataset reproduzível: SQLite embarcado e segundo caminho do pin (migrações Flyway até a V0057, .db do
+      # código-fonte depois) dão os mesmos JSON, iguais aos versionados; confere também o diff_id da camada que o oráculo
+      # vai importar.
       - run: bun tools/ibs-cbs-dados/extract.ts --check --verify-layer
       # Semente: a informada, ou a semana do ano no agendamento, para variar os casos sem perder a reprodução.
       - name: oráculo
