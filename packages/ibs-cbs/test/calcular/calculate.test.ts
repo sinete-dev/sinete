@@ -257,8 +257,9 @@ describe('compras governamentais', () => {
 });
 
 describe('alíquotas desconhecidas e simulação', () => {
-  test('2027 sem alíquota da CBS: ErroAliquotaDesconhecida, nunca zero', () => {
-    expect(() => at(op([{ n: 1, cst: '000', cClassTrib: '000001', base: '1.00' }]), '2027-01-01')).toThrow(
+  // 2029: ano sem nenhuma alíquota publicada (a CBS de 2027 e 2028 sai com a resolução do Senado).
+  test('ano sem alíquota publicada: ErroAliquotaDesconhecida, nunca zero', () => {
+    expect(() => at(op([{ n: 1, cst: '000', cClassTrib: '000001', base: '1.00' }]), '2029-01-01')).toThrow(
       ErroAliquotaDesconhecida,
     );
   });
@@ -596,13 +597,19 @@ describe('relógio de fato gerador', () => {
       emissao: relogioFixo('2027-01-05T10:00:00Z'),
       fatoGerador: relogioFixo('2027-01-01T01:30:00Z'),
     });
-    const roc = calcular(o, { dataset, aliquotas: rates, tempo: time });
+    // A CBS de 2027 vai informada, para o teste não depender de ela já estar publicada; o IBS UF (0,1% em 2026 e
+    // 0,05% em 2027, ambos da lei) mostra o ano usado.
+    const aliquotas = comAliquotasInformadas(rates, [
+      { tributo: 'CBS', valor: '8.8', motivo: 'teste do fuso', vigencia: { inicio: '2027-01-01', fim: null } },
+    ]);
+    const roc = calcular(o, { dataset, aliquotas, tempo: time });
     expect(roc.dataDeReferencia).toBe('2026-12-31');
     expect(roc.itens[0]?.IBSCBS.gIBSCBS?.gCBS.vCBS).toBe('0.90');
-    // Em UTC já é 2027: sem alíquota da CBS.
-    expect(() => calcular(o, { dataset, aliquotas: rates, tempo: time, deslocamentoMin: 0 })).toThrow(
-      ErroAliquotaDesconhecida,
-    );
+    expect(roc.itens[0]?.IBSCBS.gIBSCBS?.gIBSUF.pIBSUF).toBe('0.10');
+    // Em UTC já é 2027.
+    const utc = calcular(o, { dataset, aliquotas, tempo: time, deslocamentoMin: 0 });
+    expect(utc.dataDeReferencia).toBe('2027-01-01');
+    expect(utc.itens[0]?.IBSCBS.gIBSCBS?.gIBSUF.pIBSUF).toBe('0.05');
   });
 
   test('itens saem em ordem de nItem', () => {

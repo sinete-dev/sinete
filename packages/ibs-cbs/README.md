@@ -32,9 +32,9 @@ import { aliquotasOficiais, exigirAliquota, comAliquotasInformadas } from '@sine
 
 const p = aliquotasOficiais();
 p.nominal('2026-10-10').CBS; // { situacao: 'oficial', valor: '0.9', legal: 'LC 214/2025, art. 346', ... }
-p.nominal('2027-03-01').CBS; // { situacao: 'desconhecida', valor: null, ... }
-exigirAliquota(p.nominal('2027-03-01').CBS, '2027-03-01'); // lança ErroAliquotaDesconhecida
-const sim = comAliquotasInformadas(p, [{ tributo: 'CBS', valor: '8.8', motivo: 'simulação do orçamento 2027' }]);
+p.nominal('2029-03-01').CBS; // { situacao: 'desconhecida', valor: null, ... }
+exigirAliquota(p.nominal('2029-03-01').CBS, '2029-03-01'); // lança ErroAliquotaDesconhecida
+const sim = comAliquotasInformadas(p, [{ tributo: 'CBS', valor: '8.8', motivo: 'simulação do orçamento 2029' }]);
 ```
 
 ### Estados

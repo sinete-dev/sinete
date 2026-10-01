@@ -36,20 +36,23 @@ describe('tabela oficial', () => {
     expect(official.referencia('2026-12-31').CBS.valor).toBe('0.9');
   });
 
-  test('2027 e 2028: IBS 0,05% + 0,05% oficial (art. 344), CBS desconhecida até a resolução do Senado', () => {
+  // A CBS de 2027 e 2028 depende da resolução do Senado (art. 347): os testes de alíquota desconhecida usam 2029, sem
+  // norma, para a release que trouxer a CBS de 2027 não precisar mexer neles.
+  test('2027 e 2028: IBS 0,05% + 0,05% oficial (art. 344)', () => {
     const r = official.nominal('2027-01-01', place);
     expect(r.IBSUF).toMatchObject({ situacao: 'oficial', valor: '0.05' });
     expect(r.IBSMun).toMatchObject({ situacao: 'oficial', valor: '0.05' });
-    expect(r.CBS).toMatchObject({ situacao: 'desconhecida', valor: null });
-    expect(r.CBS.nota).toMatch(/Senado/);
-    expect(ehSimulada(r)).toBe(true);
-    expect(() => exigirAliquota(r.CBS, '2027-01-01')).toThrow(ErroAliquotaDesconhecida);
     expect(exigirAliquota(r.IBSUF, '2027-01-01')).toBe('0.05');
+    expect(official.nominal('2028-12-31', place).IBSMun).toMatchObject({ situacao: 'oficial', valor: '0.05' });
   });
 
-  test('2029 em diante: tudo desconhecido; antes de 2026 não há IBS/CBS', () => {
+  test('2029 em diante: tudo desconhecido, nunca zero; antes de 2026 não há IBS/CBS', () => {
     const r = official.nominal('2031-05-05');
     for (const t of TRIBUTOS_DAS_ALIQUOTAS) expect(r[t].situacao).toBe('desconhecida');
+    expect(r.CBS).toMatchObject({ valor: null });
+    expect(r.CBS.legal).toMatch(/Senado/);
+    expect(ehSimulada(r)).toBe(true);
+    expect(() => exigirAliquota(r.CBS, '2031-05-05')).toThrow(ErroAliquotaDesconhecida);
     const before = official.referencia('2025-12-31');
     expect(before.CBS.situacao).toBe('desconhecida');
     expect(before.CBS.nota).toMatch(/antes de 2026/);
@@ -57,14 +60,14 @@ describe('tabela oficial', () => {
 
   test('ErroAliquotaDesconhecida é tipado e explica como simular', () => {
     try {
-      exigirAliquota(official.nominal('2027-03-01').CBS, '2027-03-01');
+      exigirAliquota(official.nominal('2029-03-01').CBS, '2029-03-01');
       throw new Error('não lançou');
     } catch (e) {
       const err = e as ErroAliquotaDesconhecida;
       expect(err).toBeInstanceOf(ErroAliquotaDesconhecida);
       expect(err.code).toBe('ibscbs_aliquota_desconhecida');
       expect(err.tributo).toBe('CBS');
-      expect(err.data).toBe('2027-03-01');
+      expect(err.data).toBe('2029-03-01');
       expect(err.message).toMatch(/comAliquotasInformadas/);
     }
   });
@@ -120,9 +123,9 @@ describe('validação da tabela', () => {
     expect(broken((t) => Object.assign(t, { versaoDoFormato: 3 })).code).toBe('ibscbs_aliquotas_invalidas');
     expect(broken((t) => Object.assign(t.referencia[0] as object, { aliquota: '1,5' })).message).toMatch(/formato/);
     expect(broken((t) => Object.assign(t.referencia[0] as object, { aliquota: '150' })).message).toMatch(/formato/);
-    expect(broken((t) => Object.assign(t.referencia[3] as object, { aliquota: '1' })).message).toMatch(
-      /desconhecida com valor/,
-    );
+    const desconhecida = (t: { referencia: readonly { situacao: string }[] }): object =>
+      t.referencia.find((r) => r.situacao === 'desconhecida') as object;
+    expect(broken((t) => Object.assign(desconhecida(t), { aliquota: '1' })).message).toMatch(/desconhecida com valor/);
     expect(broken((t) => Object.assign(t.referencia[0] as object, { fontes: ['nada'] })).message).toMatch(/fonte nada/);
     expect(
       broken((t) => Object.assign(t.referencia[0] as object, { vigencia: { inicio: '2026-1-1', fim: null } })).message,
