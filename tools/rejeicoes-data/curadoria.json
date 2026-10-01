@@ -164,6 +164,11 @@
       "comoCorrigir": "Confira a situação da IE na consulta cadastro; com a IE inativa, o destinatário é não contribuinte (indIEDest 9, sem IE) ou precisa regularizar a inscrição.",
       "referencia": "MOC 7.0 Anexo I, RV 5E17-46 (NT 2019.001)"
     },
+    "327": {
+      "causaProvavel": "Nota de devolução (finNFe 4) com item cujo CFOP não está na relação de CFOP de devolução de mercadoria.",
+      "comoCorrigir": "Use em cada item um CFOP de devolução, conforme a tabela CFOP do Portal da NF-e (indDevol 1). Os CFOP 1.949 e 2.949 só são aceitos na devolução de venda para não contribuinte (indIEDest 9). Se a operação não é uma devolução, o que muda é a finalidade da nota, não o CFOP.",
+      "referencia": "MOC 7.0 Anexo I, RV I08-140 (NT 2015.002)"
+    },
     "328": {
       "causaProvavel": "Item com CFOP de devolução numa nota que não é de devolução (finNFe diferente de 2 e 4).",
       "comoCorrigir": "Emita a devolução com finNFe 4 e a nota referenciada, ou use o CFOP da operação que a nota de fato faz. A lista de CFOP de devolução está na tabela CFOP do Portal da NF-e (indDevol 1).",
@@ -371,10 +376,25 @@
       "comoCorrigir": "Informe o código do país do destinatário (tabela do BACEN) em cPais e o nome em xPais.",
       "referencia": "MOC 7.0 Anexo I, RV E14-30 (NT 2019.001)"
     },
+    "930": {
+      "causaProvavel": "Item com CST de ICMS que a UF trata como de benefício fiscal, enviado sem cBenef. A regra é aplicada a critério da UF, por CST e por modelo: pela lista da N12-84 (CST 20, 30, 40, 41, 50, 51, 60, 70 e 90) ou, na N12-85, para todo CST que tenha algum código na tabela de benefícios da UF.",
+      "comoCorrigir": "Informe em cBenef, no grupo prod do item, o código da tabela de benefícios da SEFAZ da UF para o CST e a operação, o mesmo usado na EFD. Sem benefício, revise o CST; para alguns CST a UF pode exigir a literal SEM CBENEF. No CST 90 sem redução de base (pRedBC zero e, em operação interna, pRedBCST zero), a N12-84 não se aplica.",
+      "referencia": "MOC 7.0 Anexo I, RV N12-84 e N12-85 (NT 2019.001), campo I05f e nota da RV N12-94"
+    },
+    "931": {
+      "causaProvavel": "O cBenef informado não corresponde ao CST do item segundo a tabela de benefícios da UF: o tipo do benefício não bate com o do CST, como um código de isenção num CST que não é de isenção. A mensagem da N12-94 diz \"incompatível com CST e UF\".",
+      "comoCorrigir": "Confira na tabela de cBenef publicada pela SEFAZ da UF a quais CST o código se aplica e alinhe os dois: troque o cBenef pelo do benefício que a operação usa, ou o CST pelo que o benefício pede. A regra é aplicada a critério da UF.",
+      "referencia": "MOC 7.0 Anexo I, RV I05f-20, N12-88 e N12-94 (NT 2019.001)"
+    },
     "934": {
       "causaProvavel": "A UF exige o valor e o motivo da desoneração do ICMS para o CST informado ou quando há código de benefício fiscal (cBenef).",
       "comoCorrigir": "Informe vICMSDeson e motDesICMS no item. A regra é aplicada a critério da UF, por CST e por modelo.",
       "referencia": "MOC 7.0 Anexo I, RV N12-90 e I05f-30 (NT 2019.001)"
+    },
+    "946": {
+      "causaProvavel": "O cBenef informado não existe ou não está vigente na tabela de benefícios fiscais publicada pela SEFAZ da UF: código digitado errado, de outra UF ou já revogado.",
+      "comoCorrigir": "Confira o código na tabela de cBenef vigente da SEFAZ da UF e corrija o item. A regra é aplicada a critério da UF e não vale quando o item traz CSOSN (emitente do Simples Nacional).",
+      "referencia": "MOC 7.0 Anexo I, RV N12-98 (NT 2019.001)"
     },
     "972": {
       "causaProvavel": "A UF do emitente exige o grupo do responsável técnico (infRespTec) e ele não foi informado.",
