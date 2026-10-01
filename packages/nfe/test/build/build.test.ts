@@ -209,9 +209,9 @@ describe('montarNfe: identificação e chave', () => {
     });
   });
 
-  test('erro de schema aparece como ocorrência, antes de assinar', async () => {
+  test('texto longo aparece como ocorrência da entrada, antes de assinar', async () => {
     const issues = falha(await montarNfe(nota({ natOp: 'X'.repeat(61) }), opcoes()));
-    expect(issues[0]).toMatchObject({ code: 'schema' });
+    expect(issues[0]).toMatchObject({ code: 'campo_invalido', origem: 'entrada' });
   });
 });
 
@@ -1075,14 +1075,14 @@ test('texto fora do tipo do leiaute é conferido na entrada: tamanho, espaço na
       opcoes(),
     ),
   );
-  expect(issues.map((i) => [i.caminho, i.code, i.origem, i.mensagem.split(':')[0]])).toEqual([
-    ['itens[2].produto.cProd', 'schema', 'entrada', 'padrao'],
-    ['itens[0].produto.xProd', 'schema', 'entrada', 'tamanho_maximo'],
-    ['itens[1].produto.uCom', 'schema', 'entrada', 'tamanho_maximo'],
-    ['itens[1].infAdProd', 'schema', 'entrada', 'padrao'],
-    ['transporte.volumes[0].marca', 'schema', 'entrada', 'tamanho_maximo'],
-    ['informacoesAdicionais.infCpl', 'schema', 'entrada', 'tamanho_maximo'],
-    ['informacoesAdicionais.obsCont[0].xTexto', 'schema', 'entrada', 'tamanho_maximo'],
+  expect(issues.map((i) => [i.caminho, i.code, i.origem, i.mensagem])).toEqual([
+    ['itens[2].produto.cProd', 'campo_invalido', 'entrada', 'sem espaço no começo nem no fim'],
+    ['itens[0].produto.xProd', 'campo_invalido', 'entrada', 'no máximo 120 caracteres (tem 121)'],
+    ['itens[1].produto.uCom', 'campo_invalido', 'entrada', 'no máximo 6 caracteres (tem 7)'],
+    ['itens[1].infAdProd', 'campo_invalido', 'entrada', 'caractere não aceito: “\u2013”'],
+    ['transporte.volumes[0].marca', 'campo_invalido', 'entrada', 'no máximo 60 caracteres (tem 61)'],
+    ['informacoesAdicionais.infCpl', 'campo_invalido', 'entrada', 'no máximo 5000 caracteres (tem 5001)'],
+    ['informacoesAdicionais.obsCont[0].xTexto', 'campo_invalido', 'entrada', 'no máximo 60 caracteres (tem 61)'],
   ]);
   // O rótulo da entrada diz à pessoa o que corrigir.
   expect(rotuloDoCaminho('itens[0].produto.xProd')).toBe('Item 1, Descrição do produto');

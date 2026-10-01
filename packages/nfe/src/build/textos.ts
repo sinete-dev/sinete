@@ -3,8 +3,9 @@
  *
  * Antes, o caractere que o XML não representa e o texto fora do tipo do leiaute (tamanho, espaço nas pontas,
  * caractere fora do `TString`) só apareciam na montagem, com o caminho do XML (`infNFe.det[0].prod.xProd` ou
- * `/infNFe/det[1]/prod/xProd`). Conferidos aqui, saem com `origem: 'entrada'` e o caminho da entrada
- * (`itens[0].produto.xProd`), que é o que a pessoa corrige.
+ * `/infNFe/det[1]/prod/xProd`). Conferidos aqui, saem como `campo_invalido`, com `origem: 'entrada'`, o caminho da
+ * entrada (`itens[0].produto.xProd`) e uma mensagem para quem preenche o campo (`no máximo 60 caracteres`), sem nome
+ * de validador nem de tipo do XSD.
  *
  * O tipo de cada campo vem do schema do PL da montagem (o `TString` com o `maxLength` do elemento), nunca de um número
  * escrito aqui: a tabela abaixo só diz qual elemento do `infNFe` recebe cada campo da entrada.
@@ -149,12 +150,55 @@ function textosForaDoXml(valor: unknown, caminho: string, saida: string[]): void
   }
 }
 
+/** Mensagem do caractere que não vai ao documento e que a pessoa não consegue ver (controle, invisível). */
+const CARACTERE_INVISIVEL = 'caractere não aceito (símbolo ou caractere de controle)';
+
+/** Caractere que a pessoa enxerga: letra, marca, número, pontuação ou símbolo. */
+const VISIVEL = /^[\p{L}\p{M}\p{N}\p{P}\p{S}]$/u;
+
+/** O primeiro caractere de `valor` que o tipo não aceita no meio de um texto, ou `undefined` se todos passam. */
+function caractereRecusado(tipo: SimpleType, valor: string): string | undefined {
+  for (const ch of new Set(valor)) {
+    const saida: OcorrenciaSchema[] = [];
+    conferirTipoSimples(tipo, `A${ch}A`, '', saida);
+    if (saida.some((o) => o.code === 'padrao')) return ch;
+  }
+  return undefined;
+}
+
 /**
- * Confere os textos da entrada: em qualquer campo, o caractere que o XML não representa (`campo_invalido`); nos campos
- * da tabela, o tipo do elemento no PL (`schema`, com o código do validador na mensagem, como na montagem). As
- * ocorrências são da entrada, com o caminho da entrada. O campo que já tem ocorrência (de outra conferência da entrada)
- * não ganha outra. `substituidos` são os campos que a montagem troca por um texto fixo (o nome do destinatário em
- * homologação): o tipo deles não é conferido, porque o texto informado não vai ao XML.
+ * As regras do tipo que `valor` viola, em texto para quem preenche o campo. O código do validador decide a regra; a
+ * mensagem diz o limite (do próprio tipo) e, no `padrao`, se o problema é o espaço nas pontas ou um caractere.
+ */
+function mensagensDoTexto(tipo: SimpleType, valor: string, violadas: readonly OcorrenciaSchema[]): string[] {
+  if (violadas.length === 0) return [];
+  if (valor.trim() === '') return ['não pode ficar em branco'];
+  const tamanho = [...valor].length;
+  const mensagens = new Set<string>();
+  for (const o of violadas) {
+    if (o.code === 'tamanho_maximo' && tipo.mx !== undefined)
+      mensagens.add(`no máximo ${tipo.mx} caracteres (tem ${tamanho})`);
+    else if (o.code === 'tamanho_minimo' && tipo.mn !== undefined)
+      mensagens.add(`no mínimo ${tipo.mn} caracteres (tem ${tamanho})`);
+    else if (o.code === 'tamanho' && tipo.l !== undefined)
+      mensagens.add(`exatamente ${tipo.l} caracteres (tem ${tamanho})`);
+    else if (o.code === 'padrao') {
+      const espaco = valor !== valor.trim();
+      const ch = caractereRecusado(tipo, valor);
+      if (espaco) mensagens.add('sem espaço no começo nem no fim');
+      if (ch !== undefined) mensagens.add(VISIVEL.test(ch) ? `caractere não aceito: “${ch}”` : CARACTERE_INVISIVEL);
+      if (!espaco && ch === undefined) mensagens.add('formato não aceito');
+    } else mensagens.add('valor não aceito neste campo');
+  }
+  return [...mensagens];
+}
+
+/**
+ * Confere os textos da entrada: em qualquer campo, o caractere que o XML não representa; nos campos da tabela, o tipo
+ * do elemento no PL (tamanho, espaço nas pontas, caractere fora do conjunto aceito). Tudo sai como `campo_invalido`,
+ * com o caminho da entrada, `origem: 'entrada'` e uma ocorrência por regra violada. O campo que já tem ocorrência (de
+ * outra conferência da entrada) não ganha outra. `substituidos` são os campos que a montagem troca por um texto fixo
+ * (o nome do destinatário em homologação): o tipo deles não é conferido, porque o texto informado não vai ao XML.
  */
 export function conferirTextosDaEntrada(
   entrada: DadosNfe,
@@ -167,7 +211,7 @@ export function conferirTextosDaEntrada(
   textosForaDoXml(entrada, '', foraDoXml);
   for (const c of foraDoXml) {
     if (jaRecusados.has(c) || substituidos.has(c)) continue;
-    issues.add(c, 'campo_invalido', 'texto com caractere não permitido em XML');
+    issues.add(c, 'campo_invalido', CARACTERE_INVISIVEL);
     jaRecusados.add(c);
   }
   const tipos = tiposDoPl(infNFe);
@@ -178,7 +222,7 @@ export function conferirTextosDaEntrada(
       if (typeof valor !== 'string' || jaRecusados.has(caminho) || substituidos.has(caminho)) continue;
       const saida: OcorrenciaSchema[] = [];
       conferirTipoSimples(tipo, valor, caminho, saida);
-      for (const o of saida) issues.add(caminho, 'schema', `${o.code}: ${o.mensagem}`);
+      for (const m of mensagensDoTexto(tipo, valor, saida)) issues.add(caminho, 'campo_invalido', m);
     }
   }
 }
