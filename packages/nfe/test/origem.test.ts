@@ -31,13 +31,50 @@ describe('montarNfe: origem das ocorrências', () => {
   test('texto longo num campo da entrada é da entrada, com o caminho da entrada', async () => {
     const issues = falha(await montarNfe(nota({ natOp: 'X'.repeat(61) }), opcoes()));
     expect(issues).toEqual([
-      { caminho: 'natOp', code: 'schema', mensagem: 'tamanho_maximo: tamanho máximo 60 (TString)', origem: 'entrada' },
+      { caminho: 'natOp', code: 'campo_invalido', mensagem: 'no máximo 60 caracteres (tem 61)', origem: 'entrada' },
     ]);
   });
 
   test('caractere fora do XML na entrada é da entrada, com o caminho da entrada', async () => {
     const issues = falha(await montarNfe(nota({ natOp: 'VENDA \u0001' }), opcoes()));
-    expect(issues).toEqual([expect.objectContaining({ caminho: 'natOp', code: 'campo_invalido', origem: 'entrada' })]);
+    expect(issues).toEqual([
+      {
+        caminho: 'natOp',
+        code: 'campo_invalido',
+        mensagem: 'caractere não aceito (símbolo ou caractere de controle)',
+        origem: 'entrada',
+      },
+    ]);
+  });
+
+  test('texto da entrada fora do tipo do leiaute sai como campo_invalido, com mensagem para quem preenche', async () => {
+    const e = nota().emitente;
+    const casos: [Partial<Parameters<typeof nota>[0]>, string][] = [
+      [{ emitente: { ...e, xNome: 'X'.repeat(70) } }, 'no máximo 60 caracteres (tem 70)'],
+      [{ natOp: ' VENDA' }, 'sem espaço no começo nem no fim'],
+      [{ natOp: 'VENDA ' }, 'sem espaço no começo nem no fim'],
+      [{ natOp: 'VENDA \u2013 BALCÃO' }, 'caractere não aceito: “\u2013”'],
+      [{ natOp: 'VENDA \u{1F600}' }, 'caractere não aceito: “\u{1F600}”'],
+      [{ natOp: 'VENDA\u200B' }, 'caractere não aceito (símbolo ou caractere de controle)'],
+      [{ natOp: 'VENDA \u0007' }, 'caractere não aceito (símbolo ou caractere de controle)'],
+      [{ natOp: '   ' }, 'não pode ficar em branco'],
+    ];
+    for (const [campos, mensagem] of casos) {
+      const issues = falha(await montarNfe(nota(campos), opcoes()));
+      expect(issues).toHaveLength(1);
+      const [i] = issues;
+      expect(i).toMatchObject({ code: 'campo_invalido', mensagem, origem: 'entrada' });
+      expect(i?.mensagem).not.toMatch(/xml|schema|pattern|TString|tamanho_|padrao/i);
+    }
+  });
+
+  test('texto com várias regras violadas tem uma ocorrência por regra, no mesmo caminho', async () => {
+    const issues = falha(await montarNfe(nota({ natOp: ` ${'Y'.repeat(60)}\u2013` }), opcoes()));
+    expect(issues).toEqual([
+      { caminho: 'natOp', code: 'campo_invalido', mensagem: 'no máximo 60 caracteres (tem 62)', origem: 'entrada' },
+      { caminho: 'natOp', code: 'campo_invalido', mensagem: 'sem espaço no começo nem no fim', origem: 'entrada' },
+      { caminho: 'natOp', code: 'campo_invalido', mensagem: 'caractere não aceito: “\u2013”', origem: 'entrada' },
+    ]);
   });
 
   test('schema de um grupo repassado que a entrada não confere campo a campo continua da montagem', async () => {
@@ -50,6 +87,8 @@ describe('montarNfe: origem das ocorrências', () => {
     expect(issues).toEqual([
       expect.objectContaining({ code: 'schema', caminho: '/infNFe/infIntermed/idCadIntTran', origem: 'montagem' }),
     ]);
+    // A montagem segue com a mensagem do validador: é falha de integração, não texto para a tela.
+    expect(issues[0]?.mensagem).toContain('tamanho_maximo');
   });
 
   test('ocorrência da calculadora sem origem é montagem; a marcada fica como veio', async () => {
