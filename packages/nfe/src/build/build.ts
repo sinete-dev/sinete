@@ -50,7 +50,7 @@ import type {
   Referenciada,
   ResponsavelTecnico,
 } from '../model.ts';
-import type { CalculadoraIbsCbs, PedidoIbsCbsItem } from '../ports.ts';
+import type { AliquotaIbsCbsInformada, CalculadoraIbsCbs, PedidoIbsCbsItem } from '../ports.ts';
 import { calculadoraIbsCbs } from '../rtc.ts';
 import type { Instante } from '../time.ts';
 import { deslocamentoDaUf, formatarDh } from '../time.ts';
@@ -159,6 +159,13 @@ export interface NfeMontada {
   readonly infNFe: TNFe_infNFe;
   /** `<NFe xmlns="...">` com o `infNFe` canônico, sem assinatura, já validado contra o schema. */
   readonly xml: string;
+  /**
+   * Alíquotas do IBS/CBS que a calculadora usou vindas de quem integra (`comAliquotasInformadas`), e não da tabela
+   * oficial do pacote, por item. Ausente quando todas foram oficiais. A montagem não recusa por isso: é o caminho para
+   * emitir com uma alíquota já publicada antes de o pacote trazê-la. Guarde junto com a nota e alerte quem opera; em
+   * produção, a alíquota informada é responsabilidade de quem a informou.
+   */
+  readonly aliquotasInformadas?: readonly AliquotaIbsCbsInformada[];
 }
 
 export type ResultadoMontagemNfe =
@@ -849,6 +856,7 @@ export async function montarNfe(entrada: DadosNfe, opcoes: MontarNfeOpcoes): Pro
   const classificados = entrada.itens
     .map((it, n) => ({ it, n }))
     .filter(({ it }) => it.impostos.ibsCbs?.classificacao !== undefined);
+  let aliquotasInformadas: readonly AliquotaIbsCbsInformada[] = [];
   if (classificados.length > 0) {
     const calculadora = opcoes.ibsCbs ?? calculadoraPadrao();
     const reqs: PedidoIbsCbsItem[] = classificados.map(({ it, n }) => {
@@ -925,14 +933,19 @@ export async function montarNfe(entrada: DadosNfe, opcoes: MontarNfeOpcoes): Pro
       itens: reqs,
     });
     issues.addAll(resp.ocorrencias ?? [], 'montagem');
+    aliquotasInformadas = resp.aliquotasInformadas ?? [];
+    // A calculadora que recusou já disse por quê: o grupo que faltar é consequência da ocorrência dela, e uma segunda
+    // ocorrência por item repetiria a causa. `ibscbs_calculo` fica para a calculadora que omite um item sem explicar.
+    const explicou = (resp.ocorrencias?.length ?? 0) > 0;
     for (const { n } of classificados) {
       const g = resp.itens.find((x) => x.nItem === n + 1);
       if (g === undefined) {
-        issues.montagem(
-          `itens[${n}].impostos.ibsCbs`,
-          'ibscbs_calculo',
-          'a calculadora não devolveu o grupo IBSCBS do item',
-        );
+        if (!explicou)
+          issues.montagem(
+            `itens[${n}].impostos.ibsCbs`,
+            'ibscbs_calculo',
+            'a calculadora não devolveu o grupo IBSCBS do item',
+          );
         continue;
       }
       ((itens[n] as ItemMontado).det.imposto as Record<string, unknown>).IBSCBS = g.IBSCBS;
@@ -1418,6 +1431,7 @@ export async function montarNfe(entrada: DadosNfe, opcoes: MontarNfeOpcoes): Pro
       pl: pl.vigencia,
       infNFe: inf,
       xml,
+      ...(aliquotasInformadas.length === 0 ? {} : { aliquotasInformadas }),
     },
   };
 }

@@ -480,6 +480,15 @@ export function perfilNfe(
         ambiente: ctx.ambiente,
       });
       if (!r.ok) throw new ErroDeValidacao('a NF-e não passou na validação', r.ocorrencias);
+      // Alíquota de IBS/CBS informada por quem integra (fora da tabela oficial do pacote) não recusa: avisa no log.
+      const informadas = r.valor.aliquotasInformadas;
+      if (informadas !== undefined) {
+        ctx.logger?.warn('emissor: NF-e montada com alíquota de IBS/CBS informada, fora da tabela oficial', {
+          chave: r.valor.chave,
+          aliquotas: informadas.map((a) => `${a.nItem}:${a.tributo}=${a.valor}`),
+          motivos: [...new Set(informadas.map((a) => a.motivo))],
+        });
+      }
       // O certificado que assina é o do emitente (MOC 7.0 Anexo I, grupo A e F): sem CNPJ nem CPF da ICP-Brasil, a
       // SEFAZ recusa com 282 (A07); com outro CNPJ-base ou outro CPF, com 213 (F03) ou 227 (F03A).
       if (ctx.titular.cnpj === undefined && ctx.titular.cpf === undefined) {

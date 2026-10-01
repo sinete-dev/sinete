@@ -3,10 +3,12 @@ import { createHash } from 'node:crypto';
 import type { Ocorrencia } from '@sinete/core';
 import { contextoDeTempo, formatarVerProc, relogioFixo, relogioManual } from '@sinete/core';
 import { conferirAssinatura } from '@sinete/core/xml';
+import { aliquotasOficiais, comAliquotasInformadas } from '@sinete/ibs-cbs/aliquotas';
 import { lerChaveAcesso, montarChaveAcesso } from '@sinete/validators';
 import type { CalculadoraIbsCbs, DadosNfe, Item, NfeMontada, ResultadoMontagemNfe } from '../../src/index.ts';
 import {
   assinarNfe,
+  calculadoraIbsCbs,
   exigenciaRespTec,
   hashCsrt,
   montarNfe,
@@ -709,10 +711,7 @@ describe('montarNfe: IBS e CBS pela calculadora', () => {
 
   test('sem calculadora nas opções, calcula o motor do sinete (calculadoraIbsCbs)', async () => {
     // Sem vBC, a calculadora padrão não presume base (UB16-10 ainda sem regra publicada).
-    expect(codes(await montarNfe(nota({ itens: [classificado()] }), opcoes()))).toEqual([
-      'ibscbs_base_ausente',
-      'ibscbs_calculo',
-    ]);
+    expect(codes(await montarNfe(nota({ itens: [classificado()] }), opcoes()))).toEqual(['ibscbs_base_ausente']);
     const b = item();
     const comBase: Item = {
       ...b,
@@ -725,6 +724,44 @@ describe('montarNfe: IBS e CBS pela calculadora', () => {
       gIBSCBS: { vBC: '15.00', gCBS: { pCBS: '0.90', vCBS: '0.14' }, gIBSUF: { pIBSUF: '0.10', vIBSUF: '0.02' } },
     });
     expect(n.infNFe.total.IBSCBSTot?.vBCIBSCBS).toBe('15.00');
+    expect(n.aliquotasInformadas).toBeUndefined();
+  });
+
+  const comBase = (): Item => {
+    const b = item();
+    return {
+      ...b,
+      impostos: { ...b.impostos, ibsCbs: { classificacao: { CST: '000', cClassTrib: '000001', vBC: '15.00' } } },
+    };
+  };
+  // 2029: ano em que nenhuma alíquota está publicada; emissão no mesmo dia, para as regras da NT serem as do ano.
+  const em2029 = contextoDeTempo({ emissao: relogioFixo('2029-01-08T10:00:00-03:00') });
+
+  test('alíquota desconhecida: uma ocorrência, no caminho do item, sem a ibscbs_calculo de cada item', async () => {
+    const r = await montarNfe(nota({ itens: [comBase(), comBase()] }), opcoes({ tempo: em2029 }));
+    expect(falha(r).map((i) => [i.caminho, i.code, i.origem])).toEqual([
+      ['itens[0].impostos.ibsCbs', 'ibscbs_aliquota_desconhecida', 'montagem'],
+    ]);
+  });
+
+  test('alíquota informada por quem integra: monta, sem recusar, e o resultado diz quais vieram de fora', async () => {
+    const aliquotas = comAliquotasInformadas(aliquotasOficiais(), [
+      { tributo: 'CBS', valor: '8.8', motivo: 'resolução publicada' },
+      { tributo: 'IBSUF', valor: '17.7', motivo: 'lei estadual' },
+      { tributo: 'IBSMun', valor: '2.5', motivo: 'lei municipal' },
+    ]);
+    const n = ok(
+      await montarNfe(
+        nota({ itens: [comBase(), item()] }),
+        opcoes({ tempo: em2029, ibsCbs: calculadoraIbsCbs({ aliquotas }) }),
+      ),
+    );
+    expect(imposto(n).IBSCBS).toMatchObject({ gIBSCBS: { gCBS: { pCBS: '8.80' } } });
+    expect(n.aliquotasInformadas).toEqual([
+      { nItem: 1, tributo: 'CBS', valor: '8.8', motivo: 'resolução publicada' },
+      { nItem: 1, tributo: 'IBSUF', valor: '17.7', motivo: 'lei estadual' },
+      { nItem: 1, tributo: 'IBSMun', valor: '2.5', motivo: 'lei municipal' },
+    ]);
   });
 
   test('a calculadora não devolve o item, ou devolve ocorrências', async () => {
@@ -740,8 +777,8 @@ describe('montarNfe: IBS e CBS pela calculadora', () => {
         ],
       }),
     };
+    // A causa que a calculadora deu basta: sem a segunda ocorrência por item.
     expect(codes(await montarNfe(nota({ itens: [classificado()] }), opcoes({ ibsCbs: reclama })))).toEqual([
-      'ibscbs_calculo',
       'ibscbs_calculo',
     ]);
   });

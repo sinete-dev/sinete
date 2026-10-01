@@ -16,11 +16,14 @@ import {
   ErroDeConfiguracao,
   ErroDeValidacao,
   ehErroSinete,
+  loggerEmMemoria,
   relogioFixo,
   relogioManual,
 } from '@sinete/core';
 import * as da from '@sinete/da/nfe';
 import type { DadosNfe } from '@sinete/nfe';
+import { calculadoraIbsCbs } from '@sinete/nfe';
+import { aliquotasOficiais, comAliquotasInformadas } from '@sinete/nfe/ibs-cbs';
 import type { CertificadoSintetico, Contribuinte, SefazSim, SefazSimOpcoes } from '@sinete/sefaz-sim';
 import {
   certificadoSintetico,
@@ -251,6 +254,39 @@ describe('criarEmissorNfe contra a SEFAZ simulada, HTTPS com mTLS', () => {
     expect(cancelado).toEqual(da.gerarPdf(da.danfe(d.proc, { cancelamento: canc.procEvento })));
     expect(cancelado).not.toEqual(pdf);
     expect((await c.emissor.cliente.statusServico()).tipo).toBe('autorizado');
+  });
+
+  test('alíquota de IBS/CBS informada por quem integra: emite e avisa no log, com a chave e o motivo', async () => {
+    const log = loggerEmMemoria();
+    const aliquotas = comAliquotasInformadas(aliquotasOficiais(), [
+      { tributo: 'CBS', valor: '0.9', motivo: 'conferência do aviso' },
+    ]);
+    const c = await cenario({ logger: log, montagem: { ibsCbs: calculadoraIbsCbs({ aliquotas }) } });
+    const base = n(47);
+    const [primeiro, ...resto] = base.itens;
+    if (primeiro === undefined) throw new Error('nota sem item');
+    const classificado = {
+      ...primeiro,
+      impostos: {
+        ...primeiro.impostos,
+        ibsCbs: { classificacao: { CST: '000', cClassTrib: '000001', vBC: '10.00' } },
+      },
+    };
+    const d = autorizado(await c.emissor.emitir('nota-47', { ...base, itens: [classificado, ...resto] }));
+    const aviso = log.entradas.filter(
+      (e) => e.nivel === 'warn' && e.mensagem.includes('alíquota de IBS/CBS informada'),
+    );
+    expect(aviso).toHaveLength(1);
+    expect(aviso[0]?.campos).toMatchObject({
+      chave: d.id,
+      aliquotas: ['1:CBS=0.9'],
+      motivos: ['conferência do aviso'],
+    });
+    // Com as alíquotas oficiais, nada.
+    const log2 = loggerEmMemoria();
+    const c2 = await cenario({ logger: log2 });
+    autorizado(await c2.emissor.emitir('nota-48', { ...n(48), itens: [classificado, ...resto] }));
+    expect(log2.entradas.filter((e) => e.mensagem.includes('alíquota de IBS/CBS informada'))).toEqual([]);
   });
 
   test('a SEFAZ autoriza e a rede cai: a retomada, depois de reiniciar, guarda a nota com os mesmos bytes', async () => {

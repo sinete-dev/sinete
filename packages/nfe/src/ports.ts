@@ -74,9 +74,28 @@ export interface PedidoIbsCbsNota {
   readonly compraGov?: { readonly tpEnteGov: string; readonly pRedutor: Decimal; readonly tpOperGov: string };
 }
 
+/**
+ * Alíquota do IBS/CBS que entrou no cálculo de um item vinda de quem integra (`comAliquotasInformadas`), e não da tabela
+ * oficial do pacote.
+ */
+export interface AliquotaIbsCbsInformada {
+  /** Número do item na nota (1 a 990). */
+  readonly nItem: number;
+  readonly tributo: 'CBS' | 'IBSUF' | 'IBSMun';
+  /** Percentual nominal informado (`'8.7'` = 8,7%). */
+  readonly valor: string;
+  /** O motivo declarado em `comAliquotasInformadas`. */
+  readonly motivo: string;
+}
+
 /** Resultado da calculadora: o grupo `IBSCBS` de cada item pedido, já na forma lexical do leiaute. */
 export interface RespostaIbsCbs {
   readonly itens: readonly { readonly nItem: number; readonly IBSCBS: TTribNFe }[];
+  /**
+   * As alíquotas que não vieram da tabela oficial: a montagem as repassa em `NfeMontada.aliquotasInformadas`. Ausente
+   * ou vazio quando todas foram oficiais; a calculadora de fora do sinete que não sabe dizer pode omitir.
+   */
+  readonly aliquotasInformadas?: readonly AliquotaIbsCbsInformada[];
   /**
    * Problemas de classificação ou de dado (`caminho` relativo ao item, como `itens[2].impostos.ibsCbs`). A ocorrência sem
    * `origem` entra como `montagem` (ADR 0011); marque `entrada` a que aponta um valor da nota.

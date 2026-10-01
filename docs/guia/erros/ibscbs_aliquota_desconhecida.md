@@ -10,9 +10,9 @@ O erro também ocorre quando a classificação tributária exige uma alíquota f
 
 ## Correção
 
-Para simular com alíquotas nominais ou de referência, informe os valores e o motivo (`motivo`) com `comAliquotasInformadas` de `sinete/ibs-cbs/aliquotas`. Na NF-e (Nota Fiscal Eletrônica), passe esse provedor em `calculadoraIbsCbs({ rates })`, de `sinete/nfe`, e use a calculadora na opção `ibsCbs` da montagem. Para alíquotas fixas ou uniformes setoriais ausentes, informe os valores e o motivo em `aliquotasInformadas` do item ao usar diretamente o motor de cálculo. O resultado do motor fica marcado como simulado.
+Para simular com alíquotas nominais ou de referência, informe os valores e o motivo (`motivo`) com `comAliquotasInformadas` de `sinete/ibs-cbs/aliquotas`. Na NF-e (Nota Fiscal Eletrônica), passe esse provedor em `calculadoraIbsCbs({ aliquotas })`, de `sinete/nfe`, e use a calculadora na opção `ibsCbs` da montagem. A montagem não recusa a nota por isso, nem em produção: a nota montada traz em `aliquotasInformadas` as alíquotas que vieram de fora da tabela oficial, por item, e o `@sinete/emissor` registra um aviso no log com a chave. Guarde essa marca junto com a nota. Para alíquotas fixas ou uniformes setoriais ausentes, informe os valores e o motivo em `aliquotasInformadas` do item ao usar diretamente o motor de cálculo. O resultado do motor fica marcado como simulado.
 
-Para emitir com as alíquotas oficiais, aguarde a publicação dos valores ausentes e atualize os pacotes para uma versão que os inclua. Na montagem da NF-e, este erro retorna como ocorrência da nota, com `caminho: 'impostos.ibsCbs'` e `origem: 'montagem'`.
+Para emitir com as alíquotas oficiais, aguarde a publicação dos valores ausentes e atualize os pacotes para uma versão que os inclua. Na montagem da NF-e, este erro retorna como uma única ocorrência, no caminho do primeiro item que precisa da alíquota (`itens[n].impostos.ibsCbs`, índice a partir de zero), com `origem: 'montagem'`. Os outros itens da mesma nota não ganham ocorrência própria: a causa é uma só, a data.
 
 ## Armadilha
 
