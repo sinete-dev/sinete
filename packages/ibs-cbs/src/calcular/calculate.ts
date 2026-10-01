@@ -27,6 +27,7 @@ import type {
 import { DESLOCAMENTO_BRASILIA_MIN, dataCivil } from '@sinete/ibs-cbs-dados';
 import type { ProvedorDeAliquotas, TributoDaAliquota } from '../aliquotas/index.ts';
 import { ErroAliquotaDesconhecida, exigirAliquota, TRIBUTOS_DAS_ALIQUOTAS } from '../aliquotas/index.ts';
+import { exigirFormatoDosDados } from '../formato.ts';
 import { Decimal, sum } from './decimal.ts';
 import type { MotivoErroClassificacao } from './errors.ts';
 import { ErroClassificacao, ErroRegimeNaoSuportado } from './errors.ts';
@@ -876,6 +877,7 @@ export function calcularEm(
   op: OperacaoClassificada,
   opcoes: { readonly dataset: DatasetIbsCbs; readonly aliquotas: ProvedorDeAliquotas; readonly data: DataIso },
 ): Roc {
+  exigirFormatoDosDados(opcoes.dataset);
   checkOperation(op);
   const content = opcoes.dataset.em(opcoes.data);
   const date = content.dataDeReferencia;

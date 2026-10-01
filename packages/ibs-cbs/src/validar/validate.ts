@@ -10,6 +10,7 @@ import type { DatasetIbsCbs } from '@sinete/ibs-cbs-dados';
 import { DESLOCAMENTO_BRASILIA_MIN, dataCivil } from '@sinete/ibs-cbs-dados';
 import type { ProvedorDeAliquotas } from '../aliquotas/index.ts';
 import type { Roc } from '../calcular/index.ts';
+import { exigirFormatoDosDados } from '../formato.ts';
 import type { ContextoDaRegra, Regra } from './rules.ts';
 import { REGRAS } from './rules.ts';
 import type { Ambiente, DescricaoDaRegra, DocumentoDasRegras, RelatorioDeValidacao, Violacao } from './types.ts';
@@ -42,6 +43,7 @@ export function ativa(
 
 export function validar(documento: DocumentoDasRegras, opcoes: ValidarOpcoes): RelatorioDeValidacao {
   if (!documento || !Array.isArray(documento.itens)) throw new ErroDeConfiguracao('documento sem itens');
+  exigirFormatoDosDados(opcoes.dataset);
   if (opcoes.ambiente !== 'producao' && opcoes.ambiente !== 'homologacao') {
     throw new ErroDeConfiguracao(`ambiente inválido: ${String(opcoes.ambiente)}`);
   }

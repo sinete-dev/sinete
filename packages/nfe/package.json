@@ -46,7 +46,7 @@
   "dependencies": {
     "@sinete/core": "workspace:^",
     "@sinete/ibs-cbs": "workspace:^",
-    "@sinete/ibs-cbs-dados": "workspace:^",
+    "@sinete/ibs-cbs-dados": "workspace:>=2026.9.2",
     "@sinete/rejeicoes": "workspace:^",
     "@sinete/schemas": "workspace:^",
     "@sinete/transport": "workspace:^",

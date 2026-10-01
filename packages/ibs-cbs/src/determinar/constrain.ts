@@ -9,6 +9,7 @@
 import type { ContextoDeTempo } from '@sinete/core';
 import type { ConteudoTributario, DatasetIbsCbs, RegistroClassTrib } from '@sinete/ibs-cbs-dados';
 import { DESLOCAMENTO_BRASILIA_MIN, dataCivil } from '@sinete/ibs-cbs-dados';
+import { exigirFormatoDosDados } from '../formato.ts';
 import { TABELAS_NT } from '../validar/index.ts';
 import { ErroDeterminacao } from './errors.ts';
 import type { Candidato, Exclusao, FatosDaOperacao, FatosDaParte, FatosDoItem } from './types.ts';
@@ -227,11 +228,13 @@ function checks(facts: FatosDaOperacao, content: ConteudoTributario): readonly C
 
 /** Restrições oficiais na data do fato gerador de `opcoes.tempo`. */
 export function restringir(fatos: FatosDaOperacao, opcoes: RestringirOpcoes): readonly RestricoesDoItem[] {
+  exigirFormatoDosDados(opcoes.dataset);
   return restringirEm(fatos, opcoes.dataset.em(dataDoFato(opcoes.tempo, opcoes.deslocamentoMin)));
 }
 
 /** Restrições oficiais numa visão já fixada numa data. */
 export function restringirEm(fatos: FatosDaOperacao, conteudo: ConteudoTributario): readonly RestricoesDoItem[] {
+  exigirFormatoDosDados(conteudo.dataset);
   checkFacts(fatos, conteudo);
   const inForce = conteudo.classTribs();
   const live = new Set(inForce.map((c) => c.codigo));
