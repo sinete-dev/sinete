@@ -1,27 +1,32 @@
 {
   "comment": "Artefatos oficiais fixados por hash (ADR 0007). O extrator baixa das URLs oficiais para um cache local e confere cada sha256; nada disto é redistribuído pelo repositório. Trocar de versão é mudar o pin no mesmo commit do dataset gerado.",
   "calculadora": {
-    "id": "calculadora-offline-V0057",
+    "id": "calculadora-offline-V0059",
     "title": "Calculadora de Tributos da Reforma Tributária do Consumo (RFB), módulo offline",
     "downloadUrlEndpoint": "https://piloto-cbs.tributos.gov.br/servico/calculadora-consumo/api/calculadora/download/url?platform=default",
     "url": "https://obs-13820-calcpr-apr.obsv3.br-df-1.hcs.serpro.gov.br/calculadora.zip",
-    "lastModified": "2026-09-10T13:28:06Z",
-    "contentLength": 346174581,
-    "zipSha256": "f451c3902621f02f3a63da29cd63d1e8e0f0456cce44425f1e22c89c079cb68e",
+    "lastModified": "2026-09-30T16:18:33Z",
+    "contentLength": 337833496,
+    "zipSha256": "13870dea14ddf0b59754ee4375b2a98548fffcf80d7d99f2635325d0e18da2fa",
     "entries": {
-      "calculadora.tar.gz": "419d7918bbcedcbcecaf02795d10e263200037b2dce7d46edbcf3abd3c7c751a",
-      "codigo-fonte-backend.zip": "28a21a5cf080056c753eaa6e1bc10bccb645c500a888d3c89d904464a76abfad"
+      "calculadora.tar.gz": "b59df3ff82d54142787d399d433a461ddd409f7a86aa889ed367b327a4467a66",
+      "codigo-fonte-backend.zip": "9c10710b7f0747e8a229efb2de4fd1f7e04c28681a5e4cf825b671a969eeb827"
     },
-    "dockerLayerDiffId": "sha256:36c2a33a6aa9777b307d7a653566b845f1a8c769f8769140f5d021418915ee6b",
+    "dockerLayerDiffId": "sha256:520c3e924c0b78b131f5eb968a5eebae4a08f1ec07790c3eb3ca0b5e6546d76a",
     "db": {
       "pathInTar": "calculadora/calculadora/db/calculadora-pro.db",
-      "sha256": "9a9143b12b38d02fb73630f89ea2b6c215508edc2bc3ac8d15f68c81ac12175d"
+      "sha256": "baa898c4c3c1bbe92ad832e221c4a2dad388136f95d66570869ba3d132894f9c"
+    },
+    "segundoCaminho": {
+      "tipo": "db-do-codigo-fonte",
+      "pathInSourceZip": "calculadora/db/calculadora-pro.db",
+      "nota": "Desde a V0058 o codigo-fonte-backend.zip não publica as migrações Flyway (flyway/sql) e traz o próprio calculadora-pro.db, idêntico ao do rootfs. A reconstrução independente das migrações (ADR 0007, decisão 3) deixou de ser possível; a conferência passa a ser só entre os dois arquivos publicados. Até a V0057 o dataset foi reconstruído das migrações; a diferença V0057 para V0059 está no PR que trocou o pin."
     },
     "versao": {
-      "versaoApp": "demanda-5451861-cofis-43411-delete-aliquotas-ficticias",
-      "versaoDb": "V0057",
-      "dataVersaoDb": "2026-09-03",
-      "descricaoVersaoDb": "Remoção de alíquotas da monofasia."
+      "versaoApp": "1.5.4",
+      "versaoDb": "V0059",
+      "dataVersaoDb": "2026-09-30",
+      "descricaoVersaoDb": "Habilitação de 820 para NFSe."
     }
   },
   "it": {
@@ -30,7 +35,7 @@
       "title": "IT 2025.002 v1.60: Tabela de Classificação Tributária do IBS e CBS (CST e cClassTrib)",
       "version": "v1.60",
       "date": "2026-06-22",
-      "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=D5b4Ov84WDg=",
+      "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=CMlTOCo8JuE=",
       "filename": "cClassTrib 2026-06-22.xlsx",
       "sha256": "1448cb63a41bdb67ea30b4e11f4dc200d9568542c6b9335b6cff87a4fd664654"
     },

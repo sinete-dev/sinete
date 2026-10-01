@@ -54,7 +54,7 @@ function flat(roc: Roc): Record<string, string> {
 
 describe('fixtures do oráculo', () => {
   test('gravadas da Calculadora fixada, com casos suficientes', () => {
-    expect(fixture.calculadora.versaoDb).toBe('V0057');
+    expect(fixture.calculadora.versaoDb).toBe('V0059');
     expect(cases.length).toBeGreaterThanOrEqual(100);
     const agree = cases.filter((c) => c.divergences.length === 0 && !('error' in c.engine)).length;
     expect(agree).toBeGreaterThan(cases.length / 2);

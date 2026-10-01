@@ -10,7 +10,7 @@ const ds = datasetEmbarcado();
 
 describe('dataset x Calculadora (respostas gravadas)', () => {
   test('gravado da Calculadora fixada', () => {
-    expect(fixture.calculadora.versaoDb).toBe('V0057');
+    expect(fixture.calculadora.versaoDb).toBe('V0059');
     expect(ds.manifesto.fontes.find((s) => s.tipo === 'CALCULADORA_OFFLINE')?.sha256).toBe(
       fixture.calculadora.zipSha256,
     );

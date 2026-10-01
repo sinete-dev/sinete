@@ -1,8 +1,8 @@
 {
   "comment": "Divergências conhecidas entre o @sinete/ibs-cbs/calcular e a Calculadora offline fixada em tools/ibs-cbs-dados/sources.json. Uma divergência que nenhuma entrada explica falha a execução; uma entrada com expectHits=true que não explicou nada também falha, para forçar a limpeza quando a Calculadora ou o motor mudarem. A ordem importa: vale a primeira entrada que casar.",
   "calculadora": {
-    "versaoDb": "V0057",
-    "zipSha256": "f451c3902621f02f3a63da29cd63d1e8e0f0456cce44425f1e22c89c079cb68e"
+    "versaoDb": "V0059",
+    "zipSha256": "13870dea14ddf0b59754ee4375b2a98548fffcf80d7d99f2635325d0e18da2fa"
   },
   "entries": [
     {

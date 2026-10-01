@@ -44,7 +44,7 @@ describe('pacote e manifest', () => {
     expect(m.tabelas.map((t) => t.nome)).toEqual([...NOMES_DAS_TABELAS]);
     expect(m.conhecidoEm).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(ds.versaoDoConteudo).toBe(versaoDoConteudo(m));
-    expect(ds.versaoDoConteudo).toMatch(/^2026\.09\+V0057\+v1\.60\+v1\.60#[0-9a-f]{12}$/);
+    expect(ds.versaoDoConteudo).toMatch(/^2026\.09\+V0059\+v1\.60\+v1\.60#[0-9a-f]{12}$/);
   });
 
   test('datasetEmbarcado carrega uma vez', () => {

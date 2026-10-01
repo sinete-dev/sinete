@@ -35,7 +35,7 @@ interface Caso {
 }
 
 /** NF-e em RS e AM, com redução de alíquota, imunidade e tributação integral, sem divergência com a Calculadora. */
-const IDS = ['s1-22', 's1-89'];
+const IDS = ['s1-16', 's1-19'];
 const casos = (fixture.cases as unknown as Caso[]).filter((c) => IDS.includes(c.id));
 
 let ac: CertificadoSintetico;

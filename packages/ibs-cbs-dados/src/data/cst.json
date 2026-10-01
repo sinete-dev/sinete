@@ -4,7 +4,7 @@
     "codigo": "000",
     "descricao": "Tributação integral",
     "familia": "CBS_IBS",
-    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "fontes": ["calculadora-offline-V0059", "it-2025.002-v1.60-cclasstrib"],
     "grupos": {
       "gAjusteCompet": "vedado",
       "gCredPresIBSZFM": "vedado",
@@ -23,7 +23,7 @@
     "codigo": "010",
     "descricao": "Tributação com alíquotas uniformes",
     "familia": "CBS_IBS",
-    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "fontes": ["calculadora-offline-V0059", "it-2025.002-v1.60-cclasstrib"],
     "grupos": {
       "gAjusteCompet": "vedado",
       "gCredPresIBSZFM": "vedado",
@@ -42,7 +42,7 @@
     "codigo": "011",
     "descricao": "Tributação com alíquotas uniformes reduzidas",
     "familia": "CBS_IBS",
-    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "fontes": ["calculadora-offline-V0059", "it-2025.002-v1.60-cclasstrib"],
     "grupos": {
       "gAjusteCompet": "vedado",
       "gCredPresIBSZFM": "vedado",
@@ -61,7 +61,7 @@
     "codigo": "200",
     "descricao": "Alíquota reduzida",
     "familia": "CBS_IBS",
-    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "fontes": ["calculadora-offline-V0059", "it-2025.002-v1.60-cclasstrib"],
     "grupos": {
       "gAjusteCompet": "vedado",
       "gCredPresIBSZFM": "vedado",
@@ -80,7 +80,7 @@
     "codigo": "220",
     "descricao": "Alíquota fixa",
     "familia": "CBS_IBS",
-    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "fontes": ["calculadora-offline-V0059", "it-2025.002-v1.60-cclasstrib"],
     "grupos": {
       "gAjusteCompet": "vedado",
       "gCredPresIBSZFM": "vedado",
@@ -99,7 +99,7 @@
     "codigo": "221",
     "descricao": "Alíquota fixa proporcional",
     "familia": "CBS_IBS",
-    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "fontes": ["calculadora-offline-V0059", "it-2025.002-v1.60-cclasstrib"],
     "grupos": {
       "gAjusteCompet": "vedado",
       "gCredPresIBSZFM": "vedado",
@@ -118,7 +118,7 @@
     "codigo": "222",
     "descricao": "Redução de Base de Cálculo",
     "familia": "CBS_IBS",
-    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "fontes": ["calculadora-offline-V0059", "it-2025.002-v1.60-cclasstrib"],
     "grupos": {
       "gAjusteCompet": "vedado",
       "gCredPresIBSZFM": "vedado",
@@ -137,7 +137,7 @@
     "codigo": "400",
     "descricao": "Isenção",
     "familia": "CBS_IBS",
-    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "fontes": ["calculadora-offline-V0059", "it-2025.002-v1.60-cclasstrib"],
     "grupos": {
       "gAjusteCompet": "vedado",
       "gCredPresIBSZFM": "vedado",
@@ -156,7 +156,7 @@
     "codigo": "410",
     "descricao": "Imunidade e não incidência",
     "familia": "CBS_IBS",
-    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "fontes": ["calculadora-offline-V0059", "it-2025.002-v1.60-cclasstrib"],
     "grupos": {
       "gAjusteCompet": "vedado",
       "gCredPresIBSZFM": "vedado",
@@ -175,7 +175,7 @@
     "codigo": "510",
     "descricao": "Diferimento",
     "familia": "CBS_IBS",
-    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "fontes": ["calculadora-offline-V0059", "it-2025.002-v1.60-cclasstrib"],
     "grupos": {
       "gAjusteCompet": "vedado",
       "gCredPresIBSZFM": "vedado",
@@ -194,7 +194,7 @@
     "codigo": "515",
     "descricao": "Diferimento com redução de alíquota",
     "familia": "CBS_IBS",
-    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "fontes": ["calculadora-offline-V0059", "it-2025.002-v1.60-cclasstrib"],
     "grupos": {
       "gAjusteCompet": "vedado",
       "gCredPresIBSZFM": "vedado",
@@ -213,7 +213,7 @@
     "codigo": "550",
     "descricao": "Suspensão",
     "familia": "CBS_IBS",
-    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "fontes": ["calculadora-offline-V0059", "it-2025.002-v1.60-cclasstrib"],
     "grupos": {
       "gAjusteCompet": "vedado",
       "gCredPresIBSZFM": "vedado",
@@ -232,7 +232,7 @@
     "codigo": "620",
     "descricao": "Tributação monofásica",
     "familia": "CBS_IBS",
-    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "fontes": ["calculadora-offline-V0059", "it-2025.002-v1.60-cclasstrib"],
     "grupos": {
       "gAjusteCompet": "vedado",
       "gCredPresIBSZFM": "vedado",
@@ -251,7 +251,7 @@
     "codigo": "800",
     "descricao": "Transferência de crédito",
     "familia": "CBS_IBS",
-    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "fontes": ["calculadora-offline-V0059", "it-2025.002-v1.60-cclasstrib"],
     "grupos": {
       "gAjusteCompet": "vedado",
       "gCredPresIBSZFM": "vedado",
@@ -270,7 +270,7 @@
     "codigo": "810",
     "descricao": "Ajustes de IBS na ZFM",
     "familia": "CBS_IBS",
-    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "fontes": ["calculadora-offline-V0059", "it-2025.002-v1.60-cclasstrib"],
     "grupos": {
       "gAjusteCompet": "vedado",
       "gCredPresIBSZFM": "obrigatorio",
@@ -289,7 +289,7 @@
     "codigo": "811",
     "descricao": "Ajustes",
     "familia": "CBS_IBS",
-    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "fontes": ["calculadora-offline-V0059", "it-2025.002-v1.60-cclasstrib"],
     "grupos": {
       "gAjusteCompet": "obrigatorio",
       "gCredPresIBSZFM": "vedado",
@@ -308,7 +308,7 @@
     "codigo": "820",
     "descricao": "Tributação em documento específico",
     "familia": "CBS_IBS",
-    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "fontes": ["calculadora-offline-V0059", "it-2025.002-v1.60-cclasstrib"],
     "grupos": {
       "gAjusteCompet": "vedado",
       "gCredPresIBSZFM": "vedado",
@@ -327,7 +327,7 @@
     "codigo": "830",
     "descricao": "Exclusão de base de cálculo",
     "familia": "CBS_IBS",
-    "fontes": ["calculadora-offline-V0057", "it-2025.002-v1.60-cclasstrib"],
+    "fontes": ["calculadora-offline-V0059", "it-2025.002-v1.60-cclasstrib"],
     "grupos": {
       "gAjusteCompet": "vedado",
       "gCredPresIBSZFM": "vedado",
@@ -346,7 +346,7 @@
     "codigo": "000",
     "descricao": "Tributado com Imposto Seletivo",
     "familia": "IS",
-    "fontes": ["calculadora-offline-V0057"],
+    "fontes": ["calculadora-offline-V0059"],
     "grupos": {
       "gAjusteCompet": "vedado",
       "gCredPresIBSZFM": "vedado",
@@ -365,7 +365,7 @@
     "codigo": "100",
     "descricao": "Imunidade",
     "familia": "IS",
-    "fontes": ["calculadora-offline-V0057"],
+    "fontes": ["calculadora-offline-V0059"],
     "grupos": {
       "gAjusteCompet": "vedado",
       "gCredPresIBSZFM": "vedado",
@@ -384,7 +384,7 @@
     "codigo": "200",
     "descricao": "Não ocorrência do Fato Gerador",
     "familia": "IS",
-    "fontes": ["calculadora-offline-V0057"],
+    "fontes": ["calculadora-offline-V0059"],
     "grupos": {
       "gAjusteCompet": "vedado",
       "gCredPresIBSZFM": "vedado",
@@ -403,7 +403,7 @@
     "codigo": "300",
     "descricao": "Devolução",
     "familia": "IS",
-    "fontes": ["calculadora-offline-V0057"],
+    "fontes": ["calculadora-offline-V0059"],
     "grupos": {
       "gAjusteCompet": "vedado",
       "gCredPresIBSZFM": "vedado",
@@ -422,7 +422,7 @@
     "codigo": "400",
     "descricao": "Suspensão",
     "familia": "IS",
-    "fontes": ["calculadora-offline-V0057"],
+    "fontes": ["calculadora-offline-V0059"],
     "grupos": {
       "gAjusteCompet": "vedado",
       "gCredPresIBSZFM": "vedado",
@@ -441,7 +441,7 @@
     "codigo": "500",
     "descricao": "Alíquota Zero",
     "familia": "IS",
-    "fontes": ["calculadora-offline-V0057"],
+    "fontes": ["calculadora-offline-V0059"],
     "grupos": {
       "gAjusteCompet": "vedado",
       "gCredPresIBSZFM": "vedado",
@@ -460,7 +460,7 @@
     "codigo": "600",
     "descricao": "Isenção",
     "familia": "IS",
-    "fontes": ["calculadora-offline-V0057"],
+    "fontes": ["calculadora-offline-V0059"],
     "grupos": {
       "gAjusteCompet": "vedado",
       "gCredPresIBSZFM": "vedado",

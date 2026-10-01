@@ -8,7 +8,7 @@ Status: pré-alfa, API instável até a 1.0.
 import { datasetEmbarcado } from '@sinete/ibs-cbs-dados/embarcado';
 
 const ds = datasetEmbarcado();
-ds.versaoDoConteudo; // '2026.09+V0057+v1.60+v1.60#2ec26a84383c'
+ds.versaoDoConteudo; // '2026.09+V0059+v1.60+v1.60#f88dd50fda2b'
 const at = ds.em('2026-10-10'); // visão na data do fato gerador
 const rice = at.classTrib('200003');
 at.reducao(rice!, 'CBS'); // '100'
