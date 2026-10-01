@@ -66,7 +66,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "A SEFAZ autorizadora está com o serviço parado por pouco tempo. A nota não foi analisada.",
       "comoCorrigir": "Espere alguns minutos e consulte o status do serviço antes de reenviar; se a parada se estender, avalie a contingência (SVC). Não conta como recusa da nota.",
-      "referencia": "MOC 7.0 Anexo I, regra B03"
+      "referencia": "MOC 7.0 Anexo I, regra B03",
+      "orientacao": "A SEFAZ do seu estado está temporariamente indisponível e ainda não analisou sua nota. Aguarde alguns minutos e transmita novamente, pois não é erro no preenchimento."
     },
     {
       "codigo": "109",
@@ -129,7 +130,8 @@
       "categoria": "cadastro",
       "causaProvavel": "O emitente não está habilitado a emitir NF-e no cadastro da SEFAZ da UF (credenciamento ausente, suspenso ou ainda não processado).",
       "comoCorrigir": "Regularize o credenciamento do emitente na SEFAZ da UF. Reenviar a mesma nota antes disso repete a rejeição e conta como consumo indevido (656).",
-      "referencia": "MOC 7.0 Anexo I, RV 1C17-34"
+      "referencia": "MOC 7.0 Anexo I, RV 1C17-34",
+      "orientacao": "Regularize o credenciamento do emitente para NF-e na SEFAZ do seu estado. Reenviar antes disso repete o erro e pode bloquear o envio."
     },
     {
       "codigo": "204",
@@ -219,7 +221,8 @@
       "categoria": "cadastro",
       "causaProvavel": "A IE do emitente não tem o tamanho, a composição ou o dígito verificador da UF do emitente.",
       "comoCorrigir": "Valide com lerIe(ie, uf) do @sinete/validators e confira a UF. A SEFAZ despreza zeros não significativos à esquerda antes de conferir o dígito.",
-      "referencia": "MOC 7.0 Anexo I, RV C17-20 e nota (*2) (NT 2018.001)"
+      "referencia": "MOC 7.0 Anexo I, RV C17-20 e nota (*2) (NT 2018.001)",
+      "orientacao": "Confira a inscrição estadual e o estado no cadastro do emitente. A inscrição precisa ter o tamanho e o dígito válidos para esse estado."
     },
     {
       "codigo": "210",
@@ -236,7 +239,8 @@
       "categoria": "cadastro",
       "causaProvavel": "A IE do destinatário não tem o tamanho, a composição ou o dígito verificador da UF do destinatário.",
       "comoCorrigir": "Valide com lerIe(ie, ufDest) e confira se a UF do endereço do destinatário é a da inscrição. Contribuinte isento usa indIEDest=2 sem a tag IE.",
-      "referencia": "MOC 7.0 Anexo I, RV E17-50 e nota (*2)"
+      "referencia": "MOC 7.0 Anexo I, RV E17-50 e nota (*2)",
+      "orientacao": "Confira a inscrição estadual do destinatário e se o estado do endereço corresponde ao da inscrição. Se o destinatário for isento, marque como contribuinte isento e deixe a inscrição em branco."
     },
     {
       "codigo": "211",
@@ -276,7 +280,8 @@
       "categoria": "certificado",
       "causaProvavel": "O CNPJ-base (8 primeiros caracteres) do emitente é diferente do CNPJ-base do certificado usado para assinar.",
       "comoCorrigir": "Assine com o e-CNPJ da mesma empresa do emitente (matriz ou filial da mesma raiz). Procuração eletrônica não resolve a assinatura da NF-e.",
-      "referencia": "MOC 7.0 Anexo I, RV F03 (NT 2018.001)"
+      "referencia": "MOC 7.0 Anexo I, RV F03 (NT 2018.001)",
+      "orientacao": "Use o e-CNPJ da empresa emitente, da matriz ou de uma filial com a mesma raiz de CNPJ. A procuração eletrônica não permite usar certificado de outra empresa nesse caso."
     },
     {
       "codigo": "214",
@@ -368,7 +373,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "O destinatário já registrou a Confirmação da Operação para a NF-e, o que impede o cancelamento.",
       "comoCorrigir": "Não é possível cancelar; emita uma nota de devolução ou de entrada, conforme a operação. O cancelamento volta a valer só se depois da confirmação houver Desconhecimento ou Operação não Realizada.",
-      "referencia": "MOC 7.0 Visão Geral, RV 4P15-14"
+      "referencia": "MOC 7.0 Visão Geral, RV 4P15-14",
+      "orientacao": "Emita nota de devolução ou entrada, conforme a operação, pois o destinatário já confirmou a operação. O cancelamento só volta se ele registrar depois Desconhecimento da Operação ou Operação não Realizada."
     },
     {
       "codigo": "222",
@@ -438,7 +444,8 @@
       "categoria": "certificado",
       "causaProvavel": "O CPF do emitente difere do CPF do certificado e-CPF que assinou.",
       "comoCorrigir": "Assine a nota do produtor pessoa física com o e-CPF dele.",
-      "referencia": "MOC 7.0 Anexo I, RV F03A (NT 2018.001)"
+      "referencia": "MOC 7.0 Anexo I, RV F03A (NT 2018.001)",
+      "orientacao": "Use o e-CPF do próprio produtor que está emitindo a nota. O certificado usado para assinar pertence a outro CPF."
     },
     {
       "codigo": "228",
@@ -455,7 +462,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Data de emissão (dhEmi) mais de 30 dias antes do recebimento, ou além do limite da UF, em emissão normal ou SVC.",
       "comoCorrigir": "Emita com a data e hora do momento da emissão. Nota que ficou retida deve ser regerada com a data atual; em contingência valem as regras do tipo de emissão.",
-      "referencia": "MOC 7.0 Anexo I, RV B09-20 (NT 2012.003)"
+      "referencia": "MOC 7.0 Anexo I, RV B09-20 (NT 2012.003)",
+      "orientacao": "Gere novamente a nota que ficou parada, usando a data e a hora atuais. A data anterior ultrapassou o limite aceito pela SEFAZ do seu estado."
     },
     {
       "codigo": "229",
@@ -472,7 +480,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "A IE do emitente veio vazia ou só com zeros.",
       "comoCorrigir": "Informe a IE do emitente cadastrada na UF. O literal ISENTO só vale para a NF-e avulsa.",
-      "referencia": "MOC 7.0 Anexo I, RV C17-10"
+      "referencia": "MOC 7.0 Anexo I, RV C17-10",
+      "orientacao": "Preencha a inscrição estadual no cadastro do emitente antes de reenviar. Ela está vazia ou foi informada apenas com zeros."
     },
     {
       "codigo": "230",
@@ -493,7 +502,8 @@
       "categoria": "cadastro",
       "causaProvavel": "A IE do emitente passa no dígito, mas não existe no cadastro de contribuintes da UF autorizadora.",
       "comoCorrigir": "Confira a IE no cadastro da SEFAZ ou no Sintegra: erro de digitação, IE de outra UF ou inscrição ainda não efetivada.",
-      "referencia": "MOC 7.0 Anexo I, RV 1C17-10"
+      "referencia": "MOC 7.0 Anexo I, RV 1C17-10",
+      "orientacao": "Consulte a inscrição estadual do emitente na SEFAZ ou no Sintegra. Confira a digitação, o estado da inscrição e se o cadastro já foi efetivado."
     },
     {
       "codigo": "231",
@@ -524,7 +534,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Destinatário com CNPJ e sem IE informada, mas o Cadastro Centralizado de Contribuintes indica IE ativa na UF de destino com informação obrigatória. Também volta assim a nota com indIEDest=1 e sem IE, quando a UF aplica a regra do cadastro antes da E17-20.",
       "comoCorrigir": "Informe a IE do destinatário com indIEDest=1. Marcar indIEDest=9 não contorna a regra quando o cadastro exige a IE. O montador do sinete recusa indIEDest=1 sem IE antes de assinar (E17-20, rejeição 728); a IE que o cadastro exige, ele não tem como saber.",
-      "referencia": "MOC 7.0 Anexo I, RV 5E17-50 (NT 2019.001) e E17-20"
+      "referencia": "MOC 7.0 Anexo I, RV 5E17-50 (NT 2019.001) e E17-20",
+      "orientacao": "Informe a inscrição estadual ativa do destinatário e marque como contribuinte. Marcar como não contribuinte não resolve quando o cadastro da SEFAZ exige a inscrição."
     },
     {
       "codigo": "233",
@@ -541,7 +552,8 @@
       "categoria": "cadastro",
       "causaProvavel": "A IE informada para o destinatário não existe no cadastro de contribuintes da UF de destino.",
       "comoCorrigir": "Confirme a IE com o destinatário ou no Sintegra da UF. Se ele não for contribuinte, use indIEDest=9 e omita a IE.",
-      "referencia": "MOC 7.0 Anexo I, RV 5E17-10 (NT 2019.001)"
+      "referencia": "MOC 7.0 Anexo I, RV 5E17-10 (NT 2019.001)",
+      "orientacao": "Confirme a inscrição estadual com o destinatário ou consulte no Sintegra. Se ele não for contribuinte, marque como não contribuinte e deixe a inscrição em branco."
     },
     {
       "codigo": "234",
@@ -658,7 +670,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Emissão pelo contribuinte (procEmi 0 ou 3) com série fora de 0 a 889 e 920 a 969.",
       "comoCorrigir": "Emitente CNPJ usa as séries 0 a 889; pessoa física, 920 a 969. As séries 890 a 919 são da nota avulsa (procEmi 1 ou 2).",
-      "referencia": "MOC 7.0 Anexo I, RV B26-10 (NT 2018.001)"
+      "referencia": "MOC 7.0 Anexo I, RV B26-10 (NT 2018.001)",
+      "orientacao": "Altere a série no cadastro conforme quem emite a nota. Para CNPJ, use de 0 a 889; para pessoa física, de 920 a 969."
     },
     {
       "codigo": "245",
@@ -675,7 +688,8 @@
       "categoria": "cadastro",
       "causaProvavel": "A IE do emitente não está vinculada ao CNPJ informado e o CNPJ não consta do cadastro de pessoa jurídica da UF.",
       "comoCorrigir": "Confira CNPJ e IE do emitente no cadastro da SEFAZ; se a empresa acabou de ser inscrita, aguarde a efetivação do cadastro.",
-      "referencia": "MOC 7.0 Anexo I, RV 1C17-60"
+      "referencia": "MOC 7.0 Anexo I, RV 1C17-60",
+      "orientacao": "Confira o CNPJ do emitente e sua vinculação à inscrição estadual no cadastro da SEFAZ. Se a empresa foi inscrita recentemente, aguarde a efetivação do cadastro."
     },
     {
       "codigo": "246",
@@ -746,7 +760,8 @@
       "categoria": "cadastro",
       "causaProvavel": "Inscrição na Suframa (ISUF) com o destinatário fora da área incentivada: UF diferente de AC, AM, RO e RR, ou município do Amapá diferente de Macapá e Santana.",
       "comoCorrigir": "Tire a ISUF do destinatário fora da área incentivada, ou confira a UF e o município do endereço dele.",
-      "referencia": "MOC 7.0 Anexo I, RV E18-30"
+      "referencia": "MOC 7.0 Anexo I, RV E18-30",
+      "orientacao": "Retire a inscrição Suframa do destinatário ou corrija o estado e o município do endereço. Confira a área incentivada: AC, AM, RO e RR; no Amapá, apenas Macapá e Santana."
     },
     {
       "codigo": "252",
@@ -915,7 +930,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "A série não é aceita neste serviço: na inutilização, série da faixa de emitente pessoa física (910 a 969); no EPEC, série fora de 0 a 889 e 920 a 969.",
       "comoCorrigir": "Use a série do emitente: CNPJ de 0 a 889; pessoa física de 920 a 969. Pessoa física não inutiliza numeração.",
-      "referencia": "MOC 7.0 Visão Geral, RV I02a (inutilização) e P12-32 (EPEC), NT 2018.001"
+      "referencia": "MOC 7.0 Visão Geral, RV I02a (inutilização) e P12-32 (EPEC), NT 2018.001",
+      "orientacao": "Confira a série: empresas usam de 0 a 889; pessoas físicas, de 920 a 969. Se você emite como pessoa física, não pode inutilizar numeração."
     },
     {
       "codigo": "267",
@@ -1052,7 +1068,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "O código do município do destinatário não começa pelo código IBGE da UF do destinatário: município de uma UF com a sigla de outra.",
       "comoCorrigir": "Confira o cMun (tabela de municípios do IBGE) e a UF do endereço do destinatário; as duas primeiras posições do cMun são o código da UF.",
-      "referencia": "MOC 7.0 Anexo I, RV E10-20"
+      "referencia": "MOC 7.0 Anexo I, RV E10-20",
+      "orientacao": "Corrija o município ou o estado no cadastro do destinatário. O município precisa pertencer ao estado informado no endereço."
     },
     {
       "codigo": "276",
@@ -1283,7 +1300,8 @@
       "categoria": "certificado",
       "causaProvavel": "O certificado da assinatura está fora da validade (vencido ou ainda não válido) na data do processamento.",
       "comoCorrigir": "Renove o certificado e assine de novo. Confira também o relógio da máquina que assina.",
-      "referencia": "MOC 7.0 Anexo I, RV E02"
+      "referencia": "MOC 7.0 Anexo I, RV E02",
+      "orientacao": "Confira a validade do certificado digital e a data e a hora do computador. Se o certificado estiver vencido, renove antes de enviar novamente."
     },
     {
       "codigo": "292",
@@ -1415,7 +1433,8 @@
       "categoria": "cadastro",
       "causaProvavel": "Emitente em situação irregular perante o Fisco da UF. É denegação: a NF-e fica registrada como denegada e o número é consumido.",
       "comoCorrigir": "Regularize a situação com a SEFAZ antes de emitir. Não reenvie com o mesmo número: ele não pode ser reaproveitado nem inutilizado.",
-      "referencia": "MOC 7.0 Anexo I, RV 1C17-40 e tabela 4.4.3"
+      "referencia": "MOC 7.0 Anexo I, RV 1C17-40 e tabela 4.4.3",
+      "orientacao": "Regularize a situação do emitente na SEFAZ do seu estado antes de emitir outra nota. A nota ficou denegada, e você não pode reaproveitar nem inutilizar esse número."
     },
     {
       "codigo": "302",
@@ -1432,7 +1451,8 @@
       "categoria": "cadastro",
       "causaProvavel": "Destinatário com operação vedada na UF (CCC.cSitCNPJ=3). É denegação: a NF-e fica registrada como denegada e o número é consumido.",
       "comoCorrigir": "Confirme a situação do destinatário no Sintegra antes de emitir de novo; o número denegado não pode ser reaproveitado.",
-      "referencia": "MOC 7.0 Anexo I, RV 5E17-40 (NT 2019.001)"
+      "referencia": "MOC 7.0 Anexo I, RV 5E17-40 (NT 2019.001)",
+      "orientacao": "Consulte a situação do destinatário no Sintegra antes de emitir outra nota, pois há bloqueio no estado. A nota ficou denegada, e você não pode recuperar esse número."
     },
     {
       "codigo": "303",
@@ -1490,7 +1510,8 @@
       "categoria": "cadastro",
       "causaProvavel": "A IE do destinatário não está ativa na UF, segundo o cadastro centralizado (CCC).",
       "comoCorrigir": "Confira a situação da IE na consulta cadastro; com a IE inativa, o destinatário é não contribuinte (indIEDest 9, sem IE) ou precisa regularizar a inscrição.",
-      "referencia": "MOC 7.0 Anexo I, RV 5E17-46 (NT 2019.001)"
+      "referencia": "MOC 7.0 Anexo I, RV 5E17-46 (NT 2019.001)",
+      "orientacao": "Confira a situação da inscrição estadual do destinatário na SEFAZ do estado. Com a inscrição inativa, informe o destinatário como não contribuinte, sem inscrição, ou peça que regularize a inscrição."
     },
     {
       "codigo": "315",
@@ -1683,7 +1704,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Nota de devolução (finNFe 4) com item cujo CFOP não está na relação de CFOP de devolução de mercadoria.",
       "comoCorrigir": "Use em cada item um CFOP de devolução, conforme a tabela CFOP do Portal da NF-e (indDevol 1). Os CFOP 1.949 e 2.949 só são aceitos na devolução de venda para não contribuinte (indIEDest 9). Se a operação não é uma devolução, o que muda é a finalidade da nota, não o CFOP.",
-      "referencia": "MOC 7.0 Anexo I, RV I08-140 (NT 2015.002)"
+      "referencia": "MOC 7.0 Anexo I, RV I08-140 (NT 2015.002)",
+      "orientacao": "Use CFOP de devolução nos itens; 1.949 e 2.949 só cabem na devolução de venda para não contribuinte. Se a operação não for devolução, altere a finalidade da nota, não o CFOP."
     },
     {
       "codigo": "328",
@@ -1704,7 +1726,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Item com CFOP de devolução numa nota que não é de devolução (finNFe diferente de 2 e 4).",
       "comoCorrigir": "Emita a devolução com finNFe 4 e a nota referenciada, ou use o CFOP da operação que a nota de fato faz. A lista de CFOP de devolução está na tabela CFOP do Portal da NF-e (indDevol 1).",
-      "referencia": "MOC 7.0 Anexo I, RV I08-144"
+      "referencia": "MOC 7.0 Anexo I, RV I08-144",
+      "orientacao": "Emita como nota de devolução e informe a nota original como referência. Se não for devolução, use o CFOP correspondente à operação realizada."
     },
     {
       "codigo": "329",
@@ -2309,7 +2332,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "idEstrangeiro com caractere fora de algarismos, letras e : . + - / ( ).",
       "comoCorrigir": "Remova espaços, acentos e outros símbolos do idEstrangeiro e mantenha só os caracteres permitidos.",
-      "referencia": "MOC 7.0 Anexo I, RV E03a-60 (NT 2015.002)"
+      "referencia": "MOC 7.0 Anexo I, RV E03a-60 (NT 2015.002)",
+      "orientacao": "Retire espaços, acentos e outros símbolos não permitidos do documento do destinatário estrangeiro. Use apenas letras, algarismos e os sinais dois-pontos, ponto, mais, hífen, barra e parênteses."
     },
     {
       "codigo": "373",
@@ -3425,7 +3449,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "O CRT do emitente difere do regime tributário no cadastro da SEFAZ.",
       "comoCorrigir": "Confira o regime do emitente (Simples Nacional, excesso de sublimite ou regime normal) e corrija o CRT no cadastro do seu sistema.",
-      "referencia": "MOC 7.0 Anexo I, RV 7C21-10"
+      "referencia": "MOC 7.0 Anexo I, RV 7C21-10",
+      "orientacao": "Confira o regime tributário do emitente no cadastro da SEFAZ. Ajuste o cadastro do emitente para usar esse mesmo regime na nota."
     },
     {
       "codigo": "482",
@@ -3650,7 +3675,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Série fora da faixa do emitente CNPJ (0 a 909 na regra do CNPJ; na emissão pelo contribuinte, 0 a 889).",
       "comoCorrigir": "Emita com série de 0 a 889. As séries 890 a 999 são da nota avulsa, da pessoa física e do provedor de assinatura.",
-      "referencia": "MOC 7.0 Anexo I, RV C02-30 e B26-10 (NT 2018.001)"
+      "referencia": "MOC 7.0 Anexo I, RV C02-30 e B26-10 (NT 2018.001)",
+      "orientacao": "Use uma série de 0 a 889 para emitir pela empresa. As séries de 890 a 999 são reservadas para nota avulsa, pessoa física e outros usos."
     },
     {
       "codigo": "504",
@@ -3709,7 +3735,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Venda para não contribuinte (indIEDest 9) com CST fora de 00, 20, 40, 41 e 60.",
       "comoCorrigir": "Revise o CST do item para a operação com consumidor não contribuinte. A regra tem exceções (nota de entrada, veículos novos, devolução, CFOP de remessa e retorno da tabela CFOP, combustíveis) que dependem da operação.",
-      "referencia": "MOC 7.0 Anexo I, RV N12-70 (NT 2023.001, NT 2023.003)"
+      "referencia": "MOC 7.0 Anexo I, RV N12-70 (NT 2023.001, NT 2023.003)",
+      "orientacao": "Revise o CST do ICMS do item na venda a não contribuinte. Os CST aceitos são 00, 20, 40, 41 e 60, com exceções conforme a operação."
     },
     {
       "codigo": "509",
@@ -3866,7 +3893,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Nota de entrada (tpNF 0) com CFOP de saída (começando por 5, 6 ou 7). A regra é aplicada a critério da UF.",
       "comoCorrigir": "Use o CFOP de entrada (1, 2 ou 3) na nota de entrada, ou mude o tipo da nota para saída.",
-      "referencia": "MOC 7.0 Anexo I, RV I08-20"
+      "referencia": "MOC 7.0 Anexo I, RV I08-20",
+      "orientacao": "A SEFAZ do seu estado pode barrar CFOP iniciado por 5, 6 ou 7 em notas de entrada. Use CFOP iniciado por 1, 2 ou 3, ou mude o tipo da nota para saída."
     },
     {
       "codigo": "520",
@@ -4023,7 +4051,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Item com CST 50 (suspensão) ou 51 (diferimento) para destinatário contribuinte isento de IE (indIEDest 2).",
       "comoCorrigir": "Revise a tributação do item para o destinatário isento. O CST 50 é aceito nos CFOP de conserto, reparo e demonstração da exceção 1; o CST 51 em operação interna com destinatário CNPJ depende da UF.",
-      "referencia": "MOC 7.0 Anexo I, RV N12-80"
+      "referencia": "MOC 7.0 Anexo I, RV N12-80",
+      "orientacao": "Revise os CST 50 e 51 para contribuinte isento; há exceções para conserto, reparo e demonstração. Para CST 51 em operação interna com destinatário CNPJ, confira a aceitação pela SEFAZ do seu estado."
     },
     {
       "codigo": "530",
@@ -4354,7 +4383,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Emitente com IE ISENTO em NFC-e ou em série fora da faixa 890 a 919 (reservada à NF-e avulsa).",
       "comoCorrigir": "Informe a IE do emitente. ISENTO no emitente só existe na NF-e avulsa emitida pelo Fisco.",
-      "referencia": "MOC 7.0 Anexo I, RV C17-30 (NT 2018.001)"
+      "referencia": "MOC 7.0 Anexo I, RV C17-30 (NT 2018.001)",
+      "orientacao": "Informe a inscrição estadual do emitente no lugar de ISENTO. Essa indicação só cabe na nota avulsa emitida pelo fisco."
     },
     {
       "codigo": "556",
@@ -5128,7 +5158,8 @@
       "categoria": "cadastro",
       "causaProvavel": "A IE informada para o destinatário CPF não está vinculada a esse CPF no cadastro centralizado.",
       "comoCorrigir": "Confira na consulta cadastro a IE do produtor e o CPF do titular.",
-      "referencia": "MOC 7.0 Anexo I, RV 5E17-30 (NT 2019.001)"
+      "referencia": "MOC 7.0 Anexo I, RV 5E17-30 (NT 2019.001)",
+      "orientacao": "Confirme com o produtor a inscrição estadual e o CPF do titular. A inscrição informada precisa estar vinculada a esse CPF no cadastro da SEFAZ."
     },
     {
       "codigo": "625",
@@ -5655,7 +5686,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Existe CT-e ou MDF-e autorizado que acoberta a NF-e: a SEFAZ não aceita cancelar a nota com transporte vinculado.",
       "comoCorrigir": "Cancele antes o CT-e ou encerre e cancele o MDF-e que citam a nota, e só depois peça o cancelamento da NF-e.",
-      "referencia": "MOC 7.0 Visão Geral, RV 4P15-18"
+      "referencia": "MOC 7.0 Visão Geral, RV 4P15-18",
+      "orientacao": "Cancele primeiro o CT-e vinculado ou encerre e cancele o MDF-e vinculado. Só depois solicite o cancelamento da nota que consta nesse transporte."
     },
     {
       "codigo": "691",
@@ -5739,7 +5771,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Destinatário não contribuinte (indIEDest=9) numa saída que não é para o exterior sem indicar consumidor final.",
       "comoCorrigir": "Em venda para não contribuinte, informe indFinal=1. Se o destinatário for contribuinte, corrija indIEDest e a IE.",
-      "referencia": "MOC 7.0 Anexo I, RV E16a-40 (NT 2019.001)"
+      "referencia": "MOC 7.0 Anexo I, RV E16a-40 (NT 2019.001)",
+      "orientacao": "Marque a operação como consumidor final quando o destinatário for não contribuinte nessa saída. Se ele for contribuinte, corrija o tipo de contribuinte e informe a inscrição estadual."
     },
     {
       "codigo": "697",
@@ -6084,7 +6117,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Operação com o exterior (idDest=3, destinatário com UF EX) sem a tag idEstrangeiro: o destinatário foi identificado por CNPJ ou CPF.",
       "comoCorrigir": "Identifique o destinatário no exterior por idEstrangeiro (o passaporte ou o documento do país; vazio é aceito) no lugar do CNPJ ou CPF. O montador do sinete recusa antes de assinar.",
-      "referencia": "MOC 7.0 Anexo I, RV E03a-10"
+      "referencia": "MOC 7.0 Anexo I, RV E03a-10",
+      "orientacao": "Retire o CNPJ ou CPF e identifique o destinatário pelo passaporte ou documento do país. Você também pode deixar o documento estrangeiro em branco."
     },
     {
       "codigo": "721",
@@ -6105,7 +6139,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "idEstrangeiro informado numa operação que não é com o exterior e não é com consumidor final (indFinal diferente de 1).",
       "comoCorrigir": "Fora da operação com o exterior, o destinatário estrangeiro só é aceito como consumidor final: informe indFinal=1. Se a operação é com o exterior, o endereço do destinatário é EX e idDest é 3.",
-      "referencia": "MOC 7.0 Anexo I, RV E03a-20 (NT 2015.002)"
+      "referencia": "MOC 7.0 Anexo I, RV E03a-20 (NT 2015.002)",
+      "orientacao": "Marque consumidor final para o destinatário estrangeiro nessa operação. Se for operação com o exterior, marque essa opção e informe EX no estado do endereço."
     },
     {
       "codigo": "722",
@@ -6136,7 +6171,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "NF-e (modelo 55) sem o nome do destinatário (dest/xNome).",
       "comoCorrigir": "Informe o nome ou a razão social do destinatário. Em homologação o sinete põe o literal exigido pela E04-20.",
-      "referencia": "MOC 7.0 Anexo I, RV E04-10"
+      "referencia": "MOC 7.0 Anexo I, RV E04-10",
+      "orientacao": "Preencha o nome ou a razão social do destinatário na nota."
     },
     {
       "codigo": "725",
@@ -6167,7 +6203,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "NF-e (modelo 55) sem o endereço do destinatário (dest/enderDest).",
       "comoCorrigir": "Informe o endereço do destinatário; no exterior, com UF EX, município 9999999 e o país.",
-      "referencia": "MOC 7.0 Anexo I, RV E05-10"
+      "referencia": "MOC 7.0 Anexo I, RV E05-10",
+      "orientacao": "Preencha o endereço do destinatário antes de enviar novamente a nota. Para destinatário no exterior, informe estado EX, município exterior e o país."
     },
     {
       "codigo": "727",
@@ -6198,7 +6235,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Destinatário indicado como contribuinte do ICMS (indIEDest=1) sem a tag IE.",
       "comoCorrigir": "Informe a IE do destinatário. Se ele é isento de inscrição, use indIEDest=2 sem IE; se não é contribuinte, indIEDest=9.",
-      "referencia": "MOC 7.0 Anexo I, RV E17-20"
+      "referencia": "MOC 7.0 Anexo I, RV E17-20",
+      "orientacao": "Informe a inscrição estadual se o destinatário for contribuinte do ICMS. Se for isento, marque contribuinte isento; se não for contribuinte, marque não contribuinte."
     },
     {
       "codigo": "729",
@@ -6759,7 +6797,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Operação marcada como interestadual (idDest=2) com o destinatário na mesma UF do emitente, sem local de entrega ou retirada em outra UF nem combustível consumido em outra UF.",
       "comoCorrigir": "Use idDest=1 para destinatário da mesma UF, ou deixe o sinete calcular o idDest pelas UFs. Se a mercadoria sai para outra UF, informe o local de entrega ou de retirada.",
-      "referencia": "MOC 7.0 Anexo I, RV E12-30 e E12-50 (NT 2013/005, NT 2015.003)"
+      "referencia": "MOC 7.0 Anexo I, RV E12-30 e E12-50 (NT 2013/005, NT 2015.003)",
+      "orientacao": "Marque a operação como interna se o destinatário estiver no mesmo estado do emitente. Se a mercadoria sair para outro estado, informe o local de entrega ou de retirada."
     },
     {
       "codigo": "773",
@@ -6780,7 +6819,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Operação marcada como interna (idDest=1), com destinatário de outra UF, que não é com consumidor final e não tem entrega ou retirada que a torne interna.",
       "comoCorrigir": "Use idDest=2 para destinatário de outra UF, ou deixe o sinete calcular o idDest. A regra não vale para a operação com consumidor final (indFinal=1), nem com a entrega ou a retirada nas UFs que as exceções da regra listam.",
-      "referencia": "MOC 7.0 Anexo I, RV E12-40 e E12-60 (NT 2015.003)"
+      "referencia": "MOC 7.0 Anexo I, RV E12-40 e E12-60 (NT 2015.003)",
+      "orientacao": "Marque a operação como interestadual para o destinatário de outro estado. Confira antes se há consumidor final ou entrega ou retirada que torne a operação interna."
     },
     {
       "codigo": "774",
@@ -6848,7 +6888,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "NCM de 8 posições que não consta da tabela de NCM vigente: código extinto por atualização da NCM, digitado errado ou de outra versão da tabela.",
       "comoCorrigir": "Confira o código na tabela NCM vigente publicada no Portal da NF-e e atualize o cadastro do produto.",
-      "referencia": "MOC 7.0 Anexo I, RV I05-20"
+      "referencia": "MOC 7.0 Anexo I, RV I05-20",
+      "orientacao": "Consulte o NCM na tabela vigente e corrija o cadastro do produto. O código informado pode ter sido extinto, digitado errado ou retirado de uma tabela antiga."
     },
     {
       "codigo": "779",
@@ -6893,7 +6934,8 @@
       "categoria": "cadastro",
       "causaProvavel": "O emitente não está habilitado a emitir NFC-e no cadastro da SEFAZ da UF.",
       "comoCorrigir": "Regularize o credenciamento para a NFC-e na SEFAZ da UF antes de reenviar.",
-      "referencia": "MOC 7.0 Anexo I, RV 1C17-38"
+      "referencia": "MOC 7.0 Anexo I, RV 1C17-38",
+      "orientacao": "Regularize o credenciamento do emitente para NFC-e na SEFAZ do seu estado antes de enviar novamente."
     },
     {
       "codigo": "783",
@@ -7003,7 +7045,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Operação com o exterior (idDest=3) com o destinatário indicado como contribuinte (indIEDest 1 ou 2).",
       "comoCorrigir": "Na exportação o destinatário é não contribuinte: indIEDest=9, sem IE.",
-      "referencia": "MOC 7.0 Anexo I, RV E16a-20 (NT 2015.003)"
+      "referencia": "MOC 7.0 Anexo I, RV E16a-20 (NT 2015.003)",
+      "orientacao": "Na exportação, marque o destinatário como não contribuinte e deixe a inscrição estadual em branco."
     },
     {
       "codigo": "791",
@@ -7020,7 +7063,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Destinatário marcado como contribuinte isento (indIEDest=2) com a tag IE preenchida.",
       "comoCorrigir": "Com indIEDest=2 não informe a tag IE do destinatário (nem com o literal ISENTO).",
-      "referencia": "MOC 7.0 Anexo I, RV E17-30"
+      "referencia": "MOC 7.0 Anexo I, RV E17-30",
+      "orientacao": "Deixe a inscrição estadual do destinatário em branco quando marcar contribuinte isento. Não preencha com ISENTO, pois a inscrição deve ficar vazia."
     },
     {
       "codigo": "792",
@@ -7037,7 +7081,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "IE do destinatário informada com o endereço no exterior (UF EX).",
       "comoCorrigir": "Tire a IE do destinatário estrangeiro; ele é identificado por idEstrangeiro, como não contribuinte.",
-      "referencia": "MOC 7.0 Anexo I, RV E17-40"
+      "referencia": "MOC 7.0 Anexo I, RV E17-40",
+      "orientacao": "Retire a inscrição estadual do destinatário com endereço no exterior. Marque como não contribuinte e use o documento estrangeiro para identificá-lo."
     },
     {
       "codigo": "793",
@@ -7156,7 +7201,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Destinatário marcado como contribuinte isento (indIEDest 2) numa UF que não aceita essa situação, pela configuração da UF do destinatário.",
       "comoCorrigir": "Informe a IE do destinatário (indIEDest 1) ou, se ele não tiver inscrição, trate como não contribuinte (indIEDest 9). A lista de UF muda por configuração de cada uma (NT 2025.001 v1.03 lista AL, AM, BA, CE, DF, ES, GO, MG, MS, MT, PB, PE, RJ, RN, RS, SE e SP).",
-      "referencia": "NT 2025.001 v1.03, RV E16a-30 e E16a-35"
+      "referencia": "NT 2025.001 v1.03, RV E16a-30 e E16a-35",
+      "orientacao": "Informe a inscrição estadual e marque contribuinte, conforme a exigência da SEFAZ do estado do destinatário. Se ele não tiver inscrição estadual, marque como não contribuinte."
     },
     {
       "codigo": "806",
@@ -7330,7 +7376,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Produto animal vivo sem a Guia de Trânsito Animal (GTA) no grupo de produtos agropecuários, nas UF e NCM em que a UF aplica a regra.",
       "comoCorrigir": "Informe a GTA (tpGuia 01, 02 ou 03) no grupo agropecuario, ou confira se o CFOP está entre os que a regra dispensa.",
-      "referencia": "NT 2024.003 v1.10, RV ZF05-10"
+      "referencia": "NT 2024.003 v1.10, RV ZF05-10",
+      "orientacao": "Informe a Guia de Trânsito Animal no item quando a SEFAZ do seu estado exigir para esse NCM. Confira também se o CFOP da operação está entre os dispensados."
     },
     {
       "codigo": "850",
@@ -7347,7 +7394,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Duplicata vencendo antes da parcela anterior.",
       "comoCorrigir": "Ordene as duplicatas pelo vencimento, da primeira à última parcela.",
-      "referencia": "MOC 7.0 Anexo I, RV Y09-30 (NT 2016.002)"
+      "referencia": "MOC 7.0 Anexo I, RV Y09-30 (NT 2016.002)",
+      "orientacao": "Organize as parcelas pela data de vencimento, da primeira à última. Confira se alguma parcela vence antes da que aparece anteriormente."
     },
     {
       "codigo": "851",
@@ -7392,7 +7440,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Uma parcela só, vencendo na própria data de emissão: para a SEFAZ é pagamento à vista, sem cobrança.",
       "comoCorrigir": "Tire o grupo de cobrança (fatura e duplicatas) da venda à vista, ou informe o vencimento real da parcela.",
-      "referencia": "NT 2025.001 v1.03, RV Y09-40"
+      "referencia": "NT 2025.001 v1.03, RV Y09-40",
+      "orientacao": "Retire a fatura e as parcelas se a venda for à vista, ou informe o vencimento real. Uma única parcela vencendo na emissão é considerada pagamento à vista pela SEFAZ."
     },
     {
       "codigo": "854",
@@ -8013,7 +8062,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Duplicata sem data de vencimento ou vencendo antes da data de emissão.",
       "comoCorrigir": "Informe dVenc em todas as duplicatas, na data da emissão ou depois.",
-      "referencia": "MOC 7.0 Anexo I, RV Y09-20 (NT 2016.002)"
+      "referencia": "MOC 7.0 Anexo I, RV Y09-20 (NT 2016.002)",
+      "orientacao": "Informe o vencimento de todas as parcelas antes de reenviar a nota. Use a data de emissão ou uma data posterior para cada vencimento."
     },
     {
       "codigo": "901",
@@ -8263,7 +8313,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Destinatário identificado por idEstrangeiro com a tag IE preenchida.",
       "comoCorrigir": "Tire a IE do destinatário identificado por idEstrangeiro, ou identifique-o por CNPJ ou CPF se ele tem inscrição no Brasil.",
-      "referencia": "MOC 7.0 Anexo I, RV E03a-30 (NT 2019.001)"
+      "referencia": "MOC 7.0 Anexo I, RV E03a-30 (NT 2019.001)",
+      "orientacao": "Retire a inscrição estadual do destinatário identificado por documento estrangeiro. Se ele tiver inscrição no Brasil, use CNPJ ou CPF para identificá-lo."
     },
     {
       "codigo": "926",
@@ -8280,7 +8331,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Destinatário no exterior (UF EX) com o país 1058, Brasil.",
       "comoCorrigir": "Informe o código do país do destinatário (tabela do BACEN) em cPais e o nome em xPais.",
-      "referencia": "MOC 7.0 Anexo I, RV E14-30 (NT 2019.001)"
+      "referencia": "MOC 7.0 Anexo I, RV E14-30 (NT 2019.001)",
+      "orientacao": "Informe o país real do destinatário que tem endereço no exterior."
     },
     {
       "codigo": "927",
@@ -8351,7 +8403,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "Item com CST de ICMS que a UF trata como de benefício fiscal, enviado sem cBenef. A regra é aplicada a critério da UF, por CST e por modelo: pela lista da N12-84 (CST 20, 30, 40, 41, 50, 51, 60, 70 e 90) ou, na N12-85, para todo CST que tenha algum código na tabela de benefícios da UF.",
       "comoCorrigir": "Informe em cBenef, no grupo prod do item, o código da tabela de benefícios da SEFAZ da UF para o CST e a operação, o mesmo usado na EFD. Sem benefício, revise o CST; para alguns CST a UF pode exigir a literal SEM CBENEF. No CST 90 sem redução de base (pRedBC zero e, em operação interna, pRedBCST zero), a N12-84 não se aplica.",
-      "referencia": "MOC 7.0 Anexo I, RV N12-84 e N12-85 (NT 2019.001), campo I05f e nota da RV N12-94"
+      "referencia": "MOC 7.0 Anexo I, RV N12-84 e N12-85 (NT 2019.001), campo I05f e nota da RV N12-94",
+      "orientacao": "Informe no item o código de benefício fiscal da tabela da SEFAZ do estado, também usado na EFD. Sem benefício, revise o CST; alguns estados exigem o texto SEM CBENEF."
     },
     {
       "codigo": "931",
@@ -8376,7 +8429,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "O cBenef informado não corresponde ao CST do item segundo a tabela de benefícios da UF: o tipo do benefício não bate com o do CST, como um código de isenção num CST que não é de isenção. A mensagem da N12-94 diz \"incompatível com CST e UF\".",
       "comoCorrigir": "Confira na tabela de cBenef publicada pela SEFAZ da UF a quais CST o código se aplica e alinhe os dois: troque o cBenef pelo do benefício que a operação usa, ou o CST pelo que o benefício pede. A regra é aplicada a critério da UF.",
-      "referencia": "MOC 7.0 Anexo I, RV I05f-20, N12-88 e N12-94 (NT 2019.001)"
+      "referencia": "MOC 7.0 Anexo I, RV I05f-20, N12-88 e N12-94 (NT 2019.001)",
+      "orientacao": "Consulte na tabela da SEFAZ do estado quais CST aceitam o código de benefício fiscal informado. Ajuste o código de benefício fiscal ou o CST do item conforme essa tabela."
     },
     {
       "codigo": "932",
@@ -8425,7 +8479,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "A UF exige o valor e o motivo da desoneração do ICMS para o CST informado ou quando há código de benefício fiscal (cBenef).",
       "comoCorrigir": "Informe vICMSDeson e motDesICMS no item. A regra é aplicada a critério da UF, por CST e por modelo.",
-      "referencia": "MOC 7.0 Anexo I, RV N12-90 e I05f-30 (NT 2019.001)"
+      "referencia": "MOC 7.0 Anexo I, RV N12-90 e I05f-30 (NT 2019.001)",
+      "orientacao": "Informe no item o valor do ICMS desonerado e o motivo da desoneração. A SEFAZ do seu estado exige esses dados para o CST ou o benefício fiscal informado."
     },
     {
       "codigo": "935",
@@ -8487,7 +8542,8 @@
       "categoria": "regra-negocio",
       "causaProvavel": "O cBenef informado não existe ou não está vigente na tabela de benefícios fiscais publicada pela SEFAZ da UF: código digitado errado, de outra UF ou já revogado.",
       "comoCorrigir": "Confira o código na tabela de cBenef vigente da SEFAZ da UF e corrija o item. A regra é aplicada a critério da UF e não vale quando o item traz CSOSN (emitente do Simples Nacional).",
-      "referencia": "MOC 7.0 Anexo I, RV N12-98 (NT 2019.001)"
+      "referencia": "MOC 7.0 Anexo I, RV N12-98 (NT 2019.001)",
+      "orientacao": "Confira o código de benefício fiscal na tabela vigente da SEFAZ do seu estado e corrija o item. Verifique se houve erro de digitação, uso de código de outro estado ou revogação."
     },
     {
       "codigo": "957",
@@ -8990,7 +9046,8 @@
       "categoria": "reforma",
       "causaProvavel": "CST do IBS/CBS que não existe na tabela de CST do IBS e da CBS.",
       "comoCorrigir": "Use um CST da tabela vigente publicada no Portal da NF-e.",
-      "referencia": "NT 2025.002 v1.40, RV UB13-10"
+      "referencia": "NT 2025.002 v1.40, RV UB13-10",
+      "orientacao": "Escolha um CST do IBS/CBS que exista na tabela vigente. Faça o ajuste na configuração tributária do produto ou da operação."
     },
     {
       "codigo": "1021",
@@ -9041,7 +9098,8 @@
       "categoria": "reforma",
       "causaProvavel": "cClassTrib que não existe na tabela de classificação tributária do IBS e da CBS.",
       "comoCorrigir": "Use um cClassTrib da tabela vigente publicada no Portal da NF-e; a tabela muda com frequência na transição.",
-      "referencia": "NT 2025.002 v1.40, RV UB14-10"
+      "referencia": "NT 2025.002 v1.40, RV UB14-10",
+      "orientacao": "Escolha para o item uma classificação tributária do IBS/CBS que conste na tabela vigente. Consulte a versão atual, pois a tabela muda com frequência durante a transição."
     },
     {
       "codigo": "1024",
@@ -9058,7 +9116,8 @@
       "categoria": "reforma",
       "causaProvavel": "O cClassTrib informado não pertence ao CST informado.",
       "comoCorrigir": "Os 3 primeiros dígitos do cClassTrib correspondem ao CST na tabela; escolha o par CST e cClassTrib da mesma linha da tabela.",
-      "referencia": "NT 2025.002 v1.40, RV UB14-20"
+      "referencia": "NT 2025.002 v1.40, RV UB14-20",
+      "orientacao": "Escolha o CST e a classificação tributária do IBS/CBS na mesma linha da tabela. Confira se os três primeiros dígitos da classificação correspondem ao CST informado."
     },
     {
       "codigo": "1025",

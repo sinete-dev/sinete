@@ -57,6 +57,12 @@ export interface Rejeicao {
   readonly comoCorrigir?: string;
   /** Regra citada pela curadoria (`MOC 7.0 Anexo I, RV C17-20`). */
   readonly referencia?: string;
+  /**
+   * Texto para quem emite a nota (produtor, contador, atendente), em uma ou duas frases sem termo de integração: o que
+   * aconteceu e o que mudar na nota, no cadastro ou junto à SEFAZ. Só existe quando a correção está na mão de quem
+   * emite; falhas do sistema emissor (schema, assinatura, duplicidade por reenvio, cálculo) ficam sem ela.
+   */
+  readonly orientacao?: string;
 }
 
 export interface FonteRejeicao extends FonteDeDados {
@@ -89,11 +95,16 @@ export function rejeicaoPorCodigo(cStat: string): Rejeicao | undefined {
   return byCode.get(cStat.trim());
 }
 
-/** `DicaRejeicao` do core para o código, quando há curadoria de causa e correção. */
+/** `DicaRejeicao` do core para o código, quando há curadoria de causa e correção; traz a `orientacao` quando existe. */
 export function dicaRejeicao(cStat: string): DicaRejeicao | undefined {
   const r = rejeicaoPorCodigo(cStat);
   if (!r?.causaProvavel || !r.comoCorrigir) return undefined;
-  return { causaProvavel: r.causaProvavel, comoCorrigir: r.comoCorrigir, fonte: r.referencia ?? r.fonte };
+  return {
+    causaProvavel: r.causaProvavel,
+    comoCorrigir: r.comoCorrigir,
+    fonte: r.referencia ?? r.fonte,
+    ...(r.orientacao ? { orientacao: r.orientacao } : {}),
+  };
 }
 
 /**

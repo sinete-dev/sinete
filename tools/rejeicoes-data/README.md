@@ -53,6 +53,8 @@ Antes de gravar, o builder recusa (sai com 1) mensagem que termina em artigo, pr
 
 `curadoria.json` tem, por código, `causaProvavel`, `comoCorrigir` e `referencia` (a regra de onde a explicação saiu), e opcionalmente `category` para corrigir a heurística. Redação própria a partir do MOC e das NT; nada de texto de terceiros. O builder falha se a curadoria citar um código fora do catálogo.
 
+`orientacao` (em `curadoria.json` e `curadoria-mdfe.json`) é o texto para quem emite a nota, não para quem integra: uma ou duas frases, sem nome de campo XML, web service, schema ou cStat, com o que aconteceu e o que mudar na nota, no cadastro ou junto à SEFAZ. Só entra nos códigos curados em que a correção está na mão de quem emite; falha do sistema emissor (schema, assinatura, certificado da conexão, chave e dígito, cálculo de totais e tributos, duplicidade por reenvio, consumo indevido) fica sem ela. O builder recusa `orientacao` sem `causaProvavel`, `comoCorrigir` e `referencia`, e o teste do pacote confere o tamanho e os termos proibidos.
+
 ## NFS-e Nacional (`nfse.ts`)
 
 Gera `packages/rejeicoes/src/data/nfse-erros.json` (o subpath `@sinete/rejeicoes/nfse`) a partir das planilhas oficiais listadas em `sources-nfse.json` e da curadoria em `curadoria-nfse.json`.

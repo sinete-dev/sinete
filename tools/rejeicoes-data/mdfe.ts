@@ -31,7 +31,13 @@ type Doc = {
   to: string | null;
 };
 type Category = 'schema' | 'assinatura' | 'certificado' | 'cadastro' | 'regra-negocio' | 'duplicidade';
-type Curated = { category?: Category; causaProvavel?: string; comoCorrigir?: string; referencia?: string };
+type Curated = {
+  category?: Category;
+  causaProvavel?: string;
+  comoCorrigir?: string;
+  referencia?: string;
+  orientacao?: string;
+};
 type Entry = {
   code: string;
   message: string;
@@ -42,6 +48,7 @@ type Entry = {
   causaProvavel?: string;
   comoCorrigir?: string;
   referencia?: string;
+  orientacao?: string;
 };
 
 const here = import.meta.dir;
@@ -281,6 +288,16 @@ if (unknownCurated.length > 0) {
   console.error(`rejeicoes-data: curadoria cita códigos fora do catálogo: ${unknownCurated.join(', ')}`);
   process.exit(1);
 }
+// `orientacao` é o texto para quem emite e só existe sobre uma curadoria completa (causa, correção e regra).
+const orientacaoSolta = Object.entries(curadoria.entries)
+  .filter(([, c]) => c.orientacao !== undefined && !(c.causaProvavel && c.comoCorrigir && c.referencia))
+  .map(([code]) => code);
+if (orientacaoSolta.length > 0) {
+  console.error(
+    `rejeicoes-data: orientacao sem causaProvavel, comoCorrigir e referencia: ${orientacaoSolta.join(', ')}`,
+  );
+  process.exit(1);
+}
 
 // A saída tem o tipo do pacote: um membro renomeado no `@sinete/rejeicoes` quebra a compilação aqui, e não o JSON.
 const result: RejeicaoMdfe[] = [...entries.values()]
@@ -299,6 +316,7 @@ const result: RejeicaoMdfe[] = [...entries.values()]
       ...(c.causaProvavel ? { causaProvavel: c.causaProvavel } : {}),
       ...(c.comoCorrigir ? { comoCorrigir: c.comoCorrigir } : {}),
       ...(c.referencia ? { referencia: c.referencia } : {}),
+      ...(c.orientacao ? { orientacao: c.orientacao } : {}),
     };
   });
 
@@ -351,9 +369,7 @@ const json = await $`${biome} format --stdin-file-path=${out} < ${new Response(`
 const counts = new Map<string, number>();
 for (const e of result) counts.set(e.categoria, (counts.get(e.categoria) ?? 0) + 1);
 console.log(
-  `${result.length} códigos do MDF-e; categorias: ${[...counts].map(([k, v]) => `${k}=${v}`).join(' ')}; com curadoria: ${
-    result.filter((e) => 'causaProvavel' in e).length
-  }`,
+  `${result.length} códigos do MDF-e; categorias: ${[...counts].map(([k, v]) => `${k}=${v}`).join(' ')}; com curadoria: ${result.filter((e) => 'causaProvavel' in e).length}; com orientação: ${result.filter((e) => 'orientacao' in e).length}`,
 );
 
 if (process.argv.includes('--check')) {

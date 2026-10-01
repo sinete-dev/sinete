@@ -46,6 +46,7 @@ type Curated = {
   causaProvavel?: string;
   comoCorrigir?: string;
   referencia?: string;
+  orientacao?: string;
 };
 type Entry = {
   code: string;
@@ -60,6 +61,7 @@ type Entry = {
   causaProvavel?: string;
   comoCorrigir?: string;
   referencia?: string;
+  orientacao?: string;
 };
 
 const here = import.meta.dir;
@@ -402,6 +404,16 @@ if (unknownCurated.length > 0) {
   console.error(`rejeicoes-data: curadoria cita códigos fora do catálogo: ${unknownCurated.join(', ')}`);
   process.exit(1);
 }
+// `orientacao` é o texto para quem emite e só existe sobre uma curadoria completa (causa, correção e regra).
+const orientacaoSolta = Object.entries(curadoria.entries)
+  .filter(([, c]) => c.orientacao !== undefined && !(c.causaProvavel && c.comoCorrigir && c.referencia))
+  .map(([code]) => code);
+if (orientacaoSolta.length > 0) {
+  console.error(
+    `rejeicoes-data: orientacao sem causaProvavel, comoCorrigir e referencia: ${orientacaoSolta.join(', ')}`,
+  );
+  process.exit(1);
+}
 const ntCodes = new Set(ntRules.map((r) => r.code));
 // A saída tem o tipo do pacote: um membro renomeado no `@sinete/rejeicoes` quebra a compilação aqui, e não o JSON.
 const result: Rejeicao[] = [...entries.values()]
@@ -422,6 +434,7 @@ const result: Rejeicao[] = [...entries.values()]
       ...(c.causaProvavel ? { causaProvavel: c.causaProvavel } : {}),
       ...(c.comoCorrigir ? { comoCorrigir: c.comoCorrigir } : {}),
       ...(c.referencia ? { referencia: c.referencia } : {}),
+      ...(c.orientacao ? { orientacao: c.orientacao } : {}),
     };
   });
 
@@ -494,7 +507,9 @@ console.log(
     ...counts,
   ]
     .map(([k, v]) => `${k}=${v}`)
-    .join(' ')}; com curadoria: ${result.filter((e) => 'causaProvavel' in e).length}`,
+    .join(
+      ' ',
+    )}; com curadoria: ${result.filter((e) => 'causaProvavel' in e).length}; com orientação: ${result.filter((e) => 'orientacao' in e).length}`,
 );
 
 if (process.argv.includes('--check')) {
