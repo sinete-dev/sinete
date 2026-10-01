@@ -43,10 +43,11 @@ import { carregadorDa } from './da.ts';
 export type { PdfMdfeOpcoes, ProtocoloDoEvento } from './da.ts';
 
 import type { Desfecho, DesfechoEvento } from './desfecho.ts';
-import { semResposta } from './desfecho.ts';
 import type { ContextoEmissor, Emissor, EmissorOpcoes, PerfilDocumento } from './emissor.ts';
 import { criarEmissor } from './emissor.ts';
 import { eventoRecusado, eventoRegistrado, statusDoRetorno } from './evento.ts';
+import type { EnvioOpcoes } from './sinal.ts';
+import { abortado, conferirSinal, erroCancelado, falhaSemResposta } from './sinal.ts';
 
 /** De onde sai o desfecho do MDF-e: a autorização ou a consulta da chave. */
 export type BrutoMdfe = ResultadoAutorizacao | ResultadoConsulta;
@@ -109,7 +110,12 @@ function autorDe(ctx: ContextoEmissor): AutorDocumento | undefined {
   return undefined;
 }
 
-/** Perfil do MDF-e para o `criarEmissor` da raiz. */
+/**
+ * Perfil do MDF-e para o `criarEmissor` de `@sinete/emissor/perfil`. Experimental, como aquele subpath (ADR 0016): a forma do
+ * perfil (`PerfilDocumento`) pode mudar em versão minor. Para emitir, use a fábrica deste subpath, que é estável.
+ *
+ * @experimental
+ */
 export function perfilMdfe(
   opcoes: PerfilMdfeOpcoes = {},
 ): PerfilDocumento<EntradaMdfe, ClienteMdfe, ProtocoloMdfe, BrutoMdfe> {
@@ -124,22 +130,23 @@ export function perfilMdfe(
   });
 
   /** Autoriza; sem resposta, 204 ou 539, resolve pela consulta. `reenvia` limita o reenvio a um. */
-  async function autorizar(cli: ClienteMdfe, xml: string, reenvia: boolean): Promise<DesfechoMdfe> {
+  async function autorizar(cli: ClienteMdfe, xml: string, reenvia: boolean, env?: EnvioOpcoes): Promise<DesfechoMdfe> {
     const id = chaveDe(xml);
     let r: ResultadoAutorizacao;
     try {
-      r = await cli.autorizar(xml);
+      r = await cli.autorizar(xml, env);
     } catch (e) {
-      if (!semResposta(e)) throw e;
-      return resolver(cli, xml, undefined, e, reenvia);
+      const falha = falhaSemResposta(e, env?.signal);
+      if (falha === undefined) throw e;
+      return resolver(cli, xml, undefined, falha, reenvia, env);
     }
     switch (r.tipo) {
       case 'recusado':
-        return CODIGOS.duplicidade.has(r.cStat) ? resolver(cli, xml, r, undefined, reenvia) : recusado(id, r, r);
+        return CODIGOS.duplicidade.has(r.cStat) ? resolver(cli, xml, r, undefined, reenvia, env) : recusado(id, r, r);
       case 'autorizado': {
         const p = r.valor;
         // Protocolo sem digVal: nada prova que é destes bytes; a consulta decide.
-        if (p.mdfeProc === undefined) return resolver(cli, xml, undefined, undefined, false);
+        if (p.mdfeProc === undefined) return resolver(cli, xml, undefined, undefined, false, env);
         return {
           documento: 'mdfe',
           tipo: 'autorizado',
@@ -171,16 +178,23 @@ export function perfilMdfe(
     anterior: Recusado | undefined,
     erroEnvio: unknown,
     reenvia: boolean,
+    env?: EnvioOpcoes,
   ): Promise<DesfechoMdfe> {
     const id = chaveDe(xml);
     // A recusa que levou à consulta vai junto da pendência: é o que o emitente precisa ver.
     const ant = anterior === undefined ? {} : { anterior: { cStat: anterior.cStat, xMotivo: anterior.xMotivo } };
+    // Depois do abort, nenhuma chamada nova: os bytes ficam para a retomada.
+    if (abortado(env?.signal)) {
+      const causa = erroEnvio ?? erroCancelado(env.signal, 'consulta');
+      return { documento: 'mdfe', tipo: 'pendente', id, motivo: 'sem-resposta', causa, ...ant };
+    }
     let res: ResolucaoEnvio;
     try {
-      res = await resolverEnvioSemResposta(cli, xml, anterior);
+      res = await resolverEnvioSemResposta(cli, xml, anterior, env);
     } catch (e) {
-      if (!semResposta(e)) throw e;
-      return { documento: 'mdfe', tipo: 'pendente', id, motivo: 'sem-resposta', causa: erroEnvio ?? e, ...ant };
+      const falha = falhaSemResposta(e, env?.signal);
+      if (falha === undefined) throw e;
+      return { documento: 'mdfe', tipo: 'pendente', id, motivo: 'sem-resposta', causa: erroEnvio ?? falha, ...ant };
     }
     switch (res.acao) {
       case 'concluida': {
@@ -240,7 +254,7 @@ export function perfilMdfe(
           bruto: res.consulta,
         };
       case 'reenviar':
-        if (reenvia) return autorizar(cli, res.mdfeAssinado, false);
+        if (reenvia) return autorizar(cli, res.mdfeAssinado, false, env);
         if (anterior !== undefined) return recusado(id, anterior, anterior);
         if (erroEnvio !== undefined) {
           return { documento: 'mdfe', tipo: 'pendente', id, motivo: 'sem-resposta', causa: erroEnvio };
@@ -285,8 +299,8 @@ export function perfilMdfe(
       if (!r.ok) throw new ErroDeValidacao('o MDF-e não passou na validação', r.ocorrencias);
       return { id: r.valor.chave, xml: await assinarMdfe(r.valor, ctx.assinador) };
     },
-    enviar: (cli: ClienteMdfe, xml: string, modo: 'primeiro' | 'retomada'): Promise<DesfechoMdfe> =>
-      modo === 'primeiro' ? autorizar(cli, xml, true) : resolver(cli, xml, undefined, undefined, true),
+    enviar: (cli: ClienteMdfe, xml: string, modo: 'primeiro' | 'retomada', env?: EnvioOpcoes): Promise<DesfechoMdfe> =>
+      modo === 'primeiro' ? autorizar(cli, xml, true, env) : resolver(cli, xml, undefined, undefined, true, env),
   };
 }
 
@@ -312,20 +326,22 @@ export interface CancelamentoMdfeEmissor {
 }
 
 export interface EmissorMdfe extends Emissor<EntradaMdfe, ClienteMdfe, ProtocoloMdfe, BrutoMdfe> {
-  consultar(chave: string, mdfeAssinado?: string): Promise<ResultadoConsulta>;
+  /** Passagem direta para `cliente.consultar` (ADR 0010): a situação da chave na SEFAZ, sem estado do emissor. */
+  consultar(chave: string, mdfeAssinado?: string, opcoes?: EnvioOpcoes): Promise<ResultadoConsulta>;
   /**
    * Cancela (110111) com recuperação: sem `nProt`, consulta a chave e, se o MDF-e já está cancelado, devolve o evento
    * registrado; sem resposta, ou com duplicidade de evento (631), confirma pela consulta se a SEFAZ registrou o
-   * cancelamento (`recuperado: true`). Nunca conclui pelo `cStat` sozinho.
+   * cancelamento (`recuperado: true`). Nunca conclui pelo `cStat` sozinho. `opcoes.signal` cancela: antes de o pedido
+   * sair, lança o `cancelado`; depois, o desfecho é `pendente` com `motivo: 'sem-resposta'`, sem a consulta.
    */
-  cancelar(pedido: CancelamentoMdfeEmissor): Promise<DesfechoCancelamentoMdfe>;
+  cancelar(pedido: CancelamentoMdfeEmissor, opcoes?: EnvioOpcoes): Promise<DesfechoCancelamentoMdfe>;
   /**
    * Encerramento na chegada (110112) com a mesma recuperação do `cancelar`: sem resposta, ou com duplicidade de evento
    * (631), confirma pela consulta se a SEFAZ registrou o encerramento neste município (`recuperado: true`). Já
    * encerrado em outro município, a SEFAZ recusa o pedido e o desfecho é `recusado`; encerrado sem o evento legível na
    * consulta, `pendente`.
    */
-  encerrar(pedido: EncerramentoPedido): Promise<DesfechoEncerramentoMdfe>;
+  encerrar(pedido: EncerramentoPedido, opcoes?: EnvioOpcoes): Promise<DesfechoEncerramentoMdfe>;
   /** PDF do DAMDFE a partir do `mdfeProc` (`opcoes` são as do `damdfe` do `@sinete/da/mdfe`). */
   pdf(mdfeProc: string, opcoes?: PdfMdfeOpcoes): Promise<Uint8Array>;
   /**
@@ -358,14 +374,20 @@ export async function criarEmissorMdfe(opcoes: EmissorMdfeOpcoes): Promise<Emiss
   async function recuperar(
     chave: string,
     falha: { readonly erro: unknown } | Recusado,
-    busca: BuscaDoEvento = { tpEvento: CANCELAMENTO },
+    busca: BuscaDoEvento,
+    env: EnvioOpcoes | undefined,
   ): Promise<DesfechoCancelamentoMdfe> {
+    if (abortado(env?.signal)) {
+      const causa = 'erro' in falha ? falha.erro : erroCancelado(env.signal, 'consulta');
+      return { tipo: 'pendente', motivo: 'sem-resposta', causa };
+    }
     let rec: RecuperacaoEvento;
     try {
-      rec = await recuperarEventoRegistrado(base.cliente, chave, busca.tpEvento);
+      rec = await recuperarEventoRegistrado(base.cliente, chave, busca.tpEvento, env);
     } catch (e) {
-      if (!semResposta(e)) throw e;
-      return { tipo: 'pendente', motivo: 'sem-resposta', causa: 'erro' in falha ? falha.erro : e };
+      const f = falhaSemResposta(e, env?.signal);
+      if (f === undefined) throw e;
+      return { tipo: 'pendente', motivo: 'sem-resposta', causa: 'erro' in falha ? falha.erro : f };
     }
     if (rec.registrado && (busca.confere?.(rec.evento) ?? true)) return registrado(rec.evento, true, rec.consulta);
     const c = rec.consulta;
@@ -382,15 +404,20 @@ export async function criarEmissorMdfe(opcoes: EmissorMdfeOpcoes): Promise<Emiss
     return eventoRecusado(falha, c);
   }
 
-  async function cancelar(p: CancelamentoMdfeEmissor): Promise<DesfechoCancelamentoMdfe> {
+  async function cancelar(p: CancelamentoMdfeEmissor, env?: EnvioOpcoes): Promise<DesfechoCancelamentoMdfe> {
+    conferirSinal(env?.signal, 'cancelar');
+    const busca: BuscaDoEvento = { tpEvento: CANCELAMENTO };
     let nProt = p.nProt;
     if (nProt === undefined) {
       let rec: RecuperacaoEvento;
       try {
-        rec = await recuperarEventoRegistrado(base.cliente, p.chave, CANCELAMENTO);
+        rec = await recuperarEventoRegistrado(base.cliente, p.chave, CANCELAMENTO, env);
       } catch (e) {
-        if (!semResposta(e)) throw e;
-        return { tipo: 'pendente', motivo: 'sem-resposta', causa: e };
+        const f = falhaSemResposta(e, env?.signal);
+        if (f === undefined) throw e;
+        // Abortado antes de o pedido sair: nada foi enviado.
+        if (abortado(env?.signal)) throw f;
+        return { tipo: 'pendente', motivo: 'sem-resposta', causa: f };
       }
       if (rec.registrado) return registrado(rec.evento, true, rec.consulta);
       const c = rec.consulta;
@@ -406,22 +433,24 @@ export async function criarEmissorMdfe(opcoes: EmissorMdfeOpcoes): Promise<Emiss
     }
     let o: ResultadoEvento;
     try {
-      o = await base.cliente.cancelar({ chave: p.chave, nProt, xJust: p.xJust });
+      o = await base.cliente.cancelar({ chave: p.chave, nProt, xJust: p.xJust }, env);
     } catch (e) {
-      if (!semResposta(e)) throw e;
-      return recuperar(p.chave, { erro: e });
+      const f = falhaSemResposta(e, env?.signal);
+      if (f === undefined) throw e;
+      return recuperar(p.chave, { erro: f }, busca, env);
     }
     switch (o.tipo) {
       case 'autorizado':
         return registrado(o.valor, false, o);
       case 'recusado':
-        return CODIGOS.eventoJaRegistrado.has(o.cStat) ? recuperar(p.chave, o) : eventoRecusado(o, o);
+        return CODIGOS.eventoJaRegistrado.has(o.cStat) ? recuperar(p.chave, o, busca, env) : eventoRecusado(o, o);
       default:
         return { tipo: 'pendente', motivo: 'consulta-indefinida', cStat: o.cStat, xMotivo: o.xMotivo, bruto: o };
     }
   }
 
-  async function encerrar(p: EncerramentoPedido): Promise<DesfechoEncerramentoMdfe> {
+  async function encerrar(p: EncerramentoPedido, env?: EnvioOpcoes): Promise<DesfechoEncerramentoMdfe> {
+    conferirSinal(env?.signal, 'encerrar');
     // O MDF-e se encerra uma vez só: o encerramento registrado é o deste pedido quando é do mesmo município.
     const busca: BuscaDoEvento = {
       tpEvento: ENCERRAMENTO,
@@ -430,16 +459,17 @@ export async function criarEmissorMdfe(opcoes: EmissorMdfeOpcoes): Promise<Emiss
     };
     let o: ResultadoEvento;
     try {
-      o = await base.cliente.encerrar(p);
+      o = await base.cliente.encerrar(p, env);
     } catch (e) {
-      if (!semResposta(e)) throw e;
-      return recuperar(p.chave, { erro: e }, busca);
+      const f = falhaSemResposta(e, env?.signal);
+      if (f === undefined) throw e;
+      return recuperar(p.chave, { erro: f }, busca, env);
     }
     switch (o.tipo) {
       case 'autorizado':
         return registrado(o.valor, false, o);
       case 'recusado':
-        return CODIGOS.eventoJaRegistrado.has(o.cStat) ? recuperar(p.chave, o, busca) : eventoRecusado(o, o);
+        return CODIGOS.eventoJaRegistrado.has(o.cStat) ? recuperar(p.chave, o, busca, env) : eventoRecusado(o, o);
       default:
         return { tipo: 'pendente', motivo: 'consulta-indefinida', cStat: o.cStat, xMotivo: o.xMotivo, bruto: o };
     }
@@ -455,8 +485,8 @@ export async function criarEmissorMdfe(opcoes: EmissorMdfeOpcoes): Promise<Emiss
     get cliente(): ClienteMdfe {
       return base.cliente;
     },
-    consultar: (chave: string, mdfeAssinado?: string): Promise<ResultadoConsulta> =>
-      base.cliente.consultar(chave, mdfeAssinado),
+    consultar: (chave: string, mdfeAssinado?: string, env?: EnvioOpcoes): Promise<ResultadoConsulta> =>
+      base.cliente.consultar(chave, mdfeAssinado, env),
     cancelar,
     encerrar,
     async pdf(mdfeProc: string, o?: PdfMdfeOpcoes): Promise<Uint8Array> {

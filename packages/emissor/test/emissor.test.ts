@@ -4,18 +4,26 @@
  * `nfe.test.ts`, `mdfe.test.ts` e `nfse.test.ts`.
  */
 import { beforeAll, describe, expect, test } from 'bun:test';
-import { ErroDeConfiguracao, ErroDeTempoEsgotado, ErroDeValidacao, loggerEmMemoria, relogioManual } from '@sinete/core';
+import {
+  ErroDeConfiguracao,
+  ErroDeTempoEsgotado,
+  ErroDeValidacao,
+  ehErroSinete,
+  loggerEmMemoria,
+  relogioManual,
+} from '@sinete/core';
 import { certificadoSintetico, pfxSintetico } from '@sinete/sefaz-sim';
-import type { Desfecho, EmissorOpcoes, PerfilDocumento, RegistroTransmissao, TransmissaoStore } from '../src/index.ts';
+import type { Desfecho, EmissorOpcoes, RegistroTransmissao, TransmissaoStore } from '../src/index.ts';
 import {
   abrirCertificado,
-  criarEmissor,
   destinoDosBytes,
   ErroRecusaRepetida,
   ErroTransmissaoEmAndamento,
   semResposta,
 } from '../src/index.ts';
 import { criarBancoMemoria, criarMemoriaStore } from '../src/memoria.ts';
+import type { PerfilDocumento } from '../src/perfil.ts';
+import { criarEmissor } from '../src/perfil.ts';
 
 const SENHA = 'senha-sintetica';
 const EMISSAO = '2026-09-27T10:00:00-03:00';
@@ -484,5 +492,119 @@ describe('política dos bytes e erros sem resposta', () => {
     expect(semResposta(new ErroDeTempoEsgotado('t', 1))).toBe(true);
     expect(semResposta(new ErroDeConfiguracao('c'))).toBe(false);
     expect(semResposta(new Error('x'))).toBe(false);
+  });
+});
+
+describe('criarEmissor: signal (ADR 0010, decisão 8)', () => {
+  /** Perfil que registra o `signal` que recebe e, no envio, roda `aoEnviar` antes de responder. */
+  function perfilComSinal(
+    log: string[],
+    aoEnviar: (signal: AbortSignal | undefined) => Desfecho,
+  ): PerfilDocumento<Entrada, { readonly c: 1 }> {
+    const base = perfil([], log);
+    return {
+      ...base,
+      async enviar(_c, xml, modo, o) {
+        log.push(`enviar ${modo} ${xml} signal=${o?.signal === undefined ? 'nao' : 'sim'}`);
+        return aoEnviar(o?.signal);
+      },
+    };
+  }
+  const cancelado = (e: unknown): boolean => ehErroSinete(e, 'cancelado');
+
+  test('abortado antes de emitir: lança cancelado, sem travar nem montar', async () => {
+    const m = montar();
+    const log: string[] = [];
+    const e = await criarEmissor(
+      perfilComSinal(log, () => autorizado()),
+      m.opcoes,
+    );
+    const ctrl = new AbortController();
+    ctrl.abort();
+    const erro = await e.emitir('r', { n: 1 }, { signal: ctrl.signal }).catch((x: unknown) => x);
+    expect(cancelado(erro)).toBe(true);
+    expect(log).toEqual([]);
+    expect(await m.store.ler('nfe', 'r')).toBeUndefined();
+    expect(await m.store.travar('nfe', 'r', 1000)).toBeDefined();
+  });
+
+  test('abortado na preparação: lança cancelado, nada gravado, trava solta', async () => {
+    const m = montar();
+    const log: string[] = [];
+    const e = await criarEmissor(
+      perfilComSinal(log, () => autorizado()),
+      m.opcoes,
+    );
+    const ctrl = new AbortController();
+    const erro = await e
+      .emitir(
+        'r',
+        async () => {
+          ctrl.abort();
+          return { entrada: { n: 1 } };
+        },
+        { signal: ctrl.signal },
+      )
+      .catch((x: unknown) => x);
+    expect(cancelado(erro)).toBe(true);
+    // Montou e assinou, mas o abort chegou antes de gravar: nada fica, e a próxima emissão monta de novo.
+    expect(log).toEqual(['assinar 1']);
+    expect(await m.store.ler('nfe', 'r')).toBeUndefined();
+    expect(await m.store.travar('nfe', 'r', 1000)).toBeDefined();
+  });
+
+  test('abortado no envio: pendente sem-resposta, bytes gravados, trava solta; retomar conclui com os mesmos bytes', async () => {
+    const m = montar();
+    const log: string[] = [];
+    const ctrl = new AbortController();
+    let vez = 0;
+    const e = await criarEmissor(
+      perfilComSinal(log, (signal) => {
+        vez++;
+        if (vez === 1) {
+          ctrl.abort();
+          // O que o perfil de verdade devolve depois do abort: sem resposta, com o cancelado em `causa`.
+          expect(signal?.aborted).toBe(true);
+          return { ...pendente, causa: new Error('cancelado') };
+        }
+        return autorizado();
+      }),
+      m.opcoes,
+    );
+    const d = await e.emitir('r', { n: 1 }, { signal: ctrl.signal });
+    expect(d).toMatchObject({ tipo: 'pendente', motivo: 'sem-resposta' });
+    const gravado = await m.store.ler('nfe', 'r');
+    expect(gravado?.xml).toBe('<doc n="1" a="1"/>');
+    // A trava foi solta: outro processo trava (e solta, para o retomar abaixo).
+    const outra = await m.store.travar('nfe', 'r', 1000);
+    expect(outra).toBeDefined();
+    if (outra !== undefined) await m.store.soltar(outra);
+    const d2 = await e.retomar('r');
+    expect(d2?.tipo).toBe('autorizado');
+    expect(log).toEqual([
+      'assinar 1',
+      'cliente 11222333000181',
+      'enviar primeiro <doc n="1" a="1"/> signal=sim',
+      'enviar retomada <doc n="1" a="1"/> signal=nao',
+    ]);
+    expect(m.decididos[0]?.registro.xml).toBe('<doc n="1" a="1"/>');
+  });
+
+  test('retomar abortado antes do envio: lança cancelado e os bytes ficam como estavam', async () => {
+    const m = montar();
+    const log: string[] = [];
+    const e = await criarEmissor(
+      perfilComSinal(log, () => pendente),
+      m.opcoes,
+    );
+    await e.emitir('r', { n: 1 });
+    const antes = await m.store.ler('nfe', 'r');
+    const ctrl = new AbortController();
+    ctrl.abort();
+    const erro = await e.retomar('r', { signal: ctrl.signal }).catch((x: unknown) => x);
+    expect(cancelado(erro)).toBe(true);
+    expect(await m.store.ler('nfe', 'r')).toEqual(antes);
+    expect(log.filter((l) => l.startsWith('enviar'))).toHaveLength(1);
+    expect(await m.store.travar('nfe', 'r', 1000)).toBeDefined();
   });
 });

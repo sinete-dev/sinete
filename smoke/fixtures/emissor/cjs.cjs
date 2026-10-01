@@ -6,6 +6,7 @@ const contrato = require('@sinete/emissor/contrato');
 const nfe = require('@sinete/emissor/nfe');
 const mdfe = require('@sinete/emissor/mdfe');
 const nfse = require('@sinete/emissor/nfse');
+const perfil = require('@sinete/emissor/perfil');
 const core = require('@sinete/core');
 const failures = [];
 if (!(new emissor.ErroTravaPerdida('x') instanceof core.ErroSinete)) failures.push('ErroTravaPerdida via require');
@@ -18,6 +19,9 @@ if (
   typeof nfse.criarEmissorNfse !== 'function'
 ) {
   failures.push('emissores via require');
+}
+if (typeof perfil.criarEmissor !== 'function' || 'criarEmissor' in emissor) {
+  failures.push('criarEmissor só no subpath experimental /perfil');
 }
 import('@sinete/emissor').then((esm) => {
   if (esm.ErroTravaPerdida !== emissor.ErroTravaPerdida) failures.push('mesma classe em require e import');

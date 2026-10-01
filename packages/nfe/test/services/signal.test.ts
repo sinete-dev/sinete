@@ -1,6 +1,7 @@
 /** Todo método do `ClienteNfe` que vai à rede repassa o `signal` ao transporte: abortar cancela a requisição em curso. */
 import { describe, expect, test } from 'bun:test';
 import type { ClienteNfe } from '../../src/services/index.ts';
+import { recuperarEventoRegistrado, resolverEnvioSemResposta } from '../../src/services/index.ts';
 import type { FakeTransport } from './helpers.ts';
 import { CNPJ_DEST, CNPJ_EMIT, chave, client, nfeAssinada, transportePendente } from './helpers.ts';
 
@@ -48,6 +49,11 @@ const casos: readonly (readonly [string, Chamada])[] = [
   ],
   ['consultarCadastro', (c, signal) => c.consultarCadastro({ uf: 'MT', CNPJ: CNPJ_DEST }, { signal })],
   ['distribuicaoDFe', (c, signal) => c.distribuicaoDFe({ ultNSU: 0 }, { signal })],
+  [
+    'resolverEnvioSemResposta',
+    async (c, signal) => resolverEnvioSemResposta(c, await nfeAssinada(), undefined, { signal }),
+  ],
+  ['recuperarEventoRegistrado', (c, signal) => recuperarEventoRegistrado(c, chave(), '110111', undefined, { signal })],
 ];
 
 async function cliente(): Promise<{ c: ClienteNfe; t: ReturnType<typeof transportePendente> }> {

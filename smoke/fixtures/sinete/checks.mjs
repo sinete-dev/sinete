@@ -31,6 +31,8 @@ import * as m_u_emissor_nfe from 'sinete/emissor/nfe';
 import * as m_p_emissor_nfe from '@sinete/emissor/nfe';
 import * as m_u_emissor_nfse from 'sinete/emissor/nfse';
 import * as m_p_emissor_nfse from '@sinete/emissor/nfse';
+import * as m_u_emissor_perfil from 'sinete/emissor/perfil';
+import * as m_p_emissor_perfil from '@sinete/emissor/perfil';
 import * as m_u_ibs_cbs from 'sinete/ibs-cbs';
 import * as m_p_ibs_cbs from '@sinete/ibs-cbs';
 import * as m_u_ibs_cbs_dados from 'sinete/ibs-cbs-dados';
@@ -122,6 +124,7 @@ const PARES = [
   ['emissor/memoria', m_u_emissor_memoria, m_p_emissor_memoria],
   ['emissor/nfe', m_u_emissor_nfe, m_p_emissor_nfe],
   ['emissor/nfse', m_u_emissor_nfse, m_p_emissor_nfse],
+  ['emissor/perfil', m_u_emissor_perfil, m_p_emissor_perfil],
   ['ibs-cbs', m_u_ibs_cbs, m_p_ibs_cbs],
   ['ibs-cbs-dados', m_u_ibs_cbs_dados, m_p_ibs_cbs_dados],
   ['ibs-cbs-dados/embarcado', m_u_ibs_cbs_dados_bundled, m_p_ibs_cbs_dados_bundled],

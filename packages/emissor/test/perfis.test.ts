@@ -4,11 +4,19 @@
  * que não são de rede (sobem como estão). Os bytes são assinados de verdade, pelo `assinar` de cada emissor.
  */
 import { beforeAll, describe, expect, test } from 'bun:test';
-import { contextoDeTempo, ErroDeConfiguracao, ErroDeTempoEsgotado, relogioFixo, relogioManual } from '@sinete/core';
+import {
+  contextoDeTempo,
+  ErroDeConfiguracao,
+  ErroDeTempoEsgotado,
+  ehErroSinete,
+  relogioFixo,
+  relogioManual,
+} from '@sinete/core';
 import type { ClienteMdfe } from '@sinete/mdfe';
 import type { ClienteNfe } from '@sinete/nfe';
 import type { ClienteNfse } from '@sinete/nfse';
 import { certificadoSintetico, pfxSintetico } from '@sinete/sefaz-sim';
+import { ErroTransporte } from '@sinete/transport';
 import type { Desfecho, DocumentoAssinado, EmissorOpcoes } from '../src/index.ts';
 import { criarEmissorMdfe, perfilMdfe } from '../src/mdfe.ts';
 import { criarMemoriaStore } from '../src/memoria.ts';
@@ -204,11 +212,28 @@ describe('perfil da NFS-e', () => {
     const recusa = { tipo: 'recusado', cStat: 'E0312', xMotivo: 'x', erros: [], statusHttp: 400 };
     expect(tipo(await enviar({ autorizar: [recusa] }))).toBe('recusado');
     const cli = { consultarDps: [undefined, undefined] };
-    const dup = await enviar({ autorizar: [e0014, e0014], ...cli });
-    expect([tipo(dup), dup.tipo === 'recusado' && dup.cStat]).toEqual(['recusado', 'E0014']);
+    // E0014 e a consulta não acha a DPS: o resolvedor não decide (reenviar voltaria E0014), e os bytes ficam.
+    const autorizar = [e0014, e0014];
+    const dup = await enviar({ autorizar, consultarDps: [undefined] });
+    expect([tipo(dup), dup.tipo === 'pendente' && dup.anterior?.cStat]).toEqual([
+      'pendente/consulta-indefinida',
+      'E0014',
+    ]);
+    expect(autorizar).toHaveLength(1);
     expect(tipo(await enviar({ autorizar: [timeout(), timeout()], ...cli }))).toBe('pendente/sem-resposta');
     expect(tipo(await enviar({ consultarDps: [timeout()] }, 'retomada'))).toBe('pendente/sem-resposta');
     await expect(enviar({ autorizar: [new ErroDeConfiguracao('x')] })).rejects.toBeInstanceOf(ErroDeConfiguracao);
+  });
+
+  test('DPS que consta sem a NFS-e: pendente com a consulta indefinida, sem exceção', async () => {
+    const d = await enviar(
+      { consultarDps: [{ idDps: 'DPS1', chaveAcesso: 'CHAVE' }], consultar: [undefined] },
+      'retomada',
+    );
+    expect([tipo(d), d.tipo === 'pendente' && d.xMotivo]).toEqual([
+      'pendente/consulta-indefinida',
+      'a DPS consta como processada, mas a NFS-e não foi encontrada',
+    ]);
   });
 
   test('DPS sem Id é erro de configuração', async () => {
@@ -237,5 +262,94 @@ describe('recusa do serviço, que não entra na barreira da recusa repetida', ()
     expect(perfilNfse().conteudoParaRecusa?.(dps('a'))).toBe(perfilNfse().conteudoParaRecusa?.(dps('b')));
     expect(perfilMdfe().conteudoParaRecusa?.('<MDFe><dhEmi>a</dhEmi></MDFe>')).toBe('<MDFe></MDFe>');
     expect(perfilNfe().conteudoParaRecusa?.('<NFe><dhEmi>a</dhEmi></NFe>')).toBe('<NFe></NFe>');
+  });
+});
+
+describe('signal nos perfis: depois do abort, nenhuma chamada nova', () => {
+  /** Cliente que guarda o `signal` de cada chamada e aborta `ctrl` na primeira, lançando o que o transporte lança. */
+  function abortaNaPrimeira<C>(ctrl: AbortController, chamadas: string[]): C {
+    const registrar =
+      (nome: string) =>
+      async (...args: unknown[]): Promise<never> => {
+        const o = args.at(-1) as { signal?: AbortSignal } | undefined;
+        chamadas.push(`${nome}:${o?.signal === ctrl.signal ? 'signal' : 'sem'}`);
+        ctrl.abort();
+        throw new ErroTransporte('cancelado', 'envio cancelado');
+      };
+    return new Proxy({ ambiente: 'homologacao' } as Record<string, unknown>, {
+      get: (t, nome: string) => (nome in t ? t[nome] : registrar(nome)),
+    }) as C;
+  }
+
+  test('NF-e, MDF-e e NFS-e: abort no envio vira pendente sem-resposta, sem consulta nem reenvio', async () => {
+    const casos = [
+      [
+        'nfe',
+        (c: unknown, env: { signal: AbortSignal }) => perfilNfe().enviar(c as ClienteNfe, nfe.xml, 'primeiro', env),
+      ],
+      [
+        'mdfe',
+        (c: unknown, env: { signal: AbortSignal }) => perfilMdfe().enviar(c as ClienteMdfe, mdfe.xml, 'primeiro', env),
+      ],
+      [
+        'nfse',
+        (c: unknown, env: { signal: AbortSignal }) => perfilNfse().enviar(c as ClienteNfse, nfse.xml, 'primeiro', env),
+      ],
+    ] as const;
+    for (const [doc, enviar] of casos) {
+      const ctrl = new AbortController();
+      const chamadas: string[] = [];
+      const d = await enviar(abortaNaPrimeira(ctrl, chamadas), { signal: ctrl.signal });
+      expect({ doc, tipo: tipo(d), chamadas }).toEqual({
+        doc,
+        tipo: 'pendente/sem-resposta',
+        chamadas: ['autorizar:signal'],
+      });
+      expect(d.tipo === 'pendente' && ehErroSinete(d.causa, 'cancelado')).toBe(true);
+    }
+  });
+
+  test('NF-e: abort na espera do recibo (a espera rejeita com o reason do sinal) vira o cancelado', async () => {
+    const ctrl = new AbortController();
+    const lote = { tipo: 'pendente', cStat: '103', xMotivo: 'Lote recebido', referencia: '123' };
+    const c = {
+      autorizar: async () => lote,
+      aguardarRecibo: async (_n: string, _x: string, o: { signal?: AbortSignal }) => {
+        expect(o.signal).toBe(ctrl.signal);
+        ctrl.abort();
+        throw ctrl.signal.reason;
+      },
+      consultar: async () => {
+        throw new Error('não devia consultar depois do abort');
+      },
+    } as unknown as ClienteNfe;
+    const d = await perfilNfe().enviar(c, nfe.xml, 'primeiro', { signal: ctrl.signal });
+    expect(tipo(d)).toBe('pendente/sem-resposta');
+    expect(d.tipo === 'pendente' && ehErroSinete(d.causa, 'cancelado')).toBe(true);
+  });
+
+  test('retomada com o sinal: a consulta recebe o signal', async () => {
+    const ctrl = new AbortController();
+    const chamadas: string[] = [];
+    const d = await perfilNfe().enviar(abortaNaPrimeira(ctrl, chamadas), nfe.xml, 'retomada', { signal: ctrl.signal });
+    expect([tipo(d), chamadas]).toEqual(['pendente/sem-resposta', ['consultar:signal']]);
+  });
+});
+
+describe('signal nos eventos do emissor', () => {
+  test('abortado antes do pedido: cancelar, cartaCorrecao e encerrar lançam cancelado sem ir à rede', async () => {
+    const ctrl = new AbortController();
+    ctrl.abort();
+    const env = { signal: ctrl.signal };
+    const chave = '3'.repeat(44);
+    const erros = await Promise.all([
+      emissorNfe.cancelar({ chave, nProt: '1', xJust: 'justificativa sintetica' }, env).catch((e: unknown) => e),
+      emissorNfe
+        .cartaCorrecao({ chave, xCorrecao: 'correcao sintetica do texto', nSeqEvento: 1 }, env)
+        .catch((e: unknown) => e),
+      emissorMdfe.cancelar({ chave, nProt: '1', xJust: 'justificativa sintetica' }, env).catch((e: unknown) => e),
+      emissorMdfe.encerrar({ chave, nProt: '1', uf: 'SP', cMun: '3550308' }, env).catch((e: unknown) => e),
+    ]);
+    expect(erros.map((e) => ehErroSinete(e, 'cancelado'))).toEqual([true, true, true, true]);
   });
 });

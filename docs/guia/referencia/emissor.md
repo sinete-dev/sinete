@@ -6,12 +6,11 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 
 `@sinete/emissor`: a camada que emite, retoma e cancela documentos com estado entre chamadas (ADR 0010).
 
-A raiz tem o que é comum aos documentos e não importa nenhum pacote de documento: o desfecho normalizado, o `TransmissaoStore` (bytes assinados gravados antes do envio, trava entre processos), a política dos bytes, `criarEmissor` com o perfil de um documento, `retomarPendentes` para o job e o pool de emissores por certificado. Cada documento tem um subpath que importa o seu pacote: `@sinete/emissor/nfe` (`criarEmissorNfe`), `/mdfe` e `/nfse`. O adaptador em memória está em `@sinete/emissor/memoria` e a suíte de contrato do store em `@sinete/emissor/contrato`.
+A raiz tem o que é comum aos documentos e não importa nenhum pacote de documento: o desfecho normalizado, o `TransmissaoStore` (bytes assinados gravados antes do envio, trava entre processos), a política dos bytes, `retomarPendentes` para o job e o pool de emissores por certificado. Cada documento tem um subpath que importa o seu pacote: `@sinete/emissor/nfe` (`criarEmissorNfe`), `/mdfe` e `/nfse`. O adaptador em memória está em `@sinete/emissor/memoria` e a suíte de contrato do store em `@sinete/emissor/contrato`. `criarEmissor` com um perfil próprio está em `@sinete/emissor/perfil`, experimental (ADR 0016).
 
 ### Funções
 
 - `abrirCertificado`: Abre o PFX (fora da validade, `ErroCertificado`) e devolve o certificado aberto. Os bytes não ficam guardados. `abrirCertificado(certificado: CertificadoA1, opcoes?: AbrirCertificadoOpcoes): Promise<CertificadoAberto>`
-- `criarEmissor`: Abre o PFX (ou usa o certificado aberto) e devolve o emissor. Nada vai à rede até a primeira operação que precisa dela; o certificado fora da validade é recusado aqui (`ErroCertificado`). `criarEmissor<Entrada, Cliente, P, B>(perfil: PerfilDocumento<Entrada, Cliente, P, B>, opcoes: EmissorOpcoes<P, B>): Promise<Emissor<Entrada, Cliente, P, B>>`
 - `criarPoolDeEmissores`: Cria o pool. `E` é qualquer emissor do pacote (ou qualquer coisa com `fechar`); `C`, o certificado que `criar` recebe (padrão: `CertificadoA1`). `criarPoolDeEmissores<E extends { fechar(): Promise<void>; }, C = CertificadoA1>(opcoes: PoolOpcoes<E, C>): PoolDeEmissores<E, C>`
 - `destinoDosBytes`: Política dos bytes (ADR 0010, decisão 3): decidido (autorizado ou denegado) grava o documento e conclui; já guardado conclui; pendente e divergente mantêm; recusado descarta, menos quando o `cStat` está entre os indefinidos do documento (`indefinido`, da tabela de cada perfil), que mantêm. `destinoDosBytes(d: Desfecho, indefinido: (cStat: string) => boolean): DestinoDosBytes`
 - `retomarPendentes`: Roda uma execução da retomada automática e devolve o resumo. `retomarPendentes(opcoes: RetomadaOpcoes): Promise<ResumoRetomada>`
@@ -29,10 +28,6 @@ A raiz tem o que é comum aos documentos e não importa nenhum pacote de documen
 - `AbrirCertificadoOpcoes`: Membros: `relogio`, `completarCadeia`.
 - `CertificadoA1`: Certificado A1 como arquivo e senha. Membros: `pfx`, `senha`.
 - `CertificadoAberto`: Certificado já aberto: o signer dos documentos, o titular e a identidade do mTLS. Membros: `assinador`, `titular`, `identidade`.
-- `ContextoEmissor`: O que o perfil recebe do emissor: certificado aberto, relógio e o transporte do certificado. Membros: `ambiente`, `relogio`, `assinador`, `titular`, `logger`, `timeoutMs`, `transporte()`.
-- `ContingenciaAplicada`: O que entra na nota em contingência. Membros: `desde`, `xJust`.
-- `ContingenciaDoPerfil`: O que o perfil de um documento com contingência automática oferece ao emissor. Hoje, só o da NF-e (55 e 65). `C` é o contexto do emissor; o módulo não depende dele. Membros: `escopo()`, `dosBytes()`, `aplicar()`, `offline()`, `sondar()`, `sondarSvc()`, `falha()`, `svcDesativada()`.
-- `ContingenciaDosBytes`: O que os bytes assinados dizem da contingência (pela chave de acesso). Membros: `escopo`, `emContingencia`, `offline`.
 - `ContingenciaOpcoes`: Opções da contingência automática. Desligada por padrão. Membros: `automatica`, `limiteFalhas`, `janelaMs`, `sondaMs`, `xJust`.
 - `DesfechoAutorizado` (estende `DesfechoBase`): A SEFAZ autorizou estes bytes. `proc` é o documento com o protocolo, com os bytes gravados dentro. Membros: `tipo`, `cStat`, `xMotivo`, `proc`, `protocolo`, `situacaoAtual`, `bruto`.
 - `DesfechoDenegado` (estende `DesfechoBase`): Uso denegado (só NF-e): o número fica consumido e o documento existe na SEFAZ. Membros: `tipo`, `cStat`, `xMotivo`, `conteudo`, `proc`, `protocolo`, `xml`, `bruto`.
@@ -44,14 +39,14 @@ A raiz tem o que é comum aos documentos e não importa nenhum pacote de documen
 - `Emissor`: Membros: `tipo`, `titular`, `emitir()`, `assinar()`, `retomar()`, `cliente`, `fechar()`.
 - `EmissorOpcoes` (estende `GuardaOpcoes<P, B>`): Membros: `pfx`, `senha`, `certificado`, `ambiente`, `store`, `trava`, `situacaoPosterior`, `recusaRepetida`, `contingencia`, `aoMudarContingencia`, `relogio`, `logger`, `timeoutMs`, `transporte`.
 - `EmissorRetomavel`: O que a retomada precisa de um emissor: só `retomar`, que não monta. Qualquer emissor do pacote serve. Membros: `retomar()`.
-- `EmitirOpcoes` (estende `GuardaOpcoes<P, B>`): Membros: `meta`, `reenviarRecusado`.
+- `EmitirOpcoes` (estende `GuardaOpcoes<P, B>, EnvioOpcoes`): Opções de `emitir`. Membros: `meta`, `reenviarRecusado`.
 - `EntradaPreparada`: O que `preparar` devolve: a entrada e os dados do integrador gravados com os bytes (vale sobre `EmitirOpcoes.meta`). Membros: `entrada`, `meta`.
+- `EnvioOpcoes`: Opções de toda chamada do emissor que vai à rede, com o mesmo `signal` dos clientes dos documentos. Membros: `signal`.
 - `EscopoContingencia`: O autorizador normal de um documento, modelo e UF: cada um entra e sai da contingência sozinho. Membros: `documento`, `modelo`, `uf`.
 - `EstadoContingencia`: Contingência de um autorizador (ADR 0013), pelo relógio do banco: desde quando, por quê e a última consulta de status (a sonda que decide a volta). Membros: `desde`, `motivo`, `sondadaEm`, `fimDaSvc`.
 - `FiltroPendentes`: Seleção da retomada automática. Durações, medidas pelo relógio do banco. Membros: `idadeMaximaMs`, `paradaHaMs`, `intervaloDepoisDoAlertaMs`, `limite`.
 - `GravacaoTransmissao`: O que o emissor grava. Membros: `xml`, `id`, `meta`.
 - `GuardaOpcoes`: Como o integrador guarda o documento: no emissor (padrão de todas as chamadas) ou em cada chamada. Membros: `aoDecidir`, `jaGuardado`.
-- `PerfilDocumento`: O que muda de um documento para outro. `enviar` nunca monta: recebe os bytes gravados, espera o recibo quando houver, resolve a duplicidade e o envio sem resposta pela consulta, e devolve o desfecho normalizado. Só lança o que não é da SEFAZ nem da rede (configuração, política do transporte, bug). Membros: `tipo`, `indefinido()`, `transitorio()`, `conteudoParaRecusa()`, `recusaPorCampoVolatil()`, `contingencia`, `criarCliente()`, `assinar()`, `enviar()`.
 - `PoliticaRetomada`: Membros: `idadeMaximaMs`, `paradaHaMs`, `lote`, `prazoMs`, `alertarDepoisDe`, `intervaloDepoisDoAlertaMs`.
 - `PoolDeEmissores`: Membros: `usar()`, `fechar()`.
 - `PoolOpcoes`: Membros: `criar`, `chave`, `validadeMs`, `maximo`, `relogio`.
@@ -60,9 +55,8 @@ A raiz tem o que é comum aos documentos e não importa nenhum pacote de documen
 - `RecusaRepetidaOpcoes`: Barreira contra reenviar a mesma nota recusada. Membros: `janelaMs`, `limite`.
 - `RegistroTransmissao`: Bytes gravados de um documento, com a contagem da retomada automática. Membros: `tipo`, `ref`, `xml`, `id`, `gravacao`, `assinadoEm`, `meta`, `tentativas`, `ultimaTentativaEm`, `alertadoEm`.
 - `ResumoRetomada`: Membros: `candidatas`, `desfechos`, `alertas`, `adiadas`.
-- `RetomadaOpcoes`: Membros: `store`, `usarEmissor`, `politica`, `deveRetomar`, `aoAlertar`, `aoDecidir`, `jaGuardado`, `relogio`.
-- `RetomarOpcoes` (estende `GuardaOpcoes<P, B>`): Opções de `retomar`. Membros: `gravacao`.
-- `Sonda`: Resultado da consulta de status do autorizador normal: 107 é em operação; 108, 109 ou sem resposta, fora. Membros: `emOperacao`, `detalhe`.
+- `RetomadaOpcoes`: Membros: `store`, `usarEmissor`, `politica`, `deveRetomar`, `aoAlertar`, `aoDecidir`, `jaGuardado`, `relogio`, `signal`.
+- `RetomarOpcoes` (estende `GuardaOpcoes<P, B>, EnvioOpcoes`): Opções de `retomar`. `signal` segue o contrato de `emitir`. Membros: `gravacao`.
 - `TransmissaoStore`: Membros: `travar()`, `renovar()`, `soltar()`, `ler()`, `gravar()`, `descartar()`, `concluir()`, `listarPendentes()`, `registrarTentativa()`, `registrarRecusa()`, `recusaRecente()`, `registrarFalhaDoAutorizador()`, `contingenciaAtiva()`, `entrarEmContingencia()`, `sairDaContingencia()`, `reservarSonda()`, `marcarFimDaSvc()`.
 - `Trava`: Trava de um documento. `token` identifica o dono: renovar, soltar, descartar e concluir só valem com ele. Membros: `tipo`, `ref`, `token`.
 - `TravaOpcoes`: Membros: `prazoMs`, `renovarACadaMs`.
@@ -80,12 +74,10 @@ A raiz tem o que é comum aos documentos e não importa nenhum pacote de documen
 - `DestinoDosBytes`: O que fazer com os bytes gravados depois de um desfecho. `type DestinoDosBytes = 'concluir' | 'manter' | 'descartar'`
 - `Instante`: Instante no tempo, como os relógios do `@sinete/core` o devolvem (o tipo `Date`, sem tocar no global). `type Instante = ReturnType<Relogio['agora']>`
 - `JaGuardado`: O integrador já guardou o documento destes bytes? Consultado com a trava, quando há bytes gravados, antes de ir à SEFAZ. `type JaGuardado = (registro: RegistroTransmissao) => boolean | Promise<boolean>`
-- `ModoEnvio`: `primeiro`: os bytes acabaram de ser gravados e nunca saíram. `retomada`: podem ter chegado à SEFAZ. `type ModoEnvio = 'primeiro' | 'retomada'`
 - `MotivoPendencia`: Por que os bytes ficaram pendentes: `type MotivoPendencia = 'sem-resposta' | 'consulta-indefinida' | 'lote-em-processamento' | 'contingencia'`
 - `MudancaContingencia`: Aviso ao integrador: o escopo entrou em contingência, saiu dela, ou o autorizador normal está fora e a SVC não está ativada para a UF (`svc-indisponivel`: as notas seguem em emissão normal e ficam pendentes; repete a cada consulta da SVC, uma por `sondaMs`).
 - `PrepararEntrada`: Prepara a entrada só quando for montar: chamada com a trava, e só sem bytes gravados. Serve para conferir que o documento ainda pode ser emitido e para ler do banco o que vai na montagem, sem esse trabalho (ou essa recusa) numa retomada, que ignora a entrada. `type PrepararEntrada<Entrada> = () => Promise<EntradaPreparada<Entrada>>`
 - `SituacaoPosterior`: Situação do documento autorizado que mudou fora deste fluxo. `encerrado` só existe no MDF-e. `type SituacaoPosterior = 'cancelado' | 'encerrado'`
-- `SondaSvc`: Situação da SVC da UF pela consulta de status nela (NT 2013.007 v1.03, item 04.7, regras K05.1 a K05.3): `ativa` (107), `desativando` (113, com o instante em que deixa de atender a UF, `undefined` se o `xMotivo` não o diz), `desativada` (114) ou `indisponivel` (sem resposta ou outro código).
 - `TipoDocumento`: Documentos que o emissor conhece. Cada um tem um subpath: `@sinete/emissor/nfe`, `/mdfe`, `/nfse`. `type TipoDocumento = 'nfe' | 'mdfe' | 'nfse'`
 
 ### Constantes
@@ -103,7 +95,7 @@ O envio espera o recibo quando a SEFAZ responde 103 (mesmo no envio síncrono), 
 ### Funções
 
 - `criarEmissorNfe`: Abre o PFX e devolve o emissor de NF-e. Nada vai à rede até a primeira operação que precisa dela; o certificado fora da validade é recusado aqui (`ErroCertificado`). `criarEmissorNfe(opcoes: EmissorNfeOpcoes): Promise<EmissorNfe>`
-- `perfilNfe`: Perfil da NF-e para o `criarEmissor` da raiz. `perfilNfe(opcoes?: PerfilNfeOpcoes): PerfilDocumento<EntradaNfe, ClienteNfe, ProtocoloNfe, BrutoNfe>`
+- `perfilNfe`: Perfil da NF-e para o `criarEmissor` de `@sinete/emissor/perfil`. Experimental, como aquele subpath (ADR 0016): a forma do perfil (`PerfilDocumento`) pode mudar em versão minor. Para emitir, use a fábrica deste subpath, que é estável. `perfilNfe(opcoes?: PerfilNfeOpcoes): PerfilDocumento<EntradaNfe, ClienteNfe, ProtocoloNfe, BrutoNfe>`
 
 ### Interfaces
 
@@ -137,7 +129,7 @@ Mesma política da NF-e, com as diferenças do protocolo: a recepção é síncr
 ### Funções
 
 - `criarEmissorMdfe`: Abre o PFX e devolve o emissor de MDF-e. Nada vai à rede até a primeira operação que precisa dela; o certificado fora da validade é recusado aqui (`ErroCertificado`). `criarEmissorMdfe(opcoes: EmissorMdfeOpcoes): Promise<EmissorMdfe>`
-- `perfilMdfe`: Perfil do MDF-e para o `criarEmissor` da raiz. `perfilMdfe(opcoes?: PerfilMdfeOpcoes): PerfilDocumento<EntradaMdfe, ClienteMdfe, ProtocoloMdfe, BrutoMdfe>`
+- `perfilMdfe`: Perfil do MDF-e para o `criarEmissor` de `@sinete/emissor/perfil`. Experimental, como aquele subpath (ADR 0016): a forma do perfil (`PerfilDocumento`) pode mudar em versão minor. Para emitir, use a fábrica deste subpath, que é estável. `perfilMdfe(opcoes?: PerfilMdfeOpcoes): PerfilDocumento<EntradaMdfe, ClienteMdfe, ProtocoloMdfe, BrutoMdfe>`
 
 ### Interfaces
 
@@ -170,7 +162,7 @@ Diferenças que vêm do protocolo: a chave da NFS-e só existe depois da geraç�
 ### Funções
 
 - `criarEmissorNfse`: Abre o PFX e devolve o emissor da NFS-e. Nada vai à rede até a primeira operação que precisa dela; o certificado fora da validade é recusado aqui (`ErroCertificado`). `criarEmissorNfse(opcoes: EmissorNfseOpcoes): Promise<EmissorNfse>`
-- `perfilNfse`: Perfil da NFS-e para o `criarEmissor` da raiz. `perfilNfse(opcoes?: PerfilNfseOpcoes): PerfilDocumento<DadosDps, ClienteNfse, NfseGerada, BrutoNfse>`
+- `perfilNfse`: Perfil da NFS-e para o `criarEmissor` de `@sinete/emissor/perfil`. Experimental, como aquele subpath (ADR 0016): a forma do perfil (`PerfilDocumento`) pode mudar em versão minor. Para emitir, use a fábrica deste subpath, que é estável. `perfilNfse(opcoes?: PerfilNfseOpcoes): PerfilDocumento<DadosDps, ClienteNfse, NfseGerada, BrutoNfse>`
 
 ### Interfaces
 
@@ -178,6 +170,7 @@ Diferenças que vêm do protocolo: a chave da NFS-e só existe depois da geraç�
 - `EmissorNfseOpcoes` (estende `EmissorOpcoes<NfseGerada, BrutoNfse>, PerfilNfseOpcoes`): Membros: `da`.
 - `ModuloDanfse`: O que o emissor precisa do `@sinete/da`: o módulo `@sinete/da/nfse` serve como está. Membros: `danfse()`, `gerarPdf()`.
 - `PdfNfseOpcoes`: Opções do `pdf` da NFS-e: as do `danfse` do `@sinete/da/nfse`. Membros: `cancelamento`, `substituicao`, `canhoto`, `nomeMunicipio`.
+- `PdfPorChaveOpcoes` (estende `MarcaDanfseAutomatica, EnvioOpcoes`): Opções do `pdfPorChave`: as do DANFSe com a marca automática e o `signal` das consultas.
 - `PerfilNfseOpcoes`: Membros: `montagem`, `cliente`.
 
 ### Tipos
@@ -229,3 +222,31 @@ Não depende de runner de teste: devolve casos com `nome` e `rodar`, que lançam
 - `AmbienteContrato`: Dois processos sobre o mesmo banco, vazio. Membros: `a`, `b`, `fechar`.
 - `CasoContrato`: Membros: `nome`, `rodar()`.
 - `ContratoOpcoes`: Membros: `criar`, `prazoCurtoMs`, `esperar`, `recusas`, `contingencia`.
+
+## `@sinete/emissor/perfil`
+
+`@sinete/emissor/perfil`: `criarEmissor` com o perfil de um documento, para quem compõe o próprio emissor.
+
+**Experimental**: fora da garantia de estabilidade (ADR 0016). Cada gancho novo do perfil (`transitorio`, `contingencia`, `conteudoParaRecusa`, que o ADR 0012 e o ADR 0013 acrescentaram) muda um tipo daqui, e quem implementa um perfil próprio pode precisar mudar o código em qualquer versão minor. Para emitir, use a fábrica do documento (`criarEmissorNfe` em `@sinete/emissor/nfe`, `criarEmissorMdfe`, `criarEmissorNfse`), que é estável.
+
+Como a raiz, este subpath não importa nenhum pacote de documento.
+
+@experimental
+
+### Funções
+
+- `criarEmissor`: Abre o PFX (ou usa o certificado aberto) e devolve o emissor. Nada vai à rede até a primeira operação que precisa dela; o certificado fora da validade é recusado aqui (`ErroCertificado`). `criarEmissor<Entrada, Cliente, P, B>(perfil: PerfilDocumento<Entrada, Cliente, P, B>, opcoes: EmissorOpcoes<P, B>): Promise<Emissor<Entrada, Cliente, P, B>>`
+
+### Interfaces
+
+- `ContextoEmissor`: O que o perfil recebe do emissor: certificado aberto, relógio e o transporte do certificado. Membros: `ambiente`, `relogio`, `assinador`, `titular`, `logger`, `timeoutMs`, `transporte()`.
+- `ContingenciaAplicada`: O que entra na nota em contingência. Membros: `desde`, `xJust`.
+- `ContingenciaDoPerfil`: O que o perfil de um documento com contingência automática oferece ao emissor. Hoje, só o da NF-e (55 e 65). `C` é o contexto do emissor; o módulo não depende dele. Experimental, como o perfil (`@sinete/emissor/perfil`). Membros: `escopo()`, `dosBytes()`, `aplicar()`, `offline()`, `sondar()`, `sondarSvc()`, `falha()`, `svcDesativada()`.
+- `ContingenciaDosBytes`: O que os bytes assinados dizem da contingência (pela chave de acesso). Membros: `escopo`, `emContingencia`, `offline`.
+- `PerfilDocumento`: O que muda de um documento para outro. `enviar` nunca monta: recebe os bytes gravados, espera o recibo quando houver, resolve a duplicidade e o envio sem resposta pela consulta, e devolve o desfecho normalizado. Só lança o que não é da SEFAZ nem da rede (configuração, política do transporte, bug). Membros: `tipo`, `indefinido()`, `transitorio()`, `conteudoParaRecusa()`, `recusaPorCampoVolatil()`, `contingencia`, `criarCliente()`, `assinar()`, `enviar()`.
+- `Sonda`: Resultado da consulta de status do autorizador normal: 107 é em operação; 108, 109 ou sem resposta, fora. Membros: `emOperacao`, `detalhe`.
+
+### Tipos
+
+- `ModoEnvio`: `primeiro`: os bytes acabaram de ser gravados e nunca saíram. `retomada`: podem ter chegado à SEFAZ. `type ModoEnvio = 'primeiro' | 'retomada'`
+- `SondaSvc`: Situação da SVC da UF pela consulta de status nela (NT 2013.007 v1.03, item 04.7, regras K05.1 a K05.3): `ativa` (107), `desativando` (113, com o instante em que deixa de atender a UF, `undefined` se o `xMotivo` não o diz), `desativada` (114) ou `indisponivel` (sem resposta ou outro código).

@@ -99,7 +99,9 @@ export type SondaSvc =
 
 /**
  * O que o perfil de um documento com contingência automática oferece ao emissor. Hoje, só o da NF-e (55 e 65).
- * `C` é o contexto do emissor; o módulo não depende dele.
+ * `C` é o contexto do emissor; o módulo não depende dele. Experimental, como o perfil (`@sinete/emissor/perfil`).
+ *
+ * @experimental
  */
 export interface ContingenciaDoPerfil<Entrada, C> {
   /** Escopo do autorizador normal da entrada; `undefined` se a entrada já traz a contingência. */

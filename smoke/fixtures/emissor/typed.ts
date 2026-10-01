@@ -21,6 +21,9 @@ import type { DesfechoNfe, EmissorNfe, EmissorNfeOpcoes } from '@sinete/emissor/
 import { criarEmissorNfe } from '@sinete/emissor/nfe';
 import type { EmissorNfse, EmissorNfseOpcoes } from '@sinete/emissor/nfse';
 import { criarEmissorNfse } from '@sinete/emissor/nfse';
+import type { PerfilDocumento } from '@sinete/emissor/perfil';
+import { criarEmissor } from '@sinete/emissor/perfil';
+import { perfilNfe } from '@sinete/emissor/nfe';
 
 declare const pfx: Uint8Array;
 const store: TransmissaoStore = criarMemoriaStore();
@@ -57,3 +60,9 @@ const resumo: Promise<ResumoRetomada> = retomarPendentes({
 });
 const casos: readonly CasoContrato[] = casosDoContrato({ criar: () => ({ a: store, b: store }) });
 void [mdfe, nfse, danfsePdf, danfsePorChave, semStore, semDecisao, comGancho, proc, generico, destino, resumo, casos];
+
+// O perfil e o criarEmissor ficam no subpath experimental /perfil (ADR 0016); o perfil de cada documento serve nele.
+const perfilDaNfe = perfilNfe();
+const tipoDoPerfil: PerfilDocumento<unknown, unknown>['tipo'] = perfilDaNfe.tipo;
+const proprio: Promise<unknown> = criarEmissor(perfilDaNfe, { pfx, senha: 's', ambiente: 'homologacao', store, aoDecidir });
+void [tipoDoPerfil, proprio];

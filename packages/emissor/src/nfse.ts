@@ -37,10 +37,11 @@ import { carregadorDa } from './da.ts';
 export type { PdfNfseOpcoes } from './da.ts';
 
 import type { Desfecho, DesfechoEvento } from './desfecho.ts';
-import { semResposta } from './desfecho.ts';
 import type { ContextoEmissor, Emissor, EmissorOpcoes, EmitirOpcoes, PerfilDocumento } from './emissor.ts';
 import { criarEmissor } from './emissor.ts';
 import { eventoRecusado, eventoRegistrado } from './evento.ts';
+import type { EnvioOpcoes } from './sinal.ts';
+import { abortado, conferirSinal, erroCancelado, falhaSemResposta } from './sinal.ts';
 
 /** De onde sai o desfecho da NFS-e: a emissão ou a NFS-e da consulta da DPS. */
 export type BrutoNfse = ResultadoNfse<NfseGerada> | NfseConsultada;
@@ -101,7 +102,12 @@ function idDe(xml: string): string {
   return id;
 }
 
-/** Perfil da NFS-e para o `criarEmissor` da raiz. */
+/**
+ * Perfil da NFS-e para o `criarEmissor` de `@sinete/emissor/perfil`. Experimental, como aquele subpath (ADR 0016): a forma do
+ * perfil (`PerfilDocumento`) pode mudar em versão minor. Para emitir, use a fábrica deste subpath, que é estável.
+ *
+ * @experimental
+ */
 export function perfilNfse(
   opcoes: PerfilNfseOpcoes = {},
 ): PerfilDocumento<DadosDps, ClienteNfse, NfseGerada, BrutoNfse> {
@@ -126,16 +132,17 @@ export function perfilNfse(
   });
 
   /** Envia; sem resposta ou E0014, resolve pela consulta da DPS. `reenvia` limita o reenvio a um. */
-  async function autorizar(cli: ClienteNfse, xml: string, reenvia: boolean): Promise<DesfechoNfse> {
+  async function autorizar(cli: ClienteNfse, xml: string, reenvia: boolean, env?: EnvioOpcoes): Promise<DesfechoNfse> {
     let r: ResultadoNfse<NfseGerada>;
     try {
-      r = await cli.autorizar(xml);
+      r = await cli.autorizar(xml, env);
     } catch (e) {
-      if (!semResposta(e)) throw e;
-      return resolver(cli, xml, undefined, e, reenvia);
+      const falha = falhaSemResposta(e, env?.signal);
+      if (falha === undefined) throw e;
+      return resolver(cli, xml, undefined, falha, reenvia, env);
     }
     if (r.tipo === 'autorizado') return gerada(idDe(xml), r);
-    return CODIGOS.duplicidade.has(r.cStat) ? resolver(cli, xml, r, undefined, reenvia) : recusado(idDe(xml), r);
+    return CODIGOS.duplicidade.has(r.cStat) ? resolver(cli, xml, r, undefined, reenvia, env) : recusado(idDe(xml), r);
   }
 
   async function resolver(
@@ -144,26 +151,30 @@ export function perfilNfse(
     anterior: RejeicaoNfse | undefined,
     erroEnvio: unknown,
     reenvia: boolean,
+    env?: EnvioOpcoes,
   ): Promise<DesfechoNfse> {
     const id = idDe(xml);
+    // A recusa que levou à consulta (E0014) vai junto da pendência.
+    const ant = anterior === undefined ? {} : { anterior: { cStat: anterior.cStat, xMotivo: anterior.xMotivo } };
+    // Depois do abort, nenhuma chamada nova: os bytes ficam para a retomada.
+    if (abortado(env?.signal)) {
+      const causa = erroEnvio ?? erroCancelado(env.signal, 'consulta');
+      return { documento: 'nfse', tipo: 'pendente', id, motivo: 'sem-resposta', causa, ...ant };
+    }
     let res: ResolucaoEnvio;
     try {
-      res = await resolverEnvioSemResposta(cli, xml);
+      res = await resolverEnvioSemResposta(cli, xml, anterior, env);
     } catch (e) {
-      if (!semResposta(e)) throw e;
-      return {
-        documento: 'nfse',
-        tipo: 'pendente',
-        id,
-        motivo: 'sem-resposta',
-        causa: erroEnvio ?? e,
-        // A recusa que levou à consulta (E0014) vai junto da pendência.
-        ...(anterior === undefined ? {} : { anterior: { cStat: anterior.cStat, xMotivo: anterior.xMotivo } }),
-      };
+      const falha = falhaSemResposta(e, env?.signal);
+      if (falha === undefined) throw e;
+      return { documento: 'nfse', tipo: 'pendente', id, motivo: 'sem-resposta', causa: erroEnvio ?? falha, ...ant };
     }
     switch (res.acao) {
       case 'concluida':
         return gerada(id, res.resultado);
+      case 'indefinida':
+        // A consulta respondeu sem decidir (a DPS consta sem a NFS-e, ou a E0014 sem a DPS na consulta): os bytes ficam.
+        return { documento: 'nfse', tipo: 'pendente', id, motivo: 'consulta-indefinida', xMotivo: res.motivo, ...ant };
       case 'divergente':
         return {
           documento: 'nfse',
@@ -176,7 +187,7 @@ export function perfilNfse(
           bruto: res.nfse,
         };
       case 'reenviar':
-        if (reenvia) return autorizar(cli, res.dpsAssinada, false);
+        if (reenvia) return autorizar(cli, res.dpsAssinada, false, env);
         if (anterior !== undefined) return recusado(id, anterior);
         if (erroEnvio !== undefined) {
           return { documento: 'nfse', tipo: 'pendente', id, motivo: 'sem-resposta', causa: erroEnvio };
@@ -217,8 +228,8 @@ export function perfilNfse(
       if (!r.ok) throw new ErroDeValidacao('a DPS não passou na validação', r.ocorrencias);
       return { id: r.valor.id, xml: await assinarDps(r.valor, ctx.assinador) };
     },
-    enviar: (cli: ClienteNfse, xml: string, modo: 'primeiro' | 'retomada'): Promise<DesfechoNfse> =>
-      modo === 'primeiro' ? autorizar(cli, xml, true) : resolver(cli, xml, undefined, undefined, true),
+    enviar: (cli: ClienteNfse, xml: string, modo: 'primeiro' | 'retomada', env?: EnvioOpcoes): Promise<DesfechoNfse> =>
+      modo === 'primeiro' ? autorizar(cli, xml, true, env) : resolver(cli, xml, undefined, undefined, true, env),
   };
 }
 
@@ -246,13 +257,15 @@ export interface EmissorNfse extends Emissor<DadosDps, ClienteNfse, NfseGerada, 
    * nova NFS-e e registra sozinha o cancelamento por substituição da anterior.
    */
   substituir(ref: string, dps: DadosDps, opcoes?: EmitirOpcoes): Promise<DesfechoNfse>;
-  /** NFS-e pela chave, ou `undefined` se a Sefin não a conhece. */
-  consultar(chave: string): Promise<NfseConsultada | undefined>;
+  /** NFS-e pela chave, ou `undefined` se a Sefin não a conhece. Passagem direta para `cliente.consultar` (ADR 0010). */
+  consultar(chave: string, opcoes?: EnvioOpcoes): Promise<NfseConsultada | undefined>;
   /**
    * Cancela (101101). Sem resposta, ou com E0840 (evento já vinculado à NFS-e), confirma pela consulta do e101101 se
-   * a Sefin registrou o cancelamento (`recuperado: true`). Nunca conclui pelo código sozinho.
+   * a Sefin registrou o cancelamento (`recuperado: true`). Nunca conclui pelo código sozinho. `opcoes.signal` cancela:
+   * antes de o pedido sair, lança o `cancelado`; depois, o desfecho é `pendente` com `motivo: 'sem-resposta'`, sem a
+   * consulta.
    */
-  cancelar(pedido: CancelamentoNfseEmissor): Promise<DesfechoCancelamentoNfse>;
+  cancelar(pedido: CancelamentoNfseEmissor, opcoes?: EnvioOpcoes): Promise<DesfechoCancelamentoNfse>;
   /**
    * PDF do DANFSe v2 a partir do XML da NFS-e: o `proc` do desfecho autorizado, o que o `aoDecidir` guardou (`opcoes`
    * são as do `danfse` do `@sinete/da/nfse`). Nada vai à rede.
@@ -269,12 +282,16 @@ export interface EmissorNfse extends Emissor<DadosDps, ClienteNfse, NfseGerada, 
    * PDF do DANFSe para quem não guardou o XML: consulta a NFS-e pela chave na Sefin e os eventos que a marcam
    * (cancelamento, deferido por análise fiscal, por ofício e por substituição, sequência 1), e gera com a marca, se
    * houver. `undefined` se a Sefin não conhece a chave. Prefira o `pdf` com o XML guardado: são até cinco consultas.
+   * `opcoes.signal` cancela as consultas (lança o `ErroTransporte` com `code: 'cancelado'`).
    */
-  pdfPorChave(chave: string, opcoes?: MarcaDanfseAutomatica): Promise<Uint8Array | undefined>;
+  pdfPorChave(chave: string, opcoes?: PdfPorChaveOpcoes): Promise<Uint8Array | undefined>;
 }
 
 /** Opções do DANFSe quando o emissor põe a marca: a marca sai do evento, não das opções. */
 export type MarcaDanfseAutomatica = Omit<PdfNfseOpcoes, 'cancelamento' | 'substituicao'>;
+
+/** Opções do `pdfPorChave`: as do DANFSe com a marca automática e o `signal` das consultas. */
+export interface PdfPorChaveOpcoes extends MarcaDanfseAutomatica, EnvioOpcoes {}
 
 /**
  * Abre o PFX e devolve o emissor da NFS-e. Nada vai à rede até a primeira operação que precisa dela; o certificado
@@ -300,14 +317,20 @@ export async function criarEmissorNfse(opcoes: EmissorNfseOpcoes): Promise<Emiss
   async function recuperar(
     chave: string,
     falha: { readonly erro: unknown } | RejeicaoNfse,
+    env: EnvioOpcoes | undefined,
   ): Promise<DesfechoCancelamentoNfse> {
     const bruto = 'erro' in falha ? undefined : falha;
+    if (abortado(env?.signal)) {
+      const causa = 'erro' in falha ? falha.erro : erroCancelado(env.signal, 'consulta');
+      return { tipo: 'pendente', motivo: 'sem-resposta', causa, bruto };
+    }
     let eventos: readonly EventoRegistrado[];
     try {
-      eventos = await base.cliente.consultarEventos(chave, { tpEvento: CANCELAMENTO, nSeqEvento: 1 });
+      eventos = await base.cliente.consultarEventos(chave, { tpEvento: CANCELAMENTO, nSeqEvento: 1 }, env);
     } catch (e) {
-      if (!semResposta(e)) throw e;
-      return { tipo: 'pendente', motivo: 'sem-resposta', causa: 'erro' in falha ? falha.erro : e, bruto };
+      const f = falhaSemResposta(e, env?.signal);
+      if (f === undefined) throw e;
+      return { tipo: 'pendente', motivo: 'sem-resposta', causa: 'erro' in falha ? falha.erro : f, bruto };
     }
     const achado = eventos.find((ev) => ev.chaveAcesso === chave && ev.tpEvento === CANCELAMENTO);
     if (achado !== undefined) return eventoRegistrado(achado, achado.xml, eventoRegistradoNfse, true, bruto);
@@ -315,20 +338,22 @@ export async function criarEmissorNfse(opcoes: EmissorNfseOpcoes): Promise<Emiss
     return eventoRecusado<EventoRegistrado, ResultadoNfse<EventoRegistrado>>(falha, falha);
   }
 
-  async function cancelar(p: CancelamentoNfseEmissor): Promise<DesfechoCancelamentoNfse> {
+  async function cancelar(p: CancelamentoNfseEmissor, env?: EnvioOpcoes): Promise<DesfechoCancelamentoNfse> {
     const autor = p.autor ?? titular;
     if (autor === undefined)
       throw new ErroDeConfiguracao('informe o autor do cancelamento: o certificado não traz CNPJ nem CPF');
+    conferirSinal(env?.signal, 'cancelar');
     let o: ResultadoNfse<EventoRegistrado>;
     try {
-      o = await base.cliente.cancelar({ ...p, autor });
+      o = await base.cliente.cancelar({ ...p, autor }, env);
     } catch (e) {
-      if (!semResposta(e)) throw e;
-      return recuperar(p.chave, { erro: e });
+      const f = falhaSemResposta(e, env?.signal);
+      if (f === undefined) throw e;
+      return recuperar(p.chave, { erro: f }, env);
     }
     if (o.tipo === 'autorizado') return eventoRegistrado(o.valor, o.valor.xml, o, false, o);
     return CODIGOS.eventoJaRegistrado.has(o.cStat)
-      ? recuperar(p.chave, o)
+      ? recuperar(p.chave, o, env)
       : eventoRecusado<EventoRegistrado, ResultadoNfse<EventoRegistrado>>(o, o);
   }
 
@@ -348,18 +373,21 @@ export async function criarEmissorNfse(opcoes: EmissorNfseOpcoes): Promise<Emiss
       }
       return base.emitir(ref, dps, o);
     },
-    consultar: (chave: string): Promise<NfseConsultada | undefined> => base.cliente.consultar(chave),
+    consultar: (chave: string, env?: EnvioOpcoes): Promise<NfseConsultada | undefined> =>
+      base.cliente.consultar(chave, env),
     cancelar,
     pdf: (nfse: string, o?: PdfNfseOpcoes): Promise<Uint8Array> => render(nfse, o),
     pdfCancelado(nfse: string, evento: string, o?: MarcaDanfseAutomatica): Promise<Uint8Array> {
       return render(nfse, { ...o, [opcaoDoEvento(evento)]: evento });
     },
-    async pdfPorChave(chave: string, o?: MarcaDanfseAutomatica): Promise<Uint8Array | undefined> {
-      const nfse = await base.cliente.consultar(chave);
+    async pdfPorChave(chave: string, opcoesPdf?: PdfPorChaveOpcoes): Promise<Uint8Array | undefined> {
+      const { signal, ...o } = opcoesPdf ?? {};
+      const env: EnvioOpcoes | undefined = signal === undefined ? undefined : { signal };
+      const nfse = await base.cliente.consultar(chave, env);
       if (nfse === undefined) return undefined;
       const achados = await Promise.all(
         MARCAS_DANFSE.map(async (m) => {
-          const evs = await base.cliente.consultarEventos(chave, { tpEvento: m.tpEvento, nSeqEvento: 1 });
+          const evs = await base.cliente.consultarEventos(chave, { tpEvento: m.tpEvento, nSeqEvento: 1 }, env);
           const ev = evs.find((e) => e.chaveAcesso === chave && e.tpEvento === m.tpEvento);
           return ev === undefined ? undefined : { opcao: m.opcao, xml: ev.xml };
         }),

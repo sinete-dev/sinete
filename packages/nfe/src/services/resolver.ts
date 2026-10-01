@@ -28,7 +28,7 @@
 
 import type { Recusado } from '@sinete/core';
 import { criarAutorizado, criarDenegado } from '@sinete/core';
-import type { ClienteNfe, ProtocoloNfe, ResultadoAutorizacao, ResultadoConsulta } from './client.ts';
+import type { ClienteNfe, EnvioOpcoes, ProtocoloNfe, ResultadoAutorizacao, ResultadoConsulta } from './client.ts';
 import { cstatEm } from './outcome.ts';
 import { documentoAssinado } from './proc.ts';
 
@@ -85,12 +85,14 @@ export function chaveDaDuplicidade(xMotivo: string): string | undefined {
 
 /**
  * Resolve um envio de autorização sem resposta, ou cuja resposta foi 204 ou 539, consultando a chave da NF-e
- * assinada. `anterior` é o desfecho do envio, quando houve um.
+ * assinada. `anterior` é o desfecho do envio, quando houve um. `opcoes.signal` cancela a consulta (lança o
+ * `ErroTransporte` com `code: 'cancelado'`).
  */
 export async function resolverEnvioSemResposta(
   cliente: ClienteNfe,
   nfeAssinada: string,
   anterior?: ResultadoAutorizacao,
+  opcoes?: EnvioOpcoes,
 ): Promise<ResolucaoEnvio> {
   const a = documentoAssinado(nfeAssinada, 'NFe', 'infNFe');
   const chave = a.id.slice(3);
@@ -98,7 +100,7 @@ export async function resolverEnvioSemResposta(
     const outra = chaveDaDuplicidade(anterior.xMotivo);
     return { acao: 'divergente', motivo: anterior, ...(outra === undefined ? {} : { chNFe: outra }) };
   }
-  const consulta = await cliente.consultar(chave, nfeAssinada);
+  const consulta = await cliente.consultar(chave, nfeAssinada, opcoes);
   if (consulta.tipo === 'recusado') {
     if (cstatEm(consulta.cStat, 'naoConsta')) return { acao: 'reenviar', nfeAssinada: a.xml };
     // 561, 562 e 613 na consulta: a chave local não consta, mas a numeração dela tem outra NF-e (outro mês, outro cNF

@@ -115,6 +115,23 @@ Um integrador em produção recebeu NF-e denegadas (302) com o `protNFe` sem `di
 
 O `@sinete/sefaz-sim` ganhou `setProtocoloSemDigVal('denegacao' | 'todos', onde)`, que tira o `digVal` das respostas da autorização, da consulta ou das duas, para os testes do emissor reproduzirem o caso.
 
+### 8. `signal` no emissor (0.3.0)
+
+Os clientes dos documentos aceitam `signal` em toda chamada que vai à rede; o emissor e os resolvedores não aceitavam, e quem queria um prazo próprio para `emitir` (a requisição HTTP do usuário, o desligamento do processo) não tinha como parar. O `signal` entra como opção (`EnvioOpcoes`, o mesmo formato do dos clientes) em `emitir`, `retomar`, `substituir` (NFS-e), `consultar`, `cancelar`, `cartaCorrecao`, `encerrar` e `pdfPorChave`, em `retomarPendentes`, e no `opcoes?` do fim de `resolverEnvioSemResposta` e `recuperarEventoRegistrado` dos três documentos.
+
+O abort tem dois lados, separados pelo momento em que os bytes são gravados, porque é ali que a política dos bytes (decisão 3) passa a valer:
+
+1. **Antes de gravar, lança.** Sinal já disparado na chamada, ou disparado na preparação, na montagem ou na assinatura: `emitir` lança o `ErroTransporte` com `code: 'cancelado'`, nada é gravado, e a trava, se já foi tomada, é solta no `finally` (se o `soltar` falhar, ela vence no prazo, como em qualquer erro). A conferência é feita também logo antes do `gravar`, o último ponto em que o abort não deixa rastro. O mesmo vale para `retomar` com bytes de antes da chamada, disparado antes do envio: lança e os bytes ficam como estavam.
+2. **Depois de gravar, é envio sem resposta.** O abort cancela a requisição em curso (o transporte lança `cancelado`, que o `semResposta` já tratava como envio que pode ter chegado), e o perfil não começa outra chamada à rede: nem a consulta que resolveria o envio, nem o reenvio. O desfecho é `pendente` com `motivo: 'sem-resposta'` e o `cancelado` em `causa`; os bytes ficam (`manter`, com a conferência da trava de sempre), a trava é solta no fim, e `retomar` ou a retomada automática continuam com os mesmos bytes. O abort na espera do recibo (103), que rejeita com o `reason` do sinal, vira o mesmo `cancelado`.
+
+Alternativas descartadas: lançar também depois de gravar deixaria o integrador sem saber se há bytes a retomar e trataria o abort de um jeito diferente da queda de conexão no mesmo ponto, que já é `pendente`; consultar a chave depois do abort contrariaria o pedido de parar. O abort do chamador não conta como falha do autorizador para a contingência automática (ADR 0013), e na retomada automática a gravação abortada no meio, e as que ficaram, contam em `adiadas`, sem tentativa nem alerta.
+
+Nos eventos (`cancelar`, `cartaCorrecao`, `encerrar`), a regra é a mesma, pelo pedido: abortado antes da chamada, ou na consulta que busca o `nProt`, lança o `cancelado`; abortado com o pedido do evento em curso, o desfecho é `pendente` com `motivo: 'sem-resposta'`, sem a consulta de recuperação, que a próxima chamada faz (o mesmo pedido de novo volta como evento já registrado, e o emissor o recupera pela consulta). `consultar` e `pdfPorChave` só leem: lançam o `cancelado`. O `TransmissaoStore` não recebe o sinal: as operações dele são locais e curtas, e interromper uma delas no meio deixaria a trava ou a gravação num estado que a interface não descreve.
+
+### 9. `criarEmissor` e o perfil num subpath experimental (0.3.0)
+
+`criarEmissor`, `PerfilDocumento`, `ContingenciaDoPerfil` e os tipos que só servem a quem implementa um perfil (`ContextoEmissor`, `ModoEnvio`, `ContingenciaAplicada`, `ContingenciaDosBytes`, `Sonda`, `SondaSvc`) saíram da raiz para `@sinete/emissor/perfil`, marcado como experimental pelo [ADR 0016](0016-politica-de-estabilidade.md): cada gancho novo do perfil muda esses tipos, e quem implementa um perfil próprio pode precisar mudar em minor. Os `criarEmissor<Doc>` dos subpaths de documento seguem estáveis; os `perfil<Doc>` deles devolvem o `PerfilDocumento` e são experimentais como ele.
+
 ## Consequências
 
 - O ADR 0008 ganha o critério 5; pacote novo continua precisando citar o critério no PR.
