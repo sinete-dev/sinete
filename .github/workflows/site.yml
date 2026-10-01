@@ -1,0 +1,44 @@
+# Deploy do site (tools/site, Starlight) na Vercel a cada push na main que toca o guia ou o próprio site.
+# O build roda aqui, com o Bun do repo; a Vercel só recebe o estático pronto (--prebuilt), como no deploy manual.
+# Segredos no environment `site`: VERCEL_TOKEN (token da conta com acesso ao projeto), VERCEL_ORG_ID e VERCEL_PROJECT_ID.
+name: site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/guia/**'
+      - 'tools/site/**'
+      - '.github/workflows/site.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: site
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: site
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+        working-directory: tools/site
+      # Mesmo formato da saída do `vercel build` usada até aqui: estático em output/static e trailing slash.
+      - run: |
+          mkdir -p .vercel/output
+          cp -R dist .vercel/output/static
+          printf '{"version":3,"trailingSlash":true}\n' > .vercel/output/config.json
+        working-directory: tools/site
+      - run: bunx vercel@62.1.0 deploy --prebuilt --prod --yes --token "${{ secrets.VERCEL_TOKEN }}"
+        working-directory: tools/site
