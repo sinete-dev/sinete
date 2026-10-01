@@ -1,5 +1,41 @@
 # @sinete/nfe
 
+## 0.3.0
+
+### Minor Changes
+
+- 23c1c08: **Quebra: texto e tamanho dos campos conferidos na entrada** (ADR 0011, revisão de 01/10/2026). O `montarNfe` confere os textos da entrada antes de montar, e as ocorrências abaixo mudam de `caminho` e de `origem`; o texto fora do tipo do leiaute muda também de `code` e de `mensagem`. Quem compara `code` ou `caminho` (lista de códigos que vão para a tela, tabela de rótulos, lista de campos que a aplicação preenche) precisa conferir estes casos:
+  
+  | Ocorrência | Antes | Agora |
+  |---|---|---|
+  | caractere que o XML não representa (de controle, substituto solto), em qualquer texto da entrada | `code: 'campo_invalido'`, caminho do documento montado (`infNFe.ide.natOp`, `infNFe.det[0].prod.xProd`), `origem: 'montagem'`, `mensagem: 'texto com caractere não permitido em XML'` | `code: 'campo_invalido'`, caminho da entrada (`natOp`, `itens[0].produto.xProd`), `origem: 'entrada'`, `mensagem: 'caractere não aceito (símbolo ou caractere de controle)'` |
+  | texto fora do tipo do leiaute (tamanho, espaço nas pontas, caractere fora do `TString`) nos campos listados abaixo | `code: 'schema'`, caminho do XSD (`/infNFe/ide/natOp`, `/infNFe/det[2]/prod/xProd`), `origem: 'montagem'`, `mensagem` do validador (`tamanho_maximo: tamanho máximo 60 (TString)`, `padrao: valor não casa com o pattern (TString)`) | `code: 'campo_invalido'`, caminho da entrada (`natOp`, `itens[1].produto.xProd`), `origem: 'entrada'`, uma ocorrência por regra violada, com `mensagem` para quem preenche o campo |
+  
+  As mensagens novas do texto fora do tipo: `no máximo 60 caracteres (tem 70)` (e `no mínimo`, `exatamente`, com o limite do PL), `sem espaço no começo nem no fim`, `caractere não aceito: “€”` (o primeiro caractere recusado, quando é visível), `caractere não aceito (símbolo ou caractere de controle)` (quando não é), `não pode ficar em branco` (só espaços) e, para o que o tipo recusa sem ser um desses casos, `formato não aceito`. A `mensagem` não é contrato (ADR 0016): o `code`, o `caminho` e a `origem` são.
+  
+  Campos conferidos na entrada: `natOp`; `emitente.xNome`, `xFant` e `endereco.xLgr`, `nro`, `xCpl`, `xBairro`, `xMun`; `destinatario.xNome`, `email` e `endereco.xLgr`, `nro`, `xCpl`, `xBairro`, `xMun`, `xPais`; `retirada` e `entrega` (`xNome`, `xLgr`, `nro`, `xCpl`, `xBairro`, `xMun`, `email`); `itens[n].produto.cProd`, `xProd`, `uCom`, `uTrib`, `xPed`; `itens[n].infAdProd`; `transporte.transportador.xNome`, `xEnder`, `xMun`; `transporte.volumes[n].esp`, `marca`, `nVol`; `cobranca.fatura.nFat`; `cobranca.duplicatas[n].nDup`; `pagamento.detPag[n].xPag`; `informacoesAdicionais.infAdFisco`, `infCpl`, `obsCont[n].xTexto`, `obsFisco[n].xTexto`; `compra.xNEmp`, `xPed`, `xCont`.
+  
+  O limite vem do tipo do elemento no PL da montagem, não de uma tabela de números. Não mudam e continuam `schema` (ou `campo_invalido` com a mensagem antiga, no caractere fora do XML), com o caminho do XML e `origem: 'montagem'`: o nome do destinatário e, na NFC-e, a descrição do primeiro item em homologação (a montagem os troca pelas literais de teste), os grupos repassados no tipo do schema (`exporta`, `infIntermed`, `cana`, `agropecuario` e afins), as opções da montagem (o `respTec` das opções, o CSC, o QR Code) e os valores calculados. O grupo IBSCBS pronto (`itens[n].impostos.ibsCbs.grupo`) segue `schema` com `origem: 'entrada'`, como antes: é estrutura do leiaute montada pelo integrador, não texto digitado. O campo que já tem ocorrência de outra conferência da entrada não ganha a segunda.
+  
+  **`signal` nos resolvedores.** `resolverEnvioSemResposta(cliente, nfeAssinada, anterior?, opcoes?)` e `recuperarEventoRegistrado(cliente, chave, tpEvento, nSeqEvento?, opcoes?)` aceitam `opcoes?: EnvioOpcoes` no fim e repassam o `signal` à consulta. Compatível.
+- 64b8d8a: **Atualize todos os `@sinete/*` juntos.** Nesta versão, parte dos pacotes sobe para 0.3.0 (`@sinete/core`, `@sinete/emissor`, `@sinete/mdfe`, `@sinete/nfe`, `@sinete/nfse`, `@sinete/rejeicoes` e o `sinete`) e o resto sobe em patch (0.2.1, e o `@sinete/ibs-cbs-dados` para a versão do mês), com faixas `^` entre si. Quem fixa versões exatas em `resolutions` (Yarn, Bun) ou `overrides` (npm, pnpm) precisa subir todos os `@sinete/*` na mesma mudança. Um pacote em 0.3.0 com outro preso numa versão anterior força uma combinação que nenhum deles declara: o `@sinete/nfe` 0.3.0 com o `@sinete/core` preso em 0.2.0 roda sem o que a 0.3.0 do core trouxe, ou o gerenciador instala duas cópias do core e o `instanceof` dos erros (`ErroDeValidacao`, `ErroSefaz`) falha entre elas. Quem usa só o `sinete` recebe as versões certas pelo guarda-chuva.
+
+### Patch Changes
+
+- a3993e7: A dependência do `@sinete/ibs-cbs-dados` passa de `^2026.9.2` para `>=2026.9.2`: o pacote de dados tem versão de calendário, e a faixa com `^` não aceitaria o dataset de 2027 nos pacotes já publicados. A compatibilidade passa a ser conferida pelo formato: `calcular`, `validar`, `restringir` e `determinar` do `@sinete/ibs-cbs` recusam com `ibscbs_dados_versao_incompativel` um dataset cujo `versaoDoFormato` não é o que este motor lê, mesmo que o pacote de dados instalado aceite o formato dele (ADR 0016, seção 6).
+- Updated dependencies [a3993e7]
+- Updated dependencies [1864bb5]
+- Updated dependencies [395f19c]
+- Updated dependencies [5547ca1]
+- Updated dependencies [64b8d8a]
+  - @sinete/ibs-cbs@0.2.1
+  - @sinete/ibs-cbs-dados@2026.9.3
+  - @sinete/rejeicoes@0.3.0
+  - @sinete/core@0.3.0
+  - @sinete/schemas@0.2.1
+  - @sinete/transport@0.2.1
+  - @sinete/validators@0.2.1
+
 ## 0.2.0
 
 ### Minor Changes

@@ -1,5 +1,32 @@
 # @sinete/emissor
 
+## 0.3.0
+
+### Minor Changes
+
+- 23c1c08: **Quebra: `criarEmissor` e o perfil saem da raiz.** `criarEmissor`, `PerfilDocumento`, `ContingenciaDoPerfil`, `ContextoEmissor`, `ModoEnvio`, `ContingenciaAplicada`, `ContingenciaDosBytes`, `Sonda` e `SondaSvc` passam a sair por `@sinete/emissor/perfil` (e `sinete/emissor/perfil`), subpath experimental, fora da garantia de estabilidade (ADR 0016): um gancho novo do perfil pode mudar esses tipos em minor. Troque `import { criarEmissor } from '@sinete/emissor'` por `import { criarEmissor } from '@sinete/emissor/perfil'`. `criarEmissorNfe`, `criarEmissorMdfe` e `criarEmissorNfse` não mudam e seguem estáveis; `perfilNfe`, `perfilMdfe` e `perfilNfse` continuam nos subpaths de documento, marcados como experimentais.
+  
+  **`signal` no emissor** (ADR 0010, decisão 8). `EmitirOpcoes` e `RetomarOpcoes` ganham `signal` (`EnvioOpcoes`, exportado pela raiz, o mesmo formato do dos clientes), e `consultar`, `cancelar`, `cartaCorrecao` (NF-e), `encerrar` (MDF-e) e `pdfPorChave` (NFS-e, no tipo novo `PdfPorChaveOpcoes`) aceitam `opcoes?: EnvioOpcoes`. `RetomadaOpcoes.signal` para `retomarPendentes`. Contrato: abortado antes de os bytes serem gravados, `emitir` e `retomar` lançam o `ErroTransporte` com `code: 'cancelado'`, nada é gravado e a trava é solta; abortado depois, a requisição em curso é cancelada, o emissor não consulta nem reenvia, os bytes ficam, a trava é solta e o desfecho é `pendente` com `motivo: 'sem-resposta'` e o `cancelado` em `causa`, para `retomar`. Nos eventos, abortado antes da chamada lança; com o pedido em curso, `pendente` sem a consulta de recuperação. O abort não conta como falha do autorizador para a contingência automática, e as consultas de status da contingência recebem o mesmo `signal` (`ContingenciaDoPerfil.sondar` e `sondarSvc` ganham `opcoes?: EnvioOpcoes`): nenhuma começa depois do abort e a abortada não vale como resposta. Com o sinal disparado, a `causa` da pendência é sempre o `cancelado`; na retomada automática, a gravação abortada e as seguintes contam em `adiadas`. `PerfilDocumento.enviar` recebe o `signal` como quarto parâmetro opcional.
+  
+  **NFS-e: consulta indecisa é `pendente`.** Com o `resolverEnvioSemResposta` novo do `@sinete/nfse`, a DPS que consta como processada sem a NFS-e encontrada, a NFS-e de outra DPS e a E0014 sem a DPS na consulta voltam como `pendente` com `motivo: 'consulta-indefinida'` (e a E0014 em `anterior`), sem o reenvio que só voltaria E0014 de novo. Antes, o primeiro caso chegava como `resposta_invalida` e virava `pendente` com `motivo: 'sem-resposta'`.
+- 64b8d8a: **Atualize todos os `@sinete/*` juntos.** Nesta versão, parte dos pacotes sobe para 0.3.0 (`@sinete/core`, `@sinete/emissor`, `@sinete/mdfe`, `@sinete/nfe`, `@sinete/nfse`, `@sinete/rejeicoes` e o `sinete`) e o resto sobe em patch (0.2.1, e o `@sinete/ibs-cbs-dados` para a versão do mês), com faixas `^` entre si. Quem fixa versões exatas em `resolutions` (Yarn, Bun) ou `overrides` (npm, pnpm) precisa subir todos os `@sinete/*` na mesma mudança. Um pacote em 0.3.0 com outro preso numa versão anterior força uma combinação que nenhum deles declara: o `@sinete/nfe` 0.3.0 com o `@sinete/core` preso em 0.2.0 roda sem o que a 0.3.0 do core trouxe, ou o gerenciador instala duas cópias do core e o `instanceof` dos erros (`ErroDeValidacao`, `ErroSefaz`) falha entre elas. Quem usa só o `sinete` recebe as versões certas pelo guarda-chuva.
+
+### Patch Changes
+
+- Updated dependencies [a3993e7]
+- Updated dependencies [23c1c08]
+- Updated dependencies [23c1c08]
+- Updated dependencies [23c1c08]
+- Updated dependencies [5547ca1]
+- Updated dependencies [64b8d8a]
+  - @sinete/nfe@0.3.0
+  - @sinete/mdfe@0.3.0
+  - @sinete/nfse@0.3.0
+  - @sinete/core@0.3.0
+  - @sinete/cert@0.2.1
+  - @sinete/da@0.2.1
+  - @sinete/transport@0.2.1
+
 ## 0.2.0
 
 ### Minor Changes

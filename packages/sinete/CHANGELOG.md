@@ -1,5 +1,65 @@
 # sinete
 
+## 0.3.0
+
+### Minor Changes
+
+- 23c1c08: **Quebra: `criarEmissor` e o perfil saem da raiz.** `criarEmissor`, `PerfilDocumento`, `ContingenciaDoPerfil`, `ContextoEmissor`, `ModoEnvio`, `ContingenciaAplicada`, `ContingenciaDosBytes`, `Sonda` e `SondaSvc` passam a sair por `@sinete/emissor/perfil` (e `sinete/emissor/perfil`), subpath experimental, fora da garantia de estabilidade (ADR 0016): um gancho novo do perfil pode mudar esses tipos em minor. Troque `import { criarEmissor } from '@sinete/emissor'` por `import { criarEmissor } from '@sinete/emissor/perfil'`. `criarEmissorNfe`, `criarEmissorMdfe` e `criarEmissorNfse` não mudam e seguem estáveis; `perfilNfe`, `perfilMdfe` e `perfilNfse` continuam nos subpaths de documento, marcados como experimentais.
+  
+  **`signal` no emissor** (ADR 0010, decisão 8). `EmitirOpcoes` e `RetomarOpcoes` ganham `signal` (`EnvioOpcoes`, exportado pela raiz, o mesmo formato do dos clientes), e `consultar`, `cancelar`, `cartaCorrecao` (NF-e), `encerrar` (MDF-e) e `pdfPorChave` (NFS-e, no tipo novo `PdfPorChaveOpcoes`) aceitam `opcoes?: EnvioOpcoes`. `RetomadaOpcoes.signal` para `retomarPendentes`. Contrato: abortado antes de os bytes serem gravados, `emitir` e `retomar` lançam o `ErroTransporte` com `code: 'cancelado'`, nada é gravado e a trava é solta; abortado depois, a requisição em curso é cancelada, o emissor não consulta nem reenvia, os bytes ficam, a trava é solta e o desfecho é `pendente` com `motivo: 'sem-resposta'` e o `cancelado` em `causa`, para `retomar`. Nos eventos, abortado antes da chamada lança; com o pedido em curso, `pendente` sem a consulta de recuperação. O abort não conta como falha do autorizador para a contingência automática, e as consultas de status da contingência recebem o mesmo `signal` (`ContingenciaDoPerfil.sondar` e `sondarSvc` ganham `opcoes?: EnvioOpcoes`): nenhuma começa depois do abort e a abortada não vale como resposta. Com o sinal disparado, a `causa` da pendência é sempre o `cancelado`; na retomada automática, a gravação abortada e as seguintes contam em `adiadas`. `PerfilDocumento.enviar` recebe o `signal` como quarto parâmetro opcional.
+  
+  **NFS-e: consulta indecisa é `pendente`.** Com o `resolverEnvioSemResposta` novo do `@sinete/nfse`, a DPS que consta como processada sem a NFS-e encontrada, a NFS-e de outra DPS e a E0014 sem a DPS na consulta voltam como `pendente` com `motivo: 'consulta-indefinida'` (e a E0014 em `anterior`), sem o reenvio que só voltaria E0014 de novo. Antes, o primeiro caso chegava como `resposta_invalida` e virava `pendente` com `motivo: 'sem-resposta'`.
+- 23c1c08: `resolverEnvioSemResposta(cliente, mdfeAssinado, anterior?, opcoes?)` e `recuperarEventoRegistrado(cliente, chave, tpEvento, opcoes?)` aceitam `opcoes?: EnvioOpcoes` no fim e repassam o `signal` à consulta, como os métodos do `ClienteMdfe`. Compatível.
+- 23c1c08: **Quebra: texto e tamanho dos campos conferidos na entrada** (ADR 0011, revisão de 01/10/2026). O `montarNfe` confere os textos da entrada antes de montar, e as ocorrências abaixo mudam de `caminho` e de `origem`; o texto fora do tipo do leiaute muda também de `code` e de `mensagem`. Quem compara `code` ou `caminho` (lista de códigos que vão para a tela, tabela de rótulos, lista de campos que a aplicação preenche) precisa conferir estes casos:
+  
+  | Ocorrência | Antes | Agora |
+  |---|---|---|
+  | caractere que o XML não representa (de controle, substituto solto), em qualquer texto da entrada | `code: 'campo_invalido'`, caminho do documento montado (`infNFe.ide.natOp`, `infNFe.det[0].prod.xProd`), `origem: 'montagem'`, `mensagem: 'texto com caractere não permitido em XML'` | `code: 'campo_invalido'`, caminho da entrada (`natOp`, `itens[0].produto.xProd`), `origem: 'entrada'`, `mensagem: 'caractere não aceito (símbolo ou caractere de controle)'` |
+  | texto fora do tipo do leiaute (tamanho, espaço nas pontas, caractere fora do `TString`) nos campos listados abaixo | `code: 'schema'`, caminho do XSD (`/infNFe/ide/natOp`, `/infNFe/det[2]/prod/xProd`), `origem: 'montagem'`, `mensagem` do validador (`tamanho_maximo: tamanho máximo 60 (TString)`, `padrao: valor não casa com o pattern (TString)`) | `code: 'campo_invalido'`, caminho da entrada (`natOp`, `itens[1].produto.xProd`), `origem: 'entrada'`, uma ocorrência por regra violada, com `mensagem` para quem preenche o campo |
+  
+  As mensagens novas do texto fora do tipo: `no máximo 60 caracteres (tem 70)` (e `no mínimo`, `exatamente`, com o limite do PL), `sem espaço no começo nem no fim`, `caractere não aceito: “€”` (o primeiro caractere recusado, quando é visível), `caractere não aceito (símbolo ou caractere de controle)` (quando não é), `não pode ficar em branco` (só espaços) e, para o que o tipo recusa sem ser um desses casos, `formato não aceito`. A `mensagem` não é contrato (ADR 0016): o `code`, o `caminho` e a `origem` são.
+  
+  Campos conferidos na entrada: `natOp`; `emitente.xNome`, `xFant` e `endereco.xLgr`, `nro`, `xCpl`, `xBairro`, `xMun`; `destinatario.xNome`, `email` e `endereco.xLgr`, `nro`, `xCpl`, `xBairro`, `xMun`, `xPais`; `retirada` e `entrega` (`xNome`, `xLgr`, `nro`, `xCpl`, `xBairro`, `xMun`, `email`); `itens[n].produto.cProd`, `xProd`, `uCom`, `uTrib`, `xPed`; `itens[n].infAdProd`; `transporte.transportador.xNome`, `xEnder`, `xMun`; `transporte.volumes[n].esp`, `marca`, `nVol`; `cobranca.fatura.nFat`; `cobranca.duplicatas[n].nDup`; `pagamento.detPag[n].xPag`; `informacoesAdicionais.infAdFisco`, `infCpl`, `obsCont[n].xTexto`, `obsFisco[n].xTexto`; `compra.xNEmp`, `xPed`, `xCont`.
+  
+  O limite vem do tipo do elemento no PL da montagem, não de uma tabela de números. Não mudam e continuam `schema` (ou `campo_invalido` com a mensagem antiga, no caractere fora do XML), com o caminho do XML e `origem: 'montagem'`: o nome do destinatário e, na NFC-e, a descrição do primeiro item em homologação (a montagem os troca pelas literais de teste), os grupos repassados no tipo do schema (`exporta`, `infIntermed`, `cana`, `agropecuario` e afins), as opções da montagem (o `respTec` das opções, o CSC, o QR Code) e os valores calculados. O grupo IBSCBS pronto (`itens[n].impostos.ibsCbs.grupo`) segue `schema` com `origem: 'entrada'`, como antes: é estrutura do leiaute montada pelo integrador, não texto digitado. O campo que já tem ocorrência de outra conferência da entrada não ganha a segunda.
+  
+  **`signal` nos resolvedores.** `resolverEnvioSemResposta(cliente, nfeAssinada, anterior?, opcoes?)` e `recuperarEventoRegistrado(cliente, chave, tpEvento, nSeqEvento?, opcoes?)` aceitam `opcoes?: EnvioOpcoes` no fim e repassam o `signal` à consulta. Compatível.
+- 23c1c08: **Quebra: `resolverEnvioSemResposta` devolve `indefinida` em vez de lançar.** `ResolucaoEnvio` ganha o caso `{ acao: 'indefinida', motivo, chaveAcesso? }`, como o resolvedor da NF-e e do MDF-e: a consulta respondeu sem decidir. Sai quando a DPS consta como processada e a NFS-e da chave não é encontrada (antes, `ErroRespostaInvalida` "a NFS-e não foi encontrada"), quando a NFS-e da chave é de outra DPS (antes, `ErroRespostaInvalida` "não corresponde à DPS"), e quando o envio voltou E0014 e a consulta não acha a DPS (antes, `reenviar`, que voltaria E0014 de novo). Um `switch` sobre `acao` precisa do caso novo (ou de um `default`, ADR 0016). Erros do transporte e respostas fora do contrato da própria consulta continuam lançando.
+  
+  A assinatura passa a ser `resolverEnvioSemResposta(cliente, dpsAssinada, anterior?, opcoes?)`: `anterior` é o desfecho do envio (`ResultadoNfse<NfseGerada>`), usado para reconhecer a E0014, e `opcoes.signal` vai às consultas. Chamadas com dois argumentos continuam valendo.
+  
+  **`ClienteNfse.opcoes`** (aditivo): as opções da criação, com o mesmo formato de `ClienteNfe.opcoes` e `ClienteMdfe.opcoes`. `ambiente` e `parametros` continuam.
+- 5547ca1: Campo opcional `orientacao` nas entradas do catálogo da NF-e e do MDF-e e no `DicaRejeicao`: texto para quem emite a nota (produtor, contador, atendente), em uma ou duas frases sem termo de integração, com o que aconteceu e o que mudar na nota, no cadastro ou junto à SEFAZ. `causaProvavel` e `comoCorrigir` continuam sendo o texto para quem integra. `dicaRejeicao`, `dicaRejeicaoMdfe` e os `completar*` passam a levar a `orientacao` quando a entrada tem.
+  
+  Entram 59 das 92 rejeições curadas da NF-e e 12 das 15 do MDF-e: só as que quem emite resolve na nota, no cadastro ou na SEFAZ. Falha do sistema emissor (schema, assinatura, certificado da conexão, chave e dígito, cálculo de totais e tributos, duplicidade por reenvio, consumo indevido) fica sem `orientacao`. O catálogo da NFS-e não muda.
+- 64b8d8a: **Atualize todos os `@sinete/*` juntos.** Nesta versão, parte dos pacotes sobe para 0.3.0 (`@sinete/core`, `@sinete/emissor`, `@sinete/mdfe`, `@sinete/nfe`, `@sinete/nfse`, `@sinete/rejeicoes` e o `sinete`) e o resto sobe em patch (0.2.1, e o `@sinete/ibs-cbs-dados` para a versão do mês), com faixas `^` entre si. Quem fixa versões exatas em `resolutions` (Yarn, Bun) ou `overrides` (npm, pnpm) precisa subir todos os `@sinete/*` na mesma mudança. Um pacote em 0.3.0 com outro preso numa versão anterior força uma combinação que nenhum deles declara: o `@sinete/nfe` 0.3.0 com o `@sinete/core` preso em 0.2.0 roda sem o que a 0.3.0 do core trouxe, ou o gerenciador instala duas cópias do core e o `instanceof` dos erros (`ErroDeValidacao`, `ErroSefaz`) falha entre elas. Quem usa só o `sinete` recebe as versões certas pelo guarda-chuva.
+
+### Patch Changes
+
+- Updated dependencies [23c1c08]
+- Updated dependencies [a3993e7]
+- Updated dependencies [1864bb5]
+- Updated dependencies [23c1c08]
+- Updated dependencies [23c1c08]
+- Updated dependencies [23c1c08]
+- Updated dependencies [395f19c]
+- Updated dependencies [5547ca1]
+- Updated dependencies [64b8d8a]
+  - @sinete/emissor@0.3.0
+  - @sinete/ibs-cbs@0.2.1
+  - @sinete/nfe@0.3.0
+  - @sinete/ibs-cbs-dados@2026.9.3
+  - @sinete/mdfe@0.3.0
+  - @sinete/nfse@0.3.0
+  - @sinete/rejeicoes@0.3.0
+  - @sinete/core@0.3.0
+  - @sinete/cert@0.2.1
+  - @sinete/cli@0.2.1
+  - @sinete/da@0.2.1
+  - @sinete/schemas@0.2.1
+  - @sinete/transport@0.2.1
+  - @sinete/validators@0.2.1
+
 ## 0.2.0
 
 ### Minor Changes

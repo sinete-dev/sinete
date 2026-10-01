@@ -1,5 +1,21 @@
 # @sinete/rejeicoes
 
+## 0.3.0
+
+### Minor Changes
+
+- 5547ca1: Campo opcional `orientacao` nas entradas do catálogo da NF-e e do MDF-e e no `DicaRejeicao`: texto para quem emite a nota (produtor, contador, atendente), em uma ou duas frases sem termo de integração, com o que aconteceu e o que mudar na nota, no cadastro ou junto à SEFAZ. `causaProvavel` e `comoCorrigir` continuam sendo o texto para quem integra. `dicaRejeicao`, `dicaRejeicaoMdfe` e os `completar*` passam a levar a `orientacao` quando a entrada tem.
+  
+  Entram 59 das 92 rejeições curadas da NF-e e 12 das 15 do MDF-e: só as que quem emite resolve na nota, no cadastro ou na SEFAZ. Falha do sistema emissor (schema, assinatura, certificado da conexão, chave e dígito, cálculo de totais e tributos, duplicidade por reenvio, consumo indevido) fica sem `orientacao`. O catálogo da NFS-e não muda.
+- 64b8d8a: **Atualize todos os `@sinete/*` juntos.** Nesta versão, parte dos pacotes sobe para 0.3.0 (`@sinete/core`, `@sinete/emissor`, `@sinete/mdfe`, `@sinete/nfe`, `@sinete/nfse`, `@sinete/rejeicoes` e o `sinete`) e o resto sobe em patch (0.2.1, e o `@sinete/ibs-cbs-dados` para a versão do mês), com faixas `^` entre si. Quem fixa versões exatas em `resolutions` (Yarn, Bun) ou `overrides` (npm, pnpm) precisa subir todos os `@sinete/*` na mesma mudança. Um pacote em 0.3.0 com outro preso numa versão anterior força uma combinação que nenhum deles declara: o `@sinete/nfe` 0.3.0 com o `@sinete/core` preso em 0.2.0 roda sem o que a 0.3.0 do core trouxe, ou o gerenciador instala duas cópias do core e o `instanceof` dos erros (`ErroDeValidacao`, `ErroSefaz`) falha entre elas. Quem usa só o `sinete` recebe as versões certas pelo guarda-chuva.
+
+### Patch Changes
+
+- 395f19c: Curadoria (`causaProvavel`, `comoCorrigir` e `referencia`) para quatro rejeições frequentes de produtor rural e de quem opera com benefício fiscal de ICMS: 327 (CFOP que não é de devolução em nota de devolução, RV I08-140), 930 (CST com benefício fiscal sem `cBenef`, RV N12-84 e N12-85), 931 (`cBenef` que não corresponde ao CST, RV I05f-20, N12-88 e N12-94) e 946 (`cBenef` inexistente ou fora de vigência na UF, RV N12-98), todas conferidas no texto do MOC 7.0 Anexo I. O catálogo passa a ter 92 códigos com curadoria.
+- Updated dependencies [5547ca1]
+- Updated dependencies [64b8d8a]
+  - @sinete/core@0.3.0
+
 ## 0.2.0
 
 ### Minor Changes

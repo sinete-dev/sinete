@@ -1,6 +1,6 @@
 {
   "name": "@sinete/validators",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Validadores de documentos fiscais: CPF, CNPJ numérico e alfanumérico, CAEPF, chave de acesso e inscrição estadual das 27 UFs",
   "keywords": [
     "nfe",
