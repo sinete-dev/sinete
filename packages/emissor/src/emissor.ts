@@ -535,7 +535,7 @@ export async function criarEmissor<Entrada, Cliente, P, B>(
         let offline = false;
         if (contingencia !== undefined) {
           // A contingência entra só aqui, na montagem de uma nota nova; bytes gravados nunca mudam (ADR 0013).
-          const c = await contingencia.naMontagem(entrada as Entrada, ctx);
+          const c = await contingencia.naMontagem(entrada as Entrada, ctx, signal);
           entrada = c.entrada;
           offline = c.offline;
         }
@@ -573,18 +573,23 @@ export async function criarEmissor<Entrada, Cliente, P, B>(
         // Bytes de antes desta chamada: abortada antes de enviar, nada muda.
         conferirSinal(signal, onde);
         if (guarda.jaGuardado !== undefined && (await guarda.jaGuardado(registro))) {
+          // Abortado durante o gancho: nada muda, nem a gravação sai (contrato de antes do envio).
+          conferirSinal(signal, onde);
           const d: Desfecho<P, B> = { documento: perfil.tipo, tipo: 'ja-guardado', id: registro.id };
           await aplicar(trava, registro, d, guarda.aoDecidir);
           return d;
         }
-        if (contingencia !== undefined && (await contingencia.seguraOffline(registro.xml, ctx))) {
+        if (contingencia !== undefined && (await contingencia.seguraOffline(registro.xml, ctx, signal))) {
+          conferirSinal(signal, onde);
           return await emContingencia(trava, registro, guarda.aoDecidir);
         }
+        // Os ganchos acima esperam o banco e o integrador: abortado neles, o envio não começa.
+        conferirSinal(signal, onde);
       }
       let d = await perfil.enviar(cliente(), registro.xml, modo, signal === undefined ? undefined : { signal });
       // O abort do chamador não é falha do autorizador: não conta para a contingência automática.
       if (!(signal?.aborted === true && d.tipo === 'pendente' && d.motivo === 'sem-resposta')) {
-        await contingencia?.depoisDoEnvio(registro.xml, d as Desfecho, ctx);
+        await contingencia?.depoisDoEnvio(registro.xml, d as Desfecho, ctx, signal);
       }
       if (opcoes.situacaoPosterior === 'divergente') d = comoDivergente(d);
       await aplicar(trava, registro, d, guarda.aoDecidir);

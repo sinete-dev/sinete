@@ -41,7 +41,7 @@ import type { ContextoEmissor, Emissor, EmissorOpcoes, EmitirOpcoes, PerfilDocum
 import { criarEmissor } from './emissor.ts';
 import { eventoRecusado, eventoRegistrado } from './evento.ts';
 import type { EnvioOpcoes } from './sinal.ts';
-import { abortado, conferirSinal, erroCancelado, falhaSemResposta } from './sinal.ts';
+import { abortado, causaDaPendencia, conferirSinal, falhaSemResposta } from './sinal.ts';
 
 /** De onde sai o desfecho da NFS-e: a emissão ou a NFS-e da consulta da DPS. */
 export type BrutoNfse = ResultadoNfse<NfseGerada> | NfseConsultada;
@@ -158,7 +158,7 @@ export function perfilNfse(
     const ant = anterior === undefined ? {} : { anterior: { cStat: anterior.cStat, xMotivo: anterior.xMotivo } };
     // Depois do abort, nenhuma chamada nova: os bytes ficam para a retomada.
     if (abortado(env?.signal)) {
-      const causa = erroEnvio ?? erroCancelado(env.signal, 'consulta');
+      const causa = causaDaPendencia(env.signal, erroEnvio);
       return { documento: 'nfse', tipo: 'pendente', id, motivo: 'sem-resposta', causa, ...ant };
     }
     let res: ResolucaoEnvio;
@@ -167,7 +167,14 @@ export function perfilNfse(
     } catch (e) {
       const falha = falhaSemResposta(e, env?.signal);
       if (falha === undefined) throw e;
-      return { documento: 'nfse', tipo: 'pendente', id, motivo: 'sem-resposta', causa: erroEnvio ?? falha, ...ant };
+      return {
+        documento: 'nfse',
+        tipo: 'pendente',
+        id,
+        motivo: 'sem-resposta',
+        causa: causaDaPendencia(env?.signal, erroEnvio, falha),
+        ...ant,
+      };
     }
     switch (res.acao) {
       case 'concluida':
@@ -187,6 +194,16 @@ export function perfilNfse(
           bruto: res.nfse,
         };
       case 'reenviar':
+        // Abortado durante a consulta: nada de reenvio.
+        if (abortado(env?.signal)) {
+          return {
+            documento: 'nfse',
+            tipo: 'pendente',
+            id,
+            motivo: 'sem-resposta',
+            causa: causaDaPendencia(env.signal),
+          };
+        }
         if (reenvia) return autorizar(cli, res.dpsAssinada, false, env);
         if (anterior !== undefined) return recusado(id, anterior);
         if (erroEnvio !== undefined) {
@@ -321,7 +338,7 @@ export async function criarEmissorNfse(opcoes: EmissorNfseOpcoes): Promise<Emiss
   ): Promise<DesfechoCancelamentoNfse> {
     const bruto = 'erro' in falha ? undefined : falha;
     if (abortado(env?.signal)) {
-      const causa = 'erro' in falha ? falha.erro : erroCancelado(env.signal, 'consulta');
+      const causa = causaDaPendencia(env.signal);
       return { tipo: 'pendente', motivo: 'sem-resposta', causa, bruto };
     }
     let eventos: readonly EventoRegistrado[];
@@ -330,11 +347,17 @@ export async function criarEmissorNfse(opcoes: EmissorNfseOpcoes): Promise<Emiss
     } catch (e) {
       const f = falhaSemResposta(e, env?.signal);
       if (f === undefined) throw e;
-      return { tipo: 'pendente', motivo: 'sem-resposta', causa: 'erro' in falha ? falha.erro : f, bruto };
+      return {
+        tipo: 'pendente',
+        motivo: 'sem-resposta',
+        causa: causaDaPendencia(env?.signal, 'erro' in falha ? falha.erro : undefined, f),
+        bruto,
+      };
     }
     const achado = eventos.find((ev) => ev.chaveAcesso === chave && ev.tpEvento === CANCELAMENTO);
     if (achado !== undefined) return eventoRegistrado(achado, achado.xml, eventoRegistradoNfse, true, bruto);
-    if ('erro' in falha) return { tipo: 'pendente', motivo: 'sem-resposta', causa: falha.erro };
+    if ('erro' in falha)
+      return { tipo: 'pendente', motivo: 'sem-resposta', causa: causaDaPendencia(env?.signal, falha.erro) };
     return eventoRecusado<EventoRegistrado, ResultadoNfse<EventoRegistrado>>(falha, falha);
   }
 

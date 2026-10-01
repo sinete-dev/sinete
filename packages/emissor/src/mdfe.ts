@@ -47,7 +47,7 @@ import type { ContextoEmissor, Emissor, EmissorOpcoes, PerfilDocumento } from '.
 import { criarEmissor } from './emissor.ts';
 import { eventoRecusado, eventoRegistrado, statusDoRetorno } from './evento.ts';
 import type { EnvioOpcoes } from './sinal.ts';
-import { abortado, conferirSinal, erroCancelado, falhaSemResposta } from './sinal.ts';
+import { abortado, causaDaPendencia, conferirSinal, falhaSemResposta } from './sinal.ts';
 
 /** De onde sai o desfecho do MDF-e: a autorização ou a consulta da chave. */
 export type BrutoMdfe = ResultadoAutorizacao | ResultadoConsulta;
@@ -185,7 +185,7 @@ export function perfilMdfe(
     const ant = anterior === undefined ? {} : { anterior: { cStat: anterior.cStat, xMotivo: anterior.xMotivo } };
     // Depois do abort, nenhuma chamada nova: os bytes ficam para a retomada.
     if (abortado(env?.signal)) {
-      const causa = erroEnvio ?? erroCancelado(env.signal, 'consulta');
+      const causa = causaDaPendencia(env.signal, erroEnvio);
       return { documento: 'mdfe', tipo: 'pendente', id, motivo: 'sem-resposta', causa, ...ant };
     }
     let res: ResolucaoEnvio;
@@ -194,7 +194,14 @@ export function perfilMdfe(
     } catch (e) {
       const falha = falhaSemResposta(e, env?.signal);
       if (falha === undefined) throw e;
-      return { documento: 'mdfe', tipo: 'pendente', id, motivo: 'sem-resposta', causa: erroEnvio ?? falha, ...ant };
+      return {
+        documento: 'mdfe',
+        tipo: 'pendente',
+        id,
+        motivo: 'sem-resposta',
+        causa: causaDaPendencia(env?.signal, erroEnvio, falha),
+        ...ant,
+      };
     }
     switch (res.acao) {
       case 'concluida': {
@@ -254,6 +261,16 @@ export function perfilMdfe(
           bruto: res.consulta,
         };
       case 'reenviar':
+        // Abortado durante a consulta: nada de reenvio.
+        if (abortado(env?.signal)) {
+          return {
+            documento: 'mdfe',
+            tipo: 'pendente',
+            id,
+            motivo: 'sem-resposta',
+            causa: causaDaPendencia(env.signal),
+          };
+        }
         if (reenvia) return autorizar(cli, res.mdfeAssinado, false, env);
         if (anterior !== undefined) return recusado(id, anterior, anterior);
         if (erroEnvio !== undefined) {
@@ -378,7 +395,7 @@ export async function criarEmissorMdfe(opcoes: EmissorMdfeOpcoes): Promise<Emiss
     env: EnvioOpcoes | undefined,
   ): Promise<DesfechoCancelamentoMdfe> {
     if (abortado(env?.signal)) {
-      const causa = 'erro' in falha ? falha.erro : erroCancelado(env.signal, 'consulta');
+      const causa = causaDaPendencia(env.signal);
       return { tipo: 'pendente', motivo: 'sem-resposta', causa };
     }
     let rec: RecuperacaoEvento;
@@ -387,7 +404,11 @@ export async function criarEmissorMdfe(opcoes: EmissorMdfeOpcoes): Promise<Emiss
     } catch (e) {
       const f = falhaSemResposta(e, env?.signal);
       if (f === undefined) throw e;
-      return { tipo: 'pendente', motivo: 'sem-resposta', causa: 'erro' in falha ? falha.erro : f };
+      return {
+        tipo: 'pendente',
+        motivo: 'sem-resposta',
+        causa: causaDaPendencia(env?.signal, 'erro' in falha ? falha.erro : undefined, f),
+      };
     }
     if (rec.registrado && (busca.confere?.(rec.evento) ?? true)) return registrado(rec.evento, true, rec.consulta);
     const c = rec.consulta;
@@ -400,7 +421,8 @@ export async function criarEmissorMdfe(opcoes: EmissorMdfeOpcoes): Promise<Emiss
     ) {
       return { tipo: 'pendente', motivo: 'consulta-indefinida', cStat: c.cStat, xMotivo: c.xMotivo, bruto: c };
     }
-    if ('erro' in falha) return { tipo: 'pendente', motivo: 'sem-resposta', causa: falha.erro, bruto: c };
+    if ('erro' in falha)
+      return { tipo: 'pendente', motivo: 'sem-resposta', causa: causaDaPendencia(env?.signal, falha.erro), bruto: c };
     return eventoRecusado(falha, c);
   }
 
@@ -431,6 +453,8 @@ export async function criarEmissorMdfe(opcoes: EmissorMdfeOpcoes): Promise<Emiss
       }
       nProt = achado;
     }
+    // A consulta do nProt levou tempo: abortado nela ou logo depois, o pedido não sai.
+    conferirSinal(env?.signal, 'cancelar');
     let o: ResultadoEvento;
     try {
       o = await base.cliente.cancelar({ chave: p.chave, nProt, xJust: p.xJust }, env);

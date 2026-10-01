@@ -59,7 +59,7 @@ import type { ContextoEmissor, Emissor, EmissorOpcoes, PerfilDocumento } from '.
 import { criarEmissor } from './emissor.ts';
 import { eventoRecusado, eventoRegistrado, statusDoRetorno } from './evento.ts';
 import type { EnvioOpcoes } from './sinal.ts';
-import { abortado, conferirSinal, erroCancelado, falhaSemResposta } from './sinal.ts';
+import { abortado, causaDaPendencia, conferirSinal, falhaSemResposta } from './sinal.ts';
 import { fimDaSvcPeloMotivo } from './svc.ts';
 
 /** De onde sai o desfecho da NF-e: a autorização (ou o recibo) ou a consulta da chave. */
@@ -248,7 +248,7 @@ export function perfilNfe(
     const ant = anterior === undefined ? {} : { anterior: { cStat: anterior.cStat, xMotivo: anterior.xMotivo } };
     // Depois do abort, nenhuma chamada nova: os bytes ficam para a retomada.
     if (abortado(env?.signal)) {
-      const causa = erroEnvio ?? erroCancelado(env.signal, 'consulta');
+      const causa = causaDaPendencia(env.signal, erroEnvio);
       return { documento: 'nfe', tipo: 'pendente', id, motivo: 'sem-resposta', causa, ...ant };
     }
     let res: ResolucaoEnvio;
@@ -258,7 +258,14 @@ export function perfilNfe(
       const falha = falhaSemResposta(e, env?.signal);
       if (falha === undefined) throw e;
       // Nem a consulta respondeu: os bytes ficam, e o erro que conta é o do envio.
-      return { documento: 'nfe', tipo: 'pendente', id, motivo: 'sem-resposta', causa: erroEnvio ?? falha, ...ant };
+      return {
+        documento: 'nfe',
+        tipo: 'pendente',
+        id,
+        motivo: 'sem-resposta',
+        causa: causaDaPendencia(env?.signal, erroEnvio, falha),
+        ...ant,
+      };
     }
     switch (res.acao) {
       case 'concluida': {
@@ -320,6 +327,16 @@ export function perfilNfe(
           bruto: res.consulta,
         };
       case 'reenviar':
+        // Abortado durante a consulta: nada de reenvio.
+        if (abortado(env?.signal)) {
+          return {
+            documento: 'nfe',
+            tipo: 'pendente',
+            id,
+            motivo: 'sem-resposta',
+            causa: causaDaPendencia(env.signal),
+          };
+        }
         if (reenvia) return autorizar(cli, res.nfeAssinada, false, env);
         if (anterior !== undefined) return recusado(id, anterior, anterior);
         if (erroEnvio !== undefined) {
@@ -396,10 +413,11 @@ export function perfilNfe(
         : { ...entrada, contingencia: cont };
     },
     offline: (escopo: EscopoContingencia): boolean => escopo.modelo === '65',
-    async sondar(escopo: EscopoContingencia, ctx: ContextoEmissor): Promise<Sonda> {
+    async sondar(escopo: EscopoContingencia, ctx: ContextoEmissor, env?: EnvioOpcoes): Promise<Sonda> {
       try {
         const r = await clienteDaSonda(escopo.uf, false, ctx).statusServico({
           mod: escopo.modelo === '65' ? '65' : '55',
+          ...(env?.signal === undefined ? {} : { signal: env.signal }),
         });
         return { emOperacao: r.tipo === 'autorizado', detalhe: r.cStat };
       } catch (e) {
@@ -408,9 +426,9 @@ export function perfilNfe(
     },
     // A consulta de status na SVC da UF diz se a SEFAZ de origem a ativou (NT 2013.007 v1.03, item 04.7): 107 ativa,
     // 113 em desativação até a hora do xMotivo, 114 desabilitada.
-    async sondarSvc(escopo: EscopoContingencia, ctx: ContextoEmissor): Promise<SondaSvc> {
+    async sondarSvc(escopo: EscopoContingencia, ctx: ContextoEmissor, env?: EnvioOpcoes): Promise<SondaSvc> {
       try {
-        const r = await clienteDaSonda(escopo.uf, true, ctx).statusServico();
+        const r = await clienteDaSonda(escopo.uf, true, ctx).statusServico(env);
         const detalhe = `${r.cStat} ${r.xMotivo}`;
         if (r.tipo === 'autorizado') return { situacao: 'ativa', detalhe };
         if (codigosSvc.desativando.has(r.cStat)) {
@@ -559,7 +577,7 @@ export async function criarEmissorNfe(opcoes: EmissorNfeOpcoes): Promise<Emissor
       return {
         tipo: 'pendente',
         motivo: 'sem-resposta',
-        causa: 'erro' in falha ? falha.erro : erroCancelado(o.signal, 'consulta'),
+        causa: causaDaPendencia(o.signal),
       };
     }
     let rec: RecuperacaoEvento;
@@ -568,10 +586,20 @@ export async function criarEmissorNfe(opcoes: EmissorNfeOpcoes): Promise<Emissor
     } catch (e) {
       const f = falhaSemResposta(e, o?.signal);
       if (f === undefined) throw e;
-      return { tipo: 'pendente', motivo: 'sem-resposta', causa: 'erro' in falha ? falha.erro : f };
+      return {
+        tipo: 'pendente',
+        motivo: 'sem-resposta',
+        causa: causaDaPendencia(o?.signal, 'erro' in falha ? falha.erro : undefined, f),
+      };
     }
     if (rec.registrado && (busca.confere?.(rec.evento) ?? true)) return registrado(rec.evento, true, rec.consulta);
-    if ('erro' in falha) return { tipo: 'pendente', motivo: 'sem-resposta', causa: falha.erro, bruto: rec.consulta };
+    if ('erro' in falha)
+      return {
+        tipo: 'pendente',
+        motivo: 'sem-resposta',
+        causa: causaDaPendencia(o?.signal, falha.erro),
+        bruto: rec.consulta,
+      };
     return eventoRecusado(falha, rec.consulta);
   }
 
@@ -603,6 +631,8 @@ export async function criarEmissorNfe(opcoes: EmissorNfeOpcoes): Promise<Emissor
       }
       nProt = achado;
     }
+    // A consulta do nProt levou tempo: abortado nela ou logo depois, o pedido não sai.
+    conferirSinal(o?.signal, 'cancelar');
     let r: ResultadoEvento;
     try {
       r = await base.cliente.cancelar(

@@ -42,3 +42,14 @@ export function falhaSemResposta(e: unknown, signal: AbortSignal | undefined): u
 
 /** O sinal disparou: o emissor não começa outra chamada à rede. */
 export const abortado = (signal: AbortSignal | undefined): signal is AbortSignal => signal?.aborted === true;
+
+/**
+ * A `causa` de uma pendência: com o sinal disparado, é sempre o `cancelado` (o das candidatas, ou um novo), mesmo que o
+ * envio tenha antes esgotado o tempo; sem ele, a primeira candidata presente (o erro do envio, depois o da consulta).
+ */
+export function causaDaPendencia(signal: AbortSignal | undefined, ...candidatas: unknown[]): unknown {
+  if (abortado(signal)) {
+    return candidatas.find((c) => ehErroSinete(c, 'cancelado')) ?? erroCancelado(signal, 'consulta');
+  }
+  return candidatas.find((c) => c !== undefined);
+}

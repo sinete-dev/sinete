@@ -38,6 +38,7 @@ let nfe: DocumentoAssinado;
 let mdfe: DocumentoAssinado;
 let nfse: DocumentoAssinado;
 let emissorNfe: Awaited<ReturnType<typeof criarEmissorNfe>>;
+let pfxNfe: Uint8Array;
 let emissorMdfe: Awaited<ReturnType<typeof criarEmissorMdfe>>;
 
 const comum = (pfx: Uint8Array): EmissorOpcoes => ({
@@ -55,7 +56,8 @@ beforeAll(async () => {
   const emitente = await certificadoSintetico({ relogio: clock, papel: 'titular', cnpj: CNPJ_EMIT, emissor: ac });
   const produtor = await certificadoSintetico({ relogio: clock, papel: 'titular', cpf: CPF_EMIT, emissor: ac });
   const c = await gerarCerts();
-  const eNfe = await criarEmissorNfe(comum(pfxSintetico(emitente, SENHA, { cadeia: [ac] })));
+  pfxNfe = pfxSintetico(emitente, SENHA, { cadeia: [ac] });
+  const eNfe = await criarEmissorNfe(comum(pfxNfe));
   emissorNfe = eNfe;
   nfe = await eNfe.assinar(nota({ nNF: 1, destinatario: DESTINATARIO }));
   const eMdfe = await criarEmissorMdfe({
@@ -328,6 +330,44 @@ describe('signal nos perfis: depois do abort, nenhuma chamada nova', () => {
     expect(d.tipo === 'pendente' && ehErroSinete(d.causa, 'cancelado')).toBe(true);
   });
 
+  test('timeout no envio e abort na consulta de recuperação: a causa é o cancelado, não o timeout', async () => {
+    const casos = [
+      [
+        'nfe',
+        (c: unknown, env: { signal: AbortSignal }) => perfilNfe().enviar(c as ClienteNfe, nfe.xml, 'primeiro', env),
+      ],
+      [
+        'mdfe',
+        (c: unknown, env: { signal: AbortSignal }) => perfilMdfe().enviar(c as ClienteMdfe, mdfe.xml, 'primeiro', env),
+      ],
+      [
+        'nfse',
+        (c: unknown, env: { signal: AbortSignal }) => perfilNfse().enviar(c as ClienteNfse, nfse.xml, 'primeiro', env),
+      ],
+    ] as const;
+    for (const [doc, enviar] of casos) {
+      const ctrl = new AbortController();
+      const aborta = async (): Promise<never> => {
+        ctrl.abort();
+        throw new ErroTransporte('cancelado', 'envio cancelado');
+      };
+      const c = {
+        ambiente: 'homologacao',
+        autorizar: async () => {
+          throw timeout();
+        },
+        consultar: aborta,
+        consultarDps: aborta,
+      };
+      const d = await enviar(c, { signal: ctrl.signal });
+      expect({ doc, tipo: tipo(d) }).toEqual({ doc, tipo: 'pendente/sem-resposta' });
+      expect({ doc, cancelado: d.tipo === 'pendente' && ehErroSinete(d.causa, 'cancelado') }).toEqual({
+        doc,
+        cancelado: true,
+      });
+    }
+  });
+
   test('retomada com o sinal: a consulta recebe o signal', async () => {
     const ctrl = new AbortController();
     const chamadas: string[] = [];
@@ -351,5 +391,33 @@ describe('signal nos eventos do emissor', () => {
       emissorMdfe.encerrar({ chave, nProt: '1', uf: 'SP', cMun: '3550308' }, env).catch((e: unknown) => e),
     ]);
     expect(erros.map((e) => ehErroSinete(e, 'cancelado'))).toEqual([true, true, true, true]);
+  });
+});
+
+describe('signal na recuperação de evento', () => {
+  test('timeout no pedido e abort na consulta de recuperação: pendente com o cancelado como causa', async () => {
+    const ctrl = new AbortController();
+    let n = 0;
+    const e = await criarEmissorNfe({
+      ...comum(pfxNfe),
+      transporte: (padrao) => ({
+        capacidades: { ...(padrao as unknown as { capacidades?: object }).capacidades } as never,
+        async enviar() {
+          n++;
+          if (n === 1) throw timeout();
+          ctrl.abort();
+          throw new ErroTransporte('cancelado', 'envio cancelado');
+        },
+        fechar: async () => {},
+      }),
+    });
+    const chave = nfe.id;
+    const d = await e.cancelar(
+      { chave, nProt: '135260000000001', xJust: 'justificativa sintetica' },
+      { signal: ctrl.signal },
+    );
+    expect(d.tipo).toBe('pendente');
+    expect(d.tipo === 'pendente' && ehErroSinete(d.causa, 'cancelado')).toBe(true);
+    expect(n).toBe(2);
   });
 });

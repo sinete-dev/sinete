@@ -607,4 +607,130 @@ describe('criarEmissor: signal (ADR 0010, decisão 8)', () => {
     expect(log.filter((l) => l.startsWith('enviar'))).toHaveLength(1);
     expect(await m.store.travar('nfe', 'r', 1000)).toBeDefined();
   });
+  test('abort durante o jaGuardado: lança cancelado, sem concluir nem apagar os bytes', async () => {
+    const m = montar();
+    const log: string[] = [];
+    const e = await criarEmissor(
+      perfilComSinal(log, () => pendente),
+      m.opcoes,
+    );
+    await e.emitir('r', { n: 1 });
+    const antes = await m.store.ler('nfe', 'r');
+    const ctrl = new AbortController();
+    const erro = await e
+      .retomar('r', {
+        signal: ctrl.signal,
+        jaGuardado: async () => {
+          ctrl.abort();
+          return true;
+        },
+      })
+      .catch((x: unknown) => x);
+    expect(cancelado(erro)).toBe(true);
+    expect(await m.store.ler('nfe', 'r')).toEqual(antes);
+    expect(m.decididos).toHaveLength(0);
+    expect(log.filter((l) => l.startsWith('enviar'))).toHaveLength(1);
+  });
+
+  /** Perfil com contingência automática de mentira: registra cada sonda e o `signal` que ela recebeu. */
+  function perfilComContingencia(
+    sondas: string[],
+    aoSondar: (qual: 'sondar' | 'sondarSvc') => void,
+    envio: () => Desfecho,
+  ): PerfilDocumento<Entrada, { readonly c: 1 }> {
+    const escopo = { documento: 'nfe', modelo: '55', uf: 'SP' } as const;
+    return {
+      ...perfil([]),
+      async enviar() {
+        return envio();
+      },
+      contingencia: {
+        escopo: () => escopo,
+        dosBytes: () => ({ escopo, emContingencia: false, offline: false }),
+        aplicar: (entrada) => entrada,
+        offline: () => false,
+        async sondar(_e, _c, o) {
+          sondas.push(`sondar signal=${o?.signal === undefined ? 'nao' : 'sim'}`);
+          aoSondar('sondar');
+          return { emOperacao: false, detalhe: '108' };
+        },
+        async sondarSvc(_e, _c, o) {
+          sondas.push(`sondarSvc signal=${o?.signal === undefined ? 'nao' : 'sim'}`);
+          aoSondar('sondarSvc');
+          return { situacao: 'ativa', detalhe: '107' };
+        },
+        falha: (d) => d.tipo === 'pendente' && d.motivo === 'sem-resposta',
+        svcDesativada: () => false,
+      },
+    };
+  }
+
+  test('a sonda da contingência recebe o signal; abortada, o resultado não vale e nenhuma sonda nova começa', async () => {
+    const mudancas: unknown[] = [];
+    const m = montar({
+      contingencia: { automatica: true, limiteFalhas: 1 },
+      aoMudarContingencia: (x) => {
+        mudancas.push(x);
+      },
+    });
+    const ctrl = new AbortController();
+    const sondas: string[] = [];
+    const timeout = { ...pendente, causa: new ErroDeTempoEsgotado('sem resposta', 1) };
+    const e = await criarEmissor(
+      perfilComContingencia(
+        sondas,
+        () => ctrl.abort(),
+        () => timeout,
+      ),
+      m.opcoes,
+    );
+    // A falha do envio leva à sonda da SVC, que o chamador aborta: a SVC "ativa" não pode pôr o escopo em contingência.
+    const d = await e.emitir('r', { n: 1 }, { signal: ctrl.signal });
+    expect(d.tipo).toBe('pendente');
+    expect(sondas).toEqual(['sondarSvc signal=sim']);
+    expect(mudancas).toEqual([]);
+    // Sem contingência em vigor, a nota seguinte sai em emissão normal, sem sonda.
+    const e2 = await criarEmissor(
+      perfilComContingencia(
+        sondas,
+        () => {},
+        () => autorizado('chave-2'),
+      ),
+      m.opcoes,
+    );
+    expect((await e2.emitir('r2', { n: 2 })).tipo).toBe('autorizado');
+    expect(sondas).toEqual(['sondarSvc signal=sim']);
+  });
+
+  test('sonda da volta abortada na montagem: emitir lança cancelado, nada gravado, sem a segunda sonda', async () => {
+    const m = montar({ contingencia: { automatica: true, limiteFalhas: 1 } });
+    const sondas: string[] = [];
+    const timeout = { ...pendente, causa: new ErroDeTempoEsgotado('sem resposta', 1) };
+    // Entra em contingência: falha, SVC ativa.
+    const e = await criarEmissor(
+      perfilComContingencia(
+        sondas,
+        () => {},
+        () => timeout,
+      ),
+      m.opcoes,
+    );
+    await e.emitir('r', { n: 1 });
+    expect(sondas).toEqual(['sondarSvc signal=nao']);
+    // Passado o intervalo, a nota nova sonda a volta; o chamador aborta na sonda do autorizador normal.
+    (m.opcoes.relogio as ReturnType<typeof relogioManual>).avancar(10 * 60 * 1000);
+    const ctrl = new AbortController();
+    const e2 = await criarEmissor(
+      perfilComContingencia(
+        sondas,
+        () => ctrl.abort(),
+        () => autorizado('chave-2'),
+      ),
+      m.opcoes,
+    );
+    const erro = await e2.emitir('r2', { n: 2 }, { signal: ctrl.signal }).catch((x: unknown) => x);
+    expect(cancelado(erro)).toBe(true);
+    expect(await m.store.ler('nfe', 'r2')).toBeUndefined();
+    expect(sondas).toEqual(['sondarSvc signal=nao', 'sondar signal=sim']);
+  });
 });
