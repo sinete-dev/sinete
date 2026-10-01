@@ -72,7 +72,9 @@ REST com JSON sobre qualquer `Transporte` do `@sinete/transport`; as bases (Sefi
 
 ### Envio sem resposta
 
-Grave a DPS assinada antes de enviar e nunca monte outra DPS para o mesmo número depois de um envio sem resposta. `resolverEnvioSemResposta(client, assinada)` consulta a DPS pelo Id e devolve `acao`, na mesma forma do resolvedor da NF-e e do MDF-e: `concluida` traz a NFS-e consultada e o `resultado` que a emissão teria devolvido, `reenviar` diz que a DPS não gerou NFS-e e os mesmos bytes (`dpsAssinada`) podem ir de novo (a Sefin recusa a duplicada com E0014), e `divergente` diz que a NFS-e do Id é de outra DPS: o DigestValue da DPS embutida nela não é o dos bytes gravados. Sem a assinatura na NFS-e devolvida, vale o Id.
+Grave a DPS assinada antes de enviar e nunca monte outra DPS para o mesmo número depois de um envio sem resposta. `resolverEnvioSemResposta(client, assinada, desfecho?, { signal }?)` consulta a DPS pelo Id e devolve `acao`, na mesma forma do resolvedor da NF-e e do MDF-e: `concluida` traz a NFS-e consultada e o `resultado` que a emissão teria devolvido, `reenviar` diz que a DPS não gerou NFS-e e os mesmos bytes (`dpsAssinada`) podem ir de novo (a Sefin recusa a duplicada com E0014), `divergente` diz que a NFS-e do Id é de outra DPS (o DigestValue da DPS embutida nela não é o dos bytes gravados; sem a assinatura na NFS-e devolvida, vale o Id), e `indefinida` diz que a consulta respondeu sem decidir: a DPS consta como processada, mas a NFS-e da chave não é encontrada ou é de outra DPS, ou o envio voltou E0014 (`desfecho`) e a consulta não acha a DPS. Com `indefinida`, tente mais tarde, sem reenviar nem descartar; `motivo` diz o que a consulta mostrou. Até a 0.2, esses casos lançavam `ErroRespostaInvalida`.
+
+`client.opcoes` são as opções da criação, como `ClienteNfe.opcoes` e `ClienteMdfe.opcoes`; `client.ambiente` continua, igual a `opcoes.ambiente`.
 
 ### mTLS com o certificado do emitente
 
