@@ -28,7 +28,13 @@ import { calcular, ErroClassificacao, ErroRegimeNaoSuportado } from '@sinete/ibs
 import type { Regra } from '@sinete/ibs-cbs/validar';
 import { documentoDoRoc, validar } from '@sinete/ibs-cbs/validar';
 import type { DatasetIbsCbs } from '@sinete/ibs-cbs-dados';
-import type { CalculadoraIbsCbs, PedidoIbsCbsItem, PedidoIbsCbsNota, RespostaIbsCbs } from './ports.ts';
+import type {
+  AliquotaIbsCbsInformada,
+  CalculadoraIbsCbs,
+  PedidoIbsCbsItem,
+  PedidoIbsCbsNota,
+  RespostaIbsCbs,
+} from './ports.ts';
 
 /** Grupo `IBSCBS` do item, como o `@sinete/nfe` o recebe. */
 export type GrupoIbsCbs = RespostaIbsCbs['itens'][number]['IBSCBS'];
@@ -109,15 +115,42 @@ function grupoDoLeiaute(g: IBSCBS, indDoacao: '1' | undefined): GrupoIbsCbs {
   } as GrupoIbsCbs;
 }
 
-/** Erro do motor ou das alíquotas como ocorrência no item (ou na nota, quando o erro não diz o item). */
-function ocorrenciaDoMotor(e: unknown, itens: readonly PedidoIbsCbsItem[]): Ocorrencia | undefined {
+/**
+ * Erro do motor ou das alíquotas como uma ocorrência no caminho do item (o primeiro, quando o erro não diz o item).
+ * `semAliquota` acha o item que pediu a alíquota desconhecida: o erro do provedor diz o tributo e a data, não o item.
+ */
+function ocorrenciaDoMotor(
+  e: unknown,
+  itens: readonly PedidoIbsCbsItem[],
+  semAliquota: () => number | undefined,
+): Ocorrencia | undefined {
   if (e instanceof ErroClassificacao || e instanceof ErroRegimeNaoSuportado) {
     const path = e.item !== undefined ? caminho(e.item) : caminho(itens[0]?.nItem ?? 1);
     return { caminho: path, code: e.code, mensagem: e.message, origem: 'entrada' };
   }
   // Alíquota que o sinete não conhece para a data: falta de dado do pacote, não da nota.
-  if (e instanceof ErroAliquotaDesconhecida)
-    return { caminho: 'impostos.ibsCbs', code: e.code, mensagem: e.message, origem: 'montagem' };
+  if (e instanceof ErroAliquotaDesconhecida) {
+    const n = semAliquota() ?? itens[0]?.nItem ?? 1;
+    return { caminho: caminho(n), code: e.code, mensagem: e.message, origem: 'montagem' };
+  }
+  return undefined;
+}
+
+/**
+ * O primeiro item (pela ordem de `nItem`, a do motor) cujo cálculo sozinho pede uma alíquota desconhecida. Só roda na
+ * recusa, para pôr a ocorrência no item em vez de na nota.
+ */
+function primeiroItemSemAliquota(
+  op: OperacaoClassificada,
+  calc: (op: OperacaoClassificada) => unknown,
+): number | undefined {
+  for (const it of [...op.itens].sort((a, b) => a.n - b.n)) {
+    try {
+      calc({ ...op, itens: [it] });
+    } catch (e) {
+      if (e instanceof ErroAliquotaDesconhecida) return it.n;
+    }
+  }
   return undefined;
 }
 
@@ -234,16 +267,18 @@ function calcularCom(
     itens: classificados,
   };
   const time = contextoDeTempo({ emissao: relogioFixo(nota.emissao), fatoGerador: relogioFixo(nota.fatoGerador) });
-  let roc: Roc;
-  try {
-    roc = calcular(op, {
+  const calc = (o: OperacaoClassificada): Roc =>
+    calcular(o, {
       dataset,
       aliquotas: rates,
       tempo: time,
       ...(options.deslocamentoMin === undefined ? {} : { deslocamentoMin: options.deslocamentoMin }),
     });
+  let roc: Roc;
+  try {
+    roc = calc(op);
   } catch (e) {
-    const issue = ocorrenciaDoMotor(e, itens);
+    const issue = ocorrenciaDoMotor(e, itens, () => primeiroItemSemAliquota(op, calc));
     if (issue === undefined) throw e;
     return { itens: [], ocorrencias: [issue] };
   }
@@ -295,11 +330,17 @@ function calcularCom(
   }
 
   const porItem = new Map(itens.map((it) => [it.nItem, it]));
+  const informadas: AliquotaIbsCbsInformada[] = roc.itens.flatMap((r) =>
+    r.aliquotas
+      .filter((a) => a.situacao === 'informada')
+      .map((a) => ({ nItem: r.nItem, tributo: a.tributo, valor: a.valor, motivo: a.motivo ?? '' })),
+  );
   return {
     itens: roc.itens.map((r) => ({
       nItem: r.nItem,
       IBSCBS: grupoDoLeiaute(r.IBSCBS, porItem.get(r.nItem)?.indDoacao),
     })),
+    ...(informadas.length === 0 ? {} : { aliquotasInformadas: informadas }),
     ...(issues.length === 0 ? {} : { ocorrencias: issues }),
   };
 }

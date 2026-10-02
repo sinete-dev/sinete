@@ -42,6 +42,7 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 
 ### Interfaces
 
+- `AliquotaIbsCbsInformada`: Alíquota do IBS/CBS que entrou no cálculo de um item vinda de quem integra (`comAliquotasInformadas`), e não da tabela oficial do pacote. Membros: `nItem`, `tributo`, `valor`, `motivo`.
 - `AutorizarOpcoes` (estende `EnvioOpcoes`): Membros: `sincrono`.
 - `Cadastro`: Membros: `UF`, `dhCons`, `infCad`.
 - `CalculadoraIbsCbs`: Calcula o IBS e a CBS dos itens classificados. O padrão é o `calculadoraIbsCbs`, sobre o `@sinete/ibs-cbs/calcular`; nos testes, um dublê com alíquotas fixas. A calculadora não vê o XML nem o resto da nota além do que está no pedido. Membros: `calcular()`.
@@ -106,7 +107,7 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `ManifestacaoPedido`: Membros: `chave`, `tipo`, `xJust`, `autor`.
 - `MontarNfeOpcoes`: Membros: `ambiente`, `tempo`, `ibsCbs`, `deslocamentoMin`, `verProc`, `arredondamento`, `respTec`, `exigencias`, `aleatorio`, `pagamentoIgualTotal`, `qrCode`, `urlQrCode`, `urlChave`.
 - `NfceSupl`: O que a montagem deixa pronto para o `infNFeSupl` da NFC-e. Membros: `versao`, `urlChave`, `base`, `parametros`, `assinar`.
-- `NfeMontada`: Membros: `chave`, `id`, `cNF`, `cDV`, `mod`, `tpEmis`, `dhEmi`, `nfce`, `pl`, `infNFe`, `xml`.
+- `NfeMontada`: Membros: `chave`, `id`, `cNF`, `cDV`, `mod`, `tpEmis`, `dhEmi`, `nfce`, `pl`, `infNFe`, `xml`, `aliquotasInformadas`.
 - `Pagamento`: Pagamento (grupo YA). Ausente, o builder informa `tPag` 90 (sem pagamento) com valor zero. Membros: `detPag`, `vTroco`.
 - `PedidoIbsCbsItem`: Um item classificado, com os valores que a calculadora pode precisar para a base do IBS/CBS. Membros: `nItem`, `CST`, `cClassTrib`, `indDoacao`, `cCredPres`, `gTribRegular`, `vBC`, `NCM`, `CFOP`, `uTrib`, `qTrib`, `vProd`, `vDesc`, `vFrete`, `vSeg`, `vOutro`, `vICMS`, `vICMSST`, `vFCP`, `vFCPST`, `vIPI`, `vPIS`, `vCOFINS`, `vII`, `vISSQN`, `vICMSUFDest`, `vFCPUFDest`.
 - `PedidoIbsCbsNota`: Dados da nota que decidem a regra aplicável (local da operação, vigência, compra governamental). Membros: `fatoGerador`, `emissao`, `ambiente`, `mod`, `tpNF`, `finNFe`, `tpNFDebito`, `tpNFCredito`, `indFinal`, `indPres`, `emitente`, `destino`, `cMunFGIBS`, `compraGov`.
@@ -114,7 +115,7 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `Produto`: Produto ou serviço do item (grupo I). Membros: `cProd`, `cEAN`, `cBarra`, `xProd`, `NCM`, `NVE`, `CEST`, `indEscala`, `CNPJFab`, `cBenef`, `gCred`, `tpCredPresIBSZFM`, `EXTIPI`, `CFOP`, `uCom`, `qCom`, `vUnCom`, `vProd`, `cEANTrib`, `cBarraTrib`, `uTrib`, `qTrib`, `vUnTrib`, `vFrete`, `vSeg`, `vDesc`, `vOutro`, `indTot`, `indBemMovelUsado`, `DI`, `detExport`, `xPed`, `nItemPed`, `nFCI`, `rastro`, `infProdNFF`, `infProdEmb`, `especifico`.
 - `ProtocoloNfe`: Protocolo de uma NF-e (autorização ou denegação). Membros: `chNFe`, `cStat`, `xMotivo`, `nProt`, `dhRecbto`, `digVal`, `verAplic`, `protNFe`, `nfeProc`.
 - `ResponsavelTecnico`: Responsável técnico (grupo ZD, NT 2018.005). O `hashCSRT` é calculado pelo builder a partir do CSRT (nunca vai para o XML): Base64(SHA-1(CSRT + chave de acesso)). Membros: `CNPJ`, `xContato`, `email`, `fone`, `csrt`.
-- `RespostaIbsCbs`: Resultado da calculadora: o grupo `IBSCBS` de cada item pedido, já na forma lexical do leiaute. Membros: `itens`, `ocorrencias`.
+- `RespostaIbsCbs`: Resultado da calculadora: o grupo `IBSCBS` de cada item pedido, já na forma lexical do leiaute. Membros: `itens`, `aliquotasInformadas`, `ocorrencias`.
 - `StatusServico`: Status do serviço (cStat 107). Membros: `cUF`, `verAplic`, `dhRecbto`, `tMed`, `dhRetorno`, `xObs`.
 - `StatusServicoOpcoes` (estende `EnvioOpcoes`): Opções do status do serviço. Membros: `mod`.
 - `Transportador`: Membros: `CNPJ`, `CPF`, `xNome`, `IE`, `xEnder`, `xMun`, `UF`.

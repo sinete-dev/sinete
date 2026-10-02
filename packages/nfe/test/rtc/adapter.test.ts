@@ -2,7 +2,7 @@
 import { describe, expect, test } from 'bun:test';
 import { relogioFixo } from '@sinete/core';
 import type { ProvedorDeAliquotas } from '@sinete/ibs-cbs/aliquotas';
-import { aliquotasOficiais } from '@sinete/ibs-cbs/aliquotas';
+import { aliquotasOficiais, comAliquotasInformadas } from '@sinete/ibs-cbs/aliquotas';
 import { calcularEm } from '@sinete/ibs-cbs/calcular';
 import type { Regra } from '@sinete/ibs-cbs/validar';
 import { datasetEmbarcado } from '@sinete/ibs-cbs-dados/embarcado';
@@ -236,11 +236,16 @@ describe('calculadoraIbsCbs', () => {
     // Monofasia (CST 620): o motor recusa em vez de zerar.
     const mono = await calc.calcular({ nota: nota(), itens: [item({ CST: '620', cClassTrib: '620001' })] });
     expect(mono.ocorrencias?.map((i) => i.code)).toEqual([expect.stringMatching(/^ibscbs_/)]);
-    // 2027: a CBS ainda não foi fixada pelo Senado.
-    const em2027 = relogioFixo('2027-03-10T12:00:00-03:00').agora();
-    const futuro = await calc.calcular({ nota: nota({ fatoGerador: em2027, emissao: em2027 }), itens: [item()] });
-    expect(futuro.ocorrencias?.map((i) => [i.caminho, i.code])).toEqual([
-      ['impostos.ibsCbs', 'ibscbs_aliquota_desconhecida'],
+    // 2029: nenhuma alíquota publicada. Uma ocorrência, no item que pediu a alíquota: o 410999 não tem gIBSCBS e não
+    // pede alíquota, então ela cai no segundo item, não no primeiro nem na nota.
+    const em2029 = relogioFixo('2029-03-10T12:00:00-03:00').agora();
+    const futuro = await calc.calcular({
+      nota: nota({ fatoGerador: em2029, emissao: em2029 }),
+      itens: [item({ CST: '410', cClassTrib: '410999' }), item({ nItem: 2 }), item({ nItem: 3 })],
+    });
+    expect(futuro.itens).toEqual([]);
+    expect(futuro.ocorrencias?.map((i) => [i.caminho, i.code, i.origem])).toEqual([
+      ['itens[1].impostos.ibsCbs', 'ibscbs_aliquota_desconhecida', 'montagem'],
     ]);
     const quebrado: ProvedorDeAliquotas = {
       id: 'quebrado',
@@ -254,6 +259,27 @@ describe('calculadoraIbsCbs', () => {
     expect(() =>
       calculadoraIbsCbs({ dataset, aliquotas: quebrado }).calcular({ nota: nota(), itens: [item()] }),
     ).toThrow('provedor quebrado');
+  });
+
+  test('alíquota informada por quem integra volta marcada por item; a oficial não', async () => {
+    const oficial = await calculadoraIbsCbs({ dataset, aliquotas: rates }).calcular({ nota: nota(), itens: [item()] });
+    expect(oficial.aliquotasInformadas).toBeUndefined();
+    const em2029 = relogioFixo('2029-03-10T12:00:00-03:00').agora();
+    const informadas = comAliquotasInformadas(rates, [
+      { tributo: 'CBS', valor: '8.8', motivo: 'resolução publicada, pacote sem ela' },
+      { tributo: 'IBSUF', valor: '17.7', motivo: 'lei estadual' },
+      { tributo: 'IBSMun', valor: '2.5', motivo: 'lei municipal' },
+    ]);
+    const r = await calculadoraIbsCbs({ dataset, aliquotas: informadas }).calcular({
+      nota: nota({ fatoGerador: em2029, emissao: em2029 }),
+      itens: [item({ CST: '410', cClassTrib: '410999' }), item({ nItem: 2 })],
+    });
+    expect(r.ocorrencias).toBeUndefined();
+    expect(r.aliquotasInformadas).toEqual([
+      { nItem: 2, tributo: 'CBS', valor: '8.8', motivo: 'resolução publicada, pacote sem ela' },
+      { nItem: 2, tributo: 'IBSUF', valor: '17.7', motivo: 'lei estadual' },
+      { nItem: 2, tributo: 'IBSMun', valor: '2.5', motivo: 'lei municipal' },
+    ]);
   });
 
   test('regras da NT: violação vira ocorrência com a regra, a rejeição e a fonte; `false` desliga', async () => {

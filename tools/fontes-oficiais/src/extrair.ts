@@ -99,3 +99,88 @@ export function extrairPaginaGovBr(html: string, pagina: string): Item[] {
   }
   return ordenar(itens);
 }
+
+/** Texto sem acento, em minúsculas e com espaços simples, para casar termos de ementa escritos de qualquer jeito. */
+function normalizado(s: string): string {
+  return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ');
+}
+
+/**
+ * A ementa trata da alíquota de referência do IBS/CBS (EC 132/2023, ADCT art. 130; LC 214/2025, arts. 14, 18 e 347):
+ * cita "alíquota(s) de referência", o IBS ou a CBS pelo nome ou pela sigla. Nenhuma resolução nem projeto de resolução
+ * do Senado anterior à reforma casa com isso (conferido em 01/10/2026 contra as 6.578 resoluções e os 275 projetos em
+ * tramitação), então qualquer item que aparecer é publicação nova a olhar.
+ */
+export function ementaDaAliquotaDeReferencia(ementa: string): boolean {
+  return /aliquotas? de referencia|(contribuicao social|imposto) sobre bens e servicos|\b(cbs|ibs)\b/.test(
+    normalizado(ementa),
+  );
+}
+
+const ehObjeto = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === 'object' && !Array.isArray(v);
+
+/**
+ * Confere o formato de cada registro antes do filtro: um objeto de erro, um envelope mudado ou um registro sem os campos
+ * de identificação lança, e o vigia trata a fonte como não lida (não mexe na issue nem no estado). A lista vazia com o
+ * envelope reconhecido é leitura válida.
+ */
+function registros(v: unknown, ok: (r: Record<string, unknown>) => boolean, oQue: string): Record<string, unknown>[] {
+  if (!Array.isArray(v)) throw new Error(`resposta sem a lista de ${oQue} (o leiaute mudou?)`);
+  const ruim = v.findIndex((r) => !ehObjeto(r) || !ok(r));
+  if (ruim >= 0) throw new Error(`registro ${ruim} da lista de ${oQue} fora do formato conhecido (o leiaute mudou?)`);
+  return v as Record<string, unknown>[];
+}
+
+const textoJson = (v: unknown): string => (typeof v === 'string' ? v.replace(/\s+/g, ' ').trim() : '');
+
+/**
+ * Dados abertos do Senado, legislação (`/dadosabertos/legislacao/lista.json?tipo=RSF`): as resoluções do Senado cuja
+ * ementa trata da alíquota de referência. A lista vazia depois do filtro é o normal até a resolução sair; o que conta
+ * como falha de leitura é a resposta fora do envelope conhecido ou com registro sem `id` e `normaNome` (leiaute mudou,
+ * objeto de erro com HTTP 200).
+ */
+export function extrairNormasDoSenado(json: unknown): Item[] {
+  const envelope = ehObjeto(json) && ehObjeto(json.ListaDocumento) ? json.ListaDocumento.documentos : undefined;
+  if (!ehObjeto(envelope)) throw new Error('resposta sem a lista de normas (o leiaute mudou?)');
+  // Sem norma, `documento` não vem; com uma só, vem como objeto e não como lista.
+  const doc = envelope.documento;
+  const docs = registros(
+    doc === undefined ? [] : ehObjeto(doc) ? [doc] : doc,
+    (d) => typeof d.id === 'string' && typeof d.normaNome === 'string',
+    'normas',
+  );
+  const itens: Item[] = [];
+  for (const d of docs) {
+    const ementa = textoJson(d.ementa);
+    const id = textoJson(d.id);
+    if (!id || !ementaDaAliquotaDeReferencia(ementa)) continue;
+    itens.push({ id: `https://legis.senado.leg.br/norma/${id}`, titulo: `${textoJson(d.normaNome)}: ${ementa}` });
+  }
+  return ordenar(itens);
+}
+
+/**
+ * Dados abertos do Senado, processos (`/dadosabertos/processo?sigla=PRS&tramitando=S`): os projetos de resolução em
+ * tramitação cuja ementa trata da alíquota de referência. Avisa antes da resolução: o projeto aparece ao ser apresentado
+ * e sai da lista ao virar norma, que então aparece na fonte das resoluções.
+ */
+export function extrairProcessosDoSenado(json: unknown): Item[] {
+  const procs = registros(
+    json,
+    (p) =>
+      (typeof p.codigoMateria === 'number' || typeof p.codigoMateria === 'string') &&
+      typeof p.identificacao === 'string',
+    'processos',
+  );
+  const itens: Item[] = [];
+  for (const p of procs) {
+    const ementa = textoJson(p.ementa);
+    const codigo = p.codigoMateria;
+    if ((typeof codigo !== 'number' && typeof codigo !== 'string') || !ementaDaAliquotaDeReferencia(ementa)) continue;
+    itens.push({
+      id: `https://www25.senado.leg.br/web/atividade/materias/-/materia/${codigo}`,
+      titulo: `${textoJson(p.identificacao)}: ${ementa}`,
+    });
+  }
+  return ordenar(itens);
+}

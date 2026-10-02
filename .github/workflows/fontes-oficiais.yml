@@ -1,5 +1,6 @@
 # Vigia das fontes oficiais (tools/fontes-oficiais): lê as páginas do portal da NF-e, do portal DF-e da SVRS, da
-# documentação da NFS-e Nacional e a Calculadora da RFB, e compara com o estado versionado. No agendamento, mantém uma
+# documentação da NFS-e Nacional, a Calculadora da RFB e os dados abertos do Senado (resolução da alíquota de
+# referência do IBS/CBS), e compara com o estado versionado. No agendamento, mantém uma
 # issue aberta enquanto houver diferença e a fecha quando o estado versionado alcançar as páginas. Em PR que mexe no
 # vigia, só lê e escreve o relatório no resumo do job, o que também prova que o runner alcança as fontes.
 name: fontes-oficiais

@@ -2,7 +2,7 @@
 
 Lê as páginas de onde saem os dados versionados do sinete e compara o que elas listam com `estado.json`. Uma NT nova, um pacote de schemas, um manual ou uma base nova da Calculadora aparecem aqui antes de alguém lembrar de olhar o portal.
 
-Fontes em `src/fontes.ts`: Esquemas XML, Notas Técnicas, Informes Técnicos, Atos Técnicos RFB/CGIBS e Manuais do portal da NF-e; documentos do MDF-e no portal DF-e da SVRS; documentação atual, produção restrita e reforma tributária da NFS-e Nacional; e a Calculadora da RFB. A Calculadora não entra no `estado.json`: a referência dela é o pin de `tools/ibs-cbs-dados/sources.json` (ADR 0007), comparado por `last-modified` e tamanho, sem baixar o zip.
+Fontes em `src/fontes.ts`: Esquemas XML, Notas Técnicas, Informes Técnicos, Atos Técnicos RFB/CGIBS e Manuais do portal da NF-e; documentos do MDF-e no portal DF-e da SVRS; documentação atual, produção restrita e reforma tributária da NFS-e Nacional; a Calculadora da RFB; e, no Senado, a resolução que fixa a alíquota de referência do IBS/CBS e os projetos de resolução sobre ela. A Calculadora não entra no `estado.json`: a referência dela é o pin de `tools/ibs-cbs-dados/sources.json` (ADR 0007), comparado por `last-modified` e tamanho, sem baixar o zip.
 
 ## Uso
 
@@ -13,6 +13,17 @@ bun tools/fontes-oficiais/src/vigiar.ts --gravar           # grava o que as pág
 ```
 
 Página que responde sem nenhum item reconhecido conta como falha de leitura (leiaute mudou ou página de erro), não como "tudo saiu", e a fonte mantém o estado anterior.
+
+## Alíquota de referência no Senado
+
+A CBS de 2027 e 2028 é a alíquota de referência fixada por resolução do Senado menos 0,1 ponto percentual (LC 214/2025, art. 347), e o `@sinete/ibs-cbs` recusa a nota com fato gerador em 2027 até ter esse número. Duas fontes vigiam a publicação, pelos dados abertos do Senado (`legis.senado.leg.br/dadosabertos`), que respondem em JSON e não dependem do leiaute de uma página:
+
+- `senado-resolucoes-aliquota-referencia`: todas as resoluções do Senado (`legislacao/lista.json?tipo=RSF`), filtradas pela ementa;
+- `senado-projetos-aliquota-referencia`: os projetos de resolução em tramitação (`processo?sigla=PRS&tramitando=S`), filtrados pela ementa. Avisa antes: o projeto aparece ao ser apresentado e sai da lista quando vira resolução.
+
+O filtro (`ementaDaAliquotaDeReferencia`) casa "alíquota(s) de referência", "Contribuição Social sobre Bens e Serviços", "Imposto sobre Bens e Serviços", CBS e IBS, sem acento e sem caixa. Em 01/10/2026 nenhuma das 6.578 resoluções nem dos 275 projetos em tramitação casava, e o estado inicial dessas duas fontes é a lista vazia: só uma publicação nova abre a issue. Aqui a lista vazia é o normal; falha de leitura é a resposta fora do envelope conhecido (um objeto de erro com HTTP 200, um envelope mudado) ou com registro sem os campos de identificação, e a fonte conta como não lida: o vigia não mexe na issue nem no estado. A busca do Diário Oficial da União ficou de fora: a página muda e bloqueia acesso automatizado, e a resolução entra nos dados abertos do Senado depois de publicada.
+
+Quando uma dessas fontes aparecer na issue, siga `tools/ibs-cbs-oraculo/README.md`, seção "Quando a resolução do Senado sair".
 
 ## No CI
 
@@ -30,4 +41,4 @@ O estado inicial, de 29/set/2026, deixou de fora cinco publicações que ficam r
 
 ## Fonte nova
 
-Acrescente em `src/fontes.ts` com o extrator que já serve (`portal-nfe`, `portal-dfe`, `gov-br`) ou um novo em `src/extrair.ts`, com teste em `test/`, e rode `--gravar`.
+Acrescente em `src/fontes.ts` com o extrator que já serve (`portal-nfe`, `portal-dfe`, `gov-br`, `senado-normas`, `senado-processos`) ou um novo em `src/extrair.ts`, com teste em `test/`, e rode `--gravar`. Se outras fontes tiverem publicações deixadas de fora de propósito (seção acima), o `--gravar` as apagaria do estado: nesse caso, acrescente à mão só a entrada da fonte nova em `estado.json`, como foi feito com as do Senado.

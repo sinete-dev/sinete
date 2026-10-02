@@ -15,7 +15,13 @@ import path from 'node:path';
 import type { Estado, Leitura, Mudanca } from './comparar.ts';
 import { comparar, mudou, proximoEstado, relatorio } from './comparar.ts';
 import type { Item } from './extrair.ts';
-import { extrairPaginaGovBr, extrairPortalDfe, extrairPortalNfe } from './extrair.ts';
+import {
+  extrairNormasDoSenado,
+  extrairPaginaGovBr,
+  extrairPortalDfe,
+  extrairPortalNfe,
+  extrairProcessosDoSenado,
+} from './extrair.ts';
 import type { Fonte } from './fontes.ts';
 import { FONTES } from './fontes.ts';
 
@@ -96,6 +102,11 @@ async function ler(fonte: Fonte): Promise<readonly Item[]> {
       throw new Error('HEAD sem last-modified ou content-length válido');
     }
     return [itemCalculadora(downloadUrl, new Date(modificado).toISOString().replace('.000Z', 'Z'), tamanho)];
+  }
+  if (fonte.extrator === 'senado-normas' || fonte.extrator === 'senado-processos') {
+    // Lista filtrada por termo: vazia é o normal até a publicação; o extrator falha se a resposta não traz a lista.
+    const json: unknown = await (await baixar(fonte.url)).json();
+    return fonte.extrator === 'senado-normas' ? extrairNormasDoSenado(json) : extrairProcessosDoSenado(json);
   }
   const corpo = await html(await baixar(fonte.url));
   const itens =

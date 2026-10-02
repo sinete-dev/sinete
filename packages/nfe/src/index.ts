@@ -107,7 +107,13 @@ export type {
   Volume,
 } from './model.ts';
 export { MotivoDesoneracaoIcms, TipoPagamento } from './model.ts';
-export type { CalculadoraIbsCbs, PedidoIbsCbsItem, PedidoIbsCbsNota, RespostaIbsCbs } from './ports.ts';
+export type {
+  AliquotaIbsCbsInformada,
+  CalculadoraIbsCbs,
+  PedidoIbsCbsItem,
+  PedidoIbsCbsNota,
+  RespostaIbsCbs,
+} from './ports.ts';
 export { rotuloDoCaminho } from './rotulo.ts';
 export type { CalculadoraIbsCbsOpcoes, GrupoIbsCbs } from './rtc.ts';
 export { calculadoraIbsCbs, carregarDatasetEmbarcado, localDaOperacao } from './rtc.ts';
