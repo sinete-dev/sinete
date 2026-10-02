@@ -117,9 +117,18 @@ export function ementaDaAliquotaDeReferencia(ementa: string): boolean {
   );
 }
 
-function lista(v: unknown): unknown[] | undefined {
-  if (Array.isArray(v)) return v;
-  return v !== null && typeof v === 'object' ? [v] : undefined;
+const ehObjeto = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === 'object' && !Array.isArray(v);
+
+/**
+ * Confere o formato de cada registro antes do filtro: um objeto de erro, um envelope mudado ou um registro sem os campos
+ * de identificação lança, e o vigia trata a fonte como não lida (não mexe na issue nem no estado). A lista vazia com o
+ * envelope reconhecido é leitura válida.
+ */
+function registros(v: unknown, ok: (r: Record<string, unknown>) => boolean, oQue: string): Record<string, unknown>[] {
+  if (!Array.isArray(v)) throw new Error(`resposta sem a lista de ${oQue} (o leiaute mudou?)`);
+  const ruim = v.findIndex((r) => !ehObjeto(r) || !ok(r));
+  if (ruim >= 0) throw new Error(`registro ${ruim} da lista de ${oQue} fora do formato conhecido (o leiaute mudou?)`);
+  return v as Record<string, unknown>[];
 }
 
 const textoJson = (v: unknown): string => (typeof v === 'string' ? v.replace(/\s+/g, ' ').trim() : '');
@@ -127,16 +136,21 @@ const textoJson = (v: unknown): string => (typeof v === 'string' ? v.replace(/\s
 /**
  * Dados abertos do Senado, legislação (`/dadosabertos/legislacao/lista.json?tipo=RSF`): as resoluções do Senado cuja
  * ementa trata da alíquota de referência. A lista vazia depois do filtro é o normal até a resolução sair; o que conta
- * como falha de leitura é a resposta sem a lista de normas (leiaute mudou ou página de erro).
+ * como falha de leitura é a resposta fora do envelope conhecido ou com registro sem `id` e `normaNome` (leiaute mudou,
+ * objeto de erro com HTTP 200).
  */
 export function extrairNormasDoSenado(json: unknown): Item[] {
-  const docs = lista(
-    (json as { ListaDocumento?: { documentos?: { documento?: unknown } } } | null)?.ListaDocumento?.documentos
-      ?.documento,
+  const envelope = ehObjeto(json) && ehObjeto(json.ListaDocumento) ? json.ListaDocumento.documentos : undefined;
+  if (!ehObjeto(envelope)) throw new Error('resposta sem a lista de normas (o leiaute mudou?)');
+  // Sem norma, `documento` não vem; com uma só, vem como objeto e não como lista.
+  const doc = envelope.documento;
+  const docs = registros(
+    doc === undefined ? [] : ehObjeto(doc) ? [doc] : doc,
+    (d) => typeof d.id === 'string' && typeof d.normaNome === 'string',
+    'normas',
   );
-  if (docs === undefined || docs.length === 0) throw new Error('resposta sem a lista de normas (o leiaute mudou?)');
   const itens: Item[] = [];
-  for (const d of docs as Record<string, unknown>[]) {
+  for (const d of docs) {
     const ementa = textoJson(d.ementa);
     const id = textoJson(d.id);
     if (!id || !ementaDaAliquotaDeReferencia(ementa)) continue;
@@ -151,11 +165,15 @@ export function extrairNormasDoSenado(json: unknown): Item[] {
  * e sai da lista ao virar norma, que então aparece na fonte das resoluções.
  */
 export function extrairProcessosDoSenado(json: unknown): Item[] {
-  const procs = lista(json);
-  if (procs === undefined || procs.length === 0)
-    throw new Error('resposta sem a lista de processos (o leiaute mudou?)');
+  const procs = registros(
+    json,
+    (p) =>
+      (typeof p.codigoMateria === 'number' || typeof p.codigoMateria === 'string') &&
+      typeof p.identificacao === 'string',
+    'processos',
+  );
   const itens: Item[] = [];
-  for (const p of procs as Record<string, unknown>[]) {
+  for (const p of procs) {
     const ementa = textoJson(p.ementa);
     const codigo = p.codigoMateria;
     if ((typeof codigo !== 'number' && typeof codigo !== 'string') || !ementaDaAliquotaDeReferencia(ementa)) continue;

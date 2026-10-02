@@ -120,8 +120,19 @@ describe('extratores', () => {
     ]);
     // Um documento só vem como objeto, não como lista.
     expect(extrairNormasDoSenado({ ListaDocumento: { documentos: { documento: doc('9', 'n', 'x') } } })).toEqual([]);
+    // Envelope reconhecido sem nenhuma norma: leitura válida, lista vazia.
+    expect(extrairNormasDoSenado({ ListaDocumento: { documentos: { documento: [] } } })).toEqual([]);
+    expect(extrairNormasDoSenado({ ListaDocumento: { documentos: {} } })).toEqual([]);
+    // Objeto de erro com HTTP 200, envelope mudado ou registro fora do formato: falha de leitura, nunca lista vazia.
     expect(() => extrairNormasDoSenado({ erro: 'fora do ar' })).toThrow(/lista de normas/);
-    expect(() => extrairNormasDoSenado({ ListaDocumento: { documentos: { documento: [] } } })).toThrow();
+    expect(() => extrairNormasDoSenado({ ListaDocumento: { normas: [doc('9', 'n', 'x')] } })).toThrow(
+      /lista de normas/,
+    );
+    expect(() => extrairNormasDoSenado({ documentos: { documento: [doc('9', 'n', 'x')] } })).toThrow(/lista de normas/);
+    expect(() => extrairNormasDoSenado({ ListaDocumento: { documentos: { documento: 'erro' } } })).toThrow(/normas/);
+    expect(() =>
+      extrairNormasDoSenado({ ListaDocumento: { documentos: { documento: [{ erro: 'fora do ar' }] } } }),
+    ).toThrow(/fora do formato/);
   });
 
   test('Senado, processos: projetos de resolução da alíquota de referência; resposta sem lista falha', () => {
@@ -135,8 +146,14 @@ describe('extratores', () => {
         titulo: 'PRS 80/2026: Fixa a alíquota de referência do IBS e da CBS.',
       },
     ]);
-    expect(() => extrairProcessosDoSenado([])).toThrow(/lista de processos/);
+    // Lista vazia é leitura válida.
+    expect(extrairProcessosDoSenado([])).toEqual([]);
+    // Objeto de erro com HTTP 200, envelope mudado ou registro fora do formato: falha de leitura, nunca lista vazia.
+    expect(() => extrairProcessosDoSenado({ erro: 'fora do ar' })).toThrow(/lista de processos/);
+    expect(() => extrairProcessosDoSenado({ processos: json })).toThrow(/lista de processos/);
     expect(() => extrairProcessosDoSenado(null)).toThrow(/lista de processos/);
+    expect(() => extrairProcessosDoSenado([{ erro: 'fora do ar' }])).toThrow(/fora do formato/);
+    expect(() => extrairProcessosDoSenado([...json, { id: 1, ementa: 'sem codigoMateria' }])).toThrow(/registro 2/);
   });
 
   test('entidades numéricas, hexadecimais e nomeadas; desconhecida fica como está', () => {
