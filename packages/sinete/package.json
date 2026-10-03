@@ -1,6 +1,6 @@
 {
   "name": "sinete",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Guarda-chuva do sinete, DF-e brasileiros em TypeScript: um pacote só, com um subpath por pacote @sinete/* (sinete/nfe, sinete/mdfe, sinete/nfse, sinete/da/nfe, sinete/ibs-cbs, sinete/core...) e o bin sinete, com as versões fixadas num conjunto testado junto",
   "keywords": [
     "nfe",

@@ -59,7 +59,7 @@
     },
     "packages/emissor": {
       "name": "@sinete/emissor",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "dependencies": {
         "@sinete/cert": "workspace:^",
         "@sinete/core": "workspace:^",
@@ -120,7 +120,7 @@
     },
     "packages/nfe": {
       "name": "@sinete/nfe",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "dependencies": {
         "@sinete/core": "workspace:^",
         "@sinete/ibs-cbs": "workspace:^",
@@ -181,7 +181,7 @@
     },
     "packages/sinete": {
       "name": "sinete",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "bin": {
         "sinete": "./dist/cli.js",
       },
