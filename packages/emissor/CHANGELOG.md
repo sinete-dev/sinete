@@ -1,5 +1,13 @@
 # @sinete/emissor
 
+## 0.3.1
+
+### Patch Changes
+
+- f3d43e3: O emissor de NF-e registra um aviso (`warn`) no logger quando a nota é montada com alguma alíquota de IBS/CBS informada por quem integra (`comAliquotasInformadas`), fora da tabela oficial do pacote, com a chave, as alíquotas por item e o motivo. A emissão segue normalmente.
+- Updated dependencies [f3d43e3]
+  - @sinete/nfe@0.4.0
+
 ## 0.3.0
 
 ### Minor Changes
