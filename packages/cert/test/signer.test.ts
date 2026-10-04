@@ -33,6 +33,23 @@ describe('signer A1 (WebCrypto)', () => {
     expect(await conferirBytes(ks.certificado.der, new TextEncoder().encode('outro'), sig, hash)).toBe(false);
   });
 
+  test.each(['Uint8Array', 'Buffer'] as const)(
+    'zerar a chave e o certificado do chamador (%s) e o certificado devolvido não quebra o signer',
+    async (tipo) => {
+      const { ks, key } = await a1();
+      const der = createPrivateKey(key).export({ type: 'pkcs8', format: 'der' });
+      const pkcs8 = tipo === 'Buffer' ? der : new Uint8Array(der);
+      const certificado = tipo === 'Buffer' ? Buffer.from(ks.certificado.der) : new Uint8Array(ks.certificado.der);
+      const signer = await criarAssinadorA1(pkcs8, certificado);
+      pkcs8.fill(0);
+      certificado.fill(0);
+      (await signer.certificadoDer()).fill(0);
+      const sig = await signer.assinar(data, 'SHA-256');
+      expect(await conferirBytes(ks.certificado, data, sig, 'SHA-256')).toBe(true);
+      expect(await signer.certificadoDer()).toEqual(ks.certificado.der);
+    },
+  );
+
   test('o mesmo signer é reaproveitado', async () => {
     const { ks } = await a1();
     expect(await ks.assinador()).toBe(await ks.assinador());

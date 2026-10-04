@@ -83,7 +83,11 @@ export async function conferirBytes(
  * A importação acontece uma vez por hash; a `CryptoKey` não é exportável.
  */
 export async function criarAssinadorA1(pkcs8: Uint8Array, certificadoDer: Uint8Array): Promise<AssinadorDeDados> {
-  const cert = lerCertificado(certificadoDer);
+  // Cópias próprias da chave e do certificado: a importação de cada hash acontece no primeiro uso, e quem chamou pode zerar o buffer dele logo
+  // depois de criar o signer (o SHA-256 falhava com `Invalid keyData` nesse caso). `new Uint8Array`, não `slice()`:
+  // o `slice()` de um `Buffer` do Node compartilha a memória.
+  const chave = new Uint8Array(pkcs8);
+  const cert = lerCertificado(new Uint8Array(certificadoDer));
   if (cert.chavePublica.algoritmo !== 'RSA') {
     throw new ErroCertificado('algoritmo_nao_suportado', 'o A1 precisa de chave RSA (PKCS#1 v1.5)');
   }
@@ -94,7 +98,7 @@ export async function criarAssinadorA1(pkcs8: Uint8Array, certificadoDer: Uint8A
       if (!(hash in DIGEST_INFO_PREFIX)) {
         return Promise.reject(new ErroCertificado('algoritmo_nao_suportado', `hash não suportado: ${String(hash)}`));
       }
-      k = crypto.subtle.importKey('pkcs8', ab(pkcs8), { name: 'RSASSA-PKCS1-v1_5', hash }, false, ['sign']);
+      k = crypto.subtle.importKey('pkcs8', ab(chave), { name: 'RSASSA-PKCS1-v1_5', hash }, false, ['sign']);
       keys.set(hash, k);
     }
     return k;
@@ -105,10 +109,10 @@ export async function criarAssinadorA1(pkcs8: Uint8Array, certificadoDer: Uint8A
   } catch (cause) {
     throw new ErroCertificado('algoritmo_nao_suportado', 'chave privada não importável como RSA PKCS#8', { cause });
   }
-  const der = cert.der.slice();
+  const der = new Uint8Array(cert.der);
   return {
     tipo: 'dados',
-    certificadoDer: (): Promise<Uint8Array> => Promise.resolve(der.slice()),
+    certificadoDer: (): Promise<Uint8Array> => Promise.resolve(new Uint8Array(der)),
     assinar: async (data: Uint8Array, hash: HashDaAssinatura): Promise<Uint8Array> =>
       new Uint8Array(await crypto.subtle.sign('RSASSA-PKCS1-v1_5', await keyFor(hash), ab(data))),
   };
