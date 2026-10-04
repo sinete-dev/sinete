@@ -95,7 +95,8 @@ export async function abrirPfx(pfx: Uint8Array, opcoes: AbrirPfxOpcoes): Promise
   const reader = opcoes.leitor ?? leitorPkcs12Forge;
   const contents = await reader.ler(pfx, opcoes.senha);
   if (contents.chavesPrivadas.length === 0) throw new ErroCertificado('pfx_sem_chave', 'o PFX não tem chave privada');
-  const certs = contents.certificados.map((c) => lerCertificado(c));
+  // Cópia própria de cada DER: `lerCertificado` guarda referência ao buffer, que um leitor injetado pode zerar depois.
+  const certs = contents.certificados.map((c) => lerCertificado(new Uint8Array(c)));
   const keys = contents.chavesPrivadas.map((k) => ({ der: k, modulus: rsaModulusOfPkcs8(k) }));
 
   let best: { cert: CertificadoX509; key: Uint8Array } | undefined;
