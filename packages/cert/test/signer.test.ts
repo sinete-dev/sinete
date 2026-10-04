@@ -33,6 +33,15 @@ describe('signer A1 (WebCrypto)', () => {
     expect(await conferirBytes(ks.certificado.der, new TextEncoder().encode('outro'), sig, hash)).toBe(false);
   });
 
+  test('zerar a chave do chamador depois de criar o signer não o quebra', async () => {
+    const { ks, key } = await a1();
+    const pkcs8 = new Uint8Array(createPrivateKey(key).export({ type: 'pkcs8', format: 'der' }));
+    const signer = await criarAssinadorA1(pkcs8, ks.certificado.der);
+    pkcs8.fill(0);
+    const sig = await signer.assinar(data, 'SHA-256');
+    expect(await conferirBytes(ks.certificado, data, sig, 'SHA-256')).toBe(true);
+  });
+
   test('o mesmo signer é reaproveitado', async () => {
     const { ks } = await a1();
     expect(await ks.assinador()).toBe(await ks.assinador());
