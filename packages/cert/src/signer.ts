@@ -84,8 +84,9 @@ export async function conferirBytes(
  */
 export async function criarAssinadorA1(pkcs8: Uint8Array, certificadoDer: Uint8Array): Promise<AssinadorDeDados> {
   // Cópia própria: a importação de cada hash acontece no primeiro uso, e quem chamou pode zerar o buffer dele logo
-  // depois de criar o signer (o SHA-256 falhava com `Invalid keyData` nesse caso).
-  const chave = pkcs8.slice();
+  // depois de criar o signer (o SHA-256 falhava com `Invalid keyData` nesse caso). `new Uint8Array`, não `slice()`:
+  // o `slice()` de um `Buffer` do Node compartilha a memória.
+  const chave = new Uint8Array(pkcs8);
   const cert = lerCertificado(certificadoDer);
   if (cert.chavePublica.algoritmo !== 'RSA') {
     throw new ErroCertificado('algoritmo_nao_suportado', 'o A1 precisa de chave RSA (PKCS#1 v1.5)');

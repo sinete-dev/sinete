@@ -121,7 +121,9 @@ export async function abrirPfx(pfx: Uint8Array, opcoes: AbrirPfxOpcoes): Promise
     );
   }
   const leaf = best.cert;
-  const pkcs8 = best.key;
+  // Cópia própria: um leitor injetado pode devolver um buffer do chamador, que o zera depois de abrir; o assinador e o
+  // `tlsPem()` leem esta chave mais tarde.
+  const pkcs8 = new Uint8Array(best.key);
   const validity = validadeEm(leaf, opcoes.relogio);
   if (validity !== 'valido' && opcoes.aceitarVencido !== true) {
     const details = { subject: leaf.subject.texto, notBefore: leaf.notBeforeIso, notAfter: leaf.notAfterIso };

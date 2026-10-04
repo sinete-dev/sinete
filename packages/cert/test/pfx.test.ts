@@ -5,6 +5,7 @@ import forge from 'node-forge';
 import type { LeitorPkcs12 } from '../src/index.ts';
 import {
   abrirPfx,
+  conferirBytes,
   dersDoPem,
   ErroCertificado,
   leitorPkcs12Forge,
@@ -106,6 +107,25 @@ describe('escolha do titular', () => {
     await expect(abrirPfx(new Uint8Array(), { senha: SENHA, relogio: clock, leitor: reader })).rejects.toMatchObject({
       code: 'pfx_sem_certificado_da_chave',
     });
+  });
+
+  test('zerar a chave devolvida por um leitor injetado não quebra o assinador nem o PEM', async () => {
+    const devolvidas: Uint8Array[] = [];
+    const reader: LeitorPkcs12 = {
+      nome: 'teste',
+      ler: async (pfx, senha) => {
+        const lido = await leitorPkcs12Forge.ler(pfx, senha);
+        devolvidas.push(...lido.chavesPrivadas);
+        return lido;
+      },
+    };
+    const ks = await abrirPfx(fixture('ecnpj-aes.pfx'), { senha: SENHA, relogio: clock, leitor: reader });
+    const pemAntes = ks.tlsPem().chave;
+    for (const k of devolvidas) k.fill(0);
+    const data = new TextEncoder().encode('dados');
+    const sig = await (await ks.assinador()).assinar(data, 'SHA-256');
+    expect(await conferirBytes(ks.certificado, data, sig, 'SHA-256')).toBe(true);
+    expect(ks.tlsPem().chave).toBe(pemAntes);
   });
 
   test('chave que não é RSA', async () => {
