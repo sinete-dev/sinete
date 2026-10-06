@@ -13,6 +13,9 @@ describe('tabela de CFOP (IT 2023.002)', () => {
   test('CFOP fora da tabela devolve undefined', () => {
     expect(indicadoresCfop('6998')).toBeUndefined();
     expect(indicadoresCfop('abc')).toBeUndefined();
+    for (const k of ['constructor', 'toString', '__proto__', 'hasOwnProperty'])
+      expect(indicadoresCfop(k), k).toBeUndefined();
+    expect(indicadoresCfop(' 5 202 ')?.indDevol).toBe(true);
   });
 
   test('vigência e fonte', () => {

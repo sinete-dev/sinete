@@ -54,7 +54,8 @@ const LINHAS = table.cfop as unknown as Readonly<Record<string, readonly [string
  * da SEFAZ com o indicador não recusa o CFOP desconhecido: a tabela pode estar atrás da do Portal.
  */
 export function indicadoresCfop(cfop: string): IndicadoresCfop | undefined {
-  const codigo = cfop.replace(/\./g, '').trim();
+  const codigo = cfop.replace(/\D/g, '');
+  if (!/^\d{4}$/.test(codigo) || !Object.hasOwn(LINHAS, codigo)) return undefined;
   const linha = LINHAS[codigo];
   if (linha === undefined) return undefined;
   const [inicioVigencia, fim, ind] = linha;

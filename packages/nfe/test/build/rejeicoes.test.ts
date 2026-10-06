@@ -346,6 +346,11 @@ describe('CFOP de devolução fora da devolução (RV I08-144, rejeição 328)',
 
   test('CFOP fora da tabela não é recusado como devolução', async () => {
     expect(citam(await montarNfe(rj({ itens: [cfop('6998')] }), opcoes()), '328')).toEqual([]);
+    // Com espaço ou ponto, o CFOP serializado é o mesmo: a conferência também.
+    expect(citam(await montarNfe(rj({ itens: [cfop('6 202')] }), opcoes()), '328')).toHaveLength(1);
+    expect(citam(await montarNfe(rj({ itens: [cfop('6.202')] }), opcoes()), '328')).toHaveLength(1);
+    const r = await montarNfe(rj({ itens: [cfop('constructor')] }), opcoes());
+    expect(r.ok).toBe(false);
   });
 });
 

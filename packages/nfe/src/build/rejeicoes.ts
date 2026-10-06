@@ -234,7 +234,7 @@ export function cfopDeDevolucao(input: DadosNfe, issues: Issues): void {
   if (fin === '2' || fin === '4') return;
   if (fin === '5' && input.tpNFCredito !== undefined && CREDITO_COM_DEVOLUCAO.has(input.tpNFCredito)) return;
   input.itens.forEach((it, n) => {
-    if (indicadoresCfop(it.produto.CFOP)?.indDevol !== true) return;
+    if (indicadoresCfop(it.produto.CFOP.replace(/\D/g, ''))?.indDevol !== true) return;
     issues.add(
       `itens[${n}].produto.CFOP`,
       'combinacao_invalida',
