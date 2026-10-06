@@ -203,6 +203,21 @@ const CAMPOS: Readonly<Record<string, string>> = {
   idUnidTranspVazia: 'Identificação',
   tpUnidTranspVazia: 'Tipo',
   MMSI: 'MMSI',
+  xContato: 'Contato',
+  infAdFisco: 'Informações de interesse do fisco',
+  cInt: 'Código interno do veículo',
+  nCompra: 'Número da compra',
+  NroContrato: 'Número do contrato',
+  xComp: 'Descrição do componente',
+  codAgPorto: 'Agendamento no porto',
+  cEAN: 'GTIN',
+  nONU: 'Número ONU',
+  xNomeAE: 'Nome apropriado para embarque',
+  xClaRisco: 'Classe de risco',
+  grEmb: 'Grupo de embalagem',
+  qTotProd: 'Quantidade total do produto',
+  qVolTipo: 'Quantidade e tipo de volumes',
+  serie: 'Série',
 };
 
 const rotular = criarRotuloDoCaminho({ grupos: GRUPOS, campos: CAMPOS, padrao: 'Dados do MDF-e' });

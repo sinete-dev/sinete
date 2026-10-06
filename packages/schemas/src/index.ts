@@ -35,6 +35,8 @@ export type {
 export { ehComplexType, ehElementParticle, ehWildcard, maxOccurs, minOccurs } from './runtime/desc.ts';
 export { compilarRegexXsd, ErroRegexXsd, regexXsdParaJs } from './runtime/regex.ts';
 export { serializar, serializarRaiz } from './runtime/serialize.ts';
+export type { CampoDeTexto, TextoRecusado } from './runtime/textos.ts';
+export { camposSemElemento, conferirTextos, textoXmlValido } from './runtime/textos.ts';
 export type { CodigoValidacao, OcorrenciaSchema } from './runtime/validate.ts';
 export {
   compararCalendario,

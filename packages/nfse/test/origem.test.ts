@@ -14,8 +14,7 @@ test('dado da entrada é entrada', async () => {
 });
 
 test('schema do XML montado é montagem', async () => {
-  const base = dps();
-  const r = await montarDps(dps({ servico: { ...base.servico, xDescServ: 'X'.repeat(3000) } }), opcoes);
+  const r = await montarDps(dps({ chNFSeRej: 'X' }), opcoes);
   if (r.ok) throw new Error('esperava ocorrências');
   expect(r.ocorrencias.length).toBeGreaterThan(0);
   expect(r.ocorrencias.every((i) => i.code === 'schema' && i.origem === 'montagem')).toBe(true);
@@ -83,10 +82,9 @@ describe('rotuloDoCaminho da DPS', () => {
   });
 
   test('caminhos do documento montado, com pontos e no formato do validador de XSD', async () => {
-    const base = dps();
-    const r = await montarDps(dps({ servico: { ...base.servico, xDescServ: 'X'.repeat(3000) } }), opcoes);
+    const r = await montarDps(dps({ chNFSeRej: 'X' }), opcoes);
     if (r.ok) throw new Error('esperava ocorrências');
-    expect(r.ocorrencias[0]?.caminho).toBe('/DPS/infDPS/serv/cServ/xDescServ');
+    expect(r.ocorrencias[0]?.caminho).toBe('/DPS/infDPS/chNFSeRej');
     expect(rotuloDoCaminho('/DPS/infDPS/serv/cServ/xDescServ')).toBe('Serviço, Descrição do serviço');
     for (const [ponto, barra] of [
       ['infDPS.toma.xNome', '/DPS/infDPS/toma/xNome'],

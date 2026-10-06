@@ -57,7 +57,7 @@ A NFS-e ainda não tem `rotuloDoCaminho`: a DPS tem outro vocabulário (prestado
 - ~~`rotuloDoCaminho` da NFS-e~~: feito em 06/10/2026 (`packages/nfse/src/rotulo.ts`), com a raiz `DPS` que o validador de XSD põe no caminho.
 - ~~Conferir o texto de alguns campos na entrada da NF-e antes de montar~~: feito na [Revisão (01/10)](#revisão-0110).
 - Campo de dados na `Ocorrencia` (o limite e a regra violada do texto, por exemplo), para o integrador montar a própria mensagem sem ler a do sinete.
-- A mesma conferência no MDF-e e na DPS, que ainda acusam texto e tamanho só na montagem, com o caminho do XML. Mudar é quebra do `caminho` e da `origem` dessas ocorrências: entra num minor enquanto os pacotes estiverem em 0.x, ou fica como está depois da 1.0 deles.
+- ~~A mesma conferência no MDF-e e na DPS~~: feito em 06/10/2026, minor dos dois em 0.x (veja [Revisão (06/10)](#revisão-0610)).
 
 ## Revisão (01/10)
 
@@ -101,3 +101,17 @@ O `caminho` de uma ocorrência é API (ADR 0016): o integrador o usa como chave 
 | Validador de XSD sobre o XML serializado | barras, nomes do leiaute, índice a partir de um só no elemento que se repete | `/infNFe/det[2]/prod/xProd` | `montagem` |
 
 A mesma regra sobre a mesma entrada sai sempre no mesmo caminho e com a mesma `origem`. Mover uma conferência da montagem para a entrada, como esta revisão fez, muda os dois e é quebra: em 0.x, minor com a lista das ocorrências afetadas no changeset; depois da 1.0, major. `rotuloDoCaminho` aceita os três formatos, então a tela que só mostra o rótulo não muda.
+
+## Revisão (06/10)
+
+O MDF-e e a DPS passam a conferir o texto na entrada, com o mesmo contrato da NF-e: `campo_invalido`, `origem: 'entrada'`, caminho da entrada e a mensagem para quem preenche. O motor saiu do `@sinete/nfe` para o `@sinete/schemas` (`conferirTextos`, `CampoDeTexto`, `camposSemElemento`): cada montador passa a raiz do seu leiaute e a tabela que liga o campo da entrada ao elemento que o recebe, e um teste por montador cobra que todo elemento da tabela exista no schema (`camposSemElemento` vazio), porque um erro de digitação na tabela deixaria o campo sem conferência sem aviso.
+
+O que muda em relação à NF-e:
+
+- **DPS: os grupos repassados no tipo do schema são conferidos.** Prestador, tomador, intermediário, substituição e os grupos opcionais do serviço (`local`, `comExt`, `obra`, `atvEvento`, `infoCompl`) chegam à montagem como vieram, com os nomes do leiaute, então o tipo de cada texto dentro deles é o do elemento de mesmo nome (`tomador.end.xLgr`). Na NF-e os grupos repassados (`exporta`, `infIntermed`...) seguem só na montagem: são estruturas que o integrador monta em código, raras numa tela. Na DPS, tomador e intermediário são o que a pessoa mais digita.
+- **DPS: o tipo é o do leiaute da NFS-e.** O `TSDesc2000` da descrição do serviço aceita espaço nas pontas e qualquer caractere que o XML represente; a conferência não importa as regras do `TString` da NF-e.
+- **DPS: o caractere que o XML não representa sai no campo.** Antes, a serialização recusava o documento inteiro (`caractere_invalido` no caminho `/`, `origem: 'montagem'`); agora sai `campo_invalido` no caminho da entrada (`ibsCbs.refNFSe[1]`). O `caractere_invalido` no `/` fica só para o texto das opções (`verAplic`).
+- **MDF-e: o texto das opções continua na montagem.** O `respTec` das opções e o `verProc` seguem com o caminho do XML e `origem: 'montagem'`; o mesmo `respTec` vindo na entrada sai em `respTec.xContato`, `origem: 'entrada'`.
+- **Mensagem de caractere só em tipo de texto livre.** O caractere recusado é procurado só quando o tipo aceita um texto comum (`AAA`); num tipo de formato (só dígitos, um código) a mensagem é `formato não aceito`, porque apontar um caractere seria palpite. Vale também para a NF-e (a `mensagem` não é contrato).
+
+Campos que a montagem transforma (telefone, CEP, placa e documentos no MDF-e; série, número e código de tributação nacional na DPS) continuam conferidos por ela, como antes. `rotuloDoCaminho` dos dois ganhou os campos novos (`Responsável técnico, Contato`, `IBS/CBS, NFS-e referenciada`).
