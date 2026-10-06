@@ -6,7 +6,7 @@
  */
 
 import { ehUf, ufPorCUf } from '@sinete/core';
-import { lerChaveAcesso, lerCnpj, lerCpf, lerIe } from '@sinete/validators';
+import { indicadoresCfop, lerChaveAcesso, lerCnpj, lerCpf, lerIe } from '@sinete/validators';
 import type { ConfiguracaoSim, Svc } from './context.ts';
 import { parametrosDoQrCode } from './nfce.ts';
 import type { AutorizadorSim } from './services.ts';
@@ -69,9 +69,19 @@ export interface FatosNfe {
     readonly finNFe: string;
     readonly indFinal: string;
     readonly indPres: string;
+    readonly tpNFCredito?: string;
   };
   readonly vNF?: string;
-  readonly destinatario?: Documento & { readonly idEstrangeiro?: string };
+  readonly destinatario?: Documento & { readonly idEstrangeiro?: string; readonly indIEDest?: string };
+  /** Itens: o que as regras do grupo I e do ICMS (N12) conferem; ausentes em fatos montados à mão. */
+  readonly itens?: readonly {
+    readonly CFOP: string;
+    readonly NCM: string;
+    /** CST do ICMS; ausente com CSOSN ou sem ICMS. */
+    readonly CST?: string;
+    readonly veicProd: boolean;
+    readonly cProdANP?: string;
+  }[];
   /**
    * Grupo ZX (`infNFeSupl`): o QR Code e, na versão 3 off-line, se a assinatura confere com o certificado da nota
    * (conferida antes das regras, porque a verificação é assíncrona).
@@ -136,6 +146,49 @@ const ANEXO_I = 'MOC 7.0 Anexo I';
 const VISAO_GERAL = 'MOC 7.0 Visão Geral';
 const reject = (cStat: string, params?: Readonly<Record<string, string>>): RejeicaoSim =>
   params === undefined ? { cStat } : { cStat, parametros: params };
+
+/** RV N12-70: o CST do item é recusado com o destinatário não contribuinte, fora das exceções. */
+function cstVedadoComNaoContribuinte(
+  it: NonNullable<FatosNfe['itens']>[number],
+  ide: NonNullable<FatosNfe['ide']>,
+  uf: string,
+): boolean {
+  const cst = it.CST;
+  if (cst === undefined || ['00', '20', '40', '41', '60', '61'].includes(cst)) return false;
+  const cfop = it.CFOP;
+  if ((cst === '50' || cst === '51') && ide.finNFe === '4') return false;
+  if (cst === '50') {
+    const ind = indicadoresCfop(cfop);
+    if (ind === undefined || ind.indRetor || ind.indRemes || cfop === '5949' || cfop === '6949') return false;
+  }
+  if (cst === '51' && (['5123', '5922', '6123', '6922'].includes(cfop) || ide.idDest === '1')) return false;
+  if ((cst === '10' || cst === '02') && ide.idDest === '1') return false;
+  if (cst === '30' && ide.idDest === '2') {
+    if (it.cProdANP !== undefined && !ANP_NAO_PETROLEO.has(it.cProdANP)) return false;
+    if (it.NCM === '27160000') return false;
+  }
+  return !(cst === '90' && uf === 'CE' && (cfop === '5403' || cfop === '5405'));
+}
+
+/** Códigos ANP fora da exceção 5 da N12-70 (não derivados de petróleo). */
+const ANP_NAO_PETROLEO = new Set([
+  '820101001',
+  '820101010',
+  '810102001',
+  '810102004',
+  '810102002',
+  '810102003',
+  '810101002',
+  '810101001',
+  '810101003',
+  '220101003',
+  '220101004',
+  '220101002',
+  '220101001',
+  '220101005',
+  '220101006',
+  '560101001',
+]);
 
 const EMITENTE_EVENTOS = new Set(['110110', '110111', '110112']);
 const CANCELAMENTOS = new Set(['110111', '110112']);
@@ -292,6 +345,30 @@ const autorizacao: RegraSim<ContextoAutorizacao>[] = [
       if (tp !== esperado[0] || id !== esperado[1]) return divergente('idDest');
       if (p.length < 8 || (p[7] ?? '') === '') return reject('474');
       return nfe.supl?.assinaturaConfere === true ? undefined : reject('583');
+    },
+  },
+  {
+    id: 'I08-144',
+    fonte: `${ANEXO_I}, RV I08-144, com a exceção da nota de crédito 03, 04 e 06 da NT 2025.002 v1.52 (Tabela CFOP, indDevol)`,
+    conferir({ nfe }: ContextoAutorizacao): RejeicaoSim | undefined {
+      const ide = nfe.ide;
+      if (nfe.mod !== '55' || ide === undefined || nfe.itens === undefined) return undefined;
+      if (ide.finNFe === '2' || ide.finNFe === '4') return undefined;
+      if (ide.finNFe === '5' && ['03', '04', '06'].includes(ide.tpNFCredito ?? '')) return undefined;
+      const n = nfe.itens.findIndex((it) => indicadoresCfop(it.CFOP)?.indDevol === true);
+      return n < 0 ? undefined : reject('328', { nItem: String(n + 1) });
+    },
+  },
+  {
+    id: 'N12-70',
+    fonte: `${ANEXO_I}, RV N12-70, no texto da NT 2023.001 v1.60 e da NT 2023.003 v1.40 (exceções 1 a 9 e a observação do CE)`,
+    conferir({ nfe }: ContextoAutorizacao): RejeicaoSim | undefined {
+      const ide = nfe.ide;
+      if (nfe.mod !== '55' || ide === undefined || nfe.itens === undefined) return undefined;
+      if (nfe.destinatario?.indIEDest !== '9' || ide.tpNF === '0') return undefined;
+      if (nfe.itens.some((it) => it.veicProd)) return undefined;
+      const n = nfe.itens.findIndex((it) => cstVedadoComNaoContribuinte(it, ide, nfe.emitente.UF));
+      return n < 0 ? undefined : reject('508', { nItem: String(n + 1) });
     },
   },
   {

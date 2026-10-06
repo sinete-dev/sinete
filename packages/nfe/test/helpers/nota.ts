@@ -50,6 +50,18 @@ export function item(extra: Partial<Item> = {}, icms: Item['impostos']['icms'] =
   };
 }
 
+/**
+ * Destinatário contribuinte do ICMS em SP (indIEDest 1): para os testes de CST que a SEFAZ recusaria com o consumidor
+ * final não contribuinte do `nota()` (RV N12-70, rejeição 508).
+ */
+export const DEST_CONTRIBUINTE: NonNullable<DadosNfe['destinatario']> = {
+  CNPJ: CNPJ_DEST,
+  xNome: 'DESTINATARIO CONTRIBUINTE LTDA',
+  indIEDest: '1',
+  IE: IE_SP,
+  endereco: { xLgr: 'AVENIDA FICTICIA', nro: '1', xBairro: 'BAIRRO', cMun: '3550308', xMun: 'SAO PAULO', UF: 'SP' },
+};
+
 export function nota(extra: Partial<DadosNfe> = {}): DadosNfe {
   return {
     serie: 1,

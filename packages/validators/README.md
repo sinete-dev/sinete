@@ -81,6 +81,10 @@ O literal `ISENTO` (qualquer caixa) volta como `{ tipo: 'isento' }`; `aceitarIse
 
 O validador não decide qual campo aceita `ISENTO`: quem monta o documento passa `aceitarIsento` conforme o campo.
 
+### Tabela de CFOP
+
+`indicadoresCfop('5202')` devolve a vigência e os indicadores do CFOP na Tabela de CFOP do Portal da NF-e (`indNFe`, `indComunica`, `indTransp`, `indDevol`, `indRetor`, `indAnula`, `indRemes`, `indComb`, `indExcIBSCBS`), ou `undefined` para o código fora da tabela. `TABELA_CFOP` traz a fonte e o sha256 da planilha. O dado sai de `tools/cfop-data` (IT 2023.002 v2.10, publicada em 04/09/2026). As regras da SEFAZ que consultam a tabela (I08-144 e N12-70) estão no `@sinete/nfe`, que não recusa o CFOP desconhecido.
+
 ## Verificação
 
 - Testes com os exemplos de cada roteiro oficial (válidos e com o DV trocado), mais testes de propriedade por UF e variante: IE gerada com `completarIe` valida, DV trocado falha, algarismo da base trocado falha em mais de 75% dos casos (o módulo 11 com resto 0 e 1 levados a 0 deixa passar cerca de 1 em 11).

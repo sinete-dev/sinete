@@ -58,8 +58,8 @@ Fontes: MOC 7.0 Anexo I e Visão Geral, NT 2018.001 v1.10, NT 2019.001 v1.70, NT
 | 213 | CNPJ-base do emitente difere do CNPJ-base do certificado | Anexo I, RV F03 | a | novo: `conferirEmitenteDoCertificado` no `@sinete/nfe`, chamado pelo emissor (e a F03A, 227, junto) |
 | 528 | vICMS difere de vBC vezes pICMS | Anexo I, RV N17-20; facultativa | b | dica existente |
 | 805 | destinatário isento em UF que não aceita isento | NT 2025.001 v1.03, RV E16a-30 e E16a-35 | b | dica nova; a lista de UF mudou três vezes entre as versões 1.01 e 1.03 e a NT a chama de configuração da UF |
-| 508 | CST fora de 00, 20, 40, 41, 60 com não contribuinte | Anexo I, RV N12-70; NT 2023.001 e 2023.003 | b | dica nova; as exceções dependem da tabela CFOP (indRetor, indRemes), da UF e de alterações por NT |
-| 328 | CFOP de devolução em nota que não é de devolução | Anexo I, RV I08-144 | b | dica nova; depende da tabela CFOP do Portal (indDevol), que o repositório não tem |
+| 508 | CST fora de 00, 20, 40, 41, 60 e 61 com não contribuinte | Anexo I, RV N12-70; NT 2023.001 v1.60 e NT 2023.003 v1.40 | a | dica nova; em 06/10/2026, com a Tabela CFOP versionada, virou conferência (seção abaixo) |
+| 328 | CFOP de devolução em nota que não é de devolução | Anexo I, RV I08-144; NT 2025.002 v1.52 | a | dica nova; em 06/10/2026, com a Tabela CFOP versionada, virou conferência (seção abaixo) |
 | 574 | autor do evento difere do emitente da chave | Visão Geral, RV P12-44 | a | novo: o cliente recusa o autor explícito de cancelamento, cancelamento por substituição e CC-e (`autor_difere_do_emitente`) |
 | 244 | emissão pelo contribuinte com série fora de 0 a 889 e 920 a 969 | Anexo I, RV B26-10; NT 2026.001 v1.02b | a | novo, com o 503 |
 | 209 | IE do emitente inválida para a UF | Anexo I, RV C17-20 | a | já coberto (`parseIe`); dica existente |
@@ -141,6 +141,15 @@ A NT 2026.007 v1.10 (produção em 03/11/2026) cria a NF-e sem IE do emitente, a
 
 As regras da NT de aplicação "exclusiva da SVRS" (157, 158, 161, 162) entram mesmo assim: a NF-e sem IE só é autorizada na SVRS (C17-11), então não há autorizador em que a nota recusada aqui passaria.
 
+## Tabela CFOP: 328 e 508 (06/10/2026)
+
+A Tabela de CFOP do Portal da NF-e (Documentos, Diversos; IT 2023.002 v2.10, publicada em 04/09/2026) entrou como dado no `@sinete/validators` (`indicadoresCfop`, `TABELA_CFOP`), gerada por `tools/cfop-data` da planilha oficial com o sha256 conferido. Com ela, duas regras da tabela acima passam a ser conferidas no `montarNfe` do modelo 55, com `combinacao_invalida` no caminho da entrada, e no `@sinete/sefaz-sim`:
+
+- **I08-144 (328):** CFOP com `indDevol` em nota com `finNFe` diferente de 2 e 4, menos a nota de crédito 03, 04 e 06 (exceção da NT 2025.002 v1.52), em `itens[n].produto.CFOP`.
+- **N12-70 (508):** destinatário não contribuinte (`indIEDest` 9) com CST fora de 00, 20, 40, 41, 60 e 61, em `itens[n].impostos.icms.CST`. O texto vigente é o da NT 2023.001 v1.60 e da NT 2023.003 v1.40, com nove exceções e uma observação do CE; todas ficam de fora: entrada, veículo novo em algum item, CST 50 e 51 na devolução, CST 50 com CFOP de retorno ou remessa (`indRetor`, `indRemes`) ou 5949 e 6949, CST 30 interestadual com combustível derivado de petróleo ou com energia elétrica (NCM 27160000), CST 51 com 5123, 5922, 6123 e 6922, e as de critério da UF (CST 10 e 02 internos, CST 90 com 5403 e 5405 no CE). A exceção 7 tem duas redações: a NT 2023.001 libera o CST 51 em qualquer operação interna, a NT 2023.003 só no retorno de depósito (5906 e 5907); pelo critério 4, a conferência não recusa o CST 51 interno. O CSOSN fica fora, porque a regra fala só do CST.
+
+CFOP fora da tabela versionada nunca é recusado: não é devolução para a 328 e, com o CST 50, não se sabe se é retorno ou remessa. Os testes de grupos do ICMS do `@sinete/nfe` montavam CST 10, 30, 50, 70 e 90 para o consumidor final não contribuinte, que a SEFAZ recusaria com 508; passaram a usar um destinatário contribuinte.
+
 ## A barreira da recusa repetida (656)
 
 A regra do consumo indevido conta a mesma NF-e com a mesma rejeição. Reenviar a mesma nota depois de uma rejeição que só depende dela dá sempre a mesma rejeição; depois de uma que depende do cadastro da SEFAZ (203, 230), pode passar, se a causa foi resolvida fora da nota. O emissor conta as recusas iguais e barra o reenvio só a partir de um limite:
@@ -179,5 +188,4 @@ A falha ao registrar a recusa (o banco fora do ar logo depois do descarte) só g
 
 ## Pendências
 
-- A tabela CFOP do Portal (indDevol, indRetor, indRemes) permitiria pré-validar o 328 e parte do 508; entra quando for versionada como dado com fonte.
 - O 282 com o documento só no CN do certificado: o `@sinete/cert` sabe de onde veio o documento (`source`), mas recusar por isso depende de confirmar que nenhuma SEFAZ aceita esse certificado.

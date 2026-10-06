@@ -197,6 +197,11 @@ export interface NfeParams {
   /** Estraga a chave: o Id não corresponde aos campos (502). */
   readonly idErrado?: boolean;
   readonly vNF?: string;
+  /**
+   * Itens (padrão: um, CFOP 5102 e ICMSSN102). `icms` é o conteúdo do grupo `ICMS` (`<ICMS90><orig>0</orig>...`).
+   * Cada item vale `vNF`, e o total é a soma.
+   */
+  readonly itens?: readonly { readonly CFOP?: string; readonly icms?: string }[];
   /** Trocas de texto no `infNFe` antes de assinar (`['<tpImp>4</tpImp>', '<tpImp>1</tpImp>']`). */
   readonly trocas?: readonly (readonly [string, string])[];
   /** NFC-e e NF-e Tipo 2: o texto do `qrCode`; `null` monta a nota sem `infNFeSupl`. Padrão: versão 3 on-line. */
@@ -231,7 +236,9 @@ export async function nfe(p: NfeParams = {}): Promise<Nfe> {
   const aamm = `${dhEmi.slice(2, 4)}${dhEmi.slice(5, 7)}`;
   const chave = montarChaveAcesso({ cUF, aamm, emitente: emit, mod, serie, nNF, tpEmis, cNF });
   const id = p.idErrado ? `NFe${chave.slice(0, 43)}${(Number(chave[43]) + 1) % 10}` : `NFe${chave}`;
-  const vNF = p.vNF ?? '10.00';
+  const vItem = p.vNF ?? '10.00';
+  const itens = p.itens ?? [{}];
+  const vNF = (Number(vItem) * itens.length).toFixed(2);
   const dest = p.destinatario ?? DESTINATARIO;
   const autXML = (p.autXML ?? []).map((d) => `<autXML><CNPJ>${d}</CNPJ></autXML>`).join('');
   const transp =
@@ -248,11 +255,17 @@ export async function nfe(p: NfeParams = {}): Promise<Nfe> {
     `</enderEmit><IE>${p.ie ?? IE_EMITENTE}</IE><CRT>1</CRT></emit>` +
     `<dest><CNPJ>${dest}</CNPJ><xNome>NF-E EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL</xNome>` +
     `<indIEDest>9</indIEDest></dest>${autXML}` +
-    '<det nItem="1"><prod><cProd>SKU1</cProd><cEAN>SEM GTIN</cEAN><xProd>PRODUTO SINTETICO</xProd><NCM>84713012</NCM>' +
-    `<CFOP>5102</CFOP><uCom>UN</uCom><qCom>1.0000</qCom><vUnCom>${vNF}</vUnCom><vProd>${vNF}</vProd>` +
-    `<cEANTrib>SEM GTIN</cEANTrib><uTrib>UN</uTrib><qTrib>1.0000</qTrib><vUnTrib>${vNF}</vUnTrib><indTot>1</indTot></prod>` +
-    '<imposto><ICMS><ICMSSN102><orig>0</orig><CSOSN>102</CSOSN></ICMSSN102></ICMS><PIS><PISNT><CST>07</CST></PISNT></PIS>' +
-    '<COFINS><COFINSNT><CST>07</CST></COFINSNT></COFINS></imposto></det><total><ICMSTot><vBC>0.00</vBC><vICMS>0.00</vICMS>' +
+    itens
+      .map(
+        (it, k) =>
+          `<det nItem="${k + 1}"><prod><cProd>SKU${k + 1}</cProd><cEAN>SEM GTIN</cEAN><xProd>PRODUTO SINTETICO</xProd><NCM>84713012</NCM>` +
+          `<CFOP>${it.CFOP ?? '5102'}</CFOP><uCom>UN</uCom><qCom>1.0000</qCom><vUnCom>${vItem}</vUnCom><vProd>${vItem}</vProd>` +
+          `<cEANTrib>SEM GTIN</cEANTrib><uTrib>UN</uTrib><qTrib>1.0000</qTrib><vUnTrib>${vItem}</vUnTrib><indTot>1</indTot></prod>` +
+          `<imposto><ICMS>${it.icms ?? '<ICMSSN102><orig>0</orig><CSOSN>102</CSOSN></ICMSSN102>'}</ICMS><PIS><PISNT><CST>07</CST></PISNT></PIS>` +
+          '<COFINS><COFINSNT><CST>07</CST></COFINSNT></COFINS></imposto></det>',
+      )
+      .join('') +
+    '<total><ICMSTot><vBC>0.00</vBC><vICMS>0.00</vICMS>' +
     '<vICMSDeson>0.00</vICMSDeson><vFCP>0.00</vFCP><vBCST>0.00</vBCST><vST>0.00</vST><vFCPST>0.00</vFCPST>' +
     `<vFCPSTRet>0.00</vFCPSTRet><vProd>${vNF}</vProd><vFrete>0.00</vFrete><vSeg>0.00</vSeg><vDesc>0.00</vDesc><vII>0.00</vII>` +
     '<vIPI>0.00</vIPI><vIPIDevol>0.00</vIPIDevol><vPIS>0.00</vPIS><vCOFINS>0.00</vCOFINS><vOutro>0.00</vOutro>' +

@@ -4,7 +4,7 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 
 ## `@sinete/validators`
 
-`@sinete/validators`: CPF, CNPJ (numérico e alfanumérico), CAEPF, chave de acesso e inscrição estadual das 27 UFs.
+`@sinete/validators`: CPF, CNPJ (numérico e alfanumérico), CAEPF, chave de acesso, inscrição estadual das 27 UFs e a tabela de CFOP do Portal da NF-e.
 
 Funções puras, sem API de runtime. Cada documento tem `lerX` (devolve `Resultado` com o valor normalizado ou uma `Ocorrencia` de código estável), a conferência booleana (`cpfValido`, `ieValida`...) e `formatarX`; os códigos das ocorrências compõem o `ErroDeValidacao` do `@sinete/core`.
 
@@ -28,6 +28,7 @@ Funções puras, sem API de runtime. Cada documento tem `lerX` (devolve `Resulta
 - `formatarIe`: Formata com a máscara da UF se a inscrição for válida; senão devolve a entrada sem mudança. `formatarIe(entrada: string, uf: Uf): string`
 - `ieIsenta`: Verdadeiro se o texto é o literal `ISENTO`, ignorando caixa e espaços nas pontas. `ieIsenta(entrada: string): boolean`
 - `ieValida`: `ieValida(entrada: string, uf: Uf, opcoes?: LerIeOpcoes): boolean`
+- `indicadoresCfop`: Indicadores do CFOP (`'5202'`, `'5.202'`), ou `undefined` quando o código não está na tabela. Quem confere uma regra da SEFAZ com o indicador não recusa o CFOP desconhecido: a tabela pode estar atrás da do Portal. `indicadoresCfop(cfop: string): IndicadoresCfop | undefined`
 - `lerCaepf`: Valida e normaliza um CAEPF (aceita máscara); devolve os 14 algarismos. `lerCaepf(entrada: string, opcoes?: LerOpcoes): Resultado<string, Ocorrencia>`
 - `lerChaveAcesso`: Valida e decompõe a chave de acesso (aceita espaços, como no DANFE, e minúsculas). Cada componente é conferido contra o domínio do leiaute, com a regra de origem em `data/chave.json`. `lerChaveAcesso(entrada: string, opcoes?: LerChaveAcessoOpcoes): Resultado<ChaveAcesso, Ocorrencia>`
 - `lerCnpj`: Valida e normaliza um CNPJ, numérico ou alfanumérico (aceita máscara e minúsculas); devolve os 14 caracteres. `lerCnpj(entrada: string, opcoes?: LerOpcoes): Resultado<string, Ocorrencia>`
@@ -40,8 +41,10 @@ Funções puras, sem API de runtime. Cada documento tem `lerX` (devolve `Resulta
 
 - `CalculoDvIe`: Um dígito verificador. Membros: `posicao`, `posicoesSomadas`, `pesos`, `modulo`, `resultado`, `troca`, `somarAlgarismos`, `multiplicador`, `acrescimo`, `faixas`.
 - `ChaveAcesso`: Chave de acesso decomposta. Os campos têm a forma lexical do leiaute (strings com zeros à esquerda). Membros: `chave`, `cUF`, `uf`, `aamm`, `ano`, `mes`, `emitente`, `cnpj`, `cpf`, `mod`, `documento`, `serie`, `nNF`, `leiaute`, `tpEmis`, `cNF`, `cDV`.
+- `DescricaoTabelaCfop`: Membros: `versaoDoFormato`, `versao`, `fontes`, `sha256`.
 - `DescricaoTabelaIe`: Membros: `versaoDoFormato`, `versao`, `fontes`.
 - `FaixaIe`: Faixa de números em que a regra de um dígito muda (Amapá, Goiás). Membros: `posicoes`, `minimo`, `maximo`, `acrescimo`, `troca`.
+- `IndicadoresCfop`: Indicadores e vigência de um CFOP, com os nomes das colunas da tabela oficial. Membros: `cfop`, `inicioVigencia`, `fimVigencia`, `indNFe`, `indComunica`, `indTransp`, `indDevol`, `indRetor`, `indAnula`, `indRemes`, `indComb`, `indExcIBSCBS`.
 - `LerChaveAcessoOpcoes` (estende `LerOpcoes`): Membros: `conferirEmitente`, `emissao`, `relogio`, `leiaute`.
 - `LerIeOpcoes` (estende `LerOpcoes`): Membros: `aceitarIsento`, `aceitarLegado`.
 - `LerOpcoes`: Membros: `caminho`.
@@ -59,4 +62,5 @@ Funções puras, sem API de runtime. Cada documento tem `lerX` (devolve `Resulta
 - `CNPJ_ALFANUMERICO_VIGENCIA`: Vigência do CNPJ alfanumérico nos DF-e: NT 2026.004 v1.01 (NF-e/NFC-e), produção a partir de 1º de julho de 2026. Chave com letra no CNPJ e AAMM anterior é recusada pela SEFAZ como CNPJ inválido (NT 2025.001, item 5, nota aos autorizadores). `CNPJ_ALFANUMERICO_VIGENCIA: { readonly aamm: string; readonly fonte: string; }`
 - `CODIGOS_OCORRENCIA`: Códigos estáveis das ocorrências dos validadores (API pública: renomear é major). `CODIGOS_OCORRENCIA: readonly ['cpf_caractere_invalido', 'cpf_tamanho_invalido', 'cpf_digitos_repetidos', 'cpf_dv_invalido', 'cpf_base_invalida', 'cnpj_caractere_invalido', 'cnpj_tamanho_invalido', 'cnpj_formato_invalido', 'cnpj_digitos_rep…`
 - `IE_ISENTO`: Literal do leiaute para contribuinte isento de inscrição (TIe e TIeDest do schema). `IE_ISENTO: 'ISENTO'`
+- `TABELA_CFOP`: Metadados da tabela de CFOP: versão (data da coleta), fonte e sha256 da planilha. `TABELA_CFOP: DescricaoTabelaCfop`
 - `TABELA_IE`: Metadados da tabela de regras de IE: versão e fontes gerais. As fontes por UF estão em `regraIe(uf).fontes`. `TABELA_IE: DescricaoTabelaIe`

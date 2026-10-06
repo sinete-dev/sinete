@@ -64,7 +64,7 @@ A NFS-e Nacional tem simulador próprio (`criarNfseSim`): Sefin Nacional (emiss�
 - `EventoNfseRegistro`: Um evento registrado. Membros: `chave`, `tpEvento`, `nSeqEvento`, `id`, `xml`, `recebidoEm`.
 - `FatosEvento`: Membros: `id`, `cOrgao`, `tpAmb`, `autor`, `chNFe`, `dhEvento`, `tpEvento`, `nSeqEvento`, `verEvento`, `det`.
 - `FatosInutilizacao`: Membros: `id`, `tpAmb`, `cUF`, `ano`, `CNPJ`, `mod`, `serie`, `nNFIni`, `nNFFin`.
-- `FatosNfe`: Campos da NF-e usados pelas regras de autorização. Membros: `id`, `cUF`, `cNF`, `mod`, `serie`, `nNF`, `dhEmi`, `tpEmis`, `cDV`, `tpAmb`, `emitente`, `ide`, `vNF`, `destinatario`, `supl`.
+- `FatosNfe`: Campos da NF-e usados pelas regras de autorização. Membros: `id`, `cUF`, `cNF`, `mod`, `serie`, `nNF`, `dhEmi`, `tpEmis`, `cDV`, `tpAmb`, `emitente`, `ide`, `vNF`, `destinatario`, `itens`, `supl`.
 - `IdentidadeDoCertificado` (estende `Documento`): Identidade lida de um certificado: CNPJ ou CPF do `otherName` ICP-Brasil, quando houver. Membros: `certificado`.
 - `InspecaoNfseSim`: Membros: `nfse()`, `nfses()`, `eventos()`.
 - `InspecaoSim`: Consultas ao estado para as asserções dos testes. Membros: `nfe()`, `nfes()`, `eventos()`, `inutilizacoes()`, `mdfe()`, `mdfes()`, `eventosMdfe()`, `lote()`, `distribuicao()`.

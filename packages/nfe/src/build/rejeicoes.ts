@@ -8,6 +8,7 @@
  */
 
 import type { Ocorrencia } from '@sinete/core';
+import { indicadoresCfop } from '@sinete/validators';
 import type { Issues } from '../issues.ts';
 import type { DadosNfe } from '../model.ts';
 import type { Instante } from '../time.ts';
@@ -217,5 +218,107 @@ export function exclusivoIbsCbs(
         'NF-e sem IE do emitente (contribuinte exclusivo do IBS/CBS) exige o grupo IBS/CBS em todo item (UB12-11, rejeição 162)',
       );
     }
+  });
+}
+
+/** Nota de crédito que aceita CFOP de devolução (NT 2025.002 v1.52, RV I08-144, exceção): 03, 04 e 06. */
+const CREDITO_COM_DEVOLUCAO: ReadonlySet<string> = new Set(['03', '04', '06']);
+
+/**
+ * CFOP de devolução (Tabela CFOP, `indDevol`) em NF-e que não é de devolução nem complementar: rejeição 328 (MOC 7.0
+ * Anexo I, RV I08-144, obrigatória no modelo 55; NT 2025.002 v1.52, que exclui a nota de crédito 03, 04 e 06). CFOP
+ * fora da tabela versionada não é recusado.
+ */
+export function cfopDeDevolucao(input: DadosNfe, issues: Issues): void {
+  const fin = input.finNFe ?? '1';
+  if (fin === '2' || fin === '4') return;
+  if (fin === '5' && input.tpNFCredito !== undefined && CREDITO_COM_DEVOLUCAO.has(input.tpNFCredito)) return;
+  input.itens.forEach((it, n) => {
+    if (indicadoresCfop(it.produto.CFOP.replace(/\D/g, ''))?.indDevol !== true) return;
+    issues.add(
+      `itens[${n}].produto.CFOP`,
+      'combinacao_invalida',
+      `CFOP ${it.produto.CFOP} é de devolução e a nota não é de devolução (finNFe ${fin}) (I08-144, rejeição 328)`,
+    );
+  });
+}
+
+/** CST aceitos com destinatário não contribuinte (RV N12-70; o 61 entrou pela NT 2023.001). */
+const CST_NAO_CONTRIBUINTE: ReadonlySet<string> = new Set(['00', '20', '40', '41', '60', '61']);
+
+/** Códigos ANP que a exceção 5 da N12-70 deixa de fora (não derivados de petróleo). */
+const ANP_FORA_DA_EXCECAO_5: ReadonlySet<string> = new Set([
+  '820101001',
+  '820101010',
+  '810102001',
+  '810102004',
+  '810102002',
+  '810102003',
+  '810101002',
+  '810101001',
+  '810101003',
+  '220101003',
+  '220101004',
+  '220101002',
+  '220101001',
+  '220101005',
+  '220101006',
+  '560101001',
+]);
+
+/** CFOP da exceção 7 da N12-70 (CST 51 em qualquer operação). */
+const CFOP_CST51: ReadonlySet<string> = new Set(['5123', '5922', '6123', '6922']);
+
+/**
+ * CST fora de 00, 20, 40, 41, 60 e 61 com destinatário não contribuinte (indIEDest 9): rejeição 508 (MOC 7.0 Anexo I,
+ * RV N12-70, obrigatória no modelo 55, no texto da NT 2023.001 v1.60 e da NT 2023.003 v1.40). Só o CST: a regra não
+ * fala do CSOSN. Ficam de fora todas as exceções:
+ *
+ * 1. NF-e de entrada; 3. nota com veículo novo (`veicProd`) em algum item; 6. CST 50 e 51 na devolução;
+ * 2. CST 50 com CFOP de retorno ou remessa (Tabela CFOP, `indRetor`, `indRemes`) ou 5949 e 6949, e com CFOP fora da
+ *    tabela versionada, que a conferência não sabe classificar;
+ * 5. CST 30 interestadual com combustível derivado de petróleo; 9. CST 30 interestadual com energia elétrica (NCM
+ *    27160000);
+ * 7. CST 51 com CFOP 5123, 5922, 6123 e 6922, e em qualquer operação interna: a NT 2023.001 diz "operações internas" e
+ *    a NT 2023.003 restringe ao retorno de depósito (5906 e 5907), e a conferência recusa só o que as duas recusam;
+ * 8. CST 10 e 02 em operação interna, a critério da UF; e o CST 90 com CFOP 5403 ou 5405 no CE (observação da NT
+ *    2023.003), também a critério da UF.
+ *
+ * A exceção 4 (emissão antes de 01/07/2016) não alcança nota montada agora.
+ */
+export function cstComNaoContribuinte(
+  input: DadosNfe,
+  contexto: { readonly idDest: string; readonly uf: string },
+  issues: Issues,
+): void {
+  if (input.destinatario?.indIEDest !== '9' || input.tpNF === '0') return;
+  if (input.itens.some((it) => it.produto.especifico !== undefined && 'veicProd' in it.produto.especifico)) return;
+  const fin = input.finNFe ?? '1';
+  const interna = contexto.idDest === '1';
+  const interestadual = contexto.idDest === '2';
+  input.itens.forEach((it, n) => {
+    const icms = it.impostos.icms;
+    if (icms === undefined || !('CST' in icms)) return;
+    const cst = icms.CST;
+    if (CST_NAO_CONTRIBUINTE.has(cst)) return;
+    const cfop = it.produto.CFOP.replace(/\D/g, '');
+    const esp = it.produto.especifico;
+    if ((cst === '50' || cst === '51') && fin === '4') return;
+    if (cst === '50') {
+      const ind = indicadoresCfop(cfop);
+      if (ind === undefined || ind.indRetor || ind.indRemes || cfop === '5949' || cfop === '6949') return;
+    }
+    if (cst === '51' && (CFOP_CST51.has(cfop) || interna)) return;
+    if ((cst === '10' || cst === '02') && interna) return;
+    if (cst === '30' && interestadual) {
+      if (esp !== undefined && 'comb' in esp && !ANP_FORA_DA_EXCECAO_5.has(esp.comb.cProdANP)) return;
+      if (it.produto.NCM.replace(/\D/g, '') === '27160000') return;
+    }
+    if (cst === '90' && contexto.uf === 'CE' && (cfop === '5403' || cfop === '5405')) return;
+    issues.add(
+      `itens[${n}].impostos.icms.CST`,
+      'combinacao_invalida',
+      `CST ${cst} não se usa com destinatário não contribuinte (indIEDest 9) (N12-70, rejeição 508)`,
+    );
   });
 }
