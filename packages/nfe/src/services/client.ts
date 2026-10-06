@@ -13,7 +13,7 @@
  * número. Consulte a chave (`resolverEnvioSemResposta`) e, se ela não constar, reenvie exatamente os mesmos bytes.
  */
 
-import type { Ambiente, Assinador, CUf, Logger, Relogio, ResultadoSefaz, Uf } from '@sinete/core';
+import type { Ambiente, Assinador, CUf, Logger, Recusado, Relogio, ResultadoSefaz, Uf } from '@sinete/core';
 import {
   criarAutorizado,
   criarDenegado,
@@ -213,7 +213,24 @@ export interface Inutilizacao {
   readonly procInutNFe: string;
 }
 
-export type ResultadoInutilizacao = ResultadoSefaz<Inutilizacao, never>;
+/**
+ * Protocolo da inutilização que já valia para a mesma faixa, trazido pelo 563 (MOC 7.0 Visão Geral, tabela 5-12,
+ * regra I07). Não existe consulta de inutilização na NF-e 4.00: depois de um pedido sem resposta, reenviar a mesma
+ * faixa e ler este campo é o único caminho para guardar o `nProt` que valeu. O `procInutNFe` não se monta com ele,
+ * porque a resposta 563 não é a homologação.
+ */
+export interface InutilizacaoAnterior {
+  readonly nProt: string;
+  /** `retInutNFe` do 563 como veio na resposta. */
+  readonly retInutNFe: string;
+}
+
+/** Recusa da inutilização; no 563 com protocolo, `anterior` traz o protocolo da faixa já inutilizada. */
+export interface RecusadoInutilizacao extends Recusado {
+  readonly anterior?: InutilizacaoAnterior;
+}
+
+export type ResultadoInutilizacao = Exclude<ResultadoSefaz<Inutilizacao, never>, Recusado> | RecusadoInutilizacao;
 
 export interface Cadastro {
   readonly UF: string;
@@ -1015,8 +1032,10 @@ export function criarClienteNfe(opcoesDoCliente: ClienteNfeOpcoes): ClienteNfe {
       const v = decodificar(TRetInutNFe, r.ret, r.doc.texto).valor;
       const status = { cStat: v.infInut.cStat, xMotivo: v.infInut.xMotivo };
       logger.info('nfe.inutilizacao', { id, cStat: status.cStat });
-      if (!cstatEm(status.cStat, 'inutilizacaoHomologada')) return rejeitado(status);
-      // A homologação tem de ser desta faixa: os campos que o retorno trouxer, iguais aos do pedido.
+      const homologada = cstatEm(status.cStat, 'inutilizacaoHomologada');
+      const anterior = cstatEm(status.cStat, 'inutilizacaoJaHomologada') ? v.infInut.nProt : undefined;
+      if (!homologada && anterior === undefined) return rejeitado(status);
+      // A homologação (ou a anterior, no 563) tem de ser desta faixa: os campos que o retorno trouxer, iguais aos do pedido.
       const r0 = v.infInut;
       const n = (x: string | undefined): string | undefined => (x === undefined ? undefined : String(Number(x)));
       const confere: readonly (readonly [string, string | undefined, string])[] = [
@@ -1032,6 +1051,9 @@ export function criarClienteNfe(opcoesDoCliente: ClienteNfeOpcoes): ClienteNfe {
         throw new ErroRespostaInvalida('retInutNFe de outra faixa', {
           detalhes: Object.fromEntries(fora.map(([k, v]) => [k, v])),
         });
+      }
+      if (anterior !== undefined) {
+        return { ...rejeitado(status), anterior: { nProt: anterior, retInutNFe: avulso(r.doc, r.ret) } };
       }
       return criarAutorizado(status, {
         dhRecbto: v.infInut.dhRecbto,

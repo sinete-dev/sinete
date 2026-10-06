@@ -22,13 +22,13 @@ import {
 function retInut(
   cStat: string,
   xMotivo = 'Inutilização de número homologado',
-  f: { CNPJ?: string; mod?: string; serie?: string; ini?: string; fin?: string } = {},
+  f: { CNPJ?: string; mod?: string; serie?: string; ini?: string; fin?: string; nProt?: string } = {},
 ): string {
   return (
     `<retInutNFe xmlns="${NFE_NS}" versao="4.00"><infInut Id="ID351000000000003"><tpAmb>2</tpAmb><verAplic>SP_NFE_PL009_V4</verAplic>` +
     `<cStat>${cStat}</cStat><xMotivo>${xMotivo}</xMotivo><cUF>35</cUF><ano>26</ano><CNPJ>${f.CNPJ ?? CNPJ_EMIT}</CNPJ><mod>${f.mod ?? '55'}</mod>` +
     `<serie>${f.serie ?? '1'}</serie><nNFIni>${f.ini ?? '10'}</nNFIni><nNFFin>${f.fin ?? '12'}</nNFFin><dhRecbto>2026-09-10T09:00:00-03:00</dhRecbto>` +
-    `${cStat === '102' ? '<nProt>135260000000003</nProt>' : ''}</infInut></retInutNFe>`
+    `${f.nProt !== undefined ? `<nProt>${f.nProt}</nProt>` : cStat === '102' ? '<nProt>135260000000003</nProt>' : ''}</infInut></retInutNFe>`
   );
 }
 
@@ -96,6 +96,53 @@ describe('inutilizar', () => {
     await expect(
       c.inutilizar({ ano: 2026, serie: 1, nNFIni: 10, nNFFin: 12, xJust: 'Quebra de sequência na emissão' }),
     ).rejects.toBeInstanceOf(ErroRespostaInvalida);
+  });
+
+  describe('563 (mesma faixa já inutilizada): o protocolo anterior vem no recusado', () => {
+    const pedido = { ano: 2026, serie: 1, nNFIni: 10, nNFFin: 12, xJust: 'Quebra de sequência na emissão' };
+    const MOTIVO_563 = 'Rejeição: Já existe pedido de Inutilização com a mesma faixa de inutilização';
+
+    test('com nProt e a faixa pedida: recusado com anterior.nProt e o retInutNFe como veio', async () => {
+      const t = fakeTransport(soap(retInut('563', MOTIVO_563, { nProt: '135260000000001' }), 'NFeInutilizacao4'));
+      const { c } = await client(t, { autor: { CNPJ: CNPJ_EMIT } });
+      const r = await c.inutilizar(pedido);
+      expect([r.tipo, r.cStat]).toEqual(['recusado', '563']);
+      if (r.tipo !== 'recusado') return;
+      expect(r.anterior?.nProt).toBe('135260000000001');
+      expect(r.anterior?.retInutNFe.startsWith(`<retInutNFe xmlns="${NFE_NS}" versao="4.00">`)).toBe(true);
+      expect(r.anterior?.retInutNFe).toContain('<nProt>135260000000001</nProt>');
+    });
+
+    test('sem nProt na resposta: recusado sem anterior', async () => {
+      const t = fakeTransport(soap(retInut('563', MOTIVO_563), 'NFeInutilizacao4'));
+      const { c } = await client(t, { autor: { CNPJ: CNPJ_EMIT } });
+      const r = await c.inutilizar(pedido);
+      expect([r.tipo, r.cStat]).toEqual(['recusado', '563']);
+      expect('anterior' in r).toBe(false);
+    });
+
+    test('563 de outra faixa é ErroRespostaInvalida', async () => {
+      for (const f of [{ fin: '13' }, { serie: '2' }, { CNPJ: CNPJ_DEST }, { mod: '65' }]) {
+        const t = fakeTransport(
+          soap(retInut('563', MOTIVO_563, { ...f, nProt: '135260000000001' }), 'NFeInutilizacao4'),
+        );
+        const { c } = await client(t, { autor: { CNPJ: CNPJ_EMIT } });
+        await expect(c.inutilizar(pedido)).rejects.toBeInstanceOf(ErroRespostaInvalida);
+      }
+    });
+
+    test('outra rejeição com nProt não ganha anterior', async () => {
+      const t = fakeTransport(
+        soap(
+          retInut('256', 'Rejeição: Uma NF-e da faixa já está inutilizada', { nProt: '135260000000001' }),
+          'NFeInutilizacao4',
+        ),
+      );
+      const { c } = await client(t, { autor: { CNPJ: CNPJ_EMIT } });
+      const r = await c.inutilizar(pedido);
+      expect([r.tipo, r.cStat]).toEqual(['recusado', '256']);
+      expect('anterior' in r).toBe(false);
+    });
   });
 
   test('cliente em contingência SVC (MT, SVC-RS) inutiliza no autorizador normal da UF', async () => {
