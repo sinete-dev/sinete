@@ -1,5 +1,5 @@
 /**
- * Regras de validação da NT 2025.002-RTC v1.51 (item 7, grupos UB e W) que dá para conferir sem banco de dados da
+ * Regras de validação da NT 2025.002-RTC v1.52 (item 7, grupos UB e W) que dá para conferir sem banco de dados da
  * SEFAZ: presença e vedação de grupos pelos indicadores de CST, cClassTrib e cCredPres, fórmulas de valores com a
  * tolerância da NT, alíquotas por ano de emissão, compatibilidade com o tipo de nota de débito e crédito e somas dos
  * totais. Cada regra tem o id da NT, o cStat de rejeição, os modelos, a implantação por ambiente e a fonte.
@@ -41,7 +41,7 @@ export interface Regra extends DescricaoDaRegra {
 export const TABELAS_NT: TabelasNt = ntData as TabelasNt;
 const nt: TabelasNt = TABELAS_NT;
 
-const SRC = 'NT 2025.002 v1.51';
+const SRC = 'NT 2025.002 v1.52';
 const V130: Ativacao = { homologacao: '2025-10-29', producao: '2025-11-10' };
 const V130B: Ativacao = { homologacao: '2025-11-24', producao: '2026-02-02' };
 const V140: Ativacao = { homologacao: '2026-07-01', producao: '2026-08-03' };
@@ -465,12 +465,6 @@ export const REGRAS: readonly Regra[] = [
       if (r.ct && !ctx.conteudo.permitidoEm(r.ct, ctx.documento.modelo)) {
         report(it.nItem, `cClassTrib ${ib.cClassTrib} não é permitido no modelo ${ctx.documento.modelo}`);
       }
-    }),
-  ),
-  rule('UB14-40', '1057', 'cClassTrib 620005 exige nota de crédito', NFE, (ctx, report) =>
-    withIbscbs(ctx, (it, ib) => {
-      if (ib.cClassTrib === '620005' && ctx.documento.finNFe !== 5)
-        report(it.nItem, 'cClassTrib 620005 exige finNFe 5');
     }),
   ),
   rule('UB14-60', '1202', 'cClassTrib compatível com o tipo de nota de débito ou crédito', NFE, (ctx, report) =>
@@ -984,7 +978,7 @@ export const NAO_IMPLEMENTADAS: readonly NaoImplementada[] = [
   { id: 'UB66a-20', motivo: 'Grupo gALCZFMCBS ainda não modelado.' },
   { id: 'UB66c-10', motivo: 'Grupo gALCZFMCBS ainda não modelado.' },
   { id: 'UB66e-10', motivo: 'Grupo gALCZFMCBS ainda não modelado.' },
-  { id: 'UB84a-10 a UB104', motivo: 'Grupos de tributação monofásica ainda não suportados.' },
+  { id: 'UB85a-10 a UB104', motivo: 'Grupos de tributação monofásica ainda não suportados.' },
   { id: 'W31-10, W31-20, W33-10', motivo: 'Totais do Imposto Seletivo, fora do escopo.' },
   { id: 'W58-10 a W59d-10', motivo: 'Totais da monofasia, ainda não suportada.' },
   { id: 'VB01-05, VB01-10, VB01-20, W60-05, W60-10', motivo: 'vItem e vNFTot: implementação futura na NT.' },
