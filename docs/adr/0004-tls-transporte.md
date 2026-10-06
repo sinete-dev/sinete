@@ -283,7 +283,7 @@ Rodada 2 do fechamento do M1, com um e-CPF A1 de produtor rural do DF com IE (AC
   5. O TCP reset de MS e MT homologação sem certificado sumiu com o certificado válido (107 nos dois). Era recusa por falta de certificado.
   6. Feito em parte: o ADN em TLS 1.3 aceitou o certificado real (GET do convênio). Falta o ADN limitado a TLS 1.2 com PKCS#1.
   7. Feito: PFX legado RC2-40 + 3DES lido em JS (node-forge) e passado como PEM ao `https.Agent` no Node e no Bun, e ao `createHttpClient` no Deno.
-  8. Mapear para os erros tipados os alertas com certificado expirado e com certificado revogado.
+  8. Feito no laboratório TLS (06/10/2026, Bun, Node e Deno): o alerta 45 vira `certificado_expirado` e o 44 vira `certificado_revogado`. Falta ver os dois alertas vindos de uma SEFAZ real.
   9. Feito (rodada 4): NFS-e gerada e cancelada na produção restrita, com a consulta de eventos corrigida pelo que a Sefin respondeu. O 404 do DANFSe do ADN é a suspensão da API (NT 008/2026).
   10. Feito em parte (seção 8): os autorizadores de NF-e de homologação aceitam só a folha deste emissor (AC SAFEWEB RFB v5). Falta produção e um emissor de outra AC antes de decidir se o `@sinete/cert` completa a cadeia sempre ou só quando necessário.
   11. Contribuinte exclusivo do IBS/CBS: a NT 2026.007 manda autorizar na SVRS, mas a SVRS de homologação responde 410 para cUF 35 (autorização e status). Refazer só quando o status com cUF 35 der 107.

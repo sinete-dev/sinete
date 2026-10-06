@@ -1,10 +1,10 @@
 # `certificado_recusado`: o servidor recebeu o certificado e recusou
 
-O servidor recebeu o certificado de cliente e o recusou durante a negociação TLS, que estabelece a conexão segura (alertas 43 a 46, 48 e 49). O transporte lança um `ErroTransporte` de `@sinete/transport`, que herda de `ErroSinete`, com `code: 'certificado_recusado'`. Trate o erro pelo `code`, usando `ehErroSinete(e, 'certificado_recusado')` de `@sinete/core`, nunca pela mensagem.
+O servidor recebeu o certificado de cliente e o recusou durante a negociação TLS, que estabelece a conexão segura (alertas 43, 46, 48 e 49). O transporte lança um `ErroTransporte` de `@sinete/transport`, que herda de `ErroSinete`, com `code: 'certificado_recusado'`. Trate o erro pelo `code`, usando `ehErroSinete(e, 'certificado_recusado')` de `@sinete/core`, nunca pela mensagem.
 
 ## Causa
 
-Certificado vencido ou revogado, autoridade certificadora (AC) que o servidor não reconhece, ou cadeia de certificação incompleta para aquele servidor. A cadeia liga o certificado do titular a uma raiz de confiança por meio dos certificados das autoridades intermediárias.
+Autoridade certificadora (AC) que o servidor não reconhece, tipo de certificado que ele não aceita, ou cadeia de certificação incompleta para aquele servidor. Certificado vencido (alerta 45) sai como [`certificado_expirado`](certificado_expirado.md) e revogado (alerta 44) como [`certificado_revogado`](certificado_revogado.md); quem trata os três juntos pode comparar o prefixo `certificado_` do `code`. A cadeia liga o certificado do titular a uma raiz de confiança por meio dos certificados das autoridades intermediárias.
 
 ## Correção
 

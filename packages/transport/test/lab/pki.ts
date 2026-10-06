@@ -23,7 +23,16 @@ export interface Pki {
   readonly openssl: string;
   /** Caminhos dos arquivos, para o s_server. */
   readonly files: Record<
-    'ca' | 'srv' | 'srvKey' | 'cli' | 'cliKey' | 'badSrv' | 'badSrvKey' | 'wrongName' | 'wrongNameKey',
+    | 'ca'
+    | 'srv'
+    | 'srvKey'
+    | 'cli'
+    | 'cliKey'
+    | 'badSrv'
+    | 'badSrvKey'
+    | 'wrongName'
+    | 'wrongNameKey'
+    | 'crlRevogaCliente',
     string
   >;
   readonly caPem: string;
@@ -90,6 +99,18 @@ export function createPki(): Pki {
   cert('badca', 'AC fora da confianca', 'ca');
   cert('badsrv', 'localhost', 'srv', 'badca');
   cert('wrong', 'outro-host.invalid', 'wrong', 'ca');
+  // CRL da AC de laboratório que revoga o certificado do cliente, para o s_server com `-crl_check` mandar o alerta 44.
+  const serial = execFileSync(openssl, ['x509', '-in', f('cli.pem'), '-noout', '-serial'], { encoding: 'utf8' })
+    .trim()
+    .replace(/^serial=/, '');
+  const ontem = new Date(Date.now() - 86_400_000).toISOString().replace(/[-:T]/g, '').slice(2, 14);
+  writeFileSync(f('index.txt'), `R\t991231235959Z\t${ontem}Z\t${serial}\tunknown\t/CN=Cliente de laboratorio\n`);
+  writeFileSync(
+    f('ca.cnf'),
+    `[ca]\ndefault_ca = lab\n[lab]\ndatabase = ${f('index.txt')}\ncrlnumber = ${f('crlnumber')}\ndefault_md = sha256\ndefault_crl_days = 2\n`,
+  );
+  writeFileSync(f('crlnumber'), '01\n');
+  run('ca', '-config', f('ca.cnf'), '-gencrl', '-keyfile', f('ca.key'), '-cert', f('ca.pem'), '-out', f('crl.pem'));
   let clientPfxLegacy: Uint8Array | undefined;
   try {
     run(
@@ -122,6 +143,7 @@ export function createPki(): Pki {
       badSrvKey: f('badsrv.key'),
       wrongName: f('wrong.pem'),
       wrongNameKey: f('wrong.key'),
+      crlRevogaCliente: f('crl.pem'),
     },
     caPem: readFileSync(f('ca.pem'), 'utf8'),
     clientCertPem: readFileSync(f('cli.pem'), 'utf8'),

@@ -14,8 +14,8 @@ const ALERTS: Readonly<Record<string, CodigoErroTransporte>> = {
   BAD_CERTIFICATE: 'certificado_nao_apresentado',
   CERTIFICATE_REQUIRED: 'certificado_nao_apresentado',
   UNSUPPORTED_CERTIFICATE: 'certificado_recusado',
-  CERTIFICATE_REVOKED: 'certificado_recusado',
-  CERTIFICATE_EXPIRED: 'certificado_recusado',
+  CERTIFICATE_REVOKED: 'certificado_revogado',
+  CERTIFICATE_EXPIRED: 'certificado_expirado',
   CERTIFICATE_UNKNOWN: 'certificado_recusado',
   UNKNOWN_CA: 'certificado_recusado',
   ACCESS_DENIED: 'certificado_recusado',
@@ -24,6 +24,8 @@ const ALERTS: Readonly<Record<string, CodigoErroTransporte>> = {
 const MESSAGES: Record<CodigoErroTransporte, string> = {
   certificado_nao_apresentado: 'o servidor pediu certificado de cliente e não recebeu',
   certificado_recusado: 'o servidor recusou o certificado de cliente',
+  certificado_expirado: 'o servidor recusou o certificado de cliente por estar vencido',
+  certificado_revogado: 'o servidor recusou o certificado de cliente por estar revogado',
   certificado_ausente_ou_recusado: 'o servidor recusou a conexão por certificado ausente ou não aceito',
   certificado_nao_carregado: 'o certificado da identidade não está no contexto TLS',
   conexao_recusada: 'o servidor fechou ou recusou a conexão',
@@ -39,6 +41,8 @@ const MESSAGES: Record<CodigoErroTransporte, string> = {
 const HINTS: Partial<Record<CodigoErroTransporte, string>> = {
   certificado_nao_apresentado: 'confira se a identidade TLS foi passada ao transporte',
   certificado_ausente_ou_recusado: 'confira a identidade TLS, a validade do certificado e a AC dele',
+  certificado_expirado: 'renove o certificado com a AC; confira também o relógio da máquina',
+  certificado_revogado: 'o certificado foi revogado pela AC: emita um novo',
   conexao_recusada: 'em MS e MT homologação, reset depois da requisição é falta de certificado',
   cadeia_servidor_nao_confiavel:
     'o transporte soma o bundle ICP-Brasil do @sinete/cert; proxy corporativo pede confianca: "sistema"',

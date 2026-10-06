@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { ErroDeTempoEsgotado } from '@sinete/core';
-import { classificarFalhaDeTransporte, erroHttp403 } from '../src/index.ts';
+import { classificarFalhaDeTransporte, classificarFalhaDoHelper, erroHttp403 } from '../src/index.ts';
 
 const host = 'hom.exemplo.invalid';
 const c = (err: unknown) => classificarFalhaDeTransporte(err, { host });
@@ -27,8 +27,15 @@ describe('mapa de falhas observadas (ADR 0004, seção 4)', () => {
     ],
     [e('ERR_SSL_SSLV3_ALERT_CERTIFICATE_UNKNOWN', 'x'), 'certificado_recusado', 'certificate_unknown'],
     [e('ERR_SSL_TLSV1_ALERT_UNKNOWN_CA', 'tlsv1 alert unknown ca'), 'certificado_recusado', 'unknown_ca'],
-    [e('ERR_SSL_SSLV3_ALERT_CERTIFICATE_EXPIRED', 'x'), 'certificado_recusado', 'certificate_expired'],
-    [e('ERR_SSL_SSLV3_ALERT_CERTIFICATE_REVOKED', 'x'), 'certificado_recusado', 'certificate_revoked'],
+    [e('ERR_SSL_SSLV3_ALERT_CERTIFICATE_EXPIRED', 'x'), 'certificado_expirado', 'certificate_expired'],
+    [
+      e(undefined, 'error:0A000415:SSL routines::sslv3 alert certificate expired'),
+      'certificado_expirado',
+      'certificate_expired',
+    ],
+    [e('ERR_SSL_SSLV3_ALERT_CERTIFICATE_REVOKED', 'x'), 'certificado_revogado', 'certificate_revoked'],
+    [e('ERR_SSL_SSLV3_ALERT_UNSUPPORTED_CERTIFICATE', 'x'), 'certificado_recusado', 'unsupported_certificate'],
+    [e('ERR_SSL_TLSV1_ALERT_ACCESS_DENIED', 'x'), 'certificado_recusado', 'access_denied'],
     [e('ERR_SSL_TLSV1_ALERT_PROTOCOL_VERSION', 'tlsv1 alert protocol version'), 'falha_tls', 'protocol_version'],
     // rustls (Deno)
     [
@@ -37,6 +44,8 @@ describe('mapa de falhas observadas (ADR 0004, seção 4)', () => {
       'bad_certificate',
     ],
     [e(undefined, 'received fatal alert: CertificateUnknown'), 'certificado_recusado', 'certificate_unknown'],
+    [e(undefined, 'received fatal alert: CertificateExpired'), 'certificado_expirado', 'certificate_expired'],
+    [e(undefined, 'received fatal alert: CertificateRevoked'), 'certificado_revogado', 'certificate_revoked'],
     [
       e(undefined, 'error sending request', e(undefined, 'received fatal alert: HandshakeFailure')),
       'certificado_nao_apresentado',
@@ -94,5 +103,19 @@ describe('mapa de falhas observadas (ADR 0004, seção 4)', () => {
       code: 'certificado_ausente_ou_recusado',
       detalhes: { host, status: 403 },
     });
+  });
+});
+
+describe('alerta pelo número, no helper sinete-signer', () => {
+  test.each([
+    [45, 'certificado_expirado', 'certificate_expired'],
+    [44, 'certificado_revogado', 'certificate_revoked'],
+    [46, 'certificado_recusado', 'certificate_unknown'],
+    [48, 'certificado_recusado', 'unknown_ca'],
+    [42, 'certificado_nao_apresentado', 'bad_certificate'],
+  ] as const)('alerta %p', (alert, code, alerta) => {
+    const r = classificarFalhaDoHelper({ stage: 'handshake', alert }, 'remote error: tls: x', host);
+    expect(r.code).toBe(code);
+    expect(r.detalhes).toMatchObject({ host, alerta, etapa: 'handshake' });
   });
 });
