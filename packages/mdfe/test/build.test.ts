@@ -300,7 +300,7 @@ describe('montarMdfe: carga própria do produtor rural (CPF)', () => {
       'campo_invalido',
     ]);
     expect(codigos(await montarMdfe(cargaPropria({ emitente: { ...e, xNome: 'X'.repeat(61) } }), opcoes()))).toEqual([
-      'schema',
+      'campo_invalido',
     ]);
   });
 

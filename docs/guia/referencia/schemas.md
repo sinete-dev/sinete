@@ -10,9 +10,11 @@ Os módulos de cada documento e pacote de liberação ficam em subpaths (`@sinet
 
 ### Funções
 
+- `camposSemElemento`: Os campos da tabela cujo elemento não existe em `raiz`: um erro de digitação na tabela de um montador, que deixaria o campo sem conferência sem aviso. Os testes de cada montador cobram a lista vazia. `camposSemElemento(raiz: ComplexType, campos: readonly CampoDeTexto[]): string[]`
 - `compararCalendario`: Ordem parcial do XSD: com fuso nos dois (ou em nenhum) a comparação é direta; com fuso em só um, o outro vale por qualquer fuso de -14:00 a +14:00, e se o resultado muda nesse intervalo a comparação é indeterminada (`NaN`). `compararCalendario(b: string, x: string, y: string): number`
 - `compararDecimal`: Compara dois decimais lexicais válidos sem passar por `number` (sem perda de precisão). `compararDecimal(a: string, b: string): number`
 - `compilarRegexXsd`: Compila um pattern do XSD. `compilarRegexXsd(padrao: string): RegExp`
+- `conferirTextos`: Confere os textos da entrada: em qualquer campo, o caractere que o XML não representa; nos campos da tabela, o tipo do elemento em `raiz` (tamanho, espaço nas pontas, caractere fora do conjunto aceito), um texto recusado por regra violada. `conferirTextos(entrada: unknown, raiz: ComplexType, campos: readonly CampoDeTexto[], pular?: ReadonlySet<string>): TextoRecusado[]`
 - `conferirTipoSimples`: Confere um valor simples contra o tipo. Empilha as ocorrências em `saida`. `conferirTipoSimples(t: SimpleType, bruto: string, caminho: string, saida: OcorrenciaSchema[]): void`
 - `decodificar`: Decodifica o elemento `el` como o tipo `ct`. Nunca lança por causa do conteúdo. `decodificar<T>(ct: ComplexType<T>, el: ElementoXml, texto?: string): Decodificado<T>`
 - `decodificarRaiz`: Decodifica um documento parseado pela raiz esperada. Raiz com outro nome ou namespace vira ocorrência. `decodificarRaiz<T>(raiz: ElementoRaiz<T>, documento: DocumentoXml): Decodificado<T>`
@@ -27,6 +29,7 @@ Os módulos de cada documento e pacote de liberação ficam em subpaths (`@sinet
 - `selecionarPl`: O módulo vigente para a família no instante do relógio e no ambiente dados: a entrada de início mais recente que não passa da data. `selecionarPl(familia: FamiliaSchema, ambiente: Ambiente, relogio: Relogio): EntradaDeVigencia`
 - `serializar`: Serializa `valor` como o elemento `nome` do tipo `ct`. `nsHerdado` é o namespace default já em escopo onde a string vai ser inserida (vazio para documento novo, que então recebe `xmlns`). `serializar<T>(ct: ComplexType<T>, nome: string, valor: T, nsHerdado?: string): string`
 - `serializarRaiz`: Serializa um documento a partir do elemento raiz, com o `xmlns` do namespace dele. `serializarRaiz<T>(raiz: ElementoRaiz<T>, valor: T): string`
+- `textoXmlValido`: Produção `Char` do XML 1.0: tab, LF, CR, U+0020 a U+D7FF, U+E000 a U+FFFD e U+10000 a U+10FFFF. `textoXmlValido(texto: string): boolean`
 - `validar`: Valida o elemento `el` como o tipo `ct`. Lista vazia = válido. `validar(ct: ComplexType, el: ElementoXml): OcorrenciaSchema[]`
 - `validarRaiz`: Valida um documento (string ou já parseado) pela raiz esperada. Lança `ErroXml` se o XML for malformado. `validarRaiz<T>(raiz: ElementoRaiz<T>, xml: string | DocumentoXml): OcorrenciaSchema[]`
 
@@ -51,10 +54,12 @@ Os módulos de cada documento e pacote de liberação ficam em subpaths (`@sinet
 - `OcorrenciaDecodificacao` (estende `Ocorrencia`): Membros: `code`.
 - `OcorrenciaSchema` (estende `Ocorrencia`): Membros: `code`.
 - `SimpleType`: Tipo simples: base embutida do XSD mais as facetas acumuladas na cadeia de derivação. Membros: `b`, `p`, `e`, `l`, `mn`, `mx`, `td`, `fd`, `mi`, `ma`, `me`, `mxe`, `ws`, `nm`.
+- `TextoRecusado`: Um texto recusado: o caminho na entrada e a mensagem para quem o preenche. Membros: `caminho`, `mensagem`.
 - `WildcardParticle`: `xs:any processContents="skip"` de qualquer namespace. O conteúdo fica como XML bruto em `$any`. Membros: `w`, `n`, `x`.
 
 ### Tipos
 
+- `CampoDeTexto`: Campo de texto da entrada (com `[]` onde a entrada é uma lista) e o caminho, em pontos a partir da raiz, do elemento que o recebe como veio. Quando o elemento é complexo, o grupo da entrada é o próprio tipo do schema (mesmos nomes) e cada texto dele é conferido pelo tipo do seu elemento. `type CampoDeTexto = readonly [entrada: string, xml: string]`
 - `CodigoErroSchemas`: Códigos lançados por este pacote. `type CodigoErroSchemas = 'serializacao_invalida' | 'pl_sem_vigencia'`
 - `CodigoOcorrenciaDecodificacao`: Códigos das ocorrências do decoder. `type CodigoOcorrenciaDecodificacao = 'elemento_desconhecido' | 'atributo_desconhecido' | 'whitespace_descartado' | 'texto_inesperado' | 'elemento_em_tipo_simples' | 'namespace_divergente' | 'raiz_inesperada'`
 - `CodigoValidacao`: Códigos das ocorrências do validador.

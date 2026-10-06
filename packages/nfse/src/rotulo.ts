@@ -161,6 +161,7 @@ const CAMPOS: Readonly<Record<string, string>> = {
   serie: 'Série da DPS',
   nDPS: 'Número da DPS',
   cLocEmi: 'Município emissor',
+  refNFSe: 'NFS-e referenciada',
 };
 
 const rotular = criarRotuloDoCaminho({ grupos: GRUPOS, campos: CAMPOS, padrao: 'Dados da DPS' });

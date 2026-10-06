@@ -267,7 +267,7 @@ describe('montarDps', () => {
   });
 
   test('schema e serialização viram ocorrência; verAplic inválido é ErroDeConfiguracao', async () => {
-    const schema = await montarDps(dps({ servico: { ...dps().servico, xDescServ: '' } }), {
+    const schema = await montarDps(dps({ chNFSeRej: 'X' }), {
       ambiente: 'homologacao',
       tempo: time,
     });
@@ -283,10 +283,7 @@ describe('montarDps', () => {
     await expect(montarDps(dps(), { ambiente: 'homologacao', tempo: time, verAplic: '' })).rejects.toThrow(
       ErroDeConfiguracao,
     );
-    const nulo = await montarDps(dps({ servico: { ...dps().servico, xDescServ: 'Servico\u0000teste' } }), {
-      ambiente: 'homologacao',
-      tempo: time,
-    });
+    const nulo = await montarDps(dps(), { ambiente: 'homologacao', tempo: time, verAplic: 'v\u0000' });
     expect(!nulo.ok && nulo.ocorrencias[0]?.code).toBe('caractere_invalido');
   });
 });

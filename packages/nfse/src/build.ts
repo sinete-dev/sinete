@@ -10,7 +10,7 @@
 import type { Ambiente, Assinador, ContextoDeTempo, Ocorrencia, Relogio } from '@sinete/core';
 import { ErroDeConfiguracao, formatarDataHoraComFuso, formatarVerProc, tpAmbDoAmbiente } from '@sinete/core';
 import { assinarXml, ErroXml } from '@sinete/core/xml';
-import type { ElementoRaiz } from '@sinete/schemas';
+import type { ComplexType, ElementoRaiz } from '@sinete/schemas';
 import { ErroSerializacao, serializarRaiz, validarRaiz } from '@sinete/schemas';
 import type {
   TCInfDPS,
@@ -25,6 +25,7 @@ import type { InscricaoFederal } from './codigos.ts';
 import { cTribNacDps, idDps } from './codigos.ts';
 import { leiauteVigente, VERSAO_LEIAUTE } from './leiaute.ts';
 import type { DadosDps, IbsCbsDps, Pessoa, Prestador } from './model.ts';
+import { conferirTextosDaEntrada } from './textos.ts';
 import { formatarValor } from './valores.ts';
 import { VERSAO_PACOTE } from './versao-gerada.ts';
 
@@ -290,6 +291,7 @@ export async function montarDps(entrada: DadosDps, opcoes: MontarDpsOpcoes): Pro
     valores: valores(entrada, issues),
     ...(entrada.ibsCbs === undefined ? {} : { IBSCBS: ibsCbsDps(entrada.ibsCbs, issues) }),
   };
+  conferirTextosDaEntrada(entrada, leiaute.DPSElement.tipo as ComplexType, issues);
   // Tudo o que foi conferido até aqui é da entrada (ADR 0011); daqui para baixo, do XML montado.
   if (issues.length > 0)
     return { ok: false, ocorrencias: issues.map((i) => ({ ...i, origem: i.origem ?? 'entrada' })) };

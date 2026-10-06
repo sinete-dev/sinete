@@ -59,6 +59,7 @@ import { conferirPercurso, sugerirPercurso } from '../percurso.ts';
 import type { Instante } from '../time.ts';
 import { dataDe, deslocamentoDaUf, formatarDh } from '../time.ts';
 import { VERSAO_PACOTE } from '../versao-gerada.ts';
+import { conferirTextosDaEntrada } from './textos.ts';
 
 export const MDFE_NS = 'http://www.portalfiscal.inf.br/mdfe';
 const VERSAO = '3.00';
@@ -1301,6 +1302,9 @@ export async function montarMdfe(entrada: DadosMdfe, opcoes: MontarMdfeOpcoes): 
     infRespTec,
   }) as unknown as TMDFe_infMDFe;
 
+  // Texto e tamanho conferidos na entrada (ADR 0011); o que sobra para o XML montado é o texto das opções.
+  conferirTextosDaEntrada(entrada, infCt, issues);
+  if (!issues.empty) return { ok: false, ocorrencias: issues.classificadas };
   textosForaDoXml(inf, 'infMDFe', issues);
   if (!issues.empty) return { ok: false, ocorrencias: issues.classificadas };
 

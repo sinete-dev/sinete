@@ -11,32 +11,18 @@
  * escrito aqui: a tabela abaixo só diz qual elemento do `infNFe` recebe cada campo da entrada.
  */
 
-import type { ComplexType, OcorrenciaSchema, Particle, SimpleType } from '@sinete/schemas';
-import { conferirTipoSimples, ehComplexType, ehElementParticle, ehWildcard } from '@sinete/schemas';
+import type { CampoDeTexto, ComplexType } from '@sinete/schemas';
+import { conferirTextos } from '@sinete/schemas';
 import type { Issues } from '../issues.ts';
 import type { DadosNfe } from '../model.ts';
 
-/** Produção `Char` do XML 1.0: tab, LF, CR, U+0020 a U+D7FF, U+E000 a U+FFFD e U+10000 a U+10FFFF. */
-export function textoXmlValido(texto: string): boolean {
-  for (const ch of texto) {
-    const c = ch.codePointAt(0) ?? 0;
-    const ok =
-      c === 0x9 ||
-      c === 0xa ||
-      c === 0xd ||
-      (c >= 0x20 && c <= 0xd7ff) ||
-      (c >= 0xe000 && c <= 0xfffd) ||
-      (c >= 0x10000 && c <= 0x10ffff);
-    if (!ok) return false;
-  }
-  return true;
-}
+export { textoXmlValido } from '@sinete/schemas';
 
 /**
  * Campo de texto da entrada (com `[]` onde a entrada é uma lista) e o elemento do `infNFe` que o recebe como veio. Só
  * os campos copiados sem transformação: o que a montagem calcula ou formata é conferido por ela.
  */
-const CAMPOS: readonly (readonly [entrada: string, xml: string])[] = [
+const CAMPOS: readonly CampoDeTexto[] = [
   ['natOp', 'ide.natOp'],
   ['emitente.xNome', 'emit.xNome'],
   ['emitente.xFant', 'emit.xFant'],
@@ -82,117 +68,6 @@ const CAMPOS: readonly (readonly [entrada: string, xml: string])[] = [
   ['compra.xCont', 'compra.xCont'],
 ];
 
-/** O tipo do elemento `nome` entre as partículas (sequências e escolhas aninhadas). */
-function elemento(p: Particle | undefined, nome: string): ComplexType | SimpleType | undefined {
-  if (p === undefined || ehWildcard(p)) return undefined;
-  if (ehElementParticle(p)) return p.e === nome ? p.t : undefined;
-  for (const i of p.i) {
-    const t = elemento(i, nome);
-    if (t !== undefined) return t;
-  }
-  return undefined;
-}
-
-/** O tipo simples do elemento em `caminho` (pontos) a partir do `infNFe`; `undefined` se o PL não o tem. */
-function tipoEm(infNFe: ComplexType, caminho: string): SimpleType | undefined {
-  let t: ComplexType | SimpleType | undefined = infNFe;
-  for (const nome of caminho.split('.')) {
-    if (t === undefined || !ehComplexType(t)) return undefined;
-    t = elemento(t.c, nome);
-  }
-  return t === undefined || ehComplexType(t) ? undefined : t;
-}
-
-const tiposPorPl = new WeakMap<ComplexType, ReadonlyMap<string, SimpleType>>();
-
-/** Tipo de cada campo da tabela no PL, calculado uma vez por PL. */
-function tiposDoPl(infNFe: ComplexType): ReadonlyMap<string, SimpleType> {
-  let m = tiposPorPl.get(infNFe);
-  if (m === undefined) {
-    const novo = new Map<string, SimpleType>();
-    for (const [entrada, xml] of CAMPOS) {
-      const t = tipoEm(infNFe, xml);
-      if (t !== undefined) novo.set(entrada, t);
-    }
-    m = novo;
-    tiposPorPl.set(infNFe, m);
-  }
-  return m;
-}
-
-/** Os valores de `caminho` (com `[]` nas listas) na entrada, com o caminho concreto de cada um. */
-function valoresEm(raiz: unknown, caminho: string): [string, unknown][] {
-  let atuais: [string, unknown][] = [['', raiz]];
-  for (const parte of caminho.split('.')) {
-    const lista = parte.endsWith('[]');
-    const chave = lista ? parte.slice(0, -2) : parte;
-    const proximos: [string, unknown][] = [];
-    for (const [c, v] of atuais) {
-      if (typeof v !== 'object' || v === null) continue;
-      const filho = (v as Record<string, unknown>)[chave];
-      const base = c === '' ? chave : `${c}.${chave}`;
-      if (!lista) proximos.push([base, filho]);
-      else if (Array.isArray(filho)) for (const [n, f] of filho.entries()) proximos.push([`${base}[${n}]`, f]);
-    }
-    atuais = proximos;
-  }
-  return atuais;
-}
-
-/** Caminhos de todos os textos da entrada com caractere que o XML não representa. */
-function textosForaDoXml(valor: unknown, caminho: string, saida: string[]): void {
-  if (typeof valor === 'string') {
-    if (!textoXmlValido(valor)) saida.push(caminho);
-  } else if (Array.isArray(valor)) {
-    for (const [n, v] of valor.entries()) textosForaDoXml(v, `${caminho}[${n}]`, saida);
-  } else if (typeof valor === 'object' && valor !== null) {
-    for (const [k, v] of Object.entries(valor)) textosForaDoXml(v, caminho === '' ? k : `${caminho}.${k}`, saida);
-  }
-}
-
-/** Mensagem do caractere que não vai ao documento e que a pessoa não consegue ver (controle, invisível). */
-const CARACTERE_INVISIVEL = 'caractere não aceito (símbolo ou caractere de controle)';
-
-/** Caractere que a pessoa enxerga: letra, marca, número, pontuação ou símbolo. */
-const VISIVEL = /^[\p{L}\p{M}\p{N}\p{P}\p{S}]$/u;
-
-/** O primeiro caractere de `valor` que o tipo não aceita no meio de um texto, ou `undefined` se todos passam. */
-function caractereRecusado(tipo: SimpleType, valor: string): string | undefined {
-  for (const ch of new Set(valor)) {
-    const saida: OcorrenciaSchema[] = [];
-    conferirTipoSimples(tipo, `A${ch}A`, '', saida);
-    if (saida.some((o) => o.code === 'padrao')) return ch;
-  }
-  return undefined;
-}
-
-/**
- * As regras do tipo que `valor` viola, em texto para quem preenche o campo. O código do validador decide a regra; a
- * mensagem diz o limite (do próprio tipo) e, no `padrao`, se o problema é o espaço nas pontas ou um caractere.
- */
-function mensagensDoTexto(tipo: SimpleType, valor: string, violadas: readonly OcorrenciaSchema[]): string[] {
-  if (violadas.length === 0) return [];
-  if (valor.trim() === '') return ['não pode ficar em branco'];
-  const tamanho = [...valor].length;
-  const mensagens = new Set<string>();
-  for (const o of violadas) {
-    if (o.code === 'tamanho_maximo' && tipo.mx !== undefined)
-      mensagens.add(`no máximo ${tipo.mx} caracteres (tem ${tamanho})`);
-    else if (o.code === 'tamanho_minimo' && tipo.mn !== undefined)
-      mensagens.add(`no mínimo ${tipo.mn} caracteres (tem ${tamanho})`);
-    else if (o.code === 'tamanho' && tipo.l !== undefined)
-      mensagens.add(`exatamente ${tipo.l} caracteres (tem ${tamanho})`);
-    else if (o.code === 'padrao') {
-      const espaco = valor !== valor.trim();
-      const ch = caractereRecusado(tipo, valor);
-      if (espaco) mensagens.add('sem espaço no começo nem no fim');
-      if (ch !== undefined) mensagens.add(VISIVEL.test(ch) ? `caractere não aceito: “${ch}”` : CARACTERE_INVISIVEL);
-      if (!espaco && ch === undefined) mensagens.add('formato não aceito');
-    } else mensagens.add('valor não aceito neste campo');
-  }
-  return [...mensagens];
-}
-
 /**
  * Confere os textos da entrada: em qualquer campo, o caractere que o XML não representa; nos campos da tabela, o tipo
  * do elemento no PL (tamanho, espaço nas pontas, caractere fora do conjunto aceito). Tudo sai como `campo_invalido`,
@@ -206,23 +81,6 @@ export function conferirTextosDaEntrada(
   issues: Issues,
   substituidos: ReadonlySet<string> = new Set(),
 ): void {
-  const jaRecusados = new Set(issues.list.map((i) => i.caminho));
-  const foraDoXml: string[] = [];
-  textosForaDoXml(entrada, '', foraDoXml);
-  for (const c of foraDoXml) {
-    if (jaRecusados.has(c) || substituidos.has(c)) continue;
-    issues.add(c, 'campo_invalido', CARACTERE_INVISIVEL);
-    jaRecusados.add(c);
-  }
-  const tipos = tiposDoPl(infNFe);
-  for (const [campo] of CAMPOS) {
-    const tipo = tipos.get(campo);
-    if (tipo === undefined) continue;
-    for (const [caminho, valor] of valoresEm(entrada, campo)) {
-      if (typeof valor !== 'string' || jaRecusados.has(caminho) || substituidos.has(caminho)) continue;
-      const saida: OcorrenciaSchema[] = [];
-      conferirTipoSimples(tipo, valor, caminho, saida);
-      for (const m of mensagensDoTexto(tipo, valor, saida)) issues.add(caminho, 'campo_invalido', m);
-    }
-  }
+  const pular = new Set([...issues.list.map((i) => i.caminho), ...substituidos]);
+  for (const t of conferirTextos(entrada, infNFe, CAMPOS, pular)) issues.add(t.caminho, 'campo_invalido', t.mensagem);
 }

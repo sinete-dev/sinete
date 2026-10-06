@@ -24,7 +24,7 @@ describe('montarMdfe: origem das ocorrências', () => {
     expect(issues).toEqual([expect.objectContaining({ caminho: 'tpEmis', origem: 'montagem' })]);
   });
 
-  test('caractere fora do XML é conferido no documento montado', async () => {
+  test('caractere fora do XML na entrada é entrada, com o caminho da entrada', async () => {
     const base = cargaPropria();
     const issues = falha(
       await montarMdfe(
@@ -32,8 +32,17 @@ describe('montarMdfe: origem das ocorrências', () => {
         opcoes(),
       ),
     );
-    expect(issues).toEqual([expect.objectContaining({ code: 'campo_invalido', origem: 'montagem' })]);
-    expect(issues[0]?.caminho.startsWith('infMDFe.')).toBe(true);
+    expect(issues).toEqual([
+      expect.objectContaining({ caminho: 'produtoPredominante.xProd', code: 'campo_invalido', origem: 'entrada' }),
+    ]);
+  });
+
+  test('caractere fora do XML nas opções continua sendo do documento montado', async () => {
+    const rt = { CNPJ: '11444777000161', xContato: 'SUPORTE \u0001', email: 'rt@exemplo.invalid', fone: '6530000000' };
+    const issues = falha(await montarMdfe(cargaPropria(), opcoes({ respTec: rt })));
+    expect(issues).toEqual([
+      expect.objectContaining({ caminho: 'infMDFe.infRespTec.xContato', code: 'campo_invalido', origem: 'montagem' }),
+    ]);
   });
 });
 
