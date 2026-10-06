@@ -427,3 +427,61 @@ describe('NT 2024.001 na recepção', () => {
     expect(await cStat({ aammNFe: '2603' })).toBe('100');
   });
 });
+
+describe('MDF-e transportado na recepção', () => {
+  test('647 fora do aquaviário e 648 sem AM ou AP', async () => {
+    const h = await harness();
+    const ref = (await mdfe(h.c.ecpf, { nMDF: 50 })).chave;
+    expect(tag(await sendMdfe(h, 'MDFeRecepcaoSinc', (await mdfe(h.c.ecpf, { mdfeTransp: [ref] })).xml), 'cStat')).toBe(
+      '647',
+    );
+    const h2 = await harness({ regrasMdfeDesligadas: ['F43'] });
+    const x = (await mdfe(h2.c.ecpf, { mdfeTransp: [ref] })).xml;
+    expect(tag(await sendMdfe(h2, 'MDFeRecepcaoSinc', x), 'cStat')).toBe('648');
+  });
+
+  test('chave inválida (649), antiga (520), ausente (655), cancelada (657); referência autorizada passa', async () => {
+    // F43 e F44 desligadas: o helper só monta o rodoviário de MT para SP.
+    const h = await harness({ regrasMdfeDesligadas: ['F43', 'F44'] });
+    const enviar = async (x: string): Promise<string | undefined> =>
+      tag(await sendMdfe(h, 'MDFeRecepcaoSinc', x), 'cStat');
+    const autorizado = await mdfe(h.c.ecpf, { nMDF: 1, placa: 'AAA1A11' });
+    expect(await enviar(autorizado.xml)).toBe('100');
+    const cancelado = await mdfe(h.c.ecpf, { nMDF: 2, placa: 'BBB2B22' });
+    expect(await enviar(cancelado.xml)).toBe('100');
+    const nProt = h.sim.inspecao.mdfe(cancelado.chave)?.nProt as string;
+    const ev = await eventoMdfe(h.c.ecpf, { chave: cancelado.chave, tpEvento: '110111', det: detMdfe.canc(nProt) });
+    expect(tag(await sendMdfe(h, 'MDFeRecepcaoEvento', ev), 'cStat')).toBe('135');
+    const ch = autorizado.chave;
+    const dv = `${ch.slice(0, 43)}${(Number(ch[43]) + 1) % 10}`;
+    const nfe = montarChaveAcesso({
+      cUF: '51',
+      aamm: '2609',
+      emitente: EMITENTE,
+      mod: '55',
+      serie: 1,
+      nNF: 1,
+      tpEmis: '1',
+      cNF: '11111111',
+    });
+    const antiga = montarChaveAcesso({
+      cUF: '51',
+      aamm: '2601',
+      emitente: CPF,
+      mod: '58',
+      serie: 920,
+      nNF: 9,
+      tpEmis: '1',
+      cNF: '12345678',
+    });
+    const ausente = (await mdfe(h.c.ecpf, { nMDF: 9 })).chave;
+    const com = async (nMDF: number, chave: string): Promise<string | undefined> =>
+      enviar((await mdfe(h.c.ecpf, { nMDF, placa: `CCC${nMDF}C33`, mdfeTransp: [chave] })).xml);
+    expect(await com(3, dv)).toBe('649');
+    expect(await com(4, nfe)).toBe('649');
+    expect(await com(5, antiga)).toBe('520');
+    expect(await com(6, ausente)).toBe('655');
+    expect(await com(7, cancelado.chave)).toBe('657');
+    expect(await com(8, ch)).toBe('100');
+  });
+});

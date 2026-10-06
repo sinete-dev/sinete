@@ -92,6 +92,8 @@ export interface MdfeParams {
   readonly aammNFe?: string;
   /** `tpRod` do veículo de tração; padrão 01 (truck). */
   readonly tpRod?: string;
+  /** Chaves de MDF-e transportado (`infMDFeTransp`) no descarregamento. */
+  readonly mdfeTransp?: readonly string[];
 }
 
 export interface Mdfe {
@@ -153,8 +155,11 @@ export async function mdfe(signer: CertificadoSintetico, p: MdfeParams = {}): Pr
     `<condutor><xNome>CONDUTOR SINTETICO</xNome><CPF>52998224725</CPF></condutor><tpRod>${p.tpRod ?? '01'}</tpRod><tpCar>03</tpCar>` +
     '</veicTracao></rodo></infModal>' +
     `<infDoc><infMunDescarga><cMunDescarga>${p.cMunDescarga ?? '3550308'}</cMunDescarga><xMunDescarga>DESTINO</xMunDescarga>` +
-    `${p.carregaPosterior ? '' : `<infNFe><chNFe>${chNFe}</chNFe></infNFe>`}</infMunDescarga></infDoc>` +
-    `<tot>${p.carregaPosterior ? '' : '<qNFe>1</qNFe>'}<vCarga>1000.00</vCarga><cUnid>01</cUnid><qCarga>100.0000</qCarga></tot></infMDFe>`;
+    `${p.carregaPosterior ? '' : `<infNFe><chNFe>${chNFe}</chNFe></infNFe>`}` +
+    (p.mdfeTransp ?? []).map((ch) => `<infMDFeTransp><chMDFe>${ch}</chMDFe></infMDFeTransp>`).join('') +
+    '</infMunDescarga></infDoc>' +
+    `<tot>${p.carregaPosterior ? '' : '<qNFe>1</qNFe>'}` +
+    `${(p.mdfeTransp ?? []).length === 0 ? '' : `<qMDFe>${(p.mdfeTransp ?? []).length}</qMDFe>`}<vCarga>1000.00</vCarga><cUnid>01</cUnid><qCarga>100.0000</qCarga></tot></infMDFe>`;
   let qr = p.qr === undefined ? `https://dfe-portal.svrs.rs.gov.br/mdfe/qrCode?chMDFe=${chave}&tpAmb=${tpAmb}` : p.qr;
   if (qr !== false && tpEmis === '2' && p.qr === undefined) qr = `${qr}&sign=QUJD`;
   const supl = qr === false ? '' : `<infMDFeSupl><qrCodMDFe>${qr.replace(/&/g, '&amp;')}</qrCodMDFe></infMDFeSupl>`;

@@ -7,6 +7,9 @@
  * - F79 (212) emissão no futuro, F80 (228) emissão normal com mais de 24 horas;
  * - F23 (705) carregamento posterior fora do modal rodoviário e F34 (702) entrega parcial de CT-e fora do aéreo;
  * - F43 (647) e F44 (648) MDF-e transportado fora do aquaviário ou sem AM/AP no carregamento ou no descarregamento;
+ * - F45 (649) chave do MDF-e transportado inválida, F45a (520) antiga, F46 (655) ausente deste simulador, F48 (657)
+ *   cancelado e F49 (658) de modal que não é o rodoviário (F47, chave diferente da do registro, não tem como ocorrer
+ *   aqui: o registro é indexado pela própria chave);
  * - F30a e F37a (518, 519) chave de CT-e ou NF-e anterior a 6 meses da autorização e F89c (523) cavalo mecânico sem
  *   reboque, da NT 2024.001;
  * - F114 a F118 (480, 479, 481, 482, 488) QR Code;
@@ -24,7 +27,7 @@ import { atributoDe } from '@sinete/core/xml';
 import { serializarRaiz } from '@sinete/schemas';
 import type { TProtMDFe, TRetMDFe } from '@sinete/schemas/mdfe/3.00b';
 import { MDFeElement, retMDFeElement } from '@sinete/schemas/mdfe/3.00b';
-import { calcularDvChaveAcesso, cnpjValido, cpfValido } from '@sinete/validators';
+import { calcularDvChaveAcesso, cnpjValido, cpfValido, lerChaveAcesso } from '@sinete/validators';
 import { conferirAssinaturaDoDocumento } from '../certs.ts';
 import type { ContextoDoPedido, Status } from '../context.ts';
 import { omitirDigVal } from '../context.ts';
@@ -149,6 +152,22 @@ export async function recepcaoMdfe(ctx: ContextoDoPedido): Promise<string> {
     for (const nfe of all(mun, 'infNFe')) {
       const ch = req(nfe, 'chNFe');
       if (ativa(ctx, 'F37a') && antiga(ch)) return rej('519', { chNFe: ch });
+    }
+  }
+  // F45 a F49: o MDF-e transportado tem chave de MDF-e válida, recente, e está autorizado neste simulador, sem
+  // cancelamento, e é do modal rodoviário.
+  for (const mun of all(at(inf, 'infDoc'), 'infMunDescarga')) {
+    for (const t of all(mun, 'infMDFeTransp')) {
+      const ch = req(t, 'chMDFe');
+      const r = lerChaveAcesso(ch);
+      if (ativa(ctx, 'F45') && (!r.ok || r.valor.mod !== '58')) {
+        return rej('649', { chMDFe: ch, Motivo: r.ok ? `modelo ${r.valor.mod}` : r.erro.mensagem });
+      }
+      if (ativa(ctx, 'F45a') && antiga(ch)) return rej('520', { chMDFe: ch });
+      const transportado = ctx.rt.estado.mdfes.get(ch);
+      if (ativa(ctx, 'F46') && transportado === undefined) return rej('655');
+      if (ativa(ctx, 'F48') && transportado?.situacao === 'cancelado') return rej('657');
+      if (ativa(ctx, 'F49') && transportado !== undefined && transportado.modal !== '1') return rej('658');
     }
   }
   const rodoviario = at(inf, 'infModal/rodo');

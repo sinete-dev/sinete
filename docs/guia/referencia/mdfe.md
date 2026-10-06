@@ -43,7 +43,7 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 
 - `Aereo`: Grupo do modal aéreo (`aereo`, MOC 3.00b Anexo I, 3.2). Membros: `nac`, `matr`, `nVoo`, `cAerEmb`, `cAerDes`, `dVoo`.
 - `Aquaviario`: Grupo do modal aquaviário (`aquav`, MOC 3.00b Anexo I, 3.4, com o MMSI da NT 2025.001). Membros: `irin`, `tpEmb`, `cEmbar`, `xEmbar`, `nViag`, `cPrtEmb`, `cPrtDest`, `prtTrans`, `tpNav`, `terminaisCarregamento`, `terminaisDescarregamento`, `comboio`, `unidadesCargaVazias`, `unidadesTransporteVazias`, `MMSI`.
-- `CamposMdfe`: Campos do MDF-e comuns a todos os modais. Membros: `tpEmit`, `tpTransp`, `serie`, `nMDF`, `cMDF`, `emitente`, `ufIni`, `ufFim`, `carregamento`, `percurso`, `dhIniViagem`, `indCanalVerde`, `indCarregaPosterior`, `descarregamentos`, `seguros`, `produtoPredominante`, `totais`, `lacres`, `autXML`, `informacoesAdicionais`, `respTec`.
+- `CamposMdfe` (estende `Descarregamento = Descarregamento>`): Campos do MDF-e comuns a todos os modais. `D` é o descarregamento do modal: só o aquaviário leva MDF-e transportado. Membros: `tpEmit`, `tpTransp`, `serie`, `nMDF`, `cMDF`, `emitente`, `ufIni`, `ufFim`, `carregamento`, `percurso`, `dhIniViagem`, `indCanalVerde`, `indCarregaPosterior`, `descarregamentos`, `seguros`, `produtoPredominante`, `totais`, `lacres`, `autXML`, `informacoesAdicionais`, `respTec`.
 - `CancelamentoPedido`: Membros: `chave`, `nProt`, `xJust`.
 - `ClienteMdfe`: Membros: `opcoes`, `statusServico()`, `autorizar()`, `consultar()`, `consultarNaoEncerrados()`, `cancelar()`, `encerrar()`, `incluirCondutor()`, `incluirDFe()`, `pagamentoOperacao()`.
 - `ClienteMdfeOpcoes`: Membros: `transporte`, `assinador`, `ambiente`, `relogio`, `logger`, `timeoutMs`, `deslocamentoMin`, `autor`, `endpoint`.
@@ -52,10 +52,11 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `ConsultaMdfe`: Situação do MDF-e na consulta: autorizado (100), cancelado (101) ou encerrado (132). Membros: `chMDFe`, `situacao`, `protocolo`, `eventos`, `digValConfere`.
 - `CteTransportado` (estende `DocumentoTransportado`): CT-e transportado; a entrega parcial (corte de voo) só vale no modal aéreo (F34, 702). Membros: `entregaParcial`.
 - `DadosMdfeAereo` (estende `CamposMdfe`): MDF-e do modal aéreo (`modal` 2). Membros: `aereo`, `rodoviario`, `aquaviario`, `ferroviario`.
-- `DadosMdfeAquaviario` (estende `CamposMdfe`): MDF-e do modal aquaviário (`modal` 3). Membros: `aquaviario`, `rodoviario`, `aereo`, `ferroviario`.
+- `DadosMdfeAquaviario` (estende `CamposMdfe<DescarregamentoAquaviario>`): MDF-e do modal aquaviário (`modal` 3). Membros: `aquaviario`, `rodoviario`, `aereo`, `ferroviario`.
 - `DadosMdfeFerroviario` (estende `CamposMdfe`): MDF-e do modal ferroviário (`modal` 4). Membros: `ferroviario`, `rodoviario`, `aereo`, `aquaviario`.
 - `DadosMdfeRodoviario` (estende `CamposMdfe`): MDF-e do modal rodoviário (`modal` 1). Membros: `rodoviario`, `aereo`, `aquaviario`, `ferroviario`.
 - `Descarregamento`: Município de descarregamento com os documentos que descarregam nele (`infMunDescarga`). Membros: `cMun`, `xMun`, `nfe`, `cte`.
+- `DescarregamentoAquaviario` (estende `Descarregamento`): Município de descarregamento do modal aquaviário, que também pode levar MDF-e transportado. Membros: `mdfe`.
 - `DispositivoValePedagio`: Dispositivo de vale-pedágio (`valePed/disp`). Membros: `CNPJForn`, `responsavel`, `nCompra`, `vValePed`, `tpValePed`.
 - `DocumentoAssinado`: Documento assinado já conferido: a string como veio (sem a declaração XML) e o que se lê dela. Membros: `xml`, `id`, `digestValue`, `documento`.
 - `EmbarcacaoComboio`: Embarcação do comboio (`infEmbComb`). Membros: `cEmbComb`, `xBalsa`.
@@ -69,6 +70,7 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `InclusaoDfePedido`: Membros: `chave`, `nProt`, `nSeqEvento`, `carregamento`, `documentos`.
 - `MdfeMontado`: Membros: `chave`, `id`, `cMDF`, `cDV`, `tpEmis`, `tpAmb`, `dhEmi`, `schema`, `infMDFe`, `xml`.
 - `MdfeNaoEncerrado`: MDF-e autorizado e ainda não encerrado do emitente. Membros: `chMDFe`, `nProt`.
+- `MdfeTransportado`: MDF-e transportado (`infMDFeTransp`): outro manifesto levado pela embarcação, só no modal aquaviário e só com carregamento ou descarregamento em AM ou AP (F43, 647; F44, 648). A chave é de MDF-e (modelo 58, F45, 649). Membros: `chave`, `indReentrega`, `unidadesTransporte`, `perigosos`.
 - `MontarMdfeOpcoes`: Membros: `ambiente`, `tempo`, `deslocamentoMin`, `verProc`, `tpEmis`, `respTec`, `aleatorio`.
 - `MunicipioCarregamento`: Membros: `cMun`, `xMun`.
 - `PagamentoOperacaoPedido`: Membros: `chave`, `nProt`, `nSeqEvento`, `qtdViagens`, `nroViagem`, `pagamentos`.
