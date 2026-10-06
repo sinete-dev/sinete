@@ -7,12 +7,17 @@
  * coberto entra em `dependencies` com `workspace:*`, que o `bun pm pack` troca pela versão exata: uma versão do
  * guarda-chuva corresponde a um conjunto de pacotes testado junto. O `bin` `sinete` aponta para a CLI.
  *
+ * Subpath experimental (ADR 0016, seção 5): quando o comentário de módulo da fonte traz `@experimental`, o reexporto
+ * herda a marca. A marca é lida da fonte, não de uma lista daqui. O README do `sinete` é escrito à mão; o `--check`
+ * confere que a frase dos experimentais cita exatamente esses subpaths.
+ *
  * Uso: bun scripts/umbrella.ts           (escreve)
  *      bun scripts/umbrella.ts --check   (falha se o pacote estiver fora de sincronia; roda no `bun run check`)
  */
 import { readdir, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { Glob } from 'bun';
+import { divergenciasDoReadme, fonteDosTipos, moduloExperimental, tiposDoAlvo } from './lib/experimental.ts';
 import type { Manifest } from './lib/workspace.ts';
 import { root, workspacePackages } from './lib/workspace.ts';
 
@@ -43,15 +48,29 @@ const check = process.argv.includes('--check');
 
 type Target = { readonly types: string; readonly default: string };
 
-const all = new Map((await workspacePackages()).map((p) => [p.manifest.name, p.manifest]));
+const pkgs = await workspacePackages();
+const all = new Map(pkgs.map((p) => [p.manifest.name, p.manifest]));
+const dirs = new Map(pkgs.map((p) => [p.manifest.name, p.dir]));
 const get = (name: string): Manifest => {
   const m = all.get(name);
   if (!m) throw new Error(`umbrella: ${name} não é um pacote do workspace`);
   return m;
 };
 
+/** Se o comentário de módulo da fonte do subpath traz `@experimental`. */
+async function experimental(name: string, sub: string): Promise<boolean> {
+  const tipos = tiposDoAlvo(get(name).exports?.[sub]);
+  const dir = dirs.get(name);
+  if (tipos === undefined || dir === undefined) return false;
+  const fonte = path.join(dir, fonteDosTipos(tipos));
+  if (!(await Bun.file(fonte).exists()))
+    throw new Error(`umbrella: fonte de ${name}${sub.slice(1)} não encontrada (${fonte})`);
+  return moduloExperimental(await Bun.file(fonte).text());
+}
+
 // Subpaths do guarda-chuva: `./<pacote>` e `./<pacote>/<sub>`, cada um com o módulo que reexporta.
 const files = new Map<string, string>();
+const experimentais: string[] = [];
 const exportsMap: Record<string, Target | string> = {};
 for (const name of COBERTOS) {
   const m = get(name);
@@ -63,9 +82,15 @@ for (const name of COBERTOS) {
     // Raiz do pacote em `<pacote>/index`, para não colidir com o diretório dos subpaths do mesmo pacote.
     const file = sub === '.' ? `${short}/index` : key.slice(2);
     exportsMap[key] = { types: `./dist/${file}.d.ts`, default: `./dist/${file}.js` };
+    const titulo = `\`sinete${key.slice(1)}\`: reexporta \`${spec}\`. Gerado por \`scripts/umbrella.ts\`; não edite.`;
+    const exp = await experimental(name, sub);
+    if (exp) experimentais.push(`sinete${key.slice(1)}`);
+    const comentario = exp
+      ? `/**\n * ${titulo}\n *\n * @experimental Herda a marca de \`${spec}\` (ADR 0016, seção 5).\n * Pode mudar em minor, sempre com changeset; o motivo e o que falta para sair estão no módulo de origem.\n */`
+      : `/** ${titulo} */`;
     files.set(
       `${file}.ts`,
-      `/** \`sinete${key.slice(1)}\`: reexporta \`${spec}\`. Gerado por \`scripts/umbrella.ts\`; não edite. */\n\n` +
+      `${comentario}\n\n` +
         `// biome-ignore lint/performance/noReExportAll: o guarda-chuva só reexporta o pacote correspondente.\n` +
         `export * from '${spec}';\n`,
     );
@@ -119,6 +144,9 @@ if (check) {
     if (!(await Bun.file(p).exists()) || (await Bun.file(p).text()) !== text) problems.push(`packages/sinete/src/${f}`);
   }
   for (const f of existing) if (!files.has(f)) problems.push(`packages/sinete/src/${f} (sobra)`);
+  // A frase do README que declara os experimentais cita exatamente os subpaths marcados na fonte.
+  const readme = await Bun.file(path.join(dir, 'README.md')).text();
+  for (const d of divergenciasDoReadme(readme, experimentais)) problems.push(`packages/sinete/README.md: ${d}`);
   if (problems.length > 0) {
     console.error(`umbrella: fora de sincronia, rode \`bun scripts/umbrella.ts\`:\n  ${problems.join('\n  ')}`);
     process.exit(1);
