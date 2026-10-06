@@ -113,12 +113,16 @@ describe('inutilizar', () => {
       expect(r.anterior?.retInutNFe).toContain('<nProt>135260000000001</nProt>');
     });
 
-    test('sem nProt na resposta: recusado sem anterior', async () => {
-      const t = fakeTransport(soap(retInut('563', MOTIVO_563), 'NFeInutilizacao4'));
-      const { c } = await client(t, { autor: { CNPJ: CNPJ_EMIT } });
-      const r = await c.inutilizar(pedido);
-      expect([r.tipo, r.cStat]).toEqual(['recusado', '563']);
-      expect('anterior' in r).toBe(false);
+    test('sem nProt na resposta, ou com nProt vazio: recusado sem anterior', async () => {
+      for (const nProt of [undefined, '']) {
+        const t = fakeTransport(
+          soap(retInut('563', MOTIVO_563, nProt === undefined ? {} : { nProt }), 'NFeInutilizacao4'),
+        );
+        const { c } = await client(t, { autor: { CNPJ: CNPJ_EMIT } });
+        const r = await c.inutilizar(pedido);
+        expect([r.tipo, r.cStat]).toEqual(['recusado', '563']);
+        expect('anterior' in r).toBe(false);
+      }
     });
 
     test('563 de outra faixa é ErroRespostaInvalida', async () => {

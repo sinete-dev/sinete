@@ -1033,7 +1033,8 @@ export function criarClienteNfe(opcoesDoCliente: ClienteNfeOpcoes): ClienteNfe {
       const status = { cStat: v.infInut.cStat, xMotivo: v.infInut.xMotivo };
       logger.info('nfe.inutilizacao', { id, cStat: status.cStat });
       const homologada = cstatEm(status.cStat, 'inutilizacaoHomologada');
-      const anterior = cstatEm(status.cStat, 'inutilizacaoJaHomologada') ? v.infInut.nProt : undefined;
+      // `<nProt></nProt>` vazio não é protocolo: sem ele, o 563 fica como a recusa simples.
+      const anterior = cstatEm(status.cStat, 'inutilizacaoJaHomologada') ? v.infInut.nProt || undefined : undefined;
       if (!homologada && anterior === undefined) return rejeitado(status);
       // A homologação (ou a anterior, no 563) tem de ser desta faixa: os campos que o retorno trouxer, iguais aos do pedido.
       const r0 = v.infInut;
