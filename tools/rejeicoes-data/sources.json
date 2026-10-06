@@ -1,5 +1,5 @@
 {
-  "retrievedAt": "2026-09-28",
+  "retrievedAt": "2026-10-06",
   "documents": [
     {
       "id": "moc70-anexo1",
@@ -56,6 +56,21 @@
         "regrasDe": "^\\s*3\\. Grupo D: Validação da Área de Dados\\s*$",
         "regrasAte": "^\\s*7\\. Tabela de códigos e descrições de mensagens de erro\\s*$",
         "item": "7"
+      }
+    },
+    {
+      "id": "nt2026007",
+      "title": "NT 2026.007: Emissão por Contribuinte exclusivo do IBS/CBS",
+      "versao": "1.10",
+      "citation": "NT 2026.007 v1.10",
+      "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=fpJlwzhffcQ=",
+      "file": "NT2026.007_v1.10.pdf",
+      "sha256": "4a9d9de64504f4091c55e3e8a2d499116d4bac1a2009a874a7b9ce26d9fe8b10",
+      "regras": {
+        "de": "^5 Detalhamento das Regras de Validação",
+        "ignorar": {
+          "942": "fora da faixa nova da NT (156 a 188): a RV 5AF15-10 aparece aqui com a condição tpEmis <> 3, e falta conferir se o código nasceu nesta NT (issue #48)"
+        }
       }
     }
   ]

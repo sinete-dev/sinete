@@ -140,3 +140,82 @@ export function conferirEmitenteDoCertificado(
   }
   return [];
 }
+
+/** A RV C17-42 (NFC-e sem IE) "não se aplica a partir de 2033". */
+const NFCE_SEM_IE_ATE = '2033-01-01';
+
+/**
+ * Contribuinte exclusivo do IBS/CBS: a nota sem `emitente.IE` (NT 2026.007 v1.10). Sai daqui o que a NT decide só com o
+ * documento:
+ *
+ * - NFC-e sem IE, rejeição 156 (RV C17-42), até o fim de 2032; a data é a da emissão e a do fato gerador, e a conferência
+ *   só recusa quando todas as leituras (local, Brasília e UTC) caem antes de 2033;
+ * - NF-e sem IE e sem CNPJ do emitente (emitente CPF), 157 (C17-43);
+ * - NF-e sem IE com a IE do substituto tributário, 158 (C18-50);
+ * - item com ICMS ou ICMS interestadual (`icmsUfDest`) na NF-e sem IE, 161 (N01-10), menos na devolução (finNFe 4) e na
+ *   nota de crédito de retorno por recusa ou não localização (tpNFCredito 03), as duas exceções da regra;
+ * - item sem o grupo IBSCBS na NF-e sem IE, 162 (UB12-11), conferido no grupo montado (o pronto ou o da calculadora).
+ *
+ * Ficam para a SEFAZ as regras da mesma NT que dependem de tabela ou cadastro: a 159 (tabela de CFOP do Portal), a 163 e
+ * a 164 (CCC), as de local de retirada e entrega (CCC) e as da LCC-RFB (178 a 187). A 166 e a 188 são do roteamento.
+ */
+export function exclusivoIbsCbs(
+  input: DadosNfe,
+  contexto: { readonly nfce: boolean; readonly dhEmi: string; readonly instantes: readonly Instante[] },
+  montados: readonly { readonly IBSCBS?: unknown }[],
+  issues: Issues,
+): void {
+  const e = input.emitente;
+  if (e.IE !== undefined) return;
+  if (contexto.nfce) {
+    const datas = [
+      contexto.dhEmi.slice(0, 10),
+      ...contexto.instantes.flatMap((i) => [dataNoFuso(i, OFFSET_BRASILIA), dataNoFuso(i, 0)]),
+    ];
+    if (datas.every((d) => d < NFCE_SEM_IE_ATE)) {
+      issues.add(
+        'emitente.IE',
+        'campo_obrigatorio',
+        'a NFC-e exige a IE do emitente: contribuinte exclusivo do IBS/CBS, sem IE, emite só NF-e (C17-42, rejeição 156)',
+      );
+    }
+    return;
+  }
+  if (e.CNPJ === undefined) {
+    issues.add(
+      'emitente.CNPJ',
+      'campo_obrigatorio',
+      'NF-e sem IE do emitente (contribuinte exclusivo do IBS/CBS) exige o CNPJ do emitente (C17-43, rejeição 157)',
+    );
+  }
+  if (e.IEST !== undefined) {
+    issues.add(
+      'emitente.IEST',
+      'combinacao_invalida',
+      'NF-e sem IE do emitente (contribuinte exclusivo do IBS/CBS) não leva a IE do substituto tributário (C18-50, rejeição 158)',
+    );
+  }
+  const icmsLiberado = (input.finNFe ?? '1') === '4' || input.tpNFCredito === '03';
+  input.itens.forEach((it, n) => {
+    if (!icmsLiberado) {
+      for (const [campo, grupo] of [
+        ['icms', it.impostos.icms],
+        ['icmsUfDest', it.impostos.icmsUfDest],
+      ] as const) {
+        if (grupo === undefined) continue;
+        issues.add(
+          `itens[${n}].impostos.${campo}`,
+          'grupo_vedado',
+          'NF-e sem IE do emitente (contribuinte exclusivo do IBS/CBS) não leva ICMS no item (N01-10, rejeição 161)',
+        );
+      }
+    }
+    if (montados[n]?.IBSCBS === undefined) {
+      issues.add(
+        `itens[${n}].impostos.ibsCbs`,
+        'campo_obrigatorio',
+        'NF-e sem IE do emitente (contribuinte exclusivo do IBS/CBS) exige o grupo IBS/CBS em todo item (UB12-11, rejeição 162)',
+      );
+    }
+  });
+}

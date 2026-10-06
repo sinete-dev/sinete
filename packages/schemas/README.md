@@ -74,7 +74,7 @@ As ocorrências seguem o `Ocorrencia` do core (`caminho`, `code`, `mensagem`) e 
 | Família | PL | Homologação | Produção | Fonte |
 |---|---|---|---|---|
 | `nfe` | PL_010e_v1.02 | 2026-07-01 | 2026-08-03 | NT 2025.002 v1.51, cronograma da versão 1.40 |
-| `nfe` | PL_010f_v1.04 | 2026-09-01 | 2026-11-03 | NT 2025.002 v1.51 (versão 1.50) e NT 2026.007 v1.00 |
+| `nfe` | PL_010f_v1.04 | 2026-09-01 | 2026-11-03 | NT 2025.002 v1.51 (versão 1.50) e NT 2026.007 v1.10 |
 | `mdfe`, `mdfe/eventos`, `mdfe/servicos` | 3.00b (NT 2025.001) | 2025-07-01 | 2025-10-06 | NT MDF-e 2025.001 v1.03 e aviso do portal |
 | eventos, inutilização, consultas | PL_010d_v1.03 | 2026-06-15 | 2026-07-01 | NT 2026.004 v1.01 (CNPJ alfanumérico) |
 | `nfe/status-servico`, `nfe/dist-dfe` | PL_009q, PL_NFeDistDFe_104 | sem data | sem data | sem cronograma próprio publicado |

@@ -1,6 +1,6 @@
 {
   "versaoDoFormato": 1,
-  "versao": "2026.09.28",
+  "versao": "2026.10.06",
   "geradoPor": "tools/rejeicoes-data/build.ts",
   "fontes": [
     {
@@ -10,7 +10,7 @@
       "citacao": "MOC 7.0 Anexo I",
       "url": "https://www.nfe.fazenda.gov.br/portal/listaConteudo.aspx?tipoConteudo=ndIjl+iEFdE=",
       "sha256": "5eb4cf2010b10b0b62f78197c4eb64025f24535d4c6e61158bc7806dd008f55d",
-      "coletadoEm": "2026-09-28"
+      "coletadoEm": "2026-10-06"
     },
     {
       "id": "nt2025002",
@@ -19,7 +19,7 @@
       "citacao": "NT 2025.002 v1.40",
       "url": "https://www.nfe.fazenda.gov.br/portal/listaConteudo.aspx?tipoConteudo=04BIflQt1aY=",
       "sha256": "4af56d5fae5eceaad63bb67f663dad4fd599f5bd9482d5474b419a97710193f0",
-      "coletadoEm": "2026-09-28"
+      "coletadoEm": "2026-10-06"
     },
     {
       "id": "nt2025001",
@@ -28,7 +28,7 @@
       "citacao": "NT 2025.001 v1.03",
       "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=NvuzQGYd6E8=",
       "sha256": "333b69f71debe5040585b677b574bb13b39362aa7934b904edc59cdf83cded02",
-      "coletadoEm": "2026-09-28"
+      "coletadoEm": "2026-10-06"
     },
     {
       "id": "nt2024003",
@@ -37,7 +37,7 @@
       "citacao": "NT 2024.003 v1.10",
       "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=iamjHzm+4/I=",
       "sha256": "d7609f48772db2ccbff6784b3e51a138433733ddff3deba84640622f82397966",
-      "coletadoEm": "2026-09-28"
+      "coletadoEm": "2026-10-06"
     },
     {
       "id": "nt2023002",
@@ -46,10 +46,19 @@
       "citacao": "NT 2023.002 v1.01",
       "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=T3QyeMfpios=",
       "sha256": "b0cb9528bfaa6e0b5ac2986c879898eebcbb9457e97fcf0af985a00659649031",
-      "coletadoEm": "2026-09-28"
+      "coletadoEm": "2026-10-06"
+    },
+    {
+      "id": "nt2026007",
+      "titulo": "NT 2026.007: Emissão por Contribuinte exclusivo do IBS/CBS",
+      "versao": "1.10",
+      "citacao": "NT 2026.007 v1.10",
+      "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=fpJlwzhffcQ=",
+      "sha256": "4a9d9de64504f4091c55e3e8a2d499116d4bac1a2009a874a7b9ce26d9fe8b10",
+      "coletadoEm": "2026-10-06"
     }
   ],
-  "notas": "União da tabela 4.4.2/4.4.3 do Anexo I com os códigos das regras de validação do Anexo I e da NT 2025.002, os códigos de outras NT listados em `adicionais` da curadoria (regra conferida no PDF) e os códigos novos das tabelas de mensagens da NT 2025.001 e da NT 2023.002 (NFC-e). Mensagem oficial sem ajuste (placeholders como [nItem: 999] mantidos). `modelos` vem das regras; sem regra localizada, 55 e 65. `categoria` é heurística sobre a mensagem, com correções manuais na curadoria. `causaProvavel` e `comoCorrigir` só onde houve curadoria, com a regra citada em `referencia`.",
+  "notas": "União da tabela 4.4.2/4.4.3 do Anexo I com os códigos das regras de validação do Anexo I e da NT 2025.002, os códigos de outras NT listados em `adicionais` da curadoria (regra conferida no PDF) os códigos novos das tabelas de mensagens da NT 2025.001 e da NT 2023.002 (NFC-e) e os códigos novos das regras de validação da NT 2026.007 (contribuinte exclusivo do IBS/CBS). Mensagem oficial sem ajuste (placeholders como [nItem: 999] mantidos). `modelos` vem das regras; sem regra localizada, 55 e 65. `categoria` é heurística sobre a mensagem, com correções manuais na curadoria. `causaProvavel` e `comoCorrigir` só onde houve curadoria, com a regra citada em `referencia`.",
   "rejeicoes": [
     {
       "codigo": "108",
@@ -104,6 +113,426 @@
       "modelos": ["55", "65"],
       "fonte": "MOC 7.0 Anexo I, tabela 4.4.2",
       "regras": [],
+      "categoria": "regra-negocio"
+    },
+    {
+      "codigo": "156",
+      "efeito": "rejeicao",
+      "mensagem": "NFC-e não pode ser emitida por contribuinte exclusivo do IBS/CBS.",
+      "modelos": ["65"],
+      "fonte": "NT 2026.007 v1.10, regra C17-42",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "C17-42"
+        }
+      ],
+      "categoria": "regra-negocio"
+    },
+    {
+      "codigo": "157",
+      "efeito": "rejeicao",
+      "mensagem": "Obrigatório informar CNPJ do emitente para contribuinte exclusivo do IBS/CBS.",
+      "modelos": ["55"],
+      "fonte": "NT 2026.007 v1.10, regra C17-43",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "C17-43"
+        }
+      ],
+      "categoria": "regra-negocio"
+    },
+    {
+      "codigo": "158",
+      "efeito": "rejeicao",
+      "mensagem": "Proibido informar IEST para contribuinte exclusivo do IBS/CBS",
+      "modelos": ["55"],
+      "fonte": "NT 2026.007 v1.10, regra C18-50",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "C18-50"
+        }
+      ],
+      "categoria": "regra-negocio"
+    },
+    {
+      "codigo": "159",
+      "efeito": "rejeicao",
+      "mensagem": "Operação não permitida para contribuinte exclusivo do IBS/CBS. [nItem:999]",
+      "modelos": ["55"],
+      "fonte": "NT 2026.007 v1.10, regra I08-191",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "I08-191"
+        }
+      ],
+      "categoria": "regra-negocio"
+    },
+    {
+      "codigo": "161",
+      "efeito": "rejeicao",
+      "mensagem": "Proibido informar ICMS para contribuinte exclusivo do IBS/CBS [nItem:999]",
+      "modelos": ["55"],
+      "fonte": "NT 2026.007 v1.10, regra N01-10",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "N01-10"
+        }
+      ],
+      "categoria": "regra-negocio"
+    },
+    {
+      "codigo": "162",
+      "efeito": "rejeicao",
+      "mensagem": "Grupo IBS/CBS obrigatório para contribuinte exclusivo do IBS/CBS [nItem:999]",
+      "modelos": ["55"],
+      "fonte": "NT 2026.007 v1.10, regra UB12-11",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "UB12-11"
+        }
+      ],
+      "categoria": "regra-negocio"
+    },
+    {
+      "codigo": "163",
+      "efeito": "rejeicao",
+      "mensagem": "Emitente possui inscrição estadual ativa no cadastro da UF",
+      "modelos": ["55"],
+      "fonte": "NT 2026.007 v1.10, regra 1C17-02",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "1C17-02"
+        }
+      ],
+      "categoria": "regra-negocio"
+    },
+    {
+      "codigo": "164",
+      "efeito": "rejeicao",
+      "mensagem": "Emitente com situação irregular na UF",
+      "modelos": ["55"],
+      "fonte": "NT 2026.007 v1.10, regra 1C17-04",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "1C17-04"
+        }
+      ],
+      "categoria": "regra-negocio"
+    },
+    {
+      "codigo": "165",
+      "efeito": "rejeicao",
+      "mensagem": "IE do Local de Retirada com situação irregular na UF",
+      "modelos": ["55"],
+      "fonte": "NT 2026.007 v1.10, regra 5AF15-11",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "5AF15-11"
+        }
+      ],
+      "categoria": "regra-negocio"
+    },
+    {
+      "codigo": "166",
+      "efeito": "rejeicao",
+      "mensagem": "UF de autorização não permitida para contribuinte exclusivo do IBS/CBS",
+      "modelos": ["55"],
+      "fonte": "NT 2026.007 v1.10, regra C17-11",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "C17-11"
+        }
+      ],
+      "categoria": "regra-negocio"
+    },
+    {
+      "codigo": "167",
+      "efeito": "rejeicao",
+      "mensagem": "IE do local de retirada não está ativa na UF",
+      "modelos": ["55"],
+      "fonte": "NT 2026.007 v1.10, regra 5AF15-12",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "5AF15-12"
+        }
+      ],
+      "categoria": "cadastro"
+    },
+    {
+      "codigo": "168",
+      "efeito": "rejeicao",
+      "mensagem": "IE do local de retirada não informada",
+      "modelos": ["55"],
+      "fonte": "NT 2026.007 v1.10, regra 5AF17-10",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "5AF17-10"
+        }
+      ],
+      "categoria": "regra-negocio"
+    },
+    {
+      "codigo": "169",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ do Local de Retirada com situação irregular na UF",
+      "modelos": ["55"],
+      "fonte": "NT 2026.007 v1.10, regra 5AF17-20",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "5AF17-20"
+        }
+      ],
+      "categoria": "regra-negocio"
+    },
+    {
+      "codigo": "170",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ do Autor de Evento com situação irregular na Receita Federal",
+      "modelos": ["55", "65"],
+      "fonte": "NT 2026.007 v1.10, regra 1P10-32",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "1P10-32"
+        }
+      ],
+      "categoria": "regra-negocio"
+    },
+    {
+      "codigo": "171",
+      "efeito": "rejeicao",
+      "mensagem": "IE do local de entrega não cadastrada",
+      "modelos": ["55"],
+      "fonte": "NT 2026.007 v1.10, regra 5BG15-10",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "5BG15-10"
+        }
+      ],
+      "categoria": "cadastro"
+    },
+    {
+      "codigo": "173",
+      "efeito": "rejeicao",
+      "mensagem": "IE do Local de Entrega com situação irregular na UF",
+      "modelos": ["55"],
+      "fonte": "NT 2026.007 v1.10, regra 5BG15-11",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "5BG15-11"
+        }
+      ],
+      "categoria": "regra-negocio"
+    },
+    {
+      "codigo": "175",
+      "efeito": "rejeicao",
+      "mensagem": "IE do local de Entrega não está ativa na UF",
+      "modelos": ["55"],
+      "fonte": "NT 2026.007 v1.10, regra 5BG15-12",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "5BG15-12"
+        }
+      ],
+      "categoria": "cadastro"
+    },
+    {
+      "codigo": "176",
+      "efeito": "rejeicao",
+      "mensagem": "IE do local de Entrega não informada",
+      "modelos": ["55"],
+      "fonte": "NT 2026.007 v1.10, regra 5BG17-10",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "5BG17-10"
+        }
+      ],
+      "categoria": "regra-negocio"
+    },
+    {
+      "codigo": "177",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ do Local de Entrega com situação irregular na UF",
+      "modelos": ["55"],
+      "fonte": "NT 2026.007 v1.10, regra 5BG17-20",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "5BG17-20"
+        }
+      ],
+      "categoria": "regra-negocio"
+    },
+    {
+      "codigo": "178",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ [XX.XXX.XXX/XXXX-DV] do emitente não cadastrado na Receita Federal",
+      "modelos": ["55", "65"],
+      "fonte": "NT 2026.007 v1.10, regra 12C02-10",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "12C02-10"
+        }
+      ],
+      "categoria": "cadastro"
+    },
+    {
+      "codigo": "179",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ [XX.XXX.XXX/XXXX-DV] do emitente com situação irregular na Receita Federal",
+      "modelos": ["55", "65"],
+      "fonte": "NT 2026.007 v1.10, regra 12C02-20",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "12C02-20"
+        }
+      ],
+      "categoria": "regra-negocio"
+    },
+    {
+      "codigo": "180",
+      "efeito": "rejeicao",
+      "mensagem": "Código Regime Tributário do emitente diverge do cadastro na Receita Federal",
+      "modelos": ["55", "65"],
+      "fonte": "NT 2026.007 v1.10, regra 12C21-20",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "12C21-20"
+        }
+      ],
+      "categoria": "regra-negocio"
+    },
+    {
+      "codigo": "181",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ [XX.XXX.XXX/XXXX-DV] do destinatário não cadastrado na Receita Federal",
+      "modelos": ["55", "65"],
+      "fonte": "NT 2026.007 v1.10, regra 12E02-10",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "12E02-10"
+        }
+      ],
+      "categoria": "cadastro"
+    },
+    {
+      "codigo": "182",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ [XX.XXX.XXX/XXXX-DV] do Destinatário com situação irregular na Receita Federal",
+      "modelos": ["55", "65"],
+      "fonte": "NT 2026.007 v1.10, regra 12E02-20",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "12E02-20"
+        }
+      ],
+      "categoria": "regra-negocio"
+    },
+    {
+      "codigo": "183",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ [XX.XXX.XXX/XXXX-DV] do Local de Retirada não cadastrado na Receita Federal",
+      "modelos": ["55"],
+      "fonte": "NT 2026.007 v1.10, regra 12F02-10",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "12F02-10"
+        }
+      ],
+      "categoria": "cadastro"
+    },
+    {
+      "codigo": "184",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ [XX.XXX.XXX/XXXX-DV] do Local de Retirada com situação irregular na Receita Federal",
+      "modelos": ["55"],
+      "fonte": "NT 2026.007 v1.10, regra 12F02-20",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "12F02-20"
+        }
+      ],
+      "categoria": "regra-negocio"
+    },
+    {
+      "codigo": "185",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ [XX.XXX.XXX/XXXX-DV] do Local de Entrega não cadastrado na Receita Federal",
+      "modelos": ["55"],
+      "fonte": "NT 2026.007 v1.10, regra 12G02-10",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "12G02-10"
+        }
+      ],
+      "categoria": "cadastro"
+    },
+    {
+      "codigo": "186",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ [XX.XXX.XXX/XXXX-DV] do Local de Entrega com situação irregular na Receita Federal",
+      "modelos": ["55"],
+      "fonte": "NT 2026.007 v1.10, regra 12G02-20",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "12G02-20"
+        }
+      ],
+      "categoria": "regra-negocio"
+    },
+    {
+      "codigo": "187",
+      "efeito": "rejeicao",
+      "mensagem": "CNPJ [XX.XXX.XXX/XXXX-DV] do Autor de Evento não cadastrado na Receita Federal",
+      "modelos": ["55", "65"],
+      "fonte": "NT 2026.007 v1.10, regra 1P10-30",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "1P10-30"
+        }
+      ],
+      "categoria": "cadastro"
+    },
+    {
+      "codigo": "188",
+      "efeito": "rejeicao",
+      "mensagem": "Evento de NF-e de contribuinte exclusivo do IBS/CBS deve ser autorizado na SVRS",
+      "modelos": ["55"],
+      "fonte": "NT 2026.007 v1.10, regra 1P10-40",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "1P10-40"
+        }
+      ],
       "categoria": "regra-negocio"
     },
     {

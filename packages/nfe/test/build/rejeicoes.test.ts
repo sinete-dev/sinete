@@ -5,9 +5,10 @@
 import { describe, expect, test } from 'bun:test';
 import type { Ocorrencia } from '@sinete/core';
 import { contextoDeTempo, relogioFixo } from '@sinete/core';
+import { montarChaveAcesso } from '@sinete/validators';
 import type { DadosNfe, ResultadoMontagemNfe } from '../../src/index.ts';
 import { conferirEmitenteDoCertificado, montarNfe } from '../../src/index.ts';
-import { CNPJ_DEST, CNPJ_EMIT, CPF, item, nota, opcoes } from '../helpers/nota.ts';
+import { CNPJ_DEST, CNPJ_EMIT, CPF, calculadoraFixa, IE_SP, item, nota, opcoes } from '../helpers/nota.ts';
 
 function ocorrencias(r: ResultadoMontagemNfe): readonly Ocorrencia[] {
   return r.ok ? [] : r.ocorrencias;
@@ -148,5 +149,119 @@ describe('conferirEmitenteDoCertificado (RV F03 e F03A, rejeições 213 e 227)',
     expect(conferirEmitenteDoCertificado(produtor, { cpf: CPF })).toEqual([]);
     expect(conferirEmitenteDoCertificado(produtor, { cpf: '52998224725' })[0]?.mensagem).toContain('227');
     expect(conferirEmitenteDoCertificado(produtor, { cnpj: CNPJ_EMIT })).toEqual([]);
+  });
+});
+
+describe('contribuinte exclusivo do IBS/CBS, nota sem IE (NT 2026.007 v1.10)', () => {
+  type Item = DadosNfe['itens'][number];
+  const citam = (r: ResultadoMontagemNfe, rej: string): readonly Ocorrencia[] =>
+    ocorrencias(r).filter((i) => i.mensagem.includes(`rejeição ${rej})`));
+  const ICMS = { CST: '00', orig: '0', pICMS: '18' } as const;
+  const PIS = item().impostos.pis;
+  const COFINS = item().impostos.cofins;
+  const CLASSIFICADO = { classificacao: { CST: '000', cClassTrib: '000001' } } as const;
+  /** Item com os impostos dados; o padrão é o conforme: sem ICMS e com o grupo IBS/CBS pela calculadora. */
+  const it = (impostos: Partial<Item['impostos']> = { ibsCbs: CLASSIFICADO }): Item =>
+    ({ ...item(), impostos: { pis: PIS, cofins: COFINS, ...impostos } }) as Item;
+  const comIcms = (): Item => it({ icms: ICMS, ibsCbs: CLASSIFICADO });
+  const semIe = (extra: Partial<DadosNfe> = {}, emit: { cpf?: boolean; IEST?: string } = {}): DadosNfe => {
+    const n = nota({ itens: [it()], ...extra });
+    const { IE: _, CNPJ: cnpj, ...resto } = n.emitente;
+    const doc = emit.cpf ? { CPF } : { CNPJ: cnpj };
+    return { ...n, emitente: { ...resto, ...doc, ...(emit.IEST ? { IEST: emit.IEST } : {}) } as DadosNfe['emitente'] };
+  };
+  const o = (at?: string) => opcoes({ ibsCbs: calculadoraFixa }, at);
+  const chaveRef = montarChaveAcesso({
+    cUF: '35',
+    aamm: '2608',
+    emitente: CNPJ_EMIT,
+    mod: '55',
+    serie: '1',
+    nNF: '99',
+    tpEmis: '1',
+    cNF: '31415926',
+  });
+
+  test('nota sem IE em conformidade monta, e a nota comum com IE também', async () => {
+    expect(ocorrencias(await montarNfe(semIe(), o()))).toEqual([]);
+    expect((await montarNfe(nota(), o())).ok).toBe(true);
+  });
+
+  test('NFC-e sem IE é recusada até 2032 (156), e a partir de 2033 não', async () => {
+    const nfce = (ie?: string): DadosNfe => {
+      const { destinatario: _, ...n } = semIe({ modelo: '65', pagamento: { detPag: [{ tPag: '01', vPag: '15.00' }] } });
+      return ie === undefined ? n : { ...n, emitente: { ...n.emitente, IE: ie } };
+    };
+    for (const at of ['2026-10-06T10:00:00-03:00', '2032-12-31T10:00:00-03:00']) {
+      const r = await montarNfe(nfce(), o(at));
+      expect(citam(r, '156')).toEqual([expect.objectContaining({ caminho: 'emitente.IE', origem: 'entrada' })]);
+      expect(citam(await montarNfe(nfce(IE_SP), o(at)), '156')).toEqual([]);
+    }
+    // Um instante em que alguma leitura (UTC) já é 2033 não recusa.
+    expect(citam(await montarNfe(nfce(), o('2032-12-31T22:00:00-03:00')), '156')).toEqual([]);
+    expect(citam(await montarNfe(nfce(), o('2033-01-03T10:00:00-03:00')), '156')).toEqual([]);
+  });
+
+  test('emitente CPF sem IE (157) e IEST sem IE (158)', async () => {
+    const cpf = await montarNfe(semIe({ serie: 920 }, { cpf: true }), o());
+    expect(citam(cpf, '157')).toEqual([expect.objectContaining({ caminho: 'emitente.CNPJ', origem: 'entrada' })]);
+    const iest = await montarNfe(semIe({}, { IEST: IE_SP }), o());
+    expect(citam(iest, '158')).toEqual([expect.objectContaining({ caminho: 'emitente.IEST', origem: 'entrada' })]);
+    const comIe = await montarNfe(nota({ emitente: { ...nota().emitente, IEST: IE_SP } }), o());
+    expect(citam(comIe, '158')).toEqual([]);
+  });
+
+  test('ICMS e ICMS interestadual no item da nota sem IE (161), por item', async () => {
+    const r = await montarNfe(semIe({ itens: [comIcms(), it()] }), o());
+    expect(citam(r, '161').map((i) => i.caminho)).toEqual(['itens[0].impostos.icms']);
+    const difal = it({
+      ibsCbs: CLASSIFICADO,
+      icmsUfDest: {
+        vBCUFDest: '15.00',
+        pFCPUFDest: '0',
+        pICMSUFDest: '18',
+        pICMSInter: '12.00',
+        vICMSUFDest: '0.90',
+        vFCPUFDest: '0.00',
+      },
+    });
+    const r2 = await montarNfe(semIe({ itens: [it(), difal] }), o());
+    expect(citam(r2, '161').map((i) => i.caminho)).toEqual(['itens[1].impostos.icmsUfDest']);
+  });
+
+  test('devolução e nota de crédito de retorno (tpNFCredito 03) passam com ICMS; outro tpNFCredito não', async () => {
+    const dev = await montarNfe(semIe({ finNFe: '4', referenciadas: [{ refNFe: chaveRef }], itens: [comIcms()] }), o());
+    expect(citam(dev, '161')).toEqual([]);
+    const credito = (tp: '01' | '03') =>
+      semIe({ finNFe: '5', tpNFCredito: tp, referenciadas: [{ refNFe: chaveRef }], itens: [comIcms()] });
+    expect(citam(await montarNfe(credito('03'), o()), '161')).toEqual([]);
+    expect(citam(await montarNfe(credito('01'), o()), '161').map((i) => i.caminho)).toEqual(['itens[0].impostos.icms']);
+  });
+
+  test('item sem o grupo IBS/CBS na nota sem IE (162), só nele', async () => {
+    const r = await montarNfe(semIe({ itens: [it(), it({})] }), o());
+    expect(citam(r, '162')).toEqual([
+      expect.objectContaining({ caminho: 'itens[1].impostos.ibsCbs', origem: 'entrada' }),
+    ]);
+    // Sem ICMS e sem ISSQN é a exceção 2 da B25-90 na NF-e sem IE: a única ocorrência do item é a 162.
+    expect(ocorrencias(r).filter((i) => i.caminho.startsWith('itens[1]'))).toHaveLength(1);
+  });
+
+  test('a exceção 2 da B25-90 é só do modelo 55: a NFC-e sem ICMS continua com a ocorrência do ICMS', async () => {
+    const { destinatario: _, ...n } = semIe({
+      modelo: '65',
+      itens: [it({})],
+      pagamento: { detPag: [{ tPag: '01', vPag: '15.00' }] },
+    });
+    const r = await montarNfe(n, o('2033-01-03T10:00:00-03:00'));
+    expect(ocorrencias(r)).toContainEqual(
+      expect.objectContaining({ caminho: 'itens[0].impostos.icms', code: 'campo_obrigatorio' }),
+    );
+  });
+
+  test('todas as violações voltam juntas; as regras de tabela, cadastro e roteamento ficam para a SEFAZ', async () => {
+    const r = await montarNfe(semIe({ serie: 920, itens: [comIcms(), it({})] }, { cpf: true, IEST: IE_SP }), o());
+    for (const rej of ['157', '158', '161', '162']) expect(citam(r, rej)).not.toHaveLength(0);
+    for (const rej of ['159', '163', '164', '166', '178', '187', '188']) expect(citam(r, rej)).toEqual([]);
   });
 });

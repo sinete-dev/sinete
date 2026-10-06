@@ -262,7 +262,7 @@ describe('NFC-e: montagem', () => {
         endereco: { ...base.emitente.endereco, UF: 'AM' as const, cMun: '1302603', xMun: 'MANAUS' },
       },
     } as DadosNfe;
-    delete (am.emitente as { IE?: string }).IE;
+    (am.emitente as { IE?: string }).IE = '040000001';
     const r = await montarNfe(am, opcoes());
     expect(achar(r, 'urlQrCode')).toMatchObject({ code: 'qrcode_invalido', origem: 'montagem' });
     const n = ok(await montarNfe(am, opcoes({ urlQrCode: 'https://exemplo.invalid/nfce/qrcode?' })));
