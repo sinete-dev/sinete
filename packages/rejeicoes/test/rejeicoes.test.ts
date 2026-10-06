@@ -147,3 +147,16 @@ describe('consulta e enriquecimento', () => {
     expect(r.tipo === 'recusado' && r.dica?.fonte).toBe('NT 2025.002 v1.40, RV UB56-10 e UB56-20');
   });
 });
+
+describe('dica da 327 (RV I08-140)', () => {
+  test('1.949 e 2.949 valem em qualquer devolução, sem condição sobre o destinatário (NT 2026.009)', () => {
+    const d = dicaRejeicao('327');
+    if (d === undefined) throw new Error('327 sem dica');
+    for (const texto of [d.comoCorrigir, d.orientacao ?? '']) {
+      expect(texto).toContain('1.949');
+      expect(texto).not.toMatch(/só (?:são aceitos|cabem) na devolução de venda para não contribuinte/);
+      expect(texto).not.toContain('indIEDest');
+    }
+    expect(d.fonte).toContain('NT 2026.009');
+  });
+});
