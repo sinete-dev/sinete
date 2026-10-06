@@ -220,8 +220,9 @@ describe('NF-e Tipo 2 sob as regras da NFC-e que a NT 2026.002 v1.11 estende', (
   });
 
   test('regras só da NFC-e não valem: pagamento, destinatário contribuinte, transportador na entrega, exportação', async () => {
-    const exporta = { UFSaidaPais: 'SP', xLocExporta: 'PORTO DE SANTOS' };
-    for (const extra of [{}, { destinatario: DEST_CONTRIBUINTE }, { indPres: '4' as const }, { exporta }]) {
+    const exporta = { UFSaidaPais: 'SP' as const, xLocExporta: 'PORTO DE SANTOS' };
+    const casos: Partial<DadosNfe>[] = [{}, { destinatario: DEST_CONTRIBUINTE }, { indPres: '4' }, { exporta }];
+    for (const extra of casos) {
       const n = ok(await montarNfe(tipo2(extra), opcoes()));
       expect(n.xml).toContain('<mod>55</mod>');
       expect(n.xml).toContain('<tpImp>6</tpImp>');
