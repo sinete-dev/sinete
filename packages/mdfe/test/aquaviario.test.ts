@@ -12,6 +12,7 @@ import {
   transporteSim,
   URL_BASE_SIM,
 } from '@sinete/sefaz-sim';
+import { montarChaveAcesso } from '@sinete/validators';
 import type {
   Aquaviario,
   DadosMdfe,
@@ -201,5 +202,41 @@ describe('SEFAZ simulada: modal aquaviário', () => {
         );
     const a = await p.client.autorizar(await p.assinar(posterior, comoAquaviario));
     expect(a.tipo === 'recusado' && a.cStat).toBe('705');
+  });
+  test('MDF-e transportado: 647 fora do aquaviário, 648 sem AM ou AP, aceito no aquaviário AM para AP', async () => {
+    const t = cenario(transportadora, { CNPJ: CNPJ_EMIT });
+    const ref = montarChaveAcesso({
+      cUF: '13',
+      aamm: '2609',
+      emitente: CNPJ_EMIT,
+      mod: '58',
+      serie: 1,
+      nNF: 99,
+      tpEmis: '1',
+      cNF: '10000099',
+    });
+    const comMdfe = (x: string): string =>
+      x.replace('</infMunDescarga>', `<infMDFeTransp><chMDFe>${ref}</chMDFe></infMDFeTransp></infMunDescarga>`);
+    const rodo = await t.client.autorizar(await t.assinar(prestador(), comMdfe));
+    expect(rodo.tipo === 'recusado' && rodo.cStat).toBe('647');
+    const foraAmap = await t.client.autorizar(await t.assinar(aquaviario(prestador({ nMDF: 12 })), comMdfe));
+    expect(foraAmap.tipo === 'recusado' && foraAmap.cStat).toBe('648');
+    const amap: DadosMdfeAquaviario = {
+      ...aquaviario(prestador({ nMDF: 13 })),
+      ufIni: 'AM',
+      ufFim: 'AP',
+      carregamento: [{ cMun: '1302603', xMun: 'MANAUS' }],
+      descarregamentos: prestador().descarregamentos.map((d) => ({ ...d, cMun: '1600303', xMun: 'MACAPA' })),
+    };
+    const ok100 = await t.client.autorizar(await t.assinar(amap, comMdfe));
+    expect(ok100.tipo === 'autorizado' && ok100.cStat).toBe('100');
+    const soFim: DadosMdfeAquaviario = {
+      ...amap,
+      nMDF: 14,
+      ufIni: 'MT',
+      carregamento: [{ cMun: '5103403', xMun: 'CUIABA' }],
+    };
+    const fimAp = await t.client.autorizar(await t.assinar(soFim, comMdfe));
+    expect(fimAp.tipo === 'autorizado' && fimAp.cStat).toBe('100');
   });
 });

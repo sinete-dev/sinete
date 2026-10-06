@@ -6,6 +6,7 @@
  * - F67/F68 (207, 210) documento do emitente, F69 a F71 (232, 233, 234) série e tipo do emitente pessoa física;
  * - F79 (212) emissão no futuro, F80 (228) emissão normal com mais de 24 horas;
  * - F23 (705) carregamento posterior fora do modal rodoviário e F34 (702) entrega parcial de CT-e fora do aéreo;
+ * - F43 (647) e F44 (648) MDF-e transportado fora do aquaviário ou sem AM/AP no carregamento ou no descarregamento;
  * - F30a e F37a (518, 519) chave de CT-e ou NF-e anterior a 6 meses da autorização e F89c (523) cavalo mecânico sem
  *   reboque, da NT 2024.001;
  * - F114 a F118 (480, 479, 481, 482, 488) QR Code;
@@ -126,6 +127,13 @@ export async function recepcaoMdfe(ctx: ContextoDoPedido): Promise<string> {
     for (const mun of all(at(inf, 'infDoc'), 'infMunDescarga')) {
       for (const cte of all(mun, 'infCTe')) if (at(cte, 'infEntregaParcial') !== undefined) return rej('702');
     }
+  }
+  // F43 e F44: MDF-e transportado (infMDFeTransp) só no aquaviário, e só com carregamento ou descarregamento em AM ou AP.
+  const transportaMdfe = all(at(inf, 'infDoc'), 'infMunDescarga').some((m) => all(m, 'infMDFeTransp').length > 0);
+  if (transportaMdfe) {
+    if (ativa(ctx, 'F43') && modal !== '3') return rej('647');
+    const amap = (uf: string): boolean => uf === 'AM' || uf === 'AP';
+    if (ativa(ctx, 'F44') && !amap(req(ide, 'UFIni')) && !amap(req(ide, 'UFFim'))) return rej('648');
   }
 
   // NT 2024.001: chaves de CT-e e NF-e anteriores a 6 meses da autorização (F30a, F37a) e cavalo mecânico sem reboque
