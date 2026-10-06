@@ -1,6 +1,6 @@
 {
   "name": "@sinete/ibs-cbs",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "IBS e CBS da reforma tributária do consumo, para qualquer DF-e (NF-e, NFC-e, CT-e, NFCom, NFS-e): alíquotas por data de fato gerador, cálculo nos grupos da NT 2025.002, regras de validação e determinação de CST e cClassTrib, com subpaths para usar cada parte sozinha",
   "keywords": [
     "ibs",

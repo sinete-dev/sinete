@@ -1,5 +1,14 @@
 # @sinete/cli
 
+## 0.2.2
+
+### Patch Changes
+
+- Updated dependencies [4ba29b8]
+- Updated dependencies [30d6381]
+  - @sinete/cert@0.2.2
+  - @sinete/transport@0.3.0
+
 ## 0.2.1
 
 ### Patch Changes

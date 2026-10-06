@@ -1,5 +1,74 @@
 # sinete
 
+## 0.5.0
+
+### Minor Changes
+
+- e695076: DANFE A4 (retrato e paisagem) no leiaute da NT 2026.010 v1.00: bloco "Total do IBS/CBS/IS" com CBS, IBS UF, IBS município, IS e os quatro valores da monofasia (em branco sem `gMono`), CRT e área do Tipo de Regime de Apuração no quadro do emitente, e cClassTrib, base, alíquota e valor de IBS, CBS e IS por item. O quadro provisório da NT 2025.002 sai, e com ele o `vNFTot` do A4. Simplificado, etiqueta, Tipo 2 e NFC-e não mudam.
+- 2b724ae: MDF-e do modal aéreo. `DadosMdfe` passa a ser a união `DadosMdfeRodoviario | DadosMdfeAereo` (com `CamposMdfe` para os campos comuns): quem passa `rodoviario` continua compilando, mas quem lê `dados.rodoviario` de um `DadosMdfe` precisa estreitar para `DadosMdfeRodoviario`. O grupo `aereo` (nac, matr, nVoo, cAerEmb, cAerDes, dVoo) monta `modal` 2, e o CT-e ganha `entregaParcial` (corte de voo, `infEntregaParcial`). As regras do Anexo I que só valem no rodoviário (percurso F90, seguro F91 a F93, produto predominante F54/F55 e as do veículo) deixam de valer no aéreo; F23 (705) recusa o carregamento posterior fora do rodoviário e F34 (702) a entrega parcial fora do aéreo. Entrada sem modal ou com dois vira ocorrência (`campo_obrigatorio` em `rodoviario`, `combinacao_invalida` em `aereo`), não exceção. `rotuloDoCaminho` ganha os rótulos do aéreo, e `infMDFe.infModal` sozinho passa de "Transporte rodoviário" para "Modal".
+  
+  No `@sinete/sefaz-sim`, a recepção do MDF-e aplica F23 (705) e F34 (702).
+- 61b48f6: MDF-e do modal aquaviário, o último dos quatro. `DadosMdfe` ganha o caso `DadosMdfeAquaviario`, com o grupo `aquaviario` (irin, tpEmb, cEmbar, xEmbar, nViag, cPrtEmb, cPrtDest, prtTrans, tpNav, `terminaisCarregamento` e `terminaisDescarregamento` até 5, `comboio` até 30, `unidadesCargaVazias`, `unidadesTransporteVazias` e o `MMSI` opcional da NT 2025.001), que monta `modal` 3. Como nos outros modais, as regras do rodoviário não se aplicam, F23 (705) e F34 (702) seguem o modal. Lista acima do limite do leiaute é `campo_invalido` no grupo. O MDF-e transportado (`infMDFeTransp`, F43 a F49) fica para a #57. `rotuloDoCaminho` ganha os rótulos de terminais, comboio e unidades vazias.
+  
+  No `@sinete/sefaz-sim`, a recepção do MDF-e aplica F43 (647) e F44 (648) ao MDF-e transportado (`infMDFeTransp`).
+- ae8028e: MDF-e do modal ferroviário. `DadosMdfe` ganha o caso `DadosMdfeFerroviario`, com o grupo `ferroviario` (`trem` com xPref, dhTrem, xOri e xDest; `vagoes` com pesoBC, pesoR, tpVag, serie, nVag, nSeq e TU), que monta `modal` 4; `qVag` sai da contagem dos vagões e os pesos saem com três casas. Como no aéreo, as regras do Anexo I que só valem no rodoviário não se aplicam, F23 (705) recusa o carregamento posterior e F34 (702) a entrega parcial do CT-e. Lista de vagões vazia é `campo_obrigatorio` em `ferroviario.vagoes`. `rotuloDoCaminho` ganha os rótulos do trem e dos vagões (`Vagão 2, Número do vagão`).
+- 25eb579: `inutilizar` devolve no 563 o protocolo da faixa já inutilizada. Não existe consulta de inutilização na NF-e 4.00, então reenviar a mesma faixa depois de uma resposta perdida é o único caminho para guardar o `nProt` que valeu, e até aqui o desfecho só trazia `cStat` e `xMotivo`. O 563 continua `recusado` (a resposta não é a homologação e não monta `procInutNFe`); quando o `retInutNFe` traz `nProt`, o desfecho ganha `anterior: { nProt, retInutNFe }` (tipos novos `RecusadoInutilizacao` e `InutilizacaoAnterior`; `ResultadoInutilizacao` passa a usar o primeiro no caso `recusado`). Fonte: MOC 7.0 Visão Geral, tabela 5-12, regra I07.
+  
+  Mudança de comportamento: um 563 com `nProt` cuja faixa (`ano`, `CNPJ`, `mod`, `serie`, `nNFIni`, `nNFFin`) não é a pedida passa a lançar `ErroRespostaInvalida` (`resposta_invalida`), a mesma conferência que o 102 já fazia. Antes voltava como `recusado` 563, e quem lia o 563 como "a faixa já estava homologada" não tinha como notar que a resposta era de outra faixa. O 563 sem `nProt` e as demais rejeições seguem como `recusado`, sem `anterior`.
+- adb6148: Tabela de CFOP do Portal da NF-e no `@sinete/validators` (`indicadoresCfop`, `TABELA_CFOP`; IT 2023.002 v2.10). Com ela, o `montarNfe` confere antes de assinar o CFOP de devolução fora da devolução (I08-144, rejeição 328) e o CST com destinatário não contribuinte (N12-70, rejeição 508, com as exceções da NT 2023.001 e da NT 2023.003), e o `@sinete/sefaz-sim` recusa os dois casos com o mesmo código.
+- cc09d66: Contribuinte exclusivo do IBS/CBS (NT 2026.007 v1.10). O `montarNfe` confere antes de assinar a nota sem IE do emitente: NFC-e até o fim de 2032 (rejeição 156), emitente sem CNPJ (157), IEST informada (158), ICMS no item fora da devolução e do `tpNFCredito` 03 (161) e item sem o grupo IBS/CBS (162); a falta de ICMS e ISSQN deixa de ser ocorrência nessa nota. O catálogo do `@sinete/rejeicoes` ganha as 30 rejeições novas da NT (156 a 188), e a `vigencia.json` do `@sinete/schemas` passa a citar a v1.10.
+- e6c8f28: NF-e com DANFE Simplificado Tipo 2 (`tpImp` 6, NT 2026.002 v1.11): o `montarNfe` gera o `infNFeSupl` com o QR Code versão 3 na URL da NFC-e da UF, recusa a versão 2 (672) e aceita a contingência off-line (`tpEmis` 9) nela; a chave de acesso passa a aceitar `tpEmis` 9 no modelo 55. O `@sinete/sefaz-sim` deixa de recusar o `infNFeSupl` da NF-e (393, que saiu da NT), exige o QR Code na NF-e Tipo 2 (394) e confere a versão (672). O catálogo do `@sinete/rejeicoes` ganha o 672 (ZX02-220), e o `campoVolatil` do emissor acompanha.
+- f40a0aa: NF-e de contribuinte exclusivo do IBS/CBS (sem `emit/IE`) vai à SVRS, como pede a NT 2026.007 (regras C17-11 e 1P10-40). `autorizar`, `consultar` e o recibo consultado com a nota decidem pela própria NF-e; cancelamento, carta de correção, consulta pela chave e recibo sem a nota seguem a opção nova `contribuinteExclusivoIbsCbs` do cliente. Os eventos da série 890 a 919 e a NFC-e continuam no autorizador de antes.
+- c3cbf86: `recuperarEventoRegistrado(cliente, chave, tpEvento, nSeqEvento = 1, opcoes?)` na NFS-e, como na NF-e e no MDF-e: depois de um pedido de evento sem resposta, ou recusado com E0840, consulta o evento na Sefin e devolve `{ registrado: true, evento }` ou `{ registrado: false }`, sem concluir pelo código do pedido (a E0840 também sai com a substituição vinculada). Falha de rede, resposta fora do contrato e `signal` cancelado lançam, como no `consultarEventos`. A sequência é parâmetro com padrão 1 porque a Sefin só atende a consulta com o tipo e a sequência, e o cancelamento é sempre a 1. Quem usava o `ClienteNfse` sem o emissor não tinha como recuperar um cancelamento cujo retorno se perdeu. O `@sinete/emissor` passa a usar a primitiva no cancelamento da NFS-e, com o mesmo desfecho de antes.
+- dd913dd: `rotuloDoCaminho(caminho)` na NFS-e, como o da NF-e e o do MDF-e (ADR 0011): o caminho de uma ocorrência da DPS vira texto para quem preencheu a nota (`tomador.CNPJ` vira `Tomador, CNPJ`; `/DPS/infDPS/valores/vDedRed/documentos/docDedRed[2]/vDedutivelRedutivel` vira `Documento de dedução 2, Valor dedutível ou redutível`), com `Dados da DPS` quando nem o grupo nem o campo são conhecidos. Aceita os caminhos da `DadosDps`, os do documento montado com pontos e os do validador de XSD, que na DPS incluem a raiz `DPS`.
+- dec66f5: Texto e tamanho conferidos na entrada do MDF-e e da DPS, como na NF-e (ADR 0011, revisão de 06/10). É quebra do `caminho`, da `origem` e do `code` dessas ocorrências:
+  
+  | Caso | Antes | Depois |
+  |---|---|---|
+  | MDF-e, texto fora do tipo do leiaute (longo, curto, espaço nas pontas, caractere fora do `TString`) | `schema`, `origem: 'montagem'`, caminho do XSD (`/infMDFe/emit/xNome`), mensagem do validador | `campo_invalido`, `origem: 'entrada'`, caminho da entrada (`emitente.xNome`), mensagem para quem preenche (`no máximo 60 caracteres (tem 61)`) |
+  | MDF-e, caractere que o XML não representa | `campo_invalido`, `origem: 'montagem'`, caminho do documento montado (`infMDFe.prodPred.xProd`) | `campo_invalido`, `origem: 'entrada'`, caminho da entrada (`produtoPredominante.xProd`), em qualquer texto da entrada, inclusive os que a montagem transforma (`emitente.endereco.CEP`) |
+  | DPS, texto fora do tipo do leiaute | `schema`, `origem: 'montagem'`, caminho do XSD (`/DPS/infDPS/subst/xMotivo`) | `campo_invalido`, `origem: 'entrada'`, caminho da entrada (`substituicao.xMotivo`), também dentro de prestador, tomador, intermediário e dos grupos do serviço (`tomador.end.xLgr`) |
+  | DPS, caractere que o XML não representa | `caractere_invalido`, `origem: 'montagem'`, caminho `/` (o documento inteiro) | `campo_invalido`, `origem: 'entrada'`, caminho da entrada (`ibsCbs.refNFSe[1]`) |
+  
+  O texto das opções do montador (o `respTec` das opções e o `verProc` do MDF-e, o `verAplic` da DPS) continua conferido na montagem, como antes, e os campos que a montagem transforma (telefone, CEP e placa no MDF-e; série e código de tributação nacional na DPS) seguem aceitos como antes.
+  
+  `@sinete/schemas` exporta o motor da conferência (`conferirTextos`, `CampoDeTexto`, `TextoRecusado`, `textoXmlValido` e `camposSemElemento`), que saiu do `@sinete/nfe`. Na NF-e, o comportamento é o mesmo; a única diferença é a mensagem de um tipo de formato (só dígitos, um código), que passa a ser `formato não aceito` em vez de apontar um caractere. `rotuloDoCaminho` do MDF-e e da NFS-e ganhou os campos novos (`Responsável técnico, Contato`, `Informações adicionais, Informações de interesse do fisco`, `IBS/CBS, NFS-e referenciada`).
+- 30d6381: Dois códigos novos em `CodigoErroTransporte`: `certificado_expirado` (alerta TLS 45, `certificate_expired`) e `certificado_revogado` (alerta 44, `certificate_revoked`), com a mensagem e a dica de cada um, no transporte em processo e no helper `sinete-signer`. O alerta continua em `detalhes.alerta`.
+  
+  Caso novo de união aberta (ADR 0016, seção 2): `certificado_recusado` deixa de cobrir os alertas 44 e 45 e fica com os alertas 43, 46, 48 e 49. Quem comparava `code === 'certificado_recusado'` para dizer "certificado não aceito" passa a receber os dois códigos novos nesses casos; quem compara o prefixo `certificado_` não muda. O `certificado_expirado` é o mesmo `code` que o `@sinete/cert` já usa para o PFX vencido na abertura, e a página `docs/guia/erros/certificado_expirado.md` passa a cobrir os dois.
+
+### Patch Changes
+
+- 5416fca: Os reexports dos subpaths experimentais (`sinete/emissor/perfil`, `sinete/nfe/ibs-cbs`, `sinete/transport/signer`) passam a levar `@experimental` no comentário de módulo, herdado da fonte como pede o ADR 0016 (seção 5), e o README lista os três. O gerador lê a marca do comentário de módulo da fonte, e o `--check` falha se o README divergir.
+- Updated dependencies [4ba29b8]
+- Updated dependencies [e695076]
+- Updated dependencies [1f07136]
+- Updated dependencies [2b724ae]
+- Updated dependencies [61b48f6]
+- Updated dependencies [ae8028e]
+- Updated dependencies [25eb579]
+- Updated dependencies [adb6148]
+- Updated dependencies [cc09d66]
+- Updated dependencies [e6c8f28]
+- Updated dependencies [f40a0aa]
+- Updated dependencies [c3cbf86]
+- Updated dependencies [dd913dd]
+- Updated dependencies [eb06ce6]
+- Updated dependencies [dec66f5]
+- Updated dependencies [30d6381]
+  - @sinete/cert@0.2.2
+  - @sinete/da@0.3.0
+  - @sinete/ibs-cbs@0.2.2
+  - @sinete/mdfe@0.4.0
+  - @sinete/nfe@0.5.0
+  - @sinete/validators@0.3.0
+  - @sinete/rejeicoes@0.4.0
+  - @sinete/schemas@0.3.0
+  - @sinete/emissor@0.3.2
+  - @sinete/nfse@0.4.0
+  - @sinete/transport@0.3.0
+  - @sinete/cli@0.2.2
+
 ## 0.4.0
 
 ### Minor Changes

@@ -1,5 +1,16 @@
 # @sinete/rejeicoes
 
+## 0.4.0
+
+### Minor Changes
+
+- cc09d66: Contribuinte exclusivo do IBS/CBS (NT 2026.007 v1.10). O `montarNfe` confere antes de assinar a nota sem IE do emitente: NFC-e até o fim de 2032 (rejeição 156), emitente sem CNPJ (157), IEST informada (158), ICMS no item fora da devolução e do `tpNFCredito` 03 (161) e item sem o grupo IBS/CBS (162); a falta de ICMS e ISSQN deixa de ser ocorrência nessa nota. O catálogo do `@sinete/rejeicoes` ganha as 30 rejeições novas da NT (156 a 188), e a `vigencia.json` do `@sinete/schemas` passa a citar a v1.10.
+- e6c8f28: NF-e com DANFE Simplificado Tipo 2 (`tpImp` 6, NT 2026.002 v1.11): o `montarNfe` gera o `infNFeSupl` com o QR Code versão 3 na URL da NFC-e da UF, recusa a versão 2 (672) e aceita a contingência off-line (`tpEmis` 9) nela; a chave de acesso passa a aceitar `tpEmis` 9 no modelo 55. O `@sinete/sefaz-sim` deixa de recusar o `infNFeSupl` da NF-e (393, que saiu da NT), exige o QR Code na NF-e Tipo 2 (394) e confere a versão (672). O catálogo do `@sinete/rejeicoes` ganha o 672 (ZX02-220), e o `campoVolatil` do emissor acompanha.
+
+### Patch Changes
+
+- eb06ce6: Dica da rejeição 327 (RV I08-140) alinhada à NT 2026.009 v1.00 (homologação e produção até 17/09/2026) e à NT 2025.002 v1.52: os CFOP 1.949 e 2.949 passam a valer em qualquer devolução, sem a condição de destinatário não contribuinte que a dica ainda pedia, e a regra também cobre a nota de crédito de retorno por recusa na entrega (tpNFCredito 03 e 06). A `orientacao` para quem emite muda junto.
+
 ## 0.3.0
 
 ### Minor Changes
