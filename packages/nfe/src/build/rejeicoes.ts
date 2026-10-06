@@ -154,7 +154,8 @@ const NFCE_SEM_IE_ATE = '2033-01-01';
  * - NF-e sem IE com a IE do substituto tributário, 158 (C18-50);
  * - item com ICMS ou ICMS interestadual (`icmsUfDest`) na NF-e sem IE, 161 (N01-10), menos na devolução (finNFe 4) e na
  *   nota de crédito de retorno por recusa ou não localização (tpNFCredito 03), as duas exceções da regra;
- * - item sem o grupo IBSCBS na NF-e sem IE, 162 (UB12-11), conferido no grupo montado (o pronto ou o da calculadora).
+ * - item sem `impostos.ibsCbs` (nem o grupo pronto nem a classificação para a calculadora) na NF-e sem IE, 162
+ *   (UB12-11). O item classificado cujo cálculo falhou já tem a ocorrência da calculadora, de montagem.
  *
  * Ficam para a SEFAZ as regras da mesma NT que dependem de tabela ou cadastro: a 159 (tabela de CFOP do Portal), a 163 e
  * a 164 (CCC), as de local de retirada e entrega (CCC) e as da LCC-RFB (178 a 187). A 166 e a 188 são do roteamento.
@@ -162,7 +163,6 @@ const NFCE_SEM_IE_ATE = '2033-01-01';
 export function exclusivoIbsCbs(
   input: DadosNfe,
   contexto: { readonly nfce: boolean; readonly dhEmi: string; readonly instantes: readonly Instante[] },
-  montados: readonly { readonly IBSCBS?: unknown }[],
   issues: Issues,
 ): void {
   const e = input.emitente;
@@ -210,7 +210,7 @@ export function exclusivoIbsCbs(
         );
       }
     }
-    if (montados[n]?.IBSCBS === undefined) {
+    if (it.impostos.ibsCbs === undefined) {
       issues.add(
         `itens[${n}].impostos.ibsCbs`,
         'campo_obrigatorio',

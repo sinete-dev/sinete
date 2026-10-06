@@ -133,7 +133,7 @@ A NT 2026.007 v1.10 (produção em 03/11/2026) cria a NF-e sem IE do emitente, a
 | C17-43: NF-e sem IE e sem CNPJ do emitente | 157 | a | novo: `campo_obrigatorio` em `emitente.CNPJ` |
 | C18-50: NF-e sem IE com IEST | 158 | a | novo: `combinacao_invalida` em `emitente.IEST` |
 | N01-10: ICMS ou ICMSUFDest no item da NF-e sem IE, fora da devolução e do tpNFCredito 03 | 161 | a | novo: `grupo_vedado` em `itens[n].impostos.icms` ou `icmsUfDest` |
-| UB12-11: item sem IBSCBS na NF-e sem IE | 162 | a | novo: `campo_obrigatorio` em `itens[n].impostos.ibsCbs`, conferido no grupo montado (pronto ou da calculadora); a falta de ICMS e ISSQN, que a exceção 2 da B25-90 libera nessa nota, deixa de ser ocorrência |
+| UB12-11: item sem IBSCBS na NF-e sem IE | 162 | a | novo: `campo_obrigatorio` em `itens[n].impostos.ibsCbs` para o item sem o grupo pronto e sem a classificação (o item classificado cujo cálculo falhou fica só com a ocorrência da calculadora, de montagem); a falta de ICMS e ISSQN, que a exceção 2 da B25-90 libera nessa nota, deixa de ser ocorrência |
 | I08-191: CFOP fora da tabela do Portal (coluna indExcIBSCBS) | 159 | b | fora: depende da tabela de CFOP |
 | 1C17-02, 1C17-04 | 163, 164 | b | fora: CCC |
 | 5AF15, 5AF17, 5BG15, 5BG17 (locais de retirada e entrega) | 165, 167 a 169, 171, 173, 175 a 177 | b | fora: CCC |

@@ -980,14 +980,9 @@ export async function montarNfe(entrada: DadosNfe, opcoes: MontarNfeOpcoes): Pro
   const substituidos =
     opcoes.ambiente === 'homologacao' ? ['destinatario.xNome', ...(nfce ? ['itens[0].produto.xProd'] : [])] : [];
   conferirTextosDaEntrada(entrada, pl.infNFe as ComplexType, issues, new Set(substituidos));
-  // Nota sem IE do emitente (NT 2026.007, ADR 0012): conferida com o grupo IBSCBS já montado e antes de parar nas
-  // ocorrências dos itens, para todas as violações voltarem juntas.
-  exclusivoIbsCbs(
-    entrada,
-    { nfce, dhEmi, instantes: [agora, fatoGerador] },
-    itens.map((m) => m.det.imposto as { IBSCBS?: unknown }),
-    issues,
-  );
+  // Nota sem IE do emitente (NT 2026.007, ADR 0012): conferida antes de parar nas ocorrências dos itens, para todas as
+  // violações voltarem juntas.
+  exclusivoIbsCbs(entrada, { nfce, dhEmi, instantes: [agora, fatoGerador] }, issues);
   if (!issues.empty) return { ok: false, ocorrencias: issues.classificadas };
 
   // Totais (grupo W)

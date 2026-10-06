@@ -247,6 +247,18 @@ describe('contribuinte exclusivo do IBS/CBS, nota sem IE (NT 2026.007 v1.10)', (
     expect(ocorrencias(r).filter((i) => i.caminho.startsWith('itens[1]'))).toHaveLength(1);
   });
 
+  test('item classificado cujo cálculo falhou fica só com a ocorrência da calculadora, sem a 162', async () => {
+    const recusa = {
+      calcular: () => ({
+        itens: [],
+        ocorrencias: [{ caminho: 'itens[0]', code: 'ibscbs_calculo', mensagem: 'falhou', origem: 'montagem' as const }],
+      }),
+    };
+    const r = await montarNfe(semIe(), opcoes({ ibsCbs: recusa as never }));
+    expect(citam(r, '162')).toEqual([]);
+    expect(ocorrencias(r)).toContainEqual(expect.objectContaining({ code: 'ibscbs_calculo', origem: 'montagem' }));
+  });
+
   test('a exceção 2 da B25-90 é só do modelo 55: a NFC-e sem ICMS continua com a ocorrência do ICMS', async () => {
     const { destinatario: _, ...n } = semIe({
       modelo: '65',
