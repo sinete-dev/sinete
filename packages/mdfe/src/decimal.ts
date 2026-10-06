@@ -159,6 +159,10 @@ export const D1302: FormatoDecimal = { nome: 'TDec_1302', digitosInteiros: 13, c
 export const D1302_OPC: FormatoDecimal = { nome: 'TDec_1302Opc', digitosInteiros: 13, casas: 2, naoNulo: true };
 /** `TDec_1104`: 11 inteiros e 4 casas. */
 export const D1104: FormatoDecimal = { nome: 'TDec_1104', digitosInteiros: 11, casas: 4 };
+/** `TDec_0303`: 3 inteiros e 3 casas (pesos do vagão, em toneladas). */
+export const D0303: FormatoDecimal = { nome: 'TDec_0303', digitosInteiros: 3, casas: 3 };
+/** `TDec_0302_0303`: 3 inteiros e 2 ou 3 casas; sai com 3 (tonelada útil do vagão). */
+export const D0302_0303: FormatoDecimal = { nome: 'TDec_0302_0303', digitosInteiros: 3, casas: 3 };
 
 /** Por que o valor não cabe no formato, ou `undefined` se cabe sem perder dígitos. */
 export function problemaDeFormato(value: Decimal, format: FormatoDecimal): string | undefined {

@@ -50,8 +50,9 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `Condutor`: Membros: `xNome`, `CPF`.
 - `ConsultaMdfe`: Situação do MDF-e na consulta: autorizado (100), cancelado (101) ou encerrado (132). Membros: `chMDFe`, `situacao`, `protocolo`, `eventos`, `digValConfere`.
 - `CteTransportado` (estende `DocumentoTransportado`): CT-e transportado; a entrega parcial (corte de voo) só vale no modal aéreo (F34, 702). Membros: `entregaParcial`.
-- `DadosMdfeAereo` (estende `CamposMdfe`): MDF-e do modal aéreo (`modal` 2). Membros: `aereo`, `rodoviario`.
-- `DadosMdfeRodoviario` (estende `CamposMdfe`): MDF-e do modal rodoviário (`modal` 1). Membros: `rodoviario`, `aereo`.
+- `DadosMdfeAereo` (estende `CamposMdfe`): MDF-e do modal aéreo (`modal` 2). Membros: `aereo`, `rodoviario`, `ferroviario`.
+- `DadosMdfeFerroviario` (estende `CamposMdfe`): MDF-e do modal ferroviário (`modal` 4). Membros: `ferroviario`, `rodoviario`, `aereo`.
+- `DadosMdfeRodoviario` (estende `CamposMdfe`): MDF-e do modal rodoviário (`modal` 1). Membros: `rodoviario`, `aereo`, `ferroviario`.
 - `Descarregamento`: Município de descarregamento com os documentos que descarregam nele (`infMunDescarga`). Membros: `cMun`, `xMun`, `nfe`, `cte`.
 - `DispositivoValePedagio`: Dispositivo de vale-pedágio (`valePed/disp`). Membros: `CNPJForn`, `responsavel`, `nCompra`, `vValePed`, `tpValePed`.
 - `DocumentoAssinado`: Documento assinado já conferido: a string como veio (sem a declaração XML) e o que se lê dela. Membros: `xml`, `id`, `digestValue`, `documento`.
@@ -59,6 +60,7 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `EnderecoEmitente`: Endereço do emitente (`TEndeEmi`). Membros: `xLgr`, `nro`, `xCpl`, `xBairro`, `cMun`, `xMun`, `CEP`, `UF`, `fone`, `email`.
 - `EnvioOpcoes`: Opções de toda chamada que vai à rede. Membros: `signal`.
 - `EventoRegistrado`: Evento registrado (135; 134 e 136 quando a vinculação ao MDF-e tem ressalva). Membros: `chMDFe`, `tpEvento`, `nSeqEvento`, `nProt`, `dhRegEvento`, `xEvento`, `retEventoMDFe`, `procEventoMDFe`.
+- `Ferroviario`: Grupo do modal ferroviário (`ferrov`, MOC 3.00b Anexo I, 3.3). `qVag` sai da contagem de `vagoes`. Membros: `trem`, `vagoes`.
 - `FormatoDecimal`: Formato de um campo decimal do leiaute: dígitos inteiros e casas (ADR 0002: as casas vêm do pattern do XSD). Membros: `nome`, `digitosInteiros`, `casas`, `naoNulo`.
 - `InclusaoCondutorPedido`: Membros: `chave`, `nSeqEvento`, `condutor`.
 - `InclusaoDfePedido`: Membros: `chave`, `nProt`, `nSeqEvento`, `carregamento`, `documentos`.
@@ -77,6 +79,8 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `StatusServico`: Status do serviço (cStat 107). Membros: `cUF`, `verAplic`, `dhRecbto`, `tMed`, `dhRetorno`, `xObs`.
 - `TotaisCarga`: Totais da carga. `qNFe` e `qCTe` saem dos documentos. Membros: `vCarga`, `cUnid`, `qCarga`.
 - `TrechoInvalido`: Primeiro trecho do percurso que não é divisa, ou `undefined` quando o percurso é válido. Membros: `indice`, `de`, `para`.
+- `Trem`: Composição do trem (`trem`). Membros: `xPref`, `dhTrem`, `xOri`, `xDest`.
+- `Vagao`: Vagão da composição (`vag`). Membros: `pesoBC`, `pesoR`, `tpVag`, `serie`, `nVag`, `nSeq`, `TU`.
 - `ValePedagio`: Membros: `dispositivos`, `categCombVeic`.
 - `VeiculoReboque`: Veículo reboque (`veicReboque`, até 3). Membros: `cInt`, `placa`, `RENAVAM`, `tara`, `capKG`, `capM3`, `proprietario`, `tpCar`, `UF`.
 - `VeiculoTracao`: Veículo de tração (`veicTracao`). Membros: `cInt`, `placa`, `RENAVAM`, `tara`, `capKG`, `capM3`, `proprietario`, `condutores`, `tpRod`, `tpCar`, `UF`.
@@ -90,7 +94,7 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `Contratante`: `type Contratante = DocumentoContratante & { readonly xNome?: string; readonly contrato?: { readonly NroContrato: string; readonly vContratoGlobal: DecimalInput; }; }`
 - `CStatClasse`: `type CStatClasse = 'autorizado' | 'cancelado' | 'encerrado' | 'servicoEmOperacao' | 'naoEncerradosLocalizados' | 'naoEncerradosNenhum' | 'eventoRegistrado' | 'duplicidade' | 'duplicidadeChaveDiferente' | 'naoConsta'`
 - `DadosBancarios`: Dados bancários do pagamento (`infBanc`): banco e agência, instituição de pagamento eletrônico ou PIX. `type DadosBancarios = { readonly codBanco: string; readonly codAgencia: string; } | { readonly CNPJIPEF: string; } | { readonly PIX: string; }`
-- `DadosMdfe`: Entrada do `montarMdfe`: os campos comuns e o grupo de um modal, um e só um. `type DadosMdfe = DadosMdfeRodoviario | DadosMdfeAereo`
+- `DadosMdfe`: Entrada do `montarMdfe`: os campos comuns e o grupo de um modal, um e só um. `type DadosMdfe = DadosMdfeRodoviario | DadosMdfeAereo | DadosMdfeFerroviario`
 - `DecimalInput`: O que as APIs de entrada aceitam como número. Prefira `string` (`'12.34'`): `number` perde dígitos acima de 15 algarismos. `type DecimalInput = string | number | bigint | Decimal`
 - `DocumentoContratante`: CNPJ, CPF ou identificação de estrangeiro (contratante, responsável pelo pagamento). `type DocumentoContratante = DocumentoPessoa | { readonly idEstrangeiro: string; readonly CNPJ?: never; readonly CPF?: never; }`
 - `DocumentoPessoa`: CNPJ (numérico ou alfanumérico) ou CPF, exclusivos. `type DocumentoPessoa = { readonly CNPJ: string; readonly CPF?: never; } | { readonly CPF: string; readonly CNPJ?: never; }`

@@ -28,7 +28,17 @@ import emissao from '../data/emissao.json' with { type: 'json' };
 import qrcode from '../data/qrcode.json' with { type: 'json' };
 import regras from '../data/regras.json' with { type: 'json' };
 import type { DecimalInput, FormatoDecimal } from '../decimal.ts';
-import { D1104, D1302, D1302_OPC, Decimal, formatarDecimal, problemaDeFormato, sum } from '../decimal.ts';
+import {
+  D0302_0303,
+  D0303,
+  D1104,
+  D1302,
+  D1302_OPC,
+  Decimal,
+  formatarDecimal,
+  problemaDeFormato,
+  sum,
+} from '../decimal.ts';
 import type { CodigoOcorrenciaMdfe } from '../issues.ts';
 import { Issues } from '../issues.ts';
 import type {
@@ -441,15 +451,17 @@ export async function montarMdfe(entrada: DadosMdfe, opcoes: MontarMdfeOpcoes): 
     issues.montagem('tpEmis', 'contingencia_invalida', 'tpEmis 1 (normal) ou 2 (contingência off-line)');
     return { ok: false, ocorrencias: issues.classificadas };
   }
-  // O grupo do modal: um e só um (rodoviario ou aereo).
+  // O grupo do modal: um e só um (rodoviario, aereo ou ferroviario).
   const rodo = entrada.rodoviario;
   const aereo = entrada.aereo;
-  if (rodo !== undefined && aereo !== undefined) {
-    issues.add('aereo', 'combinacao_invalida', 'informe um só modal: rodoviario ou aereo');
-  } else if (rodo === undefined && aereo === undefined) {
-    issues.add('rodoviario', 'campo_obrigatorio', 'falta o grupo do modal: rodoviario ou aereo');
+  const ferrov = entrada.ferroviario;
+  const informados = (['rodoviario', 'aereo', 'ferroviario'] as const).filter((g) => entrada[g] !== undefined);
+  if (informados.length > 1) {
+    issues.add(informados[1] as string, 'combinacao_invalida', `informe um só modal: ${informados.join(' ou ')}`);
+  } else if (informados.length === 0) {
+    issues.add('rodoviario', 'campo_obrigatorio', 'falta o grupo do modal: rodoviario, aereo ou ferroviario');
   }
-  const modal = aereo !== undefined ? '2' : '1';
+  const modal = ferrov !== undefined ? '4' : aereo !== undefined ? '2' : '1';
   const e = entrada.emitente;
   const emitUf = e.endereco.UF;
   if (!ehUf(emitUf)) {
@@ -1046,6 +1058,38 @@ export async function montarMdfe(entrada: DadosMdfe, opcoes: MontarMdfeOpcoes): 
         lacRodo:
           rodo.lacres === undefined || rodo.lacres.length === 0 ? undefined : rodo.lacres.map((nLacre) => ({ nLacre })),
       }),
+    };
+  } else if (ferrov !== undefined) {
+    // Modal ferroviário (MOC 3.00b, Anexo I, 3.3): qVag sai da contagem dos vagões.
+    const t = ferrov.trem;
+    if (ferrov.vagoes.length === 0) issues.add('ferroviario.vagoes', 'campo_obrigatorio', 'ao menos um vagão');
+    if (t.dhTrem !== undefined && !instanteValido(t.dhTrem)) {
+      issues.add('ferroviario.trem.dhTrem', 'campo_invalido', 'dhTrem precisa ser um instante válido');
+    }
+    const peso = (v: DecimalInput, path: string, f: FormatoDecimal): string => formatarDecimal(ctx.req(v, path, f), f);
+    infModal = {
+      versaoModal: VERSAO,
+      ferrov: {
+        trem: clean({
+          xPref: t.xPref,
+          dhTrem: instanteValido(t.dhTrem) ? formatarDh(t.dhTrem, offset) : undefined,
+          xOri: t.xOri,
+          xDest: t.xDest,
+          qVag: String(ferrov.vagoes.length),
+        }),
+        vag: ferrov.vagoes.map((v, n) => {
+          const path = `ferroviario.vagoes[${n}]`;
+          return clean({
+            pesoBC: peso(v.pesoBC, `${path}.pesoBC`, D0303),
+            pesoR: peso(v.pesoR, `${path}.pesoR`, D0303),
+            tpVag: v.tpVag,
+            serie: v.serie,
+            nVag: v.nVag,
+            nSeq: v.nSeq,
+            TU: peso(v.TU, `${path}.TU`, D0302_0303),
+          });
+        }),
+      },
     };
   } else {
     // Modal aéreo (MOC 3.00b, Anexo I, 3.2): os campos vão como vieram; tamanho e formato, o schema confere.

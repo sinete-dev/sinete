@@ -1,5 +1,5 @@
 /**
- * Modelo de entrada do MDF-e (modelo 58, leiaute 3.00b), modais rodoviário e aéreo: o que quem emite descreve. O builder
+ * Modelo de entrada do MDF-e (modelo 58, leiaute 3.00b), modais rodoviário, aéreo e ferroviário: o que quem emite descreve. O builder
  * (`montarMdfe`) transforma isto no objeto tipado do `@sinete/schemas` (`mdfe/3.00b`), deriva o que o leiaute permite
  * derivar (quantidades de documentos, número das parcelas, valor do contrato) e confere as regras do MOC antes de
  * serializar.
@@ -7,7 +7,7 @@
  * Convenções:
  * - Nomes de campo do leiaute (MOC) onde eles existem (`xNome`, `placa`, `tpCar`, `vCarga`); nomes em português para os
  *   agrupamentos que o leiaute não nomeia ou nomeia por sigla (`emitente`, `carregamento`, `descarregamentos`,
- *   `rodoviario`, `aereo`, `produtoPredominante`).
+ *   `rodoviario`, `aereo`, `ferroviario`, `produtoPredominante`).
  * - Números entram como `DecimalInput` (`'12.34'`, `12.34`, `12n` ou `Decimal`). Prefira texto.
  * - Documentos (CNPJ, CPF, CEP, telefone) aceitam máscara; o builder normaliza.
  * - Códigos do leiaute ficam como uniões de literais (`tpEmit: '2'`), com constantes nomeadas onde ajudam
@@ -346,6 +346,43 @@ export interface Aereo {
   readonly dVoo: string;
 }
 
+/** Composição do trem (`trem`). */
+export interface Trem {
+  /** Prefixo do trem (1 a 10 posições). */
+  readonly xPref: string;
+  /** Liberação do trem na origem. */
+  readonly dhTrem?: Instante;
+  /** Sigla da estação de origem (1 a 3 posições). */
+  readonly xOri: string;
+  /** Sigla da estação de destino (1 a 3 posições). */
+  readonly xDest: string;
+}
+
+/** Vagão da composição (`vag`). */
+export interface Vagao {
+  /** Peso base de cálculo do frete, em toneladas (3 casas). */
+  readonly pesoBC: DecimalInput;
+  /** Peso real, em toneladas (3 casas). */
+  readonly pesoR: DecimalInput;
+  /** Tipo de vagão (3 posições). */
+  readonly tpVag?: string;
+  /** Série de identificação do vagão (3 posições). */
+  readonly serie: string;
+  /** Número de identificação do vagão (1 a 8 dígitos, sem zero à esquerda). */
+  readonly nVag: string;
+  /** Sequência do vagão na composição (1 a 3 dígitos). */
+  readonly nSeq?: string;
+  /** Tonelada útil: só o peso da carga, em toneladas (2 ou 3 casas). */
+  readonly TU: DecimalInput;
+}
+
+/** Grupo do modal ferroviário (`ferrov`, MOC 3.00b Anexo I, 3.3). `qVag` sai da contagem de `vagoes`. */
+export interface Ferroviario {
+  readonly trem: Trem;
+  /** Vagões carregados (ao menos um). */
+  readonly vagoes: readonly Vagao[];
+}
+
 // ---------------------------------------------------------------------------------------------------------------
 // MDF-e
 // ---------------------------------------------------------------------------------------------------------------
@@ -397,13 +434,22 @@ export interface CamposMdfe {
 export interface DadosMdfeRodoviario extends CamposMdfe {
   readonly rodoviario: Rodoviario;
   readonly aereo?: never;
+  readonly ferroviario?: never;
 }
 
 /** MDF-e do modal aéreo (`modal` 2). */
 export interface DadosMdfeAereo extends CamposMdfe {
   readonly aereo: Aereo;
   readonly rodoviario?: never;
+  readonly ferroviario?: never;
+}
+
+/** MDF-e do modal ferroviário (`modal` 4). */
+export interface DadosMdfeFerroviario extends CamposMdfe {
+  readonly ferroviario: Ferroviario;
+  readonly rodoviario?: never;
+  readonly aereo?: never;
 }
 
 /** Entrada do `montarMdfe`: os campos comuns e o grupo de um modal, um e só um. */
-export type DadosMdfe = DadosMdfeRodoviario | DadosMdfeAereo;
+export type DadosMdfe = DadosMdfeRodoviario | DadosMdfeAereo | DadosMdfeFerroviario;
