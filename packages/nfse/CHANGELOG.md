@@ -1,5 +1,37 @@
 # @sinete/nfse
 
+## 0.4.0
+
+### Minor Changes
+
+- c3cbf86: `recuperarEventoRegistrado(cliente, chave, tpEvento, nSeqEvento = 1, opcoes?)` na NFS-e, como na NF-e e no MDF-e: depois de um pedido de evento sem resposta, ou recusado com E0840, consulta o evento na Sefin e devolve `{ registrado: true, evento }` ou `{ registrado: false }`, sem concluir pelo código do pedido (a E0840 também sai com a substituição vinculada). Falha de rede, resposta fora do contrato e `signal` cancelado lançam, como no `consultarEventos`. A sequência é parâmetro com padrão 1 porque a Sefin só atende a consulta com o tipo e a sequência, e o cancelamento é sempre a 1. Quem usava o `ClienteNfse` sem o emissor não tinha como recuperar um cancelamento cujo retorno se perdeu. O `@sinete/emissor` passa a usar a primitiva no cancelamento da NFS-e, com o mesmo desfecho de antes.
+- dd913dd: `rotuloDoCaminho(caminho)` na NFS-e, como o da NF-e e o do MDF-e (ADR 0011): o caminho de uma ocorrência da DPS vira texto para quem preencheu a nota (`tomador.CNPJ` vira `Tomador, CNPJ`; `/DPS/infDPS/valores/vDedRed/documentos/docDedRed[2]/vDedutivelRedutivel` vira `Documento de dedução 2, Valor dedutível ou redutível`), com `Dados da DPS` quando nem o grupo nem o campo são conhecidos. Aceita os caminhos da `DadosDps`, os do documento montado com pontos e os do validador de XSD, que na DPS incluem a raiz `DPS`.
+- dec66f5: Texto e tamanho conferidos na entrada do MDF-e e da DPS, como na NF-e (ADR 0011, revisão de 06/10). É quebra do `caminho`, da `origem` e do `code` dessas ocorrências:
+  
+  | Caso | Antes | Depois |
+  |---|---|---|
+  | MDF-e, texto fora do tipo do leiaute (longo, curto, espaço nas pontas, caractere fora do `TString`) | `schema`, `origem: 'montagem'`, caminho do XSD (`/infMDFe/emit/xNome`), mensagem do validador | `campo_invalido`, `origem: 'entrada'`, caminho da entrada (`emitente.xNome`), mensagem para quem preenche (`no máximo 60 caracteres (tem 61)`) |
+  | MDF-e, caractere que o XML não representa | `campo_invalido`, `origem: 'montagem'`, caminho do documento montado (`infMDFe.prodPred.xProd`) | `campo_invalido`, `origem: 'entrada'`, caminho da entrada (`produtoPredominante.xProd`), em qualquer texto da entrada, inclusive os que a montagem transforma (`emitente.endereco.CEP`) |
+  | DPS, texto fora do tipo do leiaute | `schema`, `origem: 'montagem'`, caminho do XSD (`/DPS/infDPS/subst/xMotivo`) | `campo_invalido`, `origem: 'entrada'`, caminho da entrada (`substituicao.xMotivo`), também dentro de prestador, tomador, intermediário e dos grupos do serviço (`tomador.end.xLgr`) |
+  | DPS, caractere que o XML não representa | `caractere_invalido`, `origem: 'montagem'`, caminho `/` (o documento inteiro) | `campo_invalido`, `origem: 'entrada'`, caminho da entrada (`ibsCbs.refNFSe[1]`) |
+  
+  O texto das opções do montador (o `respTec` das opções e o `verProc` do MDF-e, o `verAplic` da DPS) continua conferido na montagem, como antes, e os campos que a montagem transforma (telefone, CEP e placa no MDF-e; série e código de tributação nacional na DPS) seguem aceitos como antes.
+  
+  `@sinete/schemas` exporta o motor da conferência (`conferirTextos`, `CampoDeTexto`, `TextoRecusado`, `textoXmlValido` e `camposSemElemento`), que saiu do `@sinete/nfe`. Na NF-e, o comportamento é o mesmo; a única diferença é a mensagem de um tipo de formato (só dígitos, um código), que passa a ser `formato não aceito` em vez de apontar um caractere. `rotuloDoCaminho` do MDF-e e da NFS-e ganhou os campos novos (`Responsável técnico, Contato`, `Informações adicionais, Informações de interesse do fisco`, `IBS/CBS, NFS-e referenciada`).
+
+### Patch Changes
+
+- Updated dependencies [adb6148]
+- Updated dependencies [cc09d66]
+- Updated dependencies [e6c8f28]
+- Updated dependencies [eb06ce6]
+- Updated dependencies [dec66f5]
+- Updated dependencies [30d6381]
+  - @sinete/validators@0.3.0
+  - @sinete/rejeicoes@0.4.0
+  - @sinete/schemas@0.3.0
+  - @sinete/transport@0.3.0
+
 ## 0.3.0
 
 ### Minor Changes

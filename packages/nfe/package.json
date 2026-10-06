@@ -1,6 +1,6 @@
 {
   "name": "@sinete/nfe",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "NF-e modelo 55: modelo de entrada tipado, montagem com totais em decimal exato, validação antes de assinar, autorização, consultas, eventos, inutilização, contingência SVC e Distribuição DF-e",
   "keywords": [
     "nfe",

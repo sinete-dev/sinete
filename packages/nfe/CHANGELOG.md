@@ -1,5 +1,44 @@
 # @sinete/nfe
 
+## 0.5.0
+
+### Minor Changes
+
+- 25eb579: `inutilizar` devolve no 563 o protocolo da faixa já inutilizada. Não existe consulta de inutilização na NF-e 4.00, então reenviar a mesma faixa depois de uma resposta perdida é o único caminho para guardar o `nProt` que valeu, e até aqui o desfecho só trazia `cStat` e `xMotivo`. O 563 continua `recusado` (a resposta não é a homologação e não monta `procInutNFe`); quando o `retInutNFe` traz `nProt`, o desfecho ganha `anterior: { nProt, retInutNFe }` (tipos novos `RecusadoInutilizacao` e `InutilizacaoAnterior`; `ResultadoInutilizacao` passa a usar o primeiro no caso `recusado`). Fonte: MOC 7.0 Visão Geral, tabela 5-12, regra I07.
+  
+  Mudança de comportamento: um 563 com `nProt` cuja faixa (`ano`, `CNPJ`, `mod`, `serie`, `nNFIni`, `nNFFin`) não é a pedida passa a lançar `ErroRespostaInvalida` (`resposta_invalida`), a mesma conferência que o 102 já fazia. Antes voltava como `recusado` 563, e quem lia o 563 como "a faixa já estava homologada" não tinha como notar que a resposta era de outra faixa. O 563 sem `nProt` e as demais rejeições seguem como `recusado`, sem `anterior`.
+- adb6148: Tabela de CFOP do Portal da NF-e no `@sinete/validators` (`indicadoresCfop`, `TABELA_CFOP`; IT 2023.002 v2.10). Com ela, o `montarNfe` confere antes de assinar o CFOP de devolução fora da devolução (I08-144, rejeição 328) e o CST com destinatário não contribuinte (N12-70, rejeição 508, com as exceções da NT 2023.001 e da NT 2023.003), e o `@sinete/sefaz-sim` recusa os dois casos com o mesmo código.
+- cc09d66: Contribuinte exclusivo do IBS/CBS (NT 2026.007 v1.10). O `montarNfe` confere antes de assinar a nota sem IE do emitente: NFC-e até o fim de 2032 (rejeição 156), emitente sem CNPJ (157), IEST informada (158), ICMS no item fora da devolução e do `tpNFCredito` 03 (161) e item sem o grupo IBS/CBS (162); a falta de ICMS e ISSQN deixa de ser ocorrência nessa nota. O catálogo do `@sinete/rejeicoes` ganha as 30 rejeições novas da NT (156 a 188), e a `vigencia.json` do `@sinete/schemas` passa a citar a v1.10.
+- e6c8f28: NF-e com DANFE Simplificado Tipo 2 (`tpImp` 6, NT 2026.002 v1.11): o `montarNfe` gera o `infNFeSupl` com o QR Code versão 3 na URL da NFC-e da UF, recusa a versão 2 (672) e aceita a contingência off-line (`tpEmis` 9) nela; a chave de acesso passa a aceitar `tpEmis` 9 no modelo 55. O `@sinete/sefaz-sim` deixa de recusar o `infNFeSupl` da NF-e (393, que saiu da NT), exige o QR Code na NF-e Tipo 2 (394) e confere a versão (672). O catálogo do `@sinete/rejeicoes` ganha o 672 (ZX02-220), e o `campoVolatil` do emissor acompanha.
+- f40a0aa: NF-e de contribuinte exclusivo do IBS/CBS (sem `emit/IE`) vai à SVRS, como pede a NT 2026.007 (regras C17-11 e 1P10-40). `autorizar`, `consultar` e o recibo consultado com a nota decidem pela própria NF-e; cancelamento, carta de correção, consulta pela chave e recibo sem a nota seguem a opção nova `contribuinteExclusivoIbsCbs` do cliente. Os eventos da série 890 a 919 e a NFC-e continuam no autorizador de antes.
+
+### Patch Changes
+
+- dec66f5: Texto e tamanho conferidos na entrada do MDF-e e da DPS, como na NF-e (ADR 0011, revisão de 06/10). É quebra do `caminho`, da `origem` e do `code` dessas ocorrências:
+  
+  | Caso | Antes | Depois |
+  |---|---|---|
+  | MDF-e, texto fora do tipo do leiaute (longo, curto, espaço nas pontas, caractere fora do `TString`) | `schema`, `origem: 'montagem'`, caminho do XSD (`/infMDFe/emit/xNome`), mensagem do validador | `campo_invalido`, `origem: 'entrada'`, caminho da entrada (`emitente.xNome`), mensagem para quem preenche (`no máximo 60 caracteres (tem 61)`) |
+  | MDF-e, caractere que o XML não representa | `campo_invalido`, `origem: 'montagem'`, caminho do documento montado (`infMDFe.prodPred.xProd`) | `campo_invalido`, `origem: 'entrada'`, caminho da entrada (`produtoPredominante.xProd`), em qualquer texto da entrada, inclusive os que a montagem transforma (`emitente.endereco.CEP`) |
+  | DPS, texto fora do tipo do leiaute | `schema`, `origem: 'montagem'`, caminho do XSD (`/DPS/infDPS/subst/xMotivo`) | `campo_invalido`, `origem: 'entrada'`, caminho da entrada (`substituicao.xMotivo`), também dentro de prestador, tomador, intermediário e dos grupos do serviço (`tomador.end.xLgr`) |
+  | DPS, caractere que o XML não representa | `caractere_invalido`, `origem: 'montagem'`, caminho `/` (o documento inteiro) | `campo_invalido`, `origem: 'entrada'`, caminho da entrada (`ibsCbs.refNFSe[1]`) |
+  
+  O texto das opções do montador (o `respTec` das opções e o `verProc` do MDF-e, o `verAplic` da DPS) continua conferido na montagem, como antes, e os campos que a montagem transforma (telefone, CEP e placa no MDF-e; série e código de tributação nacional na DPS) seguem aceitos como antes.
+  
+  `@sinete/schemas` exporta o motor da conferência (`conferirTextos`, `CampoDeTexto`, `TextoRecusado`, `textoXmlValido` e `camposSemElemento`), que saiu do `@sinete/nfe`. Na NF-e, o comportamento é o mesmo; a única diferença é a mensagem de um tipo de formato (só dígitos, um código), que passa a ser `formato não aceito` em vez de apontar um caractere. `rotuloDoCaminho` do MDF-e e da NFS-e ganhou os campos novos (`Responsável técnico, Contato`, `Informações adicionais, Informações de interesse do fisco`, `IBS/CBS, NFS-e referenciada`).
+- Updated dependencies [1f07136]
+- Updated dependencies [adb6148]
+- Updated dependencies [cc09d66]
+- Updated dependencies [e6c8f28]
+- Updated dependencies [eb06ce6]
+- Updated dependencies [dec66f5]
+- Updated dependencies [30d6381]
+  - @sinete/ibs-cbs@0.2.2
+  - @sinete/validators@0.3.0
+  - @sinete/rejeicoes@0.4.0
+  - @sinete/schemas@0.3.0
+  - @sinete/transport@0.3.0
+
 ## 0.4.0
 
 ### Minor Changes

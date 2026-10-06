@@ -1,5 +1,33 @@
 # @sinete/sefaz-sim
 
+## 0.3.0
+
+### Minor Changes
+
+- 2b724ae: MDF-e do modal aéreo. `DadosMdfe` passa a ser a união `DadosMdfeRodoviario | DadosMdfeAereo` (com `CamposMdfe` para os campos comuns): quem passa `rodoviario` continua compilando, mas quem lê `dados.rodoviario` de um `DadosMdfe` precisa estreitar para `DadosMdfeRodoviario`. O grupo `aereo` (nac, matr, nVoo, cAerEmb, cAerDes, dVoo) monta `modal` 2, e o CT-e ganha `entregaParcial` (corte de voo, `infEntregaParcial`). As regras do Anexo I que só valem no rodoviário (percurso F90, seguro F91 a F93, produto predominante F54/F55 e as do veículo) deixam de valer no aéreo; F23 (705) recusa o carregamento posterior fora do rodoviário e F34 (702) a entrega parcial fora do aéreo. Entrada sem modal ou com dois vira ocorrência (`campo_obrigatorio` em `rodoviario`, `combinacao_invalida` em `aereo`), não exceção. `rotuloDoCaminho` ganha os rótulos do aéreo, e `infMDFe.infModal` sozinho passa de "Transporte rodoviário" para "Modal".
+  
+  No `@sinete/sefaz-sim`, a recepção do MDF-e aplica F23 (705) e F34 (702).
+- 61b48f6: MDF-e do modal aquaviário, o último dos quatro. `DadosMdfe` ganha o caso `DadosMdfeAquaviario`, com o grupo `aquaviario` (irin, tpEmb, cEmbar, xEmbar, nViag, cPrtEmb, cPrtDest, prtTrans, tpNav, `terminaisCarregamento` e `terminaisDescarregamento` até 5, `comboio` até 30, `unidadesCargaVazias`, `unidadesTransporteVazias` e o `MMSI` opcional da NT 2025.001), que monta `modal` 3. Como nos outros modais, as regras do rodoviário não se aplicam, F23 (705) e F34 (702) seguem o modal. Lista acima do limite do leiaute é `campo_invalido` no grupo. O MDF-e transportado (`infMDFeTransp`, F43 a F49) fica para a #57. `rotuloDoCaminho` ganha os rótulos de terminais, comboio e unidades vazias.
+  
+  No `@sinete/sefaz-sim`, a recepção do MDF-e aplica F43 (647) e F44 (648) ao MDF-e transportado (`infMDFeTransp`).
+- adb6148: Tabela de CFOP do Portal da NF-e no `@sinete/validators` (`indicadoresCfop`, `TABELA_CFOP`; IT 2023.002 v2.10). Com ela, o `montarNfe` confere antes de assinar o CFOP de devolução fora da devolução (I08-144, rejeição 328) e o CST com destinatário não contribuinte (N12-70, rejeição 508, com as exceções da NT 2023.001 e da NT 2023.003), e o `@sinete/sefaz-sim` recusa os dois casos com o mesmo código.
+- e6c8f28: NF-e com DANFE Simplificado Tipo 2 (`tpImp` 6, NT 2026.002 v1.11): o `montarNfe` gera o `infNFeSupl` com o QR Code versão 3 na URL da NFC-e da UF, recusa a versão 2 (672) e aceita a contingência off-line (`tpEmis` 9) nela; a chave de acesso passa a aceitar `tpEmis` 9 no modelo 55. O `@sinete/sefaz-sim` deixa de recusar o `infNFeSupl` da NF-e (393, que saiu da NT), exige o QR Code na NF-e Tipo 2 (394) e confere a versão (672). O catálogo do `@sinete/rejeicoes` ganha o 672 (ZX02-220), e o `campoVolatil` do emissor acompanha.
+
+### Patch Changes
+
+- Updated dependencies [4ba29b8]
+- Updated dependencies [adb6148]
+- Updated dependencies [cc09d66]
+- Updated dependencies [e6c8f28]
+- Updated dependencies [eb06ce6]
+- Updated dependencies [dec66f5]
+- Updated dependencies [30d6381]
+  - @sinete/cert@0.2.2
+  - @sinete/validators@0.3.0
+  - @sinete/rejeicoes@0.4.0
+  - @sinete/schemas@0.3.0
+  - @sinete/transport@0.3.0
+
 ## 0.2.1
 
 ### Patch Changes
