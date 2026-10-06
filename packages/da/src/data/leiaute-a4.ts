@@ -215,25 +215,48 @@ export const PAISAGEM: FormatoA4 = {
 };
 
 /**
- * Quadro de IBS, CBS e IS no DANFE A4. A NT 2025.002 v1.51 (item 9) diz que o DANFE com os novos tributos "está em
- * estudo"; até a publicação, o sinete mostra os totais do grupo W03 (IBSCBSTot, ISTot, vNFTot) num quadro próprio,
- * logo abaixo do cálculo do imposto, que pode ser suprimido. Proporções de largura, não medidas do MOC.
+ * Bloco "Total do IBS/CBS/IS" do DANFE A4 (NT 2026.010 v1.00, 4.1), logo após os totais do ICMS/IPI, em duas linhas na
+ * ordem do modelo de referência da NT. Proporções de largura, não medidas do MOC. As quatro células da monofasia ficam
+ * vazias sem o grupo `gMono` (4.4).
  */
 export const QUADRO_IBSCBS: Fonte & {
   readonly titulo: string;
-  readonly campos: readonly (readonly [string, number])[];
+  readonly linhas: readonly (readonly (readonly [string, number])[])[];
 } = {
-  source: 'NT 2025.002 v1.51, grupo W03 e item 9 (leiaute ainda não publicado); decisão do ADR 0006',
-  titulo: 'TOTAIS DE IBS, CBS E IS (NT 2025.002)',
-  campos: [
-    ['BASE DE CÁLCULO DO IBS/CBS', 1.1],
-    ['VALOR DO IBS UF', 1],
-    ['VALOR DO IBS MUNICIPAL', 1],
-    ['VALOR TOTAL DO IBS', 1],
-    ['VALOR DA CBS', 1],
-    ['VALOR DO IS', 0.9],
-    ['TOTAL DA NF-e COM IBS/CBS/IS', 1.2],
+  source: 'NT 2026.010 v1.00, itens 4.1 e 4.4, e modelo de referência (DANFE Modelo 55 Vertical)',
+  titulo: 'TOTAL DO IBS/CBS/IS',
+  linhas: [
+    [
+      ['VALOR DA CBS', 1],
+      ['VALOR DO IBS UF', 1],
+      ['VALOR DO IBS MUNICÍPIO', 1],
+      ['VALOR DO IMPOSTO SELETIVO', 1],
+    ],
+    [
+      ['VALOR DO IBS MONOFÁSICO', 1],
+      ['VALOR DA CBS MONOFÁSICA', 1],
+      ['VALOR DO IBS MONOFÁSICO POR RETENÇÃO', 1],
+      ['VALOR DA CBS MONOFÁSICA POR RETENÇÃO', 1],
+    ],
   ],
+};
+
+/**
+ * Linha do quadro do emitente com o Código do Regime Tributário e a área reservada ao Tipo de Regime de Apuração do IBS
+ * e da CBS (NT 2026.010 v1.00, 4.2; a área fica vazia até a NT que definir a tag, 4.4).
+ */
+export const REGIME: Fonte & {
+  readonly rotulos: readonly [string, string];
+  readonly crt: Readonly<Record<string, string>>;
+} = {
+  source: 'NT 2026.010 v1.00, itens 4.2 e 4.4; MOC 7.0 Anexo I, campo C21 (CRT)',
+  rotulos: ['CÓDIGO DO REGIME TRIBUTÁRIO', 'TIPO DE REGIME DE APURAÇÃO DO IBS E DA CBS'],
+  crt: {
+    '1': '1 - SIMPLES NACIONAL',
+    '2': '2 - SIMPLES NACIONAL, EXCESSO DE SUBLIMITE DE RECEITA BRUTA',
+    '3': '3 - REGIME NORMAL',
+    '4': '4 - SIMPLES NACIONAL, MEI',
+  },
 };
 
 /** Modalidade do frete (MOC 7.0, Anexo II, 3.1.10; NT 2016.002 e NT 2018.005). */

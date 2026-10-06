@@ -41,8 +41,8 @@ Até a reorganização dos pacotes (ADR 0008), era o `@sinete/danfe`, com tudo n
 
 | `formato` | Documento | Origem do leiaute |
 |---|---|---|
-| `retrato` | DANFE A4 retrato, folhas soltas | MOC 7.0, Anexo II, 3.8.1 e Anexo III.02 |
-| `paisagem` | DANFE A4 paisagem, folhas soltas | MOC 7.0, Anexo II, 3.8.2 e Anexo III.04 |
+| `retrato` | DANFE A4 retrato, folhas soltas | MOC 7.0, Anexo II, 3.8.1 e Anexo III.02; NT 2026.010 v1.00 (IBS/CBS/IS e CRT) |
+| `paisagem` | DANFE A4 paisagem, folhas soltas | MOC 7.0, Anexo II, 3.8.2 e Anexo III.04; NT 2026.010 v1.00 (IBS/CBS/IS e CRT) |
 | `simplificado` | DANFE Simplificado (`tpImp` 3) | MOC 7.0, Anexo II, 3.11 |
 | `etiqueta` | DANFE Simplificado - Etiqueta | MOC 7.0, Anexo II, 3.12 (NT 2020.004) |
 | `simplificado-tipo2` | DANFE Simplificado Tipo 2 (`tpImp` 6) | NT 2026.003 v1.00 e NT 2026.002 v1.10 |
@@ -55,8 +55,8 @@ Sem `formato`, o modelo 65 vai para `nfce` e o 55 segue o `tpImp`: 2 paisagem, 3
 
 ## O que cada documento cobre
 
-- **DANFE A4**: canhoto (suprimível; na paisagem, na lateral), cabeçalho com logotipo opcional, campos variáveis por forma de emissão (protocolo; FS-IA e FS-DA com o segundo código de barras "Dados da NF-e" de 36 dígitos; EPEC com o protocolo do evento em `epec`), destinatário, locais de retirada e entrega quando existem, fatura e duplicatas em grade de até três linhas (o excesso vai para as informações complementares), cálculo do imposto, quadro de IBS/CBS/IS, transportador, produtos com as colunas na ordem do MOC (colunas de ST quando algum item tem ST), ISSQN quando existe, dados adicionais. Folhas adicionais repetem o cabeçalho e continuam itens e informações complementares com as mesmas colunas; "FOLHA x/y" em todas.
-- **IBS/CBS/IS**: o DANFE A4 com os novos tributos "está em estudo" (NT 2025.002 v1.51, item 9). Até a publicação, os totais do grupo W03 (`IBSCBSTot`, `ISTot`, `vNFTot`) saem num quadro próprio abaixo do cálculo do imposto; `ibsCbs: false` suprime. Na NFC-e e no Tipo 2, a divisão III-A da NT 2026.003.
+- **DANFE A4**: canhoto (suprimível; na paisagem, na lateral), cabeçalho com logotipo opcional, campos variáveis por forma de emissão (protocolo; FS-IA e FS-DA com o segundo código de barras "Dados da NF-e" de 36 dígitos; EPEC com o protocolo do evento em `epec`), destinatário, locais de retirada e entrega quando existem, fatura e duplicatas em grade de até três linhas (o excesso vai para as informações complementares), cálculo do imposto, total do IBS/CBS/IS, transportador, produtos com as colunas na ordem do MOC (colunas de ST quando algum item tem ST), ISSQN quando existe, dados adicionais. Folhas adicionais repetem o cabeçalho e continuam itens e informações complementares com as mesmas colunas; "FOLHA x/y" em todas.
+- **IBS/CBS/IS**: no retrato e na paisagem, o leiaute da NT 2026.010 v1.00. O bloco "Total do IBS/CBS/IS" vem logo após o cálculo do imposto, com CBS, IBS UF, IBS município, Imposto Seletivo e os quatro valores da monofasia, que ficam em branco quando o XML não traz `gMono`; `ibsCbs: false` suprime o bloco. O quadro do emitente ganha o Código do Regime Tributário e a área do Tipo de Regime de Apuração do IBS e da CBS, vazia até a NT que definir a tag. Cada item com `IBSCBS` ou `IS` mostra, abaixo da descrição, o cClassTrib, a base, a alíquota (a efetiva quando há redução) e o valor de cada tributo; item sem esses grupos não ganha linha. Na NFC-e e no Tipo 2, a divisão III-A da NT 2026.003.
 - **Marcas** (ADR 0006, decisão 14), atrás do conteúdo (MOC 3.10.1), em todos os formatos e no DAMDFE:
   - sem protocolo de autorização na emissão normal (prévia, XML sem `protNFe`, SVC sem protocolo, EPEC sem o protocolo do evento em `epec`, cStat que não é de autorização): "SEM VALOR FISCAL", também no corpo do documento;
   - denegada (cStat 110, 301, 302 e 303): "DENEGADA", com o motivo da tabela 4.4.3 do Anexo I e o protocolo de denegação, que vai no campo do protocolo com o título "PROTOCOLO DE DENEGAÇÃO DE USO";

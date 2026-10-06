@@ -59,6 +59,22 @@ export interface ItemView {
   readonly pIPI: string;
   readonly vTotTrib: string;
   readonly infAdProd: string;
+  /**
+   * IBS e CBS do item (grupo UB), quando há `IBSCBS`. As alíquotas são as efetivas (`pAliqEfet`) quando o tributo tem
+   * `gRed`, e as vigentes sem ele (NT 2026.010, 4.3). Campo ausente no XML fica vazio.
+   */
+  readonly ibscbs?: {
+    readonly cClassTrib: string;
+    readonly vBC: string;
+    readonly pIBSUF: string;
+    readonly vIBSUF: string;
+    readonly pIBSMun: string;
+    readonly vIBSMun: string;
+    readonly pCBS: string;
+    readonly vCBS: string;
+  };
+  /** Imposto Seletivo do item (`IS`), quando há. */
+  readonly is?: { readonly vBCIS: string; readonly pIS: string; readonly vIS: string };
 }
 
 export interface IbsCbsTotView {
@@ -71,6 +87,11 @@ export interface IbsCbsTotView {
   readonly vIS: string;
   /** Total da NF-e com IBS, CBS e IS (`vNFTot`), quando informado. */
   readonly vNFTot: string;
+  /** Monofasia (`IBSCBSTot/gMono`); vazios sem o grupo. */
+  readonly vIBSMono: string;
+  readonly vCBSMono: string;
+  readonly vIBSMonoReten: string;
+  readonly vCBSMonoReten: string;
 }
 
 export interface NotaView {
@@ -93,6 +114,8 @@ export interface NotaView {
     readonly IE: string;
     readonly IEST: string;
     readonly IM: string;
+    /** Código do Regime Tributário (`CRT`). */
+    readonly CRT: string;
     readonly ender: EnderecoView;
   };
   readonly dest?: {
@@ -199,6 +222,39 @@ function item(d: TNFe_infNFe_det): ItemView {
     pIPI: str(ipiTrib, 'pIPI') ?? '',
     vTotTrib: str(imp, 'vTotTrib') ?? '',
     infAdProd: d.infAdProd ?? '',
+    ...ibsCbsDoItem(imp),
+  };
+}
+
+/** Alíquota do tributo: a efetiva (`gRed/pAliqEfet`) quando há redução, senão a vigente (NT 2026.010, 4.3). */
+function aliquota(g: Rec | undefined, vigente: string): string {
+  const red = g?.gRed as Rec | undefined;
+  return str(red, 'pAliqEfet') ?? str(g, vigente) ?? '';
+}
+
+function ibsCbsDoItem(imp: Rec): Pick<ItemView, 'ibscbs' | 'is'> {
+  const ib = imp.IBSCBS as Rec | undefined;
+  const is = imp.IS as Rec | undefined;
+  const g = ib?.gIBSCBS as Rec | undefined;
+  const uf = g?.gIBSUF as Rec | undefined;
+  const mun = g?.gIBSMun as Rec | undefined;
+  const cbs = g?.gCBS as Rec | undefined;
+  return {
+    ...(ib
+      ? {
+          ibscbs: {
+            cClassTrib: str(ib, 'cClassTrib') ?? '',
+            vBC: str(g, 'vBC') ?? '',
+            pIBSUF: aliquota(uf, 'pIBSUF'),
+            vIBSUF: str(uf, 'vIBSUF') ?? '',
+            pIBSMun: aliquota(mun, 'pIBSMun'),
+            vIBSMun: str(mun, 'vIBSMun') ?? '',
+            pCBS: aliquota(cbs, 'pCBS'),
+            vCBS: str(cbs, 'vCBS') ?? '',
+          },
+        }
+      : {}),
+    ...(is ? { is: { vBCIS: str(is, 'vBCIS') ?? '', pIS: str(is, 'pIS') ?? '', vIS: str(is, 'vIS') ?? '' } } : {}),
   };
 }
 
@@ -244,6 +300,7 @@ function view(nfe: TNFe, proc: TNfeProc | undefined): NotaView {
       IE: str(emit, 'IE') ?? '',
       IEST: str(emit, 'IEST') ?? '',
       IM: str(emit, 'IM') ?? '',
+      CRT: str(emit, 'CRT') ?? '',
       ender: ender(inf.emit.enderEmit),
     },
     ...(dest
@@ -274,6 +331,10 @@ function view(nfe: TNFe, proc: TNfeProc | undefined): NotaView {
             vCBS: ibs?.gCBS?.vCBS ?? '',
             vIS: tot.ISTot?.vIS ?? '',
             vNFTot: tot.vNFTot ?? '',
+            vIBSMono: ibs?.gMono?.vIBSMono ?? '',
+            vCBSMono: ibs?.gMono?.vCBSMono ?? '',
+            vIBSMonoReten: ibs?.gMono?.vIBSMonoReten ?? '',
+            vCBSMonoReten: ibs?.gMono?.vCBSMonoReten ?? '',
           },
         }
       : {}),

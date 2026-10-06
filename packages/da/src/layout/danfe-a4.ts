@@ -10,7 +10,7 @@
  */
 
 import type { FormatoA4, Linha } from '../data/leiaute-a4.ts';
-import { CONSULTA_NFE, FONTES, FORMA_EMISSAO, MOD_FRETE, QUADRO_IBSCBS } from '../data/leiaute-a4.ts';
+import { CONSULTA_NFE, FONTES, FORMA_EMISSAO, MOD_FRETE, QUADRO_IBSCBS, REGIME } from '../data/leiaute-a4.ts';
 import * as f from '../format.ts';
 import type { ItemView, NotaView } from '../input/nfe.ts';
 import type { Documento } from '../model.ts';
@@ -27,8 +27,8 @@ export interface DanfeA4Opcoes extends DaOpcoes {
   /** Bloco de canhoto (padrão: sim; MOC 3.3.1 permite suprimir). */
   readonly canhoto?: boolean;
   /**
-   * Quadro de totais de IBS, CBS e IS (padrão: quando a NF-e tem `IBSCBSTot` ou `ISTot`). O leiaute oficial ainda não
-   * foi publicado (NT 2025.002 v1.51, item 9); `false` suprime o quadro.
+   * Bloco "Total do IBS/CBS/IS" da NT 2026.010 (padrão: quando a NF-e tem `IBSCBSTot` ou `ISTot`); `false` suprime o
+   * bloco.
    */
   readonly ibsCbs?: boolean;
   /** Colunas de ICMS ST no quadro de produtos (padrão: quando algum item tem ST). */
@@ -100,8 +100,10 @@ function cellValue(it: ItemView, k: Col['k']): string {
       return f.num(it[k] || '0');
     case 'desc':
       return it.xProd;
-    default:
-      return it[k];
+    default: {
+      const v = it[k];
+      return typeof v === 'string' ? v : '';
+    }
   }
 }
 
@@ -111,6 +113,34 @@ interface Row {
   readonly sizes: readonly number[];
   readonly size: number;
   readonly lines: number;
+}
+
+/** Espaço que não quebra: mantém rótulo, alíquota e valor de um tributo na mesma linha. */
+const NB = '\u00a0';
+
+/**
+ * Linha de IBS, CBS e IS do item, só com o que o XML traz (NT 2026.010, 4.3 e 4.4): classificação tributária, base do
+ * IBS/CBS, alíquota e valor do IBS UF, do IBS municipal e da CBS (a efetiva, com redução) e base, alíquota e valor do IS.
+ */
+function tributosDoItem(it: ItemView): string | undefined {
+  const g = it.ibscbs;
+  const is = it.is;
+  if (g === undefined && is === undefined) return undefined;
+  const junto = (...p: string[]): string => p.filter(Boolean).join(NB);
+  const pct = (s: string): string => (s ? `${f.num(s, 2, 4)}%` : '');
+  const trib = (rotulo: string, p: string, v: string): string =>
+    p || v ? junto(rotulo, pct(p), v ? f.num(v) : '') : '';
+  const partes = [
+    g?.cClassTrib ? junto('cClassTrib', g.cClassTrib) : '',
+    g?.vBC ? junto('BC', 'IBS/CBS', f.num(g.vBC)) : '',
+    g ? trib(`IBS${NB}UF`, g.pIBSUF, g.vIBSUF) : '',
+    g ? trib(`IBS${NB}MUN`, g.pIBSMun, g.vIBSMun) : '',
+    g ? trib('CBS', g.pCBS, g.vCBS) : '',
+    is && (is.vBCIS || is.pIS || is.vIS)
+      ? junto('IS', is.vBCIS ? junto('BC', f.num(is.vBCIS)) : '', pct(is.pIS), is.vIS ? f.num(is.vIS) : '')
+      : '',
+  ].filter(Boolean);
+  return partes.length > 0 ? partes.join(' ') : undefined;
 }
 
 function ender(e: NotaView['emit']['ender']): string {
@@ -156,6 +186,9 @@ export function danfeA4(
         }
         // Informações adicionais do produto logo abaixo do item (MOC 3.1.7).
         if (it.infAdProd) extra.push(it.infAdProd);
+        // IBS, CBS e IS do item (NT 2026.010, 4.3), cada tributo com rótulo, alíquota e valor juntos.
+        const trib = tributosDoItem(it);
+        if (trib) extra.push(trib);
         sizes.push(size);
         return [it.xProd, ...extra].flatMap((s) => wrap(toWinAnsi(s), 'Times-Roman', size, w));
       }
@@ -172,7 +205,8 @@ export function danfeA4(
   // ---- alturas da folha 1
   const ibs = (options.ibsCbs ?? true) && nota.ibscbs !== undefined;
   const header1 = canhoto && !paisagem ? 25.4 : fmt.topo;
-  const HEADER_H = fmt.cabecalho.altura + 2 * RH;
+  // Natureza e protocolo; IE, IE ST e CNPJ; CRT e regime de apuração do IBS/CBS (NT 2026.010, 4.2).
+  const HEADER_H = fmt.cabecalho.altura + 3 * RH;
   const locais = [nota.retirada ? 1 : 0, nota.entrega ? 1 : 0].reduce((a, v) => a + v, 0);
   const issH = nota.issqn ? TITLE + RH : 0;
   const adicH = TITLE + fmt.adicionais.altura;
@@ -185,7 +219,7 @@ export function danfeA4(
     (TITLE + 3 * RH) +
     locais * (TITLE + 2 * RH) +
     (TITLE + 2 * RH) +
-    (ibs ? TITLE + RH : 0) +
+    (ibs ? TITLE + 2 * RH : 0) +
     (TITLE + 3 * RH);
   // Espaço mínimo do quadro de produtos na folha 1: título, cabeçalho das colunas e uma linha de item.
   const PROD_MIN = TITLE + TH + lh + 2 * PAD + 3;
@@ -522,6 +556,10 @@ export function danfeA4(
     c.field(X, ry + RH, w3, RH, 'INSCRIÇÃO ESTADUAL', nota.emit.IE, { size: FONTES.demais });
     c.field(X + w3, ry + RH, w3, RH, 'INSC. ESTADUAL DO SUBST. TRIB.', nota.emit.IEST, { size: FONTES.demais });
     c.field(X + 2 * w3, ry + RH, W - 2 * w3, RH, 'CNPJ/CPF', f.cnpjCpf(nota.emit.doc), { size: FONTES.demais });
+    const [rCrt, rApur] = REGIME.rotulos;
+    const crt = REGIME.crt[nota.emit.CRT] ?? nota.emit.CRT;
+    c.field(X, ry + 2 * RH, W / 2, RH, rCrt, crt, { size: FONTES.demais });
+    c.field(X + W / 2, ry + 2 * RH, W / 2, RH, rApur, '', { size: FONTES.demais });
   }
 
   function destinatario(c: Canvas, y: number): number {
@@ -636,19 +674,14 @@ export function danfeA4(
   }
 
   function ibsCbs(c: Canvas, y: number): number {
-    frame(c, paisagem ? 'IBS CBS IS' : QUADRO_IBSCBS.titulo, y, RH);
+    frame(c, paisagem ? 'IBS CBS IS' : QUADRO_IBSCBS.titulo, y, 2 * RH);
     const t = nota.ibscbs;
-    const v = (s: string | undefined, bold = false): FieldValue => ({ v: s ? f.num(s) : '', align: 'r', bold });
-    fields(c, y + TITLE, QUADRO_IBSCBS.campos, [
-      v(t?.vBCIBSCBS),
-      v(t?.vIBSUF),
-      v(t?.vIBSMun),
-      v(t?.vIBS),
-      v(t?.vCBS),
-      v(t?.vIS),
-      v(t?.vNFTot, true),
-    ]);
-    return y + TITLE + RH;
+    // Campo sem informação no XML fica vazio, nunca 0,00 (NT 2026.010, 4.4).
+    const v = (s: string | undefined): FieldValue => ({ v: s ? f.num(s) : '', align: 'r' });
+    const [l1, l2] = QUADRO_IBSCBS.linhas as [Linha, Linha];
+    fields(c, y + TITLE, l1, [v(t?.vCBS), v(t?.vIBSUF), v(t?.vIBSMun), v(t?.vIS)]);
+    fields(c, y + TITLE + RH, l2, [v(t?.vIBSMono), v(t?.vCBSMono), v(t?.vIBSMonoReten), v(t?.vCBSMonoReten)]);
+    return y + TITLE + 2 * RH;
   }
 
   function transportador(c: Canvas, y: number): number {

@@ -195,13 +195,14 @@ describe('DANFE A4', () => {
   test('homologação, IBS/CBS, ST, unidade tributável e valor unitário longo', () => {
     const doc = danfe(nfeXml(fx('ibscbs-st')));
     const t = texts(doc);
-    expect(t).toContain('TOTAIS DE IBS, CBS E IS (NT 2025.002)');
-    expect(t).toContain('1.059,00');
+    expect(t).toContain('TOTAL DO IBS/CBS/IS');
+    expect(t).toContain('CÓDIGO DO REGIME TRIBUTÁRIO 3 - REGIME NORMAL');
+    expect(t).toContain('cClassTrib\u00a0000001');
     expect(t).toContain('B.CÁLC. ICMS ST');
     expect(t).toContain('TRIB.: 0,50 CX X');
     expect(doc.estatisticas.quebrados).toBeGreaterThan(0);
     const sem = texts(danfe(nfeXml(fx('ibscbs-st')), { ibsCbs: false, colunasSt: false }));
-    expect(sem).not.toContain('TOTAIS DE IBS');
+    expect(sem).not.toContain('TOTAL DO IBS');
     expect(sem).not.toContain('B.CÁLC. ICMS ST');
     const h = texts(danfe(nfeXml(fx('homologacao'))));
     expect(h).toContain('SEM VALOR FISCAL');
