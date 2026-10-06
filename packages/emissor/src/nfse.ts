@@ -24,11 +24,18 @@ import type {
   MontarDpsOpcoes,
   NfseConsultada,
   NfseGerada,
+  RecuperacaoEvento,
   RejeicaoNfse,
   ResolucaoEnvio,
   ResultadoNfse,
 } from '@sinete/nfse';
-import { assinarDps, criarClienteNfse, montarDps, resolverEnvioSemResposta } from '@sinete/nfse';
+import {
+  assinarDps,
+  criarClienteNfse,
+  montarDps,
+  recuperarEventoRegistrado,
+  resolverEnvioSemResposta,
+} from '@sinete/nfse';
 import { conteudoDps } from './conteudo.ts';
 import { codigosDe, eventoRegistradoNfse } from './cstat.ts';
 import type { PdfNfseOpcoes } from './da.ts';
@@ -326,8 +333,8 @@ export async function criarEmissorNfse(opcoes: EmissorNfseOpcoes): Promise<Emiss
     t.cnpj !== undefined ? { CNPJ: t.cnpj } : t.cpf !== undefined ? { CPF: t.cpf } : undefined;
 
   /**
-   * Depois de um pedido sem resposta ou recusado com um código de `eventoJaRegistrado` (E0840): a consulta do
-   * e101101, sequência 1, diz se a Sefin registrou o cancelamento. Nunca conclui pelo código sozinho: a E0840 diz que
+   * Depois de um pedido sem resposta ou recusado com um código de `eventoJaRegistrado` (E0840): o
+   * `recuperarEventoRegistrado` do `@sinete/nfse`, com o e101101 na sequência 1, diz se a Sefin registrou o cancelamento. Nunca conclui pelo código sozinho: a E0840 diz que
    * algum evento já está vinculado à NFS-e (Anexo II, aba RN EVENTOSxEVENTOS), que pode ser o cancelamento por
    * substituição ou outro que impede o cancelamento. Sem o e101101 na consulta, a E0840 continua `recusado`.
    */
@@ -341,9 +348,9 @@ export async function criarEmissorNfse(opcoes: EmissorNfseOpcoes): Promise<Emiss
       const causa = causaDaPendencia(env.signal);
       return { tipo: 'pendente', motivo: 'sem-resposta', causa, bruto };
     }
-    let eventos: readonly EventoRegistrado[];
+    let rec: RecuperacaoEvento;
     try {
-      eventos = await base.cliente.consultarEventos(chave, { tpEvento: CANCELAMENTO, nSeqEvento: 1 }, env);
+      rec = await recuperarEventoRegistrado(base.cliente, chave, CANCELAMENTO, 1, env);
     } catch (e) {
       const f = falhaSemResposta(e, env?.signal);
       if (f === undefined) throw e;
@@ -354,8 +361,7 @@ export async function criarEmissorNfse(opcoes: EmissorNfseOpcoes): Promise<Emiss
         bruto,
       };
     }
-    const achado = eventos.find((ev) => ev.chaveAcesso === chave && ev.tpEvento === CANCELAMENTO);
-    if (achado !== undefined) return eventoRegistrado(achado, achado.xml, eventoRegistradoNfse, true, bruto);
+    if (rec.registrado) return eventoRegistrado(rec.evento, rec.evento.xml, eventoRegistradoNfse, true, bruto);
     if ('erro' in falha)
       return { tipo: 'pendente', motivo: 'sem-resposta', causa: causaDaPendencia(env?.signal, falha.erro) };
     return eventoRecusado<EventoRegistrado, ResultadoNfse<EventoRegistrado>>(falha, falha);

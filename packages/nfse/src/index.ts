@@ -66,6 +66,8 @@ export type {
   RespostaParametrizacao,
 } from './parametros.ts';
 export { cacheEmMemoria, criarParametrosMunicipais } from './parametros.ts';
+export type { RecuperacaoEvento } from './recuperar.ts';
+export { recuperarEventoRegistrado } from './recuperar.ts';
 export type { MensagemNfse, RejeicaoNfse, ResultadoNfse } from './respostas.ts';
 export { rotuloDoCaminho } from './rotulo.ts';
 export type { Valor } from './valores.ts';

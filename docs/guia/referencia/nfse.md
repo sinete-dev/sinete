@@ -28,6 +28,7 @@ Entrada do domínio (`DadosDps`), montagem validada no XSD vigente (`montarDps`,
 - `montarDps`: Monta e valida a DPS. Nunca lança por dado de entrada: tudo o que impede a DPS vira `Ocorrencia` (formato, documento com DV errado, competência depois da emissão, schema). Lança `ErroDeConfiguracao` só por opção inválida. `montarDps(entrada: DadosDps, opcoes: MontarDpsOpcoes): Promise<ResultadoMontagemDps>`
 - `montarPedidoAnaliseFiscal`: Pedido de análise fiscal para cancelamento (e101103). `montarPedidoAnaliseFiscal(p: AnaliseFiscalPedido, opcoes: PedidoEventoOpcoes): ResultadoPedidoEvento`
 - `montarPedidoCancelamento`: Pedido de cancelamento da NFS-e (e101101). `montarPedidoCancelamento(p: CancelamentoPedido, opcoes: PedidoEventoOpcoes): ResultadoPedidoEvento`
+- `recuperarEventoRegistrado`: Consulta os eventos da chave e devolve o evento `tpEvento`, na sequência `nSeqEvento` (o cancelamento, e101101, é sempre a 1), que a Sefin registrou para ela. `recuperarEventoRegistrado(cliente: ClienteNfse, chave: string, tpEvento: string, nSeqEvento?: number, opcoes?: EnvioOpcoes): Promise<RecuperacaoEvento>`
 - `resolverEnvioSemResposta`: Depois de um envio sem resposta (timeout, conexão caída) ou recusado com E0014, descobre se a DPS gerou NFS-e: consulta pelo Id da DPS e, achando a chave, lê a NFS-e. `resolverEnvioSemResposta(cliente: ClienteNfse, dpsAssinada: string, anterior?: ResultadoNfse<NfseGerada>, opcoes?: EnvioOpcoes): Promise<ResolucaoEnvio>`
 - `rotuloDoCaminho`: Rótulo em português do caminho de uma ocorrência da DPS: `Grupo, Campo` quando os dois são conhecidos (`Tomador, CNPJ`), só um deles quando falta o outro, e `Dados da DPS` quando nenhum é. `rotuloDoCaminho(caminho: string): string`
 
@@ -73,6 +74,7 @@ Entrada do domínio (`DadosDps`), montagem validada no XSD vigente (`montarDps`,
 - `LocalPrestacao`: Local da prestação: município (IBGE, `0000000` para águas marítimas) ou país (ISO, prestação no exterior). `type LocalPrestacao = { readonly cLocPrestacao: string; readonly cPaisPrestacao?: never; } | { readonly cPaisPrestacao: string; readonly cLocPrestacao?: never; }`
 - `Pessoa`: Tomador ou intermediário. `type Pessoa = TCInfoPessoa`
 - `Prestador`: Prestador: CNPJ, CPF, NIF ou motivo de não ter NIF, mais o regime de tributação (`regTrib`). `type Prestador = TCInfoPrestador`
+- `RecuperacaoEvento`: Resultado da recuperação: o evento registrado, ou que a consulta não o mostrou. `type RecuperacaoEvento = { readonly registrado: true; readonly evento: EventoRegistrado; } | { readonly registrado: false; }`
 - `ResolucaoEnvio`: Desfecho de `resolverEnvioSemResposta`, com a mesma forma do resolvedor da NF-e e do MDF-e.
 - `ResultadoMontagemDps`: `type ResultadoMontagemDps = { readonly ok: true; readonly valor: DpsMontada; } | { readonly ok: false; readonly ocorrencias: readonly Ocorrencia[]; }`
 - `ResultadoNfse`: Desfecho de uma operação da NFS-e: gerada ou registrada, ou rejeitada. Não há pendente nem denegação na NFS-e. `type ResultadoNfse<T> = Autorizado<T> | RejeicaoNfse`

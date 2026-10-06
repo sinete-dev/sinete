@@ -4,12 +4,26 @@
  * `redirecionarNfseParaSim` troca só a origem. Nenhum pedido sai da máquina.
  */
 import { afterEach, beforeAll, describe, expect, test } from 'bun:test';
-import { contextoDeTempo, ErroDeTempoEsgotado, exigirAutorizado, recusado } from '@sinete/core';
+import {
+  contextoDeTempo,
+  ErroDeConfiguracao,
+  ErroDeTempoEsgotado,
+  ehErroSinete,
+  exigirAutorizado,
+  recusado,
+} from '@sinete/core';
 import { conferirAssinatura } from '@sinete/core/xml';
 import { validarRaiz } from '@sinete/schemas';
 import { eventoElement, NFSeElement } from '@sinete/schemas/nfse/1.01-20260727';
 import type { RejeicaoNfse } from '../src/index.ts';
-import { assinarDps, criarClienteNfse, lerChaveNfse, montarDps, resolverEnvioSemResposta } from '../src/index.ts';
+import {
+  assinarDps,
+  criarClienteNfse,
+  lerChaveNfse,
+  montarDps,
+  recuperarEventoRegistrado,
+  resolverEnvioSemResposta,
+} from '../src/index.ts';
 import type { Cenario, Certs } from './helpers.ts';
 import { cenario, dps, gerarCerts, PRESTADOR, SAO_PAULO, TOMADOR } from './helpers.ts';
 
@@ -271,5 +285,60 @@ describe('parâmetros municipais', () => {
     const r2 = await s.client.autorizar(await s.assinar(dps({ cLocEmi: '3304557', nDPS: '2' })));
     expect(r2.cStat).toBe('E0037');
     expect(TOMADOR).toHaveLength(14);
+  });
+});
+
+describe('recuperarEventoRegistrado', () => {
+  test('o cancelamento registrado volta pela consulta, sem pedido de evento novo', async () => {
+    const s = await novo();
+    const v = exigirAutorizado(await s.client.autorizar(await s.assinar(dps())));
+    const semEvento = await recuperarEventoRegistrado(s.client, v.chaveAcesso, '101101');
+    expect(semEvento).toEqual({ registrado: false });
+    s.clock.avancar(3_600_000);
+    const ev = exigirAutorizado(
+      await s.client.cancelar({
+        chave: v.chaveAcesso,
+        autor: { CNPJ: PRESTADOR },
+        cMotivo: '1',
+        xMotivo: 'Erro na emissão',
+      }),
+    );
+    const antes = s.caminhos.length;
+    const r = await recuperarEventoRegistrado(s.client, v.chaveAcesso, '101101');
+    if (!r.registrado) throw new Error('esperava o cancelamento');
+    expect(r.evento).toMatchObject({ chaveAcesso: v.chaveAcesso, tpEvento: '101101', nSeqEvento: '1', id: ev.id });
+    expect(r.evento.xml).toBe(ev.xml);
+    expect(s.caminhos.slice(antes)).toEqual([`GET /sefin/nfse/${v.chaveAcesso}/eventos/101101/1`]);
+    expect(await recuperarEventoRegistrado(s.client, v.chaveAcesso, '101101', 2)).toEqual({ registrado: false });
+  });
+
+  test('outro evento vinculado não passa por cancelamento', async () => {
+    const s = await novo();
+    const v = exigirAutorizado(await s.client.autorizar(await s.assinar(dps())));
+    exigirAutorizado(
+      await s.client.substituir(
+        await s.assinar(
+          dps({ nDPS: '2', substituicao: { chSubstda: v.chaveAcesso, cMotivo: '99', xMotivo: 'Correcao do valor' } }),
+        ),
+      ),
+    );
+    expect(await recuperarEventoRegistrado(s.client, v.chaveAcesso, '101101')).toEqual({ registrado: false });
+    const sub = await recuperarEventoRegistrado(s.client, v.chaveAcesso, '105102');
+    expect(sub.registrado && sub.evento.tpEvento).toBe('105102');
+  });
+
+  test('signal já cancelado e entrada inválida não vão à rede', async () => {
+    const s = await novo();
+    const v = exigirAutorizado(await s.client.autorizar(await s.assinar(dps())));
+    const antes = s.caminhos.length;
+    const ac = new AbortController();
+    ac.abort();
+    const cancelado = await recuperarEventoRegistrado(s.client, v.chaveAcesso, '101101', 1, {
+      signal: ac.signal,
+    }).catch((e: unknown) => e);
+    expect(ehErroSinete(cancelado, 'cancelado')).toBe(true);
+    await expect(recuperarEventoRegistrado(s.client, '123', '101101')).rejects.toBeInstanceOf(ErroDeConfiguracao);
+    await expect(recuperarEventoRegistrado(s.client, v.chaveAcesso, 'abc')).rejects.toBeInstanceOf(ErroDeConfiguracao);
+    expect(s.caminhos.length).toBe(antes);
   });
 });
