@@ -63,6 +63,29 @@ describe('NFC-e', () => {
     expect(await com({ nNF: 6 })).toBe('100');
   });
 
+  test('NF-e Tipo 2 sob as regras B11 e B25 da NFC-e (NT 2026.002 v1.11); a NF-e com tpImp 1 não', async () => {
+    const h = await harness();
+    const com = async (p: Parameters<typeof nfe>[0]): Promise<string | undefined> =>
+      cStat(await h.send('NFeAutorizacao', enviNFe([(await nfe(p)).xml])))[1];
+    const trocas: [string, string, string][] = [
+      ['<tpNF>1</tpNF>', '<tpNF>0</tpNF>', '706'],
+      ['<idDest>1</idDest>', '<idDest>2</idDest>', '707'],
+      ['<finNFe>1</finNFe>', '<finNFe>4</finNFe>', '715'],
+      ['<indFinal>1</indFinal>', '<indFinal>0</indFinal>', '716'],
+      ['<indPres>1</indPres>', '<indPres>2</indPres>', '717'],
+      ['<indPres>1</indPres>', '<indPres>9</indPres>', '717'],
+    ];
+    let n = 1;
+    for (const [de, para, esperado] of trocas) {
+      expect(await com({ nNF: n++, tipo2: true, trocas: [[de, para]] })).toBe(esperado);
+      expect(await com({ nNF: n++, trocas: [[de, para]] })).toBe('100');
+    }
+    for (const indPres of ['4', '5']) {
+      const troca: [string, string] = ['<indPres>1</indPres>', `<indPres>${indPres}</indPres>`];
+      expect(await com({ nNF: n++, tipo2: true, trocas: [troca] })).toBe('100');
+    }
+  });
+
   test('lote com mais de uma NFC-e: 126', async () => {
     const h = await harness();
     const a = await nfe({ nNF: 1, mod: '65' });

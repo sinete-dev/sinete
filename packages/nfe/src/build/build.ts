@@ -631,7 +631,10 @@ export async function montarNfe(entrada: DadosNfe, opcoes: MontarNfeOpcoes): Pro
   const nfce = mod === '65';
   // Padrões da identificação resolvidos uma vez: o mesmo valor vai para o ide e para a calculadora de IBS/CBS. A NFC-e
   // é presencial e para consumidor final (MOC 7.0 Anexo I, B25a-10 e B25b-20).
-  const indPres = entrada.indPres ?? (nfce ? '1' : finNFeIn === '2' || finNFeIn === '3' ? '0' : '9');
+  // NF-e com DANFE Simplificado Tipo 2 (tpImp 6): parte das regras da NFC-e vale para ela (NT 2026.002 v1.11).
+  const tipo2 = !nfce && entrada.tpImp === '6';
+  // Na NFC-e e na Tipo 2 a operação é presencial ou entrega a domicílio (B25b-20, rejeição 717): o padrão é 1.
+  const indPres = entrada.indPres ?? (nfce || tipo2 ? '1' : finNFeIn === '2' || finNFeIn === '3' ? '0' : '9');
   const indFinal = entrada.indFinal ?? (nfce || entrada.destinatario?.indIEDest === '9' ? '1' : '0');
   const ctx = new Ctx(issues, { ...MODES, ...opcoes.arredondamento }, finNFeIn !== '2' && finNFeIn !== '3');
   const pRedutorGov = entrada.gCompraGov && ctx.req(entrada.gCompraGov.pRedutor, 'gCompraGov.pRedutor', D0302A04);
@@ -768,9 +771,11 @@ export async function montarNfe(entrada: DadosNfe, opcoes: MontarNfeOpcoes): Pro
   }
 
   // Identificação que as regras do modelo conferem antes de montar.
-  // Na NFC-e a operação é sempre interna (B11a-10, rejeição 707): o endereço do consumidor não a torna interestadual.
+  // Na NFC-e e na Tipo 2 a operação é sempre interna (B11a-10, rejeição 707): o endereço do consumidor não a torna
+  // interestadual.
   const idDest =
-    entrada.idDest ?? (nfce ? '1' : destUf === 'EX' ? '3' : destUf !== undefined && destUf !== emitUf ? '2' : '1');
+    entrada.idDest ??
+    (nfce || tipo2 ? '1' : destUf === 'EX' ? '3' : destUf !== undefined && destUf !== emitUf ? '2' : '1');
   const tpImp = entrada.tpImp ?? (nfce ? '4' : '1');
   conferirDestinatario(
     entrada,
@@ -784,10 +789,11 @@ export async function montarNfe(entrada: DadosNfe, opcoes: MontarNfeOpcoes): Pro
     },
     issues,
   );
-  if (nfce) {
+  if (nfce || tipo2) {
     conferirNfce(
       entrada,
       {
+        mod: nfce ? '65' : '55',
         tpNF: entrada.tpNF,
         idDest,
         tpImp,
@@ -859,10 +865,10 @@ export async function montarNfe(entrada: DadosNfe, opcoes: MontarNfeOpcoes): Pro
   }
   const semIe = !nfce && entrada.emitente.IE === undefined;
   const itens = entrada.itens.map((it, n) => montarItem(ctx, it, n, finNFeIn === '1', semIe));
-  // Na NFC-e em homologação, a descrição do primeiro item é a literal da RV I04-10, como o nome do destinatário da
-  // E04-20: o builder a põe, e a descrição informada fica fora do XML de teste.
+  // Na NFC-e e na Tipo 2 (NT 2026.002) em homologação, a descrição do primeiro item é a literal da RV I04-10, como o
+  // nome do destinatário da E04-20: o builder a põe, e a descrição informada fica fora do XML de teste.
   const primeiro = itens[0];
-  if (nfce && opcoes.ambiente === 'homologacao' && primeiro !== undefined) {
+  if ((nfce || tipo2) && opcoes.ambiente === 'homologacao' && primeiro !== undefined) {
     (primeiro.det.prod as unknown as Record<string, unknown>).xProd = XPROD_HOMOLOGACAO_NFCE;
   }
 
@@ -986,10 +992,12 @@ export async function montarNfe(entrada: DadosNfe, opcoes: MontarNfeOpcoes): Pro
   });
   // Texto e tamanho dos campos de texto pelo tipo do PL, com o caminho da entrada (ADR 0011); o campo que outra
   // conferência já recusou fica só com a ocorrência dela.
-  // Em homologação, o nome do destinatário e, na NFC-e, a descrição do primeiro item são as literais da E04-20 e da I04-10:
-  // o texto informado não vai ao XML.
+  // Em homologação, o nome do destinatário e, na NFC-e e na Tipo 2, a descrição do primeiro item são as literais da E04-20
+  // e da I04-10: o texto informado não vai ao XML.
   const substituidos =
-    opcoes.ambiente === 'homologacao' ? ['destinatario.xNome', ...(nfce ? ['itens[0].produto.xProd'] : [])] : [];
+    opcoes.ambiente === 'homologacao'
+      ? ['destinatario.xNome', ...(nfce || tipo2 ? ['itens[0].produto.xProd'] : [])]
+      : [];
   conferirTextosDaEntrada(entrada, pl.infNFe as ComplexType, issues, new Set(substituidos));
   // Nota sem IE do emitente (NT 2026.007, ADR 0012): conferida antes de parar nas ocorrências dos itens, para todas as
   // violações voltarem juntas.
@@ -1289,6 +1297,7 @@ export async function montarNfe(entrada: DadosNfe, opcoes: MontarNfeOpcoes): Pro
     pagamentoNfce(pag, vNF, issues);
   }
   // W16-40 (rejeição 750): acima do limite, a NFC-e identifica o destinatário por CNPJ, CPF ou idEstrangeiro.
+  // Na Tipo 2 a W16-40 não tem o que conferir: a NF-e sempre identifica o destinatário (E01-10, rejeição 719).
   if (nfce && vNF.gt(Decimal.of(NFCE_LIMITE_SEM_DESTINATARIO)) && dest === undefined) {
     issues.add(
       'destinatario',
