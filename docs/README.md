@@ -20,6 +20,7 @@
 | [adr/0014-distribuicao-do-signer.md](adr/0014-distribuicao-do-signer.md) | for mexer no cliente `@sinete/transport/signer`, nos pacotes npm do helper (`@sinete/signer` e os de plataforma) ou no build e na release dos binários |
 | [adr/0015-nomes-em-portugues.md](adr/0015-nomes-em-portugues.md) | for dar nome a qualquer coisa pública (função, tipo, propriedade, valor de união): o glossário inglês → português e as exceções |
 | [adr/0016-politica-de-estabilidade.md](adr/0016-politica-de-estabilidade.md) | for decidir se uma mudança é patch, minor ou major: o que o semver cobre (nomes, `code` e `caminho` de ocorrência, casos de união, dados, PL), uniões abertas, subpaths experimentais, a versão de calendário do `@sinete/ibs-cbs-dados` e o critério para um pacote sair 1.0 |
+| [triagem-fontes-oficiais.md](triagem-fontes-oficiais.md) | for decidir o que fazer com uma NT, um IT ou um schema que o vigia das fontes oficiais acusou: a classe de cada publicação já vista, as datas de homologação e produção e a issue que a implementa
 | [validacao-homologacao.md](validacao-homologacao.md) e [../tools/homologacao/README.md](../tools/homologacao/README.md) | for saber o que já foi provado contra a SEFAZ de homologação real, ou rodar a validação com o seu certificado |
 | [release.md](release.md) | for versionar ou publicar pacotes |
 | [../packages/core/README.md](../packages/core/README.md) | for usar erros, desfechos da SEFAZ, relógio, logger, ambiente ou UFs em outro pacote |
