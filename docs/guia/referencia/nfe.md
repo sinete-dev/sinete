@@ -100,6 +100,7 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `ImpostosItem`: Tributos do item (grupo M). ICMS ou ISSQN, exclusivos; o resto conforme a operação. Membros: `vTotTrib`, `icms`, `ipi`, `ii`, `issqn`, `pis`, `pisSt`, `cofins`, `cofinsSt`, `icmsUfDest`, `is`, `ibsCbs`.
 - `InformacoesAdicionais`: Informações adicionais (grupo Z). Membros: `infAdFisco`, `infCpl`, `obsCont`, `obsFisco`, `procRef`.
 - `Inutilizacao`: Inutilização homologada (cStat 102). Membros: `nProt`, `dhRecbto`, `retInutNFe`, `procInutNFe`.
+- `InutilizacaoAnterior`: Protocolo da inutilização que já valia para a mesma faixa, trazido pelo 563 (MOC 7.0 Visão Geral, tabela 5-12, regra I07). Membros: `nProt`, `retInutNFe`.
 - `InutilizacaoPedido`: Membros: `ano`, `serie`, `nNFIni`, `nNFFin`, `xJust`, `mod`, `autor`.
 - `IpiNaoTributado`: IPI não tributado (O08). Membros: `CST`.
 - `Issqn`: ISSQN (grupo U), NF-e conjugada. `vISSQN` padrão `vBC × vAliq / 100`. Membros: `vBC`, `vAliq`, `vISSQN`, `cMunFG`, `cListServ`, `vDeducao`, `vOutro`, `vDescIncond`, `vDescCond`, `vISSRet`, `indISS`, `cServico`, `cMun`, `cPais`, `nProcesso`, `indIncentivo`.
@@ -114,6 +115,7 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `PoliticaRecibo` (estende `ConsultaReciboOpcoes`): Política de consulta do recibo (autorização assíncrona). Membros: `maxTentativas`, `esperaMinimaMs`, `multiplicador`, `esperaMaximaMs`.
 - `Produto`: Produto ou serviço do item (grupo I). Membros: `cProd`, `cEAN`, `cBarra`, `xProd`, `NCM`, `NVE`, `CEST`, `indEscala`, `CNPJFab`, `cBenef`, `gCred`, `tpCredPresIBSZFM`, `EXTIPI`, `CFOP`, `uCom`, `qCom`, `vUnCom`, `vProd`, `cEANTrib`, `cBarraTrib`, `uTrib`, `qTrib`, `vUnTrib`, `vFrete`, `vSeg`, `vDesc`, `vOutro`, `indTot`, `indBemMovelUsado`, `DI`, `detExport`, `xPed`, `nItemPed`, `nFCI`, `rastro`, `infProdNFF`, `infProdEmb`, `especifico`.
 - `ProtocoloNfe`: Protocolo de uma NF-e (autorização ou denegação). Membros: `chNFe`, `cStat`, `xMotivo`, `nProt`, `dhRecbto`, `digVal`, `verAplic`, `protNFe`, `nfeProc`.
+- `RecusadoInutilizacao` (estende `Recusado`): Recusa da inutilização; no 563 com protocolo, `anterior` traz o protocolo da faixa já inutilizada. Membros: `anterior`.
 - `ResponsavelTecnico`: Responsável técnico (grupo ZD, NT 2018.005). O `hashCSRT` é calculado pelo builder a partir do CSRT (nunca vai para o XML): Base64(SHA-1(CSRT + chave de acesso)). Membros: `CNPJ`, `xContato`, `email`, `fone`, `csrt`.
 - `RespostaIbsCbs`: Resultado da calculadora: o grupo `IBSCBS` de cada item pedido, já na forma lexical do leiaute. Membros: `itens`, `aliquotasInformadas`, `ocorrencias`.
 - `StatusServico`: Status do serviço (cStat 107). Membros: `cUF`, `verAplic`, `dhRecbto`, `tMed`, `dhRetorno`, `xObs`.
@@ -163,7 +165,7 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `ResultadoAutorizacao`: Desfecho da autorização: autorizada, denegada (número consumido), rejeitada ou pendente (recibo em `referencia`). `type ResultadoAutorizacao = ResultadoSefaz<ProtocoloNfe, ProtocoloNfe>`
 - `ResultadoConsulta`: `type ResultadoConsulta = ResultadoSefaz<ConsultaNfe, ConsultaNfe>`
 - `ResultadoEvento`: `type ResultadoEvento = ResultadoSefaz<EventoRegistrado, never>`
-- `ResultadoInutilizacao`: `type ResultadoInutilizacao = ResultadoSefaz<Inutilizacao, never>`
+- `ResultadoInutilizacao`: `type ResultadoInutilizacao = Exclude<ResultadoSefaz<Inutilizacao, never>, Recusado> | RecusadoInutilizacao`
 - `ResultadoMontagemNfe`: `type ResultadoMontagemNfe = { readonly ok: true; readonly valor: NfeMontada; } | { readonly ok: false; readonly ocorrencias: readonly Ocorrencia[]; }`
 - `RoundingMode`: Decimal exato para os valores da NF-e. Nada de `number` nas contas: um valor é `coef × 10^-scale` com `coef` em `bigint`, então soma, subtração e multiplicação são exatas e só o arredondamento, feito de propósito e com o modo escolhido, descarta dígitos. `type RoundingMode = 'HALF_EVEN' | 'HALF_UP' | 'DOWN'`
 - `TCIBS_NFe`: reexportado de `@sinete/schemas/nfe/PL_010f` (veja a referência dele).

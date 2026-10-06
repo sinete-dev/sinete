@@ -19,6 +19,7 @@ export type CStatClasse =
   | 'loteNaoLocalizado'
   | 'servicoEmOperacao'
   | 'inutilizacaoHomologada'
+  | 'inutilizacaoJaHomologada'
   | 'eventoRegistrado'
   | 'loteEventoProcessado'
   | 'cadastroEncontrado'

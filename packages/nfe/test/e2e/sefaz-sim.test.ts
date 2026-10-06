@@ -295,6 +295,19 @@ describe('NF-e contra a SEFAZ simulada, HTTPS com mTLS', () => {
     if (r.tipo === 'autorizado') expect(r.valor.procInutNFe).toContain('<ProcInutNFe');
     const repetida = await client.inutilizar(pedido);
     expect([repetida.tipo, repetida.cStat]).toEqual(['recusado', '563']);
+    // I07: o 563 traz o protocolo da inutilização que valeu, o único caminho depois de uma resposta perdida.
+    if (r.tipo === 'autorizado' && repetida.tipo === 'recusado') {
+      expect(repetida.anterior?.nProt).toBe(r.valor.nProt);
+      expect(r.valor.nProt).toBeDefined();
+    }
+    const outra = await client.inutilizar({ ...pedido, nNFIni: 60, nNFFin: 61 });
+    if (outra.tipo !== 'autorizado') throw new Error(`outra faixa ${outra.cStat}`);
+    const outraDeNovo = await client.inutilizar({ ...pedido, nNFIni: 60, nNFFin: 61 });
+    expect(outraDeNovo.tipo === 'recusado' ? outraDeNovo.anterior?.nProt : undefined).toBe(outra.valor.nProt);
+    expect(outra.valor.nProt).not.toBe(r.tipo === 'autorizado' ? r.valor.nProt : undefined);
+    const sobreposta = await client.inutilizar({ ...pedido, nNFIni: 51, nNFFin: 55 });
+    expect([sobreposta.tipo, sobreposta.cStat]).toEqual(['recusado', '256']);
+    expect('anterior' in sobreposta).toBe(false);
     const enviados = caminhos.length;
     // NT 2018.001 v1.10, item 6.1: o controle de inutilização não se aplica ao emitente pessoa física.
     const cpf = await client
