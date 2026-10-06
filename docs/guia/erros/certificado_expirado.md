@@ -1,10 +1,13 @@
 # `certificado_expirado`: o certificado já venceu
 
-O certificado do arquivo PFX, que contém o certificado e a chave privada, passou do fim da validade segundo o relógio fornecido a `abrirPfx`. A função lança um `ErroCertificado` (`@sinete/cert`), que é um `ErroSinete` com `code: 'certificado_expirado'`. Trate o erro pelo `code`, usando `ehErroSinete(e, 'certificado_expirado')` de `@sinete/core`, nunca pela mensagem.
+O certificado passou do fim da validade. O mesmo `code` sai de dois lugares, e nos dois o remédio é renovar o certificado. Trate o erro pelo `code`, usando `ehErroSinete(e, 'certificado_expirado')` de `@sinete/core`, nunca pela mensagem.
+
+- **Na abertura do PFX** (o arquivo que contém o certificado e a chave privada): `abrirPfx` compara a validade com o relógio fornecido e lança um `ErroCertificado` (`@sinete/cert`).
+- **Na conexão TLS**, a negociação que estabelece a conexão segura com a SEFAZ: o servidor recusa o certificado de cliente com o alerta 45 (`certificate_expired`), e o transporte lança um `ErroTransporte` (`@sinete/transport`) com `detalhes.alerta` igual a `certificate_expired`. Acontece quando o certificado chega ao servidor sem passar pela conferência do `abrirPfx`: identidade montada com `identidadePem`, token A3, ou um PFX aberto antes do vencimento num processo que continuou rodando.
 
 ## Causa
 
-O certificado A1 venceu (em geral, vale um ano), ou o relógio passado ao sinete está adiantado. Quando recebem o PFX e a senha, os emissores recusam o certificado vencido durante a criação, antes de qualquer envio. Essa verificação ocorre na abertura do PFX; fornecer um certificado já aberto não repete essa verificação.
+O certificado A1 venceu (em geral, vale um ano), ou o relógio passado ao sinete está adiantado. Na conexão TLS, quem decide é o relógio do servidor: o certificado venceu na data dele, mesmo que o relógio local diga outra coisa. Quando recebem o PFX e a senha, os emissores recusam o certificado vencido durante a criação, antes de qualquer envio. Essa verificação ocorre na abertura do PFX; fornecer um certificado já aberto não repete essa verificação.
 
 ## Correção
 

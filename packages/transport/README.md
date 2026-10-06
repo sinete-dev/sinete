@@ -65,7 +65,7 @@ Antes de abrir socket, o transporte cruza o perfil TLS do host com as capacidade
 
 ## Erros
 
-`ErroTransporte` com `code`: `certificado_nao_apresentado` (alertas 40, 42, 116), `certificado_recusado` (43 a 46, 48, 49), `certificado_ausente_ou_recusado` (HTTP 403 do IIS, "bad record mac" do ADN), `certificado_nao_carregado`, `conexao_recusada`, `cadeia_servidor_nao_confiavel`, `nome_servidor_divergente`, `falha_tls`, `falha_rede`, `politica_recusou` (`ErroPolitica`), `cancelado`. Mais `ErroDeTempoEsgotado`, `ErroDeConfiguracao` e `ErroTransporteNaoSuportado` do core. O alerta 40 é ambíguo (a SEFAZ o manda por falta de certificado, mas ele também sai sem cifra em comum); a mensagem diz isso e `detalhes.alerta` traz o alerta.
+`ErroTransporte` com `code`: `certificado_nao_apresentado` (alertas 40, 42, 116), `certificado_recusado` (43, 46, 48, 49), `certificado_expirado` (45), `certificado_revogado` (44), `certificado_ausente_ou_recusado` (HTTP 403 do IIS, "bad record mac" do ADN), `certificado_nao_carregado`, `conexao_recusada`, `cadeia_servidor_nao_confiavel`, `nome_servidor_divergente`, `falha_tls`, `falha_rede`, `politica_recusou` (`ErroPolitica`), `cancelado`. Mais `ErroDeTempoEsgotado`, `ErroDeConfiguracao` e `ErroTransporteNaoSuportado` do core. O alerta 40 é ambíguo (a SEFAZ o manda por falta de certificado, mas ele também sai sem cifra em comum); a mensagem diz isso e `detalhes.alerta` traz o alerta.
 
 ## Chave fora do processo: `@sinete/transport/signer`
 

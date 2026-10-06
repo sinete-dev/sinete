@@ -208,6 +208,24 @@ describe.skipIf(!openssl)('laboratório TLS', () => {
       expect(r.error?.detalhes).toMatchObject({ alerta: 'unknown_ca' });
     });
 
+    test('servidor que recusa o certificado vencido do cliente (alerta 45)', async () => {
+      // `-attime` põe o relógio de verificação do servidor depois da validade (2 dias) do certificado do cliente.
+      const depois = String(Math.floor(Date.now() / 1000) + 10 * 86_400);
+      const srv = await wwwServer(pki, [...handshakeArgs(), '-attime', depois]);
+      const r = await run(runtime, { ...base, url: `${srv.url}/` });
+      await srv.finished(1000);
+      expect(r.error?.code).toBe('certificado_expirado');
+      expect(r.error?.detalhes).toMatchObject({ alerta: 'certificate_expired' });
+    });
+
+    test('servidor que recusa o certificado revogado do cliente (alerta 44)', async () => {
+      const srv = await wwwServer(pki, [...handshakeArgs(), '-CRL', pki.files.crlRevogaCliente, '-crl_check']);
+      const r = await run(runtime, { ...base, url: `${srv.url}/` });
+      await srv.finished(1000);
+      expect(r.error?.code).toBe('certificado_revogado');
+      expect(r.error?.detalhes).toMatchObject({ alerta: 'certificate_revoked' });
+    });
+
     test('cadeia do servidor fora da confiança', async () => {
       const srv = await wwwServer(pki, ['-tls1_2', '-naccept', '1'], 'badSrv');
       const r = await run(runtime, { ...base, url: `${srv.url}/` });

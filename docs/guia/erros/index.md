@@ -76,6 +76,7 @@ Gerado do fonte por `scripts/docs-gerados.ts`; não edite à mão. Todo erro lan
 - [`certificado_nao_apresentado`](certificado_nao_apresentado.md) (`ErroTransporte`): o servidor pediu o certificado e não recebeu
 - [`certificado_nao_carregado`](certificado_nao_carregado.md) (`ErroTransporte`): a identidade não entrou no contexto TLS
 - [`certificado_recusado`](certificado_recusado.md) (`ErroTransporte`): o servidor recebeu o certificado e recusou
+- [`certificado_revogado`](certificado_revogado.md) (`ErroTransporte`): a AC revogou o certificado
 - [`conexao_recusada`](conexao_recusada.md) (`ErroTransporte`): o servidor fechou ou recusou a conexão
 - [`falha_rede`](falha_rede.md) (`ErroTransporte`): falha de rede
 - [`falha_tls`](falha_tls.md) (`ErroTransporte`): outra falha de TLS

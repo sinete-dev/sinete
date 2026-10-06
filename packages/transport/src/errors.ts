@@ -8,8 +8,12 @@ import { ErroNaoSuportado, ErroSinete } from '@sinete/core';
 export type CodigoErroTransporte =
   /** O servidor pediu certificado e não recebeu (alertas TLS 40 e 42; 116 no TLS 1.3). */
   | 'certificado_nao_apresentado'
-  /** O servidor recebeu o certificado e recusou (alertas 43 a 46, 48 e 49: expirado, revogado, AC desconhecida). */
+  /** O servidor recebeu o certificado e recusou (alertas 43, 46, 48 e 49: tipo não aceito, AC desconhecida, acesso negado). */
   | 'certificado_recusado'
+  /** O servidor recusou o certificado de cliente por estar vencido (alerta 45). Mesmo `code` do vencimento no `@sinete/cert`. */
+  | 'certificado_expirado'
+  /** O servidor recusou o certificado de cliente por estar revogado pela AC (alerta 44). */
+  | 'certificado_revogado'
   /** Recusa sem distinguir ausência de recusa: HTTP 403 do IIS e o "bad record mac" do ADN em TLS 1.3. */
   | 'certificado_ausente_ou_recusado'
   /** A identidade não entrou no contexto TLS (o socket não tem certificado local, ou tem outro). */
