@@ -203,9 +203,40 @@ describe('SEFAZ simulada: modal aquaviário', () => {
     const a = await p.client.autorizar(await p.assinar(posterior, comoAquaviario));
     expect(a.tipo === 'recusado' && a.cStat).toBe('705');
   });
-  test('MDF-e transportado: 647 fora do aquaviário, 648 sem AM ou AP, aceito no aquaviário AM para AP', async () => {
+  test('MDF-e transportado: 647 e 648 pelo modal e pelas UFs, 649 a 658 pela chave e pelo registro', async () => {
     const t = cenario(transportadora, { CNPJ: CNPJ_EMIT });
-    const ref = montarChaveAcesso({
+    const chaveDe = (xml: string): string => /Id="MDFe(\d{44})"/.exec(xml)?.[1] ?? '';
+    const autorizar = async (d: DadosMdfe): Promise<{ chave: string; nProt: string }> => {
+      const xml = await t.assinar(d);
+      const r = await t.client.autorizar(xml);
+      if (r.tipo !== 'autorizado') throw new Error(JSON.stringify(r));
+      return { chave: chaveDe(xml), nProt: r.valor.nProt ?? '' };
+    };
+    // Dois rodoviários autorizados: um referenciado, outro cancelado.
+    const rodoviario = await autorizar(prestador({ nMDF: 90 }));
+    const r0 = prestador().rodoviario;
+    const outraPlaca = { ...r0, tracao: { ...r0.tracao, placa: 'QWE4R56' } };
+    const cancelado = await autorizar(prestador({ nMDF: 91, rodoviario: outraPlaca }));
+    const c = await t.client.cancelar({ ...cancelado, xJust: 'VIAGEM NAO REALIZADA TESTE' });
+    expect(c.tipo === 'autorizado' && c.cStat).toBe('135');
+    const comMdfe =
+      (ch: string) =>
+      (x: string): string =>
+        x.replace('</infMunDescarga>', `<infMDFeTransp><chMDFe>${ch}</chMDFe></infMDFeTransp></infMunDescarga>`);
+    const cStat = async (d: DadosMdfe, ch: string): Promise<string> => {
+      const r = await t.client.autorizar(await t.assinar(d, comMdfe(ch)));
+      return r.tipo === 'recusado' || r.tipo === 'autorizado' ? r.cStat : r.tipo;
+    };
+    expect(await cStat(prestador({ nMDF: 92 }), rodoviario.chave)).toBe('647');
+    expect(await cStat(aquaviario(prestador({ nMDF: 93 })), rodoviario.chave)).toBe('648');
+    const amap = (nMDF: number): DadosMdfeAquaviario => ({
+      ...aquaviario(prestador({ nMDF })),
+      ufIni: 'AM',
+      ufFim: 'AP',
+      carregamento: [{ cMun: '1302603', xMun: 'MANAUS' }],
+      descarregamentos: prestador().descarregamentos.map((d) => ({ ...d, cMun: '1600303', xMun: 'MACAPA' })),
+    });
+    const ausente = montarChaveAcesso({
       cUF: '13',
       aamm: '2609',
       emitente: CNPJ_EMIT,
@@ -215,28 +246,22 @@ describe('SEFAZ simulada: modal aquaviário', () => {
       tpEmis: '1',
       cNF: '10000099',
     });
-    const comMdfe = (x: string): string =>
-      x.replace('</infMunDescarga>', `<infMDFeTransp><chMDFe>${ref}</chMDFe></infMDFeTransp></infMunDescarga>`);
-    const rodo = await t.client.autorizar(await t.assinar(prestador(), comMdfe));
-    expect(rodo.tipo === 'recusado' && rodo.cStat).toBe('647');
-    const foraAmap = await t.client.autorizar(await t.assinar(aquaviario(prestador({ nMDF: 12 })), comMdfe));
-    expect(foraAmap.tipo === 'recusado' && foraAmap.cStat).toBe('648');
-    const amap: DadosMdfeAquaviario = {
-      ...aquaviario(prestador({ nMDF: 13 })),
-      ufIni: 'AM',
-      ufFim: 'AP',
-      carregamento: [{ cMun: '1302603', xMun: 'MANAUS' }],
-      descarregamentos: prestador().descarregamentos.map((d) => ({ ...d, cMun: '1600303', xMun: 'MACAPA' })),
-    };
-    const ok100 = await t.client.autorizar(await t.assinar(amap, comMdfe));
-    expect(ok100.tipo === 'autorizado' && ok100.cStat).toBe('100');
-    const soFim: DadosMdfeAquaviario = {
-      ...amap,
-      nMDF: 14,
-      ufIni: 'MT',
-      carregamento: [{ cMun: '5103403', xMun: 'CUIABA' }],
-    };
-    const fimAp = await t.client.autorizar(await t.assinar(soFim, comMdfe));
+    const dvErrado = `${ausente.slice(0, 43)}${(Number(ausente[43]) + 1) % 10}`;
+    expect(await cStat(amap(94), dvErrado)).toBe('649');
+    expect(await cStat(amap(95), ausente)).toBe('655');
+    expect(await cStat(amap(96), cancelado.chave)).toBe('657');
+    // Referência pela entrada do montador, sem mexer no XML.
+    const comEntrada = (d: DadosMdfeAquaviario, ch: string): DadosMdfeAquaviario => ({
+      ...d,
+      descarregamentos: d.descarregamentos.map((x) => ({ ...x, mdfe: [{ chave: ch }] })),
+    });
+    const aquav = await autorizar(comEntrada(amap(97), rodoviario.chave));
+    const soFim = { ...comEntrada(amap(98), rodoviario.chave), ufIni: 'MT' as const };
+    const fimAp = await t.client.autorizar(
+      await t.assinar({ ...soFim, carregamento: [{ cMun: '5103403', xMun: 'CUIABA' }] }),
+    );
     expect(fimAp.tipo === 'autorizado' && fimAp.cStat).toBe('100');
+    // O MDF-e transportado é do modal rodoviário (F49): o aquaviário autorizado acima não pode ser referenciado.
+    expect(await cStat(amap(99), aquav.chave)).toBe('658');
   });
 });

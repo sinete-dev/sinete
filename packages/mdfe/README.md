@@ -1,6 +1,6 @@
 # @sinete/mdfe
 
-MDF-e modelo 58, leiaute 3.00b, os quatro modais (rodoviário, aéreo, aquaviário e ferroviário): modelo de entrada tipado, montagem com totais em decimal exato e as regras de validação do MOC conferidas antes de assinar, chave de acesso, QR Code, contingência off-line, assinatura por splice e os serviços da SEFAZ (status, autorização síncrona, consulta, não encerrados e eventos). No aéreo, o grupo `aereo` (aeronave, voo, aeródromos e data) e a entrega parcial do CT-e (corte de voo); no aquaviário, o grupo `aquaviario` (embarcação, viagem, portos, terminais, comboio, unidades vazias e MMSI); no ferroviário, o grupo `ferroviario` (trem e vagões, com `qVag` pela contagem). Cobre os dois usos do rodoviário: carga própria (emitente não prestador, inclusive produtor rural com e-CPF) e prestador de serviço de transporte (com CT-e, ANTT, CIOT, vale-pedágio e pagamento do frete).
+MDF-e modelo 58, leiaute 3.00b, os quatro modais (rodoviário, aéreo, aquaviário e ferroviário): modelo de entrada tipado, montagem com totais em decimal exato e as regras de validação do MOC conferidas antes de assinar, chave de acesso, QR Code, contingência off-line, assinatura por splice e os serviços da SEFAZ (status, autorização síncrona, consulta, não encerrados e eventos). No aéreo, o grupo `aereo` (aeronave, voo, aeródromos e data) e a entrega parcial do CT-e (corte de voo); no aquaviário, o grupo `aquaviario` (embarcação, viagem, portos, terminais, comboio, unidades vazias e MMSI) e o MDF-e transportado (`descarregamentos[].mdfe`, com `qMDFe` derivado); no ferroviário, o grupo `ferroviario` (trem e vagões, com `qVag` pela contagem). Cobre os dois usos do rodoviário: carga própria (emitente não prestador, inclusive produtor rural com e-CPF) e prestador de serviço de transporte (com CT-e, ANTT, CIOT, vale-pedágio e pagamento do frete).
 
 Para emitir, retomar, encerrar e cancelar com estado entre chamadas (bytes assinados gravados antes do envio, trava entre processos, retomada automática, cancelamento com recuperação), use o emissor de MDF-e do [`@sinete/emissor`](../emissor) (`@sinete/emissor/mdfe`, ou `sinete/emissor/mdfe` pelo guarda-chuva). Este pacote é o protocolo e as primitivas sem estado que ele usa (ADR 0010):
 
@@ -32,7 +32,7 @@ await client.encerrar({ chave: r.valor.chave, nProt: desfecho.valor.nProt ?? '',
 
 ## Montagem (`montarMdfe`)
 
-A entrada (`DadosMdfe`) é `DadosMdfeRodoviario`, `DadosMdfeAereo`, `DadosMdfeAquaviario` ou `DadosMdfeFerroviario`: um grupo de modal, `rodoviario`, `aereo`, `aquaviario` ou `ferroviario`, e só um. Ela usa os nomes do MOC nos campos e nomes em português nos grupos (`emitente`, `carregamento`, `percurso`, `rodoviario.tracao`, `rodoviario.reboques`, `rodoviario.ciot`, `rodoviario.valePedagio`, `rodoviario.contratantes`, `rodoviario.pagamentos`, `aereo`, `aquaviario.terminaisCarregamento`, `aquaviario.comboio`, `ferroviario.trem`, `ferroviario.vagoes`, `descarregamentos[].nfe`/`cte`, `descarregamentos[].cte[].entregaParcial`, `seguros`, `produtoPredominante`, `totais`). Valores aceitam `string`, `number`, `bigint` ou `Decimal`; prefira texto.
+A entrada (`DadosMdfe`) é `DadosMdfeRodoviario`, `DadosMdfeAereo`, `DadosMdfeAquaviario` ou `DadosMdfeFerroviario`: um grupo de modal, `rodoviario`, `aereo`, `aquaviario` ou `ferroviario`, e só um. Ela usa os nomes do MOC nos campos e nomes em português nos grupos (`emitente`, `carregamento`, `percurso`, `rodoviario.tracao`, `rodoviario.reboques`, `rodoviario.ciot`, `rodoviario.valePedagio`, `rodoviario.contratantes`, `rodoviario.pagamentos`, `aereo`, `aquaviario.terminaisCarregamento`, `aquaviario.comboio`, `ferroviario.trem`, `ferroviario.vagoes`, `descarregamentos[].nfe`/`cte`, `descarregamentos[].cte[].entregaParcial`, `descarregamentos[].mdfe` (só no `DadosMdfeAquaviario`, com `unidadesTransporte` no tipo do leiaute), `seguros`, `produtoPredominante`, `totais`). Valores aceitam `string`, `number`, `bigint` ou `Decimal`; prefira texto.
 
 - **Schema por vigência.** O relógio de emissão e o ambiente escolhem o schema (`selecionarPl('mdfe')` do `@sinete/schemas`); o XML é validado contra ele antes de devolver.
 - **Chave.** cUF, AAMM, CNPJ (ou `000` + CPF), modelo 58, série, nMDF, tpEmis, cMDF e DV. cMDF aleatório (WebCrypto, injetável em `opcoes.aleatorio`) que não repete o nMDF; cMDF informado é conferido. Emitente CPF usa as séries 920 a 969.
@@ -46,7 +46,7 @@ A entrada (`DadosMdfe`) é `DadosMdfeRodoviario`, `DadosMdfeAereo`, `DadosMdfeAq
 
 - **NT 2024.001.** Chave de CT-e ou NF-e anterior a 6 meses da emissão (518 e 519; o mês limite passa) e cavalo mecânico sem reboque (523), com os parâmetros em `src/data/emissao.json`.
 
-Regras do Anexo I conferidas no builder: F08, F10, F11, F13 a F24, F26 a F30, F34 a F37, F41, F42, F52 a F58, F55a, F55b, F60 a F73, F77, F89 a F96, F98 a F108 e F121, mais F30a, F37a e F89c da NT 2024.001, com a origem de cada uma no código. As que o Anexo I abre com "Se modal rodoviário" (F18 a F20, F52 a F66, F89 a F113) não valem nos outros modais; F23 (carregamento posterior) e F34 (entrega parcial) dependem do modal.
+Regras do Anexo I conferidas no builder: F08, F10, F11, F13 a F24, F26 a F30, F34 a F37, F41 a F45, F52 a F58, F55a, F55b, F60 a F73, F77, F89 a F96, F98 a F108 e F121, mais F30a, F37a, F45a e F89c da NT 2024.001, com a origem de cada uma no código. As que o Anexo I abre com "Se modal rodoviário" (F18 a F20, F52 a F66, F89 a F113) não valem nos outros modais; F23 (carregamento posterior) e F34 (entrega parcial) dependem do modal.
 
 ### QR Code, contingência e assinatura
 
@@ -64,7 +64,7 @@ Regras do Anexo I conferidas no builder: F08, F10, F11, F13 a F24, F26 a F30, F3
 
 ## Lacunas conhecidas
 
-- MDF-e transportado (`infMDFeTransp`, só no aquaviário, regras F43 a F49): o modelo de entrada não tem a referência a outro MDF-e (#57).
+- MDF-e transportado: a existência, a situação e o modal do MDF-e referenciado (F46 a F49) dependem da base da SEFAZ e não são conferidos pelo montador; o simulador confere F46, F48 e F49 contra os MDF-e que ele mesmo autorizou (F47 não tem como ocorrer nele).
 - Sem tabela de municípios do IBGE: nome e código do município não são cruzados (rejeições 405, 406 e 408), nem a base da ANTT (RNTRC, CIOT) ou do DENATRAN.
 - A assinatura do parâmetro `sign` do QR Code não é conferida pelo simulador (F119).
 - O nome do elemento de resposta do WSDL não foi confirmado contra a SEFAZ real: o cliente procura o `ret*` pelo nome em qualquer lugar do `Body`.

@@ -46,7 +46,7 @@ import type {
   Contratante,
   CteTransportado,
   DadosMdfe,
-  Descarregamento,
+  DescarregamentoAquaviario,
   DocumentoContratante,
   DocumentoPessoa,
   LocalLotacao,
@@ -277,7 +277,8 @@ function documentos(
     nome: string;
     regraChave: [string, string];
     regraAntiga: [string, string];
-    regraSeg: [string, string, string, string];
+    /** Regra da chave repetida; o MDF-e transportado não tem. */
+    regraDuplicada?: [string, string];
   },
   interestadual: boolean,
   aammMinimo: number,
@@ -298,16 +299,11 @@ function documentos(
         ...tipo.regraAntiga,
       );
     }
+    if (tipo.regraDuplicada === undefined) continue;
     const escopo = interestadual ? r.valor.chave : `${d.municipio}:${r.valor.chave}`;
     const anterior = vistos.get(escopo);
     if (anterior !== undefined) {
-      ctx.regra(
-        d.path,
-        'duplicado',
-        `chave de ${tipo.nome} repetida (já em ${anterior})`,
-        tipo.mod === '57' ? 'F28' : 'F29',
-        tipo.mod === '57' ? '668' : '669',
-      );
+      ctx.regra(d.path, 'duplicado', `chave de ${tipo.nome} repetida (já em ${anterior})`, ...tipo.regraDuplicada);
     } else vistos.set(escopo, d.path);
   }
 }
@@ -622,7 +618,8 @@ export async function montarMdfe(entrada: DadosMdfe, opcoes: MontarMdfeOpcoes): 
     if (vistosCarrega.has(m.cMun)) ctx.regra(p, 'duplicado', 'município de carregamento repetido', 'F10', '685');
     vistosCarrega.add(m.cMun);
   }
-  const descargas: readonly Descarregamento[] = entrada.descarregamentos;
+  // Só o tipo do aquaviário tem `mdfe`; um chamador sem tipos pode mandá-lo em outro modal, e F43 o recusa.
+  const descargas: readonly DescarregamentoAquaviario[] = entrada.descarregamentos;
   if (descargas.length === 0 || descargas.length > 1000) {
     issues.add('descarregamentos', 'campo_obrigatorio', 'de 1 a 1000 municípios de descarregamento');
   }
@@ -665,6 +662,29 @@ export async function montarMdfe(entrada: DadosMdfe, opcoes: MontarMdfeOpcoes): 
   const ctes = descargas.flatMap((d, m) =>
     (d.cte ?? []).map((x, k) => ({ x, path: `descarregamentos[${m}].cte[${k}]`, municipio: m })),
   );
+  const mdfes = descargas.flatMap((d, m) =>
+    (d.mdfe ?? []).map((x, k) => ({ x, path: `descarregamentos[${m}].mdfe[${k}]`, municipio: m })),
+  );
+  // MDF-e transportado (F43, F44): só no aquaviário, e só com carregamento ou descarregamento em AM ou AP.
+  if (mdfes.length > 0) {
+    if (aquav === undefined) {
+      ctx.regra(
+        mdfes[0]?.path ?? 'descarregamentos',
+        'combinacao_invalida',
+        'MDF-e transportado só no modal aquaviário',
+        'F43',
+        '647',
+      );
+    } else if (![ufIni, ufFim].some((u) => u === 'AM' || u === 'AP')) {
+      ctx.regra(
+        mdfes[0]?.path ?? 'descarregamentos',
+        'combinacao_invalida',
+        'MDF-e transportado só com carregamento ou descarregamento em AM ou AP',
+        'F44',
+        '648',
+      );
+    }
+  }
   if (aereo === undefined) {
     for (const d of ctes) {
       if (d.x.entregaParcial !== undefined) {
@@ -717,7 +737,7 @@ export async function montarMdfe(entrada: DadosMdfe, opcoes: MontarMdfeOpcoes): 
     if (tpEmit !== '2') {
       ctx.regra('indCarregaPosterior', 'carregamento_posterior_invalido', 'só para carga própria (2)', 'F24', '707');
     }
-    if (nfes.length + ctes.length > 0) {
+    if (nfes.length + ctes.length + mdfes.length > 0) {
       ctx.regra(
         'descarregamentos',
         'carregamento_posterior_invalido',
@@ -728,7 +748,7 @@ export async function montarMdfe(entrada: DadosMdfe, opcoes: MontarMdfeOpcoes): 
     }
   } else {
     for (const [n, d] of descargas.entries()) {
-      if ((d.nfe ?? []).length + (d.cte ?? []).length === 0) {
+      if ((d.nfe ?? []).length + (d.cte ?? []).length + (d.mdfe ?? []).length === 0) {
         ctx.regra(`descarregamentos[${n}]`, 'campo_obrigatorio', 'município sem documento', 'F26', '616');
       }
     }
@@ -745,7 +765,7 @@ export async function montarMdfe(entrada: DadosMdfe, opcoes: MontarMdfeOpcoes): 
       nome: 'NF-e',
       regraChave: ['F37', '604'],
       regraAntiga: ['F37a', '519'],
-      regraSeg: ['F41', '606', 'F42', '607'],
+      regraDuplicada: ['F29', '669'],
     },
     interestadual,
     aammMinimo,
@@ -758,8 +778,15 @@ export async function montarMdfe(entrada: DadosMdfe, opcoes: MontarMdfeOpcoes): 
       nome: 'CT-e',
       regraChave: ['F30', '601'],
       regraAntiga: ['F30a', '518'],
-      regraSeg: ['F35', '602', 'F36', '603'],
+      regraDuplicada: ['F28', '668'],
     },
+    interestadual,
+    aammMinimo,
+  );
+  documentos(
+    ctx,
+    mdfes.map((d) => ({ chave: d.x.chave, path: `${d.path}.chave`, municipio: d.municipio })),
+    { mod: '58', nome: 'MDF-e', regraChave: ['F45', '649'], regraAntiga: ['F45a', '520'] },
     interestadual,
     aammMinimo,
   );
@@ -816,6 +843,20 @@ export async function montarMdfe(entrada: DadosMdfe, opcoes: MontarMdfeOpcoes): 
           (d.nfe ?? []).length === 0
             ? undefined
             : (d.nfe ?? []).map((x) => clean({ chNFe: chaveNormal(x.chave), ...docOut(x) })),
+        infMDFeTransp:
+          (d.mdfe ?? []).length === 0
+            ? undefined
+            : (d.mdfe ?? []).map((x) =>
+                clean({
+                  chMDFe: chaveNormal(x.chave),
+                  indReentrega: x.indReentrega ? '1' : undefined,
+                  infUnidTransp:
+                    x.unidadesTransporte === undefined || x.unidadesTransporte.length === 0
+                      ? undefined
+                      : x.unidadesTransporte,
+                  peri: docOut(x).peri,
+                }),
+              ),
       }),
     ),
   };
@@ -1219,6 +1260,7 @@ export async function montarMdfe(entrada: DadosMdfe, opcoes: MontarMdfeOpcoes): 
   const tot = clean({
     qCTe: ctes.length === 0 ? undefined : String(ctes.length),
     qNFe: nfes.length === 0 ? undefined : String(nfes.length),
+    qMDFe: mdfes.length === 0 ? undefined : String(mdfes.length),
     vCarga: formatarDecimal(vCarga, D1302),
     cUnid: entrada.totais.cUnid,
     qCarga: formatarDecimal(qCarga, D1104),

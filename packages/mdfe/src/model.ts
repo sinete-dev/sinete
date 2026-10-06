@@ -19,6 +19,7 @@
  */
 
 import type { Uf } from '@sinete/core';
+import type { TUnidadeTransp } from '@sinete/schemas/mdfe/3.00b';
 import type { DecimalInput } from './decimal.ts';
 import type { UfMdfe } from './percurso.ts';
 import type { Instante } from './time.ts';
@@ -270,12 +271,30 @@ export interface CteTransportado extends DocumentoTransportado {
   readonly entregaParcial?: { readonly qtdTotal: DecimalInput; readonly qtdParcial: DecimalInput };
 }
 
+/**
+ * MDF-e transportado (`infMDFeTransp`): outro manifesto levado pela embarcação, só no modal aquaviário e só com
+ * carregamento ou descarregamento em AM ou AP (F43, 647; F44, 648). A chave é de MDF-e (modelo 58, F45, 649).
+ */
+export interface MdfeTransportado {
+  /** Chave de acesso de 44 posições do MDF-e transportado. */
+  readonly chave: string;
+  readonly indReentrega?: true;
+  /** Unidades de transporte (`infUnidTransp`), no tipo do leiaute. */
+  readonly unidadesTransporte?: readonly TUnidadeTransp[];
+  readonly perigosos?: readonly ProdutoPerigoso[];
+}
+
 /** Município de descarregamento com os documentos que descarregam nele (`infMunDescarga`). */
 export interface Descarregamento {
   readonly cMun: string;
   readonly xMun: string;
   readonly nfe?: readonly NfeTransportada[];
   readonly cte?: readonly CteTransportado[];
+}
+
+/** Município de descarregamento do modal aquaviário, que também pode levar MDF-e transportado. */
+export interface DescarregamentoAquaviario extends Descarregamento {
+  readonly mdfe?: readonly MdfeTransportado[];
 }
 
 export interface MunicipioCarregamento {
@@ -452,8 +471,10 @@ export interface Ferroviario {
 // MDF-e
 // ---------------------------------------------------------------------------------------------------------------
 
-/** Campos do MDF-e comuns a todos os modais. */
-export interface CamposMdfe {
+/**
+ * Campos do MDF-e comuns a todos os modais. `D` é o descarregamento do modal: só o aquaviário leva MDF-e transportado.
+ */
+export interface CamposMdfe<D extends Descarregamento = Descarregamento> {
   readonly tpEmit: TipoEmitente;
   /**
    * Tipo do transportador: no modal rodoviário, só quando o veículo de tração é de terceiro
@@ -484,7 +505,7 @@ export interface CamposMdfe {
   /** Carregamento posterior, só no modal rodoviário: os documentos entram depois, pelo evento de inclusão de DF-e (F21 a F27). */
   readonly indCarregaPosterior?: true;
   /** Municípios de descarregamento (1 a 1000), na UF de fim, com os documentos de cada um. */
-  readonly descarregamentos: readonly Descarregamento[];
+  readonly descarregamentos: readonly D[];
   readonly seguros?: readonly Seguro[];
   readonly produtoPredominante?: ProdutoPredominante;
   readonly totais: TotaisCarga;
@@ -512,7 +533,7 @@ export interface DadosMdfeAereo extends CamposMdfe {
 }
 
 /** MDF-e do modal aquaviário (`modal` 3). */
-export interface DadosMdfeAquaviario extends CamposMdfe {
+export interface DadosMdfeAquaviario extends CamposMdfe<DescarregamentoAquaviario> {
   readonly aquaviario: Aquaviario;
   readonly rodoviario?: never;
   readonly aereo?: never;

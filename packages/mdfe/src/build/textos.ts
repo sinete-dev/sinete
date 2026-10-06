@@ -31,15 +31,18 @@ export const CAMPOS: readonly CampoDeTexto[] = [
   ),
   ['carregamento[].xMun', 'ide.infMunCarrega.xMunCarrega'],
   ['descarregamentos[].xMun', `${descarga}.xMunDescarga`],
-  ...(['nfe', 'cte'] as const).flatMap((d) =>
+  ...(
+    [
+      ['nfe', 'infNFe'],
+      ['cte', 'infCTe'],
+      ['mdfe', 'infMDFeTransp'],
+    ] as const
+  ).flatMap(([d, x]) =>
     (['nONU', 'xNomeAE', 'xClaRisco', 'grEmb', 'qTotProd', 'qVolTipo'] as const).map(
-      (c) =>
-        [
-          `descarregamentos[].${d}[].perigosos[].${c}`,
-          `${descarga}.${d === 'nfe' ? 'infNFe' : 'infCTe'}.peri.${c}`,
-        ] as const,
+      (c) => [`descarregamentos[].${d}[].perigosos[].${c}`, `${descarga}.${x}.peri.${c}`] as const,
     ),
   ),
+  ['descarregamentos[].mdfe[].unidadesTransporte[]', `${descarga}.infMDFeTransp.infUnidTransp`],
   ['rodoviario.RNTRC', `${rodo}.infANTT.RNTRC`],
   ['rodoviario.ciot[].CIOT', `${rodo}.infANTT.infCIOT.CIOT`],
   ['rodoviario.valePedagio.dispositivos[].nCompra', `${rodo}.infANTT.valePed.disp.nCompra`],
