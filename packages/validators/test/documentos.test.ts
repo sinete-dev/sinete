@@ -427,7 +427,8 @@ describe('chave de acesso: domínio de cada componente', () => {
   });
 
   test('modo emissão: tpEmis por modelo (B22-10, B22-34)', () => {
-    expect(codeOf(lerChaveAcesso(make({ tpEmis: 9 }), { emissao: true }))).toBe('chave_tpemis_invalido');
+    // NT 2026.002 v1.11: a NF-e Tipo 2 (tpImp 6) admite a off-line; o tpImp não está na chave.
+    expect(lerChaveAcesso(make({ tpEmis: 9 }), { emissao: true }).ok).toBe(true);
     expect(codeOf(lerChaveAcesso(make({ tpEmis: 3 }), { emissao: true }))).toBe('chave_tpemis_invalido');
     expect(lerChaveAcesso(make({ mod: '65', tpEmis: 9 }), { emissao: true }).ok).toBe(true);
     expect(codeOf(lerChaveAcesso(make({ mod: '65', tpEmis: 5 }), { emissao: true }))).toBe('chave_tpemis_invalido');

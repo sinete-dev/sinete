@@ -203,9 +203,9 @@ const autorizacao: RegraSim<ContextoAutorizacao>[] = [
   },
   {
     id: 'B22-10',
-    fonte: `${ANEXO_I}, item 4.2.1; contingência off-line (tpEmis 9) é só da NFC-e`,
+    fonte: `${ANEXO_I}, item 4.2.1, e NT 2026.002 v1.11: na NF-e, contingência off-line (tpEmis 9) só com tpImp 6`,
     conferir: ({ nfe }: ContextoAutorizacao): RejeicaoSim | undefined =>
-      nfe.mod === '55' && nfe.tpEmis === '9' ? reject('711') : undefined,
+      nfe.mod === '55' && nfe.tpEmis === '9' && nfe.ide?.tpImp !== '6' ? reject('711') : undefined,
   },
   {
     id: 'B22-30',
@@ -245,12 +245,13 @@ const autorizacao: RegraSim<ContextoAutorizacao>[] = [
     },
   },
   {
-    id: 'ZX01-10',
-    fonte: `${ANEXO_I}, item 4.2.1 (ZX01-10 e ZX02-10): infNFeSupl só na NFC-e, e nela o QR Code é obrigatório`,
+    id: 'ZX02-10',
+    fonte:
+      'NT 2026.002 v1.11, ZX02-10: QR Code obrigatório na NFC-e e na NF-e com DANFE Simplificado Tipo 2 (tpImp 6), menos na NFF; a ZX01-10 (393) saiu do texto',
     conferir({ nfe }: ContextoAutorizacao): RejeicaoSim | undefined {
-      if (nfe.supl === undefined) return undefined;
-      if (nfe.mod === '55') return nfe.supl.qrCode === undefined ? undefined : reject('393');
-      return nfe.supl.qrCode === undefined ? reject('394') : undefined;
+      const exige = nfe.mod === '65' || nfe.ide?.tpImp === '6';
+      if (!exige || nfe.tpEmis === '3') return undefined;
+      return nfe.supl?.qrCode === undefined ? reject('394') : undefined;
     },
   },
   {
@@ -259,10 +260,12 @@ const autorizacao: RegraSim<ContextoAutorizacao>[] = [
       'NT 2025.001 v1.03, regras ZX02-222 a ZX02-338 (QR Code versões 2 e 3; o hash da versão 2 com o CSC não é conferido)',
     conferir({ nfe, chave }: ContextoAutorizacao): RejeicaoSim | undefined {
       const qr = nfe.supl?.qrCode;
-      if (nfe.mod !== '65' || qr === undefined) return undefined;
+      if (qr === undefined) return undefined;
       const p = parametrosDoQrCode(qr);
       if (p === undefined) return undefined;
       const [chQr, versao, tpAmb] = p;
+      // ZX02-220 (NT 2026.002): na NF-e, só a versão 3.
+      if (nfe.mod === '55' && versao !== '3') return reject('672');
       const divergente = (param: string): RejeicaoSim => reject('397', { Param: param });
       if (chQr === undefined || chQr === '') return reject('396', { Param: 'chNFe' });
       if (chQr !== chave) return divergente('chNFe');

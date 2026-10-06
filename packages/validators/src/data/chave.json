@@ -103,10 +103,10 @@
       "source": "NT 2023.002 v1.00, itens 2.1 e 4.1 (produção desde 04/09/2023): a NFC-e do produtor rural pessoa física emitida com aplicativo próprio leva o CPF na chave e usa a série 920 a 969, a mesma da NF-e; 910 a 919 é da NFA-e emitida no site do Fisco. Substitui a RV C02a-04 (rejeição 337) do MOC 7.0, que não admitia emitente CPF na NFC-e."
     },
     "tpEmisPorModelo": {
-      "55": ["1", "2", "4", "5", "6", "7"],
+      "55": ["1", "2", "4", "5", "6", "7", "9"],
       "65": ["1", "4", "9"]
     },
-    "tpEmisSource": "MOC 7.0 Anexo I, campo B22 e RV B22-10 (rejeição 711: NF-e com tpEmis 9), B22-34 (rejeição 714: NFC-e com 2, 4 a critério da UF, ou 5) e NT 2015.002 (SCAN desativado)",
+    "tpEmisSource": "MOC 7.0 Anexo I, campo B22 e RV B22-10 (rejeição 711), que a NT 2026.002 v1.11 reescreveu: a NF-e aceita tpEmis 9 com o DANFE Simplificado Tipo 2 (tpImp 6), que a chave não traz, então o 9 passa no modelo 55 e o tpImp fica para quem monta a nota; B22-34 (rejeição 714: NFC-e com 2, 4 a critério da UF, ou 5) e NT 2015.002 (SCAN desativado)",
     "seriesPermitidas": [[0, 969]],
     "seriesSource": "MOC 7.0 Anexo I, campo B07 e Tabela 2-4: faixas 000 a 969; acima disso não há faixa definida para NF-e e NFC-e"
   },

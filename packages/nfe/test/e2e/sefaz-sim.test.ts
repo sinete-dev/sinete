@@ -174,6 +174,16 @@ describe('NF-e contra a SEFAZ simulada, HTTPS com mTLS', () => {
     }
   });
 
+  test('NF-e com DANFE Simplificado Tipo 2 (tpImp 6): o infNFeSupl vai e volta no nfeProc, autorizada', async () => {
+    const { client, emitir } = await cenario();
+    const nfe = await emitir({ nNF: 50, tpImp: '6', indFinal: '1', indPres: '1' });
+    const supl = /<infNFeSupl>.*<\/infNFeSupl>/.exec(nfe.xml)?.[0];
+    expect(supl).toContain(`?p=${nfe.chave}|3|2</qrCode>`);
+    const r = await client.autorizar(nfe.xml);
+    expect([r.tipo, r.cStat]).toEqual(['autorizado', '100']);
+    if (r.tipo === 'autorizado') expect(r.valor.nfeProc).toContain(nfe.xml);
+  });
+
   test('autorização assíncrona: recibo pendente (105) e consulta até o lote ser processado', async () => {
     const { client, emitir, caminhos } = await cenario({ atrasoProcessamentoMs: 3000 });
     const nfe = await emitir({ nNF: 2 });

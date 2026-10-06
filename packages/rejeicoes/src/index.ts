@@ -31,7 +31,8 @@ export const CATEGORIAS_REJEICAO: readonly CategoriaRejeicao[] = [
 
 /** Regra de validação em que o código aparece. */
 export interface RegraRejeicao {
-  /** Id do documento em `TABELA_REJEICOES.fontes` (`moc70-anexo1`, `nt2025002`, `nt2025001`, `nt2024003`, `nt2026007`). */
+  /** Id do documento em `TABELA_REJEICOES.fontes` (`moc70-anexo1`, `nt2025002`, `nt2025001`, `nt2024003`, `nt2026007`,
+   * `nt2026002`). */
   readonly documento: string;
   /** Id da regra no documento (`C17-20`, `UB13-10`). */
   readonly id: string;

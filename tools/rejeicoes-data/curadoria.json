@@ -532,6 +532,13 @@
     }
   },
   "adicionais": {
+    "672": {
+      "message": "NF-e com DANFE Simplificado Tipo 2 com versão de qrCode não permitida",
+      "doc": "nt2026002",
+      "rule": "ZX02-220",
+      "modelos": ["55"],
+      "effect": "rejeicao"
+    },
     "836": {
       "message": "Não informada Guia de Trânsito Animal [nItem: 999]",
       "doc": "nt2024003",

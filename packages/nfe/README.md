@@ -55,6 +55,10 @@ A entrada (`DadosNfe`) usa os nomes do MOC nos campos e nomes em português nos 
 - **QR Code** (`infNFeSupl`). Padrão versão 3 (NT 2025.001, Manual de Padrões Técnicos do DANFE NFC-e e QR Code 6.0, item 4.4), sem CSC: `chave|3|tpAmb`. Com `opcoes.qrCode = { versao: '2', idCSC, CSC }`, o hash SHA-1 com o CSC da versão 2 (item 4.3); o CSC nunca vai para o XML, e o emitente pessoa física não usa a versão 2 (ZX02-222). O endereço do QR Code e o `urlChave` saem da UF, do ambiente e da data de emissão (`src/data/nfce-urls.json`, das tabelas do Portal Nacional da NFC-e); `opcoes.urlQrCode` e `opcoes.urlChave` sobrepõem (AM e MA publicam o endereço sem protocolo e pedem a opção).
 - **Contingência off-line.** `contingencia: { tpEmis: '9', dhCont, xJust }`. O QR Code leva o dia da emissão, o `vNF` e, na versão 3, a identificação do destinatário e a assinatura RSA-SHA1 dos parâmetros com o certificado da nota; na versão 2, o `digVal` (o DigestValue da assinatura em hexadecimal). A nota é impressa com esse XML e transmitida depois, com os mesmos bytes.
 
+### NF-e com DANFE Simplificado Tipo 2 (`tpImp` 6)
+
+A NT 2026.002 v1.11 dá à NF-e modelo 55 com `tpImp: '6'` o mesmo `infNFeSupl` da NFC-e: o QR Code é obrigatório (ZX02-10, rejeição 394), só na versão 3 (ZX02-220, rejeição 672; `opcoes.qrCode` com a versão 2 vira ocorrência de montagem em `qrCode.versao`) e com o endereço da NFC-e da UF (ZX02-20, observação 3), com as mesmas opções `urlQrCode` e `urlChave`. A contingência off-line (`tpEmis` 9) passa a valer para ela, com os oito parâmetros e a assinatura do QR Code; na NF-e com outro `tpImp` continua recusada (B22-10, rejeição 711). As demais regras que a NT estende da NFC-e para a NF-e Tipo 2 ficam com a SEFAZ por enquanto.
+
 `assinarNfe` acrescenta o `infNFeSupl` antes da `Signature`. Para assinar em três fases (A3, HSM), `assinaturaQrCode(nota, assinador)` e `comQrCode(nota, assinatura)` dão o texto que vai para o `prepararAssinatura` do `@sinete/core/xml`.
 
 ## IBS e CBS

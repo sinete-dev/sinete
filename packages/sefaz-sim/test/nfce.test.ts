@@ -47,6 +47,22 @@ describe('NFC-e', () => {
     expect(await com({ nNF: 5, tpEmis: '9' })).toBe('711');
   });
 
+  test('NF-e com DANFE Simplificado Tipo 2 (NT 2026.002 v1.11): QR Code obrigatório, versão 3, off-line aceita', async () => {
+    const h = await harness();
+    const com = async (p: Parameters<typeof nfe>[0]): Promise<string | undefined> =>
+      cStat(await h.send('NFeAutorizacao', enviNFe([(await nfe(p)).xml])))[1];
+    // A ZX01-10 (393) saiu do texto: o infNFeSupl na NF-e Tipo 2 é autorizado, on-line e off-line.
+    expect(await com({ nNF: 1, tipo2: true })).toBe('100');
+    expect(await com({ nNF: 2, tipo2: true, tpEmis: '9' })).toBe('100');
+    expect(await com({ nNF: 3, tipo2: true, qrCode: null })).toBe('394');
+    const url = 'https://www.homologacao.nfce.fazenda.sp.gov.br/qrcode?p=';
+    const chave4 = (await nfe({ nNF: 4, tipo2: true })).chave;
+    expect(await com({ nNF: 4, tipo2: true, qrCode: `${url}${chave4}|2|2|1|${'A'.repeat(40)}` })).toBe('672');
+    // Off-line na NF-e só com tpImp 6 (B22-10); a NF-e sem tpImp 6 continua sem QR Code obrigatório.
+    expect(await com({ nNF: 5, tpEmis: '9' })).toBe('711');
+    expect(await com({ nNF: 6 })).toBe('100');
+  });
+
   test('lote com mais de uma NFC-e: 126', async () => {
     const h = await harness();
     const a = await nfe({ nNF: 1, mod: '65' });

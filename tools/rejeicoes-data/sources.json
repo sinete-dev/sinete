@@ -72,6 +72,15 @@
           "942": "fora da faixa nova da NT (156 a 188): a RV 5AF15-10 aparece aqui com a condição tpEmis <> 3, e falta conferir se o código nasceu nesta NT (issue #48)"
         }
       }
+    },
+    {
+      "id": "nt2026002",
+      "title": "NT 2026.002: NFC-e e NF-e, emissão off-line, autorização com alerta e DANFE Simplificado Tipo 2",
+      "versao": "1.11",
+      "citation": "NT 2026.002 v1.11",
+      "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=m8aACnFLK/Y=",
+      "file": "NT2026.002_v1.11.pdf",
+      "sha256": "72c033b2c7490710f61488a14d0bb3d7bb54e5345aa8d33d6ff2c270c228f046"
     }
   ]
 }

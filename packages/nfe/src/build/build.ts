@@ -149,8 +149,9 @@ export interface NfeMontada {
   readonly tpEmis: string;
   readonly dhEmi: string;
   /**
-   * Só NFC-e: o `infNFeSupl` a acrescentar (`comQrCode`, `assinarNfe`). Na versão 3 em contingência off-line, falta a
-   * assinatura dos parâmetros, que só o certificado faz (`assinaturaQrCode`).
+   * NFC-e e NF-e com DANFE Simplificado Tipo 2 (tpImp 6, NT 2026.002): o `infNFeSupl` a acrescentar (`comQrCode`,
+   * `assinarNfe`). Na versão 3 em contingência off-line, falta a assinatura dos parâmetros, que só o certificado faz
+   * (`assinaturaQrCode`).
    */
   readonly nfce?: NfceSupl;
   /** Pacote de liberação usado (escolhido pela vigência). */
@@ -750,11 +751,11 @@ export async function montarNfe(entrada: DadosNfe, opcoes: MontarNfeOpcoes): Pro
     if (cont.dhCont.getTime() > agora.getTime()) {
       issues.add('contingencia.dhCont', 'contingencia_invalida', 'entrada em contingência posterior à emissão');
     }
-    if (!nfce && tpEmis === '9') {
+    if (!nfce && tpEmis === '9' && (entrada.tpImp ?? '1') !== '6') {
       issues.add(
         'contingencia.tpEmis',
         'contingencia_invalida',
-        'contingência off-line (tpEmis 9) é só da NFC-e (B22-10, rejeição 711)',
+        'contingência off-line (tpEmis 9) é da NFC-e e da NF-e com DANFE Simplificado Tipo 2, tpImp 6 (B22-10, rejeição 711)',
       );
     }
     if (nfce && (tpEmis === '6' || tpEmis === '7')) {
@@ -799,7 +800,17 @@ export async function montarNfe(entrada: DadosNfe, opcoes: MontarNfeOpcoes): Pro
   } else if (tpImp === '4' || tpImp === '5') {
     issues.add('tpImp', 'campo_invalido', 'tpImp 4 e 5 (DANFC-e) são da NFC-e (B21-20, rejeição 710)');
   }
+  // QR Code no infNFeSupl: NFC-e e NF-e com DANFE Simplificado Tipo 2 (NT 2026.002 v1.11, ZX02-10), esta só na versão 3
+  // (ZX02-220, rejeição 672) e com a URL da NFC-e da UF (ZX02-20, observação 3).
+  const comQr = nfce || tpImp === '6';
   const qr: QrCodeNfceOpcoes = opcoes.qrCode ?? { versao: '3' };
+  if (!nfce && comQr && qr.versao === '2') {
+    issues.montagem(
+      'qrCode.versao',
+      'qrcode_invalido',
+      'a NF-e com DANFE Simplificado Tipo 2 usa só o QR Code versão 3 (ZX02-220, rejeição 672)',
+    );
+  }
   if (nfce && qr.versao === '2') {
     // O CSC e o idCSC são opções do montador, não da nota: as ocorrências são da montagem (ADR 0011).
     if (!/^\d{1,6}$/.test(qr.idCSC) || Number(qr.idCSC) === 0) {
@@ -1381,8 +1392,9 @@ export async function montarNfe(entrada: DadosNfe, opcoes: MontarNfeOpcoes): Pro
     };
   }
   let supl: NfceSupl | undefined;
-  if (nfce) {
-    // infNFeSupl (grupo ZX, NT 2025.001 item 04): endereços da UF no dia da emissão, pelo horário de Brasília.
+  if (comQr) {
+    // infNFeSupl (grupo ZX, NT 2025.001 item 04 e NT 2026.002): endereços da NFC-e da UF no dia da emissão, pelo horário
+    // de Brasília, também na NF-e Tipo 2.
     const tabela = urlsNfce(emitUf, opcoes.ambiente, diaBrasilia(agora));
     const urlQr = opcoes.urlQrCode ?? tabela.qrCode;
     const urlChave = opcoes.urlChave ?? tabela.urlChave;
@@ -1462,25 +1474,26 @@ const escapeXml = (s: string): string => s.replace(/&/g, '&amp;').replace(/</g, 
 /**
  * Assinatura dos parâmetros do QR Code da NFC-e em contingência off-line com a versão 3 (RSA-SHA1 em Base64, com o
  * certificado que assina a nota; Manual do DANFE NFC-e 6.0, 4.4.2). `undefined` quando o QR Code não leva assinatura
- * (NF-e, emissão normal, versão 2).
+ * (NF-e sem QR Code, emissão normal, versão 2). Vale também para a NF-e com DANFE Simplificado Tipo 2 em contingência
+ * off-line (NT 2026.002).
  */
 export async function assinaturaQrCode(nota: NfeMontada, assinador: Assinador): Promise<string | undefined> {
   return nota.nfce?.assinar === true ? assinarParametros(nota.nfce.parametros, assinador) : undefined;
 }
 
 /**
- * A NFC-e montada com o `infNFeSupl` (QR Code e `urlChave`) inserido por splice antes do fechamento de `NFe`, pronta
+ * A NFC-e, ou a NF-e com DANFE Simplificado Tipo 2 (tpImp 6, NT 2026.002), montada com o `infNFeSupl` (QR Code e `urlChave`) inserido por splice antes do fechamento de `NFe`, pronta
  * para a assinatura. Na versão 3 em contingência off-line, informe a `assinatura` (`assinaturaQrCode`); nos demais
  * casos ela não existe (ZX02-330, rejeição 445; ZX02-334, rejeição 474). Para assinar em três fases (A3, HSM), passe
- * este texto ao `prepararAssinatura` do `@sinete/core/xml` com o `id` da nota. Na NF-e (modelo 55), devolve o XML como
- * veio: ela não tem `infNFeSupl` (ZX01-10, rejeição 393).
+ * este texto ao `prepararAssinatura` do `@sinete/core/xml` com o `id` da nota. Na NF-e com outro tpImp, devolve o XML como
+ * veio: ela não tem `infNFeSupl`.
  */
 export function comQrCode(nota: NfeMontada, assinatura?: string): string {
   const xml = inserirSupl(nota, assinatura);
   // Com a assinatura verdadeira, o qrCode pode passar do tamanho que a montagem conferiu (chave maior que 2048 bits).
   if (assinatura !== undefined) {
     const issues = conferirSupl(xml);
-    if (issues.length > 0) throw new ErroDeValidacao('o QR Code da NFC-e não passou no schema', issues);
+    if (issues.length > 0) throw new ErroDeValidacao('o QR Code não passou no schema', issues);
   }
   return xml;
 }
@@ -1488,19 +1501,20 @@ export function comQrCode(nota: NfeMontada, assinatura?: string): string {
 function inserirSupl(built: NfeMontada, assinatura: string | undefined): string {
   const s = built.nfce;
   if (s === undefined) {
-    if (assinatura !== undefined) throw new ErroDeConfiguracao('a NF-e (modelo 55) não tem QR Code');
+    if (assinatura !== undefined)
+      throw new ErroDeConfiguracao('esta NF-e não tem QR Code: só a NF-e com DANFE Simplificado Tipo 2 (tpImp 6) leva');
     return built.xml;
   }
   if (s.assinar && assinatura === undefined) {
     throw new ErroDeConfiguracao(
-      'NFC-e em contingência off-line com QR Code versão 3 precisa da assinatura (ZX02-334, rejeição 474)',
+      'contingência off-line com QR Code versão 3 precisa da assinatura (ZX02-334, rejeição 474)',
     );
   }
   if (!s.assinar && assinatura !== undefined) {
     throw new ErroDeConfiguracao('este QR Code não leva assinatura (ZX02-330, rejeição 445)');
   }
   const fim = '</NFe>';
-  if (!built.xml.endsWith(fim)) throw new ErroDeConfiguracao('NFC-e montada fora da forma esperada');
+  if (!built.xml.endsWith(fim)) throw new ErroDeConfiguracao('nota montada fora da forma esperada');
   const qrCode = `${s.base}${s.parametros}${assinatura === undefined ? '' : `|${assinatura}`}`;
   const supl = `<infNFeSupl><qrCode>${escapeXml(qrCode)}</qrCode><urlChave>${escapeXml(s.urlChave)}</urlChave></infNFeSupl>`;
   return built.xml.slice(0, -fim.length) + supl + fim;
