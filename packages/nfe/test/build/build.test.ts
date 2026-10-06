@@ -87,6 +87,7 @@ describe('montarNfe: identificação e chave', () => {
           emitente: {
             CNPJ: CNPJ_EMIT,
             xNome: 'EMPRESA SINTETICA LTDA',
+            IE: '040000001',
             CRT: '3',
             endereco: { ...base.emitente.endereco, UF: 'AM', cMun: '1302603' },
           },

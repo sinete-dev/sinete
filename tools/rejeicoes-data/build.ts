@@ -38,6 +38,12 @@ type Doc = {
    * de validação (início e fim, expressões regulares). Delas só entram os códigos que as fontes principais não têm.
    */
   mensagens?: { tabela: string; regrasDe: string; regrasAte: string; item: string };
+  /**
+   * NT sem tabela de mensagens, só com regras de validação (NT 2026.007): o trecho das regras (início e, opcional, fim).
+   * Delas só entram os códigos que as fontes anteriores não têm, com a mensagem da coluna Descrição Erro. `ignorar` tira
+   * códigos que a NT só repete, com o motivo.
+   */
+  regras?: { de: string; ate?: string; ignorar?: Record<string, string> };
 };
 type Rule = { doc: string; id: string };
 type Category = 'schema' | 'assinatura' | 'certificado' | 'cadastro' | 'regra-negocio' | 'duplicidade' | 'reforma';
@@ -134,6 +140,8 @@ const isChrome = (l: string): boolean =>
   /^\s*MOC 7\.0 \S Anexo I/.test(l) ||
   /^\s*Reforma Tributária \S Lei Complementar/.test(l) ||
   /^\s*NT 2025\.002-RTC\s*$/.test(l) ||
+  /^\s*Projeto\s*$/.test(l) ||
+  /^\s*NT \d{4}\.\d{3} - \S/.test(l) ||
   /^\s*(Campo|Campo-Seq|#)\s+(Modelo|Regra)/.test(l) ||
   /^\s*CÓD\s+MOTIVOS/.test(l);
 
@@ -399,6 +407,32 @@ for (const d of complementares) {
   }
 }
 
+// 3c. NT só com regras de validação: códigos novos com a mensagem, os modelos e a regra do próprio trecho.
+const soRegrasRules: RuleRow[] = [];
+for (const d of sources.documents.filter((x) => x.regras !== undefined)) {
+  const cfg = d.regras as NonNullable<Doc['regras']>;
+  for (const r of parseRules(lines(d.id), new RegExp(cfg.de), cfg.ate ? new RegExp(cfg.ate) : undefined)) {
+    if (cfg.ignorar?.[r.code] !== undefined) continue;
+    if (entries.has(r.code) && !soRegrasRules.some((x) => x.code === r.code)) continue;
+    soRegrasRules.push(r);
+    const e = entries.get(r.code);
+    if (e) {
+      if (r.rule && !e.rules.some((x) => x.doc === d.id && x.id === r.rule)) e.rules.push({ doc: d.id, id: r.rule });
+      for (const m of r.modelos) if (!e.modelos.includes(m)) e.modelos.push(m);
+      continue;
+    }
+    entries.set(r.code, {
+      code: r.code,
+      effect: r.effect,
+      message: r.message,
+      modelos: [...r.modelos],
+      source: `${d.citation}, regra ${r.rule}`,
+      rules: r.rule ? [{ doc: d.id, id: r.rule }] : [],
+      category: 'regra-negocio',
+    });
+  }
+}
+
 const unknownCurated = Object.keys(curadoria.entries).filter((c) => !entries.has(c));
 if (unknownCurated.length > 0) {
   console.error(`rejeicoes-data: curadoria cita códigos fora do catálogo: ${unknownCurated.join(', ')}`);
@@ -446,7 +480,7 @@ const balanced = (m: string, open: string, close: string): boolean => m.split(op
 const allow = curadoria.sanityAllow ?? {};
 const suspects: string[] = [];
 const leftovers = new Map<string, string>();
-for (const r of [...anexoRules, ...ntRules, ...complementaresRules])
+for (const r of [...anexoRules, ...ntRules, ...complementaresRules, ...soRegrasRules])
   if (r.leftover && entries.get(r.code)?.message === r.message) leftovers.set(r.code, r.leftover);
 for (const e of entries.values()) {
   for (const m of e.messages ?? [e.message]) {
@@ -478,7 +512,7 @@ const data: DescricaoTabelaRejeicoes & { geradoPor: string; notas: string; rejei
     coletadoEm: sources.retrievedAt,
   })),
   notas:
-    'União da tabela 4.4.2/4.4.3 do Anexo I com os códigos das regras de validação do Anexo I e da NT 2025.002, os códigos de outras NT listados em `adicionais` da curadoria (regra conferida no PDF) e os códigos novos das tabelas de mensagens da NT 2025.001 e da NT 2023.002 (NFC-e). Mensagem oficial sem ajuste (placeholders como [nItem: 999] mantidos). `modelos` vem das regras; sem regra localizada, 55 e 65. `categoria` é heurística sobre a mensagem, com correções manuais na curadoria. `causaProvavel` e `comoCorrigir` só onde houve curadoria, com a regra citada em `referencia`.',
+    'União da tabela 4.4.2/4.4.3 do Anexo I com os códigos das regras de validação do Anexo I e da NT 2025.002, os códigos de outras NT listados em `adicionais` da curadoria (regra conferida no PDF) os códigos novos das tabelas de mensagens da NT 2025.001 e da NT 2023.002 (NFC-e) e os códigos novos das regras de validação da NT 2026.007 (contribuinte exclusivo do IBS/CBS). Mensagem oficial sem ajuste (placeholders como [nItem: 999] mantidos). `modelos` vem das regras; sem regra localizada, 55 e 65. `categoria` é heurística sobre a mensagem, com correções manuais na curadoria. `causaProvavel` e `comoCorrigir` só onde houve curadoria, com a regra citada em `referencia`.',
   rejeicoes: result,
 };
 // Formatado pelo Biome do repo, para o `bun run format` não reescrever o arquivo gerado.

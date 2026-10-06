@@ -69,7 +69,7 @@ import {
   urlsNfce,
 } from './nfce.ts';
 import { camposForaDoPl, escolherPl } from './pl.ts';
-import { cstComIsento, vencimentos } from './rejeicoes.ts';
+import { cstComIsento, exclusivoIbsCbs, vencimentos } from './rejeicoes.ts';
 import { conferirTextosDaEntrada, textoXmlValido } from './textos.ts';
 import { buildIcmsUfDest, buildIi, buildIpi, buildIssqn, buildPisCofins, buildPisCofinsSt } from './tributos.ts';
 import type { Familia } from './values.ts';
@@ -399,7 +399,7 @@ interface ItemMontado {
   readonly issqnOpcionais: Record<string, Decimal>;
 }
 
-function montarItem(ctx: Ctx, item: Item, n: number, normal: boolean): ItemMontado {
+function montarItem(ctx: Ctx, item: Item, n: number, normal: boolean, semIe: boolean): ItemMontado {
   const path = `itens[${n}]`;
   const p = item.produto;
   const pp = `${path}.produto`;
@@ -518,7 +518,9 @@ function montarItem(ctx: Ctx, item: Item, n: number, normal: boolean): ItemMonta
     const r = buildIcms(ctx, imp.icms, { vOp, vIPI: v.vIPI }, `${ip}.icms`);
     imposto.ICMS = r.grupo;
     icms = r.totais;
-  } else if (imp.issqn === undefined && imp.ibsCbs === undefined) {
+  } else if (imp.issqn === undefined && imp.ibsCbs === undefined && !semIe) {
+    // Na NF-e sem IE do emitente a falta de ICMS e ISSQN é a exceção 2 da RV B25-90 (NT 2026.007); a falta do grupo
+    // IBS/CBS sai como a 162, no caminho dele.
     ctx.issues.add(`${ip}.icms`, 'campo_obrigatorio', 'o item precisa de ICMS (ou ISSQN, na NF-e conjugada)');
   }
   if (imp.ii !== undefined) {
@@ -844,7 +846,8 @@ export async function montarNfe(entrada: DadosNfe, opcoes: MontarNfeOpcoes): Pro
   if (entrada.itens.length === 0 || entrada.itens.length > 990) {
     issues.add('itens', 'itens_limite', 'a NF-e tem de 1 a 990 itens');
   }
-  const itens = entrada.itens.map((it, n) => montarItem(ctx, it, n, finNFeIn === '1'));
+  const semIe = !nfce && entrada.emitente.IE === undefined;
+  const itens = entrada.itens.map((it, n) => montarItem(ctx, it, n, finNFeIn === '1', semIe));
   // Na NFC-e em homologação, a descrição do primeiro item é a literal da RV I04-10, como o nome do destinatário da
   // E04-20: o builder a põe, e a descrição informada fica fora do XML de teste.
   const primeiro = itens[0];
@@ -977,6 +980,9 @@ export async function montarNfe(entrada: DadosNfe, opcoes: MontarNfeOpcoes): Pro
   const substituidos =
     opcoes.ambiente === 'homologacao' ? ['destinatario.xNome', ...(nfce ? ['itens[0].produto.xProd'] : [])] : [];
   conferirTextosDaEntrada(entrada, pl.infNFe as ComplexType, issues, new Set(substituidos));
+  // Nota sem IE do emitente (NT 2026.007, ADR 0012): conferida antes de parar nas ocorrências dos itens, para todas as
+  // violações voltarem juntas.
+  exclusivoIbsCbs(entrada, { nfce, dhEmi, instantes: [agora, fatoGerador] }, issues);
   if (!issues.empty) return { ok: false, ocorrencias: issues.classificadas };
 
   // Totais (grupo W)

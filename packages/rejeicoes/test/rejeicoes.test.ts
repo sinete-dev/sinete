@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { criarAutorizado, criarPendente, criarRecusado, ehCStat } from '@sinete/core';
 import table from '../src/data/rejeicoes.json' with { type: 'json' };
+import type { Rejeicao } from '../src/index.ts';
 import {
   CATEGORIAS_REJEICAO,
   completarRecusado,
@@ -25,7 +26,7 @@ describe('catálogo', () => {
       for (const m of r.modelos) expect(['55', '65']).toContain(m);
       expect(CATEGORIAS_REJEICAO).toContain(r.categoria);
       expect(r.fonte).toMatch(
-        /^(MOC 7\.0 Anexo I|NT 2025\.002 v1\.40|NT 2025\.001 v1\.03|NT 2024\.003 v1\.10), (tabela 4\.4\.[23]|regra \S+)$|^(NT 2025\.001 v1\.03, item 90\.1|NT 2023\.002 v1\.01, item 7)$/,
+        /^(MOC 7\.0 Anexo I|NT 2025\.002 v1\.40|NT 2025\.001 v1\.03|NT 2024\.003 v1\.10|NT 2026\.007 v1\.10), (tabela 4\.4\.[23]|regra \S+)$|^(NT 2025\.001 v1\.03, item 90\.1|NT 2023\.002 v1\.01, item 7)$/,
       );
       for (const rule of r.regras) expect(docs.has(rule.documento), `${r.codigo} ${rule.documento}`).toBe(true);
       // curadoria vem sempre completa e com a regra citada
@@ -158,5 +159,78 @@ describe('dica da 327 (RV I08-140)', () => {
       expect(texto).not.toContain('indIEDest');
     }
     expect(d.fonte).toContain('NT 2026.009');
+  });
+});
+
+describe('contribuinte exclusivo do IBS/CBS (NT 2026.007 v1.10)', () => {
+  const NOVOS = [
+    '156',
+    '157',
+    '158',
+    '159',
+    '161',
+    '162',
+    '163',
+    '164',
+    '165',
+    '166',
+    '167',
+    '168',
+    '169',
+    '170',
+    '171',
+    '173',
+    '175',
+    '176',
+    '177',
+    '178',
+    '179',
+    '180',
+    '181',
+    '182',
+    '183',
+    '184',
+    '185',
+    '186',
+    '187',
+    '188',
+  ];
+
+  test('as 30 rejeições novas estão no catálogo, com a regra da NT', () => {
+    for (const c of NOVOS) {
+      const r = rejeicaoPorCodigo(c);
+      expect(r?.fonte).toStartWith('NT 2026.007 v1.10, regra ');
+      expect(r?.regras.some((x) => x.documento === 'nt2026007')).toBe(true);
+    }
+    const daNt = REJEICOES.filter((r) => r.fonte.startsWith('NT 2026.007'));
+    expect(daNt.map((r) => r.codigo)).toEqual(NOVOS);
+    for (const c of ['160', '172', '174', '942'])
+      expect(rejeicaoPorCodigo(c)?.fonte.startsWith('NT 2026.007')).not.toBe(true);
+    expect(TABELA_REJEICOES.fontes.map((f) => f.id)).toContain('nt2026007');
+  });
+
+  test('mensagem, regra e modelos seguem a NT', () => {
+    const casos: [string, string, string, string[]][] = [
+      ['156', 'C17-42', 'NFC-e não pode ser emitida por contribuinte exclusivo do IBS/CBS.', ['65']],
+      ['157', 'C17-43', 'Obrigatório informar CNPJ do emitente para contribuinte exclusivo do IBS/CBS.', ['55']],
+      ['158', 'C18-50', 'Proibido informar IEST para contribuinte exclusivo do IBS/CBS', ['55']],
+      ['161', 'N01-10', 'Proibido informar ICMS para contribuinte exclusivo do IBS/CBS [nItem:999]', ['55']],
+      ['162', 'UB12-11', 'Grupo IBS/CBS obrigatório para contribuinte exclusivo do IBS/CBS [nItem:999]', ['55']],
+      ['166', 'C17-11', 'UF de autorização não permitida para contribuinte exclusivo do IBS/CBS', ['55']],
+      ['188', '1P10-40', 'Evento de NF-e de contribuinte exclusivo do IBS/CBS deve ser autorizado na SVRS', ['55']],
+      ['178', '12C02-10', 'CNPJ [XX.XXX.XXX/XXXX-DV] do emitente não cadastrado na Receita Federal', ['55', '65']],
+      [
+        '187',
+        '1P10-30',
+        'CNPJ [XX.XXX.XXX/XXXX-DV] do Autor de Evento não cadastrado na Receita Federal',
+        ['55', '65'],
+      ],
+    ];
+    for (const [c, regra, mensagem, modelos] of casos) {
+      const r = rejeicaoPorCodigo(c);
+      expect(r?.mensagem).toBe(mensagem);
+      expect(r?.regras).toContainEqual({ documento: 'nt2026007', id: regra });
+      expect(r?.modelos).toEqual(modelos as Rejeicao['modelos']);
+    }
   });
 });

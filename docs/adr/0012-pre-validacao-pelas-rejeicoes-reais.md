@@ -123,6 +123,24 @@ Todas as ocorrências novas vão no caminho da entrada (`destinatario...`, `idDe
 
 Antes de fechar, as regras foram aplicadas às 3.615 NF-e autorizadas do corpus local (as próprias do integrador e a paridade), todas modelo 55: nenhuma seria recusada. O controle negativo (trocar o `idDest` de cada nota) faz a E12-30 a E12-60 dispararem em 3.435 delas, então a conferência roda sobre esse corpus. O corpus não tem destinatário no exterior, com ISUF nem NFC-e com destinatário: as regras E03a, E14-30, E16a-20, E17-40 e E18-30 se apoiam só no texto do MOC. A E12-30 recusa também o destinatário com CPF na UF do emitente com `idDest` 2 (o CPF difere do CNPJ do emitente em qualquer leitura da regra).
 
+## Contribuinte exclusivo do IBS/CBS (06/10/2026)
+
+A NT 2026.007 v1.10 (produção em 03/11/2026) cria a NF-e sem IE do emitente, autorizada só na SVRS, e 30 rejeições novas (156 a 188, que entraram no catálogo do `@sinete/rejeicoes` pela leitura das regras da NT). O roteamento (166 e 188) é do cliente da NF-e. Pelo critério acima:
+
+| Regra | Rejeição | Classe | O que foi feito |
+|---|---|---|---|
+| C17-42: NFC-e sem IE, até o fim de 2032 | 156 | a | novo: `campo_obrigatorio` em `emitente.IE`; recusa só quando a data da emissão e a do fato gerador, no fuso local, em Brasília e em UTC, caem todas antes de 2033 |
+| C17-43: NF-e sem IE e sem CNPJ do emitente | 157 | a | novo: `campo_obrigatorio` em `emitente.CNPJ` |
+| C18-50: NF-e sem IE com IEST | 158 | a | novo: `combinacao_invalida` em `emitente.IEST` |
+| N01-10: ICMS ou ICMSUFDest no item da NF-e sem IE, fora da devolução e do tpNFCredito 03 | 161 | a | novo: `grupo_vedado` em `itens[n].impostos.icms` ou `icmsUfDest` |
+| UB12-11: item sem IBSCBS na NF-e sem IE | 162 | a | novo: `campo_obrigatorio` em `itens[n].impostos.ibsCbs` para o item sem o grupo pronto e sem a classificação (o item classificado cujo cálculo falhou fica só com a ocorrência da calculadora, de montagem); a falta de ICMS e ISSQN, que a exceção 2 da B25-90 libera nessa nota, deixa de ser ocorrência |
+| I08-191: CFOP fora da tabela do Portal (coluna indExcIBSCBS) | 159 | b | fora: depende da tabela de CFOP |
+| 1C17-02, 1C17-04 | 163, 164 | b | fora: CCC |
+| 5AF15, 5AF17, 5BG15, 5BG17 (locais de retirada e entrega) | 165, 167 a 169, 171, 173, 175 a 177 | b | fora: CCC |
+| 12C02, 12C21, 12E02, 12F02, 12G02, 1P10-30, 1P10-32 | 170, 178 a 187 | b | fora: LCC-RFB |
+
+As regras da NT de aplicação "exclusiva da SVRS" (157, 158, 161, 162) entram mesmo assim: a NF-e sem IE só é autorizada na SVRS (C17-11), então não há autorizador em que a nota recusada aqui passaria.
+
 ## A barreira da recusa repetida (656)
 
 A regra do consumo indevido conta a mesma NF-e com a mesma rejeição. Reenviar a mesma nota depois de uma rejeição que só depende dela dá sempre a mesma rejeição; depois de uma que depende do cadastro da SEFAZ (203, 230), pode passar, se a causa foi resolvida fora da nota. O emissor conta as recusas iguais e barra o reenvio só a partir de um limite:

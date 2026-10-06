@@ -66,3 +66,12 @@ describe('selecionarPl', () => {
     }
   });
 });
+
+describe('PL_010f da NF-e', () => {
+  test('cita a NT 2026.007 v1.10, com as datas de teste e produção mantidas', () => {
+    const e = VIGENCIAS.nfe.find((v) => v.pl === 'PL_010f_v1.04');
+    expect(e?.fonte).toContain('NT 2026.007 v1.10');
+    expect(e?.homologacao).toBe('2026-09-01');
+    expect(e?.producao).toBe('2026-11-03');
+  });
+});
