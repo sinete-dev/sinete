@@ -21,7 +21,7 @@ import { atributoDe, c14n, elementosFilhos, lerXml, primeiroFilho, textoDe } fro
 import { decodificar } from '@sinete/schemas';
 import type { TMDFe_infMDFe } from '@sinete/schemas/mdfe/3.00b';
 import { TMDFe_infMDFe as InfMDFe } from '@sinete/schemas/mdfe/3.00b';
-import type { DadosMdfe, UfMdfe } from '../../src/index.ts';
+import type { DadosMdfeRodoviario, UfMdfe } from '../../src/index.ts';
 import { conferirPercurso, MDFE_NS, montarMdfe } from '../../src/index.ts';
 
 const dir = process.env.SINETE_CORPUS_MDFE ?? path.join(homedir(), '.local/state/sinete/corpus/mdfe');
@@ -42,13 +42,13 @@ const docC = (x: Obj): Obj =>
   def({ CNPJ: x.CNPJ as string | undefined, CPF: x.CPF as string | undefined, idEstrangeiro: x.idEstrangeiro });
 
 /** Entrada do domínio a partir do `infMDFe` autorizado (o caminho inverso do builder). */
-function entradaDoXml(inf: TMDFe_infMDFe): DadosMdfe {
+function entradaDoXml(inf: TMDFe_infMDFe): DadosMdfeRodoviario {
   const ide = inf.ide;
   const e = inf.emit;
   const rodo = o(inf.infModal.rodo);
   const antt = o(rodo.infANTT);
   const tr = o(rodo.veicTracao);
-  const prop = (p: unknown): DadosMdfe['rodoviario']['tracao']['proprietario'] =>
+  const prop = (p: unknown): DadosMdfeRodoviario['rodoviario']['tracao']['proprietario'] =>
     p === undefined
       ? undefined
       : (def({
@@ -213,7 +213,7 @@ function entradaDoXml(inf: TMDFe_infMDFe): DadosMdfe {
                 ? undefined
                 : { idCSRT: inf.infRespTec.idCSRT, hashCSRT: inf.infRespTec.hashCSRT },
           }),
-  }) as unknown as DadosMdfe;
+  }) as unknown as DadosMdfeRodoviario;
 }
 
 /** Primeira diferença entre dois elementos, como caminho sem índice e o tipo da diferença. */

@@ -27,6 +27,8 @@ export { Decimal, dec, sum } from './decimal.ts';
 export type { CodigoOcorrenciaMdfe } from './issues.ts';
 export { CODIGOS_OCORRENCIA_MDFE } from './issues.ts';
 export type {
+  Aereo,
+  CamposMdfe,
   Ciot,
   ComponentePagamento,
   Condutor,
@@ -34,6 +36,8 @@ export type {
   CteTransportado,
   DadosBancarios,
   DadosMdfe,
+  DadosMdfeAereo,
+  DadosMdfeRodoviario,
   Descarregamento,
   DispositivoValePedagio,
   DocumentoContratante,

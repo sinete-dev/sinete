@@ -5,6 +5,7 @@
  * - F01 (252) ambiente, F02 (247) UF do emitente e da chave, F03 (227) composição do `Id`, F05 (253) DV;
  * - F67/F68 (207, 210) documento do emitente, F69 a F71 (232, 233, 234) série e tipo do emitente pessoa física;
  * - F79 (212) emissão no futuro, F80 (228) emissão normal com mais de 24 horas;
+ * - F23 (705) carregamento posterior fora do modal rodoviário e F34 (702) entrega parcial de CT-e fora do aéreo;
  * - F30a e F37a (518, 519) chave de CT-e ou NF-e anterior a 6 meses da autorização e F89c (523) cavalo mecânico sem
  *   reboque, da NT 2024.001;
  * - F114 a F118 (480, 479, 481, 482, 488) QR Code;
@@ -118,6 +119,15 @@ export async function recepcaoMdfe(ctx: ContextoDoPedido): Promise<string> {
   if (ativa(ctx, 'F79') && dhEmiMs > now + CINCO_MINUTOS) return rej('212');
   if (ativa(ctx, 'F80') && tpEmis === '1' && now - dhEmiMs > DIA) return rej('228');
 
+  // F23: carregamento posterior só no modal rodoviário; F34: entrega parcial (corte de voo) só no aéreo.
+  const modal = req(ide, 'modal');
+  if (ativa(ctx, 'F23') && text(ide, 'indCarregaPosterior') === '1' && modal !== '1') return rej('705');
+  if (ativa(ctx, 'F34') && modal !== '2') {
+    for (const mun of all(at(inf, 'infDoc'), 'infMunDescarga')) {
+      for (const cte of all(mun, 'infCTe')) if (at(cte, 'infEntregaParcial') !== undefined) return rej('702');
+    }
+  }
+
   // NT 2024.001: chaves de CT-e e NF-e anteriores a 6 meses da autorização (F30a, F37a) e cavalo mecânico sem reboque
   // (F89c). O mês limite passa (autorizado em setembro, março ainda é aceito).
   const agora = utcParts(now + ctx.rt.configuracao.deslocamentoMin * 60_000);
@@ -216,7 +226,7 @@ export async function recepcaoMdfe(ctx: ContextoDoPedido): Promise<string> {
     cMDF,
     tpEmit,
     tpEmis,
-    modal: req(ide, 'modal'),
+    modal,
     UFIni: ufIni,
     UFFim: ufFim,
     qtdPercurso: all(ide, 'infPercurso').length,

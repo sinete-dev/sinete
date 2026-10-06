@@ -15,7 +15,7 @@ import {
   URL_BASE_SIM,
 } from '@sinete/sefaz-sim';
 import { ErroPolitica } from '@sinete/transport';
-import type { ClienteMdfe, DadosMdfe, MontarMdfeOpcoes } from '../src/index.ts';
+import type { ClienteMdfe, DadosMdfe, DadosMdfeRodoviario, MontarMdfeOpcoes } from '../src/index.ts';
 import {
   assinarMdfe,
   criarClienteMdfe,
@@ -280,7 +280,7 @@ describe('consultas', () => {
 });
 
 describe('não encerrados bloqueiam a emissão (F85 a F88)', () => {
-  const mesmaPlaca = (extra: Partial<DadosMdfe>): DadosMdfe => cargaPropria({ nMDF: 2, ...extra });
+  const mesmaPlaca = (extra: Partial<DadosMdfeRodoviario>): DadosMdfe => cargaPropria({ nMDF: 2, ...extra });
 
   test('611: mesma placa e UF de descarga; libera depois do encerramento', async () => {
     const s = cenario();

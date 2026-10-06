@@ -5,7 +5,7 @@ import { validarRaiz } from '@sinete/schemas';
 import { MDFeElement } from '@sinete/schemas/mdfe/3.00b';
 import { certificadoSintetico } from '@sinete/sefaz-sim';
 import { lerChaveAcesso, montarChaveAcesso } from '@sinete/validators';
-import type { DadosMdfe, PagamentoFrete, ResultadoMontagemMdfe } from '../src/index.ts';
+import type { DadosMdfeRodoviario, PagamentoFrete, ResultadoMontagemMdfe } from '../src/index.ts';
 import { assinarMdfe, comQrCode, montarMdfe, prazoContingencia, qrCodeMdfe } from '../src/index.ts';
 import { VERSAO_PACOTE } from '../src/versao-gerada.ts';
 import {
@@ -42,7 +42,7 @@ function sem<T extends object, K extends keyof T>(o: T, ...chaves: K[]): T {
   return c;
 }
 
-const rodo = (i: DadosMdfe, extra: Partial<DadosMdfe['rodoviario']>): DadosMdfe => ({
+const rodo = (i: DadosMdfeRodoviario, extra: Partial<DadosMdfeRodoviario['rodoviario']>): DadosMdfeRodoviario => ({
   ...i,
   rodoviario: { ...i.rodoviario, ...extra },
 });
@@ -89,7 +89,7 @@ describe('montarMdfe: carga própria do produtor rural (CPF)', () => {
   });
 
   test('série, número, cMDF e dhIniViagem fora da forma voltam como ocorrência, não como exceção', async () => {
-    const casos: [Partial<DadosMdfe>, string][] = [
+    const casos: [Partial<DadosMdfeRodoviario>, string][] = [
       [{ serie: 1000 }, 'serie'],
       [{ nMDF: -1 }, 'nMDF'],
       [{ nMDF: 1_000_000_000 }, 'nMDF'],
@@ -111,7 +111,7 @@ describe('montarMdfe: carga própria do produtor rural (CPF)', () => {
     const chave = (aamm: string, mod: '55' | '57'): string =>
       montarChaveAcesso({ cUF: '51', aamm, emitente: CNPJ_EMIT, mod, serie: 1, nNF: 3, tpEmis: '1', cNF: '10000003' });
     // Emissão em 09/2026: 03/2026 ainda passa, 02/2026 não.
-    const comNfe = (aamm: string): DadosMdfe =>
+    const comNfe = (aamm: string): DadosMdfeRodoviario =>
       cargaPropria({ descarregamentos: [{ cMun: '3550308', xMun: 'SAO PAULO', nfe: [{ chave: chave(aamm, '55') }] }] });
     expect(rejeicoes(await montarMdfe(comNfe('2603'), opcoes()))).toEqual([]);
     expect(rejeicoes(await montarMdfe(comNfe('2602'), opcoes()))).toEqual(['519']);
@@ -165,7 +165,7 @@ describe('montarMdfe: carga própria do produtor rural (CPF)', () => {
       opcoes(),
     );
     expect(rejeicoes(r1)).toEqual(expect.arrayContaining(['685', '456']));
-    const d = cargaPropria().descarregamentos[0] as DadosMdfe['descarregamentos'][number];
+    const d = cargaPropria().descarregamentos[0] as DadosMdfeRodoviario['descarregamentos'][number];
     const r2 = await montarMdfe(
       cargaPropria({ descarregamentos: [d, { ...d, nfe: [{ chave: chaveDoc(3) }] }, { ...d, cMun: '5103403' }] }),
       opcoes(),
@@ -218,7 +218,7 @@ describe('montarMdfe: carga própria do produtor rural (CPF)', () => {
     const d = [
       ...cargaPropria().descarregamentos,
       { cMun: '3509502', xMun: 'CAMPINAS' },
-    ] as DadosMdfe['descarregamentos'];
+    ] as DadosMdfeRodoviario['descarregamentos'];
     expect(rejeicoes(await montarMdfe(cargaPropria({ descarregamentos: d }), opcoes()))).toEqual(['616']);
   });
 
@@ -256,7 +256,7 @@ describe('montarMdfe: carga própria do produtor rural (CPF)', () => {
   });
 
   test('duplicidade de chave: no MDF-e inteiro na operação interestadual, por município na interna', async () => {
-    const doisMunicipios = (ufFim: 'SP' | 'MT'): DadosMdfe['descarregamentos'] => {
+    const doisMunicipios = (ufFim: 'SP' | 'MT'): DadosMdfeRodoviario['descarregamentos'] => {
       const [a, b] = ufFim === 'SP' ? ['3550308', '3509502'] : ['5103403', '5108402'];
       return [
         { cMun: a, xMun: 'AAA', nfe: [{ chave: chaveDoc(1) }] },
@@ -390,7 +390,7 @@ describe('montarMdfe: transportador prestando serviço (CNPJ)', () => {
       expect.arrayContaining(['578', '684']),
     );
     expect(rejeicoes(await montarMdfe(sem(i, 'produtoPredominante'), opcoes()))).toEqual(['725']);
-    const pp = i.produtoPredominante as NonNullable<DadosMdfe['produtoPredominante']>;
+    const pp = i.produtoPredominante as NonNullable<DadosMdfeRodoviario['produtoPredominante']>;
     expect(rejeicoes(await montarMdfe({ ...i, produtoPredominante: sem(pp, 'lotacao') }, opcoes()))).toEqual(['726']);
     expect(rejeicoes(await montarMdfe({ ...i, produtoPredominante: sem(pp, 'NCM') }, opcoes()))).toEqual(['301']);
     expect(rejeicoes(await montarMdfe(rodo(i, { pagamentos: [] }), opcoes()))).toEqual(['302']);

@@ -4,7 +4,7 @@
  */
 import { contextoDeTempo, relogioFixo } from '@sinete/core';
 import { montarChaveAcesso } from '@sinete/validators';
-import type { DadosMdfe, MontarMdfeOpcoes } from '../../src/index.ts';
+import type { DadosMdfeRodoviario, MontarMdfeOpcoes } from '../../src/index.ts';
 
 export const CNPJ_EMIT = '11222333000181';
 export const CNPJ_TERCEIRO = '11444777000161';
@@ -46,7 +46,7 @@ export function chaveDoc(n: number, mod: '55' | '57' = '55', tpEmis = '1'): stri
 }
 
 /** Produtor rural (CPF) transportando a própria carga em veículo próprio, de MT para SP passando por MS. */
-export function cargaPropria(extra: Partial<DadosMdfe> = {}): DadosMdfe {
+export function cargaPropria(extra: Partial<DadosMdfeRodoviario> = {}): DadosMdfeRodoviario {
   return {
     tpEmit: '2',
     serie: 920,
@@ -88,7 +88,7 @@ export function cargaPropria(extra: Partial<DadosMdfe> = {}): DadosMdfe {
 }
 
 /** Transportador (CNPJ) prestando serviço com um CT-e (carga lotação), com seguro, CIOT, contratante e pagamento. */
-export function prestador(extra: Partial<DadosMdfe> = {}): DadosMdfe {
+export function prestador(extra: Partial<DadosMdfeRodoviario> = {}): DadosMdfeRodoviario {
   return {
     tpEmit: '1',
     serie: 1,
