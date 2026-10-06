@@ -1,0 +1,8 @@
+{
+  "name": "@sinete/tool-cfop-data",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Gera a tabela de CFOP do @sinete/validators a partir da planilha oficial do Portal da NF-e (IT 2023.002)",
+  "license": "Apache-2.0",
+  "type": "module"
+}

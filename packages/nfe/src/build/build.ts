@@ -69,7 +69,7 @@ import {
   urlsNfce,
 } from './nfce.ts';
 import { camposForaDoPl, escolherPl } from './pl.ts';
-import { cstComIsento, exclusivoIbsCbs, vencimentos } from './rejeicoes.ts';
+import { cfopDeDevolucao, cstComIsento, cstComNaoContribuinte, exclusivoIbsCbs, vencimentos } from './rejeicoes.ts';
 import { conferirTextosDaEntrada, textoXmlValido } from './textos.ts';
 import { buildIcmsUfDest, buildIi, buildIpi, buildIssqn, buildPisCofins, buildPisCofinsSt } from './tributos.ts';
 import type { Familia } from './values.ts';
@@ -1358,6 +1358,10 @@ export async function montarNfe(entrada: DadosNfe, opcoes: MontarNfeOpcoes): Pro
 
   // Regras da SEFAZ que só dependem do documento (ADR 0012).
   cstComIsento(entrada, idDest, issues);
+  if (!nfce) {
+    cfopDeDevolucao(entrada, issues);
+    cstComNaoContribuinte(entrada, { idDest, uf: emitUf }, issues);
+  }
   vencimentos(entrada, { dhEmi, instante: agora }, issues);
 
   camposForaDoPl(pl.infNFe, inf, 'infNFe', pl.vigencia.pl, issues);

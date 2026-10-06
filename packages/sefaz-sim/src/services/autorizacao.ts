@@ -104,10 +104,28 @@ function factsOf(nfe: ElementoXml): { facts: FatosNfe; inf: ElementoXml } {
   const ie = text(emit, 'IE');
   const destEl = at(inf, 'dest');
   const idEstrangeiro = text(destEl, 'idEstrangeiro');
+  const indIEDest = text(destEl, 'indIEDest');
   const dest =
     destEl === undefined
       ? undefined
-      : { ...documento(destEl), ...(idEstrangeiro === undefined ? {} : { idEstrangeiro }) };
+      : {
+          ...documento(destEl),
+          ...(idEstrangeiro === undefined ? {} : { idEstrangeiro }),
+          ...(indIEDest === undefined ? {} : { indIEDest }),
+        };
+  const itens = all(inf, 'det').map((det) => {
+    const icms = at(det, 'imposto/ICMS')?.filhos.find((f): f is ElementoXml => f.tipo === 'elemento');
+    const cst = text(icms, 'CST');
+    const anp = text(det, 'prod/comb/cProdANP');
+    return {
+      CFOP: req(det, 'prod/CFOP'),
+      NCM: req(det, 'prod/NCM'),
+      ...(cst === undefined ? {} : { CST: cst }),
+      veicProd: at(det, 'prod/veicProd') !== undefined,
+      ...(anp === undefined ? {} : { cProdANP: anp }),
+    };
+  });
+  const tpNFCredito = text(ide, 'tpNFCredito');
   const supl = at(nfe, 'infNFeSupl');
   const qrCode = text(supl, 'qrCode')?.trim();
   const facts: FatosNfe = {
@@ -134,7 +152,9 @@ function factsOf(nfe: ElementoXml): { facts: FatosNfe; inf: ElementoXml } {
       finNFe: req(ide, 'finNFe'),
       indFinal: req(ide, 'indFinal'),
       indPres: req(ide, 'indPres'),
+      ...(tpNFCredito === undefined ? {} : { tpNFCredito }),
     },
+    itens,
     vNF: req(inf, 'total/ICMSTot/vNF'),
     ...(dest === undefined ? {} : { destinatario: dest }),
     supl: qrCode === undefined ? {} : { qrCode },

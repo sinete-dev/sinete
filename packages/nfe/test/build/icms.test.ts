@@ -2,12 +2,12 @@ import { describe, expect, test } from 'bun:test';
 import type { Ocorrencia } from '@sinete/core';
 import type { Icms, NfeMontada } from '../../src/index.ts';
 import { MotivoDesoneracaoIcms, montarNfe } from '../../src/index.ts';
-import { item, nota, opcoes } from '../helpers/nota.ts';
+import { DEST_CONTRIBUINTE, item, nota, opcoes } from '../helpers/nota.ts';
 
 type Grupo = Record<string, Record<string, string>>;
 
 async function comIcms(icms: Icms, crt: '1' | '3' = '3'): Promise<NfeMontada> {
-  const base = nota({ itens: [item({}, icms)] });
+  const base = nota({ itens: [item({}, icms)], destinatario: DEST_CONTRIBUINTE });
   const r = await montarNfe({ ...base, emitente: { ...base.emitente, CRT: crt } }, opcoes());
   if (!r.ok) throw new Error(JSON.stringify(r.ocorrencias, null, 1));
   return r.valor;

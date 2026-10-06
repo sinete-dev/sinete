@@ -220,6 +220,10 @@
         "@sinete/core": "workspace:^",
       },
     },
+    "tools/cfop-data": {
+      "name": "@sinete/tool-cfop-data",
+      "version": "0.0.0",
+    },
     "tools/danfe-corpus": {
       "name": "@sinete/tool-danfe-corpus",
       "version": "0.0.0",
@@ -663,6 +667,8 @@
     "@sinete/schemas": ["@sinete/schemas@workspace:packages/schemas"],
 
     "@sinete/sefaz-sim": ["@sinete/sefaz-sim@workspace:packages/sefaz-sim"],
+
+    "@sinete/tool-cfop-data": ["@sinete/tool-cfop-data@workspace:tools/cfop-data"],
 
     "@sinete/tool-danfe-corpus": ["@sinete/tool-danfe-corpus@workspace:tools/danfe-corpus"],
 

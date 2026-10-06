@@ -1,5 +1,6 @@
 /**
- * `@sinete/validators`: CPF, CNPJ (numérico e alfanumérico), CAEPF, chave de acesso e inscrição estadual das 27 UFs.
+ * `@sinete/validators`: CPF, CNPJ (numérico e alfanumérico), CAEPF, chave de acesso, inscrição estadual das 27 UFs e a
+ * tabela de CFOP do Portal da NF-e.
  *
  * Funções puras, sem API de runtime. Cada documento tem `lerX` (devolve `Resultado` com o valor normalizado ou uma
  * `Ocorrencia` de código estável), a conferência booleana (`cpfValido`, `ieValida`...) e `formatarX`; os códigos das
@@ -7,6 +8,8 @@
  */
 
 export { caepfValido, calcularDvCaepf, formatarCaepf, lerCaepf } from './caepf.ts';
+export type { DescricaoTabelaCfop, IndicadoresCfop } from './cfop.ts';
+export { indicadoresCfop, TABELA_CFOP } from './cfop.ts';
 export type { ChaveAcesso, LerChaveAcessoOpcoes, PartesChaveAcesso } from './chave.ts';
 export {
   CNPJ_ALFANUMERICO_VIGENCIA,
