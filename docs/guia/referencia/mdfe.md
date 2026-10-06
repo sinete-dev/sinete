@@ -42,6 +42,7 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 ### Interfaces
 
 - `Aereo`: Grupo do modal aéreo (`aereo`, MOC 3.00b Anexo I, 3.2). Membros: `nac`, `matr`, `nVoo`, `cAerEmb`, `cAerDes`, `dVoo`.
+- `Aquaviario`: Grupo do modal aquaviário (`aquav`, MOC 3.00b Anexo I, 3.4, com o MMSI da NT 2025.001). Membros: `irin`, `tpEmb`, `cEmbar`, `xEmbar`, `nViag`, `cPrtEmb`, `cPrtDest`, `prtTrans`, `tpNav`, `terminaisCarregamento`, `terminaisDescarregamento`, `comboio`, `unidadesCargaVazias`, `unidadesTransporteVazias`, `MMSI`.
 - `CamposMdfe`: Campos do MDF-e comuns a todos os modais. Membros: `tpEmit`, `tpTransp`, `serie`, `nMDF`, `cMDF`, `emitente`, `ufIni`, `ufFim`, `carregamento`, `percurso`, `dhIniViagem`, `indCanalVerde`, `indCarregaPosterior`, `descarregamentos`, `seguros`, `produtoPredominante`, `totais`, `lacres`, `autXML`, `informacoesAdicionais`, `respTec`.
 - `CancelamentoPedido`: Membros: `chave`, `nProt`, `xJust`.
 - `ClienteMdfe`: Membros: `opcoes`, `statusServico()`, `autorizar()`, `consultar()`, `consultarNaoEncerrados()`, `cancelar()`, `encerrar()`, `incluirCondutor()`, `incluirDFe()`, `pagamentoOperacao()`.
@@ -50,12 +51,14 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `Condutor`: Membros: `xNome`, `CPF`.
 - `ConsultaMdfe`: Situação do MDF-e na consulta: autorizado (100), cancelado (101) ou encerrado (132). Membros: `chMDFe`, `situacao`, `protocolo`, `eventos`, `digValConfere`.
 - `CteTransportado` (estende `DocumentoTransportado`): CT-e transportado; a entrega parcial (corte de voo) só vale no modal aéreo (F34, 702). Membros: `entregaParcial`.
-- `DadosMdfeAereo` (estende `CamposMdfe`): MDF-e do modal aéreo (`modal` 2). Membros: `aereo`, `rodoviario`, `ferroviario`.
-- `DadosMdfeFerroviario` (estende `CamposMdfe`): MDF-e do modal ferroviário (`modal` 4). Membros: `ferroviario`, `rodoviario`, `aereo`.
-- `DadosMdfeRodoviario` (estende `CamposMdfe`): MDF-e do modal rodoviário (`modal` 1). Membros: `rodoviario`, `aereo`, `ferroviario`.
+- `DadosMdfeAereo` (estende `CamposMdfe`): MDF-e do modal aéreo (`modal` 2). Membros: `aereo`, `rodoviario`, `aquaviario`, `ferroviario`.
+- `DadosMdfeAquaviario` (estende `CamposMdfe`): MDF-e do modal aquaviário (`modal` 3). Membros: `aquaviario`, `rodoviario`, `aereo`, `ferroviario`.
+- `DadosMdfeFerroviario` (estende `CamposMdfe`): MDF-e do modal ferroviário (`modal` 4). Membros: `ferroviario`, `rodoviario`, `aereo`, `aquaviario`.
+- `DadosMdfeRodoviario` (estende `CamposMdfe`): MDF-e do modal rodoviário (`modal` 1). Membros: `rodoviario`, `aereo`, `aquaviario`, `ferroviario`.
 - `Descarregamento`: Município de descarregamento com os documentos que descarregam nele (`infMunDescarga`). Membros: `cMun`, `xMun`, `nfe`, `cte`.
 - `DispositivoValePedagio`: Dispositivo de vale-pedágio (`valePed/disp`). Membros: `CNPJForn`, `responsavel`, `nCompra`, `vValePed`, `tpValePed`.
 - `DocumentoAssinado`: Documento assinado já conferido: a string como veio (sem a declaração XML) e o que se lê dela. Membros: `xml`, `id`, `digestValue`, `documento`.
+- `EmbarcacaoComboio`: Embarcação do comboio (`infEmbComb`). Membros: `cEmbComb`, `xBalsa`.
 - `EncerramentoPedido`: Membros: `chave`, `nProt`, `dtEnc`, `uf`, `cMun`, `terceiro`.
 - `EnderecoEmitente`: Endereço do emitente (`TEndeEmi`). Membros: `xLgr`, `nro`, `xCpl`, `xBairro`, `cMun`, `xMun`, `CEP`, `UF`, `fone`, `email`.
 - `EnvioOpcoes`: Opções de toda chamada que vai à rede. Membros: `signal`.
@@ -77,9 +80,13 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `Rodoviario`: Grupo do modal rodoviário (`rodo`). Membros: `RNTRC`, `ciot`, `valePedagio`, `contratantes`, `pagamentos`, `tracao`, `reboques`, `codAgPorto`, `lacres`.
 - `Seguro`: Seguro da carga (`seg`). `respSeg` 1 emitente; 2 contratante (com o CNPJ ou CPF dele). Membros: `responsavel`, `seguradora`, `nApol`, `nAver`.
 - `StatusServico`: Status do serviço (cStat 107). Membros: `cUF`, `verAplic`, `dhRecbto`, `tMed`, `dhRetorno`, `xObs`.
+- `TerminalCarregamento`: Terminal de carregamento (`infTermCarreg`). Membros: `cTermCarreg`, `xTermCarreg`.
+- `TerminalDescarregamento`: Terminal de descarregamento (`infTermDescarreg`). Membros: `cTermDescarreg`, `xTermDescarreg`.
 - `TotaisCarga`: Totais da carga. `qNFe` e `qCTe` saem dos documentos. Membros: `vCarga`, `cUnid`, `qCarga`.
 - `TrechoInvalido`: Primeiro trecho do percurso que não é divisa, ou `undefined` quando o percurso é válido. Membros: `indice`, `de`, `para`.
 - `Trem`: Composição do trem (`trem`). Membros: `xPref`, `dhTrem`, `xOri`, `xDest`.
+- `UnidadeCargaVazia`: Unidade de carga vazia (`infUnidCargaVazia`): 1 contêiner, 2 ULD, 3 pallet, 4 outros. Membros: `idUnidCargaVazia`, `tpUnidCargaVazia`.
+- `UnidadeTransporteVazia`: Unidade de transporte vazia (`infUnidTranspVazia`): 1 caminhão (tração), 2 carreta (reboque). Membros: `idUnidTranspVazia`, `tpUnidTranspVazia`.
 - `Vagao`: Vagão da composição (`vag`). Membros: `pesoBC`, `pesoR`, `tpVag`, `serie`, `nVag`, `nSeq`, `TU`.
 - `ValePedagio`: Membros: `dispositivos`, `categCombVeic`.
 - `VeiculoReboque`: Veículo reboque (`veicReboque`, até 3). Membros: `cInt`, `placa`, `RENAVAM`, `tara`, `capKG`, `capM3`, `proprietario`, `tpCar`, `UF`.
@@ -94,7 +101,7 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `Contratante`: `type Contratante = DocumentoContratante & { readonly xNome?: string; readonly contrato?: { readonly NroContrato: string; readonly vContratoGlobal: DecimalInput; }; }`
 - `CStatClasse`: `type CStatClasse = 'autorizado' | 'cancelado' | 'encerrado' | 'servicoEmOperacao' | 'naoEncerradosLocalizados' | 'naoEncerradosNenhum' | 'eventoRegistrado' | 'duplicidade' | 'duplicidadeChaveDiferente' | 'naoConsta'`
 - `DadosBancarios`: Dados bancários do pagamento (`infBanc`): banco e agência, instituição de pagamento eletrônico ou PIX. `type DadosBancarios = { readonly codBanco: string; readonly codAgencia: string; } | { readonly CNPJIPEF: string; } | { readonly PIX: string; }`
-- `DadosMdfe`: Entrada do `montarMdfe`: os campos comuns e o grupo de um modal, um e só um. `type DadosMdfe = DadosMdfeRodoviario | DadosMdfeAereo | DadosMdfeFerroviario`
+- `DadosMdfe`: Entrada do `montarMdfe`: os campos comuns e o grupo de um modal, um e só um. `type DadosMdfe = DadosMdfeRodoviario | DadosMdfeAereo | DadosMdfeAquaviario | DadosMdfeFerroviario`
 - `DecimalInput`: O que as APIs de entrada aceitam como número. Prefira `string` (`'12.34'`): `number` perde dígitos acima de 15 algarismos. `type DecimalInput = string | number | bigint | Decimal`
 - `DocumentoContratante`: CNPJ, CPF ou identificação de estrangeiro (contratante, responsável pelo pagamento). `type DocumentoContratante = DocumentoPessoa | { readonly idEstrangeiro: string; readonly CNPJ?: never; readonly CPF?: never; }`
 - `DocumentoPessoa`: CNPJ (numérico ou alfanumérico) ou CPF, exclusivos. `type DocumentoPessoa = { readonly CNPJ: string; readonly CPF?: never; } | { readonly CPF: string; readonly CNPJ?: never; }`

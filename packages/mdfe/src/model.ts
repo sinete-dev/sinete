@@ -1,5 +1,5 @@
 /**
- * Modelo de entrada do MDF-e (modelo 58, leiaute 3.00b), modais rodoviário, aéreo e ferroviário: o que quem emite descreve. O builder
+ * Modelo de entrada do MDF-e (modelo 58, leiaute 3.00b), modais rodoviário, aéreo, aquaviário e ferroviário: o que quem emite descreve. O builder
  * (`montarMdfe`) transforma isto no objeto tipado do `@sinete/schemas` (`mdfe/3.00b`), deriva o que o leiaute permite
  * derivar (quantidades de documentos, número das parcelas, valor do contrato) e confere as regras do MOC antes de
  * serializar.
@@ -7,7 +7,7 @@
  * Convenções:
  * - Nomes de campo do leiaute (MOC) onde eles existem (`xNome`, `placa`, `tpCar`, `vCarga`); nomes em português para os
  *   agrupamentos que o leiaute não nomeia ou nomeia por sigla (`emitente`, `carregamento`, `descarregamentos`,
- *   `rodoviario`, `aereo`, `ferroviario`, `produtoPredominante`).
+ *   `rodoviario`, `aereo`, `aquaviario`, `ferroviario`, `produtoPredominante`).
  * - Números entram como `DecimalInput` (`'12.34'`, `12.34`, `12n` ou `Decimal`). Prefira texto.
  * - Documentos (CNPJ, CPF, CEP, telefone) aceitam máscara; o builder normaliza.
  * - Códigos do leiaute ficam como uniões de literais (`tpEmit: '2'`), com constantes nomeadas onde ajudam
@@ -346,6 +346,71 @@ export interface Aereo {
   readonly dVoo: string;
 }
 
+/** Terminal de carregamento (`infTermCarreg`). */
+export interface TerminalCarregamento {
+  /** Código do terminal na tabela do Ministério dos Transportes (1 a 8 posições). */
+  readonly cTermCarreg: string;
+  readonly xTermCarreg: string;
+}
+
+/** Terminal de descarregamento (`infTermDescarreg`). */
+export interface TerminalDescarregamento {
+  /** Código do terminal na tabela do Ministério dos Transportes (1 a 8 posições). */
+  readonly cTermDescarreg: string;
+  readonly xTermDescarreg: string;
+}
+
+/** Embarcação do comboio (`infEmbComb`). */
+export interface EmbarcacaoComboio {
+  readonly cEmbComb: string;
+  /** Identificador da balsa. */
+  readonly xBalsa: string;
+}
+
+/** Unidade de carga vazia (`infUnidCargaVazia`): 1 contêiner, 2 ULD, 3 pallet, 4 outros. */
+export interface UnidadeCargaVazia {
+  readonly idUnidCargaVazia: string;
+  readonly tpUnidCargaVazia: '1' | '2' | '3' | '4';
+}
+
+/** Unidade de transporte vazia (`infUnidTranspVazia`): 1 caminhão (tração), 2 carreta (reboque). */
+export interface UnidadeTransporteVazia {
+  readonly idUnidTranspVazia: string;
+  readonly tpUnidTranspVazia: '1' | '2';
+}
+
+/** Grupo do modal aquaviário (`aquav`, MOC 3.00b Anexo I, 3.4, com o MMSI da NT 2025.001). */
+export interface Aquaviario {
+  /** IRIN do navio (1 a 10 posições). */
+  readonly irin: string;
+  /** Tipo de embarcação (2 dígitos, tabela do Ministério dos Transportes). */
+  readonly tpEmb: string;
+  /** Código da embarcação (1 a 10 posições). */
+  readonly cEmbar: string;
+  /** Nome da embarcação. */
+  readonly xEmbar: string;
+  /** Número da viagem (até 10 dígitos, sem zero à esquerda). */
+  readonly nViag: string;
+  /** Porto de embarque (tabela do Ministério dos Transportes, 1 a 5 posições). */
+  readonly cPrtEmb: string;
+  /** Porto de destino (tabela do Ministério dos Transportes, 1 a 5 posições). */
+  readonly cPrtDest: string;
+  /** Porto de transbordo. */
+  readonly prtTrans?: string;
+  /** Tipo de navegação: 0 interior, 1 cabotagem. */
+  readonly tpNav?: '0' | '1';
+  /** Até 5 terminais de carregamento. */
+  readonly terminaisCarregamento?: readonly TerminalCarregamento[];
+  /** Até 5 terminais de descarregamento. */
+  readonly terminaisDescarregamento?: readonly TerminalDescarregamento[];
+  /** Até 30 embarcações do comboio. */
+  readonly comboio?: readonly EmbarcacaoComboio[];
+  readonly unidadesCargaVazias?: readonly UnidadeCargaVazia[];
+  readonly unidadesTransporteVazias?: readonly UnidadeTransporteVazia[];
+  /** Maritime Mobile Service Identity (9 dígitos), opcional desde a NT 2025.001. */
+  readonly MMSI?: string;
+}
+
 /** Composição do trem (`trem`). */
 export interface Trem {
   /** Prefixo do trem (1 a 10 posições). */
@@ -434,6 +499,7 @@ export interface CamposMdfe {
 export interface DadosMdfeRodoviario extends CamposMdfe {
   readonly rodoviario: Rodoviario;
   readonly aereo?: never;
+  readonly aquaviario?: never;
   readonly ferroviario?: never;
 }
 
@@ -441,6 +507,15 @@ export interface DadosMdfeRodoviario extends CamposMdfe {
 export interface DadosMdfeAereo extends CamposMdfe {
   readonly aereo: Aereo;
   readonly rodoviario?: never;
+  readonly aquaviario?: never;
+  readonly ferroviario?: never;
+}
+
+/** MDF-e do modal aquaviário (`modal` 3). */
+export interface DadosMdfeAquaviario extends CamposMdfe {
+  readonly aquaviario: Aquaviario;
+  readonly rodoviario?: never;
+  readonly aereo?: never;
   readonly ferroviario?: never;
 }
 
@@ -449,7 +524,8 @@ export interface DadosMdfeFerroviario extends CamposMdfe {
   readonly ferroviario: Ferroviario;
   readonly rodoviario?: never;
   readonly aereo?: never;
+  readonly aquaviario?: never;
 }
 
 /** Entrada do `montarMdfe`: os campos comuns e o grupo de um modal, um e só um. */
-export type DadosMdfe = DadosMdfeRodoviario | DadosMdfeAereo | DadosMdfeFerroviario;
+export type DadosMdfe = DadosMdfeRodoviario | DadosMdfeAereo | DadosMdfeAquaviario | DadosMdfeFerroviario;

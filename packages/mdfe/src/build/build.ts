@@ -451,17 +451,24 @@ export async function montarMdfe(entrada: DadosMdfe, opcoes: MontarMdfeOpcoes): 
     issues.montagem('tpEmis', 'contingencia_invalida', 'tpEmis 1 (normal) ou 2 (contingência off-line)');
     return { ok: false, ocorrencias: issues.classificadas };
   }
-  // O grupo do modal: um e só um (rodoviario, aereo ou ferroviario).
+  // O grupo do modal: um e só um (rodoviario, aereo, aquaviario ou ferroviario).
   const rodo = entrada.rodoviario;
   const aereo = entrada.aereo;
+  const aquav = entrada.aquaviario;
   const ferrov = entrada.ferroviario;
-  const informados = (['rodoviario', 'aereo', 'ferroviario'] as const).filter((g) => entrada[g] !== undefined);
+  const informados = (['rodoviario', 'aereo', 'aquaviario', 'ferroviario'] as const).filter(
+    (g) => entrada[g] !== undefined,
+  );
   if (informados.length > 1) {
     issues.add(informados[1] as string, 'combinacao_invalida', `informe um só modal: ${informados.join(' ou ')}`);
   } else if (informados.length === 0) {
-    issues.add('rodoviario', 'campo_obrigatorio', 'falta o grupo do modal: rodoviario, aereo ou ferroviario');
+    issues.add(
+      'rodoviario',
+      'campo_obrigatorio',
+      'falta o grupo do modal: rodoviario, aereo, aquaviario ou ferroviario',
+    );
   }
-  const modal = ferrov !== undefined ? '4' : aereo !== undefined ? '2' : '1';
+  const modal = ferrov !== undefined ? '4' : aquav !== undefined ? '3' : aereo !== undefined ? '2' : '1';
   const e = entrada.emitente;
   const emitUf = e.endereco.UF;
   if (!ehUf(emitUf)) {
@@ -1057,6 +1064,48 @@ export async function montarMdfe(entrada: DadosMdfe, opcoes: MontarMdfeOpcoes): 
         codAgPorto: rodo.codAgPorto,
         lacRodo:
           rodo.lacres === undefined || rodo.lacres.length === 0 ? undefined : rodo.lacres.map((nLacre) => ({ nLacre })),
+      }),
+    };
+  } else if (aquav !== undefined) {
+    // Modal aquaviário (MOC 3.00b, Anexo I, 3.4; MMSI da NT 2025.001).
+    const limite = (lista: readonly unknown[] | undefined, path: string, max: number, nome: string): void => {
+      if ((lista ?? []).length > max) issues.add(path, 'campo_invalido', `no máximo ${max} ${nome}`);
+    };
+    limite(aquav.terminaisCarregamento, 'aquaviario.terminaisCarregamento', 5, 'terminais de carregamento');
+    limite(aquav.terminaisDescarregamento, 'aquaviario.terminaisDescarregamento', 5, 'terminais de descarregamento');
+    limite(aquav.comboio, 'aquaviario.comboio', 30, 'embarcações no comboio');
+    const lista = <T, U>(l: readonly T[] | undefined, f: (x: T) => U): U[] | undefined =>
+      l === undefined || l.length === 0 ? undefined : l.map(f);
+    infModal = {
+      versaoModal: VERSAO,
+      aquav: clean({
+        irin: aquav.irin,
+        tpEmb: aquav.tpEmb,
+        cEmbar: aquav.cEmbar,
+        xEmbar: aquav.xEmbar,
+        nViag: aquav.nViag,
+        cPrtEmb: aquav.cPrtEmb,
+        cPrtDest: aquav.cPrtDest,
+        prtTrans: aquav.prtTrans,
+        tpNav: aquav.tpNav,
+        infTermCarreg: lista(aquav.terminaisCarregamento, (t) => ({
+          cTermCarreg: t.cTermCarreg,
+          xTermCarreg: t.xTermCarreg,
+        })),
+        infTermDescarreg: lista(aquav.terminaisDescarregamento, (t) => ({
+          cTermDescarreg: t.cTermDescarreg,
+          xTermDescarreg: t.xTermDescarreg,
+        })),
+        infEmbComb: lista(aquav.comboio, (e) => ({ cEmbComb: e.cEmbComb, xBalsa: e.xBalsa })),
+        infUnidCargaVazia: lista(aquav.unidadesCargaVazias, (u) => ({
+          idUnidCargaVazia: u.idUnidCargaVazia,
+          tpUnidCargaVazia: u.tpUnidCargaVazia,
+        })),
+        infUnidTranspVazia: lista(aquav.unidadesTransporteVazias, (u) => ({
+          idUnidTranspVazia: u.idUnidTranspVazia,
+          tpUnidTranspVazia: u.tpUnidTranspVazia,
+        })),
+        MMSI: aquav.MMSI,
       }),
     };
   } else if (ferrov !== undefined) {
