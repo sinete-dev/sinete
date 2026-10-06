@@ -3,48 +3,48 @@
   "dpi": 100,
   "casos": {
     "basica": {
-      "sha256": "89bca61b573aa6e4f02acb955288e23c5e3f0379d2f40161b20b977188253296",
+      "sha256": "135c109e895d530c5d8dbfd78e6744b005eb5b87420bbff0a10b657e81027e50",
       "paginas": 1
     },
     "muitos-itens": {
-      "sha256": "0cdb8c9338510d2394d8153686c9e14f942b4f91bf75ab0d1d390c0bd47dc283",
+      "sha256": "dbe3288d82f0e5beffe7c13a4e8d98790c83dd436434073ff265a6fc0644e51b",
       "paginas": 2
     },
     "textos-longos": {
-      "sha256": "cd76ff95e70458cac5a0ce5472b2a0c3cdd9efa5d679b65cca81f64a36d8d817",
+      "sha256": "f2088d6e3a2a9bfdc0a4b297fe6b6bdf5b25915b4fdf8501a9a87d8f0c238698",
       "paginas": 3
     },
     "duplicatas-40": {
-      "sha256": "dfade677d8c5c7c6e8b1d255d9c86eafd27961717da14cbcd8de057e9ac2d5ae",
+      "sha256": "da230b371e72e3b7cad1470dc7fd577e9044325f71763ff8844a3ebb847d3eb8",
       "paginas": 1
     },
     "homologacao": {
-      "sha256": "6f229f94df28ae8f01a097fe2477666563624f9c063f6d3d8e87b2e63fc24d19",
+      "sha256": "8521dfe8e41f28b6c433dfd6b52363cf76c59f3cbc3d5f3ee6d5adb1676314d5",
       "paginas": 1
     },
     "caracteres": {
-      "sha256": "a48e1c675f51fe7fe7295aff5925cc7bc4071017250250ac6e59170009544d7b",
+      "sha256": "0ff3020b4afb37bcdfcea11dbb569290098eded58ed09d1af461da4fe67514c4",
       "paginas": 1
     },
     "ibscbs-st": {
-      "sha256": "91f86b53643f41d5cad6998f9aaf38042e9df90346fe4fd21f534afc02d51607",
+      "sha256": "ff5433ec5413b63b8ad793d5dbdb91380bf9b1808c4abd49299f2da04d738b2a",
       "paginas": 1
     },
     "issqn-locais": {
-      "sha256": "3674db5874f32172f9b0f6584eb479a475f75e364e559dd9a2468e10fab6eed9",
+      "sha256": "60a96bec720f16ca218b61959c71215c23990971e0d30edcabc128fb9ff77a67",
       "paginas": 1
     },
     "fsda": {
-      "sha256": "bedd99a79c690ec702d779306e9d0407c3faf354b69ef2f72d5d988a7df2394f",
+      "sha256": "c34df3169b7e836a135745af2c2c26d17e1dbcdfec5ab71f98088264af2b444e",
       "paginas": 1
     },
     "epec": {
-      "sha256": "849ab72c8e302db4eb560968fd4a5c993ea1bbd4a395bc5b155534ed2db8f087",
+      "sha256": "4670549f80c0f8a6b935153354726297528b9b47ac9146e2041c0225902b131a",
       "paginas": 1
     },
     "paisagem": {
-      "sha256": "f7d3e916a7990d09843ca945975645ac10e7fcdac0fd5b6cd14abaa4e48d0c85",
-      "paginas": 2
+      "sha256": "cc1bf802a8bea563210013c470fd982fb398e9f0562d7e49b6ef5f3e748bbcd6",
+      "paginas": 3
     },
     "simplificado": {
       "sha256": "4731e6aa0b372ee3d31854a381dd346cc72c1c63488b20cf2e4fa656121fe408",
@@ -63,19 +63,19 @@
       "paginas": 1
     },
     "previa": {
-      "sha256": "7222194b944bb26e6d1b924ca010d09f94ffad7789b3d82e50b69c5721db539c",
+      "sha256": "4f999f0ba68a3c1b1296e6c21f847e475e93eeb695c1ee3a050e39af5de2d82e",
       "paginas": 1
     },
     "denegada": {
-      "sha256": "5f73a9939b67a74cec205157e8c721615f5e96ea513b579ac7f44a9b7e9b0ae2",
+      "sha256": "d6aa566e6894e8733010d0a20a567e388301d65fae5b601ae4b2b2b4bde6255f",
       "paginas": 1
     },
     "previa-paisagem": {
-      "sha256": "3372cf3feffdb88701d8f0c0b55a35b8240f7f6441d8eed9fb773983e1bfbc55",
+      "sha256": "6cab90e75c092ce840e6daba9a4212a60c71e1c2a0a85861cb1b7d66a9e7e232",
       "paginas": 1
     },
     "denegada-paisagem": {
-      "sha256": "714bb113075f20ae4e2269e3fa2f8b67de64fcddd2ff51ca12a7a8467af63451",
+      "sha256": "fcde9f89f4a9a599bb6fe7c3cc6e3e688842277ab2d0a084de37e6819201ad0d",
       "paginas": 1
     },
     "previa-simplificado": {
@@ -103,7 +103,7 @@
       "paginas": 1
     },
     "cancelada-protocolo": {
-      "sha256": "488b33bb9f248582d7171229712ac6bb6e9696b8aa9341d4fbca5e0f20849a61",
+      "sha256": "b4c420f4821ae409ce17e4062e7cd46e464b2ef8f97c0bd1af75a4a7ee560294",
       "paginas": 1
     },
     "cancelada-protocolo-nfce": {
@@ -143,15 +143,15 @@
       "paginas": 1
     },
     "cancelada": {
-      "sha256": "d8e2e0ff48cb194d47bf782e6948ee45caeb6fc5ffd4e030e9e245f26837ba80",
+      "sha256": "526570763328fd37505173b2f306f94ded033f372c8fcccecf0cd4804c8ccd34",
       "paginas": 1
     },
     "cancelada-protocolo-evento": {
-      "sha256": "d8e2e0ff48cb194d47bf782e6948ee45caeb6fc5ffd4e030e9e245f26837ba80",
+      "sha256": "526570763328fd37505173b2f306f94ded033f372c8fcccecf0cd4804c8ccd34",
       "paginas": 1
     },
     "logo": {
-      "sha256": "e93a553e9f3507dbe2413ee14fa5c09e9d0d5d6945aff7f0cdfe65cd2cd08c30",
+      "sha256": "df3d8aa3e2ab3e0882ff7f7f615c20d473d2a29bc3aa543a45b4b882e55d7b06",
       "paginas": 1
     },
     "etiqueta": {
