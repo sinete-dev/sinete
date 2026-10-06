@@ -186,10 +186,10 @@
       "orientacao": "Confira a situação da inscrição estadual do destinatário na SEFAZ do estado. Com a inscrição inativa, informe o destinatário como não contribuinte, sem inscrição, ou peça que regularize a inscrição."
     },
     "327": {
-      "causaProvavel": "Nota de devolução (finNFe 4) com item cujo CFOP não está na relação de CFOP de devolução de mercadoria.",
-      "comoCorrigir": "Use em cada item um CFOP de devolução, conforme a tabela CFOP do Portal da NF-e (indDevol 1). Os CFOP 1.949 e 2.949 só são aceitos na devolução de venda para não contribuinte (indIEDest 9). Se a operação não é uma devolução, o que muda é a finalidade da nota, não o CFOP.",
-      "referencia": "MOC 7.0 Anexo I, RV I08-140 (NT 2015.002)",
-      "orientacao": "Use CFOP de devolução nos itens; 1.949 e 2.949 só cabem na devolução de venda para não contribuinte. Se a operação não for devolução, altere a finalidade da nota, não o CFOP."
+      "causaProvavel": "Nota de devolução (finNFe 4), ou nota de crédito de retorno por recusa na entrega (finNFe 5 com tpNFCredito 03 ou 06), com item cujo CFOP não está na relação de CFOP de devolução de mercadoria.",
+      "comoCorrigir": "Use em cada item um CFOP de devolução, conforme a tabela CFOP do Portal da NF-e (indDevol 1). Os CFOP 1.949 e 2.949 são aceitos em todas essas notas, sem condição sobre o destinatário (NT 2026.009); 5.949 e 6.949 só na devolução simbólica de gás natural (NCM 27112100). Se a operação não é uma devolução, o que muda é a finalidade da nota, não o CFOP.",
+      "referencia": "MOC 7.0 Anexo I, RV I08-140 (NT 2015.002), com a redação da NT 2025.002 v1.52 e a exceção ampliada pela NT 2026.009 v1.00",
+      "orientacao": "Use CFOP de devolução nos itens; 1.949 e 2.949 também são aceitos em qualquer devolução. Se a operação não for devolução, altere a finalidade da nota, não o CFOP."
     },
     "328": {
       "causaProvavel": "Item com CFOP de devolução numa nota que não é de devolução (finNFe diferente de 2 e 4).",
