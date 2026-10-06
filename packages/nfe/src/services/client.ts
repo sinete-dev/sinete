@@ -112,6 +112,15 @@ export interface ClienteNfeOpcoes {
   readonly endpointNfce?: (servico: NfeServico, uf: Uf) => EndpointResolvido;
   /** Gerador de `idLote` (até 15 dígitos); padrão: os milissegundos do relógio. */
   readonly idLote?: () => string;
+  /**
+   * O titular emite NF-e sem inscrição estadual, como contribuinte exclusivo do IBS/CBS (NT 2026.007 v1.10). A
+   * autorização dessa NF-e é só na SVRS (RV C17-11, rejeição 166), e os eventos de autoria do emitente dela também
+   * (RV 1P10-40, rejeição 188), menos na série 890 a 919. Com a NF-e assinada na mão (`autorizar`, `consultar` e
+   * `consultarRecibo` com ela) o cliente vê a falta de `emit/IE` sozinho; esta opção é para o que parte só da chave:
+   * cancelamento, carta de correção, consulta e recibo sem a nota. Não vale para a NFC-e, que não admite emitente sem
+   * IE (RV C17-42, rejeição 156).
+   */
+  readonly contribuinteExclusivoIbsCbs?: boolean;
 }
 
 /** Opções de toda chamada que vai à rede. */
@@ -447,6 +456,13 @@ function autorDoEmitente(a: AutorDocumento | undefined, c: ChaveAcesso): { CNPJ:
  */
 const SVC_DO_TPEMIS: Readonly<Record<string, 'SVC-AN' | 'SVC-RS'>> = { '6': 'SVC-AN', '7': 'SVC-RS' };
 
+/** A NF-e tem o grupo `emit` e ele não traz `IE`: contribuinte exclusivo do IBS/CBS (NT 2026.007). */
+function emitenteSemIe(a: DocumentoAssinado): boolean {
+  const inf = primeiroFilho(a.documento.raiz, 'infNFe', NFE_NS);
+  const emit = inf === undefined ? undefined : primeiroFilho(inf, 'emit', NFE_NS);
+  return emit !== undefined && primeiroFilho(emit, 'IE', NFE_NS) === undefined;
+}
+
 /** Chave do documento assinado, lida para rotear: o emitente é conferido pela SEFAZ, não aqui. */
 function chaveDoDocumento(a: DocumentoAssinado): ChaveAcesso {
   const r = lerChaveAcesso(a.id.slice(3), { caminho: 'infNFe.Id', conferirEmitente: false });
@@ -609,8 +625,18 @@ export function criarClienteNfe(opcoesDoCliente: ClienteNfeOpcoes): ClienteNfe {
    * autorizou a nota. `naUf` força o autorizador da UF (a CC-e não existe no SVC). A NFC-e vai sempre ao autorizador
    * normal da NFC-e.
    */
-  const endpointDaChave = (servico: NfeServico, c: ChaveAcesso, naUf = false): EndpointResolvido => {
+  const endpointDaChave = (
+    servico: NfeServico,
+    c: ChaveAcesso,
+    naUf = false,
+    semIe = opcoesDoCliente.contribuinteExclusivoIbsCbs === true,
+  ): EndpointResolvido => {
     if (c.mod === '65') return endpointNfce(servico, c.uf);
+    // Contribuinte exclusivo do IBS/CBS (NT 2026.007): autorização, consulta e eventos do emitente só na SVRS, menos
+    // na série 890 a 919 (exceção 1 da RV 1P10-40).
+    const serie = Number(c.serie);
+    if (semIe && !(serie >= 890 && serie <= 919))
+      return nfeEndpoint({ ambiente: opcoesDoCliente.ambiente, servico, autorizador: 'SVRS' });
     const svc = naUf || c.tpEmis === undefined ? undefined : SVC_DO_TPEMIS[c.tpEmis];
     return nfeEndpoint({
       ambiente: opcoesDoCliente.ambiente,
@@ -618,6 +644,10 @@ export function criarClienteNfe(opcoesDoCliente: ClienteNfeOpcoes): ClienteNfe {
       ...(svc === undefined ? { uf: c.uf } : { autorizador: svc }),
     });
   };
+
+  /** A NF-e assinada diz se o emitente tem IE; sem ela, vale a opção `contribuinteExclusivoIbsCbs`. */
+  const semIeOuOpcao = (a: DocumentoAssinado | undefined): boolean =>
+    a === undefined ? opcoesDoCliente.contribuinteExclusivoIbsCbs === true : emitenteSemIe(a);
 
   const call = (
     ep: EndpointResolvido,
@@ -657,7 +687,9 @@ export function criarClienteNfe(opcoesDoCliente: ClienteNfeOpcoes): ClienteNfe {
     const msg = envelope('consReciNFe', '4.00', [`<tpAmb>${tpAmb}</tpAmb><nRec>${nRec}</nRec>`]);
     // O recibo é do autorizador que recebeu o lote: com a NF-e, o da chave; sem ela, o das opções.
     const ep =
-      c === undefined ? endpoint('NFeRetAutorizacao', opcoes.mod ?? '55') : endpointDaChave('NFeRetAutorizacao', c);
+      c === undefined
+        ? endpoint('NFeRetAutorizacao', opcoes.mod ?? '55')
+        : endpointDaChave('NFeRetAutorizacao', c, false, semIeOuOpcao(a));
     const r = await call(ep, 'NFeRetAutorizacao', msg, 'retConsReciNFe', opcoes.signal);
     const v = decodificar(TRetConsReciNFe, r.ret, r.doc.texto).valor;
     if (v.nRec !== undefined && v.nRec !== nRec) {
@@ -680,7 +712,7 @@ export function criarClienteNfe(opcoesDoCliente: ClienteNfeOpcoes): ClienteNfe {
     const a = nfeAssinada === undefined ? undefined : documentoAssinado(nfeAssinada, 'NFe', 'infNFe');
     if (a && a.id !== `NFe${c.chave}`) throw new ErroDeConfiguracao('a NF-e assinada não é a da chave consultada');
     const msg = serializarRaiz(consSitNFeElement, { versao: '4.00', tpAmb, xServ: 'CONSULTAR', chNFe: c.chave });
-    const ep = endpointDaChave('NfeConsultaProtocolo', c);
+    const ep = endpointDaChave('NfeConsultaProtocolo', c, false, semIeOuOpcao(a));
     const r = await call(ep, 'NfeConsultaProtocolo', msg, 'retConsSitNFe', opcoes?.signal);
     const v = decodificar(TRetConsSitNFe, r.ret, r.doc.texto).valor;
     const status = { cStat: v.cStat, xMotivo: v.xMotivo };
@@ -814,7 +846,7 @@ export function criarClienteNfe(opcoesDoCliente: ClienteNfeOpcoes): ClienteNfe {
         a.xml,
       ]);
       // O autorizador é o do documento: a UF do cUF e, assinada em SVC (tpEmis 6 ou 7), o SVC da chave.
-      const ep = endpointDaChave('NFeAutorizacao', chaveDoDocumento(a));
+      const ep = endpointDaChave('NFeAutorizacao', chaveDoDocumento(a), false, semIeOuOpcao(a));
       const r = await call(ep, 'NFeAutorizacao', msg, 'retEnviNFe', opcoes.signal);
       const v = decodificar(TRetEnviNFe, r.ret, r.doc.texto).valor;
       const status = { cStat: v.cStat, xMotivo: v.xMotivo };

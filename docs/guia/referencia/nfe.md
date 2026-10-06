@@ -52,7 +52,7 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `CartaCorrecaoPedido`: Membros: `chave`, `xCorrecao`, `nSeqEvento`, `autor`.
 - `ClassificacaoIbsCbs`: Classificação do item para IBS/CBS (NT 2025.002): o que o `CalculadoraIbsCbs` recebe. `CST` e `cClassTrib` vêm do cadastro do item (tabela de classificação tributária); o cálculo, as alíquotas e as reduções são da calculadora. Membros: `CST`, `cClassTrib`, `vBC`, `indDoacao`, `cCredPres`, `gTribRegular`.
 - `ClienteNfe`: Membros: `opcoes`, `statusServico()`, `autorizar()`, `consultarRecibo()`, `aguardarRecibo()`, `consultar()`, `cancelar()`, `cancelarPorSubstituicao()`, `cartaCorrecao()`, `manifestar()`, `inutilizar()`, `consultarCadastro()`, `distribuicaoDFe()`.
-- `ClienteNfeOpcoes`: Membros: `transporte`, `assinador`, `ambiente`, `uf`, `relogio`, `logger`, `timeoutMs`, `deslocamentoMin`, `contingencia`, `autor`, `esperar`, `endpointNfce`, `idLote`.
+- `ClienteNfeOpcoes`: Membros: `transporte`, `assinador`, `ambiente`, `uf`, `relogio`, `logger`, `timeoutMs`, `deslocamentoMin`, `contingencia`, `autor`, `esperar`, `endpointNfce`, `idLote`, `contribuinteExclusivoIbsCbs`.
 - `Cobranca`: Cobrança (grupo Y). `fat.vLiq` padrão `vOrig - vDesc`. Membros: `fatura`, `duplicatas`.
 - `ConsultaNfe`: Situação da NF-e na consulta protocolo. Membros: `chNFe`, `situacao`, `protocolo`, `eventos`, `digValConfere`.
 - `ConsultaReciboOpcoes` (estende `EnvioOpcoes`): Opções da consulta de um recibo. Membros: `mod`.
