@@ -29,6 +29,7 @@ Entrada do domínio (`DadosDps`), montagem validada no XSD vigente (`montarDps`,
 - `montarPedidoAnaliseFiscal`: Pedido de análise fiscal para cancelamento (e101103). `montarPedidoAnaliseFiscal(p: AnaliseFiscalPedido, opcoes: PedidoEventoOpcoes): ResultadoPedidoEvento`
 - `montarPedidoCancelamento`: Pedido de cancelamento da NFS-e (e101101). `montarPedidoCancelamento(p: CancelamentoPedido, opcoes: PedidoEventoOpcoes): ResultadoPedidoEvento`
 - `resolverEnvioSemResposta`: Depois de um envio sem resposta (timeout, conexão caída) ou recusado com E0014, descobre se a DPS gerou NFS-e: consulta pelo Id da DPS e, achando a chave, lê a NFS-e. `resolverEnvioSemResposta(cliente: ClienteNfse, dpsAssinada: string, anterior?: ResultadoNfse<NfseGerada>, opcoes?: EnvioOpcoes): Promise<ResolucaoEnvio>`
+- `rotuloDoCaminho`: Rótulo em português do caminho de uma ocorrência da DPS: `Grupo, Campo` quando os dois são conhecidos (`Tomador, CNPJ`), só um deles quando falta o outro, e `Dados da DPS` quando nenhum é. `rotuloDoCaminho(caminho: string): string`
 
 ### Interfaces
 

@@ -34,7 +34,7 @@ Este projeto usa o sinete (DF-e brasileiros em TypeScript: NF-e, NFC-e, MDF-e, N
 - \`sinete/nfe\`: \`DadosNfe\`, \`montarNfe\`, \`assinarNfe\`, \`criarClienteNfe\` (\`.autorizar()\`, \`.consultar()\`, \`.cancelar()\`, \`.cartaCorrecao()\`, \`.manifestar()\`, \`.inutilizar()\`, \`.consultarCadastro()\`, \`.distribuicaoDFe()\`, \`.statusServico()\`), \`resolverEnvioSemResposta\`, \`recuperarEventoRegistrado\`, \`nfeAssinadaDoProc\`, \`autorizadorContingencia\`, \`assinaturaQrCode\`, \`comQrCode\`, \`urlsNfce\`, \`calculadoraIbsCbs\`, \`carregarDatasetEmbarcado\`, \`rotuloDoCaminho\`
 - \`sinete/nfe/ibs-cbs\`: motor do IBS/CBS reexportado (\`determinar\`, \`calcular\`, \`validar\`, \`aliquotasOficiais\`)
 - \`sinete/mdfe\`: \`DadosMdfe\`, \`montarMdfe\`, \`assinarMdfe\`, \`criarClienteMdfe\` (\`.encerrar()\`, \`.consultarNaoEncerrados()\`), \`conferirPercurso\`, \`sugerirPercurso\`, \`prazoContingencia\`, \`rotuloDoCaminho\`
-- \`sinete/nfse\`: \`DadosDps\`, \`montarDps\`, \`assinarDps\`, \`criarClienteNfse\` (\`.consultarDps()\`, \`.solicitarAnaliseFiscal()\`), \`resolverEnvioSemResposta\`
+- \`sinete/nfse\`: \`DadosDps\`, \`montarDps\`, \`assinarDps\`, \`criarClienteNfse\` (\`.consultarDps()\`, \`.solicitarAnaliseFiscal()\`), \`resolverEnvioSemResposta\`, \`rotuloDoCaminho\`
 - \`sinete/da/nfe\`: \`danfe\`, \`gerarPdf\`, \`gerarHtml\`; \`sinete/da/nfce\`: \`danfce\`; \`sinete/da/mdfe\`: \`damdfe\`; \`sinete/da/nfse\`: \`danfse\`; \`sinete/da/cce\`: \`dacce\`
 - \`sinete/ibs-cbs\`: \`calcular\`, \`validar\`, \`determinar\`, \`aliquotasOficiais\`, \`comAliquotasInformadas\`
 - \`sinete/ibs-cbs-dados\`: \`carregarDataset\`, \`conferirDataset\`; \`/embarcado\`: \`datasetEmbarcado\`

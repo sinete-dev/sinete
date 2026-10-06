@@ -67,5 +67,6 @@ export type {
 } from './parametros.ts';
 export { cacheEmMemoria, criarParametrosMunicipais } from './parametros.ts';
 export type { MensagemNfse, RejeicaoNfse, ResultadoNfse } from './respostas.ts';
+export { rotuloDoCaminho } from './rotulo.ts';
 export type { Valor } from './valores.ts';
 export { formatarValor } from './valores.ts';

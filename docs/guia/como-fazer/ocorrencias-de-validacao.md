@@ -42,7 +42,7 @@ try {
 
 ## O caminho em português
 
-`rotuloDoCaminho(path)`, de `sinete/nfe` e de `sinete/mdfe`, transforma o caminho num rótulo compreensível: `itens[1].produto.xProd` vira `Item 2, Descrição do produto`, e `rodoviario.tracao.condutores[0].CPF` vira `Condutor 1, CPF`. Aceita caminhos da entrada e do documento montado, com pontos ou com barras, e apresenta a numeração a partir de um. Quando reconhece apenas o grupo ou o campo, devolve esse rótulo; quando não reconhece nenhum deles, devolve `Dados da NF-e` ou `Dados do MDF-e`. A Nota Fiscal de Serviço Eletrônica (NFS-e), emitida a partir da DPS, ainda não tem `rotuloDoCaminho`.
+`rotuloDoCaminho(path)`, de `sinete/nfe`, `sinete/mdfe` e `sinete/nfse`, transforma o caminho num rótulo compreensível: `itens[1].produto.xProd` vira `Item 2, Descrição do produto`, e `rodoviario.tracao.condutores[0].CPF` vira `Condutor 1, CPF`. Aceita caminhos da entrada e do documento montado, com pontos ou com barras, e apresenta a numeração a partir de um. Quando reconhece apenas o grupo ou o campo, devolve esse rótulo; quando não reconhece nenhum deles, devolve `Dados da NF-e`, `Dados do MDF-e` ou `Dados da DPS`. Na NFS-e, o rótulo é o da DPS: `tomador.CNPJ` vira `Tomador, CNPJ`, e o caminho do validador de XSD, que inclui a raiz (`/DPS/infDPS/serv/cServ/xDescServ`), vira `Serviço, Descrição do serviço`.
 
 ## Regras da SEFAZ conferidas antes do envio
 
