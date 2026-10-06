@@ -53,6 +53,11 @@ describe('autorização (C17-11)', () => {
     expect(await urlDe((c) => c.consultarRecibo('351000000000001', assinada))).toBe(SVRS('NFeRetAutorizacao'));
   });
 
+  test('a série 890 a 919 é exceção só dos eventos: a autorização sem IE vai à SVRS', async () => {
+    const avulsa = chave({ serie: 890 });
+    expect(await urlDe(async (c) => c.autorizar(await nfe(avulsa)))).toBe(SVRS('NFeAutorizacao'));
+  });
+
   test('com a NF-e na mão, a IE dela vence a opção do cliente', async () => {
     const ch = chave();
     const comIe = await nfe(ch, '110042490114');
@@ -76,6 +81,12 @@ describe('eventos do emitente (1P10-40)', () => {
     expect(await urlDe((c) => c.cancelar(pedido(ch)), o)).toBe(SVRS('RecepcaoEvento'));
     expect(await urlDe((c) => c.cartaCorrecao(cce(ch)), o)).toBe(SVRS('RecepcaoEvento'));
     expect(await urlDe((c) => c.consultar(ch), o)).toBe(SVRS('NfeConsultaProtocolo'));
+    expect(await urlDe((c) => c.consultarRecibo('351000000000001'), { ...o, uf: 'SP' })).toBe(
+      SVRS('NFeRetAutorizacao'),
+    );
+    expect(
+      await urlDe((c) => c.consultarRecibo('351000000000001', undefined, { mod: '65' }), { ...o, uf: 'SP' }),
+    ).not.toBe(SVRS('NFeRetAutorizacao'));
   });
 
   test('sem a opção, ou na série 890 a 919, ou na NFC-e, o evento fica no autorizador da chave', async () => {

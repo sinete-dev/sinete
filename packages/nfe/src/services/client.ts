@@ -117,7 +117,8 @@ export interface ClienteNfeOpcoes {
    * autorização dessa NF-e é só na SVRS (RV C17-11, rejeição 166), e os eventos de autoria do emitente dela também
    * (RV 1P10-40, rejeição 188), menos na série 890 a 919. Com a NF-e assinada na mão (`autorizar`, `consultar` e
    * `consultarRecibo` com ela) o cliente vê a falta de `emit/IE` sozinho; esta opção é para o que parte só da chave:
-   * cancelamento, carta de correção, consulta e recibo sem a nota. Não vale para a NFC-e, que não admite emitente sem
+   * cancelamento, carta de correção, consulta e recibo sem a nota (o recibo sem a nota vai à SVRS no modelo 55). A série 890 a
+   * 919 é exceção só dos eventos. Não vale para a NFC-e, que não admite emitente sem
    * IE (RV C17-42, rejeição 156).
    */
   readonly contribuinteExclusivoIbsCbs?: boolean;
@@ -632,10 +633,10 @@ export function criarClienteNfe(opcoesDoCliente: ClienteNfeOpcoes): ClienteNfe {
     semIe = opcoesDoCliente.contribuinteExclusivoIbsCbs === true,
   ): EndpointResolvido => {
     if (c.mod === '65') return endpointNfce(servico, c.uf);
-    // Contribuinte exclusivo do IBS/CBS (NT 2026.007): autorização, consulta e eventos do emitente só na SVRS, menos
-    // na série 890 a 919 (exceção 1 da RV 1P10-40).
+    // Contribuinte exclusivo do IBS/CBS (NT 2026.007): autorização, consulta e eventos do emitente só na SVRS (RV
+    // C17-11 e 1P10-40). A série 890 a 919 é exceção só dos eventos (exceção 1 da RV 1P10-40).
     const serie = Number(c.serie);
-    if (semIe && !(serie >= 890 && serie <= 919))
+    if (semIe && !(servico === 'RecepcaoEvento' && serie >= 890 && serie <= 919))
       return nfeEndpoint({ ambiente: opcoesDoCliente.ambiente, servico, autorizador: 'SVRS' });
     const svc = naUf || c.tpEmis === undefined ? undefined : SVC_DO_TPEMIS[c.tpEmis];
     return nfeEndpoint({
@@ -688,7 +689,9 @@ export function criarClienteNfe(opcoesDoCliente: ClienteNfeOpcoes): ClienteNfe {
     // O recibo é do autorizador que recebeu o lote: com a NF-e, o da chave; sem ela, o das opções.
     const ep =
       c === undefined
-        ? endpoint('NFeRetAutorizacao', opcoes.mod ?? '55')
+        ? (opcoes.mod ?? '55') === '55' && opcoesDoCliente.contribuinteExclusivoIbsCbs === true
+          ? nfeEndpoint({ ambiente: opcoesDoCliente.ambiente, servico: 'NFeRetAutorizacao', autorizador: 'SVRS' })
+          : endpoint('NFeRetAutorizacao', opcoes.mod ?? '55')
         : endpointDaChave('NFeRetAutorizacao', c, false, semIeOuOpcao(a));
     const r = await call(ep, 'NFeRetAutorizacao', msg, 'retConsReciNFe', opcoes.signal);
     const v = decodificar(TRetConsReciNFe, r.ret, r.doc.texto).valor;
