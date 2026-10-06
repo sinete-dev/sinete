@@ -52,21 +52,21 @@ O bin `sinete` executa a CLI de `@sinete/cli`, com `doctor` e `agents-md`. O sim
 
 | Subpath | Pacote |
 |---|---|
-| `sinete/nfe`, `sinete/nfe/ibs-cbs` | `@sinete/nfe` |
+| `sinete/nfe`, `sinete/nfe/ibs-cbs` (experimental) | `@sinete/nfe` |
 | `sinete/mdfe` | `@sinete/mdfe` |
 | `sinete/nfse` | `@sinete/nfse` |
-| `sinete/emissor`, `sinete/emissor/nfe`, `/mdfe`, `/nfse`, `/memoria`, `/contrato` | `@sinete/emissor` |
+| `sinete/emissor`, `sinete/emissor/nfe`, `/mdfe`, `/nfse`, `/memoria`, `/contrato`, `sinete/emissor/perfil` (experimental) | `@sinete/emissor` |
 | `sinete/da`, `sinete/da/nfe`, `sinete/da/nfce`, `sinete/da/mdfe`, `sinete/da/cce` | `@sinete/da` |
 | `sinete/ibs-cbs`, `sinete/ibs-cbs/aliquotas`, `/calcular`, `/validar`, `/determinar` | `@sinete/ibs-cbs` |
 | `sinete/ibs-cbs-dados`, `sinete/ibs-cbs-dados/embarcado` | `@sinete/ibs-cbs-dados` |
 | `sinete/validators` | `@sinete/validators` |
 | `sinete/cert` | `@sinete/cert` |
-| `sinete/transport` | `@sinete/transport` |
+| `sinete/transport`, `sinete/transport/signer` (experimental) | `@sinete/transport` |
 | `sinete/rejeicoes`, `sinete/rejeicoes/mdfe`, `sinete/rejeicoes/nfse` | `@sinete/rejeicoes` |
 | `sinete/schemas`, `sinete/schemas/nfe/PL_010f` e os demais schemas | `@sinete/schemas` |
 | `sinete/core`, `sinete/core/xml` | `@sinete/core` |
 
-Os subpaths experimentais dos pacotes cobertos (`sinete/transport/signer`, `sinete/nfe/ibs-cbs`) são experimentais aqui também: podem mudar em minor, sempre com changeset ([ADR 0016](../../docs/adr/0016-politica-de-estabilidade.md), seção 5).
+Os subpaths experimentais dos pacotes cobertos (`sinete/emissor/perfil`, `sinete/nfe/ibs-cbs`, `sinete/transport/signer`) são experimentais aqui também, com `@experimental` no módulo de reexporto: podem mudar em minor, sempre com changeset ([ADR 0016](../../docs/adr/0016-politica-de-estabilidade.md), seção 5).
 
 No repositório, `scripts/umbrella.ts` gera `package.json` e os arquivos de `src/` a partir do `exports` dos pacotes. O `bun run check` falha quando eles ficam fora de sincronia. Os critérios de divisão estão no ADR 0008.
 
