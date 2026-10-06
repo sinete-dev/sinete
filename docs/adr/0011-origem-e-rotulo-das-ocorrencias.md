@@ -54,7 +54,7 @@ A NFS-e ainda não tem `rotuloDoCaminho`: a DPS tem outro vocabulário (prestado
 
 ## Pendências
 
-- `rotuloDoCaminho` da NFS-e.
+- ~~`rotuloDoCaminho` da NFS-e~~: feito em 06/10/2026 (`packages/nfse/src/rotulo.ts`), com a raiz `DPS` que o validador de XSD põe no caminho.
 - ~~Conferir o texto de alguns campos na entrada da NF-e antes de montar~~: feito na [Revisão (01/10)](#revisão-0110).
 - Campo de dados na `Ocorrencia` (o limite e a regra violada do texto, por exemplo), para o integrador montar a própria mensagem sem ler a do sinete.
 - A mesma conferência no MDF-e e na DPS, que ainda acusam texto e tamanho só na montagem, com o caminho do XML. Mudar é quebra do `caminho` e da `origem` dessas ocorrências: entra num minor enquanto os pacotes estiverem em 0.x, ou fica como está depois da 1.0 deles.
