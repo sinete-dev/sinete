@@ -2,6 +2,8 @@
 
 Registro de cada publicação que o vigia (`tools/fontes-oficiais`) acusou: o que ela muda, em que data vale e o que o sinete faz com ela. A regra é a do README do vigia: só vira código a publicação ativa em homologação, ou com a NT na versão que vai valer e tudo o que ela pede já publicado (schemas incluídos). O resto fica aqui com a data em que vira trabalho, e o `estado.json` registra que a publicação foi vista.
 
+Uma seção por data, a mais recente primeiro. O teste do vigia (`tools/fontes-oficiais/test/triagem.test.ts`) confere que toda publicação da seção mais recente está no `estado.json`; as anteriores são histórico, e a versão que o portal substituir sai do estado no próximo `--gravar`.
+
 Classes: **A** ativa em homologação (ou NT final com tudo publicado), vira trabalho agora; **B** com data futura, vira trabalho na data; **C** publicada sem data ou sem schema, espera; **D** não pede mudança no sinete.
 
 ## 06/10/2026 (issue #10)
