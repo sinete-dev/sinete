@@ -26,7 +26,7 @@ describe('catálogo', () => {
       for (const m of r.modelos) expect(['55', '65']).toContain(m);
       expect(CATEGORIAS_REJEICAO).toContain(r.categoria);
       expect(r.fonte).toMatch(
-        /^(MOC 7\.0 Anexo I|NT 2025\.002 v1\.40|NT 2025\.001 v1\.03|NT 2024\.003 v1\.10|NT 2026\.007 v1\.10), (tabela 4\.4\.[23]|regra \S+)$|^(NT 2025\.001 v1\.03, item 90\.1|NT 2023\.002 v1\.01, item 7)$/,
+        /^(MOC 7\.0 Anexo I|NT 2025\.002 v1\.40|NT 2025\.001 v1\.03|NT 2024\.003 v1\.10|NT 2026\.007 v1\.10|NT 2026\.002 v1\.11), (tabela 4\.4\.[23]|regra \S+)$|^(NT 2025\.001 v1\.03, item 90\.1|NT 2023\.002 v1\.01, item 7)$/,
       );
       for (const rule of r.regras) expect(docs.has(rule.documento), `${r.codigo} ${rule.documento}`).toBe(true);
       // curadoria vem sempre completa e com a regra citada

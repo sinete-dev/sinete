@@ -56,6 +56,15 @@
       "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=fpJlwzhffcQ=",
       "sha256": "4a9d9de64504f4091c55e3e8a2d499116d4bac1a2009a874a7b9ce26d9fe8b10",
       "coletadoEm": "2026-10-06"
+    },
+    {
+      "id": "nt2026002",
+      "titulo": "NT 2026.002: NFC-e e NF-e, emissão off-line, autorização com alerta e DANFE Simplificado Tipo 2",
+      "versao": "1.11",
+      "citacao": "NT 2026.002 v1.11",
+      "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=m8aACnFLK/Y=",
+      "sha256": "72c033b2c7490710f61488a14d0bb3d7bb54e5345aa8d33d6ff2c270c228f046",
+      "coletadoEm": "2026-10-06"
     }
   ],
   "notas": "União da tabela 4.4.2/4.4.3 do Anexo I com os códigos das regras de validação do Anexo I e da NT 2025.002, os códigos de outras NT listados em `adicionais` da curadoria (regra conferida no PDF) os códigos novos das tabelas de mensagens da NT 2025.001 e da NT 2023.002 (NFC-e) e os códigos novos das regras de validação da NT 2026.007 (contribuinte exclusivo do IBS/CBS). Mensagem oficial sem ajuste (placeholders como [nItem: 999] mantidos). `modelos` vem das regras; sem regra localizada, 55 e 65. `categoria` é heurística sobre a mensagem, com correções manuais na curadoria. `causaProvavel` e `comoCorrigir` só onde houve curadoria, com a regra citada em `referencia`.",
@@ -5917,6 +5926,20 @@
         {
           "documento": "moc70-anexo1",
           "id": "N16-04"
+        }
+      ],
+      "categoria": "regra-negocio"
+    },
+    {
+      "codigo": "672",
+      "efeito": "rejeicao",
+      "mensagem": "NF-e com DANFE Simplificado Tipo 2 com versão de qrCode não permitida",
+      "modelos": ["55"],
+      "fonte": "NT 2026.002 v1.11, regra ZX02-220",
+      "regras": [
+        {
+          "documento": "nt2026002",
+          "id": "ZX02-220"
         }
       ],
       "categoria": "regra-negocio"

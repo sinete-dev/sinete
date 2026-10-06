@@ -184,7 +184,7 @@ async function processNfe(
   // ZX02-338: a assinatura do QR Code versão 3 off-line confere com o certificado da nota; a regra lê o resultado.
   const qr = facts.supl?.qrCode;
   const params = qr === undefined ? undefined : parametrosDoQrCode(qr);
-  if (facts.mod === '65' && facts.tpEmis === '9' && params?.[1] === '3') {
+  if (facts.tpEmis === '9' && params?.[1] === '3') {
     const assinaturaConfere = await assinaturaDoQrCodeConfere(params, sig.certificadoDer);
     facts = { ...facts, supl: { ...facts.supl, assinaturaConfere } };
   }

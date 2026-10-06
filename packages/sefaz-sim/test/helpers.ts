@@ -199,8 +199,10 @@ export interface NfeParams {
   readonly vNF?: string;
   /** Trocas de texto no `infNFe` antes de assinar (`['<tpImp>4</tpImp>', '<tpImp>1</tpImp>']`). */
   readonly trocas?: readonly (readonly [string, string])[];
-  /** Só NFC-e: o texto do `qrCode`; `null` monta a NFC-e sem `infNFeSupl`. Padrão: versão 3 on-line. */
+  /** NFC-e e NF-e Tipo 2: o texto do `qrCode`; `null` monta a nota sem `infNFeSupl`. Padrão: versão 3 on-line. */
   readonly qrCode?: string | null;
+  /** NF-e com DANFE Simplificado Tipo 2 (tpImp 6, NT 2026.002): leva o QR Code como a NFC-e. */
+  readonly tipo2?: boolean;
 }
 
 export interface Nfe {
@@ -239,7 +241,7 @@ export async function nfe(p: NfeParams = {}): Promise<Nfe> {
   const inf =
     `<infNFe Id="${id}" versao="4.00"><ide><cUF>${cUF}</cUF><cNF>${cNF}</cNF><natOp>VENDA SINTETICA</natOp>` +
     `<mod>${mod}</mod><serie>${serie}</serie><nNF>${nNF}</nNF><dhEmi>${dhEmi}</dhEmi><tpNF>1</tpNF><idDest>1</idDest>` +
-    `<cMunFG>3550308</cMunFG><tpImp>${mod === '65' ? '4' : '1'}</tpImp><tpEmis>${tpEmis}</tpEmis><cDV>${chave[43]}</cDV><tpAmb>${p.tpAmb ?? '2'}</tpAmb>` +
+    `<cMunFG>3550308</cMunFG><tpImp>${mod === '65' ? '4' : p.tipo2 ? '6' : '1'}</tpImp><tpEmis>${tpEmis}</tpEmis><cDV>${chave[43]}</cDV><tpAmb>${p.tpAmb ?? '2'}</tpAmb>` +
     '<finNFe>1</finNFe><indFinal>1</indFinal><indPres>1</indPres><procEmi>0</procEmi><verProc>sinete-teste</verProc></ide>' +
     `<emit><CNPJ>${emit}</CNPJ><xNome>EMPRESA SINTETICA DE TESTE LTDA</xNome><enderEmit><xLgr>RUA DE TESTE</xLgr>` +
     '<nro>100</nro><xBairro>CENTRO</xBairro><cMun>3550308</cMun><xMun>SAO PAULO</xMun><UF>SP</UF><CEP>01001000</CEP>' +
@@ -259,14 +261,15 @@ export async function nfe(p: NfeParams = {}): Promise<Nfe> {
   // dia, valor, destinatário e a assinatura dos parâmetros pelo certificado da nota. Ou o informado.
   const signer = (p.signer ?? c.emitente).assinador;
   let qrCode = p.qrCode;
-  if (mod === '65' && qrCode === undefined) {
+  const comQr = mod === '65' || p.tipo2 === true;
+  if (comQr && qrCode === undefined) {
     const base = `${chave}|3|${p.tpAmb ?? '2'}`;
     const params = tpEmis === '9' ? `${base}|${dhEmi.slice(8, 10)}|${vNF}|1|${dest}` : base;
     const assinatura = tpEmis === '9' ? `|${await assinarQrCode(params, signer)}` : '';
     qrCode = `https://www.homologacao.nfce.fazenda.sp.gov.br/qrcode?p=${params}${assinatura}`;
   }
   const supl =
-    mod === '65' && qrCode !== null && qrCode !== undefined
+    comQr && qrCode !== null && qrCode !== undefined
       ? `<infNFeSupl><qrCode>${qrCode}</qrCode>` +
         '<urlChave>https://www.homologacao.nfce.fazenda.sp.gov.br/consulta</urlChave></infNFeSupl>'
       : '';
