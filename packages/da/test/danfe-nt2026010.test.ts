@@ -154,4 +154,24 @@ describe('DANFE A4 na NT 2026.010', () => {
     expect(t).toContain('PRD00064');
     expect(doc.estatisticas.cortados).toBe(0);
   });
+  test('folha 1 mais cheia: nenhum quadro invade o seguinte, e fatura e duplicatas que não cabem vão para o texto', () => {
+    for (const dups of [0, 1, 6, 40]) {
+      const doc = danfe(
+        nfeXml({ name: 'cheia', items: 4, ibscbs: true, issqn: true, locais: true, fat: dups > 0, dups, transp: true }),
+      );
+      const y = (s: string): number => {
+        const o = ops(doc).find((x) => x.pagina === 0 && x.s === s);
+        if (o === undefined) throw new Error(s);
+        return o.y;
+      };
+      // Do rótulo PESO LÍQUIDO ao fim do quadro do transportador cabe uma linha; daí até o ISSQN, o quadro de produtos.
+      expect(y('DADOS DOS PRODUTOS/SERVIÇOS')).toBeGreaterThan(y('PESO LÍQUIDO') + 4);
+      expect(y('CÁLCULO DO ISSQN') - y('DADOS DOS PRODUTOS/SERVIÇOS')).toBeGreaterThanOrEqual(10);
+      const t = texts(doc);
+      if (dups > 0) {
+        expect(t).toContain('FATURA Nº 1234');
+        for (let n = 1; n <= dups; n++) expect(t).toContain(`Nº ${String(n).padStart(3, '0')}`);
+      }
+    }
+  });
 });

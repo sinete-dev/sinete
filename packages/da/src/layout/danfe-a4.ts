@@ -235,13 +235,22 @@ export function danfeA4(
   const dupRowsNeeded = Math.ceil(nota.dup.length / dupPerRow);
   let dupMaxRows = Math.min(3, dupRowsNeeded);
   while (dupMaxRows > 1 && semFatura + fatHeight(dupMaxRows) + PROD_MIN > prodBottom1) dupMaxRows--;
+  // Na folha mais cheia (canhoto, dois locais, IBS/CBS e ISSQN) nem uma linha da grade cabe sem invadir o quadro de
+  // produtos: as duplicatas vão todas para as informações complementares, e a linha da fatura também, se não couber.
+  const cabe = (h: number): boolean => semFatura + h + TITLE + TH <= prodBottom1;
+  if (dupMaxRows > 0 && !cabe(fatHeight(dupMaxRows))) dupMaxRows = 0;
   const dupCap = dupPerRow * dupMaxRows;
-  const dupGrade = nota.dup.length > dupCap ? nota.dup.slice(0, dupCap - 1) : nota.dup;
+  const dupGrade = nota.dup.length > dupCap ? nota.dup.slice(0, Math.max(0, dupCap - 1)) : nota.dup;
   const dupResto = nota.dup.slice(dupGrade.length);
-  const dupRows = Math.ceil((dupGrade.length + (dupResto.length > 0 ? 1 : 0)) / dupPerRow);
-  const fatH = fatHeight(dupRows);
+  const dupRows = dupCap === 0 ? 0 : Math.ceil((dupGrade.length + (dupResto.length > 0 ? 1 : 0)) / dupPerRow);
+  const quadroFat = hasFat && (dupRows > 0 || (nota.fat !== undefined && cabe(fatHeight(0))));
+  const fatH = quadroFat ? fatHeight(dupRows) : 0;
+  const fatTexto =
+    nota.fat !== undefined && !quadroFat
+      ? `FATURA Nº ${nota.fat.nFat} VALOR ORIGINAL R$ ${f.num(nota.fat.vOrig)} DESCONTO R$ ${f.num(nota.fat.vDesc || '0')} VALOR LÍQUIDO R$ ${f.num(nota.fat.vLiq)}.`
+      : '';
   const dupTexto = dupResto.length
-    ? `DEMAIS DUPLICATAS: ${dupResto.map((d) => `Nº ${d.nDup} VENC. ${f.data(d.dVenc)} R$ ${f.num(d.vDup)}`).join('; ')}.`
+    ? `${dupGrade.length > 0 ? 'DEMAIS DUPLICATAS' : 'DUPLICATAS'}: ${dupResto.map((d) => `Nº ${d.nDup} VENC. ${f.data(d.dVenc)} R$ ${f.num(d.vDup)}`).join('; ')}.`
     : '';
   const firstTop = semFatura + fatH;
 
@@ -255,6 +264,7 @@ export function danfeA4(
     cont && pendente ? `DANFE EMITIDO EM ${cont}.` : '',
     nota.tpAmb === '2' ? 'EMITIDA EM AMBIENTE DE HOMOLOGAÇÃO - SEM VALOR FISCAL.' : '',
     nota.infAdFisco,
+    fatTexto,
     dupTexto,
     nota.infCpl,
   ].filter(Boolean);
@@ -331,7 +341,7 @@ export function danfeA4(
       y = destinatario(c, y);
       if (nota.retirada) y = local(c, y, 'INFORMAÇÕES DO LOCAL DE RETIRADA', nota.retirada);
       if (nota.entrega) y = local(c, y, 'INFORMAÇÕES DO LOCAL DE ENTREGA', nota.entrega);
-      if (hasFat) y = fatura(c, y);
+      if (quadroFat) y = fatura(c, y);
       y = imposto(c, y);
       if (ibs) y = ibsCbs(c, y);
       y = transportador(c, y);
@@ -653,7 +663,7 @@ export function danfeA4(
       c.text(`VENC. ${f.data(d.dVenc)}`, x + 0.6, top + 4.6, dw - 1.2, { size: 6.5 });
       c.text(`VALOR R$ ${f.num(d.vDup)}`, x + 0.6, top + 6.9, dw - 1.2, { size: 6.5 });
     });
-    if (dupResto.length > 0) {
+    if (dupResto.length > 0 && dupRows > 0) {
       const [x, top] = cell(dupGrade.length);
       c.text(`+ ${dupResto.length} DUPLICATAS`, x + 0.6, top + 2.3, dw - 1.2, { font: c.bold, size: 6.5, fixo: true });
       c.text('EM INFORMAÇÕES', x + 0.6, top + 4.6, dw - 1.2, { size: 6.5, fixo: true });

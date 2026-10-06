@@ -59,7 +59,7 @@ describe('DANFE A4', () => {
         }
       }
       const t = texts(doc);
-      expect(t).toContain('DEMAIS DUPLICATAS');
+      expect(t).toContain('DUPLICATAS: Nº ');
       expect(t).toContain('PRODUTO DE TESTE 3');
     }
   });
