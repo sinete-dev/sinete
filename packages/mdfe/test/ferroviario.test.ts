@@ -66,6 +66,19 @@ describe('montarMdfe: modal ferroviário', () => {
     expect(dois.xml).toContain('<qVag>2</qVag>');
   });
 
+  test('peso abaixo de uma tonelada sai no padrão do TDec_0303: 0, duas casas, e três casas só a partir de 1', async () => {
+    const xml = async (pesoBC: string, pesoR: string) =>
+      ok(await montarMdfe(ferroviario(prestador(), { ...TREM, vagoes: [{ ...VAGAO, pesoBC, pesoR }] }), opcoes())).xml;
+    expect(await xml('0', '0.5')).toContain('<pesoBC>0</pesoBC><pesoR>0.50</pesoR>');
+    expect(await xml('0.000', '1')).toContain('<pesoBC>0</pesoBC><pesoR>1.000</pesoR>');
+    expect(await xml('0.25', '999.999')).toContain('<pesoBC>0.25</pesoBC><pesoR>999.999</pesoR>');
+    const r = await montarMdfe(ferroviario(prestador(), { ...TREM, vagoes: [{ ...VAGAO, pesoR: '0.505' }] }), opcoes());
+    if (r.ok) throw new Error('esperava ocorrência');
+    expect(r.ocorrencias).toContainEqual(
+      expect.objectContaining({ caminho: 'ferroviario.vagoes[0].pesoR', code: 'decimal_invalido' }),
+    );
+  });
+
   test('sem vagão, peso fora do leiaute e número de vagão zero são ocorrências com rótulo do ferroviário', async () => {
     const casos: [Ferroviario, string][] = [
       [{ ...TREM, vagoes: [] }, 'ferroviario.vagoes'],

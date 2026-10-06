@@ -1067,6 +1067,17 @@ export async function montarMdfe(entrada: DadosMdfe, opcoes: MontarMdfeOpcoes): 
       issues.add('ferroviario.trem.dhTrem', 'campo_invalido', 'dhTrem precisa ser um instante válido');
     }
     const peso = (v: DecimalInput, path: string, f: FormatoDecimal): string => formatarDecimal(ctx.req(v, path, f), f);
+    // TDec_0303 (ER13): 0, 0 com duas casas abaixo de uma tonelada, ou três casas de 1 em diante.
+    const toneladas = (v: DecimalInput, path: string): string => {
+      const d = ctx.req(v, path, D0303);
+      if (d.isZero()) return '0';
+      if (d.gt(1) || d.eq(1)) return formatarDecimal(d, D0303);
+      if (d.significantScale() > 2) {
+        issues.add(path, 'decimal_invalido', 'abaixo de uma tonelada, o leiaute (TDec_0303) aceita só duas casas');
+        return d.toString();
+      }
+      return d.toFixed(2);
+    };
     infModal = {
       versaoModal: VERSAO,
       ferrov: {
@@ -1080,8 +1091,8 @@ export async function montarMdfe(entrada: DadosMdfe, opcoes: MontarMdfeOpcoes): 
         vag: ferrov.vagoes.map((v, n) => {
           const path = `ferroviario.vagoes[${n}]`;
           return clean({
-            pesoBC: peso(v.pesoBC, `${path}.pesoBC`, D0303),
-            pesoR: peso(v.pesoR, `${path}.pesoR`, D0303),
+            pesoBC: toneladas(v.pesoBC, `${path}.pesoBC`),
+            pesoR: toneladas(v.pesoR, `${path}.pesoR`),
             tpVag: v.tpVag,
             serie: v.serie,
             nVag: v.nVag,
