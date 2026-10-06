@@ -90,7 +90,7 @@ roc.total.IBSCBSTot.vBCIBSCBS; // '1000.00'
 
 ## Regras de validação da NT 2025.002 (`@sinete/ibs-cbs/validar`)
 
-Regras de validação da NT 2025.002-RTC v1.51 (grupos UB e W da NF-e e da NFC-e) que dá para conferir sem o banco da SEFAZ, como funções puras. Cada regra tem o id da NT, o cStat de rejeição (cruzado com o `@sinete/rejeicoes`), os modelos, a implantação por ambiente e a fonte. Serve para conferir um XML lido de fora ou a saída do `@sinete/ibs-cbs/calcular`, e é o segundo oráculo do motor no que a Calculadora da RFB não calcula.
+Regras de validação da NT 2025.002-RTC v1.52 (grupos UB e W da NF-e e da NFC-e) que dá para conferir sem o banco da SEFAZ, como funções puras. Cada regra tem o id da NT, o cStat de rejeição (cruzado com o `@sinete/rejeicoes`), os modelos, a implantação por ambiente e a fonte. Serve para conferir um XML lido de fora ou a saída do `@sinete/ibs-cbs/calcular`, e é o segundo oráculo do motor no que a Calculadora da RFB não calcula.
 
 ```ts
 import { relogioFixo, contextoDeTempo } from '@sinete/core';
@@ -103,7 +103,7 @@ const report = validar(doc, {
   tempo: contextoDeTempo({ emissao: relogioFixo('2026-10-10T12:00:00-03:00') }),
   ambiente: 'producao',
 });
-report.violacoes; // [{ regra: 'UB35-10', cStat: '1041', item: 1, message: '...', fonte: 'NT 2025.002 v1.51, UB35-10' }]
+report.violacoes; // [{ regra: 'UB35-10', cStat: '1041', item: 1, message: '...', fonte: 'NT 2025.002 v1.52, UB35-10' }]
 ```
 
 ### O que confere

@@ -71,7 +71,7 @@ describe('catálogo de regras', () => {
         rej?.regras.some((x) => x.id === r.id),
         `${r.id} não está na regra do cStat ${r.cStat}`,
       ).toBe(true);
-      expect(r.fonte).toBe(`NT 2025.002 v1.51, ${r.id}`);
+      expect(r.fonte).toBe(`NT 2025.002 v1.52, ${r.id}`);
       for (const a of r.ativacao) expect(a.homologacao <= a.producao).toBe(true);
       for (const m of r.modelos) expect(rej?.modelos).toContain(String(m) as '55');
     }
@@ -238,7 +238,8 @@ describe('violações', () => {
     expect(run(patch(doc, (ib) => ({ ...ib, CST: '200' })))).toContain('UB14-20');
     const nfce = docOf([full], { modelo: 65 });
     expect(run(patch(nfce, (ib) => ({ ...ib, CST: '200', cClassTrib: '200045' })))).toContain('UB14-25');
-    expect(run(patch(doc, (ib) => ({ ...ib, CST: '620', cClassTrib: '620005' })))).toContain('UB14-40');
+    // A UB14-40 (620005 só em nota de crédito, rejeição 1057) saiu da NT 2025.002 na v1.52: não recusa mais.
+    expect(run(patch(doc, (ib) => ({ ...ib, CST: '620', cClassTrib: '620005' })))).not.toContain('UB14-40');
   });
 
   test('presença de grupos pela CST', () => {
