@@ -32,7 +32,9 @@ import { D1104, D1302, D1302_OPC, Decimal, formatarDecimal, problemaDeFormato, s
 import type { CodigoOcorrenciaMdfe } from '../issues.ts';
 import { Issues } from '../issues.ts';
 import type {
+  Aereo,
   Contratante,
+  CteTransportado,
   DadosMdfe,
   Descarregamento,
   DocumentoContratante,
@@ -439,6 +441,15 @@ export async function montarMdfe(entrada: DadosMdfe, opcoes: MontarMdfeOpcoes): 
     issues.montagem('tpEmis', 'contingencia_invalida', 'tpEmis 1 (normal) ou 2 (contingência off-line)');
     return { ok: false, ocorrencias: issues.classificadas };
   }
+  // O grupo do modal: um e só um (rodoviario ou aereo).
+  const rodo = entrada.rodoviario;
+  const aereo = entrada.aereo;
+  if (rodo !== undefined && aereo !== undefined) {
+    issues.add('aereo', 'combinacao_invalida', 'informe um só modal: rodoviario ou aereo');
+  } else if (rodo === undefined && aereo === undefined) {
+    issues.add('rodoviario', 'campo_obrigatorio', 'falta o grupo do modal: rodoviario ou aereo');
+  }
+  const modal = aereo !== undefined ? '2' : '1';
   const e = entrada.emitente;
   const emitUf = e.endereco.UF;
   if (!ehUf(emitUf)) {
@@ -609,7 +620,8 @@ export async function montarMdfe(entrada: DadosMdfe, opcoes: MontarMdfeOpcoes): 
     issues.add('percurso', 'campo_invalido', `no máximo ${emissao.percursoMaximo} UFs de percurso`);
   }
   for (const [n, u] of percurso.entries()) ufValida(u, `percurso[${n}]`);
-  if (okUfs && percurso.every((u) => u === 'EX' || ehUf(u))) {
+  // F90 só no modal rodoviário.
+  if (rodo !== undefined && okUfs && percurso.every((u) => u === 'EX' || ehUf(u))) {
     const trecho = conferirPercurso(ufIni, percurso, ufFim);
     if (trecho !== undefined) {
       const sugestao =
@@ -633,6 +645,19 @@ export async function montarMdfe(entrada: DadosMdfe, opcoes: MontarMdfeOpcoes): 
   const ctes = descargas.flatMap((d, m) =>
     (d.cte ?? []).map((x, k) => ({ x, path: `descarregamentos[${m}].cte[${k}]`, municipio: m })),
   );
+  if (aereo === undefined) {
+    for (const d of ctes) {
+      if (d.x.entregaParcial !== undefined) {
+        ctx.regra(
+          `${d.path}.entregaParcial`,
+          'combinacao_invalida',
+          'entrega parcial (corte de voo) só no modal aéreo',
+          'F34',
+          '702',
+        );
+      }
+    }
+  }
   if (tpEmit === '1' && nfes.length > 0) {
     ctx.regra(
       'descarregamentos',
@@ -665,6 +690,9 @@ export async function montarMdfe(entrada: DadosMdfe, opcoes: MontarMdfeOpcoes): 
     }
     if (interestadual) {
       ctx.regra('indCarregaPosterior', 'carregamento_posterior_invalido', 'só em operação interna', 'F22', '704');
+    }
+    if (rodo === undefined) {
+      ctx.regra('indCarregaPosterior', 'carregamento_posterior_invalido', 'só no modal rodoviário', 'F23', '705');
     }
     if (tpEmit !== '2') {
       ctx.regra('indCarregaPosterior', 'carregamento_posterior_invalido', 'só para carga própria (2)', 'F24', '707');
@@ -740,17 +768,30 @@ export async function montarMdfe(entrada: DadosMdfe, opcoes: MontarMdfeOpcoes): 
             }),
           ),
   });
+  const entregaParcial = (x: CteTransportado, path: string): Obj | undefined =>
+    x.entregaParcial === undefined
+      ? undefined
+      : {
+          qtdTotal: formatarDecimal(ctx.req(x.entregaParcial.qtdTotal, `${path}.qtdTotal`, D1104), D1104),
+          qtdParcial: formatarDecimal(ctx.req(x.entregaParcial.qtdParcial, `${path}.qtdParcial`, D1104), D1104),
+        };
   // A chave sai como o validador a leu (letras do CNPJ alfanumérico em maiúsculas), a mesma que as regras conferiram.
   const chaveNormal = (ch: string): string => lerChave(ch)?.chave ?? ch.replace(/\s/g, '');
   const infDoc = {
-    infMunDescarga: descargas.map((d) =>
+    infMunDescarga: descargas.map((d, m) =>
       clean({
         cMunDescarga: d.cMun,
         xMunDescarga: d.xMun,
         infCTe:
           (d.cte ?? []).length === 0
             ? undefined
-            : (d.cte ?? []).map((x) => clean({ chCTe: chaveNormal(x.chave), ...docOut(x) })),
+            : (d.cte ?? []).map((x, k) =>
+                clean({
+                  chCTe: chaveNormal(x.chave),
+                  ...docOut(x),
+                  infEntregaParcial: entregaParcial(x, `descarregamentos[${m}].cte[${k}].entregaParcial`),
+                }),
+              ),
         infNFe:
           (d.nfe ?? []).length === 0
             ? undefined
@@ -760,253 +801,271 @@ export async function montarMdfe(entrada: DadosMdfe, opcoes: MontarMdfeOpcoes): 
   };
   const qtdDfe = nfes.length + ctes.length;
 
-  // Modal rodoviário
-  const rodo = entrada.rodoviario;
-  const prestacao = tpEmit === '1' || tpEmit === '3' || (tpEmit === '2' && entrada.tpTransp !== undefined);
-  const tr = rodo.tracao;
-  const propTr = tr.proprietario;
-  // Tipo do transportador (F18 a F20)
-  if (propTr === undefined && entrada.tpTransp !== undefined) {
-    ctx.regra('tpTransp', 'combinacao_invalida', 'sem proprietário do veículo de tração, não informe', 'F20', '745');
-  }
-  if (propTr?.CPF !== undefined && entrada.tpTransp !== '2') {
-    ctx.regra('tpTransp', 'combinacao_invalida', 'proprietário CPF exige TAC (2)', 'F18', '743');
-  }
-  if (propTr?.CNPJ !== undefined && entrada.tpTransp !== '1' && entrada.tpTransp !== '3') {
-    ctx.regra('tpTransp', 'combinacao_invalida', 'proprietário CNPJ exige ETC (1) ou CTC (3)', 'F19', '744');
-  }
-  const semEx = ufIni !== 'EX' && ufFim !== 'EX';
-  const conferirPlaca = (p: string, path: string): void => {
-    if (semEx && !PLACA.test(p)) ctx.regra(path, 'placa_invalida', 'placa fora do formato nacional', 'F89', '646');
-  };
-  const placaTr = placa(tr.placa);
-  conferirPlaca(placaTr, 'rodoviario.tracao.placa');
-  if (tr.condutores.length === 0 || tr.condutores.length > 10) {
-    issues.add('rodoviario.tracao.condutores', 'campo_obrigatorio', 'de 1 a 10 condutores');
-  }
-  const cpfsCondutor = new Set<string>();
-  const condutor = tr.condutores.map((c, n) => {
-    const path = `rodoviario.tracao.condutores[${n}].CPF`;
-    const r = lerCpf(c.CPF, { caminho: path });
-    if (!r.ok) ctx.regra(path, 'documento_invalido', 'CPF do condutor inválido', 'F100', '645');
-    const cpf = r.ok ? r.valor : c.CPF;
-    if (cpfsCondutor.has(cpf)) ctx.regra(path, 'duplicado', 'condutor repetido', 'F99', '577');
-    cpfsCondutor.add(cpf);
-    return { xNome: c.xNome, CPF: cpf };
-  });
-  const emitKey = docKey(emitDoc);
-  const propTrOut =
-    propTr === undefined ? undefined : proprietario(ctx, propTr, 'rodoviario.tracao.proprietario', 'F103', '718');
-  if (propTrOut !== undefined && docKey(propTrOut as Doc) === emitKey) {
-    ctx.regra('rodoviario.tracao.proprietario', 'combinacao_invalida', 'proprietário igual ao emitente', 'F64', '740');
-  }
-  const veicTracao = clean({
-    cInt: tr.cInt,
-    placa: placaTr,
-    RENAVAM: tr.RENAVAM,
-    tara: inteiro(tr.tara, 'rodoviario.tracao.tara', 6, ctx),
-    capKG: inteiro(tr.capKG, 'rodoviario.tracao.capKG', 6, ctx),
-    capM3: inteiro(tr.capM3, 'rodoviario.tracao.capM3', 3, ctx),
-    prop: propTrOut,
-    condutor,
-    tpRod: tr.tpRod,
-    tpCar: tr.tpCar,
-    UF: tr.UF,
-  });
-  const reboques = rodo.reboques ?? [];
-  if (reboques.length > 3) issues.add('rodoviario.reboques', 'campo_invalido', 'no máximo 3 reboques');
-  if (tr.tpRod === emissao.reboqueCavalo.tpRod && reboques.length === 0) {
-    ctx.regra('rodoviario.reboques', 'campo_obrigatorio', 'cavalo mecânico (tpRod 03) exige reboque', 'F89c', '523');
-  }
-  const veicReboque = reboques.map((r, n) => {
-    const path = `rodoviario.reboques[${n}]`;
-    const pl = placa(r.placa);
-    conferirPlaca(pl, `${path}.placa`);
-    return clean({
-      cInt: r.cInt,
-      placa: pl,
-      RENAVAM: r.RENAVAM,
-      tara: inteiro(r.tara, `${path}.tara`, 6, ctx),
-      capKG: inteiro(r.capKG, `${path}.capKG`, 6, ctx),
-      capM3: inteiro(r.capM3, `${path}.capM3`, 3, ctx),
-      prop:
-        r.proprietario === undefined
-          ? undefined
-          : proprietario(ctx, r.proprietario, `${path}.proprietario`, 'F104', '719'),
-      tpCar: r.tpCar,
-      UF: r.UF,
+  // Modal rodoviário (as regras F18 a F20, F52 a F66, F89 a F108 e F55a/F55b só valem nele)
+  let infModal: Obj;
+  if (rodo !== undefined) {
+    const prestacao = tpEmit === '1' || tpEmit === '3' || (tpEmit === '2' && entrada.tpTransp !== undefined);
+    const tr = rodo.tracao;
+    const propTr = tr.proprietario;
+    // Tipo do transportador (F18 a F20)
+    if (propTr === undefined && entrada.tpTransp !== undefined) {
+      ctx.regra('tpTransp', 'combinacao_invalida', 'sem proprietário do veículo de tração, não informe', 'F20', '745');
+    }
+    if (propTr?.CPF !== undefined && entrada.tpTransp !== '2') {
+      ctx.regra('tpTransp', 'combinacao_invalida', 'proprietário CPF exige TAC (2)', 'F18', '743');
+    }
+    if (propTr?.CNPJ !== undefined && entrada.tpTransp !== '1' && entrada.tpTransp !== '3') {
+      ctx.regra('tpTransp', 'combinacao_invalida', 'proprietário CNPJ exige ETC (1) ou CTC (3)', 'F19', '744');
+    }
+    const semEx = ufIni !== 'EX' && ufFim !== 'EX';
+    const conferirPlaca = (p: string, path: string): void => {
+      if (semEx && !PLACA.test(p)) ctx.regra(path, 'placa_invalida', 'placa fora do formato nacional', 'F89', '646');
+    };
+    const placaTr = placa(tr.placa);
+    conferirPlaca(placaTr, 'rodoviario.tracao.placa');
+    if (tr.condutores.length === 0 || tr.condutores.length > 10) {
+      issues.add('rodoviario.tracao.condutores', 'campo_obrigatorio', 'de 1 a 10 condutores');
+    }
+    const cpfsCondutor = new Set<string>();
+    const condutor = tr.condutores.map((c, n) => {
+      const path = `rodoviario.tracao.condutores[${n}].CPF`;
+      const r = lerCpf(c.CPF, { caminho: path });
+      if (!r.ok) ctx.regra(path, 'documento_invalido', 'CPF do condutor inválido', 'F100', '645');
+      const cpf = r.ok ? r.valor : c.CPF;
+      if (cpfsCondutor.has(cpf)) ctx.regra(path, 'duplicado', 'condutor repetido', 'F99', '577');
+      cpfsCondutor.add(cpf);
+      return { xNome: c.xNome, CPF: cpf };
     });
-  });
+    const emitKey = docKey(emitDoc);
+    const propTrOut =
+      propTr === undefined ? undefined : proprietario(ctx, propTr, 'rodoviario.tracao.proprietario', 'F103', '718');
+    if (propTrOut !== undefined && docKey(propTrOut as Doc) === emitKey) {
+      ctx.regra(
+        'rodoviario.tracao.proprietario',
+        'combinacao_invalida',
+        'proprietário igual ao emitente',
+        'F64',
+        '740',
+      );
+    }
+    const veicTracao = clean({
+      cInt: tr.cInt,
+      placa: placaTr,
+      RENAVAM: tr.RENAVAM,
+      tara: inteiro(tr.tara, 'rodoviario.tracao.tara', 6, ctx),
+      capKG: inteiro(tr.capKG, 'rodoviario.tracao.capKG', 6, ctx),
+      capM3: inteiro(tr.capM3, 'rodoviario.tracao.capM3', 3, ctx),
+      prop: propTrOut,
+      condutor,
+      tpRod: tr.tpRod,
+      tpCar: tr.tpCar,
+      UF: tr.UF,
+    });
+    const reboques = rodo.reboques ?? [];
+    if (reboques.length > 3) issues.add('rodoviario.reboques', 'campo_invalido', 'no máximo 3 reboques');
+    if (tr.tpRod === emissao.reboqueCavalo.tpRod && reboques.length === 0) {
+      ctx.regra('rodoviario.reboques', 'campo_obrigatorio', 'cavalo mecânico (tpRod 03) exige reboque', 'F89c', '523');
+    }
+    const veicReboque = reboques.map((r, n) => {
+      const path = `rodoviario.reboques[${n}]`;
+      const pl = placa(r.placa);
+      conferirPlaca(pl, `${path}.placa`);
+      return clean({
+        cInt: r.cInt,
+        placa: pl,
+        RENAVAM: r.RENAVAM,
+        tara: inteiro(r.tara, `${path}.tara`, 6, ctx),
+        capKG: inteiro(r.capKG, `${path}.capKG`, 6, ctx),
+        capM3: inteiro(r.capM3, `${path}.capM3`, 3, ctx),
+        prop:
+          r.proprietario === undefined
+            ? undefined
+            : proprietario(ctx, r.proprietario, `${path}.proprietario`, 'F104', '719'),
+        tpCar: r.tpCar,
+        UF: r.UF,
+      });
+    });
 
-  // ANTT: RNTRC, CIOT, vale-pedágio, contratantes e pagamento (F52 a F66, F94 a F98, F101, F102, F108)
-  const ciots = (rodo.ciot ?? []).map((c, n) =>
-    clean({ CIOT: c.CIOT, ...ctx.doc(c, `rodoviario.ciot[${n}]`, 'F101', '716') }),
-  );
-  let valePed: Obj | undefined;
-  let pagadorValePed = false;
-  if (rodo.valePedagio !== undefined) {
-    const vp = rodo.valePedagio;
-    if (vp.categCombVeic === undefined) {
-      ctx.regra(
-        'rodoviario.valePedagio.categCombVeic',
-        'campo_obrigatorio',
-        'categoria de combinação veicular',
-        'F95',
-        '731',
-      );
+    // ANTT: RNTRC, CIOT, vale-pedágio, contratantes e pagamento (F52 a F66, F94 a F98, F101, F102, F108)
+    const ciots = (rodo.ciot ?? []).map((c, n) =>
+      clean({ CIOT: c.CIOT, ...ctx.doc(c, `rodoviario.ciot[${n}]`, 'F101', '716') }),
+    );
+    let valePed: Obj | undefined;
+    let pagadorValePed = false;
+    if (rodo.valePedagio !== undefined) {
+      const vp = rodo.valePedagio;
+      if (vp.categCombVeic === undefined) {
+        ctx.regra(
+          'rodoviario.valePedagio.categCombVeic',
+          'campo_obrigatorio',
+          'categoria de combinação veicular',
+          'F95',
+          '731',
+        );
+      }
+      if (vp.dispositivos.length === 0) {
+        issues.add('rodoviario.valePedagio.dispositivos', 'campo_obrigatorio', 'ao menos um dispositivo');
+      }
+      valePed = clean({
+        disp: vp.dispositivos.map((d, n) => {
+          const path = `rodoviario.valePedagio.dispositivos[${n}]`;
+          const forn = lerCnpj(d.CNPJForn, { caminho: `${path}.CNPJForn` });
+          if (!forn.ok)
+            ctx.regra(`${path}.CNPJForn`, 'documento_invalido', 'CNPJ da fornecedora inválido', 'F96', '732');
+          const pg = ctx.doc(d.responsavel, `${path}.responsavel`, 'F98', '734');
+          if (pg !== undefined) pagadorValePed = true;
+          const v = ctx.req(d.vValePed, `${path}.vValePed`, D1302);
+          return clean({
+            CNPJForn: forn.ok ? forn.valor : d.CNPJForn,
+            ...(pg === undefined ? {} : 'CNPJ' in pg ? { CNPJPg: pg.CNPJ } : { CPFPg: pg.CPF }),
+            nCompra: d.nCompra,
+            vValePed: formatarDecimal(v, D1302),
+            tpValePed: d.tpValePed,
+          });
+        }),
+        categCombVeic: vp.categCombVeic,
+      });
     }
-    if (vp.dispositivos.length === 0) {
-      issues.add('rodoviario.valePedagio.dispositivos', 'campo_obrigatorio', 'ao menos um dispositivo');
+    const contratantes: readonly Contratante[] = rodo.contratantes ?? [];
+    const vistosContratante = new Set<string>();
+    const infContratante = contratantes.map((c, n) => {
+      const path = `rodoviario.contratantes[${n}]`;
+      const d = ctx.docContratante(c, path, 'F102', '717');
+      const k = docKey(d);
+      if (k !== undefined && vistosContratante.has(k)) {
+        ctx.regra(path, 'duplicado', 'contratante repetido', 'F66', '742');
+      }
+      if (k !== undefined) vistosContratante.add(k);
+      const contrato = c.contrato;
+      return clean({
+        xNome: c.xNome,
+        ...d,
+        infContrato:
+          contrato === undefined
+            ? undefined
+            : {
+                NroContrato: contrato.NroContrato,
+                vContratoGlobal: formatarDecimal(
+                  ctx.req(contrato.vContratoGlobal, `${path}.contrato.vContratoGlobal`, D1302_OPC),
+                  D1302_OPC,
+                ),
+              },
+      });
+    });
+    if (propTr !== undefined) {
+      const soEmitente = infContratante.length === 1 && docKey(infContratante[0] as Doc) === emitKey;
+      if (!soEmitente) {
+        ctx.regra(
+          'rodoviario.contratantes',
+          'contratante_obrigatorio',
+          'com proprietário do veículo, o contratante é só o emitente',
+          'F65',
+          '741',
+        );
+      }
     }
-    valePed = clean({
-      disp: vp.dispositivos.map((d, n) => {
-        const path = `rodoviario.valePedagio.dispositivos[${n}]`;
-        const forn = lerCnpj(d.CNPJForn, { caminho: `${path}.CNPJForn` });
-        if (!forn.ok) ctx.regra(`${path}.CNPJForn`, 'documento_invalido', 'CNPJ da fornecedora inválido', 'F96', '732');
-        const pg = ctx.doc(d.responsavel, `${path}.responsavel`, 'F98', '734');
-        if (pg !== undefined) pagadorValePed = true;
-        const v = ctx.req(d.vValePed, `${path}.vValePed`, D1302);
-        return clean({
-          CNPJForn: forn.ok ? forn.valor : d.CNPJForn,
-          ...(pg === undefined ? {} : 'CNPJ' in pg ? { CNPJPg: pg.CNPJ } : { CPFPg: pg.CPF }),
-          nCompra: d.nCompra,
-          vValePed: formatarDecimal(v, D1302),
-          tpValePed: d.tpValePed,
-        });
+    const infPag = (rodo.pagamentos ?? []).map((p, n) => pagamento(ctx, p, `rodoviario.pagamentos[${n}]`, dataEmissao));
+    if (prestacao) {
+      if (ciots.length === 0 && !pagadorValePed && infContratante.length === 0) {
+        ctx.regra(
+          'rodoviario.contratantes',
+          'contratante_obrigatorio',
+          'informe o contratante (ou o responsável pelo CIOT ou pelo vale-pedágio)',
+          'F94',
+          '578',
+        );
+      }
+      if (ciots.length === 0 && emVigor('ciotObrigatorio', opcoes.ambiente, agora)) {
+        ctx.regra(
+          'rodoviario.ciot',
+          'ciot_obrigatorio',
+          `CIOT obrigatório na prestação por conta de terceiros (${regras.regras.ciotObrigatorio.fonte})`,
+          'NT 2026.001',
+          regras.regras.ciotObrigatorio.cStat,
+        );
+      }
+      if (entrada.produtoPredominante === undefined) {
+        ctx.regra('produtoPredominante', 'prod_pred_obrigatorio', 'produto predominante obrigatório', 'F54', '725');
+      }
+      if (qtdDfe === 1) {
+        const pp = entrada.produtoPredominante;
+        if (pp !== undefined && pp.lotacao === undefined) {
+          ctx.regra(
+            'produtoPredominante.lotacao',
+            'prod_pred_obrigatorio',
+            'carga lotação (um único DF-e) exige os locais de carregamento e descarregamento',
+            'F55',
+            '726',
+          );
+        }
+        if (pp !== undefined && pp.NCM === undefined && emVigor('ncmLotacao', opcoes.ambiente, agora)) {
+          ctx.regra(
+            'produtoPredominante.NCM',
+            'prod_pred_obrigatorio',
+            'NCM obrigatório na carga lotação',
+            'F55a',
+            '301',
+          );
+        }
+        if (infPag.length === 0 && emVigor('infPagLotacao', opcoes.ambiente, agora)) {
+          ctx.regra(
+            'rodoviario.pagamentos',
+            'pagamento_invalido',
+            'pagamento do frete obrigatório na carga lotação',
+            'F55b',
+            '302',
+          );
+        }
+      }
+    }
+    if ((tpEmit === '1' || tpEmit === '3') && interestadual && rodo.RNTRC === undefined) {
+      ctx.regra('rodoviario.RNTRC', 'campo_obrigatorio', 'RNTRC do prestador em operação interestadual', 'F108', '688');
+    }
+    const temAntt =
+      rodo.RNTRC !== undefined ||
+      ciots.length > 0 ||
+      valePed !== undefined ||
+      infContratante.length > 0 ||
+      infPag.length > 0;
+    const infANTT = temAntt
+      ? clean({
+          RNTRC: rodo.RNTRC,
+          infCIOT: ciots.length === 0 ? undefined : ciots,
+          valePed,
+          infContratante: infContratante.length === 0 ? undefined : infContratante,
+          infPag: infPag.length === 0 ? undefined : infPag,
+        })
+      : undefined;
+    infModal = {
+      versaoModal: VERSAO,
+      rodo: clean({
+        infANTT,
+        veicTracao,
+        veicReboque: veicReboque.length === 0 ? undefined : veicReboque,
+        codAgPorto: rodo.codAgPorto,
+        lacRodo:
+          rodo.lacres === undefined || rodo.lacres.length === 0 ? undefined : rodo.lacres.map((nLacre) => ({ nLacre })),
       }),
-      categCombVeic: vp.categCombVeic,
-    });
+    };
+  } else {
+    // Modal aéreo (MOC 3.00b, Anexo I, 3.2): os campos vão como vieram; tamanho e formato, o schema confere.
+    const a = aereo ?? ({} as Aereo);
+    infModal = {
+      versaoModal: VERSAO,
+      aereo: { nac: a.nac, matr: a.matr, nVoo: a.nVoo, cAerEmb: a.cAerEmb, cAerDes: a.cAerDes, dVoo: a.dVoo },
+    };
   }
-  const contratantes: readonly Contratante[] = rodo.contratantes ?? [];
-  const vistosContratante = new Set<string>();
-  const infContratante = contratantes.map((c, n) => {
-    const path = `rodoviario.contratantes[${n}]`;
-    const d = ctx.docContratante(c, path, 'F102', '717');
-    const k = docKey(d);
-    if (k !== undefined && vistosContratante.has(k)) {
-      ctx.regra(path, 'duplicado', 'contratante repetido', 'F66', '742');
-    }
-    if (k !== undefined) vistosContratante.add(k);
-    const contrato = c.contrato;
-    return clean({
-      xNome: c.xNome,
-      ...d,
-      infContrato:
-        contrato === undefined
-          ? undefined
-          : {
-              NroContrato: contrato.NroContrato,
-              vContratoGlobal: formatarDecimal(
-                ctx.req(contrato.vContratoGlobal, `${path}.contrato.vContratoGlobal`, D1302_OPC),
-                D1302_OPC,
-              ),
-            },
-    });
-  });
-  if (propTr !== undefined) {
-    const soEmitente = infContratante.length === 1 && docKey(infContratante[0] as Doc) === emitKey;
-    if (!soEmitente) {
-      ctx.regra(
-        'rodoviario.contratantes',
-        'contratante_obrigatorio',
-        'com proprietário do veículo, o contratante é só o emitente',
-        'F65',
-        '741',
-      );
-    }
-  }
-  const infPag = (rodo.pagamentos ?? []).map((p, n) => pagamento(ctx, p, `rodoviario.pagamentos[${n}]`, dataEmissao));
-  if (prestacao) {
-    if (ciots.length === 0 && !pagadorValePed && infContratante.length === 0) {
-      ctx.regra(
-        'rodoviario.contratantes',
-        'contratante_obrigatorio',
-        'informe o contratante (ou o responsável pelo CIOT ou pelo vale-pedágio)',
-        'F94',
-        '578',
-      );
-    }
-    if (ciots.length === 0 && emVigor('ciotObrigatorio', opcoes.ambiente, agora)) {
-      ctx.regra(
-        'rodoviario.ciot',
-        'ciot_obrigatorio',
-        `CIOT obrigatório na prestação por conta de terceiros (${regras.regras.ciotObrigatorio.fonte})`,
-        'NT 2026.001',
-        regras.regras.ciotObrigatorio.cStat,
-      );
-    }
-    if (entrada.produtoPredominante === undefined) {
-      ctx.regra('produtoPredominante', 'prod_pred_obrigatorio', 'produto predominante obrigatório', 'F54', '725');
-    }
-    if (qtdDfe === 1) {
-      const pp = entrada.produtoPredominante;
-      if (pp !== undefined && pp.lotacao === undefined) {
-        ctx.regra(
-          'produtoPredominante.lotacao',
-          'prod_pred_obrigatorio',
-          'carga lotação (um único DF-e) exige os locais de carregamento e descarregamento',
-          'F55',
-          '726',
-        );
-      }
-      if (pp !== undefined && pp.NCM === undefined && emVigor('ncmLotacao', opcoes.ambiente, agora)) {
-        ctx.regra(
-          'produtoPredominante.NCM',
-          'prod_pred_obrigatorio',
-          'NCM obrigatório na carga lotação',
-          'F55a',
-          '301',
-        );
-      }
-      if (infPag.length === 0 && emVigor('infPagLotacao', opcoes.ambiente, agora)) {
-        ctx.regra(
-          'rodoviario.pagamentos',
-          'pagamento_invalido',
-          'pagamento do frete obrigatório na carga lotação',
-          'F55b',
-          '302',
-        );
-      }
-    }
-  }
-  if ((tpEmit === '1' || tpEmit === '3') && interestadual && rodo.RNTRC === undefined) {
-    ctx.regra('rodoviario.RNTRC', 'campo_obrigatorio', 'RNTRC do prestador em operação interestadual', 'F108', '688');
-  }
-  const temAntt =
-    rodo.RNTRC !== undefined ||
-    ciots.length > 0 ||
-    valePed !== undefined ||
-    infContratante.length > 0 ||
-    infPag.length > 0;
-  const infANTT = temAntt
-    ? clean({
-        RNTRC: rodo.RNTRC,
-        infCIOT: ciots.length === 0 ? undefined : ciots,
-        valePed,
-        infContratante: infContratante.length === 0 ? undefined : infContratante,
-        infPag: infPag.length === 0 ? undefined : infPag,
-      })
-    : undefined;
-  const infModal = {
-    versaoModal: VERSAO,
-    rodo: clean({
-      infANTT,
-      veicTracao,
-      veicReboque: veicReboque.length === 0 ? undefined : veicReboque,
-      codAgPorto: rodo.codAgPorto,
-      lacRodo:
-        rodo.lacres === undefined || rodo.lacres.length === 0 ? undefined : rodo.lacres.map((nLacre) => ({ nLacre })),
-    }),
-  };
 
   // Seguro (F91 a F93)
   const seguros = entrada.seguros ?? [];
-  if ((tpEmit === '1' || tpEmit === '3') && seguros.length === 0) {
+  // F91 a F93 só no modal rodoviário; nos demais o seguro é opcional (observação do respSeg).
+  const seguroObrigatorio = rodo !== undefined && (tpEmit === '1' || tpEmit === '3');
+  if (seguroObrigatorio && seguros.length === 0) {
     ctx.regra('seguros', 'seguro_obrigatorio', 'seguro da carga obrigatório para o prestador', 'F91', '698');
   }
   const seg = seguros.map((s, n) => {
     const path = `seguros[${n}]`;
-    if (tpEmit === '1' || tpEmit === '3') {
+    if (seguroObrigatorio) {
       if (s.seguradora === undefined || s.nApol === undefined || (s.nAver ?? []).length === 0) {
         ctx.regra(path, 'seguro_obrigatorio', 'seguradora, apólice e averbação obrigatórias', 'F92', '699');
       }
@@ -1105,7 +1164,7 @@ export async function montarMdfe(entrada: DadosMdfe, opcoes: MontarMdfeOpcoes): 
     nMDF: String(nMDF),
     cMDF,
     cDV,
-    modal: '1',
+    modal,
     dhEmi,
     tpEmis,
     procEmi: '0',

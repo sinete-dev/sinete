@@ -1,5 +1,5 @@
 /**
- * Modelo de entrada do MDF-e (modelo 58, leiaute 3.00b), modal rodoviário: o que quem emite descreve. O builder
+ * Modelo de entrada do MDF-e (modelo 58, leiaute 3.00b), modais rodoviário e aéreo: o que quem emite descreve. O builder
  * (`montarMdfe`) transforma isto no objeto tipado do `@sinete/schemas` (`mdfe/3.00b`), deriva o que o leiaute permite
  * derivar (quantidades de documentos, número das parcelas, valor do contrato) e confere as regras do MOC antes de
  * serializar.
@@ -7,7 +7,7 @@
  * Convenções:
  * - Nomes de campo do leiaute (MOC) onde eles existem (`xNome`, `placa`, `tpCar`, `vCarga`); nomes em português para os
  *   agrupamentos que o leiaute não nomeia ou nomeia por sigla (`emitente`, `carregamento`, `descarregamentos`,
- *   `rodoviario`, `produtoPredominante`).
+ *   `rodoviario`, `aereo`, `produtoPredominante`).
  * - Números entram como `DecimalInput` (`'12.34'`, `12.34`, `12n` ou `Decimal`). Prefira texto.
  * - Documentos (CNPJ, CPF, CEP, telefone) aceitam máscara; o builder normaliza.
  * - Códigos do leiaute ficam como uniões de literais (`tpEmit: '2'`), com constantes nomeadas onde ajudam
@@ -263,7 +263,12 @@ interface DocumentoTransportado {
 }
 
 export type NfeTransportada = DocumentoTransportado;
-export type CteTransportado = DocumentoTransportado;
+
+/** CT-e transportado; a entrega parcial (corte de voo) só vale no modal aéreo (F34, 702). */
+export interface CteTransportado extends DocumentoTransportado {
+  /** Entrega parcial (`infEntregaParcial`): quantidade total de volumes e a enviada neste MDF-e (4 casas). */
+  readonly entregaParcial?: { readonly qtdTotal: DecimalInput; readonly qtdParcial: DecimalInput };
+}
 
 /** Município de descarregamento com os documentos que descarregam nele (`infMunDescarga`). */
 export interface Descarregamento {
@@ -325,15 +330,32 @@ export interface ResponsavelTecnico {
   readonly csrt?: { readonly idCSRT: string; readonly hashCSRT: string };
 }
 
+/** Grupo do modal aéreo (`aereo`, MOC 3.00b Anexo I, 3.2). */
+export interface Aereo {
+  /** Marca da nacionalidade da aeronave (1 a 4 posições). */
+  readonly nac: string;
+  /** Marca de matrícula da aeronave (1 a 6 posições). */
+  readonly matr: string;
+  /** Número do voo, no formato AB1234 (5 a 9 posições). */
+  readonly nVoo: string;
+  /** Aeródromo de embarque: código IATA de três letras ou, sem ele, a sigla OACI. */
+  readonly cAerEmb: string;
+  /** Aeródromo de destino: código IATA de três letras ou, sem ele, a sigla OACI. */
+  readonly cAerDes: string;
+  /** Data do voo (`AAAA-MM-DD`). */
+  readonly dVoo: string;
+}
+
 // ---------------------------------------------------------------------------------------------------------------
 // MDF-e
 // ---------------------------------------------------------------------------------------------------------------
 
-export interface DadosMdfe {
+/** Campos do MDF-e comuns a todos os modais. */
+export interface CamposMdfe {
   readonly tpEmit: TipoEmitente;
   /**
-   * Tipo do transportador: só quando o veículo de tração é de terceiro (`rodoviario.tracao.proprietario`); TAC (2) com
-   * proprietário CPF, ETC (1) ou CTC (3) com CNPJ (F18 a F20).
+   * Tipo do transportador: no modal rodoviário, só quando o veículo de tração é de terceiro
+   * (`rodoviario.tracao.proprietario`); TAC (2) com proprietário CPF, ETC (1) ou CTC (3) com CNPJ (F18 a F20).
    */
   readonly tpTransp?: TipoTransportador;
   readonly serie: number | string;
@@ -349,14 +371,16 @@ export interface DadosMdfe {
   readonly ufFim: UfMdfe;
   /** Municípios de carregamento (1 a 50), na UF de início. */
   readonly carregamento: readonly MunicipioCarregamento[];
-  /** UFs atravessadas entre `ufIni` e `ufFim`, na ordem (F90). Vazio quando as duas fazem divisa ou são a mesma. */
+  /**
+   * UFs atravessadas entre `ufIni` e `ufFim`, na ordem. No modal rodoviário, vazio quando as duas fazem divisa ou são a
+   * mesma (F90).
+   */
   readonly percurso?: readonly UfMdfe[];
   /** Início previsto da viagem. */
   readonly dhIniViagem?: Instante;
   readonly indCanalVerde?: true;
-  /** Carregamento posterior: os documentos entram depois, pelo evento de inclusão de DF-e (F21 a F27). */
+  /** Carregamento posterior, só no modal rodoviário: os documentos entram depois, pelo evento de inclusão de DF-e (F21 a F27). */
   readonly indCarregaPosterior?: true;
-  readonly rodoviario: Rodoviario;
   /** Municípios de descarregamento (1 a 1000), na UF de fim, com os documentos de cada um. */
   readonly descarregamentos: readonly Descarregamento[];
   readonly seguros?: readonly Seguro[];
@@ -368,3 +392,18 @@ export interface DadosMdfe {
   readonly informacoesAdicionais?: { readonly infAdFisco?: string; readonly infCpl?: string };
   readonly respTec?: ResponsavelTecnico;
 }
+
+/** MDF-e do modal rodoviário (`modal` 1). */
+export interface DadosMdfeRodoviario extends CamposMdfe {
+  readonly rodoviario: Rodoviario;
+  readonly aereo?: never;
+}
+
+/** MDF-e do modal aéreo (`modal` 2). */
+export interface DadosMdfeAereo extends CamposMdfe {
+  readonly aereo: Aereo;
+  readonly rodoviario?: never;
+}
+
+/** Entrada do `montarMdfe`: os campos comuns e o grupo de um modal, um e só um. */
+export type DadosMdfe = DadosMdfeRodoviario | DadosMdfeAereo;

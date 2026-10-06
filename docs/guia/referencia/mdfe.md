@@ -41,13 +41,17 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 
 ### Interfaces
 
+- `Aereo`: Grupo do modal aéreo (`aereo`, MOC 3.00b Anexo I, 3.2). Membros: `nac`, `matr`, `nVoo`, `cAerEmb`, `cAerDes`, `dVoo`.
+- `CamposMdfe`: Campos do MDF-e comuns a todos os modais. Membros: `tpEmit`, `tpTransp`, `serie`, `nMDF`, `cMDF`, `emitente`, `ufIni`, `ufFim`, `carregamento`, `percurso`, `dhIniViagem`, `indCanalVerde`, `indCarregaPosterior`, `descarregamentos`, `seguros`, `produtoPredominante`, `totais`, `lacres`, `autXML`, `informacoesAdicionais`, `respTec`.
 - `CancelamentoPedido`: Membros: `chave`, `nProt`, `xJust`.
 - `ClienteMdfe`: Membros: `opcoes`, `statusServico()`, `autorizar()`, `consultar()`, `consultarNaoEncerrados()`, `cancelar()`, `encerrar()`, `incluirCondutor()`, `incluirDFe()`, `pagamentoOperacao()`.
 - `ClienteMdfeOpcoes`: Membros: `transporte`, `assinador`, `ambiente`, `relogio`, `logger`, `timeoutMs`, `deslocamentoMin`, `autor`, `endpoint`.
 - `ComponentePagamento`: Componente do pagamento: 01 vale-pedágio; 02 impostos; 03 despesas; 04 frete; 99 outros. Membros: `tpComp`, `vComp`, `xComp`.
 - `Condutor`: Membros: `xNome`, `CPF`.
 - `ConsultaMdfe`: Situação do MDF-e na consulta: autorizado (100), cancelado (101) ou encerrado (132). Membros: `chMDFe`, `situacao`, `protocolo`, `eventos`, `digValConfere`.
-- `DadosMdfe`: Membros: `tpEmit`, `tpTransp`, `serie`, `nMDF`, `cMDF`, `emitente`, `ufIni`, `ufFim`, `carregamento`, `percurso`, `dhIniViagem`, `indCanalVerde`, `indCarregaPosterior`, `rodoviario`, `descarregamentos`, `seguros`, `produtoPredominante`, `totais`, `lacres`, `autXML`, `informacoesAdicionais`, `respTec`.
+- `CteTransportado` (estende `DocumentoTransportado`): CT-e transportado; a entrega parcial (corte de voo) só vale no modal aéreo (F34, 702). Membros: `entregaParcial`.
+- `DadosMdfeAereo` (estende `CamposMdfe`): MDF-e do modal aéreo (`modal` 2). Membros: `aereo`, `rodoviario`.
+- `DadosMdfeRodoviario` (estende `CamposMdfe`): MDF-e do modal rodoviário (`modal` 1). Membros: `rodoviario`, `aereo`.
 - `Descarregamento`: Município de descarregamento com os documentos que descarregam nele (`infMunDescarga`). Membros: `cMun`, `xMun`, `nfe`, `cte`.
 - `DispositivoValePedagio`: Dispositivo de vale-pedágio (`valePed/disp`). Membros: `CNPJForn`, `responsavel`, `nCompra`, `vValePed`, `tpValePed`.
 - `DocumentoAssinado`: Documento assinado já conferido: a string como veio (sem a declaração XML) e o que se lê dela. Membros: `xml`, `id`, `digestValue`, `documento`.
@@ -85,8 +89,8 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `CodigoOcorrenciaMdfe`: `type CodigoOcorrenciaMdfe = (typeof CODIGOS_OCORRENCIA_MDFE)[number]`
 - `Contratante`: `type Contratante = DocumentoContratante & { readonly xNome?: string; readonly contrato?: { readonly NroContrato: string; readonly vContratoGlobal: DecimalInput; }; }`
 - `CStatClasse`: `type CStatClasse = 'autorizado' | 'cancelado' | 'encerrado' | 'servicoEmOperacao' | 'naoEncerradosLocalizados' | 'naoEncerradosNenhum' | 'eventoRegistrado' | 'duplicidade' | 'duplicidadeChaveDiferente' | 'naoConsta'`
-- `CteTransportado`: `type CteTransportado = DocumentoTransportado`
 - `DadosBancarios`: Dados bancários do pagamento (`infBanc`): banco e agência, instituição de pagamento eletrônico ou PIX. `type DadosBancarios = { readonly codBanco: string; readonly codAgencia: string; } | { readonly CNPJIPEF: string; } | { readonly PIX: string; }`
+- `DadosMdfe`: Entrada do `montarMdfe`: os campos comuns e o grupo de um modal, um e só um. `type DadosMdfe = DadosMdfeRodoviario | DadosMdfeAereo`
 - `DecimalInput`: O que as APIs de entrada aceitam como número. Prefira `string` (`'12.34'`): `number` perde dígitos acima de 15 algarismos. `type DecimalInput = string | number | bigint | Decimal`
 - `DocumentoContratante`: CNPJ, CPF ou identificação de estrangeiro (contratante, responsável pelo pagamento). `type DocumentoContratante = DocumentoPessoa | { readonly idEstrangeiro: string; readonly CNPJ?: never; readonly CPF?: never; }`
 - `DocumentoPessoa`: CNPJ (numérico ou alfanumérico) ou CPF, exclusivos. `type DocumentoPessoa = { readonly CNPJ: string; readonly CPF?: never; } | { readonly CPF: string; readonly CNPJ?: never; }`

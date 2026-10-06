@@ -3,7 +3,7 @@
  * CPF 111.444.777-35 e 529.982.247-25, IE MT 0013000001-9); nomes, placas e chaves de NF-e e CT-e são inventados.
  */
 
-import type { DadosMdfe } from '@sinete/mdfe';
+import type { DadosMdfeRodoviario } from '@sinete/mdfe';
 import { montarChaveAcesso } from '@sinete/validators';
 
 export const CNPJ_EMIT = '11222333000181';
@@ -30,7 +30,7 @@ export function chaveDoc(n: number, mod: '55' | '57' = '55', tpEmis = '1'): stri
 }
 
 /** Produtor rural (CPF) transportando a própria carga em veículo próprio, de MT para SP passando por MS. */
-export function cargaPropria(extra: Partial<DadosMdfe> = {}): DadosMdfe {
+export function cargaPropria(extra: Partial<DadosMdfeRodoviario> = {}): DadosMdfeRodoviario {
   return {
     tpEmit: '2',
     serie: 920,
