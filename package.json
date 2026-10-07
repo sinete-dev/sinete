@@ -27,7 +27,8 @@
     "ci": "bun scripts/check.ts --smoke",
     "version": "changeset version && bun scripts/versao-gerada.ts && bun install",
     "release": "bun run build && bun scripts/release.ts",
-    "release:tag": "changeset git-tag"
+    "release:tag": "changeset git-tag",
+    "release:push": "bun scripts/push-tags.ts"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",

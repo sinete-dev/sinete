@@ -21,8 +21,9 @@ A política de estabilidade está no [ADR 0016](adr/0016-politica-de-estabilidad
 
 ## Publicar
 
-1. No commit mergeado, `bun run release:tag` (`changeset git-tag`) cria uma tag `@sinete/<pacote>@<versão>` por pacote com versão nova, e `sinete@<versão>` para o guarda-chuva. `git push --tags`.
-2. A tag dispara o job `release` do CI: build, `scripts/release.ts` (`bun pm pack`, travas no tarball, `npm publish <tgz> --provenance`) com trusted publishing via OIDC. O script pula o que já está publicado, então é seguro relançar e é seguro que várias tags disparem vários runs.
+1. No commit mergeado, `bun run release:tag` (`changeset git-tag`) cria uma tag `@sinete/<pacote>@<versão>` por pacote com versão nova, e `sinete@<versão>` para o guarda-chuva.
+2. `bun run release:push` (`scripts/push-tags.ts`) empurra para o `origin` as tags de release do HEAD que ele ainda não tem: as dos pacotes num push e a `sinete@<versão>` sozinha, por último. Não use `git push --tags`: o GitHub não cria evento de push de tag quando mais de três tags vão no mesmo push, e aí o job `release` não roda (aconteceu na 0.5.0, issue #65). Pode ser relançado depois de um push interrompido, porque só empurra o que falta; se o remoto tiver uma tag de mesmo nome com outro objeto, ele para sem empurrar nada, sem force-push. Sem o script, o equivalente à mão é empurrar as tags dos pacotes e depois `git push origin sinete@<versão>` sozinha.
+3. A tag que chega sozinha dispara o job `release` do CI: build, `scripts/release.ts` (`bun pm pack`, travas no tarball, `npm publish <tgz> --provenance`) com trusted publishing via OIDC. O script pula o que já está publicado, então é seguro relançar e é seguro que várias tags disparem vários runs.
 
 `changeset publish` e `bun publish` não são usados: o primeiro publica `workspace:` literal num repo bun, o segundo não faz OIDC nem provenance e ignora `publishConfig.registry`.
 

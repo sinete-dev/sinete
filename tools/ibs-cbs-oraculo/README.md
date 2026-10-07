@@ -88,6 +88,6 @@ O `bun run version` consome todos os changesets pendentes de uma vez. Antes de c
    ```
 
 9. `bun run check`, PR, review, merge.
-10. Versão: `bun run version` num PR à parte (confira no diff que o `@sinete/ibs-cbs` foi para 0.2.x), merge, `bun run release:tag` e `git push --tags`. A tag dispara a publicação (`docs/release.md`).
+10. Versão: `bun run version` num PR à parte (confira no diff que o `@sinete/ibs-cbs` foi para 0.2.x), merge, `bun run release:tag` e `bun run release:push` (nunca `git push --tags`: com mais de três tags o GitHub não dispara a publicação, ver `docs/release.md`).
 11. Depois de publicado: `npm view @sinete/ibs-cbs version` e, num diretório vazio, `npm install @sinete/nfe@0.3.0 && npm ls @sinete/ibs-cbs` tem de mostrar a patch nova.
 12. Quem integra: atualizar o `@sinete/ibs-cbs` no lockfile (ou na versão fixada) e emitir uma nota de teste com fato gerador no ano, sem alíquota informada. Quem estava emitindo com a alíquota informada (`comAliquotasInformadas`) tira a sobreposição: a montagem deixa de marcar `aliquotasInformadas` na nota.
