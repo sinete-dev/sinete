@@ -226,6 +226,30 @@ describe.skipIf(!openssl)('laboratório TLS', () => {
       expect(r.error?.detalhes).toMatchObject({ alerta: 'certificate_revoked' });
     });
 
+    // TLS 1.3: o servidor confere o certificado de cliente depois do Finished do cliente, e o alerta chega quando a
+    // requisição já foi escrita. Node e Deno leem o alerta; o Bun só vê o fim da conexão (nem o socket TLS cru dele
+    // emite erro), então o código sai `conexao_recusada` (#42). Se este teste quebrar no Bun, o Bun passou a entregar
+    // o alerta: troque a expectativa e tire a ressalva de docs/guia/erros/conexao_recusada.md.
+    test.each([
+      ['vencido', 'certificado_expirado', 'certificate_expired'],
+      ['revogado', 'certificado_revogado', 'certificate_revoked'],
+    ] as const)('TLS 1.3, servidor que recusa o certificado %s do cliente', async (caso, code, alerta) => {
+      const args = handshakeArgs().map((a) => (a === '-tls1_2' ? '-tls1_3' : a));
+      const extra =
+        caso === 'vencido'
+          ? ['-attime', String(Math.floor(Date.now() / 1000) + 10 * 86_400)]
+          : ['-CRL', pki.files.crlRevogaCliente, '-crl_check'];
+      const srv = await wwwServer(pki, [...args, ...extra]);
+      const r = await run(runtime, { ...base, url: `${srv.url}/` });
+      await srv.finished(1000);
+      if (runtime === 'bun') {
+        expect(r.error?.code).toBe('conexao_recusada');
+        return;
+      }
+      expect(r.error?.code).toBe(code);
+      expect(r.error?.detalhes).toMatchObject({ alerta });
+    });
+
     test('cadeia do servidor fora da confiança', async () => {
       const srv = await wwwServer(pki, ['-tls1_2', '-naccept', '1'], 'badSrv');
       const r = await run(runtime, { ...base, url: `${srv.url}/` });
