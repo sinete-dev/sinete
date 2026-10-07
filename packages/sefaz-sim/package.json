@@ -1,6 +1,6 @@
 {
   "name": "@sinete/sefaz-sim",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "SEFAZ simulada com estado para testes: web services da NF-e 4.00 com as regras de validação do MOC, relógio injetado, cenários de falha e servidor HTTPS com mTLS",
   "keywords": [
     "nfe",

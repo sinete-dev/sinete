@@ -1,6 +1,6 @@
 {
   "name": "@sinete/rejeicoes",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Catálogo versionado de rejeições e denegações da SEFAZ (NF-e e NFC-e, e o do MDF-e numa entrada própria) e dos códigos de erro da NFS-e Nacional, com mensagem oficial, origem da regra e diagnóstico",
   "keywords": [
     "nfe",

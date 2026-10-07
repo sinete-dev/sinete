@@ -1,5 +1,26 @@
 # @sinete/sefaz-sim
 
+## 0.4.0
+
+### Minor Changes
+
+- 40ed7f6: MDF-e transportado no modal aquaviário (`infMDFeTransp`). `DadosMdfeAquaviario` aceita `descarregamentos[].mdfe` (`MdfeTransportado`: chave, `indReentrega`, `unidadesTransporte` no tipo `TUnidadeTransp` do leiaute e `perigosos`), e o `tot` ganha `qMDFe` pela contagem. `CamposMdfe` passa a ter um parâmetro de tipo para o descarregamento (`CamposMdfe<D extends Descarregamento = Descarregamento>`, com `DescarregamentoAquaviario` no aquaviário); quem usa `CamposMdfe` sem parâmetro não muda. O município que só tem MDF-e transportado deixa de ser recusado pela F26 (616), como o texto oficial da 616 já previa.
+  
+  O montador confere F43 (647, só no aquaviário, inclusive para quem passa `mdfe` sem tipos em outro modal), F44 (648, carregamento ou descarregamento no AM ou no AP), F45 (649, chave de MDF-e com DV e modelo 58) e F45a (520, chave anterior a 6 meses, NT 2024.001), com `origem: 'entrada'` e o caminho `descarregamentos[i].mdfe[j]`. `rotuloDoCaminho` rotula esses caminhos como os da NF-e e do CT-e (`Documento 1 do descarregamento 1, Chave de acesso`).
+  
+  O simulador confere F45 (649), F45a (520), F46 (655, MDF-e referenciado que ele não autorizou), F48 (657, cancelado) e F49 (658, modal que não é o rodoviário). Um teste que referenciava uma chave inventada e esperava 100 passa a receber 655.
+- 5961eaf: NF-e com DANFE Simplificado Tipo 2 (`tpImp` 6) sob as regras da NFC-e que a NT 2026.002 v1.11 estende a ela (homologação desde 01/07/2026, produção desde 03/08/2026). O `montarNfe` passa a recusar na entrada, com o caminho do campo, `origem: 'entrada'` e a rejeição na mensagem, o que antes só a SEFAZ recusava: `dhSaiEnt` (B10-10, 705), `tpNF` 0 (B11-10, 706), `idDest` diferente de 1 (B11a-10, 707), `finNFe` diferente de 1 (B25-20, 715), `indFinal` 0 (B25a-10, 716), `indPres` fora de 1, 4 e 5 (B25b-20, 717), nota referenciada (BA01-10, 708), `emitente.IEST` (C18-10, 718), destinatário ausente na entrega a domicílio (E01-20, 787), os grupos de item, transporte, cobrança, compra e cana que a NFC-e não tem, e duas regras novas para a NFC-e e a Tipo 2: local de retirada (F01-10, 669) e item fora do total, `indTot` 0 (I17b-10, 774).
+  
+  Os padrões mudam na Tipo 2: sem `indPres`, sai 1 (era 9, que a SEFAZ recusa com 717); sem `idDest`, sai 1 mesmo com o consumidor em outra UF (era 2, recusado com 707). Em homologação, a descrição do primeiro item da Tipo 2 é a literal da I04-10, como na NFC-e. O local de entrega (G01-10, 670) não é conferido: a NT o marca como implementação futura. A mensagem das regras da NFC-e na Tipo 2 começa por "NF-e com DANFE Simplificado Tipo 2" em vez de "NFC-e".
+  
+  O simulador recusa a NF-e Tipo 2 com 706, 707, 715, 716 e 717, como a NFC-e.
+- d878b71: O simulador segue a NT 2026.007 v1.10 para a NF-e sem IE do emitente (contribuinte exclusivo do IBS/CBS): a C17-10 foi excluída e a 229 deixa de sair. A NF-e sem IE é autorizada quando o simulador faz o papel da SVRS, decidido pela UF configurada nos dados de endpoints do `@sinete/transport`, inclusive de outra UF (sem 410 no lote nem 226 na B02-10), e a consulta e os eventos do emitente dela respondem ali (a P08-10 deixa de recusar com 250 o `cOrgao` da UF da chave); a exceção vale só no endpoint normal da SVRS, e a NF-e sem IE em contingência pela SVC recebe 166; fora da SVRS ela é recusada com 166 (C17-11). A NFC-e sem IE é recusada com 156 (C17-42) até o fim de 2032, como no montador: só quando a data local do `dhEmi` e o instante do recebimento caem antes de 2033. A IE zerada passa de 229 para 209.
+
+### Patch Changes
+
+- Updated dependencies [cab3b84]
+  - @sinete/rejeicoes@0.4.1
+
 ## 0.3.0
 
 ### Minor Changes
