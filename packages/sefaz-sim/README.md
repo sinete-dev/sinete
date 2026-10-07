@@ -97,7 +97,7 @@ Os três autorizadores dividem o mesmo estado. A SVC responde conforme a ativaç
    - Evento: P07 a P21, 2P12, H01 a H06, 2P13, 2P23, 4P15 e 5P31, com 572, 250, 252, 489/490, chave (236 e afins), 574, 578, 573, 594, 455/466, 784, 595, 494, 575, 501, 580, 650/651, 655, 577/579, 222, 221 e 910 a 913.
    - Inutilização: I01 a I08 com 252, 250, 266 (I02a da NT 2018.001: série 910 a 969 é de emitente CPF, que não inutiliza), 453/454, 224/201, 502, 203/240, 563 (com o `nProt` anterior), 256 e 241.
 
-Os lotes do `indSinc=0` ficam pendentes até o relógio passar de `atrasoProcessamentoMs` (105 enquanto isso); `settle()` processa os vencidos.
+Os lotes do `indSinc=0` ficam pendentes até o relógio passar de `atrasoProcessamentoMs` (105 enquanto isso); `processarLotes()` processa os vencidos sem esperar um pedido (todo pedido também os processa antes de ser atendido).
 
 ## MDF-e 3.00b
 
