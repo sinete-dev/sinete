@@ -59,7 +59,7 @@
     },
     "packages/emissor": {
       "name": "@sinete/emissor",
-      "version": "0.3.2",
+      "version": "0.3.3",
       "dependencies": {
         "@sinete/cert": "workspace:^",
         "@sinete/core": "workspace:^",
@@ -106,7 +106,7 @@
     },
     "packages/mdfe": {
       "name": "@sinete/mdfe",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "dependencies": {
         "@sinete/core": "workspace:^",
         "@sinete/rejeicoes": "workspace:^",
@@ -120,7 +120,7 @@
     },
     "packages/nfe": {
       "name": "@sinete/nfe",
-      "version": "0.5.0",
+      "version": "0.6.0",
       "dependencies": {
         "@sinete/core": "workspace:^",
         "@sinete/ibs-cbs": "workspace:^",
@@ -150,7 +150,7 @@
     },
     "packages/rejeicoes": {
       "name": "@sinete/rejeicoes",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "dependencies": {
         "@sinete/core": "workspace:^",
       },
@@ -164,7 +164,7 @@
     },
     "packages/sefaz-sim": {
       "name": "@sinete/sefaz-sim",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "dependencies": {
         "@sinete/cert": "workspace:^",
         "@sinete/core": "workspace:^",
@@ -181,7 +181,7 @@
     },
     "packages/sinete": {
       "name": "sinete",
-      "version": "0.5.0",
+      "version": "0.6.0",
       "bin": {
         "sinete": "./dist/cli.js",
       },

@@ -1,5 +1,16 @@
 # @sinete/emissor
 
+## 0.3.3
+
+### Patch Changes
+
+- 91b1979: Documentação embarcada: no Bun, com o servidor em TLS 1.3, a recusa do certificado de cliente vencido ou revogado chega como `conexao_recusada`, porque o Bun não entrega o alerta TLS (Node e Deno entregam e classificam como `certificado_expirado` ou `certificado_revogado`). As páginas de `conexao_recusada`, `certificado_expirado` e `certificado_revogado` registram a ressalva.
+- Updated dependencies [40ed7f6]
+- Updated dependencies [5961eaf]
+  - @sinete/mdfe@0.5.0
+  - @sinete/nfe@0.6.0
+  - @sinete/nfse@0.4.0
+
 ## 0.3.2
 
 ### Patch Changes

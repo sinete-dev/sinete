@@ -1,6 +1,6 @@
 {
   "name": "@sinete/emissor",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Camada de emissão dos DF-e com estado entre chamadas: bytes assinados gravados antes do envio com trava entre processos (TransmissaoStore), política dos bytes por cStat, retomada automática, cancelamento com recuperação, pool de emissores por certificado e um emissor por documento (NF-e, MDF-e, NFS-e) em subpaths",
   "keywords": [
     "nfe",
