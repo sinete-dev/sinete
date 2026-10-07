@@ -8980,6 +8980,20 @@
       "categoria": "regra-negocio"
     },
     {
+      "codigo": "942",
+      "efeito": "rejeicao",
+      "mensagem": "IE do local de retirada não cadastrada",
+      "modelos": ["55"],
+      "fonte": "NT 2026.007 v1.10, regra 5AF15-10",
+      "regras": [
+        {
+          "documento": "nt2026007",
+          "id": "5AF15-10"
+        }
+      ],
+      "categoria": "cadastro"
+    },
+    {
       "codigo": "946",
       "efeito": "rejeicao",
       "mensagem": "Informado código de benefício fiscal incorreto ou inexistente na UF [nItem: nnn]",

@@ -203,14 +203,15 @@ describe('contribuinte exclusivo do IBS/CBS (NT 2026.007 v1.10)', () => {
       expect(r?.regras.some((x) => x.documento === 'nt2026007')).toBe(true);
     }
     const daNt = REJEICOES.filter((r) => r.fonte.startsWith('NT 2026.007'));
-    expect(daNt.map((r) => r.codigo)).toEqual(NOVOS);
-    for (const c of ['160', '172', '174', '942'])
-      expect(rejeicaoPorCodigo(c)?.fonte.startsWith('NT 2026.007')).not.toBe(true);
+    // Mais o 942 (RV 5AF15-10), código que a SEFAZ já usava e que a NT mantém fora da faixa nova (issue #48).
+    expect(daNt.map((r) => r.codigo)).toEqual([...NOVOS, '942']);
+    for (const c of ['160', '172', '174']) expect(rejeicaoPorCodigo(c)?.fonte.startsWith('NT 2026.007')).not.toBe(true);
     expect(TABELA_REJEICOES.fontes.map((f) => f.id)).toContain('nt2026007');
   });
 
   test('mensagem, regra e modelos seguem a NT', () => {
     const casos: [string, string, string, string[]][] = [
+      ['942', '5AF15-10', 'IE do local de retirada não cadastrada', ['55']],
       ['156', 'C17-42', 'NFC-e não pode ser emitida por contribuinte exclusivo do IBS/CBS.', ['65']],
       ['157', 'C17-43', 'Obrigatório informar CNPJ do emitente para contribuinte exclusivo do IBS/CBS.', ['55']],
       ['158', 'C18-50', 'Proibido informar IEST para contribuinte exclusivo do IBS/CBS', ['55']],
