@@ -73,7 +73,7 @@ export function consultaProtocolo(ctx: ContextoDoPedido): string {
   const invalida = rejeicaoDaChave(chNFe, ctx.agora, ctx.rt.configuracao.deslocamentoMin);
   if (invalida !== undefined) return ret(status(invalida.cStat));
   // A SVRS também responde pela NF-e sem IE que ela autorizou, de qualquer UF (NT 2026.007 v1.10, C17-11).
-  const daSvrs = simulaSvrs(ctx.rt.configuracao) && ctx.rt.estado.nfes.has(chNFe);
+  const daSvrs = ctx.autorizador === 'uf' && simulaSvrs(ctx.rt.configuracao) && ctx.rt.estado.nfes.has(chNFe);
   if (!daSvrs && !ctx.rt.configuracao.cUFsAtendidas.includes(chNFe.slice(0, 2))) return ret(status('226'));
   const nfe = ctx.rt.estado.nfes.get(chNFe);
   if (nfe === undefined) {

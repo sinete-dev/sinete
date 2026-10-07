@@ -299,7 +299,7 @@ export async function autorizacao(ctx: ContextoDoPedido): Promise<string> {
   const cUFs = new Set(nfes.map((n) => text(n, 'infNFe/ide/cUF')));
   // B05: UF atendida pelo web service (410), antes das regras de cada NF-e. A SVRS recebe a NF-e sem IE de qualquer UF
   // (contribuinte exclusivo do IBS/CBS, NT 2026.007 v1.10, C17-11).
-  const svrs = simulaSvrs(ctx.rt.configuracao);
+  const svrs = ctx.autorizador === 'uf' && simulaSvrs(ctx.rt.configuracao);
   const atendida = (n: (typeof nfes)[number]): boolean => {
     const c = text(n, 'infNFe/ide/cUF');
     if (c !== undefined && ctx.rt.configuracao.cUFsAtendidas.includes(c)) return true;

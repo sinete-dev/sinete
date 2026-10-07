@@ -6,8 +6,11 @@ import {
   consReciNFe,
   consSitNFe,
   consStatServ,
+  det,
   EMITENTE,
+  envEvento,
   enviNFe,
+  evento,
   harness,
   IE_EMITENTE,
   inutNFe,
@@ -120,12 +123,38 @@ describe('autorização síncrona', () => {
     expect((await enviar(sp, { nNF: 3, trocas: [semIe], serie: 890 }))[1]).toBe('166');
     // SC é atendida pela SVRS: a NF-e sem IE de SP é autorizada; a de SP com IE continua fora da UF atendida (410).
     const svrs = await harness({ uf: 'SC' });
-    expect(await enviar(svrs, { nNF: 4, trocas: [semIe] })).toEqual(['104', '100']);
+    const deSp = await nfe({ nNF: 4, trocas: [semIe] });
+    const autorizada = await svrs.send('NFeAutorizacao', enviNFe([deSp.xml]));
+    expect(cStat(autorizada)).toEqual(['104', '100']);
+    // Os eventos do emitente dessa NF-e também vão à SVRS, com o cOrgao da UF da chave.
+    const cancelamento = await evento({
+      chave: deSp.chave,
+      tpEvento: '110111',
+      det: det.cancelamento(tag(autorizada, 'nProt') as string),
+    });
+    expect(cStat(await svrs.send('RecepcaoEvento', envEvento([cancelamento])))).toEqual(['128', '135']);
     expect(await enviar(svrs, { nNF: 5 })).toEqual(['410']);
     // A exceção é só da NF-e: a NFC-e sem IE de outra UF continua fora (410), e a SVRS só responde à consulta do que autorizou.
     expect(await enviar(svrs, { nNF: 7, mod: '65', trocas: [semIe] })).toEqual(['410']);
     const naoAutorizada = await nfe({ nNF: 8, trocas: [semIe] });
     expect(tag(await svrs.send('NfeConsultaProtocolo', consSitNFe(naoAutorizada.chave)), 'cStat')).toBe('226');
+    const semNota = await evento({
+      chave: naoAutorizada.chave,
+      tpEvento: '110111',
+      det: det.cancelamento('135260000000001'),
+    });
+    expect(cStat(await svrs.send('RecepcaoEvento', envEvento([semNota])))).toEqual(['128', '250']);
+    // A SVC não herda a exceção: a NF-e sem IE em contingência recebe 166, mesmo da UF atendida.
+    svrs.sim.definirContingencia('SVC-AN');
+    const contingencia = await nfe({ nNF: 10, cUF: '42', tpEmis: '6', trocas: [semIe] });
+    expect(cStat(await svrs.send('NFeAutorizacao', enviNFe([contingencia.xml]), { autorizador: 'svc' }))[1]).toBe(
+      '166',
+    );
+    expect(tag(await svrs.send('NfeConsultaProtocolo', consSitNFe(deSp.chave), { autorizador: 'svc' }), 'cStat')).toBe(
+      '226',
+    );
+    const deOutraUf = await nfe({ nNF: 11, tpEmis: '6', trocas: [semIe] });
+    expect(cStat(await svrs.send('NFeAutorizacao', enviNFe([deOutraUf.xml]), { autorizador: 'svc' }))).toEqual(['410']);
     // Fora da SVRS a NF-e sem IE de outra UF para no lote (410).
     expect(await enviar(await harness({ uf: 'RS' }), { nNF: 9, trocas: [semIe] })).toEqual(['410']);
     // RS tem autorizador próprio (a SEFAZ-RS não é a SVRS), mesmo atendendo a UF da nota.

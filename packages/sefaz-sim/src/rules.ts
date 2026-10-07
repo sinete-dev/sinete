@@ -226,8 +226,9 @@ export function simulaSvrs(cfg: ConfiguracaoSim): boolean {
   return ehUf(cfg.uf) && nfeAutorizadorDaUf(cfg.uf, cfg.ambiente) === 'SVRS';
 }
 
-function ehSvrs(view: VisaoSim): boolean {
-  return simulaSvrs(view.configuracao);
+/** Pedido recebido pelo endpoint normal da SVRS; os da SVC não herdam a exceção da C17-11. */
+function ehSvrs(view: VisaoSim, autorizador: AutorizadorSim): boolean {
+  return autorizador === 'uf' && simulaSvrs(view.configuracao);
 }
 
 /** NF-e de contribuinte exclusivo do IBS/CBS: modelo 55 sem `emit/IE` (NT 2026.007 v1.10). */
@@ -251,8 +252,10 @@ const autorizacao: RegraSim<ContextoAutorizacao>[] = [
   {
     id: 'B02-10',
     fonte: `${ANEXO_I}, item 4.2.1 (B. Identificação da NF-e); NT 2026.007 v1.10 (a SVRS autoriza a NF-e sem IE de qualquer UF)`,
-    conferir: ({ nfe, visao: view }: ContextoAutorizacao): RejeicaoSim | undefined =>
-      view.configuracao.cUFsAtendidas.includes(nfe.cUF) || (semIe(nfe) && ehSvrs(view)) ? undefined : reject('226'),
+    conferir: ({ nfe, autorizador, visao: view }: ContextoAutorizacao): RejeicaoSim | undefined =>
+      view.configuracao.cUFsAtendidas.includes(nfe.cUF) || (semIe(nfe) && ehSvrs(view, autorizador))
+        ? undefined
+        : reject('226'),
   },
   {
     id: 'B11-10',
@@ -397,13 +400,13 @@ const autorizacao: RegraSim<ContextoAutorizacao>[] = [
   {
     id: 'C17',
     fonte: `${ANEXO_I}, item 4.2.1 (C17-20 e C17-30); NT 2026.007 v1.10 (C17-10 excluída, C17-11 e C17-42)`,
-    conferir({ nfe, visao: view }: ContextoAutorizacao): RejeicaoSim | undefined {
+    conferir({ nfe, autorizador, visao: view }: ContextoAutorizacao): RejeicaoSim | undefined {
       const ie = nfe.emitente.IE;
       // Sem IE é o contribuinte exclusivo do IBS/CBS: a C17-10 (229) foi excluída; a NFC-e dele é recusada (C17-42, 156)
       // e a NF-e só é autorizada na SVRS (C17-11, 166).
       if (ie === undefined) {
         if (nfe.mod === '65') return reject('156');
-        return ehSvrs(view) ? undefined : reject('166');
+        return ehSvrs(view, autorizador) ? undefined : reject('166');
       }
       if (/^0*$/.test(ie)) return reject('209');
       if (ie === 'ISENTO') {
@@ -510,7 +513,11 @@ const evento: RegraSim<ContextoEvento>[] = [
     conferir({ evento: e, autorizador, visao: view }: ContextoEvento): RejeicaoSim | undefined {
       const orgao = autorizador === 'an' ? '91' : e.chNFe.slice(0, 2);
       const doOrgao = autorizador === 'an' ? MANIFESTACOES.has(e.tpEvento) : EMITENTE_EVENTOS.has(e.tpEvento);
-      const atende = autorizador === 'an' || view.configuracao.cUFsAtendidas.includes(e.cOrgao);
+      // A SVRS também recebe os eventos da NF-e sem IE de outra UF que ela autorizou (NT 2026.007 v1.10, C17-11).
+      const atende =
+        autorizador === 'an' ||
+        view.configuracao.cUFsAtendidas.includes(e.cOrgao) ||
+        (ehSvrs(view, autorizador) && view.nfe(e.chNFe) !== undefined);
       return e.cOrgao === orgao && doOrgao && atende ? undefined : reject('250');
     },
   },
