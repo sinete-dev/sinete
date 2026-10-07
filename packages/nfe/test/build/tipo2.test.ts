@@ -10,7 +10,7 @@ import { validar } from '@sinete/schemas';
 import { TNFe_infNFeSupl } from '@sinete/schemas/nfe/PL_010f';
 import type { DadosNfe, NfeMontada, ResultadoMontagemNfe } from '../../src/index.ts';
 import { assinarNfe, assinaturaQrCode, comQrCode, montarNfe, NFE_NS, urlsNfce } from '../../src/index.ts';
-import { CPF, nota, opcoes } from '../helpers/nota.ts';
+import { CNPJ_EMIT, CPF, DEST_CONTRIBUINTE, IE_SP, item, nota, opcoes } from '../helpers/nota.ts';
 import { generateTestKeys } from '../helpers/test-keys.ts';
 
 function ok(r: ResultadoMontagemNfe): NfeMontada {
@@ -142,5 +142,131 @@ describe('NF-e com DANFE Simplificado Tipo 2 (tpImp 6)', () => {
         expect.objectContaining({ caminho: 'contingencia.tpEmis', code: 'contingencia_invalida' }),
       );
     }
+  });
+});
+
+/** A ocorrência que cita a rejeição, ou `undefined`. */
+const rejeicao = (o: readonly Ocorrencia[], cStat: string): Ocorrencia | undefined =>
+  o.find((i) => new RegExp(`rejeição ${cStat}\\)`).test(i.mensagem));
+
+describe('NF-e Tipo 2 sob as regras da NFC-e que a NT 2026.002 v1.11 estende', () => {
+  const RJ = { xLgr: 'RUA X', nro: '1', xBairro: 'CENTRO', cMun: '3304557', xMun: 'RIO DE JANEIRO', UF: 'RJ' as const };
+  const consumidorRj = { CPF, xNome: 'CONSUMIDOR', indIEDest: '9' as const, endereco: RJ };
+  const casos: [string, Partial<DadosNfe>, string, string][] = [
+    ['dhSaiEnt', { dhSaiEnt: new Date('2026-09-26T10:00:00-03:00') }, 'dhSaiEnt', '705'],
+    ['tpNF', { tpNF: '0' }, 'tpNF', '706'],
+    ['idDest', { idDest: '2', destinatario: consumidorRj }, 'idDest', '707'],
+    ['finNFe', { finNFe: '4' }, 'finNFe', '715'],
+    ['indFinal', { indFinal: '0', destinatario: DEST_CONTRIBUINTE }, 'indFinal', '716'],
+    ['indPres', { indPres: '2' }, 'indPres', '717'],
+    ['IEST', { emitente: { ...nota().emitente, IEST: IE_SP } }, 'emitente.IEST', '718'],
+    [
+      'ipi',
+      { itens: [item({ impostos: { ...item().impostos, ipi: { cEnq: '999', CST: '53' } } as never })] },
+      'itens[0].impostos.ipi',
+      '742',
+    ],
+    ['modFrete', { transporte: { modFrete: '0' } }, 'transporte.modFrete', '753'],
+    ['cobranca', { cobranca: { fatura: { nFat: '1', vOrig: '15.00', vLiq: '15.00' } } }, 'cobranca', '760'],
+    [
+      'retirada',
+      {
+        retirada: {
+          CNPJ: CNPJ_EMIT,
+          xLgr: 'RUA',
+          nro: '1',
+          xBairro: 'CENTRO',
+          cMun: '3550308',
+          xMun: 'SAO PAULO',
+          UF: 'SP',
+        },
+      },
+      'retirada',
+      '669',
+    ],
+    [
+      'indTot',
+      { itens: [item(), item({ produto: { ...item().produto, indTot: '0' } })] },
+      'itens[1].produto.indTot',
+      '774',
+    ],
+  ];
+  for (const [nome, extra, caminho, cStat] of casos) {
+    test(`${nome}: ${cStat} no caminho da entrada, só no Tipo 2`, async () => {
+      const o = falha(await montarNfe(tipo2(extra), opcoes()));
+      expect(rejeicao(o, cStat)).toMatchObject({ caminho, origem: 'entrada' });
+      expect(rejeicao(o, cStat)?.mensagem).toStartWith('NF-e com DANFE Simplificado Tipo 2 ');
+      const r = await montarNfe(nota({ ...extra, ...(nome === 'indFinal' ? { indFinal: '0' } : {}) }), opcoes());
+      if (!r.ok) expect(rejeicao(r.ocorrencias, cStat)).toBeUndefined();
+    });
+  }
+
+  test('referenciar outra nota é 708; várias violações voltam juntas', async () => {
+    const outra = ok(await montarNfe(tipo2({ nNF: 9 }), opcoes())).chave;
+    expect(
+      rejeicao(falha(await montarNfe(tipo2({ referenciadas: [{ refNFe: outra }] }), opcoes())), '708')?.caminho,
+    ).toBe('referenciadas');
+    const o = falha(
+      await montarNfe(
+        tipo2({
+          dhSaiEnt: new Date('2026-09-26T10:00:00-03:00'),
+          emitente: { ...nota().emitente, IEST: IE_SP },
+          cobranca: { fatura: { nFat: '1', vOrig: '15.00', vLiq: '15.00' } },
+        }),
+        opcoes(),
+      ),
+    );
+    expect(o.map((i) => i.caminho)).toEqual(expect.arrayContaining(['dhSaiEnt', 'emitente.IEST', 'cobranca']));
+  });
+
+  test('regras só da NFC-e não valem: pagamento, destinatário contribuinte, transportador na entrega, exportação', async () => {
+    const exporta = { UFSaidaPais: 'SP' as const, xLocExporta: 'PORTO DE SANTOS' };
+    const casos: Partial<DadosNfe>[] = [{}, { destinatario: DEST_CONTRIBUINTE }, { indPres: '4' }, { exporta }];
+    for (const extra of casos) {
+      const n = ok(await montarNfe(tipo2(extra), opcoes()));
+      expect(n.xml).toContain('<mod>55</mod>');
+      expect(n.xml).toContain('<tpImp>6</tpImp>');
+    }
+  });
+
+  test('padrões do Tipo 2: indPres 1 e idDest 1 mesmo com o consumidor em outra UF', async () => {
+    const { indPres: _, ...semIndPres } = tipo2();
+    const a = ok(await montarNfe(semIndPres as DadosNfe, opcoes()));
+    expect(a.xml).toContain('<indPres>1</indPres>');
+    const b = ok(await montarNfe(tipo2({ destinatario: consumidorRj }), opcoes()));
+    expect(b.xml).toContain('<idDest>1</idDest>');
+    const c = ok(await montarNfe(nota({ destinatario: consumidorRj }), opcoes()));
+    expect(c.xml).toContain('<idDest>2</idDest>');
+  });
+
+  test('local de entrega segue aceito (G01-10 é implementação futura na NT)', async () => {
+    const entrega = {
+      CPF,
+      xLgr: 'RUA LOCAL',
+      nro: '10',
+      xBairro: 'CENTRO',
+      cMun: '3550308',
+      xMun: 'SAO PAULO',
+      UF: 'SP' as const,
+    };
+    expect(ok(await montarNfe(tipo2({ entrega }), opcoes())).xml).toContain('<entrega>');
+  });
+
+  test('entrega a domicílio identifica o destinatário (E01-20, 787)', async () => {
+    const { destinatario: _, ...sem } = tipo2({ indPres: '4' });
+    expect(rejeicao(falha(await montarNfe(sem as DadosNfe, opcoes())), '787')?.caminho).toBe('destinatario');
+  });
+
+  test('em homologação, a descrição do primeiro item é a literal da I04-10; em produção, a informada', async () => {
+    expect(ok(await montarNfe(tipo2(), opcoes())).xml).toContain(
+      '<xProd>NOTA FISCAL EMITIDA EM AMBIENTE DE HOMOLOGACAO - SEM VALOR FISCAL</xProd>',
+    );
+    expect(ok(await montarNfe(tipo2(), opcoes({ ambiente: 'producao' }))).xml).toContain(
+      '<xProd>PARAFUSO SINTETICO</xProd>',
+    );
+    expect(ok(await montarNfe(nota(), opcoes())).xml).toContain('<xProd>PARAFUSO SINTETICO</xProd>');
+    // A descrição informada não vai ao XML de teste, então o tipo dela não é conferido em homologação.
+    const longa = tipo2({ itens: [item({ produto: { ...item().produto, xProd: 'X'.repeat(130) } })] });
+    expect(ok(await montarNfe(longa, opcoes())).xml).toContain('HOMOLOGACAO - SEM VALOR FISCAL</xProd>');
   });
 });

@@ -212,6 +212,11 @@ function aamm(dhEmi: string): string {
   return `${dhEmi.slice(2, 4)}${dhEmi.slice(5, 7)}`;
 }
 
+/** NFC-e, ou NF-e com DANFE Simplificado Tipo 2 (tpImp 6), que a NT 2026.002 v1.11 põe sob as regras B11 e B25. */
+function simplificada(nfe: FatosNfe): boolean {
+  return nfe.mod === '65' || (nfe.mod === '55' && nfe.ide?.tpImp === '6');
+}
+
 const autorizacao: RegraSim<ContextoAutorizacao>[] = [
   {
     id: 'A03-10',
@@ -233,15 +238,15 @@ const autorizacao: RegraSim<ContextoAutorizacao>[] = [
   },
   {
     id: 'B11-10',
-    fonte: `${ANEXO_I}, item 4.2.1; NFC-e só de saída (tpNF 1)`,
+    fonte: `${ANEXO_I}, item 4.2.1, e NT 2026.002 v1.11: NFC-e e NF-e Tipo 2 só de saída (tpNF 1)`,
     conferir: ({ nfe }: ContextoAutorizacao): RejeicaoSim | undefined =>
-      nfe.mod === '65' && nfe.ide !== undefined && nfe.ide.tpNF !== '1' ? reject('706') : undefined,
+      simplificada(nfe) && nfe.ide !== undefined && nfe.ide.tpNF !== '1' ? reject('706') : undefined,
   },
   {
     id: 'B11a-10',
-    fonte: `${ANEXO_I}, item 4.2.1; NFC-e só em operação interna (idDest 1)`,
+    fonte: `${ANEXO_I}, item 4.2.1, e NT 2026.002 v1.11: NFC-e e NF-e Tipo 2 só em operação interna (idDest 1)`,
     conferir: ({ nfe }: ContextoAutorizacao): RejeicaoSim | undefined =>
-      nfe.mod === '65' && nfe.ide !== undefined && nfe.ide.idDest !== '1' ? reject('707') : undefined,
+      simplificada(nfe) && nfe.ide !== undefined && nfe.ide.idDest !== '1' ? reject('707') : undefined,
   },
   {
     id: 'B21-10',
@@ -288,10 +293,10 @@ const autorizacao: RegraSim<ContextoAutorizacao>[] = [
   },
   {
     id: 'B25-20',
-    fonte: `${ANEXO_I}, item 4.2.1 (B25-20, B25a-10); NT 2025.002 v1.51, B25b-20 (NFC-e presencial: indPres 1, 4 ou 5)`,
+    fonte: `${ANEXO_I}, item 4.2.1 (B25-20, B25a-10); NT 2025.002 v1.51, B25b-20 (NFC-e presencial: indPres 1, 4 ou 5); NT 2026.002 v1.11 (também a NF-e Tipo 2)`,
     conferir({ nfe }: ContextoAutorizacao): RejeicaoSim | undefined {
       const ide = nfe.ide;
-      if (nfe.mod !== '65' || ide === undefined) return undefined;
+      if (!simplificada(nfe) || ide === undefined) return undefined;
       if (ide.finNFe !== '1') return reject('715');
       if (ide.indFinal !== '1') return reject('716');
       return ['1', '4', '5'].includes(ide.indPres) ? undefined : reject('717');

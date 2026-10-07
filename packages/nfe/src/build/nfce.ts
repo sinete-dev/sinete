@@ -180,6 +180,8 @@ const TPAG_VEDADOS: Readonly<Record<string, string>> = {
 
 /** Identificação já resolvida pelo montador (com os padrões aplicados). */
 export interface IdeNfce {
+  /** 65 é a NFC-e; 55, a NF-e com DANFE Simplificado Tipo 2 (tpImp 6), que a NT 2026.002 põe sob parte destas regras. */
+  readonly mod: '55' | '65';
   readonly tpNF: string;
   readonly idDest: string;
   readonly tpImp: string;
@@ -191,21 +193,29 @@ export interface IdeNfce {
 /**
  * Regras da NFC-e sobre a entrada (origem `entrada`, ADR 0011), todas de aplicação obrigatória. Grupos que a NFC-e
  * não tem saem como `grupo_vedado` no caminho da entrada.
+ *
+ * A NT 2026.002 v1.11 (homologação em 01/07/2026, produção em 03/08/2026) estende parte delas à NF-e com DANFE
+ * Simplificado Tipo 2 (`mod` 55, `tpImp` 6): as que a NT escreve "Se NFC-e ou NF-e com DANFE Simplificado Tipo 2". As
+ * que ela não cita (data de previsão de entrega, tpImp 4 e 5, cMunFGIBS, compra governamental, o destinatário fora da
+ * E01-20, ISSQN, transportador, pagamento e exportação) seguem só da NFC-e (`soNfce`). A G01-10 (local de entrega,
+ * 670) fica de fora: a NT a marca como implementação futura.
  */
 export function conferirNfce(input: DadosNfe, ide: IdeNfce, issues: Issues): void {
-  const vedado = (path: string, msg: string): void => issues.add(path, 'grupo_vedado', `NFC-e ${msg}`);
-  const invalido = (path: string, msg: string): void => issues.add(path, 'campo_invalido', `NFC-e ${msg}`);
+  const soNfce = ide.mod === '65';
+  const doc = soNfce ? 'NFC-e' : 'NF-e com DANFE Simplificado Tipo 2';
+  const vedado = (path: string, msg: string): void => issues.add(path, 'grupo_vedado', `${doc} ${msg}`);
+  const invalido = (path: string, msg: string): void => issues.add(path, 'campo_invalido', `${doc} ${msg}`);
 
   // B. Identificação
   if (input.dhSaiEnt !== undefined) vedado('dhSaiEnt', 'sem data de entrada ou saída (B10-10, rejeição 705)');
-  if (input.dPrevEntrega !== undefined) {
+  if (soNfce && input.dPrevEntrega !== undefined) {
     vedado('dPrevEntrega', 'sem data de previsão de entrega (NT 2025.002, B10a-10, rejeição 1153)');
   }
   if (ide.tpNF !== '1') invalido('tpNF', 'só de saída, tpNF 1 (B11-10, rejeição 706)');
   if (ide.idDest !== '1') {
     invalido('idDest', 'só em operação interna, idDest 1 (B11a-10, rejeição 707)');
   }
-  if (ide.tpImp !== '4' && ide.tpImp !== '5') {
+  if (soNfce && ide.tpImp !== '4' && ide.tpImp !== '5') {
     invalido('tpImp', 'com DANFC-e: tpImp 4 (impresso) ou 5 (mensagem eletrônica) (B21-10, rejeição 709)');
   }
   if (ide.finNFe !== '1') invalido('finNFe', 'só com finalidade normal, finNFe 1 (B25-20, rejeição 715)');
@@ -213,13 +223,13 @@ export function conferirNfce(input: DadosNfe, ide: IdeNfce, issues: Issues): voi
   if (!['1', '4', '5'].includes(ide.indPres)) {
     invalido('indPres', 'só presencial: indPres 1, 4 (entrega a domicílio) ou 5 (NT 2025.002, B25b-20, rejeição 717)');
   }
-  if (input.cMunFGIBS !== undefined && ide.indPres !== '5') {
+  if (soNfce && input.cMunFGIBS !== undefined && ide.indPres !== '5') {
     invalido(
       'cMunFGIBS',
       'com cMunFGIBS só em operação presencial fora do estabelecimento, indPres 5 (NT 2025.002, B25b-60, rejeição 1000)',
     );
   }
-  if (input.cMunFGIBS === undefined && ide.indPres === '5') {
+  if (soNfce && input.cMunFGIBS === undefined && ide.indPres === '5') {
     issues.add(
       'cMunFGIBS',
       'campo_obrigatorio',
@@ -229,7 +239,7 @@ export function conferirNfce(input: DadosNfe, ide: IdeNfce, issues: Issues): voi
   if (input.referenciadas !== undefined && input.referenciadas.length > 0) {
     vedado('referenciadas', 'não referencia documento fiscal (BA01-10, rejeição 708)');
   }
-  if (input.gCompraGov !== undefined)
+  if (soNfce && input.gCompraGov !== undefined)
     vedado('gCompraGov', 'sem compra governamental (NT 2025.002, BB01-10, rejeição 1006)');
 
   // C. Emitente
@@ -242,17 +252,19 @@ export function conferirNfce(input: DadosNfe, ide: IdeNfce, issues: Issues): voi
     issues.add(
       'destinatario',
       'campo_obrigatorio',
-      'NFC-e com entrega a domicílio identifica o destinatário (E01-20, rejeição 787)',
+      `${doc} com entrega a domicílio identifica o destinatário (E01-20, rejeição 787)`,
     );
   }
-  if (ide.indPres === '4' && d !== undefined && d.endereco === undefined) {
+  // F01-10 (669): sem local de retirada.
+  if (input.retirada !== undefined) vedado('retirada', 'sem local de retirada (F01-10, rejeição 669)');
+  if (soNfce && ide.indPres === '4' && d !== undefined && d.endereco === undefined) {
     issues.add(
       'destinatario.endereco',
       'campo_obrigatorio',
       'NFC-e com entrega a domicílio informa o endereço do destinatário (E05-20, rejeição 788)',
     );
   }
-  if (d !== undefined) {
+  if (soNfce && d !== undefined) {
     if (d.CNPJ !== undefined && input.emitente.CNPJ !== undefined && digitos(d.CNPJ) === digitos(input.emitente.CNPJ)) {
       invalido('destinatario.CNPJ', 'com destinatário igual ao emitente (E02-20, rejeição 220)');
     }
@@ -271,7 +283,10 @@ export function conferirNfce(input: DadosNfe, ide: IdeNfce, issues: Issues): voi
     if (esp.arma !== undefined) vedado(`${p}.produto.especifico.arma`, 'sem armamento (L01-10, rejeição 738)');
     if (esp.nRECOPI !== undefined)
       vedado(`${p}.produto.especifico.nRECOPI`, 'sem papel imune RECOPI (LB01-10, rejeição 348)');
-    if (it.produto.tpCredPresIBSZFM !== undefined) {
+    if (it.produto.indTot === '0') {
+      invalido(`${p}.produto.indTot`, 'sem item fora do total, indTot 1 (I17b-10, rejeição 774)');
+    }
+    if (soNfce && it.produto.tpCredPresIBSZFM !== undefined) {
       vedado(
         `${p}.produto.tpCredPresIBSZFM`,
         'sem classificação para subapuração do IBS na ZFM (NT 2025.002, I05k-10, rejeição 1165)',
@@ -279,14 +294,14 @@ export function conferirNfce(input: DadosNfe, ide: IdeNfce, issues: Issues): voi
     }
     const cfop = it.produto.CFOP.replace(/\D/g, '');
     const imp = it.impostos;
-    if (cfop === CFOP_ISSQN && imp.issqn === undefined) {
+    if (soNfce && cfop === CFOP_ISSQN && imp.issqn === undefined) {
       issues.add(
         `${p}.impostos.issqn`,
         'combinacao_invalida',
         'NFC-e com CFOP 5.933 tem o grupo do ISSQN (I08-160, rejeição 374)',
       );
     }
-    if (cfop !== CFOP_ISSQN && imp.issqn !== undefined) {
+    if (soNfce && cfop !== CFOP_ISSQN && imp.issqn !== undefined) {
       issues.add(
         `${p}.produto.CFOP`,
         'combinacao_invalida',
@@ -314,10 +329,10 @@ export function conferirNfce(input: DadosNfe, ide: IdeNfce, issues: Issues): voi
   if (tr !== undefined && tr.modFrete !== '9' && !entrega) {
     invalido('transporte.modFrete', 'sem frete fora da entrega a domicílio: modFrete 9 (X02-10, rejeição 753)');
   }
-  if (tr?.transportador !== undefined && !entrega) {
+  if (soNfce && tr?.transportador !== undefined && !entrega) {
     vedado('transporte.transportador', 'só tem transportador na entrega a domicílio (X03-10, rejeição 754)');
   }
-  if (entrega && tr?.transportador === undefined) {
+  if (soNfce && entrega && tr?.transportador === undefined) {
     issues.add(
       'transporte.transportador',
       'campo_obrigatorio',
@@ -331,6 +346,17 @@ export function conferirNfce(input: DadosNfe, ide: IdeNfce, issues: Issues): voi
 
   // Y e YA. Cobrança e pagamento
   if (input.cobranca !== undefined) vedado('cobranca', 'sem fatura nem duplicata (Y01-10, rejeição 760)');
+  // O pagamento é só da NFC-e: a NT 2026.002 não estende as regras do grupo YA à Tipo 2.
+  if (soNfce) conferirPagamentoNfce(input, issues);
+
+  // Z. Grupos que a NFC-e não tem
+  if (soNfce && input.exporta !== undefined) vedado('exporta', 'sem comércio exterior (ZA01-30, rejeição 814)');
+  if (input.compra !== undefined) vedado('compra', 'sem dados de compra (ZB01-10, rejeição 762)');
+  if (input.cana !== undefined) vedado('cana', 'sem aquisição de cana (ZC01-10, rejeição 763)');
+}
+
+/** Pagamento informado na NFC-e: obrigatório, sem os meios vedados e com o grupo do cartão quando pede. */
+function conferirPagamentoNfce(input: DadosNfe, issues: Issues): void {
   if (input.pagamento === undefined || input.pagamento.detPag.length === 0) {
     issues.add(
       'pagamento',
@@ -351,11 +377,6 @@ export function conferirNfce(input: DadosNfe, ide: IdeNfce, issues: Issues): voi
       }
     });
   }
-
-  // Z. Grupos que a NFC-e não tem
-  if (input.exporta !== undefined) vedado('exporta', 'sem comércio exterior (ZA01-30, rejeição 814)');
-  if (input.compra !== undefined) vedado('compra', 'sem dados de compra (ZB01-10, rejeição 762)');
-  if (input.cana !== undefined) vedado('cana', 'sem aquisição de cana (ZC01-10, rejeição 763)');
 }
 
 /** O `pag` montado, na forma que as regras de pagamento leem e completam. */
