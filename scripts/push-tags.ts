@@ -22,7 +22,7 @@ if (plano.sozinha === undefined) {
 }
 if (plano.juntas.length > 0) {
   console.log(`push-tags: ${plano.juntas.length} tag(s) num push: ${plano.juntas.join(' ')}`);
-  await $`git push ${remoto} ${plano.juntas.map((t) => `refs/tags/${t}`)}`;
+  await $`git push --no-follow-tags ${remoto} ${plano.juntas.map((t) => `refs/tags/${t}`)}`;
 }
 console.log(`push-tags: ${plano.sozinha} sozinha (dispara o job release)`);
-await $`git push ${remoto} ${`refs/tags/${plano.sozinha}`}`;
+await $`git push --no-follow-tags ${remoto} ${`refs/tags/${plano.sozinha}`}`;
