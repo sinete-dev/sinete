@@ -3,7 +3,15 @@
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
   "files": {
     // `spikes/` é código descartável de referência, com configs próprias.
-    "includes": ["**", "!!**/spikes", "!**/dist", "!**/CHANGELOG.md", "!smoke/fixtures", "!.changeset/*.md"]
+    "includes": [
+      "**",
+      "!!**/spikes",
+      "!**/dist",
+      "!**/CHANGELOG.md",
+      "!smoke/fixtures",
+      "!tools/fontes-oficiais/test/fixtures",
+      "!.changeset/*.md"
+    ]
   },
   "formatter": { "indentStyle": "space", "indentWidth": 2, "lineWidth": 120 },
   "javascript": { "formatter": { "quoteStyle": "single" } },

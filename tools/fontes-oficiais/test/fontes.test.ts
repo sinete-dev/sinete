@@ -1,4 +1,6 @@
 import { describe, expect, test } from 'bun:test';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { comparar, mudou, proximoEstado, relatorio } from '../src/comparar.ts';
 import {
   decodificarEntidades,
@@ -76,6 +78,46 @@ describe('extratores', () => {
       <a class="plain" href="${pagina}/rtc">GOV.BR</a>
       <a href="${pagina}/nt-009.pdf">NT 009</a>`;
     expect(extrairPaginaGovBr(html, pagina)).toEqual([{ id: `${pagina}/nt-009.pdf`, titulo: 'NT 009' }]);
+  });
+
+  test('gov.br: arquivo do mesmo site em outra pasta entra só se citado no corpo da página (#40)', () => {
+    const pagina = 'https://www.gov.br/nfse/pt-br/biblioteca/documentacao-tecnica/rtc';
+    const via = 'https://www.gov.br/nfse/pt-br/nfs-e-via/documentacao-tecnica';
+    const html =
+      `<nav><a href="${via}/menu.pdf">Menu</a><a href="https://www.gov.br/nfse/pt-br/municipios">Municípios</a></nav>` +
+      '<div id="content-core">' +
+      `<a href="${via}/notas-tecnicas/nt-010.pdf">NT 010</a>` +
+      `<a href="${via}">Página da NFS-e Via</a>` +
+      '<a href="https://outro.gov.br/nt.pdf">Outro site</a>' +
+      `<a href="${pagina}/nt-009.pdf">NT 009</a>` +
+      '</div><div id="viewlet-below-content">' +
+      `<a href="${via}/depois.pdf">Depois do corpo</a></div>`;
+    expect(extrairPaginaGovBr(html, pagina)).toEqual([
+      { id: `${pagina}/nt-009.pdf`, titulo: 'NT 009' },
+      { id: `${via}/notas-tecnicas/nt-010.pdf`, titulo: 'NT 010' },
+    ]);
+    // Sem o marcador do corpo, vale só o caminho da página.
+    expect(extrairPaginaGovBr(html.replace('content-core', 'outro'), pagina)).toEqual([
+      { id: `${pagina}/nt-009.pdf`, titulo: 'NT 009' },
+    ]);
+  });
+
+  test('gov.br: a NT SE/CGNFS-e 010 na página da RTC (trecho real da página, #40)', () => {
+    const pagina = 'https://www.gov.br/nfse/pt-br/biblioteca/documentacao-tecnica/rtc';
+    const html = readFileSync(path.join(import.meta.dir, 'fixtures/govbr-nfse-rtc.html'), 'utf8');
+    const itens = extrairPaginaGovBr(html, pagina);
+    expect(itens).toContainEqual({
+      id: 'https://www.gov.br/nfse/pt-br/nfs-e-via/documentacao-tecnica/notas-tecnicas/nt-010-se-cgnfse-leiaute-nfse-via-v-1.00.pdf',
+      titulo: 'Nota Técnica 010 SE/CGNFS-e nº 010 versão 1.00',
+    });
+    // Fora do caminho da página, só arquivos citados no corpo: nada de menu, rodapé ou subpágina de outra pasta.
+    const fora = itens.filter((i) => !i.id.startsWith(`${pagina}/`)).map((i) => i.id.split('/').at(-1));
+    expect(fora).toEqual([
+      'anexovi-leiautesrn_rtc_ibscbs-v1-01-03-nt004.xlsx',
+      'nfse-esquemas_xsd-rtc-v1-00-20251210.zip',
+      'nt-004-se-cgnfse-novo-layout-rtc-v2-00-20251210.pdf',
+      'nt-010-se-cgnfse-leiaute-nfse-via-v-1.00.pdf',
+    ]);
   });
 
   test('gov.br: sem <base>, relativo resolve pelo endereço da página', () => {

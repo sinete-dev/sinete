@@ -65,12 +65,16 @@ export function extrairPortalDfe(html: string): Item[] {
   return ordenar(itens);
 }
 
+/** Extensão de arquivo publicado (documento, planilha, pacote de esquemas). */
+const ARQUIVO = /\.(pdf|zip|xlsx?|docx?|odt|ods|xsd|csv)$/i;
+
 /**
  * Página do gov.br (documentação da NFS-e Nacional): os links que ficam abaixo do caminho da própria página, que são
  * os arquivos e as subpáginas que ela publica. Menu e rodapé apontam para fora desse caminho e ficam de fora. Links
  * relativos resolvem como o navegador resolveria: pelo `<base href>` da página, ou pelo endereço dela. O Plone do
  * gov.br publica a página como um documento dentro da pasta (o `og:url`), e o logo e os botões de compartilhar apontam
  * para ele: esse endereço é a própria página e fica de fora, senão uma página sem nenhum documento passaria por lida.
+ * Dentro do corpo da página entra também o arquivo do mesmo site publicado em outra pasta, que a página cita.
  */
 export function extrairPaginaGovBr(html: string, pagina: string): Item[] {
   const base = pagina.replace(/\/+$/, '');
@@ -83,6 +87,12 @@ export function extrairPaginaGovBr(html: string, pagina: string): Item[] {
   }
   const propria = /<meta\b[^>]*property="og:url"[^>]*content="([^"]+)"/i.exec(html)?.[1];
   const itens: Item[] = [];
+  // O corpo da página (`content-core` do Plone, até o `viewlet-below-content`) pode citar arquivo publicado em outra
+  // pasta do mesmo site: a NT SE/CGNFS-e 010 está na página da RTC com o PDF em `/nfse/pt-br/nfs-e-via/...` (#40).
+  const inicio = html.search(/id="content-core"/);
+  const fim = inicio < 0 ? -1 : html.indexOf('viewlet-below-content', inicio);
+  const noCorpo = (pos: number): boolean => inicio >= 0 && pos > inicio && (fim < 0 || pos < fim);
+  const host = new URL(pagina).host;
   const re = /<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
   for (const m of html.matchAll(re)) {
     let url: string;
@@ -93,7 +103,9 @@ export function extrairPaginaGovBr(html: string, pagina: string): Item[] {
     }
     url = url.replace(/\/(view|@@download\/file)$/, '');
     // A âncora de acessibilidade ("Ir para o conteúdo") aponta para a própria página e sobra como `${base}/`.
-    if (!url.startsWith(`${base}/`) || url.length === base.length + 1) continue;
+    const abaixo = url.startsWith(`${base}/`) && url.length > base.length + 1;
+    const arquivoCitado = noCorpo(m.index) && new URL(url).host === host && ARQUIVO.test(url);
+    if (!abaixo && !arquivoCitado) continue;
     if (propria && url === decodificarEntidades(propria).replace(/\/+$/, '')) continue;
     itens.push({ id: url, titulo: texto(m[2] ?? '') || url.slice(base.length + 1) });
   }
