@@ -31,22 +31,22 @@
   },
   "it": {
     "classTrib": {
-      "id": "it-2025.002-v1.60-cclasstrib",
-      "title": "IT 2025.002 v1.60: Tabela de Classificação Tributária do IBS e CBS (CST e cClassTrib)",
-      "version": "v1.60",
-      "date": "2026-06-22",
-      "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=CMlTOCo8JuE=",
-      "filename": "cClassTrib 2026-06-22.xlsx",
-      "sha256": "1448cb63a41bdb67ea30b4e11f4dc200d9568542c6b9335b6cff87a4fd664654"
+      "id": "it-2025.002-v1.70-cclasstrib",
+      "title": "IT 2025.002 v1.70: Tabela de Classificação Tributária do IBS e CBS (CST e cClassTrib)",
+      "version": "v1.70",
+      "date": "2026-10-01",
+      "url": "https://dfe-portal.svrs.rs.gov.br/DFE/DownloadArquivoEstatico/?sistema=DFE&tipoArquivo=12&nomeArquivo=IT%202025.002%20v.1.70%20-%20cClassTrib.xlsx",
+      "filename": "IT 2025.002 v.1.70 - cClassTrib.xlsx",
+      "sha256": "41260d98e9443bcacfa64fddd520f8add8e5a2780cc620f171790c0e1ca1cfb3"
     },
     "credPres": {
-      "id": "it-2025.002-v1.60-ccredpres",
-      "title": "IT 2025.002 v1.60: Tabela de Código de Crédito Presumido do IBS e CBS (cCredPres)",
-      "version": "v1.60",
-      "date": "2026-06-22",
-      "url": "https://www.nfe.fazenda.gov.br/portal/exibirArquivo.aspx?conteudo=TpJZSmm9U1c=",
-      "filename": "cCredPres_2026-06-22.xlsx",
-      "sha256": "65f2461398b6c361921201f68621e9d351d8497ce1d47b15a1cd8e1a08caec52"
+      "id": "it-2025.002-v1.70-ccredpres",
+      "title": "IT 2025.002 v1.70: Tabela de Código de Crédito Presumido do IBS e CBS (cCredPres)",
+      "version": "v1.70",
+      "date": "2026-10-01",
+      "url": "https://dfe-portal.svrs.rs.gov.br/DFE/DownloadArquivoEstatico/?sistema=DFE&tipoArquivo=12&nomeArquivo=IT%202025.002%20v.1.70%20-%20cCredPres.xlsx",
+      "filename": "IT 2025.002 v.1.70 - cCredPres.xlsx",
+      "sha256": "5afee01483e532b342700f8c2786f95ba6cf91a4e23ceccfbeb34bf1afef9ee1"
     },
     "aliquotasCbs": {
       "id": "it-2026.002-v1.00-aliquotas-cbs",

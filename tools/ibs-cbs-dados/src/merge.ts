@@ -149,6 +149,8 @@ export function merge(
     check('tpRBSN', c.tpRBSN, i.tpRBSN);
     check('annex', c.anexo, i.annex);
     for (const [field, col] of CLASS_FIELDS) {
+      // Indicador que o IT deixou de publicar (`ind_gMonoDif` saiu na v1.70) fica só com a Calculadora.
+      if (!(col in i.indicators)) continue;
       const iv: Indicador =
         field === 'gCredPresOper' ? (i.indicators[col] ? 'permitido' : 'vedado') : ind(i.indicators[col] === true);
       check(field, c.grupos[field], iv);

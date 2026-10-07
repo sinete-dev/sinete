@@ -74,7 +74,6 @@ const CLASS_INDICATOR_COLUMNS = [
   'ind_gMonoPadrao',
   'ind_gMonoReten',
   'ind_gMonoRet',
-  'ind_gMonoDif',
   'ind_gpBioDiferenca',
   'ind_gEstornoCred',
 ] as const;
@@ -94,6 +93,7 @@ const CLASS_COLUMNS = [
   'pRedCBS',
   ...CLASS_INDICATOR_COLUMNS,
   'tpRBSN',
+  'tpDoacao',
   'dIniVig',
   'dFimVig',
   'DataAtualização',
@@ -188,7 +188,7 @@ const CRED_COLUMNS = [
   'LC 214/2025',
   'Apropria via NF?',
   'Apropria via evento?',
-  'ind_DeduzCredPres',
+  'indDeduzCredPres',
   'ind_gCBSCredPres',
   'ind_gIBSCredPres',
   'Alíquota CBS',
@@ -196,11 +196,16 @@ const CRED_COLUMNS = [
   'pAliqCredPresCBS',
   'pAliqCredPresIBS',
   'pRedTransicaoIBS',
-  'cClass nota referenciada',
+  'cClassTrib nota referenciada',
   'dIniVigCBS',
   'dFimVigCBS',
   'dIniVigIBS',
   'dFimVigIBS',
+  'indDecPag',
+  'indNFe',
+  'indNFCe',
+  'indCTe',
+  'indNFSe',
 ];
 const CALC_COLUMNS = ['cCredPres', 'LC 214/2025', 'pAliq', 'vBC_CredPres', 'vCred Pres', 'Impedimento de CredPres'];
 
@@ -223,7 +228,8 @@ function validityOf(from: string | undefined, to: string | undefined): Vigencia 
 export async function readItCredPres(file: string, sourceId: string): Promise<RegistroCredPres[]> {
   const sheets = await readXlsx(file);
   const main = sheets.find((s) => s.name === 'cCredPres');
-  const calc = sheets.find((s) => s.name !== 'cCredPres');
+  // A planilha de cálculo não tem nome fixo ("Planilha2"); desde a v1.70 há também a de domínio do `indDecPag`.
+  const calc = sheets.find((s) => s.name !== 'cCredPres' && s.rows.some((r) => Object.values(r)[0] === 'cCredPres'));
   if (!main || !calc) throw new Error(`${file}: planilhas cCredPres e de cálculo não encontradas`);
   const mainHeader = main.rows.find((r) => Object.values(r)[0] === 'cCredPres');
   const calcHeader = calc.rows.find((r) => Object.values(r)[0] === 'cCredPres');
@@ -247,7 +253,7 @@ export async function readItCredPres(file: string, sourceId: string): Promise<Re
         legal: r['LC 214/2025'] ?? '',
         viaDocumento: flag(r['Apropria via NF?'], `${where} via NF`),
         viaEvento: flag(r['Apropria via evento?'], `${where} via evento`),
-        deduzDoTributo: flag(r.ind_DeduzCredPres, `${where} ind_DeduzCredPres`),
+        deduzDoTributo: flag(r.indDeduzCredPres, `${where} indDeduzCredPres`),
         grupos: {
           gCBSCredPres: ind(r.ind_gCBSCredPres, `${where} ind_gCBSCredPres`),
           gIBSCredPres: ind(r.ind_gIBSCredPres, `${where} ind_gIBSCredPres`),
@@ -259,7 +265,7 @@ export async function readItCredPres(file: string, sourceId: string): Promise<Re
           pAliqCredPresIBS: numberOrText(r.pAliqCredPresIBS),
           pRedTransicaoIBS: numberOrText(r.pRedTransicaoIBS),
         },
-        classTribReferenciado: r['cClass nota referenciada'] ?? null,
+        classTribReferenciado: r['cClassTrib nota referenciada'] ?? null,
         vigencia: {
           cbs: validityOf(r.dIniVigCBS, r.dFimVigCBS),
           ibs: validityOf(r.dIniVigIBS, r.dFimVigIBS),
