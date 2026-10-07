@@ -10,7 +10,7 @@ import { consStatServElement, retConsStatServElement } from '@sinete/schemas/nfe
 import type { ContextoDoPedido, Status } from '../context.ts';
 import { dh, prelude, status, verAplic } from '../context.ts';
 import { procEventoXml } from '../docs.ts';
-import { rejeicaoDaChave } from '../rules.ts';
+import { rejeicaoDaChave, simulaSvrs } from '../rules.ts';
 import { statusDaSvc } from '../svc.ts';
 import { text } from '../xmlutil.ts';
 import { protNFeNaResposta } from './autorizacao.ts';
@@ -72,7 +72,9 @@ export function consultaProtocolo(ctx: ContextoDoPedido): string {
   if (text(pre.doc.raiz, 'tpAmb') !== ctx.rt.configuracao.tpAmb) return ret(status('252'));
   const invalida = rejeicaoDaChave(chNFe, ctx.agora, ctx.rt.configuracao.deslocamentoMin);
   if (invalida !== undefined) return ret(status(invalida.cStat));
-  if (!ctx.rt.configuracao.cUFsAtendidas.includes(chNFe.slice(0, 2))) return ret(status('226'));
+  // A SVRS também responde pela NF-e sem IE que ela autorizou, de qualquer UF (NT 2026.007 v1.10, C17-11).
+  const daSvrs = simulaSvrs(ctx.rt.configuracao) && ctx.rt.estado.nfes.has(chNFe);
+  if (!daSvrs && !ctx.rt.configuracao.cUFsAtendidas.includes(chNFe.slice(0, 2))) return ret(status('226'));
   const nfe = ctx.rt.estado.nfes.get(chNFe);
   if (nfe === undefined) {
     // J03 a J06: a mesma numeração com outra chave.

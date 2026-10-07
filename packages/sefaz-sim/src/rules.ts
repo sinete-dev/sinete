@@ -6,6 +6,7 @@
  */
 
 import { ehUf, ufPorCUf } from '@sinete/core';
+import { nfeAutorizadorDaUf } from '@sinete/transport';
 import { indicadoresCfop, lerChaveAcesso, lerCnpj, lerCpf, lerIe } from '@sinete/validators';
 import type { ConfiguracaoSim, Svc } from './context.ts';
 import { parametrosDoQrCode } from './nfce.ts';
@@ -217,6 +218,23 @@ function simplificada(nfe: FatosNfe): boolean {
   return nfe.mod === '65' || (nfe.mod === '55' && nfe.ide?.tpImp === '6');
 }
 
+/**
+ * O simulador faz o papel da SVRS: a UF dele é atendida pela SVRS nos dados de endpoints do `@sinete/transport`. É onde
+ * a NF-e do contribuinte exclusivo do IBS/CBS, sem IE, é autorizada (NT 2026.007 v1.10, C17-11).
+ */
+export function simulaSvrs(cfg: ConfiguracaoSim): boolean {
+  return ehUf(cfg.uf) && nfeAutorizadorDaUf(cfg.uf, cfg.ambiente) === 'SVRS';
+}
+
+function ehSvrs(view: VisaoSim): boolean {
+  return simulaSvrs(view.configuracao);
+}
+
+/** NF-e de contribuinte exclusivo do IBS/CBS: modelo 55 sem `emit/IE` (NT 2026.007 v1.10). */
+function semIe(nfe: FatosNfe): boolean {
+  return nfe.mod === '55' && nfe.emitente.IE === undefined;
+}
+
 const autorizacao: RegraSim<ContextoAutorizacao>[] = [
   {
     id: 'A03-10',
@@ -232,9 +250,9 @@ const autorizacao: RegraSim<ContextoAutorizacao>[] = [
   },
   {
     id: 'B02-10',
-    fonte: `${ANEXO_I}, item 4.2.1 (B. Identificação da NF-e)`,
+    fonte: `${ANEXO_I}, item 4.2.1 (B. Identificação da NF-e); NT 2026.007 v1.10 (a SVRS autoriza a NF-e sem IE de qualquer UF)`,
     conferir: ({ nfe, visao: view }: ContextoAutorizacao): RejeicaoSim | undefined =>
-      view.configuracao.cUFsAtendidas.includes(nfe.cUF) ? undefined : reject('226'),
+      view.configuracao.cUFsAtendidas.includes(nfe.cUF) || (semIe(nfe) && ehSvrs(view)) ? undefined : reject('226'),
   },
   {
     id: 'B11-10',
@@ -378,11 +396,16 @@ const autorizacao: RegraSim<ContextoAutorizacao>[] = [
   },
   {
     id: 'C17',
-    fonte: `${ANEXO_I}, item 4.2.1 (C17-10, C17-20 e C17-30)`,
-    conferir({ nfe }: ContextoAutorizacao): RejeicaoSim | undefined {
+    fonte: `${ANEXO_I}, item 4.2.1 (C17-20 e C17-30); NT 2026.007 v1.10 (C17-10 excluída, C17-11 e C17-42)`,
+    conferir({ nfe, visao: view }: ContextoAutorizacao): RejeicaoSim | undefined {
       const ie = nfe.emitente.IE;
-      // O PL_010f deixa emit/IE opcional no schema; a regra de negócio exige.
-      if (ie === undefined || /^0*$/.test(ie)) return reject('229');
+      // Sem IE é o contribuinte exclusivo do IBS/CBS: a C17-10 (229) foi excluída; a NFC-e dele é recusada (C17-42, 156)
+      // e a NF-e só é autorizada na SVRS (C17-11, 166).
+      if (ie === undefined) {
+        if (nfe.mod === '65') return reject('156');
+        return ehSvrs(view) ? undefined : reject('166');
+      }
+      if (/^0*$/.test(ie)) return reject('209');
       if (ie === 'ISENTO') {
         // Só a NF-e avulsa (modelo 55, série 890 a 919) pode ter o emitente ISENTO.
         const serie = Number(nfe.serie);

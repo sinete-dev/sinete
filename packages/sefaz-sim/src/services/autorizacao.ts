@@ -21,7 +21,7 @@ import { standalone } from '../docs.ts';
 import { ehDenegacao, motivo } from '../messages.ts';
 import { assinaturaDoQrCodeConfere, parametrosDoQrCode } from '../nfce.ts';
 import type { FatosNfe, VisaoSim } from '../rules.ts';
-import { primeiraRejeicao } from '../rules.ts';
+import { primeiraRejeicao, simulaSvrs } from '../rules.ts';
 import type { AutorizadorSim } from '../services.ts';
 import type {
   Contribuinte,
@@ -297,8 +297,15 @@ export async function autorizacao(ctx: ContextoDoPedido): Promise<string> {
   // GAP03a-4 (NT 2023.002 v1.00, item 3.1): o lote de NFC-e tem uma nota só.
   if (modelos.has('65') && nfes.length > 1) return retEnviNFe(ctx, status('126'));
   const cUFs = new Set(nfes.map((n) => text(n, 'infNFe/ide/cUF')));
-  // B05: UF atendida pelo web service (410), antes das regras de cada NF-e.
-  if ([...cUFs].some((c) => c === undefined || !ctx.rt.configuracao.cUFsAtendidas.includes(c))) {
+  // B05: UF atendida pelo web service (410), antes das regras de cada NF-e. A SVRS recebe a NF-e sem IE de qualquer UF
+  // (contribuinte exclusivo do IBS/CBS, NT 2026.007 v1.10, C17-11).
+  const svrs = simulaSvrs(ctx.rt.configuracao);
+  const atendida = (n: (typeof nfes)[number]): boolean => {
+    const c = text(n, 'infNFe/ide/cUF');
+    if (c !== undefined && ctx.rt.configuracao.cUFsAtendidas.includes(c)) return true;
+    return svrs && text(n, 'infNFe/ide/mod') === '55' && at(n, 'infNFe/emit/IE') === undefined;
+  };
+  if (!nfes.every(atendida)) {
     return retEnviNFe(ctx, status('410'));
   }
   // C03.2 e GB02.2 (NT 2013.007 v1.03, item 04.1): a SVC só recebe da UF para a qual a SEFAZ de origem a ativou.

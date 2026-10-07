@@ -4,6 +4,7 @@ import type { ContextoAutorizacao, RegraSim, RejeicaoSim } from '../src/index.ts
 import { NFE_NS, REGRAS_PADRAO } from '../src/index.ts';
 import {
   consReciNFe,
+  consSitNFe,
   consStatServ,
   EMITENTE,
   enviNFe,
@@ -96,14 +97,41 @@ describe('autorização síncrona', () => {
     expect(tags(r, 'xMotivo')[1]).toBe('Rejeição: CNPJ do emitente com Série incompatível');
   });
 
-  test('IE do emitente: 229 ausente ou zerada, 209 inválida para a UF, 554 ISENTO fora da avulsa', async () => {
+  test('IE do emitente: 209 zerada ou inválida para a UF, 554 ISENTO fora da avulsa', async () => {
     const h = await harness();
     const com = async (p: Parameters<typeof nfe>[0]): Promise<string | undefined> =>
       cStat(await h.send('NFeAutorizacao', enviNFe([(await nfe(p)).xml])))[1];
-    expect(await com({ ie: '000000000000' })).toBe('229');
+    expect(await com({ ie: '000000000000' })).toBe('209');
     expect(await com({ nNF: 2, ie: '123456789012' })).toBe('209');
     expect(await com({ nNF: 3, ie: 'ISENTO' })).toBe('554');
     expect(await com({ nNF: 4, ie: 'ISENTO', serie: 890 })).toBe('100');
+  });
+
+  test('sem IE (NT 2026.007 v1.10): 166 fora da SVRS, 100 na SVRS de qualquer UF, 156 na NFC-e; nunca 229', async () => {
+    const semIe: [string, string] = [`<IE>${IE_EMITENTE}</IE>`, ''];
+    const enviar = async (h: Awaited<ReturnType<typeof harness>>, p: Parameters<typeof nfe>[0]): Promise<string[]> =>
+      cStat(await h.send('NFeAutorizacao', enviNFe([(await nfe(p)).xml])));
+    // SP tem autorizador próprio: a NF-e sem IE é recusada com 166 e não fica registrada.
+    const sp = await harness();
+    const recusada = await nfe({ nNF: 1, trocas: [semIe] });
+    expect(cStat(await sp.send('NFeAutorizacao', enviNFe([recusada.xml])))[1]).toBe('166');
+    expect(sp.sim.inspecao.nfe(recusada.chave)).toBeUndefined();
+    expect((await enviar(sp, { nNF: 2, mod: '65', trocas: [semIe] }))[1]).toBe('156');
+    expect((await enviar(sp, { nNF: 3, trocas: [semIe], serie: 890 }))[1]).toBe('166');
+    // SC é atendida pela SVRS: a NF-e sem IE de SP é autorizada; a de SP com IE continua fora da UF atendida (410).
+    const svrs = await harness({ uf: 'SC' });
+    expect(await enviar(svrs, { nNF: 4, trocas: [semIe] })).toEqual(['104', '100']);
+    expect(await enviar(svrs, { nNF: 5 })).toEqual(['410']);
+    // A exceção é só da NF-e: a NFC-e sem IE de outra UF continua fora (410), e a SVRS só responde à consulta do que autorizou.
+    expect(await enviar(svrs, { nNF: 7, mod: '65', trocas: [semIe] })).toEqual(['410']);
+    const naoAutorizada = await nfe({ nNF: 8, trocas: [semIe] });
+    expect(tag(await svrs.send('NfeConsultaProtocolo', consSitNFe(naoAutorizada.chave)), 'cStat')).toBe('226');
+    // Fora da SVRS a NF-e sem IE de outra UF para no lote (410).
+    expect(await enviar(await harness({ uf: 'RS' }), { nNF: 9, trocas: [semIe] })).toEqual(['410']);
+    // RS tem autorizador próprio (a SEFAZ-RS não é a SVRS), mesmo atendendo a UF da nota.
+    expect((await enviar(await harness({ uf: 'RS', ufsAtendidas: ['SP'] }), { nNF: 6, trocas: [semIe] }))[1]).toBe(
+      '166',
+    );
   });
 
   test('cadastro: 230, 231, 203 e denegação 301 com protocolo; reenvio da denegada dá 205', async () => {
