@@ -137,6 +137,9 @@ describe('autorização síncrona', () => {
     // A exceção é só da NF-e: a NFC-e sem IE de outra UF continua fora (410), e a SVRS só responde à consulta do que autorizou.
     expect(await enviar(svrs, { nNF: 7, mod: '65', trocas: [semIe] })).toEqual(['410']);
     const naoAutorizada = await nfe({ nNF: 8, trocas: [semIe] });
+    // A mesma numeração da NF-e sem IE que a SVRS autorizou, com outro cNF: 562, não 226.
+    const outroCnf = await nfe({ nNF: 4, cNF: '87654321', trocas: [semIe] });
+    expect(tag(await svrs.send('NfeConsultaProtocolo', consSitNFe(outroCnf.chave)), 'cStat')).toBe('562');
     expect(tag(await svrs.send('NfeConsultaProtocolo', consSitNFe(naoAutorizada.chave)), 'cStat')).toBe('226');
     const semNota = await evento({
       chave: naoAutorizada.chave,

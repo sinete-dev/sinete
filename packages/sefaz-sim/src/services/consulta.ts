@@ -72,16 +72,18 @@ export function consultaProtocolo(ctx: ContextoDoPedido): string {
   if (text(pre.doc.raiz, 'tpAmb') !== ctx.rt.configuracao.tpAmb) return ret(status('252'));
   const invalida = rejeicaoDaChave(chNFe, ctx.agora, ctx.rt.configuracao.deslocamentoMin);
   if (invalida !== undefined) return ret(status(invalida.cStat));
-  // A SVRS também responde pela NF-e sem IE que ela autorizou, de qualquer UF (NT 2026.007 v1.10, C17-11).
-  const daSvrs = ctx.autorizador === 'uf' && simulaSvrs(ctx.rt.configuracao) && ctx.rt.estado.nfes.has(chNFe);
-  if (!daSvrs && !ctx.rt.configuracao.cUFsAtendidas.includes(chNFe.slice(0, 2))) return ret(status('226'));
   const nfe = ctx.rt.estado.nfes.get(chNFe);
+  // J03 a J06: a mesma numeração com outra chave.
+  // Emitente CPF nas séries 910 a 969 (NT 2018.001), com 000 à esquerda na chave.
+  const serie = Number(chNFe.slice(22, 25));
+  const emitente = serie >= 910 && serie <= 969 ? chNFe.slice(9, 20) : chNFe.slice(6, 20);
+  const outra = ctx.rt.estado.nfeByNumero(emitente, chNFe.slice(20, 22), chNFe.slice(22, 25), chNFe.slice(25, 34));
+  // A SVRS também responde pela NF-e sem IE que ela autorizou, de qualquer UF (NT 2026.007 v1.10, C17-11), e pela
+  // mesma numeração com outra chave, para as J03 a J06 acusarem o conflito.
+  const daSvrs =
+    ctx.autorizador === 'uf' && simulaSvrs(ctx.rt.configuracao) && (nfe !== undefined || outra !== undefined);
+  if (!daSvrs && !ctx.rt.configuracao.cUFsAtendidas.includes(chNFe.slice(0, 2))) return ret(status('226'));
   if (nfe === undefined) {
-    // J03 a J06: a mesma numeração com outra chave.
-    // Emitente CPF nas séries 910 a 969 (NT 2018.001), com 000 à esquerda na chave.
-    const serie = Number(chNFe.slice(22, 25));
-    const emitente = serie >= 910 && serie <= 969 ? chNFe.slice(9, 20) : chNFe.slice(6, 20);
-    const outra = ctx.rt.estado.nfeByNumero(emitente, chNFe.slice(20, 22), chNFe.slice(22, 25), chNFe.slice(25, 34));
     if (outra === undefined) return ret(status('217'));
     if (outra.cNF !== chNFe.slice(35, 43)) return ret(status('562', { chNFe: outra.chave }));
     if (outra.chave.slice(2, 6) !== chNFe.slice(2, 6)) return ret(status('561'));
