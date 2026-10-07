@@ -253,7 +253,7 @@ describe('autorização assíncrona', () => {
     expect(cStat(await h.send('NFeRetAutorizacao', consReciNFe(nRec, '1')))).toEqual(['252']);
   });
 
-  test('settle() processa sem pedido; 223 para outro transmissor; indSinc=1 vira recibo com respostaSincrona assíncrona', async () => {
+  test('processarLotes() processa sem pedido; 223 para outro transmissor; indSinc=1 vira recibo com respostaSincrona assíncrona', async () => {
     const h = await harness({ respostaSincrona: 'assincrona' });
     const rec = await h.send('NFeAutorizacao', enviNFe([(await nfe()).xml], '1'));
     const nRec = tag(rec, 'nRec') as string;
