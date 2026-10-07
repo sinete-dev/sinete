@@ -4,9 +4,13 @@ import type { ContextoAutorizacao, RegraSim, RejeicaoSim } from '../src/index.ts
 import { NFE_NS, REGRAS_PADRAO } from '../src/index.ts';
 import {
   consReciNFe,
+  consSitNFe,
   consStatServ,
+  det,
   EMITENTE,
+  envEvento,
   enviNFe,
+  evento,
   harness,
   IE_EMITENTE,
   inutNFe,
@@ -96,14 +100,90 @@ describe('autorização síncrona', () => {
     expect(tags(r, 'xMotivo')[1]).toBe('Rejeição: CNPJ do emitente com Série incompatível');
   });
 
-  test('IE do emitente: 229 ausente ou zerada, 209 inválida para a UF, 554 ISENTO fora da avulsa', async () => {
+  test('IE do emitente: 209 zerada ou inválida para a UF, 554 ISENTO fora da avulsa', async () => {
     const h = await harness();
     const com = async (p: Parameters<typeof nfe>[0]): Promise<string | undefined> =>
       cStat(await h.send('NFeAutorizacao', enviNFe([(await nfe(p)).xml])))[1];
-    expect(await com({ ie: '000000000000' })).toBe('229');
+    expect(await com({ ie: '000000000000' })).toBe('209');
     expect(await com({ nNF: 2, ie: '123456789012' })).toBe('209');
     expect(await com({ nNF: 3, ie: 'ISENTO' })).toBe('554');
     expect(await com({ nNF: 4, ie: 'ISENTO', serie: 890 })).toBe('100');
+  });
+
+  test('sem IE (NT 2026.007 v1.10): 166 fora da SVRS, 100 na SVRS de qualquer UF, 156 na NFC-e; nunca 229', async () => {
+    const semIe: [string, string] = [`<IE>${IE_EMITENTE}</IE>`, ''];
+    const enviar = async (h: Awaited<ReturnType<typeof harness>>, p: Parameters<typeof nfe>[0]): Promise<string[]> =>
+      cStat(await h.send('NFeAutorizacao', enviNFe([(await nfe(p)).xml])));
+    // SP tem autorizador próprio: a NF-e sem IE é recusada com 166 e não fica registrada.
+    const sp = await harness();
+    const recusada = await nfe({ nNF: 1, trocas: [semIe] });
+    expect(cStat(await sp.send('NFeAutorizacao', enviNFe([recusada.xml])))[1]).toBe('166');
+    expect(sp.sim.inspecao.nfe(recusada.chave)).toBeUndefined();
+    expect((await enviar(sp, { nNF: 2, mod: '65', trocas: [semIe] }))[1]).toBe('156');
+    expect((await enviar(sp, { nNF: 3, trocas: [semIe], serie: 890 }))[1]).toBe('166');
+    // SC é atendida pela SVRS: a NF-e sem IE de SP é autorizada; a de SP com IE continua fora da UF atendida (410).
+    const svrs = await harness({ uf: 'SC' });
+    const deSp = await nfe({ nNF: 4, trocas: [semIe] });
+    const autorizada = await svrs.send('NFeAutorizacao', enviNFe([deSp.xml]));
+    expect(cStat(autorizada)).toEqual(['104', '100']);
+    // Os eventos do emitente dessa NF-e também vão à SVRS, com o cOrgao da UF da chave.
+    const cancelamento = await evento({
+      chave: deSp.chave,
+      tpEvento: '110111',
+      det: det.cancelamento(tag(autorizada, 'nProt') as string),
+    });
+    expect(cStat(await svrs.send('RecepcaoEvento', envEvento([cancelamento])))).toEqual(['128', '135']);
+    expect(await enviar(svrs, { nNF: 5 })).toEqual(['410']);
+    // A exceção é só da NF-e: a NFC-e sem IE de outra UF continua fora (410), e a SVRS só responde à consulta do que autorizou.
+    expect(await enviar(svrs, { nNF: 7, mod: '65', trocas: [semIe] })).toEqual(['410']);
+    const naoAutorizada = await nfe({ nNF: 8, trocas: [semIe] });
+    // A mesma numeração da NF-e sem IE que a SVRS autorizou, com outro cNF: 562, não 226.
+    const outroCnf = await nfe({ nNF: 4, cNF: '87654321', trocas: [semIe] });
+    expect(tag(await svrs.send('NfeConsultaProtocolo', consSitNFe(outroCnf.chave)), 'cStat')).toBe('562');
+    // A exceção não vale para a NF-e com IE: a mesma numeração dela, com a chave de outra UF, continua 226.
+    const comIe = await nfe({ nNF: 20, cUF: '42' });
+    expect(cStat(await svrs.send('NFeAutorizacao', enviNFe([comIe.xml])))[1]).toBe('100');
+    const comIeDeSp = await nfe({ nNF: 20, cNF: '87654321' });
+    expect(tag(await svrs.send('NfeConsultaProtocolo', consSitNFe(comIeDeSp.chave)), 'cStat')).toBe('226');
+    expect(tag(await svrs.send('NfeConsultaProtocolo', consSitNFe(naoAutorizada.chave)), 'cStat')).toBe('226');
+    const semNota = await evento({
+      chave: naoAutorizada.chave,
+      tpEvento: '110111',
+      det: det.cancelamento('135260000000001'),
+    });
+    expect(cStat(await svrs.send('RecepcaoEvento', envEvento([semNota])))).toEqual(['128', '250']);
+    // A SVC não herda a exceção: a NF-e sem IE em contingência recebe 166, mesmo da UF atendida.
+    svrs.sim.definirContingencia('SVC-AN');
+    const contingencia = await nfe({ nNF: 10, cUF: '42', tpEmis: '6', trocas: [semIe] });
+    expect(cStat(await svrs.send('NFeAutorizacao', enviNFe([contingencia.xml]), { autorizador: 'svc' }))[1]).toBe(
+      '166',
+    );
+    expect(tag(await svrs.send('NfeConsultaProtocolo', consSitNFe(deSp.chave), { autorizador: 'svc' }), 'cStat')).toBe(
+      '226',
+    );
+    const deOutraUf = await nfe({ nNF: 11, tpEmis: '6', trocas: [semIe] });
+    expect(cStat(await svrs.send('NFeAutorizacao', enviNFe([deOutraUf.xml]), { autorizador: 'svc' }))).toEqual(['410']);
+    // Fora da SVRS a NF-e sem IE de outra UF para no lote (410).
+    expect(await enviar(await harness({ uf: 'RS' }), { nNF: 9, trocas: [semIe] })).toEqual(['410']);
+    // RS tem autorizador próprio (a SEFAZ-RS não é a SVRS), mesmo atendendo a UF da nota.
+    expect((await enviar(await harness({ uf: 'RS', ufsAtendidas: ['SP'] }), { nNF: 6, trocas: [semIe] }))[1]).toBe(
+      '166',
+    );
+  });
+
+  test('C17-42 (156) vale até 2032: data local do dhEmi e instante do recebimento em UTC', () => {
+    const c17 = REGRAS_PADRAO.autorizacao.find((r) => r.id === 'C17') as RegraSim<ContextoAutorizacao>;
+    const conferir = (dhEmi: string, agora: string): string | undefined =>
+      c17.conferir({
+        nfe: { mod: '65', dhEmi, emitente: {} },
+        autorizador: 'uf',
+        agora: Date.parse(agora),
+      } as unknown as ContextoAutorizacao)?.cStat;
+    expect(conferir('2032-12-31T20:00:00-03:00', '2032-12-31T20:00:00-03:00')).toBe('156');
+    // 23h30 de Brasília em 31/12/2032 já é 2033 em UTC; e o dhEmi de 2033 basta.
+    expect(conferir('2032-12-31T23:30:00-03:00', '2032-12-31T23:30:00-03:00')).toBeUndefined();
+    expect(conferir('2033-01-02T10:00:00-03:00', '2032-12-31T20:00:00-03:00')).toBeUndefined();
+    expect(conferir('2032-12-31T20:00:00-03:00', '2033-01-01T00:00:00Z')).toBeUndefined();
   });
 
   test('cadastro: 230, 231, 203 e denegação 301 com protocolo; reenvio da denegada dá 205', async () => {

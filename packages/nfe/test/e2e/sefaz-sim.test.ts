@@ -13,7 +13,7 @@ import { criarTransporte } from '@sinete/transport';
 import { calcularDvCnpj } from '@sinete/validators';
 import type { ClienteNfe, ClienteNfeOpcoes, DadosNfe } from '../../src/index.ts';
 import { assinarNfe, criarClienteNfe, montarNfe, resolverEnvioSemResposta } from '../../src/index.ts';
-import { CNPJ_DEST, CNPJ_EMIT, EMISSAO, IE_SP, nota, opcoes } from '../helpers/nota.ts';
+import { CNPJ_DEST, CNPJ_EMIT, calculadoraFixa, EMISSAO, IE_SP, item, nota, opcoes } from '../helpers/nota.ts';
 
 /** Transmissor terceiro (contabilidade): outra raiz de CNPJ. */
 const CNPJ_TERCEIRO = `778889990001${calcularDvCnpj('778889990001')}`;
@@ -172,6 +172,45 @@ describe('NF-e contra a SEFAZ simulada, HTTPS com mTLS', () => {
       expect(consulta.valor.situacao).toBe('autorizada');
       expect(consulta.valor.digValConfere).toBe(true);
     }
+  });
+
+  test('contribuinte exclusivo do IBS/CBS (NT 2026.007): NF-e sem IE autorizada na SVRS, 166 na SEFAZ-SP', async () => {
+    const semIe = async (clock: RelogioManual, nNF: number): Promise<{ chave: string; xml: string }> => {
+      const base = nota({ destinatario: DEST_CNPJ, nNF });
+      const { IE: _, ...emitente } = base.emitente;
+      const it = item();
+      const r = await montarNfe(
+        {
+          ...base,
+          emitente: emitente as DadosNfe['emitente'],
+          itens: [
+            {
+              ...it,
+              impostos: {
+                pis: it.impostos.pis,
+                cofins: it.impostos.cofins,
+                ibsCbs: { classificacao: { CST: '000', cClassTrib: '000001' } },
+              },
+            } as DadosNfe['itens'][number],
+          ],
+        },
+        opcoes({ tempo: contextoDeTempo({ emissao: clock }), ibsCbs: calculadoraFixa }),
+      );
+      if (!r.ok) throw new Error(r.ocorrencias.map((i) => `${i.caminho}: ${i.mensagem}`).join('\n'));
+      return { chave: r.valor.chave, xml: await assinarNfe(r.valor, c.emitente.assinador) };
+    };
+    // SC é atendida pela SVRS: o cliente manda a NF-e sem IE à SVRS e o simulador a autoriza.
+    const svrs = await cenario({ uf: 'SC', cadastro: [] });
+    const nfe = await semIe(svrs.clock, 60);
+    const r = await svrs.client.autorizar(nfe.xml);
+    expect([r.tipo, r.cStat]).toEqual(['autorizado', '100']);
+    if (r.tipo !== 'autorizado') throw new Error('não autorizou');
+    expect(r.valor.nProt).toBe(svrs.sim.inspecao.nfe(nfe.chave)?.nProt as string);
+    const consulta = await svrs.client.consultar(nfe.chave, nfe.xml);
+    expect([consulta.tipo, consulta.cStat]).toEqual(['autorizado', '100']);
+    // SP tem autorizador próprio: a mesma nota é recusada com 166, nunca 229.
+    const sp = await cenario();
+    expect((await sp.client.autorizar((await semIe(sp.clock, 61)).xml)).cStat).toBe('166');
   });
 
   test('NF-e com DANFE Simplificado Tipo 2 (tpImp 6): o infNFeSupl vai e volta no nfeProc, autorizada', async () => {
