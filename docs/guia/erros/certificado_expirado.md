@@ -15,4 +15,4 @@ Renove o certificado com a autoridade certificadora (AC) e substitua o PFX. Para
 
 ## Armadilha
 
-Não use `aceitarVencido` para emitir: a opção permite diagnóstico e reprocessamento, mas não torna o certificado válido para envio. Confira também o relógio: um `relogioManual` de `@sinete/core`, usado em testes e esquecido num ambiente real com uma data posterior ao vencimento, produz este erro mesmo que o certificado ainda esteja válido na data real.
+Não use `aceitarVencido` para emitir: a opção permite diagnóstico e reprocessamento, mas não torna o certificado válido para envio. Confira também o relógio: um `relogioManual` de `@sinete/core`, usado em testes e esquecido num ambiente real com uma data posterior ao vencimento, produz este erro mesmo que o certificado ainda esteja válido na data real. No Bun, com o servidor em TLS 1.3, esta recusa chega como [`conexao_recusada`](conexao_recusada.md), sem o alerta: o Bun não o entrega.

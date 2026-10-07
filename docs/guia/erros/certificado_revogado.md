@@ -12,4 +12,4 @@ Emita um certificado novo com a AC e troque a identidade configurada. Se a empre
 
 ## Armadilha
 
-Repetir a chamada ou trocar de autorizador não resolve: a revogação é do certificado, e todo servidor que consulta a LCR vai recusá-lo. O `abrirPfx` não consulta a LCR, então um PFX revogado abre sem erro e só falha na conexão. Quem trata todas as recusas de certificado juntas pode comparar o prefixo `certificado_` do `code`, que também cobre [`certificado_recusado`](certificado_recusado.md) e [`certificado_expirado`](certificado_expirado.md).
+Repetir a chamada ou trocar de autorizador não resolve: a revogação é do certificado, e todo servidor que consulta a LCR vai recusá-lo. O `abrirPfx` não consulta a LCR, então um PFX revogado abre sem erro e só falha na conexão. Quem trata todas as recusas de certificado juntas pode comparar o prefixo `certificado_` do `code`, que também cobre [`certificado_recusado`](certificado_recusado.md) e [`certificado_expirado`](certificado_expirado.md). No Bun, com o servidor em TLS 1.3, esta recusa chega como [`conexao_recusada`](conexao_recusada.md), sem o alerta: o Bun não o entrega.
