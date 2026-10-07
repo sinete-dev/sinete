@@ -163,6 +163,21 @@ describe('autorização síncrona', () => {
     );
   });
 
+  test('C17-42 (156) vale até 2032: data local do dhEmi e instante do recebimento em UTC', () => {
+    const c17 = REGRAS_PADRAO.autorizacao.find((r) => r.id === 'C17') as RegraSim<ContextoAutorizacao>;
+    const conferir = (dhEmi: string, agora: string): string | undefined =>
+      c17.conferir({
+        nfe: { mod: '65', dhEmi, emitente: {} },
+        autorizador: 'uf',
+        agora: Date.parse(agora),
+      } as unknown as ContextoAutorizacao)?.cStat;
+    expect(conferir('2032-12-31T20:00:00-03:00', '2032-12-31T20:00:00-03:00')).toBe('156');
+    // 23h30 de Brasília em 31/12/2032 já é 2033 em UTC; e o dhEmi de 2033 basta.
+    expect(conferir('2032-12-31T23:30:00-03:00', '2032-12-31T23:30:00-03:00')).toBeUndefined();
+    expect(conferir('2033-01-02T10:00:00-03:00', '2032-12-31T20:00:00-03:00')).toBeUndefined();
+    expect(conferir('2032-12-31T20:00:00-03:00', '2033-01-01T00:00:00Z')).toBeUndefined();
+  });
+
   test('cadastro: 230, 231, 203 e denegação 301 com protocolo; reenvio da denegada dá 205', async () => {
     const outro = EMITENTE.replace(/^1/, '9');
     const h = await harness({

@@ -231,6 +231,9 @@ function ehSvrs(view: VisaoSim, autorizador: AutorizadorSim): boolean {
   return autorizador === 'uf' && simulaSvrs(view.configuracao);
 }
 
+/** 01/01/2033 00:00 UTC, em milissegundos: fim da C17-42 (NT 2026.007 v1.10). */
+const INICIO_2033_UTC = 1_988_150_400_000;
+
 /** NF-e de contribuinte exclusivo do IBS/CBS: modelo 55 sem `emit/IE` (NT 2026.007 v1.10). */
 function semIe(nfe: FatosNfe): boolean {
   return nfe.mod === '55' && nfe.emitente.IE === undefined;
@@ -399,13 +402,16 @@ const autorizacao: RegraSim<ContextoAutorizacao>[] = [
   },
   {
     id: 'C17',
-    fonte: `${ANEXO_I}, item 4.2.1 (C17-20 e C17-30); NT 2026.007 v1.10 (C17-10 excluída, C17-11 e C17-42)`,
-    conferir({ nfe, autorizador, visao: view }: ContextoAutorizacao): RejeicaoSim | undefined {
+    fonte: `${ANEXO_I}, item 4.2.1 (C17-20 e C17-30); NT 2026.007 v1.10 (C17-10 excluída, C17-11 e C17-42, até 2032)`,
+    conferir({ nfe, autorizador, visao: view, agora }: ContextoAutorizacao): RejeicaoSim | undefined {
       const ie = nfe.emitente.IE;
       // Sem IE é o contribuinte exclusivo do IBS/CBS: a C17-10 (229) foi excluída; a NFC-e dele é recusada (C17-42, 156)
       // e a NF-e só é autorizada na SVRS (C17-11, 166).
       if (ie === undefined) {
-        if (nfe.mod === '65') return reject('156');
+        // A C17-42 vale até o fim de 2032. Como no montador, só recusa quando todas as leituras caem antes de 2033: a
+        // data local do dhEmi e o instante do recebimento em Brasília e em UTC (UTC é a mais tardia das duas).
+        if (nfe.mod === '65')
+          return nfe.dhEmi.slice(0, 4) < '2033' && agora < INICIO_2033_UTC ? reject('156') : undefined;
         return ehSvrs(view, autorizador) ? undefined : reject('166');
       }
       if (/^0*$/.test(ie)) return reject('209');
