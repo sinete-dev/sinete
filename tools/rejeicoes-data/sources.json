@@ -67,10 +67,7 @@
       "file": "NT2026.007_v1.10.pdf",
       "sha256": "4a9d9de64504f4091c55e3e8a2d499116d4bac1a2009a874a7b9ce26d9fe8b10",
       "regras": {
-        "de": "^5 Detalhamento das Regras de Validação",
-        "ignorar": {
-          "942": "fora da faixa nova da NT (156 a 188): a RV 5AF15-10 aparece aqui com a condição tpEmis <> 3, e falta conferir se o código nasceu nesta NT (issue #48)"
-        }
+        "de": "^5 Detalhamento das Regras de Validação"
       }
     },
     {
