@@ -234,6 +234,11 @@ function ehSvrs(view: VisaoSim, autorizador: AutorizadorSim): boolean {
 /** 01/01/2033 00:00 UTC, em milissegundos: fim da C17-42 (NT 2026.007 v1.10). */
 const INICIO_2033_UTC = 1_988_150_400_000;
 
+/** NF-e sem IE já registrada pelo simulador (a que a SVRS autorizou de outra UF). */
+function registroSemIe(r: RegistroNfe | undefined): boolean {
+  return r?.mod === '55' && r.emitente.IE === undefined;
+}
+
 /** NF-e de contribuinte exclusivo do IBS/CBS: modelo 55 sem `emit/IE` (NT 2026.007 v1.10). */
 function semIe(nfe: FatosNfe): boolean {
   return nfe.mod === '55' && nfe.emitente.IE === undefined;
@@ -523,7 +528,7 @@ const evento: RegraSim<ContextoEvento>[] = [
       const atende =
         autorizador === 'an' ||
         view.configuracao.cUFsAtendidas.includes(e.cOrgao) ||
-        (ehSvrs(view, autorizador) && view.nfe(e.chNFe) !== undefined);
+        (ehSvrs(view, autorizador) && registroSemIe(view.nfe(e.chNFe)));
       return e.cOrgao === orgao && doOrgao && atende ? undefined : reject('250');
     },
   },
