@@ -177,4 +177,16 @@ describe('criarTransporte por entrada', () => {
     }
     expect(nodeEntry.detectarRuntime()).toBe('bun');
   });
+
+  test('antesDeConectar no Deno é recusado em vez de ignorado', () => {
+    const g = globalThis as { Deno?: unknown };
+    g.Deno = { version: { deno: '2.9.1' }, ...fakeDeno().api };
+    try {
+      expect(() => nodeEntry.criarTransporte({ identidade: identity, antesDeConectar: () => {} })).toThrow(
+        expect.objectContaining({ code: 'nao_suportado', message: expect.stringContaining('antesDeConectar') }),
+      );
+    } finally {
+      delete g.Deno;
+    }
+  });
 });

@@ -36,6 +36,55 @@ export interface TransporteNodeOpcoes extends TransporteOpcoes {
   readonly sigalgs?: string;
   /** Padrão: `true` (pool keep-alive por host). */
   readonly manterConexao?: boolean;
+  /**
+   * Chamado de forma síncrona a cada conexão nova, dentro do `createConnection` do Agent do transporte: depois da
+   * política e de toda a preparação assíncrona do pedido, e imediatamente antes de abrir o socket, sem nenhum `await`
+   * no meio. Serve para conferir algo que precisa valer no instante em que a conexão sai, como a vaga de um limite de
+   * chamadas por minuto.
+   *
+   * - Se lançar, nada vai para a rede (o socket nem é criado) e o `enviar` rejeita com o mesmo valor lançado, sem
+   *   passar por `classificarFalhaDeTransporte`, como a recusa de uma `PoliticaDeHosts`: quem chama reconhece o próprio
+   *   erro. Na auditoria, um erro que não é `ErroSinete` sai com `codigoDoErro: 'desconhecido'`.
+   * - Com `manterConexao: true` (o padrão), um envio que reaproveita um socket do pool não abre conexão e não chama o
+   *   gancho. Para conferir a cada envio, use `manterConexao: false`.
+   * - Só a identidade `pem` abre a conexão no processo. Com a identidade `helper` quem conecta é o `sinete-signer`, e
+   *   `criarTransporteNode` lança `ErroDeConfiguracao`; no Deno, `criarTransporte` lança `ErroNaoSuportado`.
+   */
+  readonly antesDeConectar?: () => void;
+}
+
+/** O que o gancho `antesDeConectar` lançou, levado até o `enviar` sem passar pelo classificador de falhas de rede. */
+class RecusaAntesDeConectar extends Error {
+  readonly lancado: unknown;
+  constructor(lancado: unknown) {
+    super('antesDeConectar recusou a conexão');
+    this.lancado = lancado;
+  }
+}
+
+/** Agent que chama o gancho antes de cada conexão nova. Os sockets reaproveitados do pool não passam por aqui. */
+class AgentComGancho extends https.Agent {
+  readonly #antesDeConectar: () => void;
+  constructor(opcoes: https.AgentOptions, antesDeConectar: () => void) {
+    super(opcoes);
+    this.#antesDeConectar = antesDeConectar;
+  }
+  override createConnection(
+    ...args: Parameters<https.Agent['createConnection']>
+  ): ReturnType<https.Agent['createConnection']> {
+    try {
+      this.#antesDeConectar();
+    } catch (e) {
+      const recusa = new RecusaAntesDeConectar(e);
+      // Pelo callback, Node e Bun entregam a falha como 'error' da requisição, inclusive se o Agent abrir a conexão
+      // fora da chamada síncrona do `https.request`; sem callback, a exceção sai do próprio `https.request`.
+      const [, callback] = args;
+      if (typeof callback !== 'function') throw recusa;
+      (callback as (erro: Error) => void)(recusa);
+      return undefined;
+    }
+    return super.createConnection(...args);
+  }
 }
 
 interface LocalCert {
@@ -85,12 +134,18 @@ export function criarTransporteNode(opcoes: TransporteNodeOpcoes): Transporte {
     conferenciaDoCertificadoLocal: true,
   };
   const id = opcoes.identidade;
+  const antesDeConectar = opcoes.antesDeConectar;
+  if (antesDeConectar !== undefined && id.tipo !== 'pem') {
+    throw new ErroDeConfiguracao(
+      `antesDeConectar só vale para a identidade pem: com a identidade ${id.tipo}, quem abre a conexão é o sinete-signer`,
+    );
+  }
   let agent: https.Agent | undefined;
   let expectedLeaf: Uint8Array | undefined;
   if (id.tipo === 'pem') {
     expectedLeaf = dersDoPem(id.cadeia)[0];
     if (!expectedLeaf) throw new ErroDeConfiguracao('identidade pem sem certificado');
-    agent = new https.Agent({
+    const agentOptions: https.AgentOptions = {
       keepAlive: opcoes.manterConexao ?? true,
       cert: id.cadeia,
       key: id.chave,
@@ -99,7 +154,9 @@ export function criarTransporteNode(opcoes: TransporteNodeOpcoes): Transporte {
       rejectUnauthorized: true,
       minVersion: 'TLSv1.2',
       ...(opcoes.sigalgs === undefined ? {} : { sigalgs: opcoes.sigalgs, maxVersion: 'TLSv1.2' as const }),
-    });
+    };
+    agent =
+      antesDeConectar === undefined ? new https.Agent(agentOptions) : new AgentComGancho(agentOptions, antesDeConectar);
   }
   let closed = false;
 
@@ -115,6 +172,8 @@ export function criarTransporteNode(opcoes: TransporteNodeOpcoes): Transporte {
         retomada: undefined,
       };
       let settled = false;
+      const classify = (e: unknown): unknown =>
+        e instanceof RecusaAntesDeConectar ? e.lancado : classificarFalhaDeTransporte(e, { host: prepared.host });
       // Prazo total da requisição. O `timeout` do https.request é só de inatividade do socket: um servidor que pinga
       // pedaços da resposta o manteria vivo para sempre.
       let deadline: ReturnType<typeof setTimeout> | undefined;
@@ -156,7 +215,7 @@ export function criarTransporteNode(opcoes: TransporteNodeOpcoes): Transporte {
         );
       } catch (e) {
         // Identidade inválida (chave que não casa com o certificado, PEM corrompido) estoura aqui, ao criar o contexto.
-        fail(classificarFalhaDeTransporte(e, { host: prepared.host }));
+        fail(classify(e));
         return;
       }
       // Lido logo depois do handshake: com `connection: close` o socket já foi destruído quando a resposta termina.
@@ -197,7 +256,7 @@ export function criarTransporteNode(opcoes: TransporteNodeOpcoes): Transporte {
       if (signal?.aborted) onAbort();
       signal?.addEventListener('abort', onAbort, { once: true });
       req.on('close', () => signal?.removeEventListener('abort', onAbort));
-      req.on('error', (e) => fail(classificarFalhaDeTransporte(e, { host: prepared.host })));
+      req.on('error', (e) => fail(classify(e)));
       req.end(prepared.body);
     });
   }

@@ -51,6 +51,13 @@ export function criarTransporteDeno(opcoes: TransporteDenoOpcoes): Transporte {
   if (!deno || typeof deno.createHttpClient !== 'function') {
     throw new ErroNaoSuportado('Deno.createHttpClient não existe nesta runtime');
   }
+  // Opção do transporte Node e Bun que chega aqui pelo `criarTransporte` da entrada `node`. Ao contrário de `sigalgs` ou
+  // `manterConexao`, ignorá-la deixaria sair sem a conferência que o chamador pôs antes da rede.
+  if ((opcoes as { readonly antesDeConectar?: unknown }).antesDeConectar !== undefined) {
+    throw new ErroNaoSuportado(
+      'antesDeConectar não existe no transporte do Deno: o Deno.createHttpClient não expõe a abertura da conexão',
+    );
+  }
   const id = opcoes.identidade;
   const client =
     id.tipo === 'pem'
