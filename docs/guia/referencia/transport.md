@@ -70,7 +70,7 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `SoapFault`: Membros: `code`, `reason`.
 - `Transporte`: Membros: `capacidades`, `enviar()`, `fechar()`.
 - `TransporteDenoOpcoes` (estende `TransporteOpcoes`): Membros: `hostsDesconhecidos`, `deno`, `fetch`.
-- `TransporteNodeOpcoes` (estende `TransporteOpcoes`; só na condição `node`): Membros: `confianca`, `sigalgs`, `manterConexao`.
+- `TransporteNodeOpcoes` (estende `TransporteOpcoes`; só na condição `node`): Membros: `confianca`, `sigalgs`, `manterConexao`, `antesDeConectar`.
 - `TransporteOpcoes`: Opções comuns às implementações. Membros: `identidade`, `politica`, `acsAdicionais`, `timeoutMs`, `recusarEm403`, `logger`, `auditoria`.
 - `UrlsConsultaNfce`: URLs públicas da NFC-e por UF, só onde a tabela oficial de web services as publica. Membros: `qrCode`, `consultaChave`, `fonte`.
 

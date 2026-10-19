@@ -88,7 +88,7 @@ export { conferirCertificadoLocal, criarTransporteNode } from './transport.node.
 /**
  * Cria o transporte da runtime atual: `node:https` em Node e Bun, `Deno.createHttpClient` no Deno. As opções de
  * Node (`confianca`, `sigalgs`, `manterConexao`) são ignoradas no Deno, que não tem esses ajustes; `hostsDesconhecidos` só vale no
- * Deno.
+ * Deno. `antesDeConectar` não é ignorada: no Deno, lança `ErroNaoSuportado`.
  */
 export function criarTransporte(opcoes: CriarTransporteOpcoes & TransporteNodeOpcoes): Transporte {
   if (detectarRuntime() === 'deno') return criarTransporteDeno(opcoes);

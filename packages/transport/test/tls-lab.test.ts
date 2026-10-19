@@ -174,6 +174,20 @@ describe.skipIf(!openssl)('laboratório TLS', () => {
       expect(log).not.toContain('Cipher is');
     });
 
+    test('antesDeConectar que lança: nada sai e o erro chega intacto; no Deno, recusa na criação', async () => {
+      // Servidor de uma conexão só: o segundo envio só passa se o vetado não chegou a conectar.
+      const srv = await wwwServer(pki, handshakeArgs());
+      const r = await run(runtime, { ...base, url: `${srv.url}/`, vetarPrimeiraConexao: true });
+      if (nodeLike) {
+        await srv.finished(1000);
+        expect(r.error).toBeUndefined();
+        expect(r).toMatchObject({ vetoIntacto: true, ganchos: 2, status: 200 });
+      } else {
+        srv.stop();
+        expect(r.error).toMatchObject({ code: 'nao_suportado' });
+      }
+    });
+
     test('PFX legado (RC2-40 + 3DES) lido em JS e apresentado no TLS', async () => {
       if (!pki.clientPfxLegacy) return;
       const pfx = { pfxB64: codificarBase64(pki.clientPfxLegacy), password: 'lab', additionalCa: [pki.caPem] };

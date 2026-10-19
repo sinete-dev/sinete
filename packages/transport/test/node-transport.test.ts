@@ -302,6 +302,129 @@ describe.skipIf(!openssl)('transporte node:https', () => {
     await t.fechar();
   });
 
+  describe('antesDeConectar', () => {
+    /** Servidor HTTP/1.1 keep-alive sobre TLS que conta as conexões TCP aceitas. */
+    async function servidorQueConta(): Promise<{ url: string; conexoes: () => number }> {
+      let n = 0;
+      const srv = tls.createServer({ ...serverPem }, (s) => {
+        s.on('data', () => s.write('HTTP/1.1 200 OK\r\ncontent-length: 2\r\nconnection: keep-alive\r\n\r\nok'));
+        s.on('error', () => {});
+      });
+      srv.on('connection', () => n++);
+      servers.push({ stop: () => srv.close() });
+      const url = await new Promise<string>((resolve) => {
+        srv.listen(0, '127.0.0.1', () => resolve(`https://127.0.0.1:${(srv.address() as { port: number }).port}`));
+      });
+      return { url, conexoes: () => n };
+    }
+
+    class RecusaDoChamador extends Error {}
+
+    test('o erro do gancho chega intacto ao chamador, sem virar código de rede', async () => {
+      const { url } = await servidorQueConta();
+      // A mensagem tem o texto que o classificador leria como conexao_recusada: só passa se ninguém o reclassificar.
+      const recusa = new RecusaDoChamador('ECONNRESET: vaga do minuto esgotada');
+      const events: EventoDeAuditoria[] = [];
+      const t = criarTransporteNode({
+        identidade: identity(),
+        acsAdicionais: [pki.caPem],
+        auditoria: (e) => events.push(e),
+        antesDeConectar: () => {
+          throw recusa;
+        },
+      });
+      await expect(t.enviar({ url })).rejects.toBe(recusa);
+      expect(events[0]).toMatchObject({ status: undefined, codigoDoErro: 'desconhecido' });
+      await t.fechar();
+    });
+
+    test('gancho que lança: o servidor não recebe a conexão', async () => {
+      const srv = await servidorQueConta();
+      let vetar = true;
+      const t = criarTransporteNode({
+        identidade: identity(),
+        acsAdicionais: [pki.caPem],
+        manterConexao: false,
+        antesDeConectar: () => {
+          if (vetar) throw new RecusaDoChamador('sem vaga');
+        },
+      });
+      await expect(t.enviar({ url: srv.url })).rejects.toBeInstanceOf(RecusaDoChamador);
+      vetar = false;
+      // A conexão do envio seguinte chega ao servidor; uma tentativa vetada teria chegado antes dela.
+      expect((await t.enviar({ url: srv.url })).texto()).toBe('ok');
+      expect(srv.conexoes()).toBe(1);
+      await t.fechar();
+    });
+
+    test('roda depois da preparação assíncrona (política) e antes da conexão', async () => {
+      const srv = await servidorQueConta();
+      const ordem: string[] = [];
+      const t = criarTransporteNode({
+        identidade: identity(),
+        acsAdicionais: [pki.caPem],
+        politica: {
+          async conferir() {
+            await Promise.resolve();
+            ordem.push('politica');
+          },
+        },
+        antesDeConectar: () => ordem.push(`gancho com ${srv.conexoes()} conexões`),
+      });
+      await t.enviar({ url: srv.url });
+      expect(ordem).toEqual(['politica', 'gancho com 0 conexões']);
+      expect(srv.conexoes()).toBe(1);
+      await t.fechar();
+    });
+
+    test('manterConexao: false chama o gancho uma vez em cada conexão nova', async () => {
+      const srv = await servidorQueConta();
+      let chamadas = 0;
+      const t = criarTransporteNode({
+        identidade: identity(),
+        acsAdicionais: [pki.caPem],
+        manterConexao: false,
+        antesDeConectar: () => void chamadas++,
+      });
+      for (let i = 0; i < 3; i++) await t.enviar({ url: srv.url });
+      expect(srv.conexoes()).toBe(3);
+      expect(chamadas).toBe(3);
+      await t.fechar();
+    });
+
+    test('socket reaproveitado do pool não chama o gancho', async () => {
+      const srv = await servidorQueConta();
+      let chamadas = 0;
+      const t = criarTransporteNode({
+        identidade: identity(),
+        acsAdicionais: [pki.caPem],
+        antesDeConectar: () => void chamadas++,
+      });
+      for (let i = 0; i < 3; i++) await t.enviar({ url: srv.url });
+      expect(srv.conexoes()).toBe(1);
+      expect(chamadas).toBe(1);
+      await t.fechar();
+    });
+
+    test('identidade helper recusa o gancho na criação em vez de ignorá-lo', () => {
+      const helper: HelperTlsExterno = {
+        versaoDoProtocolo: 1,
+        enviar: async () => {
+          throw new Error('não deveria enviar');
+        },
+        fechar: async () => {},
+      };
+      expect(() =>
+        criarTransporte({
+          identidade: { tipo: 'helper', helper, identidade: 'a3-token' },
+          antesDeConectar: () => {},
+        }),
+      ).toThrow(
+        expect.objectContaining({ code: 'config_invalida', message: expect.stringContaining('antesDeConectar') }),
+      );
+    });
+  });
+
   // TLS 1.2: o alerta chega como erro. No TLS 1.3 o Bun só fecha o socket (vira conexao_recusada no transporte).
   test.each(['-tls1_2'])('cliente sem certificado contra servidor que exige (%s)', async (version) => {
     const srv = await wwwServer(pki, [
