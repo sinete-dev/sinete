@@ -1,5 +1,5 @@
 // Spike S2 parte 2: carrega o e-CNPJ A1 real SÓ em memória.
-// Lê via op-agentes (spawn sem shell; o segredo nunca vai para argv/env de outro processo),
+// Lê via vw-agentes (spawn sem shell; o segredo nunca vai para argv/env de outro processo),
 // abre o PFX legado (RC2-40 + 3DES) com node-forge e devolve PEM em memória.
 // Nunca grava, nunca imprime chave, PFX, PEM ou senha.
 import { spawnSync } from "node:child_process";
@@ -8,17 +8,18 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import forge from "node-forge";
 
-const ITEM = "op://Agentes/6zjnde57clgjg55q4bohsjoqie";
+// Item "Certificado digital e-CNPJ A1 fazer.ai" no Vaultwarden, pelo id (o nome tem parênteses).
+const ITEM = "vw://Agentes/2c8f9123-b32a-422e-a87d-5d4436f53bdc";
 const HERE = new URL(".", import.meta.url).pathname;
 
-function opRead(field: string): string {
-  const r = spawnSync("op-agentes", ["read", `${ITEM}/${field}`], {
+function lerSegredo(field: string): string {
+  const r = spawnSync("vw-agentes", ["read", `${ITEM}/${field}`], {
     encoding: "utf8",
-    env: { ...process.env, OP_AGENTES_NO_CACHE: "1" },
+    env: { ...process.env, VW_AGENTES_NO_CACHE: "1" },
     stdio: ["ignore", "pipe", "pipe"],
     maxBuffer: 1 << 22,
   });
-  if (r.status !== 0) throw new Error(`op-agentes falhou (${field}): status ${r.status}; ${String(r.stderr).replace(/[^\x20-\x7e]/g, "").slice(0, 200)}`);
+  if (r.status !== 0) throw new Error(`vw-agentes falhou (${field}): status ${r.status}; ${String(r.stderr).replace(/[^\x20-\x7e]/g, "").slice(0, 200)}`);
   return r.stdout;
 }
 
@@ -55,8 +56,8 @@ function icpCatalog(): X509Certificate[] {
 }
 
 export function loadCert(): LoadedCert {
-  const b64 = opRead("pfx_base64").replace(/\s+/g, "");
-  const pass = opRead("senha").replace(/\r?\n$/, "");
+  const b64 = lerSegredo("pfx_base64").replace(/\s+/g, "");
+  const pass = lerSegredo("senha").replace(/\r?\n$/, "");
   const der = forge.util.decode64(b64);
   const p12 = forge.pkcs12.pkcs12FromAsn1(forge.asn1.fromDer(der, { parseAllBytes: false }) /* o base64 do cofre traz 1 byte extra no fim */, false, pass);
   const keyBags = p12.getBags({ bagType: forge.pki.oids.pkcs8ShroudedKeyBag })[forge.pki.oids.pkcs8ShroudedKeyBag] ?? [];
