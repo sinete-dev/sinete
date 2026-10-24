@@ -1,8 +1,8 @@
 /**
  * Abre o A1 do operador só em memória, pelo `@sinete/cert`. Duas origens:
  *
- * - `--op <referência>`: lê os campos `pfx_base64` e `senha` do item com a CLI do 1Password (`--op-bin`, padrão `op`),
- *   por spawn sem shell. O segredo volta pelo stdout do filho e nunca passa por argv, env de outro processo ou disco.
+ * - `--op <referência>`: lê os campos `pfx_base64` e `senha` do item com o leitor de segredos, por spawn sem shell. A referência escolhe o leitor
+ *   (`--op-bin` sobrepõe): `vw://cofre/item` usa `vw-agentes` (Vaultwarden); `op://cofre/item` usa `op` (1Password). O segredo volta pelo stdout do filho e nunca passa por argv, env de outro processo ou disco.
  * - `--pfx <arquivo>`: lê o PFX do disco (o do operador) e a senha da variável de `--senha-env` (padrão
  *   `SINETE_PFX_SENHA`), como o `sinete doctor`.
  *
@@ -35,10 +35,15 @@ export interface Certificado {
   readonly extras: readonly CertificadoX509[];
 }
 
+/** Leitor padrão pelo esquema da referência: `vw://` é o `vw-agentes`; qualquer outra (`op://`) segue o `op`. */
+export function leitorPadrao(ref: string): string {
+  return ref.startsWith('vw://') ? 'vw-agentes' : 'op';
+}
+
 function opRead(bin: string, ref: string): string {
   const r = spawnSync(bin, ['read', ref], {
     encoding: 'utf8',
-    env: { ...process.env, OP_AGENTES_NO_CACHE: '1' },
+    env: { ...process.env, OP_AGENTES_NO_CACHE: '1', VW_AGENTES_NO_CACHE: '1' },
     stdio: ['ignore', 'pipe', 'pipe'],
     maxBuffer: 1 << 22,
     shell: false,
@@ -62,8 +67,8 @@ export async function abrirCertificado(o: OrigemCertificado): Promise<Certificad
   let pfx: Uint8Array;
   let senha: string;
   if (o.op !== undefined) {
-    const bin = o.opBin ?? 'op';
     const ref = o.op.replace(/\/+$/, '');
+    const bin = o.opBin ?? leitorPadrao(ref);
     pfx = base64(opRead(bin, `${ref}/pfx_base64`));
     senha = opRead(bin, `${ref}/senha`).replace(/\r?\n$/, '');
   } else if (o.pfx !== undefined) {

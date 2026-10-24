@@ -72,7 +72,7 @@ O "ECDHE-AES256-SHA384" da tabela do S2 é só a preferência do OpenSSL; esses 
 
 ### 5. SEFAZ homologação com o e-CNPJ A1 real (chave só na memória do Bun)
 
-Mesmo certificado do S2 (`CN=FAZER AI LTDA:59554465000137`, raiz v5, cadeia de 3 enviada). O PFX e a senha foram lidos só por `op-agentes` e abertos com node-forge no processo Bun (reuso de `s2-tls/real/cert.ts`). O helper recebeu só a cadeia pública em DER e rodou com env mínimo (`PATH`, `HOME`). Guarda: 14 hosts de NF-e e MDF-e homologação compilados no binário, só POST com ação `NfeStatusServico`/`MDFeStatusServico`, `tpAmb` 2. **30 usos** no total, todos no ledger (`~/.local/state/sinete/cert-usage.log`, linhas `go-helper s4`). Uma varredura em `spikes/s4-signer-tls/` fora de `.local/` não achou material de chave.
+Mesmo certificado do S2 (`CN=FAZER AI LTDA:59554465000137`, raiz v5, cadeia de 3 enviada). O PFX e a senha foram lidos só por `op-agentes` (hoje `vw-agentes`) e abertos com node-forge no processo Bun (reuso de `s2-tls/real/cert.ts`). O helper recebeu só a cadeia pública em DER e rodou com env mínimo (`PATH`, `HOME`). Guarda: 14 hosts de NF-e e MDF-e homologação compilados no binário, só POST com ação `NfeStatusServico`/`MDFeStatusServico`, `tpAmb` 2. **30 usos** no total, todos no ledger (`~/.local/state/sinete/cert-usage.log`, linhas `go-helper s4`). Uma varredura em `spikes/s4-signer-tls/` fora de `.local/` não achou material de chave.
 
 Status de serviço pelo helper, modo digest (`results/sefaz-real.json`; contagem de renegociação em `results/sefaz-real-recount.json`, porque a primeira rodada saiu com o bug de contagem do item 1):
 

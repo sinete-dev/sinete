@@ -45,8 +45,9 @@ const USO = `uso: <node|bun|deno run -A> tools/homologacao/src/run.ts <comando> 
 comandos: status | consultas | autorizacao | doctor
 
 certificado (um dos dois):
-  --op <op://cofre/item>     campos pfx_base64 e senha do item, lidos pela CLI do 1Password
-  --op-bin <bin>             executável da CLI (padrão op)
+  --op <vw://cofre/item>     campos pfx_base64 e senha do item, lidos pelo vw-agentes (Vaultwarden);
+                             também aceita op://cofre/item, lido pela CLI do 1Password
+  --op-bin <bin>             executável do leitor (padrão: vw-agentes para vw://, op para op://)
   --pfx <arquivo>            PFX do disco; senha na variável de --senha-env (padrão SINETE_PFX_SENHA)
   --cadeia <arquivo.pem>     intermediárias da AC, quando o PFX só traz a folha
 
