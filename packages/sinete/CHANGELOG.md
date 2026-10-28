@@ -1,5 +1,24 @@
 # sinete
 
+## 0.7.0
+
+### Minor Changes
+
+- 3a855bc: Subpath novo `@sinete/da/evento` (e `sinete/da/evento`) com `daEvento(xml, opcoes)`: o documento auxiliar de qualquer evento registrado, por uma chamada só. A raiz escolhe a família (`procEventoNFe` ou `procEventoMDFe`) e o `tpEvento` os campos. Na NF-e e na NFC-e: CC-e (110110, o mesmo documento do `dacce`), cancelamento (110111, com o protocolo de autorização e a justificativa) e cancelamento por substituição (110112, também com a chave da NFC-e substituta). No MDF-e: cancelamento (110111), encerramento (110112, com a data, a UF e o código IBGE do município) e inclusão de condutor (110114, com o nome e o CPF). As opções `nfe` e `mdfe`, opcionais, dão o emitente e a linha do documento. O evento precisa trazer o retorno de registro do mesmo pedido (cStat 135, 136 ou 155 na NF-e; 135, 134 ou 136 no MDF-e). Tipo sem documento auxiliar, evento não registrado e documento de outra chave ou da outra família lançam `ErroDa` com `evento_incompativel`; outra raiz, `documento_inesperado`. O `dacce` não muda: o DACCE sai byte a byte igual.
+- 58a6c3d: Opção `antesDeConectar` no transporte de Node e Bun (`TransporteNodeOpcoes`, entrada `node`): um gancho síncrono chamado a cada conexão nova, dentro do `createConnection` do Agent do próprio transporte, depois da política e de toda a preparação assíncrona e imediatamente antes de abrir o socket. Se ele lançar, nada vai para a rede e o `enviar` rejeita com o mesmo valor lançado, sem reclassificação. Um socket reaproveitado do pool (`manterConexao: true`, o padrão) não chama o gancho. Com a identidade `helper` a criação lança `ErroDeConfiguracao`, e no Deno o `criarTransporte` lança `ErroNaoSuportado`, em vez de ignorar a opção. O transporte continua sem aceitar `https.Agent` de fora.
+
+### Patch Changes
+
+- Updated dependencies [3a855bc]
+- Updated dependencies [58a6c3d]
+  - @sinete/da@0.4.0
+  - @sinete/transport@0.4.0
+  - @sinete/emissor@0.3.4
+  - @sinete/cli@0.2.3
+  - @sinete/mdfe@0.5.1
+  - @sinete/nfe@0.6.1
+  - @sinete/nfse@0.4.1
+
 ## 0.6.0
 
 ### Minor Changes

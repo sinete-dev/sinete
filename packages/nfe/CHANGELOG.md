@@ -1,5 +1,12 @@
 # @sinete/nfe
 
+## 0.6.1
+
+### Patch Changes
+
+- Updated dependencies [58a6c3d]
+  - @sinete/transport@0.4.0
+
 ## 0.6.0
 
 ### Minor Changes
