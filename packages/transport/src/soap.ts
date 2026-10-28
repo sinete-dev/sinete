@@ -50,30 +50,46 @@ export interface SoapFault {
   readonly reason: string | undefined;
 }
 
-/** Fault SOAP 1.2 (ou 1.1) da resposta, se houver. */
 /** `cStat` e `xMotivo` que a SEFAZ mandou, em qualquer elemento e namespace. */
 export interface MotivoDaSefaz {
   readonly cStat: string;
   readonly xMotivo?: string;
 }
 
-/**
- * O primeiro `cStat` (e o `xMotivo` que o acompanha) de uma resposta que não veio no formato esperado: outro elemento
- * de retorno, fora do namespace, sem o grupo do `cStat`. Lê o texto, não o XML, para valer também quando o corpo não
- * é XML bem formado. Sem `cStat`, `undefined`. Serve para o erro levar a mensagem real da SEFAZ em vez de descartá-la.
- */
-export function lerMotivoDaSefaz(corpo: string): MotivoDaSefaz | undefined {
-  const texto = (tag: string): string | undefined => {
-    const m = new RegExp(`<(?:[\\w.-]+:)?${tag}(?:\\s[^>]*)?>([^<]*)</(?:[\\w.-]+:)?${tag}>`).exec(corpo);
-    const v = m?.[1]?.replace(/\s+/g, ' ').trim();
-    return v === '' ? undefined : v;
-  };
-  const cStat = texto('cStat');
-  if (cStat === undefined) return undefined;
-  const xMotivo = texto('xMotivo');
-  return xMotivo === undefined ? { cStat } : { cStat, xMotivo };
+/** Texto de um elemento: CDATA ou texto com as entidades do XML decodificadas, espaços colapsados. */
+function textoDoElemento(cdata: string | undefined, bruto: string | undefined): string | undefined {
+  const v =
+    cdata ??
+    (bruto ?? '').replace(/&(?:#(\d+)|#x([\da-fA-F]+)|(lt|gt|amp|quot|apos));/g, (_, dec, hex, nome) => {
+      if (dec !== undefined) return String.fromCodePoint(Number(dec));
+      if (hex !== undefined) return String.fromCodePoint(Number.parseInt(hex, 16));
+      return ({ lt: '<', gt: '>', amp: '&', quot: '"', apos: "'" } as Record<string, string>)[nome];
+    });
+  const t = v.replace(/\s+/g, ' ').trim();
+  return t === '' ? undefined : t;
 }
 
+/**
+ * O primeiro `cStat` de uma resposta que não veio no formato esperado (outro elemento de retorno, fora do namespace,
+ * sem o grupo do `cStat`), com o `xMotivo` do mesmo grupo: só o que vem logo depois dele, como no leiaute, para nunca
+ * juntar o status de um grupo com o motivo de outro. Lê o texto, não o XML, para valer também quando o corpo não é XML
+ * bem formado; aceita CDATA e decodifica as entidades. Sem `cStat`, `undefined`. Serve para o erro levar a mensagem
+ * real da SEFAZ em vez de descartá-la.
+ */
+export function lerMotivoDaSefaz(corpo: string): MotivoDaSefaz | undefined {
+  const valor = '(?:<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>|([^<]*))';
+  const el = (tag: string): string => `<(?:[\\w.-]+:)?${tag}(?:\\s[^>]*)?>${valor}</(?:[\\w.-]+:)?${tag}>`;
+  const re = new RegExp(`${el('cStat')}(?:\\s*${el('xMotivo')})?`, 'g');
+  for (const m of corpo.matchAll(re)) {
+    const cStat = textoDoElemento(m[1], m[2]);
+    if (cStat === undefined) continue;
+    const xMotivo = m[3] === undefined && m[4] === undefined ? undefined : textoDoElemento(m[3], m[4]);
+    return xMotivo === undefined ? { cStat } : { cStat, xMotivo };
+  }
+  return undefined;
+}
+
+/** Fault SOAP 1.2 (ou 1.1) da resposta, se houver. */
 export function lerSoapFault(envelope: string): SoapFault | undefined {
   if (!/<(?:[\w.-]+:)?Fault[\s>]/.test(envelope)) return undefined;
   const text = (tag: string): string | undefined => {

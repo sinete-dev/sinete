@@ -28,4 +28,32 @@ describe('lerMotivoDaSefaz', () => {
   test('cStat sem xMotivo', () => {
     expect(lerMotivoDaSefaz('<ret><cStat>108</cStat></ret>')).toEqual({ cStat: '108' });
   });
+
+  test('CDATA e entidades decodificadas', () => {
+    expect(
+      lerMotivoDaSefaz(
+        '<ret><cStat><![CDATA[225]]></cStat><xMotivo><![CDATA[Rejeicao: Falha no Schema <x>]]></xMotivo></ret>',
+      ),
+    ).toEqual({
+      cStat: '225',
+      xMotivo: 'Rejeicao: Falha no Schema <x>',
+    });
+    expect(
+      lerMotivoDaSefaz('<ret><cStat>225</cStat><xMotivo>Falha &lt;x&gt; &amp; &#233;&#xE7;</xMotivo></ret>'),
+    ).toEqual({
+      cStat: '225',
+      xMotivo: 'Falha <x> & éç',
+    });
+  });
+
+  test('o motivo é só o do mesmo grupo do cStat, nunca de outro', () => {
+    expect(
+      lerMotivoDaSefaz(
+        '<ret><xMotivo>Lote processado</xMotivo><prot><cStat>302</cStat><xMotivo>Uso denegado</xMotivo></prot></ret>',
+      ),
+    ).toEqual({ cStat: '302', xMotivo: 'Uso denegado' });
+    expect(lerMotivoDaSefaz('<ret><cStat>302</cStat><outro>x</outro><xMotivo>Uso denegado</xMotivo></ret>')).toEqual({
+      cStat: '302',
+    });
+  });
 });
