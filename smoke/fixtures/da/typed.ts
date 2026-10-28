@@ -2,6 +2,8 @@
 import type { CodigoErroDa, Documento, EstatisticasDeEncaixe, Op, Pagina } from '@sinete/da';
 import type { DanfeOpcoes, FormatoDanfe } from '@sinete/da/nfe';
 import { dacce } from '@sinete/da/cce';
+import type { DaEventoOpcoes } from '@sinete/da/evento';
+import { daEvento } from '@sinete/da/evento';
 import type { DamdfeOpcoes } from '@sinete/da/mdfe';
 import { damdfe } from '@sinete/da/mdfe';
 import type { DanfceOpcoes } from '@sinete/da/nfce';
@@ -23,6 +25,8 @@ const f: FormatoDanfe = 'simplificado-tipo2';
 const code: CodigoErroDa = 'campo_ausente';
 const m: Documento = damdfe('<mdfeProc/>', { documentos: true, cancelado: false });
 const c: Documento = dacce('<procEventoNFe/>', { nfe: '<nfeProc/>' });
+const eOpts: DaEventoOpcoes = { mdfe: '<mdfeProc/>', logo: new Uint8Array() };
+const ev: Documento = daEvento('<procEventoMDFe/>', eOpts);
 const nfceOpts: DanfceOpcoes = { largura: 58, cancelamento: true };
 const nc: Documento = danfce('<nfeProc/>', nfceOpts);
 const mOpts: DamdfeOpcoes = { documentos: false };
@@ -30,4 +34,4 @@ const sOpts: DanfseOpcoes = { cancelamento: true, canhoto: false, nomeMunicipio:
 const ns: Documento = danfse('<NFSe/>', sOpts);
 // @ts-expect-error formato fora da lista
 const bad: FormatoDanfe = 'a5';
-void [ops, pdf, html, svg, stats, f, code, m, c, nc, mOpts, ns, bad];
+void [ops, pdf, html, svg, stats, f, code, m, c, ev, nc, mOpts, ns, bad];

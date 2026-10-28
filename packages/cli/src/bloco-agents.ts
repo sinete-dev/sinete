@@ -35,7 +35,7 @@ Este projeto usa o sinete (DF-e brasileiros em TypeScript: NF-e, NFC-e, MDF-e, N
 - \`sinete/nfe/ibs-cbs\`: motor do IBS/CBS reexportado (\`determinar\`, \`calcular\`, \`validar\`, \`aliquotasOficiais\`)
 - \`sinete/mdfe\`: \`DadosMdfe\`, \`montarMdfe\`, \`assinarMdfe\`, \`criarClienteMdfe\` (\`.encerrar()\`, \`.consultarNaoEncerrados()\`), \`conferirPercurso\`, \`sugerirPercurso\`, \`prazoContingencia\`, \`rotuloDoCaminho\`
 - \`sinete/nfse\`: \`DadosDps\`, \`montarDps\`, \`assinarDps\`, \`criarClienteNfse\` (\`.consultarDps()\`, \`.solicitarAnaliseFiscal()\`), \`resolverEnvioSemResposta\`, \`recuperarEventoRegistrado\`, \`rotuloDoCaminho\`
-- \`sinete/da/nfe\`: \`danfe\`, \`gerarPdf\`, \`gerarHtml\`; \`sinete/da/nfce\`: \`danfce\`; \`sinete/da/mdfe\`: \`damdfe\`; \`sinete/da/nfse\`: \`danfse\`; \`sinete/da/cce\`: \`dacce\`
+- \`sinete/da/nfe\`: \`danfe\`, \`gerarPdf\`, \`gerarHtml\`; \`sinete/da/nfce\`: \`danfce\`; \`sinete/da/mdfe\`: \`damdfe\`; \`sinete/da/nfse\`: \`danfse\`; \`sinete/da/cce\`: \`dacce\`; \`sinete/da/evento\`: \`daEvento\` (PDF de qualquer evento registrado)
 - \`sinete/ibs-cbs\`: \`calcular\`, \`validar\`, \`determinar\`, \`aliquotasOficiais\`, \`comAliquotasInformadas\`
 - \`sinete/ibs-cbs-dados\`: \`carregarDataset\`, \`conferirDataset\`; \`/embarcado\`: \`datasetEmbarcado\`
 - \`sinete/cert\`: \`abrirPfx\`, \`montarCadeia\`, \`criarAssinadorA1\`

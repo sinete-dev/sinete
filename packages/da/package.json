@@ -1,7 +1,7 @@
 {
   "name": "@sinete/da",
   "version": "0.3.0",
-  "description": "Documentos auxiliares dos DF-e em PDF e HTML/SVG a partir do XML autorizado, com um subpath por documento: DANFE da NF-e (retrato, paisagem, Simplificado, Etiqueta e Simplificado Tipo 2), DANFC-e (DANFE NFC-e), DAMDFE, DACCe e DANFSe v2 (NT 008/2026), com o DACTE previsto. Determinístico e sem dependência nativa",
+  "description": "Documentos auxiliares dos DF-e em PDF e HTML/SVG a partir do XML autorizado, com um subpath por documento: DANFE da NF-e (retrato, paisagem, Simplificado, Etiqueta e Simplificado Tipo 2), DANFC-e (DANFE NFC-e), DAMDFE, DACCe, o documento dos demais eventos registrados da NF-e e do MDF-e e DANFSe v2 (NT 008/2026), com o DACTE previsto. Determinístico e sem dependência nativa",
   "keywords": [
     "danfe",
     "danfce",
@@ -14,6 +14,7 @@
     "nfce",
     "mdfe",
     "cce",
+    "evento",
     "cte",
     "nfse",
     "pdf",
@@ -45,6 +46,10 @@
     "./cce": {
       "types": "./dist/cce.d.ts",
       "default": "./dist/cce.js"
+    },
+    "./evento": {
+      "types": "./dist/evento.d.ts",
+      "default": "./dist/evento.js"
     },
     "./nfse": {
       "types": "./dist/nfse.d.ts",

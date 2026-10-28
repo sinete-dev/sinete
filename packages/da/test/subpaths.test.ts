@@ -51,6 +51,10 @@ const ESPERADO: Record<string, { tem: Marca[]; naoTem: Marca[] }> = {
     tem: ['schemaNfe'],
     naoTem: ['a4', 'leiauteA4', 'simplificado', 'bobina', 'damdfe', 'danfse', 'schemaMdfe', 'schemaNfse'],
   },
+  'evento.ts': {
+    tem: ['schemaNfe', 'schemaMdfe'],
+    naoTem: ['a4', 'leiauteA4', 'simplificado', 'bobina', 'damdfe', 'danfse', 'schemaNfse'],
+  },
   'nfse.ts': {
     tem: ['danfse', 'schemaNfse'],
     naoTem: ['a4', 'leiauteA4', 'simplificado', 'bobina', 'damdfe', 'schemaNfe', 'schemaMdfe'],

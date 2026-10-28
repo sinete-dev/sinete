@@ -4,6 +4,7 @@
  * (NT 2026.004); o `detEvento` de cada tipo vem do módulo do próprio evento.
  */
 
+import type { DocumentoXml } from '@sinete/core/xml';
 import { procEventoNFeElement as cancElement } from '@sinete/schemas/nfe/evento-cancelamento/PL_010d';
 import { procEventoNFeElement as cancSubstElement } from '@sinete/schemas/nfe/evento-cancelamento-substituicao/PL_010d';
 import { procEventoNFeElement as cceElement } from '@sinete/schemas/nfe/evento-cce/PL_010d';
@@ -25,6 +26,10 @@ export interface EventoView {
     readonly xMotivo: string;
     readonly nProt: string;
     readonly dhRegEvento: string;
+    /** Chave, tipo e sequência do retorno, para conferir que ele é deste pedido. */
+    readonly chNFe: string;
+    readonly tpEvento: string;
+    readonly nSeqEvento: string;
   };
 }
 
@@ -33,7 +38,11 @@ export interface EventoView {
  * evento de outro tipo é `evento_incompativel`.
  */
 export function readEvento(xml: string, tipos: readonly string[]): EventoView {
-  const doc = parse(xml);
+  return lerEvento(parse(xml), tipos);
+}
+
+/** `readEvento` sobre o XML já lido, para quem decide a família do evento pela raiz. */
+export function lerEvento(doc: DocumentoXml, tipos: readonly string[]): EventoView {
   // O envelope é o mesmo nos três módulos: a primeira leitura só descobre o tipo, que escolhe o módulo do detEvento.
   const envelope = decodeAs<Rec>(doc, [cancElement as never], 'procEventoNFe').value;
   const tp = str((envelope.evento as Rec | undefined)?.infEvento as Rec | undefined, 'tpEvento');
@@ -63,6 +72,9 @@ export function readEvento(xml: string, tipos: readonly string[]): EventoView {
             xMotivo: str(ret, 'xMotivo') ?? '',
             nProt: str(ret, 'nProt') ?? '',
             dhRegEvento: str(ret, 'dhRegEvento') ?? '',
+            chNFe: str(ret, 'chNFe') ?? '',
+            tpEvento: str(ret, 'tpEvento') ?? '',
+            nSeqEvento: str(ret, 'nSeqEvento') ?? '',
           },
         }
       : {}),

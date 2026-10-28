@@ -150,6 +150,25 @@ export function eventoXml(o: {
   return `<?xml version="1.0" encoding="UTF-8"?><procEventoNFe xmlns="http://www.portalfiscal.inf.br/nfe" versao="1.00"><evento versao="1.00"><infEvento Id="${id}"><cOrgao>35</cOrgao><tpAmb>${tpAmb}</tpAmb><CNPJ>${EMIT_CNPJ}</CNPJ><chNFe>${o.chave}</chNFe><dhEvento>2026-09-02T09:00:00-03:00</dhEvento><tpEvento>${o.tpEvento}</tpEvento><nSeqEvento>1</nSeqEvento><verEvento>1.00</verEvento>${det}</infEvento></evento><retEvento versao="1.00"><infEvento><tpAmb>${tpAmb}</tpAmb><verAplic>SP_EVENTOS</verAplic><cOrgao>35</cOrgao><cStat>${o.cStat ?? '135'}</cStat><xMotivo>Evento registrado e vinculado a NF-e</xMotivo><chNFe>${o.chave}</chNFe><tpEvento>${o.tpEvento}</tpEvento><nSeqEvento>1</nSeqEvento><dhRegEvento>2026-09-02T09:00:05-03:00</dhRegEvento><nProt>135260000000099</nProt></infEvento></retEvento></procEventoNFe>`;
 }
 
+/** `procEventoMDFe` registrado do cancelamento (110111), do encerramento (110112) ou da inclusão de condutor (110114). */
+export function eventoMdfeXml(o: {
+  tpEvento: '110111' | '110112' | '110114';
+  chave: string;
+  tpAmb?: string;
+  cStat?: string;
+  indEncPorTerceiro?: boolean;
+}): string {
+  const tpAmb = o.tpAmb ?? '1';
+  const det =
+    o.tpEvento === '110111'
+      ? '<evCancMDFe><descEvento>Cancelamento</descEvento><nProt>935260000000001</nProt><xJust>CANCELAMENTO DE TESTE DO MANIFESTO SINTETICO</xJust></evCancMDFe>'
+      : o.tpEvento === '110112'
+        ? `<evEncMDFe><descEvento>Encerramento</descEvento><nProt>935260000000001</nProt><dtEnc>2026-09-05</dtEnc><cUF>33</cUF><cMun>3304557</cMun>${o.indEncPorTerceiro ? '<indEncPorTerceiro>1</indEncPorTerceiro>' : ''}</evEncMDFe>`
+        : '<evIncCondutorMDFe><descEvento>Inclusao Condutor</descEvento><condutor><xNome>MOTORISTA FICTICIO TRES</xNome><CPF>11144477735</CPF></condutor></evIncCondutorMDFe>';
+  const xEvento = { '110111': 'Cancelamento', '110112': 'Encerramento', '110114': 'Inclusao Condutor' }[o.tpEvento];
+  return `<?xml version="1.0" encoding="UTF-8"?><procEventoMDFe xmlns="http://www.portalfiscal.inf.br/mdfe" versao="3.00"><eventoMDFe versao="3.00"><infEvento Id="ID${o.tpEvento}${o.chave}001"><cOrgao>35</cOrgao><tpAmb>${tpAmb}</tpAmb><CNPJ>${EMIT_CNPJ}</CNPJ><chMDFe>${o.chave}</chMDFe><dhEvento>2026-09-05T17:00:00-03:00</dhEvento><tpEvento>${o.tpEvento}</tpEvento><nSeqEvento>1</nSeqEvento><detEvento versaoEvento="3.00">${det}</detEvento></infEvento></eventoMDFe><retEventoMDFe versao="3.00"><infEvento><tpAmb>${tpAmb}</tpAmb><verAplic>SVRS</verAplic><cOrgao>35</cOrgao><cStat>${o.cStat ?? '135'}</cStat><xMotivo>Evento registrado e vinculado ao MDF-e</xMotivo><chMDFe>${o.chave}</chMDFe><tpEvento>${o.tpEvento}</tpEvento><xEvento>${xEvento}</xEvento><nSeqEvento>1</nSeqEvento><dhRegEvento>2026-09-05T17:00:04-03:00</dhRegEvento><nProt>935260000000088</nProt></infEvento></retEventoMDFe></procEventoMDFe>`;
+}
+
 export interface MdfeFx {
   readonly name: string;
   readonly modal?: '1' | '2' | '3' | '4';

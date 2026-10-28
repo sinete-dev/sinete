@@ -3,6 +3,7 @@
 import { ehErroSinete } from '@sinete/core';
 import { code128C, ErroDa, matrizQr, gerarHtml, gerarPdf, gerarSvg } from '@sinete/da';
 import { dacce } from '@sinete/da/cce';
+import { daEvento, gerarPdf as toPdfEvento } from '@sinete/da/evento';
 import { damdfe } from '@sinete/da/mdfe';
 import { danfce, gerarPdf as toPdfNfce } from '@sinete/da/nfce';
 import { danfe } from '@sinete/da/nfe';
@@ -46,6 +47,14 @@ export async function runChecks() {
     err2 = e;
   }
   expect('dacce recusa nfeProc', ehErroSinete(err2, 'documento_inesperado'));
+  let errEvento;
+  try {
+    daEvento(MDFE);
+  } catch (e) {
+    errEvento = e;
+  }
+  expect('daEvento recusa mdfeProc', ehErroSinete(errEvento, 'documento_inesperado'));
+  expect('renderizador reexportado em /evento é o mesmo', toPdfEvento === gerarPdf);
   let err3;
   try {
     danfse(NFE);

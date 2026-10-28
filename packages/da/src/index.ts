@@ -2,7 +2,7 @@
  * `@sinete/da`: documentos auxiliares dos DF-e a partir do XML autorizado (ADR 0006). A raiz tem o que é comum a todos
  * (renderizadores, modelo do documento, códigos de barras e erros); cada documento está no próprio subpath, para que
  * quem importa um não leve ao bundle o layout dos outros: `@sinete/da/nfe` (DANFE), `@sinete/da/nfce` (DANFE NFC-e),
- * `@sinete/da/mdfe` (DAMDFE) e `@sinete/da/cce` (DACCE).
+ * `@sinete/da/mdfe` (DAMDFE), `@sinete/da/cce` (DACCE) e `@sinete/da/evento` (qualquer evento registrado).
  *
  * O layout é uma função pura do XML para um `Documento` (páginas de operações em mm); `gerarPdf` e `gerarHtml`/`gerarSvg` só
  * desenham. A mesma entrada gera os mesmos bytes em Node, Bun, Deno e no browser: sem data de criação, sem fonte

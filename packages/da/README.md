@@ -12,6 +12,7 @@ Status: pré-alfa, API instável até a 1.0.
 | `@sinete/da/nfce` | `danfce`: só o DANFE NFC-e, sem os layouts A4 e Simplificado |
 | `@sinete/da/mdfe` | `damdfe`: DAMDFE, sem nenhum layout nem schema da NF-e |
 | `@sinete/da/cce` | `dacce`: DACCe da Carta de Correção |
+| `@sinete/da/evento` | `daEvento`: documento auxiliar de qualquer evento registrado da NF-e, da NFC-e e do MDF-e, por uma chamada só; leva os schemas da NF-e e do MDF-e, sem layout de DANFE nem de DAMDFE |
 | `@sinete/da/nfse` | `danfse`: DANFSe v2 da NFS-e Nacional, sem nenhum layout nem schema da NF-e |
 | `@sinete/da` | o que é comum: `gerarPdf`, `gerarHtml`, `gerarSvg`, o modelo `Documento`, `ErroDa`, CODE-128 e QR Code |
 
@@ -20,6 +21,7 @@ Cada subpath reexporta os renderizadores, então um import basta. Quem importa s
 ```ts
 import { danfe, gerarHtml, gerarPdf } from '@sinete/da/nfe';
 import { dacce } from '@sinete/da/cce';
+import { daEvento } from '@sinete/da/evento';
 import { damdfe } from '@sinete/da/mdfe';
 import { danfce } from '@sinete/da/nfce';
 import { danfse } from '@sinete/da/nfse';
@@ -31,6 +33,7 @@ const html: string = gerarHtml(doc); // uma <svg> por página, pronta para windo
 danfe(nfeProcXml, { formato: 'paisagem', logo: pngOuJpeg, cancelamento: procEventoCancelamentoXml });
 danfce(nfceProcXml, { largura: 58, via: 'estabelecimento' }); // ou danfe(nfceProcXml, { ... })
 dacce(procEventoCceXml, { nfe: nfeProcXml });
+daEvento(procEventoXml, { nfe: nfeProcXml }); // ou { mdfe: mdfeProcXml } no procEventoMDFe
 damdfe(mdfeProcXml, { documentos: true, cancelado: procEventoMDFeCancelamentoXml });
 danfse(nfseXml, { cancelamento: eventoCancelamentoNfseXml, canhoto: false });
 ```
@@ -48,6 +51,7 @@ Até a reorganização dos pacotes (ADR 0008), era o `@sinete/danfe`, com tudo n
 | `simplificado-tipo2` | DANFE Simplificado Tipo 2 (`tpImp` 6) | NT 2026.003 v1.00 e NT 2026.002 v1.10 |
 | `nfce` ou `danfce()` | DANFE NFC-e (modelo 65) | Manual do DANFE NFC-e e QR Code; divisões iguais às da NT 2026.003 |
 | `dacce()` | DACCE (evento 110110) | convenção de mercado: o MOC não define leiaute |
+| `daEvento()` | eventos registrados: CC-e, cancelamento e cancelamento por substituição da NF-e e da NFC-e; cancelamento, encerramento e inclusão de condutor do MDF-e | o leiaute do DACCE, com os campos do schema de cada evento (ADR 0006, decisão 17) |
 | `damdfe()` | DAMDFE, modais rodoviário, aéreo, aquaviário e ferroviário | MOC MDF-e 3.00a, Anexo II |
 | `danfse()` | DANFSe v2, A4 retrato numa página | NT SE/CGNFS-e 008/2026 v1.02, Anexo I e tabela do 2.4.5 |
 
@@ -66,6 +70,7 @@ Sem `formato`, o modelo 65 vai para `nfce` e o 55 segue o `tpImp`: 2 paisagem, 3
   - cancelada pelo protocolo (ADR 0006, decisão 15): `protNFe` com cStat 101, 151 ou 155, como gravam os sistemas que importam a nota, sai "CANCELADA", sem "SEM VALOR FISCAL", com o `nProt` no campo do protocolo de autorização. Se o evento de cancelamento também for passado, o carimbo é o do evento, com o protocolo dele.
   - O MDF-e não tem denegação (MOC MDF-e 3.00b, Visão Geral, 4.2.6): `protMDFe` com cStat 101 sai "CANCELADO", com 132 (encerrado) sai como autorizado, e com qualquer outro diferente de 100 sai como sem protocolo. O `cancelado` do `damdfe` aceita o `procEventoMDFe` do cancelamento (110111, da mesma chave e com retorno 135, 134 ou 136), que dá o protocolo e a data do evento ao carimbo, como o `procEventoNFe` no DANFE; o objeto `{ nProt, dhRegEvento }` e o `true` continuam valendo.
 - **DANFSe v2** (ADR 0006, decisão 16): entrada pelo `NFSe` autorizado, com a DPS dentro, nos pacotes de esquemas 1.01 de 20260209 e de 20260727 (escolhido pela data e pelo ambiente da DPS). Página única: descrição do serviço e informações complementares dividem a altura que sobra e terminam em reticências, sem cortar a linha dos tributos aproximados; conteúdo sempre em 7 pt. Blocos sem dados viram a frase da NT, o canhoto é opcional (`canhoto: false`), e o nome dos municípios que o XML não traz vem de `nomeMunicipio`. QR de 15,2 mm com a consulta pública do Portal Nacional. Produção restrita: "NFS-e SEM VALIDADE JURÍDICA" em vermelho no cabeçalho. Cancelada e substituída: marca d'água pelo `evento` registrado (`cancelamento`: e101101, e105104 ou e305101; `substituicao`: e105102) ou por `true`.
+- **Eventos** (ADR 0006, decisão 17): `daEvento` aceita o `procEventoNFe` ou o `procEventoMDFe` registrado (retorno 135, 136 ou 155 na NF-e; 135, 134 ou 136 no MDF-e, com a mesma chave, tipo e sequência do pedido). Na CC-e, devolve o mesmo documento do `dacce`; nos outros, o mesmo leiaute com o quadro "DADOS DO EVENTO": protocolo de autorização e justificativa nos cancelamentos, chave da NFC-e substituta no 110112 da NF-e, data, UF e código IBGE do município no encerramento do MDF-e, nome e CPF na inclusão de condutor. `nfe` ou `mdfe` (opcionais, da mesma chave) dão o emitente e a linha do documento. Tipo sem documento auxiliar, evento não registrado e documento de outra chave ou da outra família são `evento_incompativel`.
 - **Logotipo**: PNG (todas as profundidades e tipos de cor, entrelaçado, paleta, transparência) ou JPEG (entra no PDF sem decodificar). Outro formato é `imagem_invalida`.
 
 ## Decisões (ADR 0006)

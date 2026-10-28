@@ -1,10 +1,11 @@
 // Casos do teste de regressão visual: cada fixture sintética com o formato e as opções que ela exercita.
 import { dacce } from '../src/cce.ts';
+import { daEvento } from '../src/evento.ts';
 import { damdfe } from '../src/mdfe.ts';
 import type { Documento } from '../src/model.ts';
 import { danfe } from '../src/nfe.ts';
 import { danfse } from '../src/nfse.ts';
-import { chaveDe, eventoXml, MDFE_FIXTURES, mdfeXml, NFE_FIXTURES, nfeXml } from './fixtures.ts';
+import { chaveDe, eventoMdfeXml, eventoXml, MDFE_FIXTURES, mdfeXml, NFE_FIXTURES, nfeXml } from './fixtures.ts';
 import { chaveNfse, eventoNfseXml, NFSE_FIXTURES, nfseXml, PREST_CNPJ } from './fixtures-nfse.ts';
 import { encodePng } from './helpers/png.ts';
 
@@ -40,6 +41,33 @@ export const CASES: readonly Case[] = [
   {
     name: 'dacce',
     doc: (): Documento => dacce(eventoXml({ tpEvento: '110110', chave: chaveDe('55') }), { nfe: nfeXml(basica) }),
+  },
+  // Documento auxiliar dos outros eventos registrados (daEvento): NF-e, NFC-e e MDF-e.
+  {
+    name: 'evento-cancelamento-nfe',
+    doc: (): Documento =>
+      daEvento(eventoXml({ tpEvento: '110111', chave: chaveDe('55') }), { nfe: nfeXml(basica), logo: LOGO }),
+  },
+  {
+    name: 'evento-substituicao-nfce',
+    doc: (): Documento => daEvento(eventoXml({ tpEvento: '110112', chave: chaveDe('65') })),
+  },
+  {
+    name: 'evento-cancelamento-mdfe',
+    doc: (): Documento =>
+      daEvento(eventoMdfeXml({ tpEvento: '110111', chave: chaveDe('58', '1', 888) }), { mdfe: mdfeXml({ name: 'x' }) }),
+  },
+  {
+    name: 'evento-encerramento-mdfe',
+    doc: (): Documento =>
+      daEvento(eventoMdfeXml({ tpEvento: '110112', chave: chaveDe('58', '1', 888), indEncPorTerceiro: true })),
+  },
+  {
+    name: 'evento-condutor-mdfe',
+    doc: (): Documento =>
+      daEvento(eventoMdfeXml({ tpEvento: '110114', chave: chaveDe('58', '1', 888), tpAmb: '2' }), {
+        mdfe: mdfeXml({ name: 'x', tpAmb: '2' }),
+      }),
   },
   {
     name: 'cancelada',
