@@ -51,8 +51,8 @@ export { ErroPolitica, ErroSigner, ErroTransporte, ErroTransporteNaoSuportado } 
 export { identidadePem } from './identity.ts';
 export type { PoliticaDeHostsPermitidosOpcoes } from './policy.ts';
 export { politicaDeHostsPermitidos, todasAsPoliticas } from './policy.ts';
-export type { SoapFault } from './soap.ts';
-export { contentTypeSoap12, envelopeSoap12, lerBodySoap, lerSoapFault, SOAP12_NS } from './soap.ts';
+export type { MotivoDaSefaz, SoapFault } from './soap.ts';
+export { contentTypeSoap12, envelopeSoap12, lerBodySoap, lerMotivoDaSefaz, lerSoapFault, SOAP12_NS } from './soap.ts';
 export type {
   AssinadorTls,
   CapacidadesDoTransporte,

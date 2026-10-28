@@ -366,6 +366,23 @@ describe('respostas SOAP defeituosas', () => {
     );
     for (let i = 0; i < 3; i++) await expect(c.statusServico()).rejects.toBeInstanceOf(ErroRespostaInvalida);
   });
+
+  test('retorno inesperado com cStat leva o motivo da SEFAZ no erro', async () => {
+    const { c } = await client(
+      fakeTransport(
+        soap(`<outro xmlns="${NFE_NS}"><cStat>999</cStat><xMotivo>Rejeicao: Erro nao catalogado</xMotivo></outro>`),
+        { status: 500, body: '<html><cStat>656</cStat><xMotivo>Rejeicao: Consumo Indevido</xMotivo>' },
+      ),
+    );
+    const outro = (await c.statusServico().catch((e: unknown) => e)) as ErroRespostaInvalida;
+    expect(outro).toBeInstanceOf(ErroRespostaInvalida);
+    expect(outro.message).toContain('sem <retConsStatServ>');
+    expect(outro.message).toContain('cStat 999 Rejeicao: Erro nao catalogado');
+    expect(outro.detalhes).toMatchObject({ cStat: '999', xMotivo: 'Rejeicao: Erro nao catalogado' });
+    const html = (await c.statusServico().catch((e: unknown) => e)) as ErroRespostaInvalida;
+    expect(html.message).toContain('não é XML');
+    expect(html.message).toContain('cStat 656 Rejeicao: Consumo Indevido');
+  });
 });
 
 describe('proc: fatias e documento assinado', () => {

@@ -50,6 +50,79 @@ export interface SoapFault {
   readonly reason: string | undefined;
 }
 
+/** `cStat` e `xMotivo` que a SEFAZ mandou, em qualquer elemento e namespace. */
+export interface MotivoDaSefaz {
+  readonly cStat: string;
+  readonly xMotivo?: string;
+}
+
+/** Quanto do corpo o `lerMotivoDaSefaz` examina. */
+const LIMITE_DO_MOTIVO = 64 * 1024;
+
+const ENTIDADES: Readonly<Record<string, string>> = { lt: '<', gt: '>', amp: '&', quot: '"', apos: "'" };
+
+/** Caractere de uma referência numérica, ou `undefined` quando o código não é um caractere válido do XML. */
+function caractereDoCodigo(codigo: number): string | undefined {
+  const valido =
+    Number.isInteger(codigo) &&
+    (codigo === 0x9 ||
+      codigo === 0xa ||
+      codigo === 0xd ||
+      (codigo >= 0x20 && codigo <= 0xd7ff) ||
+      (codigo >= 0xe000 && codigo <= 0xfffd) ||
+      (codigo >= 0x10000 && codigo <= 0x10ffff));
+  return valido ? String.fromCodePoint(codigo) : undefined;
+}
+
+/**
+ * Texto de um elemento: seções CDATA como vieram e o texto entre elas com as entidades do XML decodificadas (uma
+ * referência inválida fica como veio), espaços colapsados. Nunca lança: é o diagnóstico de uma resposta já defeituosa.
+ */
+function textoDoElemento(conteudo: string): string | undefined {
+  let v = '';
+  for (const m of conteudo.matchAll(/<!\[CDATA\[([\s\S]*?)\]\]>|([^<]+)/g)) {
+    if (m[1] !== undefined) {
+      v += m[1];
+      continue;
+    }
+    v += (m[2] ?? '').replace(
+      /&(?:#(\d+)|#x([\da-fA-F]+)|(lt|gt|amp|quot|apos));/g,
+      (entidade: string, dec?: string, hex?: string, nome?: string): string => {
+        if (dec !== undefined) return caractereDoCodigo(Number(dec)) ?? entidade;
+        if (hex !== undefined) return caractereDoCodigo(Number.parseInt(hex, 16)) ?? entidade;
+        return ENTIDADES[nome ?? ''] ?? entidade;
+      },
+    );
+  }
+  const t = v.replace(/\s+/g, ' ').trim();
+  return t === '' ? undefined : t;
+}
+
+/**
+ * O primeiro `cStat` de uma resposta que não veio no formato esperado (outro elemento de retorno, fora do namespace,
+ * sem o grupo do `cStat`), com o `xMotivo` do mesmo grupo: só o que vem logo depois dele, como no leiaute, para nunca
+ * juntar o status de um grupo com o motivo de outro. Lê o texto, não o XML, para valer também quando o corpo não é XML
+ * bem formado; o conteúdo de cada elemento pode ter texto, CDATA ou os dois, com espaços em volta. Sem `cStat`,
+ * `undefined`. Nunca lança e só examina os primeiros 64 KB. Serve para o erro levar a mensagem real da SEFAZ em vez de descartá-la.
+ */
+export function lerMotivoDaSefaz(corpo: string): MotivoDaSefaz | undefined {
+  // Conteúdo de um elemento simples: texto e seções CDATA intercalados, sem outros elementos. A seção CDATA para no
+  // primeiro `]]>` e as duas alternativas não começam pelo mesmo caractere: a varredura é linear mesmo numa resposta
+  // defeituosa (uma CDATA com `*?` repetida voltava atrás por todas as combinações de seções).
+  const conteudo = '((?:[^<]|<!\\[CDATA\\[(?:[^\\]]|\\](?!\\]>))*\\]\\]>)*)';
+  // Os atributos param no próximo `<`: um `[^>]*` varreria o resto do corpo a partir de cada tag aberta.
+  const el = (tag: string): string => `<(?:[\\w.-]+:)?${tag}(?:\\s[^<>]*)?>${conteudo}</(?:[\\w.-]+:)?${tag}>`;
+  const re = new RegExp(`${el('cStat')}(?:\\s*${el('xMotivo')})?`, 'g');
+  // Uma rejeição da SEFAZ cabe com folga nos primeiros 64 KB; o limite mantém barato o diagnóstico de qualquer corpo.
+  for (const m of corpo.slice(0, LIMITE_DO_MOTIVO).matchAll(re)) {
+    const cStat = textoDoElemento(m[1] ?? '');
+    if (cStat === undefined) continue;
+    const xMotivo = m[2] === undefined ? undefined : textoDoElemento(m[2]);
+    return xMotivo === undefined ? { cStat } : { cStat, xMotivo };
+  }
+  return undefined;
+}
+
 /** Fault SOAP 1.2 (ou 1.1) da resposta, se houver. */
 export function lerSoapFault(envelope: string): SoapFault | undefined {
   if (!/<(?:[\w.-]+:)?Fault[\s>]/.test(envelope)) return undefined;
