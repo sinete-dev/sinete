@@ -1,5 +1,13 @@
 # @sinete/nfse
 
+## 0.4.1
+
+### Patch Changes
+
+- Updated dependencies [caeab1e]
+- Updated dependencies [58a6c3d]
+  - @sinete/transport@0.4.0
+
 ## 0.4.0
 
 ### Minor Changes
