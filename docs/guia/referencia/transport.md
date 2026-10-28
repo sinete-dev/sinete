@@ -23,7 +23,8 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `hostsDoAmbiente`: Hosts distintos de um ambiente (base para a allowlist de homologação, por exemplo). `hostsDoAmbiente(ambiente: Ambiente): string[]`
 - `identidadePem`: Identidade `pem` a partir de um A1 aberto pelo `@sinete/cert`. Por padrão manda o titular e as intermediárias que vieram no PFX; passe `cadeia` (o resultado de `montarCadeia`) para mandar a cadeia completada. `identidadePem(certificado: CertificadoA1, opcoes?: { readonly cadeia?: readonly CertificadoX509[]; }): Extract<IdentidadeTls, { tipo: 'pem'; }>`
 - `lerBodySoap`: Conteúdo do `Body` da resposta, como fatia da string recebida (sem parse nem reserialização). Lança `ErroRespostaInvalida` se não houver `Body`. `lerBodySoap(envelope: string): string`
-- `lerSoapFault`: Fault SOAP 1.2 (ou 1.1) da resposta, se houver. `lerSoapFault(envelope: string): SoapFault | undefined`
+- `lerMotivoDaSefaz`: O primeiro `cStat` (e o `xMotivo` que o acompanha) de uma resposta que não veio no formato esperado: outro elemento de retorno, fora do namespace, sem o grupo do `cStat`. `lerMotivoDaSefaz(corpo: string): MotivoDaSefaz | undefined`
+- `lerSoapFault`: `lerSoapFault(envelope: string): SoapFault | undefined`
 - `mdfeEndpoint`: Resolve o endpoint de um serviço de MDF-e 3.00 (sempre SVRS). `mdfeEndpoint(busca: { readonly ambiente: Ambiente; readonly servico: MdfeServico; }): EndpointResolvido`
 - `motivosNaoSuportado`: Motivos pelos quais uma runtime não fala com um host, pelo perfil TLS medido. Vazio: compatível. `motivosNaoSuportado(perfil: PerfilTls | undefined, capacidades: CapacidadesDoTransporte): string[]`
 - `nfceAutorizadorDaUf`: Autorizador de NFC-e da UF no ambiente. As tabelas oficiais listam os autorizadores com ambiente próprio da NFC-e (relação da SVRS e página da SEF/MG); a UF que não tem um autoriza na SVRS (`nfce.regraDoMapaDeUfs` nos dados). `nfceAutorizadorDaUf(uf: Uf, ambiente: Ambiente): NfceAutorizador`
@@ -60,6 +61,7 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `EndpointResolvido`: Endpoint resolvido: para onde vai, de onde veio o dado e o perfil TLS do host. Membros: `documento`, `ambiente`, `autorizador`, `servico`, `versao`, `url`, `host`, `fonte`, `tls`.
 - `EventoDeAuditoria`: Um uso do certificado, para auditoria (o app grava onde quiser). Sem segredo e sem corpo. Membros: `runtime`, `host`, `caminho`, `metodo`, `status`, `codigoDoErro`, `duracaoMs`.
 - `HelperTlsExterno`: Conexão com o helper nativo `sinete-signer` (ADR 0005), que termina o mTLS com uma chave que não está no processo. O cliente do protocolo v1 é o `@sinete/transport/signer` (`iniciarSigner`, `conectarSigner`); o `Transporte` aplica a política e delega a requisição. Membros: `versaoDoProtocolo`, `enviar()`, `fechar()`.
+- `MotivoDaSefaz`: `cStat` e `xMotivo` que a SEFAZ mandou, em qualquer elemento e namespace. Membros: `cStat`, `xMotivo`.
 - `PedidoHttpDoHelper`: Requisição HTTP entregue ao helper, já aprovada pela política. Membros: `url`, `metodo`, `cabecalhos`, `corpo`, `timeoutMs`.
 - `PedidoParaPolitica`: Pedido que a política examina antes de qualquer socket. Membros: `url`, `metodo`, `corpo`, `endpoint`.
 - `PedidoTransporte`: Membros: `url`, `metodo`, `cabecalhos`, `corpo`, `signal`, `timeoutMs`, `endpoint`.

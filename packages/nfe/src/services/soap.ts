@@ -8,9 +8,22 @@ import { ErroRespostaInvalida } from '@sinete/core';
 import type { DocumentoXml, ElementoXml } from '@sinete/core/xml';
 import { descendentes, elementosFilhos, lerXml } from '@sinete/core/xml';
 import type { EndpointResolvido, NfeServico, Transporte } from '@sinete/transport';
-import { contentTypeSoap12, envelopeSoap12, lerSoapFault } from '@sinete/transport';
+import { contentTypeSoap12, envelopeSoap12, lerMotivoDaSefaz, lerSoapFault } from '@sinete/transport';
 import servicos from '../data/servicos.json' with { type: 'json' };
 import { NFE_NS } from './proc.ts';
+
+/**
+ * Sufixo e detalhes com o `cStat` e o `xMotivo` que a SEFAZ mandou numa resposta fora do formato esperado: o erro
+ * continua sendo `ErroRespostaInvalida`, mas leva a mensagem real em vez de descartá-la.
+ */
+function comMotivo(texto: string): { readonly sufixo: string; readonly detalhes: Record<string, string> } {
+  const m = lerMotivoDaSefaz(texto);
+  if (m === undefined) return { sufixo: '', detalhes: {} };
+  return {
+    sufixo: `: cStat ${m.cStat}${m.xMotivo === undefined ? '' : ` ${m.xMotivo}`}`,
+    detalhes: { cStat: m.cStat, ...(m.xMotivo === undefined ? {} : { xMotivo: m.xMotivo }) },
+  };
+}
 
 interface ServicoInfo {
   readonly namespace: string;
@@ -86,9 +99,10 @@ export async function chamar(c: ChamadaSoap): Promise<RespostaSoap> {
   try {
     doc = lerXml(text.replace(/^﻿/, ''));
   } catch (cause) {
-    throw new ErroRespostaInvalida(`resposta de ${c.endpoint.host} não é XML (HTTP ${res.status})`, {
+    const m = comMotivo(text);
+    throw new ErroRespostaInvalida(`resposta de ${c.endpoint.host} não é XML (HTTP ${res.status})${m.sufixo}`, {
       cause,
-      detalhes: { status: res.status, servico: c.servico },
+      detalhes: { status: res.status, servico: c.servico, ...m.detalhes },
     });
   }
   let ret: ElementoXml | undefined;
@@ -105,13 +119,18 @@ export async function chamar(c: ChamadaSoap): Promise<RespostaSoap> {
     c.logger.warn('nfe.soap.retorno_fora_do_namespace', { ...started, retorno: c.retorno, ns: ret.ns });
   }
   if (!ret) {
-    throw new ErroRespostaInvalida(`resposta de ${c.endpoint.host} sem <${c.retorno}> (HTTP ${res.status})`, {
-      detalhes: { status: res.status, servico: c.servico },
-    });
+    const m = comMotivo(text);
+    throw new ErroRespostaInvalida(
+      `resposta de ${c.endpoint.host} sem <${c.retorno}> (HTTP ${res.status})${m.sufixo}`,
+      {
+        detalhes: { status: res.status, servico: c.servico, ...m.detalhes },
+      },
+    );
   }
   if (!Array.from(descendentes(ret)).some((el) => el.local === 'cStat' && el.ns === NFE_NS)) {
-    throw new ErroRespostaInvalida(`<${c.retorno}> de ${c.endpoint.host} sem cStat (HTTP ${res.status})`, {
-      detalhes: { status: res.status, servico: c.servico },
+    const m = comMotivo(text);
+    throw new ErroRespostaInvalida(`<${c.retorno}> de ${c.endpoint.host} sem cStat (HTTP ${res.status})${m.sufixo}`, {
+      detalhes: { status: res.status, servico: c.servico, ...m.detalhes },
     });
   }
   c.logger.debug('nfe.soap.resposta', { ...started, status: res.status });

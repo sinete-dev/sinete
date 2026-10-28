@@ -174,10 +174,12 @@ describe('cartaCorrecao (110110)', () => {
     const ev = eventoEnviado(mensagem(t.requests[0] as never));
     expect(ev).toContain(`<infEvento Id="ID110110${ch}03">`);
     expect(campo(ev, 'nSeqEvento')).toBe('3');
-    expect(campo(ev, 'descEvento')).toBe('Carta de Correção');
+    // Forma sem acento do enum do schema: a SEFAZ-MT rejeita com 402 qualquer caractere acentuado no evento.
+    expect(campo(ev, 'descEvento')).toBe('Carta de Correcao');
     expect(campo(ev, 'xCondUso')).toStartWith(
-      'A Carta de Correção é disciplinada pelo § 1º-A do art. 7º do Convênio S/N',
+      'A Carta de Correcao e disciplinada pelo paragrafo 1o-A do art. 7o do Convenio S/N',
     );
+    expect(campo(ev, 'xCondUso')).not.toMatch(/[^\x20-\x7e]/);
     expect((await conferirAssinatura(ev, { id: `ID110110${ch}03` })).ok).toBe(true);
   });
 
@@ -247,6 +249,24 @@ describe('retEvento de outro evento', () => {
       const { c } = await client(fakeTransport(soap(retEnvEvento({ evento }), 'NFeRecepcaoEvento4')));
       await expect(c.cancelar(pedido)).rejects.toBeInstanceOf(ErroRespostaInvalida);
     }
+  });
+
+  test('rejeição com retEvento sem chave, tipo e sequência volta como rejeição, com o motivo da SEFAZ', async () => {
+    // SEFAZ-MT, CC-e rejeitada com 402: o retEvento da rejeição não repete os campos do evento.
+    const ch = chave();
+    const corpo = soap(
+      `<retEnvEvento xmlns="${NFE_NS}" versao="1.00"><idLote>1</idLote><tpAmb>2</tpAmb><verAplic>MT</verAplic>` +
+        '<cOrgao>51</cOrgao><cStat>128</cStat><xMotivo>Lote de Evento Processado</xMotivo>' +
+        '<retEvento versao="1.00"><infEvento><tpAmb>2</tpAmb><verAplic>MT</verAplic><cOrgao>51</cOrgao>' +
+        '<cStat>402</cStat><xMotivo>Rejeicao: XML da area de dados com codificacao diferente de UTF-8</xMotivo>' +
+        '<chNFe></chNFe><tpEvento></tpEvento><nSeqEvento></nSeqEvento></infEvento></retEvento></retEnvEvento>',
+      'NFeRecepcaoEvento4',
+    );
+    const { c } = await client(fakeTransport(corpo));
+    const r = await c.cartaCorrecao({ chave: ch, xCorrecao: 'Correcao do endereco de entrega', nSeqEvento: 1 });
+    expect(r.tipo).toBe('recusado');
+    expect(r.cStat).toBe('402');
+    expect(r.xMotivo).toContain('codificacao diferente de UTF-8');
   });
 });
 

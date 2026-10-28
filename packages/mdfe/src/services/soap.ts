@@ -10,10 +10,23 @@ import { ErroRespostaInvalida } from '@sinete/core';
 import type { DocumentoXml, ElementoXml } from '@sinete/core/xml';
 import { descendentes, lerXml, primeiroFilho } from '@sinete/core/xml';
 import type { EndpointResolvido, MdfeServico, Transporte } from '@sinete/transport';
-import { contentTypeSoap12, envelopeSoap12, lerSoapFault } from '@sinete/transport';
+import { contentTypeSoap12, envelopeSoap12, lerMotivoDaSefaz, lerSoapFault } from '@sinete/transport';
 import servicos from '../data/servicos.json' with { type: 'json' };
 import { comprimirGzipBase64 } from './gzip.ts';
 import { MDFE_NS } from './proc.ts';
+
+/**
+ * Sufixo e detalhes com o `cStat` e o `xMotivo` que a SEFAZ mandou numa resposta fora do formato esperado: o erro
+ * continua sendo `ErroRespostaInvalida`, mas leva a mensagem real em vez de descartá-la.
+ */
+function comMotivo(texto: string): { readonly sufixo: string; readonly detalhes: Record<string, string> } {
+  const m = lerMotivoDaSefaz(texto);
+  if (m === undefined) return { sufixo: '', detalhes: {} };
+  return {
+    sufixo: `: cStat ${m.cStat}${m.xMotivo === undefined ? '' : ` ${m.xMotivo}`}`,
+    detalhes: { cStat: m.cStat, ...(m.xMotivo === undefined ? {} : { xMotivo: m.xMotivo }) },
+  };
+}
 
 /** Serviços do MDF-e que o cliente chama (a distribuição de DF-e do MDF-e fica fora deste pacote). */
 export type MdfeServicoCliente = Exclude<MdfeServico, 'MDFeDistribuicaoDFe'>;
@@ -87,9 +100,10 @@ export async function chamar(c: ChamadaSoap): Promise<RespostaSoap> {
   try {
     doc = lerXml(text.replace(/^﻿/, ''));
   } catch (cause) {
-    throw new ErroRespostaInvalida(`resposta de ${c.endpoint.host} não é XML (HTTP ${res.status})`, {
+    const m = comMotivo(text);
+    throw new ErroRespostaInvalida(`resposta de ${c.endpoint.host} não é XML (HTTP ${res.status})${m.sufixo}`, {
       cause,
-      detalhes: { status: res.status, servico: c.servico },
+      detalhes: { status: res.status, servico: c.servico, ...m.detalhes },
     });
   }
   let ret: ElementoXml | undefined;
@@ -100,16 +114,24 @@ export async function chamar(c: ChamadaSoap): Promise<RespostaSoap> {
     }
   }
   if (!ret) {
-    throw new ErroRespostaInvalida(`resposta de ${c.endpoint.host} sem <${c.retorno}> (HTTP ${res.status})`, {
-      detalhes: { status: res.status, servico: c.servico },
-    });
+    const m = comMotivo(text);
+    throw new ErroRespostaInvalida(
+      `resposta de ${c.endpoint.host} sem <${c.retorno}> (HTTP ${res.status})${m.sufixo}`,
+      {
+        detalhes: { status: res.status, servico: c.servico, ...m.detalhes },
+      },
+    );
   }
   const grupo = c.cStatEm === undefined ? ret : primeiroFilho(ret, c.cStatEm, MDFE_NS);
   if (grupo === undefined || primeiroFilho(grupo, 'cStat', MDFE_NS) === undefined) {
     const onde = c.cStatEm === undefined ? '' : `/${c.cStatEm}`;
-    throw new ErroRespostaInvalida(`<${c.retorno}${onde}> de ${c.endpoint.host} sem cStat (HTTP ${res.status})`, {
-      detalhes: { status: res.status, servico: c.servico },
-    });
+    const m = comMotivo(text);
+    throw new ErroRespostaInvalida(
+      `<${c.retorno}${onde}> de ${c.endpoint.host} sem cStat (HTTP ${res.status})${m.sufixo}`,
+      {
+        detalhes: { status: res.status, servico: c.servico, ...m.detalhes },
+      },
+    );
   }
   c.logger.debug('mdfe.soap.resposta', { ...started, status: res.status });
   return { doc, ret, status: res.status };

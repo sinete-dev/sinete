@@ -51,6 +51,29 @@ export interface SoapFault {
 }
 
 /** Fault SOAP 1.2 (ou 1.1) da resposta, se houver. */
+/** `cStat` e `xMotivo` que a SEFAZ mandou, em qualquer elemento e namespace. */
+export interface MotivoDaSefaz {
+  readonly cStat: string;
+  readonly xMotivo?: string;
+}
+
+/**
+ * O primeiro `cStat` (e o `xMotivo` que o acompanha) de uma resposta que não veio no formato esperado: outro elemento
+ * de retorno, fora do namespace, sem o grupo do `cStat`. Lê o texto, não o XML, para valer também quando o corpo não
+ * é XML bem formado. Sem `cStat`, `undefined`. Serve para o erro levar a mensagem real da SEFAZ em vez de descartá-la.
+ */
+export function lerMotivoDaSefaz(corpo: string): MotivoDaSefaz | undefined {
+  const texto = (tag: string): string | undefined => {
+    const m = new RegExp(`<(?:[\\w.-]+:)?${tag}(?:\\s[^>]*)?>([^<]*)</(?:[\\w.-]+:)?${tag}>`).exec(corpo);
+    const v = m?.[1]?.replace(/\s+/g, ' ').trim();
+    return v === '' ? undefined : v;
+  };
+  const cStat = texto('cStat');
+  if (cStat === undefined) return undefined;
+  const xMotivo = texto('xMotivo');
+  return xMotivo === undefined ? { cStat } : { cStat, xMotivo };
+}
+
 export function lerSoapFault(envelope: string): SoapFault | undefined {
   if (!/<(?:[\w.-]+:)?Fault[\s>]/.test(envelope)) return undefined;
   const text = (tag: string): string | undefined => {

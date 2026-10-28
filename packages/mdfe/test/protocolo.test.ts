@@ -102,6 +102,16 @@ describe('respostas SOAP defeituosas', () => {
     expect(((await status(aninhado)) as ErroRespostaInvalida).message).toContain('sem cStat');
   });
 
+  test('retorno inesperado com cStat leva o motivo da SEFAZ no erro', async () => {
+    const e = (await status(
+      envelope(`<outro xmlns="${MDFE_NS}"><cStat>999</cStat><xMotivo>Rejeicao: Erro nao catalogado</xMotivo></outro>`),
+    )) as ErroRespostaInvalida;
+    expect(e).toBeInstanceOf(ErroRespostaInvalida);
+    expect(e.message).toContain('sem <retConsStatServMDFe>');
+    expect(e.message).toContain('cStat 999 Rejeicao: Erro nao catalogado');
+    expect(e.detalhes).toMatchObject({ cStat: '999' });
+  });
+
   test('retEventoMDFe sem infEvento vira ErroRespostaInvalida, não TypeError', async () => {
     const chave = montarChaveAcesso({
       cUF: '51',

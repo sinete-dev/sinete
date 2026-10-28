@@ -359,6 +359,16 @@ describe('autorizar assíncrono e recibo', () => {
     expect(vistos).toEqual([ac.signal]);
   });
 
+  test('rejeição da consulta com o nRec vazio volta como rejeição, não como outro recibo', async () => {
+    const t = fakeTransport(
+      soap(retConsReciNFe({ cStat: '248', xMotivo: 'Rejeicao: UF do Recibo diverge da UF autorizadora', nRec: '' })),
+    );
+    const { c } = await client(t);
+    const r = await c.consultarRecibo('351000000000001');
+    expect(r.tipo).toBe('recusado');
+    expect(r.cStat).toBe('248');
+  });
+
   test('retorno de outro recibo é ErroRespostaInvalida', async () => {
     const t = fakeTransport(soap(retConsReciNFe({ cStat: '105', nRec: '351000000000009' })));
     const { c } = await client(t);

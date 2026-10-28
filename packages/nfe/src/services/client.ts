@@ -543,9 +543,12 @@ function protNFeDaChave(parent: ElementoXml, a: DocumentoAssinado | undefined): 
 // ---------------------------------------------------------------------------------------------------------------
 
 const EVENTO_VERSAO = '1.00';
-/** Texto fixo das condições de uso da CC-e (schema e110110, primeira forma do enum). */
+/**
+ * Texto fixo das condições de uso da CC-e na forma sem acento do enum do schema e110110 (o schema aceita as duas). A
+ * SEFAZ-MT rejeita com 402 qualquer caractere acentuado no evento; a forma sem acento vale em todas as UFs.
+ */
 const XCONDUSO: DetCce['xCondUso'] =
-  'A Carta de Correção é disciplinada pelo § 1º-A do art. 7º do Convênio S/N, de 15 de dezembro de 1970 e pode ser utilizada para regularização de erro ocorrido na emissão de documento fiscal, desde que o erro não esteja relacionado com: I - as variáveis que determinam o valor do imposto tais como: base de cálculo, alíquota, diferença de preço, quantidade, valor da operação ou da prestação; II - a correção de dados cadastrais que implique mudança do remetente ou do destinatário; III - a data de emissão ou de saída.';
+  'A Carta de Correcao e disciplinada pelo paragrafo 1o-A do art. 7o do Convenio S/N, de 15 de dezembro de 1970 e pode ser utilizada para regularizacao de erro ocorrido na emissao de documento fiscal, desde que o erro nao esteja relacionado com: I - as variaveis que determinam o valor do imposto tais como: base de calculo, aliquota, diferenca de preco, quantidade, valor da operacao ou da prestacao; II - a correcao de dados cadastrais que implique mudanca do remetente ou do destinatario; III - a data de emissao ou de saida.';
 
 /** Manifestação do destinatário (NT 2012.002): tipo de evento, descrição e schema do `detEvento`. */
 const MANIFESTACOES: Readonly<
@@ -695,11 +698,15 @@ export function criarClienteNfe(opcoesDoCliente: ClienteNfeOpcoes): ClienteNfe {
         : endpointDaChave('NFeRetAutorizacao', c, false, semIeOuOpcao(a));
     const r = await call(ep, 'NFeRetAutorizacao', msg, 'retConsReciNFe', opcoes.signal);
     const v = decodificar(TRetConsReciNFe, r.ret, r.doc.texto).valor;
+    const status = { cStat: v.cStat, xMotivo: v.xMotivo };
+    logger.info('nfe.recibo', { nRec, cStat: v.cStat });
+    const doLote =
+      cstatEm(v.cStat, 'loteEmProcessamento') || cstatEm(v.cStat, 'loteRecebido') || cstatEm(v.cStat, 'loteProcessado');
+    // Rejeição da consulta antes de conferir o recibo: ela pode vir com o nRec vazio, e conferir antes a descartaria.
+    if (!doLote) return rejeitado(status);
     if (v.nRec !== undefined && v.nRec !== nRec) {
       throw new ErroRespostaInvalida('retorno de outro recibo', { detalhes: { nRec: v.nRec } });
     }
-    const status = { cStat: v.cStat, xMotivo: v.xMotivo };
-    logger.info('nfe.recibo', { nRec, cStat: v.cStat });
     if (cstatEm(v.cStat, 'loteEmProcessamento') || cstatEm(v.cStat, 'loteRecebido'))
       return criarPendente(status, { referencia: nRec });
     if (cstatEm(v.cStat, 'loteProcessado')) {
@@ -788,7 +795,11 @@ export function criarClienteNfe(opcoesDoCliente: ClienteNfeOpcoes): ClienteNfe {
     const retEl = elementosFilhos(r.ret).find((e) => e.local === 'retEvento' && e.ns === NFE_NS);
     const ret = v.retEvento?.[0]?.infEvento;
     if (!retEl || !ret) throw new ErroRespostaInvalida('lote de evento processado sem retEvento');
-    // O retorno tem de ser deste evento: chave, tipo e sequência, quando vierem, iguais aos enviados.
+    const status = { cStat: ret.cStat, xMotivo: ret.xMotivo };
+    // Rejeição antes de qualquer conferência: o retEvento de uma rejeição pode vir sem repetir chave, tipo e sequência
+    // (SEFAZ-MT, CC-e rejeitada com 402), e conferir antes descartaria a mensagem real.
+    if (!cstatEm(ret.cStat, 'eventoRegistrado')) return rejeitado(status);
+    // O evento registrado tem de ser este: chave, tipo e sequência, quando vierem, iguais aos enviados.
     const divergentes = (
       [
         ['chNFe', ret.chNFe, p.chave],
@@ -801,8 +812,6 @@ export function criarClienteNfe(opcoesDoCliente: ClienteNfeOpcoes): ClienteNfe {
         detalhes: Object.fromEntries(divergentes.map(([k, veio]) => [k, veio])),
       });
     }
-    const status = { cStat: ret.cStat, xMotivo: ret.xMotivo };
-    if (!cstatEm(ret.cStat, 'eventoRegistrado')) return rejeitado(status);
     return criarAutorizado(status, {
       chNFe: p.chave,
       tpEvento: p.tpEvento,
@@ -963,7 +972,7 @@ export function criarClienteNfe(opcoesDoCliente: ClienteNfeOpcoes): ClienteNfe {
         autor: autorDoEmitente(p.autor, c),
         detEvento: {
           versao: EVENTO_VERSAO,
-          descEvento: 'Carta de Correção',
+          descEvento: 'Carta de Correcao',
           xCorrecao: p.xCorrecao,
           xCondUso: XCONDUSO,
         },
