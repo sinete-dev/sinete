@@ -56,4 +56,29 @@ describe('lerMotivoDaSefaz', () => {
       cStat: '302',
     });
   });
+
+  test('CDATA com espaços em volta, misturada com texto, e referência inválida nunca lançam', () => {
+    expect(
+      lerMotivoDaSefaz(
+        '<ret><cStat>\n  <![CDATA[225]]>\n</cStat>\n<xMotivo>\n<![CDATA[Rejeicao: Falha no Schema]]>\n</xMotivo></ret>',
+      ),
+    ).toEqual({
+      cStat: '225',
+      xMotivo: 'Rejeicao: Falha no Schema',
+    });
+    expect(lerMotivoDaSefaz('<ret><cStat>225</cStat><xMotivo>Falha <![CDATA[<x>]]> &amp; fim</xMotivo></ret>')).toEqual(
+      {
+        cStat: '225',
+        xMotivo: 'Falha <x> & fim',
+      },
+    );
+    expect(
+      lerMotivoDaSefaz(
+        '<ret><cStat>225</cStat><xMotivo>A &#x110000; B &#0; C &#xD800; D &#99999999999999999999; E</xMotivo></ret>',
+      ),
+    ).toEqual({
+      cStat: '225',
+      xMotivo: 'A &#x110000; B &#0; C &#xD800; D &#99999999999999999999; E',
+    });
+  });
 });

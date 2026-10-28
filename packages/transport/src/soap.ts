@@ -58,18 +58,39 @@ export interface MotivoDaSefaz {
 
 const ENTIDADES: Readonly<Record<string, string>> = { lt: '<', gt: '>', amp: '&', quot: '"', apos: "'" };
 
-/** Texto de um elemento: CDATA ou texto com as entidades do XML decodificadas, espaços colapsados. */
-function textoDoElemento(cdata: string | undefined, bruto: string | undefined): string | undefined {
-  const v =
-    cdata ??
-    (bruto ?? '').replace(
+/** Caractere de uma referência numérica, ou `undefined` quando o código não é um caractere válido do XML. */
+function caractereDoCodigo(codigo: number): string | undefined {
+  const valido =
+    Number.isInteger(codigo) &&
+    (codigo === 0x9 ||
+      codigo === 0xa ||
+      codigo === 0xd ||
+      (codigo >= 0x20 && codigo <= 0xd7ff) ||
+      (codigo >= 0xe000 && codigo <= 0xfffd) ||
+      (codigo >= 0x10000 && codigo <= 0x10ffff));
+  return valido ? String.fromCodePoint(codigo) : undefined;
+}
+
+/**
+ * Texto de um elemento: seções CDATA como vieram e o texto entre elas com as entidades do XML decodificadas (uma
+ * referência inválida fica como veio), espaços colapsados. Nunca lança: é o diagnóstico de uma resposta já defeituosa.
+ */
+function textoDoElemento(conteudo: string): string | undefined {
+  let v = '';
+  for (const m of conteudo.matchAll(/<!\[CDATA\[([\s\S]*?)\]\]>|([^<]+)/g)) {
+    if (m[1] !== undefined) {
+      v += m[1];
+      continue;
+    }
+    v += (m[2] ?? '').replace(
       /&(?:#(\d+)|#x([\da-fA-F]+)|(lt|gt|amp|quot|apos));/g,
       (entidade: string, dec?: string, hex?: string, nome?: string): string => {
-        if (dec !== undefined) return String.fromCodePoint(Number(dec));
-        if (hex !== undefined) return String.fromCodePoint(Number.parseInt(hex, 16));
+        if (dec !== undefined) return caractereDoCodigo(Number(dec)) ?? entidade;
+        if (hex !== undefined) return caractereDoCodigo(Number.parseInt(hex, 16)) ?? entidade;
         return ENTIDADES[nome ?? ''] ?? entidade;
       },
     );
+  }
   const t = v.replace(/\s+/g, ' ').trim();
   return t === '' ? undefined : t;
 }
@@ -78,17 +99,18 @@ function textoDoElemento(cdata: string | undefined, bruto: string | undefined): 
  * O primeiro `cStat` de uma resposta que não veio no formato esperado (outro elemento de retorno, fora do namespace,
  * sem o grupo do `cStat`), com o `xMotivo` do mesmo grupo: só o que vem logo depois dele, como no leiaute, para nunca
  * juntar o status de um grupo com o motivo de outro. Lê o texto, não o XML, para valer também quando o corpo não é XML
- * bem formado; aceita CDATA e decodifica as entidades. Sem `cStat`, `undefined`. Serve para o erro levar a mensagem
- * real da SEFAZ em vez de descartá-la.
+ * bem formado; o conteúdo de cada elemento pode ter texto, CDATA ou os dois, com espaços em volta. Sem `cStat`,
+ * `undefined`. Nunca lança. Serve para o erro levar a mensagem real da SEFAZ em vez de descartá-la.
  */
 export function lerMotivoDaSefaz(corpo: string): MotivoDaSefaz | undefined {
-  const valor = '(?:<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>|([^<]*))';
-  const el = (tag: string): string => `<(?:[\\w.-]+:)?${tag}(?:\\s[^>]*)?>${valor}</(?:[\\w.-]+:)?${tag}>`;
+  // Conteúdo de um elemento simples: texto e seções CDATA intercalados, sem outros elementos.
+  const conteudo = '((?:[^<]|<!\\[CDATA\\[[\\s\\S]*?\\]\\]>)*)';
+  const el = (tag: string): string => `<(?:[\\w.-]+:)?${tag}(?:\\s[^>]*)?>${conteudo}</(?:[\\w.-]+:)?${tag}>`;
   const re = new RegExp(`${el('cStat')}(?:\\s*${el('xMotivo')})?`, 'g');
   for (const m of corpo.matchAll(re)) {
-    const cStat = textoDoElemento(m[1], m[2]);
+    const cStat = textoDoElemento(m[1] ?? '');
     if (cStat === undefined) continue;
-    const xMotivo = m[3] === undefined && m[4] === undefined ? undefined : textoDoElemento(m[3], m[4]);
+    const xMotivo = m[2] === undefined ? undefined : textoDoElemento(m[2]);
     return xMotivo === undefined ? { cStat } : { cStat, xMotivo };
   }
   return undefined;
