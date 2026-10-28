@@ -56,15 +56,20 @@ export interface MotivoDaSefaz {
   readonly xMotivo?: string;
 }
 
+const ENTIDADES: Readonly<Record<string, string>> = { lt: '<', gt: '>', amp: '&', quot: '"', apos: "'" };
+
 /** Texto de um elemento: CDATA ou texto com as entidades do XML decodificadas, espaços colapsados. */
 function textoDoElemento(cdata: string | undefined, bruto: string | undefined): string | undefined {
   const v =
     cdata ??
-    (bruto ?? '').replace(/&(?:#(\d+)|#x([\da-fA-F]+)|(lt|gt|amp|quot|apos));/g, (_, dec, hex, nome) => {
-      if (dec !== undefined) return String.fromCodePoint(Number(dec));
-      if (hex !== undefined) return String.fromCodePoint(Number.parseInt(hex, 16));
-      return ({ lt: '<', gt: '>', amp: '&', quot: '"', apos: "'" } as Record<string, string>)[nome];
-    });
+    (bruto ?? '').replace(
+      /&(?:#(\d+)|#x([\da-fA-F]+)|(lt|gt|amp|quot|apos));/g,
+      (entidade: string, dec?: string, hex?: string, nome?: string): string => {
+        if (dec !== undefined) return String.fromCodePoint(Number(dec));
+        if (hex !== undefined) return String.fromCodePoint(Number.parseInt(hex, 16));
+        return ENTIDADES[nome ?? ''] ?? entidade;
+      },
+    );
   const t = v.replace(/\s+/g, ' ').trim();
   return t === '' ? undefined : t;
 }
