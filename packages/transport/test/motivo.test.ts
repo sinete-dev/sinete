@@ -86,6 +86,13 @@ describe('lerMotivoDaSefaz', () => {
     const inicio = performance.now();
     expect(lerMotivoDaSefaz(`<cStat>${'<![CDATA[x]]>'.repeat(5000)}<broken>`)).toBeUndefined();
     expect(lerMotivoDaSefaz(`<cStat>${'<![CDATA[x]] ]>'.repeat(5000)}<broken>`)).toBeUndefined();
+    expect(lerMotivoDaSefaz('<cStat '.repeat(20000))).toBeUndefined();
+    expect(lerMotivoDaSefaz(`<cStat a="${'x'.repeat(200000)}`)).toBeUndefined();
     expect(performance.now() - inicio).toBeLessThan(500);
+  });
+
+  test('só os primeiros 64 KB são examinados', () => {
+    expect(lerMotivoDaSefaz(`${' '.repeat(70 * 1024)}<cStat>225</cStat>`)).toBeUndefined();
+    expect(lerMotivoDaSefaz(`${' '.repeat(1024)}<cStat>225</cStat>`)).toEqual({ cStat: '225' });
   });
 });
