@@ -5,6 +5,7 @@ const nfe = require('@sinete/da/nfe');
 const nfce = require('@sinete/da/nfce');
 const mdfe = require('@sinete/da/mdfe');
 const cce = require('@sinete/da/cce');
+const evento = require('@sinete/da/evento');
 const nfse = require('@sinete/da/nfse');
 const core = require('@sinete/core');
 const failures = [];
@@ -15,10 +16,10 @@ try {
   err = e;
 }
 if (!(err instanceof da.ErroDa) || !(err instanceof core.ErroSinete)) failures.push('ErroDa via require');
-if (nfe.ErroDa !== da.ErroDa || mdfe.ErroDa !== da.ErroDa || nfse.ErroDa !== da.ErroDa) {
+if (nfe.ErroDa !== da.ErroDa || mdfe.ErroDa !== da.ErroDa || nfse.ErroDa !== da.ErroDa || evento.ErroDa !== da.ErroDa) {
   failures.push('uma classe só entre subpaths');
 }
-if (typeof nfce.danfce !== 'function' || typeof mdfe.damdfe !== 'function' || typeof cce.dacce !== 'function' || typeof nfse.danfse !== 'function') {
+if (typeof nfce.danfce !== 'function' || typeof mdfe.damdfe !== 'function' || typeof cce.dacce !== 'function' || typeof evento.daEvento !== 'function' || typeof nfse.danfse !== 'function') {
   failures.push('funções dos subpaths via require');
 }
 if (da.gerarPdf({ titulo: 't', paginas: [], imagens: {}, estatisticas: { reduzidos: 0, quebrados: 0, cortados: 0 } })[0] !== 37) failures.push('gerarPdf via require');

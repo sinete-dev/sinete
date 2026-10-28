@@ -1,4 +1,4 @@
-# Como gerar DANFE, DANFC-e, DAMDFE, DACCe e o DANFSe
+# Como gerar DANFE, DANFC-e, DAMDFE, DACCe, o DANFSe e o PDF dos eventos
 
 O `@sinete/da` gera documentos auxiliares a partir do XML, em PDF ou em HTML com uma `<svg>` por página. No pacote `sinete`, os imports ficam em `sinete/da/...`. A geração é determinística: o mesmo XML, com as mesmas opções, gera os mesmos bytes em Node, Bun, Deno e no navegador, sem navegador automatizado, fonte embutida nem dependência nativa. Cada documento tem um caminho de importação próprio, para carregar apenas os leiautes necessários.
 
@@ -8,6 +8,7 @@ O `@sinete/da` gera documentos auxiliares a partir do XML, em PDF ou em HTML com
 | DANFC-e, documento auxiliar da Nota Fiscal de Consumidor Eletrônica (NFC-e), em bobina | `danfce` de `sinete/da/nfce`, ou `danfe` de `sinete/da/nfe` | `nfeProc` da NFC-e, ou `NFe` sem protocolo em contingência |
 | DAMDFE, documento auxiliar do Manifesto Eletrônico de Documentos Fiscais (MDF-e) | `damdfe` de `sinete/da/mdfe` | `mdfeProc`, XML do manifesto com o protocolo, ou `MDFe` assinado em contingência |
 | DACCe, documento auxiliar da Carta de Correção Eletrônica (CC-e) | `dacce` de `sinete/da/cce` | `procEventoNFe` da CC-e, XML do evento com o retorno do registro; a nota é opcional |
+| Documento auxiliar de qualquer evento registrado: CC-e, cancelamento (110111) e cancelamento por substituição (110112) da NF-e e da NFC-e; cancelamento (110111), encerramento (110112) e inclusão de condutor (110114) do MDF-e | `daEvento` de `sinete/da/evento` | `procEventoNFe` ou `procEventoMDFe` com o retorno do registro; a nota ou o manifesto são opcionais |
 | DANFSe v2, documento auxiliar da Nota Fiscal de Serviço Eletrônica (NFS-e) Nacional | `danfse` de `sinete/da/nfse` | `NFSe` autorizado pela Secretaria de Finanças Nacional (Sefin Nacional), com a Declaração de Prestação de Serviços (DPS) dentro |
 
 ## Pelo emissor
@@ -69,11 +70,25 @@ const substituida = gerarPdf(danfse(nfseXml, { substituicao: eventoSubstituicaoX
 - **Nome dos municípios.** O gerador aproveita os nomes presentes no XML para os municípios de emissão, prestação e incidência, incluindo a localidade de incidência de IBS/CBS quando informada. Nos endereços nacionais, usa esses nomes quando o código coincide. Para os demais municípios, imprime o código do Instituto Brasileiro de Geografia e Estatística (IBGE) e a sigla do estado (UF), a menos que você forneça o nome pela opção `nomeMunicipio: (codigo) => nome`.
 - **Pelo emissor de NFS-e.** `pdf(d.proc)` gera o DANFSe a partir do XML do resultado autorizado, sem acesso à rede. `pdfCancelado(nfse, evento)` aplica "CANCELADA" ou "SUBSTITUÍDA", conforme o evento registrado; para um cancelamento, use o campo `xml` do resultado confirmado de `cancelar`. Para quem não guardou o XML, `pdfPorChave(chave)` consulta a NFS-e e os eventos de cancelamento e substituição na Sefin, na sequência 1, e aplica a marca encontrada. São até cinco consultas; se a Sefin não conhecer a chave, o retorno é `undefined`. O `@sinete/da` é carregado como nos outros emissores: no navegador e no Deno, importe `sinete/da/nfse` de forma estática e passe o módulo na opção `da`.
 
+## Eventos
+
+`daEvento` gera o PDF de qualquer evento registrado que o sinete emite, com uma chamada só. A raiz do XML escolhe a família (`procEventoNFe` ou `procEventoMDFe`) e o `tpEvento` escolhe os campos. Na CC-e, o documento é o mesmo do `dacce`.
+
+```ts
+import { daEvento, gerarPdf } from 'sinete/da/evento';
+
+const cancelamento = gerarPdf(daEvento(procEventoNFe, { nfe: nfeProc }));
+const encerramento = gerarPdf(daEvento(procEventoMDFe, { mdfe: mdfeProc }));
+```
+
+- **Conteúdo.** Cabeçalho com o emitente (da nota ou do manifesto passados em `nfe` ou `mdfe`; sem eles, o CNPJ ou CPF do autor), a chave com o código de barras, o código e a sequência do evento, o protocolo e a data e hora do registro, e os campos do tipo: a justificativa e o protocolo de autorização nos cancelamentos, a chave da NFC-e substituta no cancelamento por substituição, a data, a UF e o código IBGE do município no encerramento (o XML do evento não traz o nome do município) e o nome e o CPF do condutor na inclusão de condutor. O Manual de Orientação do Contribuinte (MOC) não define leiaute para o evento impresso: o documento segue o do DACCe.
+- **Só evento registrado.** O XML precisa trazer o retorno do registro do mesmo pedido (mesma chave, tipo e sequência), com cStat 135, 136 ou 155 na NF-e e 135, 134 ou 136 no MDF-e. Evento sem esse retorno, tipo sem documento auxiliar, ou nota e manifesto de outra chave ou da outra família lançam `ErroDa` com código `evento_incompativel`; outra raiz lança `documento_inesperado`.
+
 ## Armadilhas
 
 - **Guardar só o PDF.** O documento fiscal é o XML (`nfeProc`, `mdfeProc`, `NFSe` ou o XML do evento registrado); o PDF pode ser gerado novamente quando necessário.
 - **XML reserializado.** O `@sinete/da` lê o XML com um decodificador tolerante e gera o documento auxiliar, mas você deve guardar a string autorizada original, sem reformatá-la.
-- **Evento de outro documento.** `pdfCancelado` e `dacce`, quando recebe a nota na opção `nfe`, recusam eventos de outra chave com o código `evento_incompativel`; cabe à aplicação decidir se mantém o PDF antigo.
+- **Evento de outro documento.** `pdfCancelado` recusa evento de outra chave, e `dacce` e `daEvento` recusam a nota ou o manifesto de outra chave passados nas opções, com o código `evento_incompativel`; cabe à aplicação decidir se mantém o PDF antigo.
 
 ## Veja também
 

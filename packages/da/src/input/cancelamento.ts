@@ -5,8 +5,8 @@ import type { Cancelamento } from '../layout/marcas.ts';
 import { readEvento } from './evento.ts';
 import type { NotaView } from './nfe.ts';
 
-/** Eventos de cancelamento registrados: 135 (vinculado), 136 (não vinculado) e 155 (fora de prazo). */
-const REGISTRADO = new Set(['135', '136', '155']);
+/** Eventos da NF-e registrados: 135 (vinculado), 136 (não vinculado) e 155 (cancelamento homologado fora de prazo). */
+export const REGISTRADO_NFE: ReadonlySet<string> = new Set(['135', '136', '155']);
 
 /**
  * NF-e ou NFC-e cancelada: o `procEventoNFe` do cancelamento (110111) ou do cancelamento por substituição (110112), que
@@ -21,7 +21,7 @@ export function cancelamentoNfe(nota: NotaView, c: string | true | undefined): C
       detalhes: { chave: nota.chave, chaveEvento: ev.chNFe },
     });
   }
-  if (!ev.ret || !REGISTRADO.has(ev.ret.cStat)) {
+  if (!ev.ret || !REGISTRADO_NFE.has(ev.ret.cStat)) {
     throw new ErroDa('evento_incompativel', 'cancelamento sem retorno de evento registrado', {
       detalhes: { cStat: ev.ret?.cStat ?? '' },
     });

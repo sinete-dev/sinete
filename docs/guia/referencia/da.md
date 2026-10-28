@@ -4,7 +4,7 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 
 ## `@sinete/da`
 
-`@sinete/da`: documentos auxiliares dos DF-e a partir do XML autorizado (ADR 0006). A raiz tem o que é comum a todos (renderizadores, modelo do documento, códigos de barras e erros); cada documento está no próprio subpath, para que quem importa um não leve ao bundle o layout dos outros: `@sinete/da/nfe` (DANFE), `@sinete/da/nfce` (DANFE NFC-e), `@sinete/da/mdfe` (DAMDFE) e `@sinete/da/cce` (DACCE).
+`@sinete/da`: documentos auxiliares dos DF-e a partir do XML autorizado (ADR 0006). A raiz tem o que é comum a todos (renderizadores, modelo do documento, códigos de barras e erros); cada documento está no próprio subpath, para que quem importa um não leve ao bundle o layout dos outros: `@sinete/da/nfe` (DANFE), `@sinete/da/nfce` (DANFE NFC-e), `@sinete/da/mdfe` (DAMDFE), `@sinete/da/cce` (DACCE) e `@sinete/da/evento` (qualquer evento registrado).
 
 O layout é uma função pura do XML para um `Documento` (páginas de operações em mm); `gerarPdf` e `gerarHtml`/`gerarSvg` só desenham. A mesma entrada gera os mesmos bytes em Node, Bun, Deno e no browser: sem data de criação, sem fonte embutida, sem dependência nativa.
 
@@ -145,6 +145,32 @@ O layout é uma função pura do XML para um `Documento` (páginas de operaçõe
 ### Interfaces
 
 - `DacceOpcoes` (estende `DaOpcoes`): Membros: `nfe`.
+- `DaOpcoes`: Opções comuns a todos os documentos auxiliares. Membros: `logo`.
+- `Documento`: Membros: `titulo`, `paginas`, `imagens`, `estatisticas`.
+- `PdfOpcoes`: Membros: `comprimir`, `informacoes`.
+
+### Tipos
+
+- `CodigoErroDa`: Códigos estáveis dos erros do `@sinete/da`.
+
+## `@sinete/da/evento`
+
+`@sinete/da/evento`: o documento auxiliar de qualquer evento registrado que o sinete emite, por uma chamada só. Na NF-e e na NFC-e, a Carta de Correção (110110, o mesmo DACCE do `@sinete/da/cce`), o cancelamento (110111) e o cancelamento por substituição (110112); no MDF-e, o cancelamento (110111), o encerramento (110112) e a inclusão de condutor (110114). A raiz do XML (`procEventoNFe` ou `procEventoMDFe`) escolhe a família e o `tpEvento` escolhe os campos. Leva os schemas da NF-e e do MDF-e, mas nenhum layout de DANFE nem de DAMDFE. Os renderizadores (`gerarPdf`, `gerarHtml`, `gerarSvg`) são reexportados aqui para bastar um import.
+
+### Funções
+
+- `daEvento`: Documento auxiliar do evento registrado, a partir do `procEventoNFe` ou do `procEventoMDFe`. `daEvento(xmlEvento: string, opcoes?: DaEventoOpcoes): Documento`
+- `gerarHtml`: Documento HTML com uma `<svg>` por página, pronto para visualizar ou imprimir. `gerarHtml(documento: Documento): string`
+- `gerarPdf`: Serializa o `Documento` num PDF 1.4. `gerarPdf(documento: Documento, opcoes?: PdfOpcoes): Uint8Array`
+- `gerarSvg`: Uma página como SVG autocontido, em mm. Passe o `documento` para que os logotipos entrem como data URI. `gerarSvg(pagina: Pagina, documento?: Documento): string`
+
+### Classes
+
+- `ErroDa` (estende `ErroSinete<CodigoErroDa>`)
+
+### Interfaces
+
+- `DaEventoOpcoes` (estende `DaOpcoes`): Membros: `nfe`, `mdfe`.
 - `DaOpcoes`: Opções comuns a todos os documentos auxiliares. Membros: `logo`.
 - `Documento`: Membros: `titulo`, `paginas`, `imagens`, `estatisticas`.
 - `PdfOpcoes`: Membros: `comprimir`, `informacoes`.

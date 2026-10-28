@@ -207,6 +207,10 @@
       "types": "./dist/da/cce.d.ts",
       "default": "./dist/da/cce.js"
     },
+    "./da/evento": {
+      "types": "./dist/da/evento.d.ts",
+      "default": "./dist/da/evento.js"
+    },
     "./da/nfse": {
       "types": "./dist/da/nfse.d.ts",
       "default": "./dist/da/nfse.js"

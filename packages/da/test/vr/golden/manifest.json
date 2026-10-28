@@ -142,6 +142,26 @@
       "sha256": "9adce2ad8d1420f5405d8c3cb27a289eeed6e6d92125c4ef1c6c49fc1cdb06fe",
       "paginas": 1
     },
+    "evento-cancelamento-nfe": {
+      "sha256": "f846a77d1b0e3008d856b6b5978fb2adcb560101c5e0d537cd5e3c9958ac7af5",
+      "paginas": 1
+    },
+    "evento-substituicao-nfce": {
+      "sha256": "2ec19ef15fadfe3b10da1324cc752fcd64c5f39501b9760b2bab5718e977331d",
+      "paginas": 1
+    },
+    "evento-cancelamento-mdfe": {
+      "sha256": "ce1ebc41768e37857bb43ba29551081feaab6f84d3b3ef72c94a8877dd99d7e6",
+      "paginas": 1
+    },
+    "evento-encerramento-mdfe": {
+      "sha256": "02c889dd7be6296440fefd8270f13c3bff3f4ed8ea3c21cb96a8b5400512f1eb",
+      "paginas": 1
+    },
+    "evento-condutor-mdfe": {
+      "sha256": "3815c54db34874e5429bc3ea69d67463ff51585bb423d657eb3a7f94b8333ecb",
+      "paginas": 1
+    },
     "cancelada": {
       "sha256": "526570763328fd37505173b2f306f94ded033f372c8fcccecf0cd4804c8ccd34",
       "paginas": 1

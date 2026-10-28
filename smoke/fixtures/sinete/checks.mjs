@@ -11,6 +11,8 @@ import * as m_u_da from 'sinete/da';
 import * as m_p_da from '@sinete/da';
 import * as m_u_da_cce from 'sinete/da/cce';
 import * as m_p_da_cce from '@sinete/da/cce';
+import * as m_u_da_evento from 'sinete/da/evento';
+import * as m_p_da_evento from '@sinete/da/evento';
 import * as m_u_da_mdfe from 'sinete/da/mdfe';
 import * as m_p_da_mdfe from '@sinete/da/mdfe';
 import * as m_u_da_nfce from 'sinete/da/nfce';
@@ -114,6 +116,7 @@ const PARES = [
   ['core/xml', m_u_core_xml, m_p_core_xml],
   ['da', m_u_da, m_p_da],
   ['da/cce', m_u_da_cce, m_p_da_cce],
+  ['da/evento', m_u_da_evento, m_p_da_evento],
   ['da/mdfe', m_u_da_mdfe, m_p_da_mdfe],
   ['da/nfce', m_u_da_nfce, m_p_da_nfce],
   ['da/nfe', m_u_da_nfe, m_p_da_nfe],
