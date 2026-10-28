@@ -81,4 +81,11 @@ describe('lerMotivoDaSefaz', () => {
       xMotivo: 'A &#x110000; B &#0; C &#xD800; D &#99999999999999999999; E',
     });
   });
+
+  test('resposta defeituosa com muitas seções CDATA não trava a varredura', () => {
+    const inicio = performance.now();
+    expect(lerMotivoDaSefaz(`<cStat>${'<![CDATA[x]]>'.repeat(5000)}<broken>`)).toBeUndefined();
+    expect(lerMotivoDaSefaz(`<cStat>${'<![CDATA[x]] ]>'.repeat(5000)}<broken>`)).toBeUndefined();
+    expect(performance.now() - inicio).toBeLessThan(500);
+  });
 });

@@ -103,8 +103,10 @@ function textoDoElemento(conteudo: string): string | undefined {
  * `undefined`. Nunca lança. Serve para o erro levar a mensagem real da SEFAZ em vez de descartá-la.
  */
 export function lerMotivoDaSefaz(corpo: string): MotivoDaSefaz | undefined {
-  // Conteúdo de um elemento simples: texto e seções CDATA intercalados, sem outros elementos.
-  const conteudo = '((?:[^<]|<!\\[CDATA\\[[\\s\\S]*?\\]\\]>)*)';
+  // Conteúdo de um elemento simples: texto e seções CDATA intercalados, sem outros elementos. A seção CDATA para no
+  // primeiro `]]>` e as duas alternativas não começam pelo mesmo caractere: a varredura é linear mesmo numa resposta
+  // defeituosa (uma CDATA com `*?` repetida voltava atrás por todas as combinações de seções).
+  const conteudo = '((?:[^<]|<!\\[CDATA\\[(?:[^\\]]|\\](?!\\]>))*\\]\\]>)*)';
   const el = (tag: string): string => `<(?:[\\w.-]+:)?${tag}(?:\\s[^>]*)?>${conteudo}</(?:[\\w.-]+:)?${tag}>`;
   const re = new RegExp(`${el('cStat')}(?:\\s*${el('xMotivo')})?`, 'g');
   for (const m of corpo.matchAll(re)) {
