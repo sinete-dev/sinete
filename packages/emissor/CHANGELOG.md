@@ -1,5 +1,17 @@
 # @sinete/emissor
 
+## 0.3.4
+
+### Patch Changes
+
+- Updated dependencies [3a855bc]
+- Updated dependencies [58a6c3d]
+  - @sinete/da@0.4.0
+  - @sinete/transport@0.4.0
+  - @sinete/mdfe@0.5.1
+  - @sinete/nfe@0.6.1
+  - @sinete/nfse@0.4.1
+
 ## 0.3.3
 
 ### Patch Changes

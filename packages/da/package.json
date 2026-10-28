@@ -1,6 +1,6 @@
 {
   "name": "@sinete/da",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Documentos auxiliares dos DF-e em PDF e HTML/SVG a partir do XML autorizado, com um subpath por documento: DANFE da NF-e (retrato, paisagem, Simplificado, Etiqueta e Simplificado Tipo 2), DANFC-e (DANFE NFC-e), DAMDFE, DACCe, o documento dos demais eventos registrados da NF-e e do MDF-e e DANFSe v2 (NT 008/2026), com o DACTE previsto. Determinístico e sem dependência nativa",
   "keywords": [
     "danfe",

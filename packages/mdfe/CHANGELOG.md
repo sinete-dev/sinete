@@ -1,5 +1,12 @@
 # @sinete/mdfe
 
+## 0.5.1
+
+### Patch Changes
+
+- Updated dependencies [58a6c3d]
+  - @sinete/transport@0.4.0
+
 ## 0.5.0
 
 ### Minor Changes
