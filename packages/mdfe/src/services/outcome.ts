@@ -19,7 +19,8 @@ export type CStatClasse =
   | 'eventoRegistrado'
   | 'duplicidade'
   | 'duplicidadeChaveDiferente'
-  | 'naoConsta';
+  | 'naoConsta'
+  | 'outroMdfeNoNumero';
 
 const CLASSES: Readonly<Record<CStatClasse, readonly string[]>> = table;
 

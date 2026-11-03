@@ -244,6 +244,20 @@ describe('criarEmissorMdfe contra a SEFAZ simulada, HTTPS com mTLS', () => {
     expect(await c.store.ler('mdfe', 'c')).toBeUndefined();
   });
 
+  test('número usado fora com outro cMDF: 539 no envio e, na retomada, 216 na consulta, os dois divergentes', async () => {
+    const c = await cenario();
+    // O emitente já tem o MDF-e 30 na SEFAZ, emitido por outro sistema.
+    const fora = autorizado(await c.emissor.emitir('fora', cargaPropria({ nMDF: 30, cMDF: '11111111' })));
+    const envio = await c.emissor.emitir('local', cargaPropria({ nMDF: 30, cMDF: '22222222' }));
+    expect([envio.tipo, envio.tipo === 'divergente' && envio.chaveRegistrada]).toEqual(['divergente', fora.id]);
+    // Os bytes ficam e a retomada consulta a chave deles: a SEFAZ acha o número com outro cMDF (216).
+    expect(await c.store.ler('mdfe', 'local')).toBeDefined();
+    const d = await c.emissor.retomar('local');
+    expect(d?.tipo === 'divergente' && d.cStat).toBe('216');
+    expect(await c.store.ler('mdfe', 'local')).toBeDefined();
+    expect(recepcoes(c)).toBe(2);
+  });
+
   test('protocolo sem digVal: a consulta prova e guarda; sem digVal nem na consulta, divergente com os bytes', async () => {
     const c = await cenario();
     c.sim.definirProtocoloSemDigVal('todos', 'autorizacao');

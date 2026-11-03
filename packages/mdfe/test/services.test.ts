@@ -192,6 +192,22 @@ describe('status e autorização', () => {
     expect(res).toMatchObject({ acao: 'divergente', chMDFe: a.chave });
   });
 
+  test('o número já tem outro MDF-e e o envio ficou sem resposta: 216 e 600 na consulta são divergentes', async () => {
+    const s = cenario();
+    await s.autorizado(cargaPropria({ nMDF: 70, cMDF: '12345678' }));
+    // Outro cMDF (G05, 216): os bytes gravados nunca serão autorizados.
+    const outroCodigo = await s.emitir(cargaPropria({ nMDF: 70, cMDF: '87654321' }));
+    const r216 = await resolverEnvioSemResposta(s.client, outroCodigo.xml);
+    expect(r216).toMatchObject({ acao: 'divergente', motivo: { tipo: 'recusado', cStat: '216' } });
+    expect(r216.acao === 'divergente' && r216.chMDFe).toBeUndefined();
+    // O mesmo cMDF com a chave diferente em outra parte (tpEmis, G06): 600.
+    const outraChave = await s.emitir(cargaPropria({ nMDF: 70, cMDF: '12345678' }), { tpEmis: '2' });
+    const r600 = await resolverEnvioSemResposta(s.client, outraChave.xml);
+    expect(r600).toMatchObject({ acao: 'divergente', motivo: { tipo: 'recusado', cStat: '600' } });
+    // Nada foi reenviado: a SEFAZ só tem o primeiro.
+    expect(s.sim.inspecao.mdfes()).toHaveLength(1);
+  });
+
   test('sem resposta depois de processar: o resolvedor recupera o mdfeProc; antes de processar, manda reenviar', async () => {
     const s = cenario();
     const lento = s.cliente(c.produtor, 200);
