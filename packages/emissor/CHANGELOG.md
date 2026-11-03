@@ -1,5 +1,12 @@
 # @sinete/emissor
 
+## 0.3.5
+
+### Patch Changes
+
+- Updated dependencies [97630b8]
+  - @sinete/mdfe@0.6.0
+
 ## 0.3.4
 
 ### Patch Changes
