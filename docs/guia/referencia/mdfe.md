@@ -101,7 +101,7 @@ Gerado dos `.d.ts` publicados por `scripts/docs-gerados.ts`; não edite à mão.
 - `Ciot`: CIOT (`infCIOT`): código e o CPF ou CNPJ do responsável pela geração. O código é opcional desde a NT 2025.001. `type Ciot = DocumentoPessoa & { readonly CIOT?: string; }`
 - `CodigoOcorrenciaMdfe`: `type CodigoOcorrenciaMdfe = (typeof CODIGOS_OCORRENCIA_MDFE)[number]`
 - `Contratante`: `type Contratante = DocumentoContratante & { readonly xNome?: string; readonly contrato?: { readonly NroContrato: string; readonly vContratoGlobal: DecimalInput; }; }`
-- `CStatClasse`: `type CStatClasse = 'autorizado' | 'cancelado' | 'encerrado' | 'servicoEmOperacao' | 'naoEncerradosLocalizados' | 'naoEncerradosNenhum' | 'eventoRegistrado' | 'duplicidade' | 'duplicidadeChaveDiferente' | 'naoConsta'`
+- `CStatClasse`: `type CStatClasse = 'autorizado' | 'cancelado' | 'encerrado' | 'servicoEmOperacao' | 'naoEncerradosLocalizados' | 'naoEncerradosNenhum' | 'eventoRegistrado' | 'duplicidade' | 'duplicidadeChaveDiferente' | 'naoConsta' | 'outroMdfeNoNumero'`
 - `DadosBancarios`: Dados bancários do pagamento (`infBanc`): banco e agência, instituição de pagamento eletrônico ou PIX. `type DadosBancarios = { readonly codBanco: string; readonly codAgencia: string; } | { readonly CNPJIPEF: string; } | { readonly PIX: string; }`
 - `DadosMdfe`: Entrada do `montarMdfe`: os campos comuns e o grupo de um modal, um e só um. `type DadosMdfe = DadosMdfeRodoviario | DadosMdfeAereo | DadosMdfeAquaviario | DadosMdfeFerroviario`
 - `DecimalInput`: O que as APIs de entrada aceitam como número. Prefira `string` (`'12.34'`): `number` perde dígitos acima de 15 algarismos. `type DecimalInput = string | number | bigint | Decimal`

@@ -34,8 +34,8 @@ export type ResolucaoEnvio =
   /** O MDF-e não consta (217): reenvie `mdfeAssinado`, os mesmos bytes. */
   | { readonly acao: 'reenviar'; readonly mdfeAssinado: string }
   /**
-   * Existe outro MDF-e para o mesmo número: a mesma chave com outro conteúdo (`digVal` diferente) ou outra chave (539,
-   * `chMDFe` extraída do `xMotivo`). Não reenvie: recupere o MDF-e registrado e descarte o local.
+   * Existe outro MDF-e para o mesmo número: a mesma chave com outro conteúdo (`digVal` diferente) ou outra chave (539
+   * no envio, 216 ou 600 na consulta; `chMDFe` extraída do `xMotivo` quando ele a traz). Não reenvie: recupere o MDF-e registrado e descarte o local.
    */
   | {
       readonly acao: 'divergente';
@@ -83,6 +83,13 @@ export async function resolverEnvioSemResposta(
   const consulta = await cliente.consultar(chave, mdfeAssinado, opcoes);
   if (consulta.tipo === 'recusado') {
     if (cstatEm(consulta.cStat, 'naoConsta')) return { acao: 'reenviar', mdfeAssinado: a.xml };
+    // 216 e 600 na consulta: a SEFAZ acha o MDF-e pelo emitente, série e número (G04) e a chave dele difere da
+    // consultada, no cMDF (G05) ou em outra parte (G06). É a mesma situação da 539 no envio: estes bytes nunca serão
+    // autorizados. O 600 pode trazer a chave registrada no xMotivo.
+    if (cstatEm(consulta.cStat, 'outroMdfeNoNumero')) {
+      const outra = chaveDaDuplicidade(consulta.xMotivo);
+      return { acao: 'divergente', motivo: consulta, ...(outra === undefined ? {} : { chMDFe: outra }) };
+    }
     return { acao: 'indefinida', resultado: consulta };
   }
   if (consulta.tipo !== 'autorizado') return { acao: 'indefinida', resultado: consulta };
