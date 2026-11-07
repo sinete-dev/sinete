@@ -40,6 +40,11 @@ export interface DaEventoOpcoes extends DaOpcoes {
   readonly nfe?: string;
   /** `mdfeProc` do manifesto do evento do MDF-e, para o emitente no cabeçalho e a linha do manifesto. */
   readonly mdfe?: string;
+  /**
+   * Nome do município pelo código IBGE, para o município do encerramento do MDF-e (110112): o `evEncMDFe` só traz o
+   * `cMun`. Sem a opção, ou quando ela devolve `undefined`, a linha sai com o código IBGE.
+   */
+  readonly nomeMunicipio?: (cMun: string) => string | undefined;
 }
 
 /** Tipos de evento com documento auxiliar, por família. */
@@ -145,7 +150,7 @@ function eventoMdfe(ev: EventoMdfeView, opcoes: DaEventoOpcoes): Documento {
   if (m && m.chave !== ev.chMDFe) {
     throw incompativel('o MDF-e passado não é o do evento', { chave: m.chave, chaveEvento: ev.chMDFe });
   }
-  const tipo = camposMdfe(ev.tpEvento, ev.det);
+  const tipo = camposMdfe(ev.tpEvento, ev.det, opcoes.nomeMunicipio);
   return eventoLayout(
     {
       ...tipo,
@@ -176,7 +181,11 @@ function eventoMdfe(ev: EventoMdfeView, opcoes: DaEventoOpcoes): Documento {
 }
 
 /** Nome, campos e quadros de cada tipo de evento do MDF-e. */
-function camposMdfe(tpEvento: string, d: Rec): Pick<EventoImpresso, 'nome' | 'campos' | 'quadros'> {
+function camposMdfe(
+  tpEvento: string,
+  d: Rec,
+  nomeMunicipio: DaEventoOpcoes['nomeMunicipio'],
+): Pick<EventoImpresso, 'nome' | 'campos' | 'quadros'> {
   const protocolo: Celula = ['PROTOCOLO DE AUTORIZAÇÃO DO MDF-e', str(d, 'nProt') ?? ''];
   if (tpEvento === '110111') {
     return {
@@ -186,17 +195,19 @@ function camposMdfe(tpEvento: string, d: Rec): Pick<EventoImpresso, 'nome' | 'ca
     };
   }
   if (tpEvento === '110112') {
-    // evEncMDFe: dtEnc, cUF e cMun (código IBGE; o XML não traz o nome do município).
+    // evEncMDFe: dtEnc, cUF e cMun (código IBGE; o XML não traz o nome do município, que vem do chamador).
+    const cMun = str(d, 'cMun') ?? '';
+    const nome = cMun ? nomeMunicipio?.(cMun)?.trim() : undefined;
+    const municipio: Celula = nome
+      ? ['MUNICÍPIO DO ENCERRAMENTO', nome]
+      : ['MUNICÍPIO DO ENCERRAMENTO (CÓDIGO IBGE)', cMun];
     const terceiro: readonly (readonly Celula[])[] =
       str(d, 'indEncPorTerceiro') === '1' ? [[['ENCERRAMENTO', 'ENCERRADO PELO TRANSPORTADOR TERCEIRO']]] : [];
     return {
       nome: 'ENCERRAMENTO DO MDF-e',
       campos: [
         [protocolo, ['DATA DO ENCERRAMENTO', f.data(str(d, 'dtEnc'))]],
-        [
-          ['UF DO ENCERRAMENTO', siglaDaUf(str(d, 'cUF') ?? '')],
-          ['MUNICÍPIO DO ENCERRAMENTO (CÓDIGO IBGE)', str(d, 'cMun') ?? ''],
-        ],
+        [['UF DO ENCERRAMENTO', siglaDaUf(str(d, 'cUF') ?? '')], municipio],
         ...terceiro,
       ],
       quadros: [],
