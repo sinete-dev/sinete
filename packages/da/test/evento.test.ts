@@ -103,6 +103,27 @@ describe('daEvento: uma chamada para qualquer evento registrado', () => {
     expect(terceiro).toContain('ENCERRADO PELO TRANSPORTADOR TERCEIRO');
   });
 
+  test('encerramento do MDF-e com nomeMunicipio: o nome no lugar do código IBGE', () => {
+    const consultas: string[] = [];
+    const nomeMunicipio = (c: string): string | undefined => {
+      consultas.push(c);
+      return c === '3304557' ? 'Rio de Janeiro' : undefined;
+    };
+    const t = texts(daEvento(eventoMdfeXml({ tpEvento: '110112', chave: CH_MDFE }), { nomeMunicipio }));
+    expect(consultas).toEqual(['3304557']);
+    expect(t).toContain('MUNICÍPIO DO ENCERRAMENTO | Rio de Janeiro');
+    expect(t).toContain('UF DO ENCERRAMENTO | RJ');
+    expect(t).not.toContain('CÓDIGO IBGE');
+    // Sem o nome resolvido, fica o código, como sem a opção.
+    const semNome = texts(
+      daEvento(eventoMdfeXml({ tpEvento: '110112', chave: CH_MDFE }), { nomeMunicipio: () => undefined }),
+    );
+    expect(semNome).toContain('MUNICÍPIO DO ENCERRAMENTO (CÓDIGO IBGE) | 3304557');
+    // Os outros eventos não consultam o município.
+    daEvento(eventoMdfeXml({ tpEvento: '110111', chave: CH_MDFE }), { nomeMunicipio });
+    expect(consultas).toEqual(['3304557']);
+  });
+
   test('inclusão de condutor no MDF-e (110114): nome e CPF do condutor', () => {
     const t = texts(daEvento(eventoMdfeXml({ tpEvento: '110114', chave: CH_MDFE })));
     expect(t).toContain('INCLUSÃO DE CONDUTOR NO MDF-e');

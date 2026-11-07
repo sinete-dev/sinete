@@ -170,7 +170,7 @@ O layout é uma função pura do XML para um `Documento` (páginas de operaçõe
 
 ### Interfaces
 
-- `DaEventoOpcoes` (estende `DaOpcoes`): Membros: `nfe`, `mdfe`.
+- `DaEventoOpcoes` (estende `DaOpcoes`): Membros: `nfe`, `mdfe`, `nomeMunicipio`.
 - `DaOpcoes`: Opções comuns a todos os documentos auxiliares. Membros: `logo`.
 - `Documento`: Membros: `titulo`, `paginas`, `imagens`, `estatisticas`.
 - `PdfOpcoes`: Membros: `comprimir`, `informacoes`.
