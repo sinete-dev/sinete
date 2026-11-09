@@ -37,7 +37,7 @@ import { assinarNfe, criarClienteNfe, montarNfe } from '@sinete/nfe';
 import type { EventoDeAuditoria, PedidoTransporte, RespostaTransporte, Transporte } from '@sinete/transport';
 import { criarTransporte, detectarRuntime, identidadePem, nfeEndpoint } from '@sinete/transport';
 import type { Certificado } from './certificado.ts';
-import { abrirCertificado, leitorPadrao } from './certificado.ts';
+import { abrirCertificado } from './certificado.ts';
 import { LEDGER_PADRAO, ledger } from './ledger.ts';
 import { HOSTS_HOMOLOGACAO_DF, homologacaoDfPolicy } from './policy.ts';
 
@@ -66,9 +66,8 @@ const { values: opt, positionals } = parseArgs({
   },
 });
 
-// Sem --op-bin: `vw://` usa o vw-agentes; `op://` segue pelo op-agentes, como antes.
-const leitor = (ref: string): string =>
-  (opt['op-bin'] as string | undefined) ?? (ref.startsWith('op://') ? 'op-agentes' : leitorPadrao(ref));
+// Sem --op-bin, o leitor é o vw-agentes (só `vw://`; `op://` é recusado por abrirCertificado).
+const opBin = opt['op-bin'] === undefined ? {} : { opBin: opt['op-bin'] };
 
 const comando = positionals[0] ?? '';
 if (!['status', 'emitir', 'consultar', 'cce', 'cancelar', 'dist'].includes(comando)) {
@@ -115,7 +114,7 @@ const registrar = (host: string, servico: string, desfecho: string): void =>
 // Certificados: e-CPF do emitente (assinatura e TLS) e, só no teste do transmissor terceiro, o e-CNPJ no TLS
 // ---------------------------------------------------------------------------------------------------------------
 
-const cert: Certificado = await abrirCertificado({ op: opt.op, opBin: leitor(opt.op) });
+const cert: Certificado = await abrirCertificado({ op: opt.op, ...opBin });
 const titular = cert.ks.identidade;
 if (titular.tipo !== 'e-CPF' || titular.cpf !== emit.CPF) {
   throw new Error(`o certificado do emitente precisa ser o e-CPF do CPF do emitente (veio ${titular.tipo})`);
@@ -129,7 +128,7 @@ const signer = await cert.ks.assinador();
 let tlsCert: Certificado = cert;
 let rotuloTls = 'TLS e-CPF emitente';
 if (opt['transmissor-op']) {
-  tlsCert = await abrirCertificado({ op: opt['transmissor-op'], opBin: leitor(opt['transmissor-op']) });
+  tlsCert = await abrirCertificado({ op: opt['transmissor-op'], ...opBin });
   const t = tlsCert.ks.identidade;
   if (t.tipo !== 'e-CNPJ' || !t.cnpj) throw new Error('o transmissor terceiro precisa ser e-CNPJ');
   rotuloTls = `TLS e-CNPJ transmissor ${t.cnpj}`;
