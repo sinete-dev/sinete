@@ -1,8 +1,8 @@
 /**
  * Abre o A1 do operador só em memória, pelo `@sinete/cert`. Duas origens:
  *
- * - `--op <referência>`: lê os campos `pfx_base64` e `senha` do item com o leitor de segredos, por spawn sem shell. A referência escolhe o leitor
- *   (`--op-bin` sobrepõe): `vw://cofre/item` usa `vw-agentes` (Vaultwarden); `op://cofre/item` usa `op` (1Password). O segredo volta pelo stdout do filho e nunca passa por argv, env de outro processo ou disco.
+ * - `--op <referência>`: lê os campos `pfx_base64` e `senha` do item com o leitor de segredos, por spawn sem shell. A referência é `vw://Agentes/item`,
+ *   lida pelo `vw-agentes` (Vaultwarden); `op://` (1Password) foi aposentado e recusado. `--op-bin` troca o executável do leitor (usado nos testes, com um leitor falso). O segredo volta pelo stdout do filho e nunca passa por argv, env de outro processo ou disco.
  * - `--pfx <arquivo>`: lê o PFX do disco (o do operador) e a senha da variável de `--senha-env` (padrão
  *   `SINETE_PFX_SENHA`), como o `sinete doctor`.
  *
@@ -35,15 +35,20 @@ export interface Certificado {
   readonly extras: readonly CertificadoX509[];
 }
 
-/** Leitor padrão pelo esquema da referência: `vw://` é o `vw-agentes`; qualquer outra (`op://`) segue o `op`. */
-export function leitorPadrao(ref: string): string {
-  return ref.startsWith('vw://') ? 'vw-agentes' : 'op';
+export const LEITOR_PADRAO = 'vw-agentes';
+
+/** Só `vw://` é aceito; `op://` ganha uma mensagem própria, porque o 1Password foi aposentado. */
+export function exigirReferenciaVw(ref: string): void {
+  if (ref.startsWith('op://')) {
+    throw new Error('o 1Password foi aposentado: referências op:// não são mais aceitas, use vw://Agentes/<item>');
+  }
+  if (!ref.startsWith('vw://')) throw new Error('referência inválida: use vw://Agentes/<item>');
 }
 
-function opRead(bin: string, ref: string): string {
+function lerSegredo(bin: string, ref: string): string {
   const r = spawnSync(bin, ['read', ref], {
     encoding: 'utf8',
-    env: { ...process.env, OP_AGENTES_NO_CACHE: '1', VW_AGENTES_NO_CACHE: '1' },
+    env: { ...process.env, VW_AGENTES_NO_CACHE: '1' },
     stdio: ['ignore', 'pipe', 'pipe'],
     maxBuffer: 1 << 22,
     shell: false,
@@ -68,16 +73,17 @@ export async function abrirCertificado(o: OrigemCertificado): Promise<Certificad
   let senha: string;
   if (o.op !== undefined) {
     const ref = o.op.replace(/\/+$/, '');
-    const bin = o.opBin ?? leitorPadrao(ref);
-    pfx = base64(opRead(bin, `${ref}/pfx_base64`));
-    senha = opRead(bin, `${ref}/senha`).replace(/\r?\n$/, '');
+    exigirReferenciaVw(ref);
+    const bin = o.opBin ?? LEITOR_PADRAO;
+    pfx = base64(lerSegredo(bin, `${ref}/pfx_base64`));
+    senha = lerSegredo(bin, `${ref}/senha`).replace(/\r?\n$/, '');
   } else if (o.pfx !== undefined) {
     pfx = new Uint8Array(readFileSync(o.pfx));
     const nome = o.senhaEnv ?? 'SINETE_PFX_SENHA';
     const v = process.env[nome];
     if (v === undefined) throw new Error(`defina ${nome} com a senha do PFX`);
     senha = v;
-    // Nenhum filho (xmllint, CLI do 1Password) herda a senha.
+    // Nenhum filho (xmllint, vw-agentes) herda a senha.
     delete process.env[nome];
   } else {
     throw new Error('informe --op <referência> ou --pfx <arquivo>');
